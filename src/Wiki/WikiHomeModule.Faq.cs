@@ -28,7 +28,7 @@ public static partial class WikiHomeModule
             [
                 H("p", "问：为什么 `System/*` 辅助函数是显式浏览器模块而非隐藏的运行时胶水？"),
                 H("p", "答：因为生产输出必须是可检查、可导入和可冒烟验证的。显式模块保持浏览器契约可见。"),
-                H("p", "问：为什么文档宿主在未知路由上仍然提供 `index.html`？"),
+                H("p", "问：为什么文档宿主在未知路由上仍然提供 HTML shell？"),
                 H("p", "答：这样直接刷新和手动输入的 URL 仍然能启动 SPA 外壳，然后可以恢复到带有路由建议的未找到页面。")
             ]),
             PageSection("wiki-workflow", "Wiki 工作流",

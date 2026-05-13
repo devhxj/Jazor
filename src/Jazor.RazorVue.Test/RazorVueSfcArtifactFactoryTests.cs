@@ -1011,6 +1011,51 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersLibraryStringEnumProp_WithoutLiftedBinding()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using ECMAScript.Vuetify;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/card-host")]
+                public class CardHost : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VCard>(0);
+                        builder.AddAttribute(1, nameof(VCard.Variant), VuetifyVariant.Outlined);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<VCard variant=\"outlined\" />");
+        Assert.IsFalse(artifact.TemplateText.Contains(":variant=", StringComparison.Ordinal), artifact.TemplateText);
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("computed", StringComparison.Ordinal), artifact.ScriptSetupText);
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("__jazor$", StringComparison.Ordinal), artifact.ScriptSetupText);
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_LowersComponentLevelAttributeBinding_ThroughExplicitBindingSite()
     {
         var context = CreateContext(

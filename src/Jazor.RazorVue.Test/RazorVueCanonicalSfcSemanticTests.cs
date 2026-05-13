@@ -438,6 +438,59 @@ public sealed class RazorVueCanonicalSfcSemanticTests
     }
 
     [TestMethod]
+    public void RazorVue_CanonicalModelFactory_MapsStringEnumComponentProp_ToDirectStaticAttribute()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using ECMAScript.Vuetify;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/card-host")]
+                public class CardHost : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VCard>(0);
+                        builder.AddAttribute(1, nameof(VCard.Variant), VuetifyVariant.Outlined);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+        var component = AssertNode<RazorVueCanonicalComponentNode>(canonical.Template.Children.Single());
+        var attribute = component.Attributes.OfType<RazorVueCanonicalAttributeBinding>().Single();
+        var sfc = new RazorVueSfcSemanticModelFactory().Create(canonical);
+
+        Assert.AreEqual("variant", attribute.Name);
+        Assert.AreEqual("\"outlined\"", attribute.ExpressionText);
+        Assert.AreEqual(RazorVueExpressionBindingKind.Literal, attribute.BindingKind);
+        Assert.AreEqual(RazorVueLiteralValueKind.String, attribute.LiteralValueKind);
+        Assert.AreEqual(RazorVueTemplateEncodability.DirectTemplate, attribute.TemplateEncodability);
+        Assert.AreEqual(RazorVueTemplateExpressionSafety.DirectTemplateSafe, attribute.TemplateExpressionSafety);
+        Assert.AreEqual(RazorVueSideEffectClassification.None, attribute.SideEffectClassification);
+        Assert.IsTrue(sfc.ScriptSetupBlock.LiftedBindings.IsDefaultOrEmpty);
+        Assert.IsTrue(sfc.TemplateBlock.BindingSites.IsDefaultOrEmpty);
+    }
+
+    [TestMethod]
     public void RazorVue_CanonicalModelFactory_MapsScopedSlotForwarding_ToForwardedSlotBinding()
     {
         var context = CreateContext(

@@ -180,8 +180,9 @@ class="playground-page playground-page--catalog"
 
 ### 后续提升方向
 
-- 进一步把 `razorvue-consumer-entry` 封装为 `Jazor` SDK/MSBuild target，减少项目手写 `Exec`。
-- 提供 ASP.NET Core + RazorVue library mode 的标准模板，明确 colocated consumer 目录、runtime entry、bundle 输出和 publish 合并策略。
+- 已收敛为 `Jazor` SDK/MSBuild contract：项目通过 `JazorConsumerRoot`、`JazorConsumerRunScriptPath`、`JazorConsumerBuildTask`、`JazorConsumerBrowserAssetRoot` 等声明式属性启用 colocated consumer build，不再手写项目私有 `Exec` target。
+- `src/Jazor/buildTransitive/Jazor.targets` 现已官方提供 consumer build 与 publish materialization 组合能力；`Playground` 只保留配置，`SdkIntegrationTests` 覆盖 package consumer 场景下的 build/publish merge 行为。
+- 后续仍需要提供 ASP.NET Core + RazorVue library mode 标准模板，明确 colocated consumer 目录、runtime entry、bundle 输出和 publish 合并策略。
 
 ## 5. ASP.NET Core fallback 不能使用 catch-all endpoint 抢占静态文件
 
@@ -261,7 +262,7 @@ app.MapMethods("/{**path}", ["GET", "HEAD"], ...)
 
 ### 后续提升方向
 
-- RazorVue / ASP.NET Core 集成层可以提供官方合并 target，避免真实项目手写“emit + consumer bundle”合并逻辑。
+- RazorVue / ASP.NET Core 集成层已提供官方 publish 合并 target：`JazorPublishMaterializeEnabled=true` 负责将开发输出根物化到发布 `wwwroot/jazor`，`JazorPublishConsumerBrowserAssets` 负责把 colocated consumer browser bundle 合并到同一路径并清理影子目录。
 - `UseJazorWebAssets(...)` 后续可以继续扩展为更完整的 RazorVue library-mode 宿主模板入口。
 
 ## 8. 待执行：统一 manifest 与宿主 API 收敛
@@ -357,12 +358,14 @@ jazor-manifest-razorvue.json
 - `JazorDevelopmentAssetOptions` 默认探测列表移除旧 manifest 文件名，避免继续把废弃文件作为隐式契约。
 - `wwwroot` 静态文件使用 ASP.NET Core 默认 web root 机制，不在 Playground/Wiki 私有代码里手写特殊处理。
 - `JazorWebApplication.CreateBuilder(args)` 作为源码运行与发布运行的内容根 helper，可供 Playground 和 Wiki 共用。
-- `UseJazorWebAssets(...)` 负责标准静态文件、source map content type、开发期 Jazor 输出挂载；项目只配置安全头、cache header 或是否启用 default files。
+- `UseJazorHost(...)` 作为默认宿主入口，统一挂载通用安全头、标准静态文件、source map content type、开发期 Jazor 输出；项目仅在需要时覆盖站点特有 cache/header 策略。
+- `UseJazorWebAssets(...)` 继续作为更细粒度的低层挂载 API 存在，但不再要求 Playground/Wiki 这类标准宿主手写组合样板。
 - `UseJazorSpaFallback(...)` 继续负责 SPA navigation fallback；Wiki 如果需要 SEO shell 和 discovery document，可以保留项目特定 HTML shell 逻辑，但不应复制静态资源挂载和 Jazor output 探测逻辑。
 
 ### Playground / Wiki 一致性工作项
 
 - `Playground/Program.cs` 精简为 builder、服务注册、安全头、`UseJazorWebAssets(...)`、SPA fallback、API endpoint，不再包含 manifest 文件名或 Jazor output 细节。
+- `Playground/Program.cs` 现已进一步收敛为 builder、服务注册、`UseJazorHost()`、SPA fallback、API endpoint，不再维护项目私有静态资产/安全头样板。
 - `Wiki/Program.cs` 迁移到同一组 `Jazor.AspNetCore` helper，避免与 Playground 使用不同 API 设计。
 - Wiki 可保留 host-rendered HTML shell、robots/sitemap、路径基址和目录完整性校验；这些是站点语义，不是 Jazor web asset 基础设施。
 - 两个项目都应以默认配置跑起来，差异只体现在项目语义 option，而不是基础 Jazor host 契约。
@@ -394,6 +397,7 @@ jazor-manifest-razorvue.json
 - library component raw `class=` / `style=` fallthrough authoring 体验修复
 - RazorVue SFC named-export bridge 官方化
 - RazorVue consumer entry generation 官方化切片
+- colocated consumer MSBuild build/publish contract 官方化
 - ASP.NET Core SPA fallback/static-file 官方 helper
 - ASP.NET Core 源码/发布双形态 content root helper
 - `/jazor/*` 本地 webroot bundle + development emit 标准挂载 helper

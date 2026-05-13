@@ -38,7 +38,7 @@ src/Wiki/jazor/System/
                 H("p", "契约刻意保持显式：浏览器入口 HTML 声明 `System/` import-map 前缀，发射的 Jazor 模块导入命名的运行时辅助函数，目录输出为这些辅助函数提供稳定的 ESM 导出。"),
                 H("div", new VueObject { Class = "check-grid" },
                 [
-                    CheckCard("Import map", "浏览器通过 `wwwroot/index.html` 中的 `/jazor/System/` 解析 `System/*`。"),
+                    CheckCard("Import map", "浏览器通过宿主 HTML 模板中的 `/jazor/System/` 解析 `System/*`。"),
                     CheckCard("命名导出", "生成的运行时模块暴露可调用的辅助函数导出和模块命名空间对象以保持导入稳定性。"),
                     CheckCard("本地资源", "Wiki 在开发时从项目本地发射目录提供运行时辅助函数，发布后从 `wwwroot/jazor/System/` 提供。")
                 ])

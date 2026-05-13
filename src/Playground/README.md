@@ -26,11 +26,11 @@
 
 - 本地 build 生成 `src/Playground/jazor`
 - 宿主使用 `JazorWebApplication.CreateBuilder()` 处理源码/发布双形态内容根
-- 宿主开发时用 `UseJazorWebAssets()` 同时提供 `wwwroot` 静态资产和根 `jazor` development assets
+- 宿主默认用 `UseJazorHost()` 同时挂载安全响应头、`wwwroot` 静态资产和根 `jazor` development assets
 - HTML shell fallback 使用 `UseJazorSpaFallback()`，只兜底无扩展名的 HTML 导航请求，不使用 endpoint catch-all
-- consumer 在 `JazorEmit` 后自动运行，生成 `wwwroot/jazor/client-entry.*`
+- consumer 通过 `Jazor` SDK 官方 `JazorConsumer*` MSBuild contract 在 `JazorEmit` 后自动运行，生成 `wwwroot/jazor/client-entry.*`
+- publish 通过 `JazorPublishMaterializeEnabled=true` 官方化“根 `jazor` emit + consumer browser bundle -> 发布 `wwwroot/jazor`”合并语义
 - publish 后只从发布目录的 `wwwroot/jazor` 提供 `/jazor/*`
-- publish 阶段会把根 `jazor` emit 与 `wwwroot/jazor/client-entry.*` 合并到发布目录的 `wwwroot/jazor`
 - 发布根目录不能出现影子 `jazor/` 目录
 - consumer 的中间 build root 默认使用 `.deno-build/pid-*`，避免并行 smoke/build 互相清空目录；需要固定路径时可显式设置 `RAZORVUE_BUILD_ROOT`
 

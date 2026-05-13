@@ -25,7 +25,7 @@ string mainModulePath = Path.Combine(jazorRoot, "main.mjs");
 string componentModulePath = Path.Combine(jazorRoot, "components", "wiki-home.mjs");
 string manifestPath = Path.Combine(jazorRoot, "jazor-manifest.json");
 string moduleTextPath = componentModulePath;
-string indexPath = Path.Combine(webRoot, "index.html");
+string indexTemplatePath = Path.Combine(sampleRoot, "host", "index.template.html");
 string faviconPath = Path.Combine(webRoot, "favicon.svg");
 string stdoutLog = Path.Combine(sampleRoot, $".wiki-smoke-{Environment.ProcessId}.stdout.log");
 string stderrLog = Path.Combine(sampleRoot, $".wiki-smoke-{Environment.ProcessId}.stderr.log");
@@ -74,7 +74,7 @@ if (options.Publish)
     componentModulePath = Path.Combine(jazorRoot, "components", "wiki-home.mjs");
     manifestPath = Path.Combine(jazorRoot, "jazor-manifest.json");
     moduleTextPath = componentModulePath;
-    indexPath = Path.Combine(webRoot, "index.html");
+    indexTemplatePath = Path.Combine(hostRoot, "host", "index.template.html");
     faviconPath = Path.Combine(webRoot, "favicon.svg");
     stdoutLog = Path.Combine(hostRoot, ".wiki-publish-smoke.stdout.log");
     stderrLog = Path.Combine(hostRoot, ".wiki-publish-smoke.stderr.log");
@@ -147,19 +147,19 @@ else if (options.Build)
 WikiScriptHelpers.EnsureFileExists(mainModulePath, "emitted main module");
 WikiScriptHelpers.EnsureFileExists(componentModulePath, "emitted wiki component module");
 WikiScriptHelpers.EnsureFileExists(manifestPath, "emit manifest");
-WikiScriptHelpers.EnsureFileExists(indexPath, "static index page");
+WikiScriptHelpers.EnsureFileExists(indexTemplatePath, "host HTML template");
 WikiScriptHelpers.EnsureFileExists(faviconPath, "favicon asset");
 WikiScriptHelpers.EnsureFileExists(moduleTextPath, "emitted docs shell module");
 
-var indexContent = await File.ReadAllTextAsync(indexPath, Encoding.UTF8);
-AssertContains(indexContent, "id=\"app\"", "Vue mount root in index.html");
-AssertContains(indexContent, "__WIKI_SITE_CSS_URL__", "stylesheet token in index.html");
-AssertContains(indexContent, "__WIKI_FAVICON_URL__", "favicon token in index.html");
-AssertContains(indexContent, "__WIKI_MAIN_MODULE_URL__", "main module token in index.html");
-AssertContains(indexContent, "\"System/\": \"__WIKI_SYSTEM_IMPORT_BASE__\"", "CLR runtime import-map token in index.html");
-AssertContains(indexContent, "data-wiki-path-base=\"__WIKI_PATH_BASE__\"", "path-base token in index.html");
-AssertContains(indexContent, "__WIKI_VENDOR_VUE_URL__", "vendored dependency marker in index.html");
-AssertNotContains(indexContent, "unpkg.com", "forbidden CDN URL in index.html");
+var indexTemplateContent = await File.ReadAllTextAsync(indexTemplatePath, Encoding.UTF8);
+AssertContains(indexTemplateContent, "id=\"app\"", "Vue mount root in host HTML template");
+AssertContains(indexTemplateContent, "__WIKI_SITE_CSS_URL__", "stylesheet token in host HTML template");
+AssertContains(indexTemplateContent, "__WIKI_FAVICON_URL__", "favicon token in host HTML template");
+AssertContains(indexTemplateContent, "__WIKI_MAIN_MODULE_URL__", "main module token in host HTML template");
+AssertContains(indexTemplateContent, "\"System/\": \"__WIKI_SYSTEM_IMPORT_BASE__\"", "CLR runtime import-map token in host HTML template");
+AssertContains(indexTemplateContent, "data-wiki-path-base=\"__WIKI_PATH_BASE__\"", "path-base token in host HTML template");
+AssertContains(indexTemplateContent, "__WIKI_VENDOR_VUE_URL__", "vendored dependency marker in host HTML template");
+AssertNotContains(indexTemplateContent, "unpkg.com", "forbidden CDN URL in host HTML template");
 
 var siteCssPath = Path.Combine(webRoot, "site.css");
 WikiScriptHelpers.EnsureFileExists(siteCssPath, "site.css");

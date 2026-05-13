@@ -75,7 +75,7 @@ src/Wiki/
   WikiHomeModule.ContentGovernance.cs
   WikiHomeModule.Deployment.cs
   WikiHomeModule.TestingVerification.cs
-  wwwroot/index.html
+  host/index.template.html
   wwwroot/site.css
   wiki-verify-smoke.cs
 """)

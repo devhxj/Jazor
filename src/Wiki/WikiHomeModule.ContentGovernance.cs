@@ -25,7 +25,7 @@ public static partial class WikiHomeModule
                 H("p", "编写边界必须对维护者保持明显。源文件直接编辑；生成的浏览器制品作为输出检查，不作为手工维护的源码。"),
                 H("ul",
                 [
-                    H("li", "在 `WikiHomeModule.*.cs`、`Program.cs`、`AppModule.cs`、`index.html` 和 `site.css` 中编写内容。"),
+                    H("li", "在 `WikiHomeModule.*.cs`、`Program.cs`、`AppModule.cs`、`host/index.template.html` 和 `site.css` 中编写内容。"),
                     H("li", "不要将 `src/Wiki/jazor/main.mjs`、`components/wiki-home.mjs` 或发射的 manifest 文件手工维护为行为的主要来源。"),
                     H("li", "如果发射输出因源码变更而改变，审查生成的差异并保持与导致变更的源码变更同步。")
                 ])
@@ -38,7 +38,7 @@ Author here:
   src/Wiki/WikiHomeModule.*.cs
   src/Wiki/AppModule.cs
   src/Wiki/Program.cs
-  src/Wiki/wwwroot/index.html
+  src/Wiki/host/index.template.html
   src/Wiki/wwwroot/site.css
 
 Review output here:

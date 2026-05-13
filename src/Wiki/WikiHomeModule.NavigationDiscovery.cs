@@ -46,7 +46,7 @@ public static partial class WikiHomeModule
                 H("p", "未知 URL 不会让读者落入死胡同外壳。宿主仍然提供应用，文档表面通过分组感知和片段感知的建议提供恢复。"),
                 H("div", new VueObject { Class = "check-grid" },
                 [
-                    CheckCard("路由回退", "ASP.NET Core 仍然为未知文档路径返回 `index.html`，以便前端可以恢复。"),
+                    CheckCard("路由回退", "ASP.NET Core 仍然为未知文档路径提供 HTML shell，以便前端可以恢复。"),
                     CheckCard("请求路径上下文", "未找到文档显示请求的路由，以便维护者诊断页面是缺失还是拼写错误。"),
                     CheckCard("建议页面", "恢复链接从与正常导航相同的路由目录派生。")
                 ])

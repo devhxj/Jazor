@@ -24,7 +24,6 @@ Published output must follow this layout:
   Wiki.dll
   Wiki.exe
   wwwroot/
-    index.html
     site.css
     favicon.svg
     vendor/
@@ -53,7 +52,7 @@ The following invariants are enforced by `wiki-verify-smoke.cs --publish`:
 7. Search routes are utility surfaces, so they must emit `noindex, nofollow` and must not appear in `sitemap.xml`
 8. Unknown docs routes must return HTTP 404 with the recoverable shell and `X-Robots-Tag: noindex, nofollow`
 9. HTML responses must carry `Referrer-Policy: strict-origin-when-cross-origin`, `X-Content-Type-Options: nosniff`, and `X-Frame-Options: DENY`
-10. `index.html` must not reference any external CDN URL
+10. `host/index.template.html` must not reference any external CDN URL
 11. When `Wiki__PathBase` / `Wiki:PathBase` is configured, first-response HTML, discovery documents, static assets, and SPA navigation must all stay correct beneath that subpath
 
 ## Verification

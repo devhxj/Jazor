@@ -8,6 +8,7 @@
     <JazorOutDir>$(MSBuildProjectDirectory)\jazor\</JazorOutDir>
     <JazorBundle>false</JazorBundle>
     <JazorEmitToolPath>$(MSBuildProjectDirectory)\..\Jazor.Emit\bin\$(Configuration)\net11.0\Jazor.Emit.dll</JazorEmitToolPath>
+    <JazorPublishMaterializeEnabled>true</JazorPublishMaterializeEnabled>
   </PropertyGroup>
 
   <Import Project="..\Jazor\buildTransitive\Jazor.props" />
@@ -17,6 +18,13 @@
     <Content Remove="jazor\**" />
     <EmbeddedResource Remove="jazor\**" />
     <None Remove="jazor\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="host\index.template.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -40,22 +48,5 @@
       <Analyzer Include="$(MSBuildProjectDirectory)\..\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll')" />
     </ItemGroup>
   </Target>
-
-  <Target Name="PublishWikiJazorArtifacts" AfterTargets="Publish" Condition="'$(JazorEmit)' == 'true' and Exists('$(JazorOutDir)')">
-    <PropertyGroup>
-      <_WikiPublishedJazorRoot>$([System.IO.Path]::Combine('$(PublishDir)', 'wwwroot', 'jazor'))</_WikiPublishedJazorRoot>
-      <_WikiPublishedLocalJazorRoot>$([System.IO.Path]::Combine('$(PublishDir)', 'jazor'))</_WikiPublishedLocalJazorRoot>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <_WikiJazorArtifact Include="$(JazorOutDir)**\*" />
-    </ItemGroup>
-
-    <RemoveDir Directories="$(_WikiPublishedJazorRoot)" />
-    <MakeDir Directories="$(_WikiPublishedJazorRoot)" />
-    <Copy SourceFiles="@(_WikiJazorArtifact)" DestinationFiles="@(_WikiJazorArtifact->'$(_WikiPublishedJazorRoot)\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <RemoveDir Directories="$(_WikiPublishedLocalJazorRoot)" Condition="Exists('$(_WikiPublishedLocalJazorRoot)')" />
-  </Target>
-
   <Import Project="..\Jazor\buildTransitive\Jazor.targets" />
 </Project>

@@ -37,13 +37,14 @@ Current product boundary:
 - `Wiki.csproj`: single web host project for the docs site.
 - `WikiHomeModule.cs`, `WikiHomeModule.RouteContract.cs`, `WikiHomeModule.Elements.cs`, `WikiCatalogGuard.cs`, and the per-page files `WikiHomeModule.Overview.cs`, `WikiHomeModule.Search.cs`, `WikiHomeModule.GettingStarted.cs`, `WikiHomeModule.ProjectLines.cs`, `WikiHomeModule.ContentModel.cs`, `WikiHomeModule.NavigationDiscovery.cs`, `WikiHomeModule.InformationArchitecture.cs`, `WikiHomeModule.TopicIndex.cs`, `WikiHomeModule.Glossary.cs`, `WikiHomeModule.Faq.cs`, `WikiHomeModule.Troubleshooting.cs`, `WikiHomeModule.HFunctionAuthoring.cs`, `WikiHomeModule.CompilerOverview.cs`, `WikiHomeModule.CompilerBoundary.cs`, `WikiHomeModule.RouteCatalogContract.cs`, `WikiHomeModule.HostSemanticSeams.cs`, `WikiHomeModule.ImportEmitContract.cs`, `WikiHomeModule.RuntimeCatalog.cs`, `WikiHomeModule.JoltHost.cs`, `WikiHomeModule.RazorVueLibraryMode.cs`, `WikiHomeModule.VueRouteBindings.cs`, `WikiHomeModule.ContentGovernance.cs`, `WikiHomeModule.Deployment.cs`, `WikiHomeModule.TestingVerification.cs`: the route shell, centralized route contract, startup guard, page bodies, and reusable leaf render helpers for the named-export Vue component.
 - `AppModule.cs`: Jazor C# module source for runtime bootstrap.
-- `Program.cs`: ASP.NET Core host with `/health`, route fallback, and an explicit `/jazor` mount for the local emit directory when present.
+- `Program.cs`: ASP.NET Core host with `/health`, `UseJazorHost()` default web-asset/security setup, development reload, and route fallback.
 - `scripts/csharp/wiki-build-local.cs`: local build entry that verifies emitted Wiki artifacts exist after build.
 - `scripts/csharp/wiki-serve.cs`: preview entry that can run either the local development host or a production-shape published host, and refuses to run when the required artifacts are missing.
 - `scripts/csharp/wiki-verify-smoke.cs`: focused smoke verification for build output, `/health`, route-specific HTML metadata, robots/sitemap discovery docs, response headers, all registered docs routes, and unknown-route fallback.
 - `scripts/csharp/wiki-verify-browser.cs` + `verify-browser.mjs`: real browser verification for runtime mount, SPA routing, search/not-found recovery, persisted shell state, copy affordances, hash routing, and mobile drawers.
 - `jazor/`: local emitted Jazor browser artifacts used for development and smoke verification.
-- `wwwroot/`: static entry (`index.html`, `site.css`, `favicon.svg`) plus the publish-time destination for `/jazor` assets.
+- `wwwroot/`: static assets (`site.css`, `favicon.svg`) plus the publish-time destination for `/jazor` assets.
+- `host/`: private HTML shell template consumed by the Wiki host at request time.
 
 ## Build from This Repository
 
@@ -166,14 +167,14 @@ The smoke check verifies:
 - `/search?q=...` returns the expected search metadata but also carries `noindex, nofollow` in both HTML and `X-Robots-Tag`
 - an unknown docs route still returns the frontend shell through fallback, but now with HTTP 404 plus `X-Robots-Tag: noindex, nofollow`
 - browser-served assets such as `/jazor/main.mjs`, `/jazor/System/StringModule.js`, `/site.css`, `/favicon.svg`, and `/vendor/vue@3.5.16.mjs` resolve successfully
-- `wwwroot/index.html` references the vendored Vue module and contains no external CDN URLs
+- `host/index.template.html` references the vendored Vue module and contains no external CDN URLs
 - emitted `wiki-home.mjs` still contains the client-side navigation contract (`replaceState`, `pushState`, `popstate`, click interception, and session-local scroll restoration)
 - emitted `wiki-home.mjs` still contains the section-routing contract (`hashchange`, scroll listeners, active TOC markers, and section-driven reading-state sync)
 - emitted `wiki-home.mjs` still contains the section permalink contract (`window.navigator.clipboard`, `clipboard.writeText`, permalink button labels, and copied/fallback-state styling markers)
 - emitted `wiki-home.mjs` still contains the code-block copy contract (`Copy code`, copied/unavailable state labels, and code-copy button styling markers)
 - emitted `wiki-home.mjs` still contains the page-discovery filter contract (`Search docs pages`, keyboard focus shortcuts, filter-empty state, and left-rail search styling markers)
 - emitted `wiki-home.mjs` still contains the product-shell contract for theme toggle, page metadata cards, source/report actions, page feedback, mobile drawers, and search-route results
-- `wwwroot/index.html` still carries the metadata token contract that the host resolves per route before the shell mounts, and the shell keeps those values synchronized after SPA navigation
+- `host/index.template.html` still carries the metadata token contract that the host resolves per route before the shell mounts, and the shell keeps those values synchronized after SPA navigation
 - `wwwroot/site.css` still carries the shell selectors for skip link, breadcrumbs, metadata cards, feedback actions, search results, drawers, and light-theme overrides
 - emitted `wiki-home.mjs` still contains the registered docs-route markers, page-title labels, and section-anchor contract markers
 - host startup now rejects route-catalog drift such as mismatched page-array lengths, duplicate page paths, duplicate section ids, empty metadata entries, or related links that point at unknown pages
@@ -225,7 +226,7 @@ Requirements:
 
 ## Runtime Dependency Notes
 
-`wwwroot/index.html` keeps the browser import map deliberately explicit:
+`host/index.template.html` keeps the browser import map deliberately explicit:
 
 - `System/` — CLR runtime support modules emitted by `Jazor.CLR`
 - `vue` — Vue 3.5.16 ESM browser production build, vendored locally at `/vendor/vue@3.5.16.mjs`
@@ -245,7 +246,7 @@ dotnet run --file .\scripts\csharp\wiki-verify-browser.cs -- --build --path-base
 
 The host reads `Wiki__PathBase` / `Wiki:PathBase` and applies `UsePathBase(...)` before static hosting, HTML shell fallback, and discovery documents.
 
-In development, the host serves `/jazor/*` from the project-local `src/Wiki/jazor/` emit directory. During publish, the same artifacts are copied into `wwwroot/jazor/` so production still uses standard web-root static hosting.
+In development, `UseJazorHost()` serves `/jazor/*` from the project-local `src/Wiki/jazor/` emit directory when `jazor-manifest.json` is present. During publish, the same artifacts are copied into `wwwroot/jazor/` so production still uses standard web-root static hosting.
 
 When the generated shell uses CLR-backed helper members such as `string.Contains(..., StringComparison.OrdinalIgnoreCase)`, `Jazor.CLR` support modules are emitted locally under `src/Wiki/jazor/System/...`, published into `wwwroot/jazor/System/...`, and resolved in the browser through the import-map prefix `"System/": "/jazor/System/"`.
 
@@ -262,7 +263,7 @@ Summary of invariants enforced by `wiki-verify-smoke.cs --publish`:
 - Search routes are intentionally non-indexable and are excluded from `sitemap.xml`
 - Unknown docs routes return the same recoverable shell with HTTP 404 and `X-Robots-Tag: noindex, nofollow`
 - Route HTML is metadata-correct on first response, not only after client-side hydration
-- `index.html` contains no external CDN URLs
+- `host/index.template.html` contains no external CDN URLs
 
 ## Positioning
 

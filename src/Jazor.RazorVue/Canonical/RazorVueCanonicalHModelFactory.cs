@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Linq;
+using Jazor.Compiler;
 using Jazor.RazorVue;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
@@ -1114,6 +1115,9 @@ internal sealed class RazorVueCanonicalHModelFactory
         if (current is null)
             return RazorVueExpressionBindingKind.None;
 
+        if (TryGetStableTemplateScalarLiteral(current, out _))
+            return RazorVueExpressionBindingKind.Literal;
+
         return current switch
         {
             ILiteralOperation => RazorVueExpressionBindingKind.Literal,
@@ -1136,6 +1140,9 @@ internal sealed class RazorVueCanonicalHModelFactory
         var current = Unwrap(operation);
         if (current is null)
             return RazorVueLiteralValueKind.None;
+
+        if (TryGetStableTemplateScalarLiteral(current, out var literal))
+            return ClassifyStableTemplateScalarLiteralKind(literal);
 
         if (current is IDefaultValueOperation defaultValue)
             return IsNullDefaultValue(defaultValue)
@@ -1175,6 +1182,9 @@ internal sealed class RazorVueCanonicalHModelFactory
         if (current is null)
             return RazorVueTemplateEncodability.DirectTemplate;
 
+        if (TryGetStableTemplateScalarLiteral(current, out _))
+            return RazorVueTemplateEncodability.DirectTemplate;
+
         return current switch
         {
             ILiteralOperation => RazorVueTemplateEncodability.DirectTemplate,
@@ -1199,6 +1209,9 @@ internal sealed class RazorVueCanonicalHModelFactory
     {
         var current = Unwrap(operation);
         if (current is null)
+            return RazorVueTemplateExpressionSafety.DirectTemplateSafe;
+
+        if (TryGetStableTemplateScalarLiteral(current, out _))
             return RazorVueTemplateExpressionSafety.DirectTemplateSafe;
 
         return current switch
@@ -1276,6 +1289,9 @@ internal sealed class RazorVueCanonicalHModelFactory
         if (current is null)
             return RazorVueSideEffectClassification.None;
 
+        if (TryGetStableTemplateScalarLiteral(current, out _))
+            return RazorVueSideEffectClassification.None;
+
         if (ClassifyPureTemplateExpressionSideEffects(current) == RazorVueSideEffectClassification.None)
             return RazorVueSideEffectClassification.None;
 
@@ -1300,6 +1316,9 @@ internal sealed class RazorVueCanonicalHModelFactory
     {
         var current = Unwrap(operation);
         if (current is null)
+            return RazorVueSideEffectClassification.None;
+
+        if (TryGetStableTemplateScalarLiteral(current, out _))
             return RazorVueSideEffectClassification.None;
 
         return current switch
@@ -1372,6 +1391,92 @@ internal sealed class RazorVueCanonicalHModelFactory
             return RazorVueSideEffectClassification.SingleEvaluationRequired;
 
         return RazorVueSideEffectClassification.None;
+    }
+
+    private static RazorVueLiteralValueKind ClassifyStableTemplateScalarLiteralKind(object? literal)
+        => literal switch
+        {
+            null => RazorVueLiteralValueKind.Null,
+            string => RazorVueLiteralValueKind.String,
+            char => RazorVueLiteralValueKind.String,
+            bool => RazorVueLiteralValueKind.Boolean,
+            sbyte or byte or short or ushort or int or uint or long or ulong or float or double or decimal => RazorVueLiteralValueKind.Number,
+            _ => RazorVueLiteralValueKind.Other
+        };
+
+    private static bool TryGetStableTemplateScalarLiteral(IOperation operation, out object? literal)
+    {
+        literal = null;
+        var current = Unwrap(operation);
+        if (current is null)
+            return false;
+
+        if (current is ILiteralOperation literalOperation && literalOperation.ConstantValue.HasValue)
+        {
+            literal = literalOperation.ConstantValue.Value;
+            return true;
+        }
+
+        if (current is IDefaultValueOperation defaultValue && IsNullDefaultValue(defaultValue))
+        {
+            literal = null;
+            return true;
+        }
+
+        if (current is not IFieldReferenceOperation fieldReference)
+            return false;
+
+        var field = fieldReference.Field;
+        if (!field.HasConstantValue)
+            return false;
+
+        if (field.ContainingType?.TypeKind == TypeKind.Enum &&
+            Util.IsStringEnumType(field.ContainingType))
+        {
+            if (!TryGetStringEnumLiteralText(field, out var enumLiteral))
+                return false;
+
+            literal = enumLiteral;
+            return true;
+        }
+
+        literal = field.ConstantValue;
+        return ClassifyStableTemplateScalarLiteralKind(literal) is not RazorVueLiteralValueKind.Other;
+    }
+
+    private static bool TryGetStringEnumLiteralText(IFieldSymbol symbol, out string? literalText)
+    {
+        literalText = null;
+        if (symbol.ContainingType?.TypeKind != TypeKind.Enum ||
+            !Util.IsStringEnumType(symbol.ContainingType))
+        {
+            return false;
+        }
+
+        foreach (var attribute in symbol.GetAttributes())
+        {
+            if (attribute.ConstructorArguments.Length == 0)
+                continue;
+
+            if (attribute.AttributeClass?.Name == "ECMAScriptNameAttribute")
+            {
+                literalText = attribute.ConstructorArguments[0].Value?.ToString() ?? string.Empty;
+                return true;
+            }
+
+            if (attribute.AttributeClass?.Name != "DescriptionAttribute")
+                continue;
+
+            var description = attribute.ConstructorArguments[0].Value?.ToString()?.Trim();
+            if (description?.StartsWith("@#", StringComparison.Ordinal) != true)
+                continue;
+
+            literalText = description.Substring(2);
+            return true;
+        }
+
+        literalText = Util.GetSymbolConfigName(symbol) ?? symbol.Name;
+        return true;
     }
 
     private static bool IsCurrentParameterProperty(RazorVueSemanticSnapshot snapshot, IPropertyReferenceOperation property)

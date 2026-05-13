@@ -6,23 +6,7 @@ builder.Services.AddSingleton<PlaygroundExampleRepository>();
 
 var app = builder.Build();
 
-app.Use(async (context, next) =>
-{
-    context.Response.OnStarting(static state =>
-    {
-        var response = (HttpResponse)state;
-        PlaygroundHostPage.ApplySecurityHeaders(response.Headers);
-        return Task.CompletedTask;
-    }, context.Response);
-
-    await next();
-});
-
-app.UseJazorWebAssets(options =>
-{
-    options.OnPrepareResponse = PlaygroundHostPage.ApplyStaticAssetHeaders;
-});
-
+app.UseJazorHost();
 app.UseJazorSpaFallback(PlaygroundHostPage.WriteHtmlAsync);
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "playground-host" }));

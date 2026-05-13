@@ -18,7 +18,7 @@ This directory contains localized browser dependencies to eliminate runtime CDN 
    ```
    sha256sum vue@<version>.mjs
    ```
-3. Update `wwwroot/index.html` import map: change `vue` and `npm:vue@3` to `/vendor/vue@<version>.mjs`
+3. Update `host/index.template.html` import map: change `vue` and `npm:vue@3` to `/vendor/vue@<version>.mjs`
 4. Update `wiki-verify-smoke.cs` vendor markers to match the new filename
 5. Update this README with the new version and hash
 6. Run `dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --build` to verify

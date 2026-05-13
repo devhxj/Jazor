@@ -15,7 +15,7 @@ public static partial class WikiHomeModule
                 H("p", "如果直接路由刷新失败或文档外壳加载无内容，在修改页面代码之前先检查宿主契约。"),
                 H("ul",
                 [
-                    H("li", "确认 `Program.cs` 仍然提供静态文件并回退到 `index.html`。"),
+                    H("li", "确认 `Program.cs` 仍然通过统一的 Jazor helper 提供静态文件并回退到 HTML shell。"),
                     H("li", "确认 `/jazor/main.mjs` 可以从开发环境的本地发射目录解析。"),
                     H("li", "确认请求的路由已在 `WikiHomeModule.RouteContract.cs` 中注册。")
                 ])
@@ -24,7 +24,7 @@ public static partial class WikiHomeModule
             [
                 H("p", "如果浏览器提供的 `System/*` 辅助函数加载失败，问题通常出在 Emit 输出或 import-map 连接，而非页面正文。"),
                 CodeBlock("检查以下路径", """
-src/Wiki/wwwroot/index.html
+src/Wiki/host/index.template.html
 src/Wiki/jazor/main.mjs
 src/Wiki/jazor/System/
 src/Jazor.Compiler.Generator/Program.cs

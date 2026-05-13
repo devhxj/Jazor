@@ -10,6 +10,8 @@ namespace Wiki;
 
 internal static class WikiHostShell
 {
+    internal const string HtmlTemplateRelativePath = "host/index.template.html";
+
     // 模板 token 前缀 / Template token prefix
     private const string MetadataTokenPrefix = "__WIKI_";
 
@@ -38,78 +40,25 @@ internal static class WikiHostShell
 
     internal const string WikiPathBaseAttributeName = "data-wiki-path-base";
 
-    // 权限策略 / Permissions policy
-    private const string PermissionsPolicy =
-        "accelerometer=(), autoplay=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), " +
-        "hid=(), microphone=(), payment=(), usb=(), clipboard-read=(self), clipboard-write=(self)";
-
-    internal static void ApplySecurityHeaders(IHeaderDictionary headers)
-    {
-        headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
-        headers["X-Content-Type-Options"] = "nosniff";
-        headers["X-Frame-Options"] = "DENY";
-        headers["Cross-Origin-Opener-Policy"] = "same-origin";
-        headers["Cross-Origin-Resource-Policy"] = "same-origin";
-        headers["Permissions-Policy"] = PermissionsPolicy;
-        headers["X-Permitted-Cross-Domain-Policies"] = "none";
-    }
-
     internal static void ApplyDiscoveryDocumentHeaders(IHeaderDictionary headers)
     {
-        ApplySecurityHeaders(headers);
         headers["Cache-Control"] = DiscoveryCacheControl;
     }
 
     internal static void ApplyStaticAssetHeaders(StaticFileResponseContext context)
     {
-        ApplySecurityHeaders(context.Context.Response.Headers);
-
         var requestPath = context.Context.Request.Path.Value ?? "";
         if (requestPath.StartsWith("/vendor/", StringComparison.OrdinalIgnoreCase))
         {
-			context.Context.Response.Headers["Cache-Control"] = ImmutableVersionedAssetCacheControl;
+            context.Context.Response.Headers["Cache-Control"] = ImmutableVersionedAssetCacheControl;
             return;
         }
 
         context.Context.Response.Headers.CacheControl = MutableAssetCacheControl;
     }
 
-    internal static async Task<bool> TryHandleHtmlRequestAsync(HttpContext context, CancellationToken cancellationToken = default)
-    {
-        if (!HttpMethods.IsGet(context.Request.Method) && !HttpMethods.IsHead(context.Request.Method))
-            return false;
-
-        if (!ShouldServeHtmlShell(context.Request.Path))
-            return false;
-
-        await WriteHtmlShellAsync(context, cancellationToken);
-        return true;
-    }
-
-    private static bool ShouldServeHtmlShell(PathString requestPath)
-    {
-        if (!requestPath.HasValue)
-            return true;
-
-        if (requestPath.StartsWithSegments("/health", StringComparison.OrdinalIgnoreCase) ||
-            requestPath.StartsWithSegments("/jazor", StringComparison.OrdinalIgnoreCase) ||
-            requestPath.StartsWithSegments("/vendor", StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        var pathValue = requestPath.Value ?? "";
-        if (pathValue.Length == 0 || pathValue == "/")
-            return true;
-
-        if (pathValue.Equals("/index.html", StringComparison.OrdinalIgnoreCase) ||
-            pathValue.EndsWith("/index.html", StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        return !Path.HasExtension(pathValue);
-    }
+    internal static Task WriteHtmlAsync(HttpContext context, CancellationToken cancellationToken = default)
+        => WriteHtmlShellAsync(context, cancellationToken);
 
     private static async Task WriteHtmlShellAsync(HttpContext context, CancellationToken cancellationToken)
     {
@@ -157,11 +106,11 @@ internal static class WikiHostShell
     private static async Task<string> LoadIndexTemplateAsync(HttpContext context, CancellationToken cancellationToken)
     {
         var environment = context.RequestServices.GetRequiredService<IWebHostEnvironment>();
-        var indexFile = environment.WebRootFileProvider.GetFileInfo("index.html");
-        if (!indexFile.Exists)
-            throw new InvalidOperationException("Wiki host could not locate wwwroot/index.html.");
+        var templateFile = environment.ContentRootFileProvider.GetFileInfo(HtmlTemplateRelativePath);
+        if (!templateFile.Exists)
+            throw new InvalidOperationException("Wiki host could not locate " + HtmlTemplateRelativePath + ".");
 
-        await using var stream = indexFile.CreateReadStream();
+        await using var stream = templateFile.CreateReadStream();
         using var reader = new StreamReader(stream);
         return await reader.ReadToEndAsync(cancellationToken);
     }
