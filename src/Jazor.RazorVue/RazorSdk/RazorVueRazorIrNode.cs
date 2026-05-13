@@ -58,7 +58,9 @@ internal sealed record RazorVueRazorIrNode(
     ImmutableArray<RazorVueRazorIrNode> Splats = default,
     ImmutableArray<RazorVueRazorIrNode> ChildContents = default,
     ImmutableArray<RazorVueRazorIrNode> Captures = default,
-    ImmutableArray<RazorVueRazorIrNode> SetKeys = default)
+    ImmutableArray<RazorVueRazorIrNode> SetKeys = default,
+    string? Prefix = null,
+    string? Suffix = null)
 {
     public ImmutableArray<RazorVueRazorIrNode> AttributesOrEmpty
         => Attributes.IsDefault ? ImmutableArray<RazorVueRazorIrNode>.Empty : Attributes;

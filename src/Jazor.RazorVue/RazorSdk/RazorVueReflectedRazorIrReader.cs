@@ -243,6 +243,8 @@ internal static class RazorVueReflectedRazorIrReader
             IsSynthesized: ReadBool(node, "IsSynthesized"),
             HasAttributeNameExpression: GetPropertyValue(node, "AttributeNameExpression") is not null,
             Content: ReadString(node, "Content"),
+            Prefix: ReadString(node, "Prefix"),
+            Suffix: ReadString(node, "Suffix"),
             StartTagSpan: ReadSourceSpanProperty(node, "StartTagSpan"),
             Attributes: ReadNodeCollection(node, "Attributes").Select(ConvertNode).ToImmutableArray(),
             Body: ReadNodeCollection(node, "Body").Select(ConvertNode).ToImmutableArray(),

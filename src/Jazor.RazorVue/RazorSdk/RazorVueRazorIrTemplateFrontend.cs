@@ -454,6 +454,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
             if (children.Length != 1)
             {
+                if (TryResolveStaticLiteralAttributeValue(children, out var literalValue))
+                    return CreateLiteralStringOperation(literalValue);
+
                 throw CreateUnsupportedAttributeException(
                     fallbackSource,
                     $"RazorVue Razor IR frontend does not yet support mixed attribute content for '{attributeName}' in component '{_snapshot.Descriptor.FullName}'.");
@@ -481,7 +484,8 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 RazorVueRazorIrNodeKind.CSharpCodeAttributeValue => throw CreateUnsupportedNodeException(
                     children[0],
                     $"CSharpCodeAttributeValueIntermediateNode '{attributeName}'"),
-                RazorVueRazorIrNodeKind.HtmlAttributeValue => ResolveLiteralAttributeValue(children[0]),
+                RazorVueRazorIrNodeKind.HtmlAttributeValue => CreateLiteralStringOperation(
+                    NormalizeLiteralAttributeText(ResolveHtmlAttributeValueText(children[0], includePrefix: false))),
                 _ => throw CreateUnsupportedNodeException(children[0], $"{children[0].RuntimeTypeName} '{attributeName}'")
             };
         }
@@ -517,6 +521,65 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 text = GetNodeContent(node);
 
             return CreateLiteralStringOperation(NormalizeLiteralAttributeText(text));
+        }
+
+        private bool TryResolveStaticLiteralAttributeValue(
+            ImmutableArray<RazorVueRazorIrNode> children,
+            out string value)
+        {
+            value = string.Empty;
+            if (children.Length == 0)
+                return false;
+
+            var builder = new System.Text.StringBuilder();
+            var isFirst = true;
+            foreach (var child in children)
+            {
+                var part = ResolveStaticLiteralAttributeText(child, includePrefix: !isFirst);
+                if (part is null)
+                    return false;
+
+                builder.Append(part);
+                isFirst = false;
+            }
+
+            value = NormalizeLiteralAttributeText(builder.ToString());
+            return true;
+        }
+
+        private static string? ResolveStaticLiteralAttributeText(
+            RazorVueRazorIrNode node,
+            bool includePrefix)
+        {
+            switch (node.Kind)
+            {
+                case RazorVueRazorIrNodeKind.HtmlContent:
+                    return ResolveLiteralText(node);
+                case RazorVueRazorIrNodeKind.HtmlAttributeValue:
+                    return ResolveHtmlAttributeValueText(node, includePrefix);
+                case RazorVueRazorIrNodeKind.IntermediateToken when !IsCSharpIntermediateToken(node):
+                    return ResolveLiteralText(node);
+                default:
+                    return null;
+            }
+        }
+
+        private static string ResolveHtmlAttributeValueText(
+            RazorVueRazorIrNode node,
+            bool includePrefix)
+        {
+            var text = ResolveLiteralText(node);
+            return includePrefix && !string.IsNullOrEmpty(node.Prefix)
+                ? node.Prefix + text
+                : text;
+        }
+
+        private static string ResolveLiteralText(RazorVueRazorIrNode node)
+        {
+            var text = GetNodeText(node);
+            return string.IsNullOrEmpty(text)
+                ? GetNodeContent(node)
+                : text;
         }
 
         private void RejectElementExtensions(IEnumerable<RazorVueRazorIrNode> nodes, string detail)

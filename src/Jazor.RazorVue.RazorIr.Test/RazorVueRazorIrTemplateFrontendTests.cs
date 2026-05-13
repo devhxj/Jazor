@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.IO;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
@@ -82,6 +83,59 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
         Assert.IsNotNull(classAttribute.Value);
         Assert.IsTrue(classAttribute.Value.ConstantValue.HasValue);
         Assert.AreEqual("hero", classAttribute.Value.ConstantValue.Value);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForStaticAttributeSplitAcrossLiteralIrNodes_ConcatenatesValue()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<div title="@Title" class="todo-card todo-card--active">Hello</div>""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.StaticSplitAttribute.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        Assert.IsNotNull(snapshot.RazorSourceGeneratorDocument);
+        var sourceGeneratorDocument = snapshot.RazorSourceGeneratorDocument!;
+        var splitDocument = sourceGeneratorDocument with
+        {
+            DocumentNode = SplitFirstClassAttributeIntoLiteralTokens(sourceGeneratorDocument.DocumentNode)
+        };
+        var splitSnapshot = snapshot with
+        {
+            RazorSourceGeneratorDocument = splitDocument
+        };
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, splitSnapshot);
+
+        var element = renderTree.Children[0] as RazorVueElementNode;
+        Assert.IsNotNull(element);
+        var classAttribute = element.Attributes.OfType<RazorVueAttributeNode>().Single(static attribute => attribute.Name == "class");
+        Assert.IsNotNull(classAttribute.Value);
+        Assert.IsTrue(classAttribute.Value.ConstantValue.HasValue);
+        Assert.AreEqual("todo-card todo-card--active", classAttribute.Value.ConstantValue.Value);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForMixedStaticAndExpressionAttributeContent_StillThrowsExplicitFailure()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<div class="todo-card @Title">Hello</div>""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.MixedAttribute.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "mixed attribute content");
+        StringAssert.Contains(exception.Message, "class");
     }
 
     [TestMethod]
@@ -315,6 +369,88 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
         var bodyText = childElement.Children.Children[0] as RazorVueTextNode;
         Assert.IsNotNull(bodyText);
         Assert.AreEqual("Body", bodyText.Text);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForComponentRawClassFallthrough_ProducesLiteralClassAttribute()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<VChip class="playground-category-chip" Text="@Title" />""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.Component.ClassFallthrough.Tests",
+            documentPath,
+            documentText,
+            """
+            using ECMAScript.Vuetify;
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """,
+            """
+            @using Demo.Pages
+            @using ECMAScript.Vuetify
+            """);
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+        var component = renderTree.Children[0] as RazorVueComponentNode;
+
+        Assert.IsNotNull(component, RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot));
+        Assert.AreEqual("VChip", component.ComponentName);
+
+        var classAttribute = component.Attributes
+            .OfType<RazorVueAttributeNode>()
+            .Single(static attribute => attribute.Name == "class");
+        Assert.IsNotNull(classAttribute.Value);
+        Assert.IsTrue(classAttribute.Value.ConstantValue.HasValue);
+        Assert.AreEqual("playground-category-chip", classAttribute.Value.ConstantValue.Value);
+
+        var textAttribute = component.Attributes
+            .OfType<RazorVueAttributeNode>()
+            .Single(static attribute => attribute.Name == "Text");
+        Assert.IsNotNull(textAttribute.Value);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(textAttribute.Value);
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_CanLowerComponentRawClassFallthrough()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<VChip class="playground-category-chip" Text="@Title" />""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.Component.ClassFallthrough.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            using ECMAScript.Vuetify;
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """,
+            """
+            @using Demo.Pages
+            @using ECMAScript.Vuetify
+            """);
+
+        var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ModuleCode, "\"class\": \"playground-category-chip\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"text\": props.title");
     }
 
     [TestMethod]
@@ -578,8 +714,8 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
         var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
 
         StringAssert.Contains(artifact.ModuleCode, "\"title\": props.title");
-        StringAssert.Contains(artifact.ModuleCode, "header: () => h(\"h1\", props.title)");
-        StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (item) => h(\"p\", item)");
+        StringAssert.Contains(artifact.ModuleCode, "header: () => h(\"h1\", null, props.title)");
+        StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (item) => h(\"p\", null, item)");
     }
 
     [TestMethod]
@@ -682,7 +818,7 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
             .Single();
 
         StringAssert.Contains(artifact.ModuleCode, "props.items.length > 0");
-        StringAssert.Contains(artifact.ModuleCode, ".map((item) => h(\"li\", item))");
+        StringAssert.Contains(artifact.ModuleCode, ".map((item) => h(\"li\", null, item))");
         StringAssert.Contains(artifact.ModuleCode, "h(\"ul\"");
     }
 
@@ -732,7 +868,7 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
 
         StringAssert.Contains(artifact.ModuleCode, "props.items.map((item)");
         StringAssert.Contains(artifact.ModuleCode, "!item.IsDone");
-        StringAssert.Contains(artifact.ModuleCode, "h(\"li\", item.Title)");
+        StringAssert.Contains(artifact.ModuleCode, "h(\"li\", null, item.Title)");
     }
 
     [TestMethod]
@@ -822,7 +958,7 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
             .Artifacts
             .Single();
 
-        StringAssert.Contains(artifact.ModuleCode, "props.visible ? h(\"p\", \"Visible\") : h(\"p\", \"Hidden\")");
+        StringAssert.Contains(artifact.ModuleCode, "props.visible ? h(\"p\", null, \"Visible\") : h(\"p\", null, \"Hidden\")");
     }
 
     [TestMethod]
@@ -931,8 +1067,8 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
             .Artifacts
             .Single();
 
-        StringAssert.Contains(artifact.ModuleCode, "props.visible ? h(\"p\", \"Visible\") : h(\"ul\"");
-        StringAssert.Contains(artifact.ModuleCode, ".map((item) => h(\"li\", item))");
+        StringAssert.Contains(artifact.ModuleCode, "props.visible ? h(\"p\", null, \"Visible\") : h(\"ul\"");
+        StringAssert.Contains(artifact.ModuleCode, ".map((item) => h(\"li\", null, item))");
     }
 
     [TestMethod]
@@ -1042,7 +1178,7 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
             .Artifacts
             .Single();
 
-        StringAssert.Contains(artifact.ModuleCode, "props.primary ? h(\"p\", \"Primary\") : (props.secondary ? h(\"p\", \"Secondary\") : h(\"p\", \"Fallback\"))");
+        StringAssert.Contains(artifact.ModuleCode, "props.primary ? h(\"p\", null, \"Primary\") : (props.secondary ? h(\"p\", null, \"Secondary\") : h(\"p\", null, \"Fallback\"))");
     }
 
     [TestMethod]
@@ -1305,4 +1441,61 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
         StringAssert.Contains(exception.Message, "only supports count-style for-loops");
     }
 
+    private static RazorVueRazorIrNode SplitFirstClassAttributeIntoLiteralTokens(RazorVueRazorIrNode root)
+    {
+        var replaced = false;
+        var rewritten = Rewrite(root, ref replaced);
+        Assert.IsTrue(replaced, "The test fixture did not contain a class attribute to rewrite.");
+        return rewritten;
+
+        static RazorVueRazorIrNode Rewrite(RazorVueRazorIrNode node, ref bool replaced)
+        {
+            if (!replaced &&
+                node.Kind == RazorVueRazorIrNodeKind.HtmlAttribute &&
+                string.Equals(node.AttributeName, "class", StringComparison.Ordinal))
+            {
+                replaced = true;
+                return node with
+                {
+                    Children = ImmutableArray.Create(
+                        CreateStaticAttributeValue(prefix: string.Empty, content: "todo-card"),
+                        CreateStaticAttributeValue(prefix: " ", content: "todo-card--active"))
+                };
+            }
+
+            return node with
+            {
+                Children = RewriteNodes(node.Children, ref replaced),
+                Attributes = RewriteNodes(node.Attributes, ref replaced),
+                Body = RewriteNodes(node.Body, ref replaced),
+                Splats = RewriteNodes(node.Splats, ref replaced),
+                ChildContents = RewriteNodes(node.ChildContents, ref replaced),
+                Captures = RewriteNodes(node.Captures, ref replaced),
+                SetKeys = RewriteNodes(node.SetKeys, ref replaced)
+            };
+        }
+
+        static ImmutableArray<RazorVueRazorIrNode> RewriteNodes(
+            ImmutableArray<RazorVueRazorIrNode> nodes,
+            ref bool replaced)
+        {
+            if (nodes.IsDefaultOrEmpty)
+                return nodes;
+
+            var builder = ImmutableArray.CreateBuilder<RazorVueRazorIrNode>(nodes.Length);
+            foreach (var child in nodes)
+                builder.Add(Rewrite(child, ref replaced));
+
+            return builder.ToImmutable();
+        }
+
+        static RazorVueRazorIrNode CreateStaticAttributeValue(string prefix, string content)
+            => new(
+                RazorVueRazorIrNodeKind.HtmlAttributeValue,
+                "Microsoft.AspNetCore.Razor.Language.Intermediate.HtmlAttributeValueIntermediateNode",
+                ImmutableArray<RazorVueRazorIrNode>.Empty,
+                ImmutableArray.Create(new RazorVueRazorIrToken(content, Source: null)),
+                Source: null,
+                Prefix: prefix);
+    }
 }
