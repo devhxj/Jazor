@@ -38,6 +38,14 @@ if (!string.IsNullOrWhiteSpace(options.JazorOutDir))
         sampleWorkspaceRoot,
         sampleRoot);
 }
+else
+{
+    ScriptHelpers.CleanDirectoryWithinRoots(
+        Path.Combine(sampleRoot, "Todo.Host", "jazor"),
+        repoRoot,
+        sampleWorkspaceRoot,
+        sampleRoot);
+}
 
 var isolationArguments = new[]
 {

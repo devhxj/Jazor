@@ -4,14 +4,15 @@ This sample demonstrates the current RazorVue library-mode path:
 
 - author components in `.razor + .razor.cs`
 - generate Vue `.vue` SFC artifacts at design time
-- materialize those artifacts during host build
-- consume the generated SFCs from a pure Deno frontend pipeline
+- keep a single ASP.NET Core host as the runtime boundary
+- consume the generated SFCs from a colocated Deno frontend pipeline
+- materialize publish output into `wwwroot/jazor`
 
 The sample is split into:
 
 - `Todo.Library`: RazorVue component library authored with Razor and C#
-- `Todo.Host`: build host that turns on `JazorEmit` and writes generated artifacts to `wwwroot/jazor/`
-- `todo-consumer`: a minimal pure-Deno + Vue + Vuetify consumer that compiles generated `.vue` files and bundles them without Vite or npm wrapper scripts
+- `Todo.Host`: the single ASP.NET Core host project; development emit goes to `Todo.Host/jazor`, browser assets go to `Todo.Host/wwwroot/jazor`
+- `Todo.Host/consumer`: a colocated DenoHost consumer that uses the official `razorvue-consumer-entry` contract and bundles browser assets without Vite or npm wrapper scripts
 
 `Todo.Library` follows the explicit authoring contract. Component marker types are brought in with:
 
@@ -32,7 +33,7 @@ dotnet run --file .\samples\RazorVue.TodoList\build-local.cs
 Generated RazorVue artifacts are written to:
 
 ```text
-.\Todo.Host\wwwroot\jazor\
+.\Todo.Host\jazor\
 ```
 
 You should see:
@@ -42,35 +43,42 @@ You should see:
 - `jazor-manifest.json`
 - `__jazor/razorvue-host.mjs`
 
-If you also want the regular JS bundle sidecars from `Jazor.Emit`, build with:
+The colocated browser bundle is emitted by the consumer into:
 
-```powershell
-dotnet run --file .\samples\RazorVue.TodoList\build-local.cs -- --bundle
+```text
+.\Todo.Host\wwwroot\jazor\
+```
+
+The host shell served by ASP.NET Core lives at:
+
+```text
+.\Todo.Host\wwwroot\index.html
 ```
 
 ## Run the frontend consumer
 
 After `build-local.cs` succeeds:
 
-1. open `todo-consumer/`
+1. open `Todo.Host/consumer/`
 2. run the pure Deno pipeline through the bundled runtime entry
 
 ```powershell
-cd .\todo-consumer
+cd .\Todo.Host\consumer
 dotnet run --file .\scripts\run-deno.cs -- task test
 ```
 
 The consumer imports:
 
-- the generated root component from `..\Todo.Host\wwwroot\jazor\components\todo-app.vue`
-- host metadata from `..\Todo.Host\wwwroot\jazor\__jazor\razorvue-host.mjs`
+- the generated root component through the official `razorvue-consumer-entry` bridge modules
+- host metadata from `..\jazor\__jazor\razorvue-host.mjs`
 
 and then:
 
-- precompiles each generated `.vue` into `.mjs + .css`
+- uses `Jazor.Emit razorvue-consumer-entry` to generate browser/SSR bridge modules and stable entrypoints
 - runs SSR smoke through `vue/server-renderer` + Vuetify
 - runs a `Deno.bundle()` smoke over the prepared browser entry
-- runs `deno bundle` to emit the browser build under `todo-consumer/dist/`
+- runs `deno bundle` to emit the browser build under `Todo.Host/consumer/dist/jazor/`
+- copies the generated browser assets into `Todo.Host/wwwroot/jazor/`
 
 Useful focused commands:
 
@@ -92,11 +100,11 @@ dotnet run --file .\scripts\run-deno.cs -- task build
 
 ## Notes
 
-- The `.NET` host does not run the Vue app itself. Its responsibility is artifact generation and materialization.
-- The Deno consumer is intentionally small and explicit so the generated SFCs are consumed through a production-style Deno pipeline instead of a Vite-specific loader contract.
-- `todo-consumer` no longer relies on `package.json` / `npm run ...` wrapper scripts. The repository-level contract is `deno.json` tasks plus `scripts/run-deno.cs`, which resolves the bundled `deno.exe`.
+- `Todo.Host` is the only runtime host. The colocated `consumer` directory is a build-time frontend consumption layer, not a second application host.
+- The Deno consumer is intentionally small and explicit so the generated SFCs are consumed through the official `razorvue-consumer-entry` contract instead of a project-private SFC compiler.
+- `Todo.Host/consumer` no longer relies on `package.json` / `npm run ...` wrapper scripts. The repository-level contract is `deno.json` tasks plus `scripts/run-deno.cs`, which executes the bundled Deno runtime through `DenoHost`.
 - `Todo.Library` currently sets `UseRazorSourceGenerator=false`. The current library-mode design-time path still depends on generated `*.razor.g.cs` being present in compilation.
 - The generated SFCs do not emit `<style src="vuetify/styles">` blocks. Style and plugin requirements stay in `__jazor/razorvue-host.mjs`, and the Deno consumer imports `vuetify/styles` explicitly.
-- `todo-consumer/scripts/lib/pipeline.ts` owns the Deno-side SFC compilation contract. It compiles RazorVue-generated `.vue` files into local `.mjs` modules before bundling. Deno is not expected to consume `.vue` files directly.
+- `Todo.Host/consumer/scripts/lib/pipeline.ts` owns only consumer orchestration. SFC bridge generation is delegated to the official `Jazor.Emit razorvue-consumer-entry` command.
 - `deno bundle` is the formal browser build entry for this sample. `Deno.bundle()` is kept as an additional API-level smoke because its option surface is still unstable.
-- `build-local.cs` is fail-fast. If any framework build, pack, publish, or host rebuild step fails, the script stops instead of silently continuing with stale outputs.
+- `build-local.cs` is fail-fast. If any framework build, pack, restore, or host rebuild step fails, the script stops instead of silently continuing with stale outputs.

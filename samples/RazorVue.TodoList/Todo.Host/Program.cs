@@ -1,8 +1,20 @@
+using Jazor.AspNetCore;
+
 namespace Todo.Host;
 
 internal static class Program
 {
-    private static void Main()
+    private static void Main(string[] args)
     {
+        var builder = JazorWebApplication.CreateBuilder(args);
+        var app = builder.Build();
+
+        app.UseJazorHost();
+        app.UseJazorSpaFallback(static (context, cancellationToken) =>
+            context.Response.SendFileAsync(
+                Path.Combine("wwwroot", "index.html"),
+                cancellationToken));
+
+        app.Run();
     }
 }

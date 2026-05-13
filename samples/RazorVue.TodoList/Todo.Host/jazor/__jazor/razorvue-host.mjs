@@ -1,0 +1,12 @@
+export const razorVueHostAssemblyName = "Todo.Library";
+export const razorVueHostGeneratedAtUtc = "2026-05-13T15:04:49.3822753Z";
+export const razorVueStyles = Object.freeze(["vuetify/styles"]);
+export const razorVuePluginRequirements = Object.freeze(["vuetify"]);
+export const razorVueHostModules = Object.freeze([{"assemblyName":"Todo.Library","componentId":"Todo.Library.TodoApp","moduleId":"components/todo-app.vue","componentName":"TodoApp","relativeModulePath":"components/todo-app.vue","sourceMapPath":"components/todo-app.vue.map","originMapPath":"components/todo-app.vue.origins.json","styles":["vuetify/styles"],"pluginRequirements":["vuetify"],"descriptorHash":"CFA06F2B1992F6CC41900EDAEE989F6BAE551E116408F3D08572BBE46E88BA97","templateHash":"9B32FEEEF5F760A2E22B4024317C35275CA75BCFD98DD1CD3D655C7E3654D931","logicHash":"E8597831B1442007A501BE095A453F816AFF8AC02105BEABCB56BBB7F85DFF87","contentHash":"8D3D00C6C3535B6D8EBA02B416904BB8A2F27A9ED7D3F5080B0A152BFB4054C7","styleHash":"E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855","hmrBoundaryKind":1,"requiresHydration":false,"supportsSsr":true},{"assemblyName":"Todo.Library","componentId":"Todo.Library.TodoSummaryCard","moduleId":"components/todo-summary-card.vue","componentName":"TodoSummaryCard","relativeModulePath":"components/todo-summary-card.vue","sourceMapPath":"components/todo-summary-card.vue.map","originMapPath":"components/todo-summary-card.vue.origins.json","styles":["vuetify/styles"],"pluginRequirements":["vuetify"],"descriptorHash":"70F8B3CCA999CA2D23DCF0ADDEA7DCA37AC80FBFF9E44271D795D09CCDAE2F89","templateHash":"2000C0BD686EEF613BF6637F0529A89F31EC97CE3B5FC0B14D614C3969256252","logicHash":"AEA6674229E008F38FC9B1944A42A61A63EDC2C7610055084D5F12E5025E4CF0","contentHash":"1D423EAC7511F42D882857FE0FC749928F254BD5E2A5C55FFFC645867CE0300D","styleHash":"E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855","hmrBoundaryKind":1,"requiresHydration":false,"supportsSsr":true}]);
+export const razorVueHostRequirements = Object.freeze({
+  assemblyName: razorVueHostAssemblyName,
+  generatedAtUtc: razorVueHostGeneratedAtUtc,
+  styles: razorVueStyles,
+  pluginRequirements: razorVuePluginRequirements,
+  modules: razorVueHostModules
+});

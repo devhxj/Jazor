@@ -1,0 +1,16 @@
+import { runBuild } from "./build.ts";
+import { runBrowserSmoke } from "./smoke-browser.ts";
+import { runBundleApiSmoke } from "./smoke-bundle-api.ts";
+import { runSsrSmoke } from "./smoke-ssr.ts";
+
+async function runAll(): Promise<void> {
+  await runSsrSmoke();
+  await runBundleApiSmoke();
+  await runBuild();
+  await runBrowserSmoke();
+  console.log("RazorVue TodoList colocated Deno pipeline passed.");
+}
+
+if (import.meta.main) {
+  await runAll();
+}

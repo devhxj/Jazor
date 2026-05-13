@@ -13,9 +13,16 @@ public sealed class JazorSpaFallbackOptions
             new PathString("/health"),
             new PathString("/jazor")
         ];
+
+        AllowedPathSuffixes =
+        [
+            "/"
+        ];
     }
 
     public IList<PathString> ExcludedPathPrefixes { get; }
+
+    public IList<string> AllowedPathSuffixes { get; }
 
     public bool RequireHtmlAcceptHeader { get; set; } = true;
 }

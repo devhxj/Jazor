@@ -452,6 +452,83 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    public async Task Publish_LocalJazorPackage_WebSdkHost_WithColocatedConsumer_UsesSdkConsumerBuildAndUnifiedJazorPublishRoot()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "WebSdkConsumerPublishSample");
+        var publishOutputRoot = Path.Combine(workspace.RootPath, "publish-output");
+        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var projectPath = CreateWebHostWithColocatedConsumerProject(projectRoot);
+
+        var publish = await RunDotNetWithEnvironmentAsync(
+            package.RepoRoot,
+            [
+                "publish",
+                projectPath,
+                "-c",
+                "Debug",
+                "-o",
+                publishOutputRoot,
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}"
+            ],
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["JAZOR_DENO_EXE"] = package.DenoExePath
+            });
+
+        Assert.AreEqual(0, publish.ExitCode, publish.ToString());
+
+        var sourceDevJazorRoot = Path.Combine(projectRoot, "jazor");
+        var sourceBrowserBundleRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        var publishedJazorRoot = Path.Combine(publishOutputRoot, "wwwroot", "jazor");
+        var publishedShadowJazorRoot = Path.Combine(publishOutputRoot, "jazor");
+        var publishedLegacyAssetsRoot = Path.Combine(publishOutputRoot, "wwwroot", "assets");
+
+        Assert.IsTrue(File.Exists(Path.Combine(sourceDevJazorRoot, "jazor-manifest.json")));
+        Assert.IsTrue(File.Exists(Path.Combine(sourceDevJazorRoot, "components", "catalog-page.vue")));
+        Assert.IsTrue(File.Exists(Path.Combine(sourceDevJazorRoot, "__jazor", "razorvue-host.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(sourceBrowserBundleRoot, "client-entry.js")));
+        Assert.IsTrue(File.Exists(Path.Combine(sourceBrowserBundleRoot, "client-entry.css")));
+
+        Assert.IsTrue(File.Exists(Path.Combine(publishedJazorRoot, "jazor-manifest.json")));
+        Assert.IsTrue(File.Exists(Path.Combine(publishedJazorRoot, "components", "catalog-page.vue")));
+        Assert.IsTrue(File.Exists(Path.Combine(publishedJazorRoot, "__jazor", "razorvue-host.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(publishedJazorRoot, "client-entry.js")));
+        Assert.IsTrue(File.Exists(Path.Combine(publishedJazorRoot, "client-entry.css")));
+
+        var manifest = LoadManifest(Path.Combine(publishedJazorRoot, "jazor-manifest.json"));
+        var modulePaths = manifest.Modules
+            .Select(static module => module.RelativePath)
+            .Where(static path => !string.IsNullOrWhiteSpace(path))
+            .ToArray();
+        CollectionAssert.Contains(modulePaths, "components/catalog-page.vue");
+        CollectionAssert.Contains(modulePaths, "components/detail-page.vue");
+
+        var browserEntry = (await File.ReadAllTextAsync(Path.Combine(publishedJazorRoot, "client-entry.js"))).ReplaceLineEndings("\n");
+        StringAssert.Contains(browserEntry, "mountSdkConsumer");
+        StringAssert.Contains(browserEntry, "CatalogPage");
+        StringAssert.Contains(browserEntry, "DetailPage");
+        StringAssert.Contains(browserEntry, "razorVueHostRequirements");
+        Assert.IsFalse(
+            ContainsVueModuleSpecifier(browserEntry),
+            "Published colocated consumer browser entry should not retain unresolved .vue imports.");
+
+        Assert.IsFalse(
+            Directory.Exists(publishedShadowJazorRoot),
+            $"Publish output must not leak a shadow root jazor directory at '{publishedShadowJazorRoot}'.");
+        Assert.IsFalse(
+            Directory.Exists(publishedLegacyAssetsRoot),
+            $"Publish output must not leak legacy browser assets directory at '{publishedLegacyAssetsRoot}'.");
+    }
+
+    [TestMethod]
     public async Task Build_LocalJazorPackage_SourceReferencedRazorVue_UsesProjectRootJazorByDefault()
     {
         var package = await LocalPackage.Value;
@@ -1748,8 +1825,7 @@ public sealed class SdkIntegrationTests
             ["RAZORVUE_HOST_JAZOR_ROOT"] = hostJazorRoot,
             ["RAZORVUE_BUILD_ROOT"] = consumerBuildRoot,
             ["RAZORVUE_DIST_ROOT"] = consumerDistRoot,
-            ["RAZORVUE_ROOT_COMPONENT_ID"] = "ExternalRazorVueSfcConsumer.ExternalDashboard",
-            ["RAZORVUE_ROOT_COMPONENT_NAME"] = "ExternalDashboard",
+            ["RAZORVUE_ROOT_COMPONENT_SELECTOR"] = "id:ExternalRazorVueSfcConsumer.ExternalDashboard",
             ["RAZORVUE_BROWSER_EXPECTED_TEXTS_JSON"] = JsonSerializer.Serialize(new[]
             {
                 "External RazorVue Consumer",
@@ -1761,7 +1837,7 @@ public sealed class SdkIntegrationTests
             }),
             ["RAZORVUE_BROWSER_CLICK_BUTTON_TEXT"] = string.Empty,
             ["RAZORVUE_BROWSER_AFTER_CLICK_EXPECTED_TEXTS_JSON"] = "[]",
-            ["JAZOR_DENO_EXE"] = package.DenoExePath
+            ["JAZOR_EMIT_TOOL_PATH"] = Path.Combine(package.RepoRoot, "src", "Jazor.Emit", "bin", "Debug", "net11.0", "Jazor.Emit.dll")
         };
 
         var pipeline = await RunDotNetWithEnvironmentAsync(
@@ -1778,15 +1854,10 @@ public sealed class SdkIntegrationTests
 
         Assert.AreEqual(0, pipeline.ExitCode, pipeline.ToString());
         var output = (pipeline.StandardOutput + pipeline.StandardError).ReplaceLineEndings("\n");
-        StringAssert.Contains(output, "RazorVue TodoList Deno SSR smoke passed.");
-        StringAssert.Contains(output, "RazorVue Deno.bundle() smoke passed");
-        StringAssert.Contains(output, "RazorVue Deno build emitted client-entry.js and 1 CSS asset(s).");
-        StringAssert.Contains(output, "RazorVue browser smoke passed.");
-        StringAssert.Contains(output, "RazorVue TodoList pure Deno pipeline passed.");
 
         var distHtmlPath = Path.Combine(consumerDistRoot, "index.html");
-        var distJsPath = Path.Combine(consumerDistRoot, "assets", "client-entry.js");
-        var distCssPath = Path.Combine(consumerDistRoot, "assets", "client-entry.css");
+        var distJsPath = Path.Combine(consumerDistRoot, "jazor", "client-entry.js");
+        var distCssPath = Path.Combine(consumerDistRoot, "jazor", "client-entry.css");
         Assert.IsTrue(File.Exists(distHtmlPath), $"Expected Deno dist HTML was not generated: {distHtmlPath}");
         Assert.IsTrue(File.Exists(distJsPath), $"Expected Deno dist JS was not generated: {distJsPath}");
         Assert.IsTrue(File.Exists(distCssPath), $"Expected Deno dist CSS was not generated: {distCssPath}");
@@ -1795,8 +1866,8 @@ public sealed class SdkIntegrationTests
 
         var distHtml = (await File.ReadAllTextAsync(distHtmlPath)).ReplaceLineEndings("\n");
         var distJs = (await File.ReadAllTextAsync(distJsPath)).ReplaceLineEndings("\n");
-        StringAssert.Contains(distHtml, "<script type=\"module\" src=\"./assets/client-entry.js\"></script>");
-        StringAssert.Contains(distHtml, "<link rel=\"stylesheet\" href=\"./assets/client-entry.css\" />");
+        StringAssert.Contains(distHtml, "<script type=\"module\" src=\"./jazor/client-entry.js\"></script>");
+        StringAssert.Contains(distHtml, "<link rel=\"stylesheet\" href=\"./jazor/client-entry.css\" />");
         StringAssert.Contains(distJs, "globalThis.__VUE_OPTIONS_API__ = true;");
         StringAssert.Contains(distJs, "globalThis.__VUE_PROD_DEVTOOLS__ = false;");
         StringAssert.Contains(distJs, "globalThis.__VUE_PROD_HYDRATION_MISMATCH_DETAILS__ = false;");
@@ -1813,8 +1884,9 @@ public sealed class SdkIntegrationTests
         using var workspace = new TestWorkspace(package.RepoRoot);
         var sampleSourceRoot = Path.Combine(package.RepoRoot, "samples", "RazorVue.TodoList");
         var sampleRoot = Path.Combine(workspace.RootPath, "RazorVue.TodoList");
-        var hostJazorRoot = Path.Combine(sampleRoot, "Todo.Host", "wwwroot", "jazor");
-        var consumerRoot = Path.Combine(sampleRoot, "todo-consumer");
+        var hostJazorRoot = Path.Combine(sampleRoot, "Todo.Host", "jazor");
+        var hostBrowserAssetRoot = Path.Combine(sampleRoot, "Todo.Host", "wwwroot", "jazor");
+        var consumerRoot = Path.Combine(sampleRoot, "Todo.Host", "consumer");
         var consumerBuildRoot = Path.Combine(consumerRoot, ".deno-build-test");
         var consumerDistRoot = Path.Combine(consumerRoot, "dist-test");
 
@@ -1876,9 +1948,10 @@ public sealed class SdkIntegrationTests
         var denoEnvironment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["RAZORVUE_HOST_JAZOR_ROOT"] = hostJazorRoot,
+            ["RAZORVUE_HOST_WWWROOT_ROOT"] = Path.Combine(sampleRoot, "Todo.Host", "wwwroot"),
             ["RAZORVUE_BUILD_ROOT"] = consumerBuildRoot,
             ["RAZORVUE_DIST_ROOT"] = consumerDistRoot,
-            ["JAZOR_DENO_EXE"] = package.DenoExePath
+            ["JAZOR_EMIT_TOOL_PATH"] = Path.Combine(package.RepoRoot, "src", "Jazor.Emit", "bin", "Debug", "net11.0", "Jazor.Emit.dll")
         };
 
         var ssrSmoke = await RunDotNetWithEnvironmentAsync(
@@ -1893,7 +1966,6 @@ public sealed class SdkIntegrationTests
             ],
             denoEnvironment);
         Assert.AreEqual(0, ssrSmoke.ExitCode, ssrSmoke.ToString());
-        StringAssert.Contains(ssrSmoke.StandardOutput + ssrSmoke.StandardError, "RazorVue TodoList Deno SSR smoke passed.");
 
         var bundleApiSmoke = await RunDotNetWithEnvironmentAsync(
             consumerRoot,
@@ -1907,7 +1979,6 @@ public sealed class SdkIntegrationTests
             ],
             denoEnvironment);
         Assert.AreEqual(0, bundleApiSmoke.ExitCode, bundleApiSmoke.ToString());
-        StringAssert.Contains(bundleApiSmoke.StandardOutput + bundleApiSmoke.StandardError, "RazorVue Deno.bundle() smoke passed");
 
         var browserBuild = await RunDotNetWithEnvironmentAsync(
             consumerRoot,
@@ -1921,7 +1992,6 @@ public sealed class SdkIntegrationTests
             ],
             denoEnvironment);
         Assert.AreEqual(0, browserBuild.ExitCode, browserBuild.ToString());
-        StringAssert.Contains(browserBuild.StandardOutput + browserBuild.StandardError, "RazorVue Deno build emitted client-entry.js and 1 CSS asset(s).");
 
         var browserSmokeEnvironment = new Dictionary<string, string>(denoEnvironment, StringComparer.OrdinalIgnoreCase)
         {
@@ -1939,11 +2009,10 @@ public sealed class SdkIntegrationTests
             ],
             browserSmokeEnvironment);
         Assert.AreEqual(0, browserSmoke.ExitCode, browserSmoke.ToString());
-        StringAssert.Contains(browserSmoke.StandardOutput + browserSmoke.StandardError, "RazorVue browser smoke passed.");
 
         var distHtmlPath = Path.Combine(consumerDistRoot, "index.html");
-        var distJsPath = Path.Combine(consumerDistRoot, "assets", "client-entry.js");
-        var distCssPath = Path.Combine(consumerDistRoot, "assets", "client-entry.css");
+        var distJsPath = Path.Combine(consumerDistRoot, "jazor", "client-entry.js");
+        var distCssPath = Path.Combine(consumerDistRoot, "jazor", "client-entry.css");
         Assert.IsTrue(File.Exists(distHtmlPath), $"Expected Deno dist HTML was not generated: {distHtmlPath}");
         Assert.IsTrue(File.Exists(distJsPath), $"Expected Deno dist JS was not generated: {distJsPath}");
         Assert.IsTrue(File.Exists(distCssPath), $"Expected Deno dist CSS was not generated: {distCssPath}");
@@ -1952,14 +2021,16 @@ public sealed class SdkIntegrationTests
 
         var distHtml = (await File.ReadAllTextAsync(distHtmlPath)).ReplaceLineEndings("\n");
         var distJs = (await File.ReadAllTextAsync(distJsPath)).ReplaceLineEndings("\n");
-        StringAssert.Contains(distHtml, "<script type=\"module\" src=\"./assets/client-entry.js\"></script>");
-        StringAssert.Contains(distHtml, "<link rel=\"stylesheet\" href=\"./assets/client-entry.css\" />");
+        StringAssert.Contains(distHtml, "<script type=\"module\" src=\"./jazor/client-entry.js\"></script>");
+        StringAssert.Contains(distHtml, "<link rel=\"stylesheet\" href=\"./jazor/client-entry.css\" />");
         StringAssert.Contains(distJs, "globalThis.__VUE_OPTIONS_API__ = true;");
         StringAssert.Contains(distJs, "globalThis.__VUE_PROD_DEVTOOLS__ = false;");
         StringAssert.Contains(distJs, "globalThis.__VUE_PROD_HYDRATION_MISMATCH_DETAILS__ = false;");
         Assert.IsFalse(
             ContainsVueModuleSpecifier(distJs),
             "Bundled browser entry should not retain unresolved .vue imports.");
+        Assert.IsTrue(File.Exists(Path.Combine(hostBrowserAssetRoot, "client-entry.js")), "Expected host browser JS bundle was not copied into wwwroot/jazor.");
+        Assert.IsTrue(File.Exists(Path.Combine(hostBrowserAssetRoot, "client-entry.css")), "Expected host browser CSS bundle was not copied into wwwroot/jazor.");
     }
 
     private static async Task<LocalPackageFixture> CreateLocalPackageAsync()
@@ -2645,6 +2716,419 @@ public sealed class SdkIntegrationTests
         return projectPath;
     }
 
+    private static string CreateWebHostWithColocatedConsumerProject(string projectRoot)
+    {
+        Directory.CreateDirectory(projectRoot);
+        var consumerRoot = Path.Combine(projectRoot, "consumer");
+        var projectPath = Path.Combine(projectRoot, "WebHostConsumerOutput.csproj");
+
+        WriteFile(
+            projectPath,
+            """
+            <Project Sdk="Microsoft.NET.Sdk.Web">
+              <PropertyGroup>
+                <TargetFramework>net11.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <RazorLangVersion>11.0</RazorLangVersion>
+                <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
+                <JazorEmit>true</JazorEmit>
+                <JazorBundle>false</JazorBundle>
+                <JazorRazorVueOutputMode>sfc</JazorRazorVueOutputMode>
+                <JazorRazorVueEnableRazorSgIntegration>true</JazorRazorVueEnableRazorSgIntegration>
+                <JazorOutDir>$(MSBuildProjectDirectory)\jazor\</JazorOutDir>
+                <JazorPublishMaterializeEnabled>true</JazorPublishMaterializeEnabled>
+                <JazorConsumerRoot>$(MSBuildProjectDirectory)\consumer</JazorConsumerRoot>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <Compile Remove="consumer\**" />
+                <Content Remove="consumer\**" />
+                <EmbeddedResource Remove="consumer\**" />
+                <None Remove="consumer\**" />
+                <Compile Remove="jazor\**" />
+                <Content Remove="jazor\**" />
+                <EmbeddedResource Remove="jazor\**" />
+                <None Remove="jazor\**" />
+                <Compile Remove="wwwroot\jazor\**" />
+                <Content Remove="wwwroot\jazor\**" />
+                <EmbeddedResource Remove="wwwroot\jazor\**" />
+                <None Remove="wwwroot\jazor\**" />
+              </ItemGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+                <PackageReference Include="ECMAScript.Vuetify" Version="$(JazorPackageVersion)" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "Program.cs"),
+            """
+            var builder = WebApplication.CreateBuilder(args);
+            var app = builder.Build();
+            app.MapGet("/", () => "ready");
+            app.Run();
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "_Imports.razor"),
+            """
+            @using Microsoft.AspNetCore.Components
+            @using ECMAScript.Vuetify
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "AppModule.cs"),
+            """
+            using ECMAScript;
+
+            namespace WebHostConsumerOutput;
+
+            [ECMAScriptModule("host/app.mjs")]
+            public static class AppModule
+            {
+                public static string Boot() => "ready";
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "CatalogPage.razor.cs"),
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+
+            namespace WebHostConsumerOutput;
+
+            [ECMAScriptModule("./components/catalog-page")]
+            public partial class CatalogPage : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public string? Title { get; set; }
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "CatalogPage.razor"),
+            """
+            <VContainer Fluid="true">
+                <VRow>
+                    <VCol Cols="12">
+                        <VCard class="catalog-card">
+                            <VCardTitle>Catalog</VCardTitle>
+                            <VCardText>Catalog body</VCardText>
+                        </VCard>
+                    </VCol>
+                </VRow>
+            </VContainer>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "DetailPage.razor.cs"),
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+
+            namespace WebHostConsumerOutput;
+
+            [ECMAScriptModule("./components/detail-page")]
+            public partial class DetailPage : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public string? Title { get; set; }
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "DetailPage.razor"),
+            """
+            <VContainer Fluid="true">
+                <VCard class="detail-card">
+                    <VCardTitle>Detail</VCardTitle>
+                    <VCardText>Detail body</VCardText>
+                </VCard>
+            </VContainer>
+            """);
+
+        Directory.CreateDirectory(consumerRoot);
+
+        WriteFile(
+            Path.Combine(consumerRoot, "deno.json"),
+            """
+            {
+              "nodeModulesDir": "auto",
+              "imports": {
+                "vue": "npm:vue@3.5.21",
+                "vue/server-renderer": "npm:@vue/server-renderer@3.5.21",
+                "vuetify": "npm:vuetify@3.10.8",
+                "vuetify/components": "npm:vuetify@3.10.8/components",
+                "vuetify/directives": "npm:vuetify@3.10.8/directives",
+                "vuetify/styles": "npm:vuetify@3.10.8/styles"
+              },
+              "tasks": {
+                "build": "deno run -A scripts/build.ts"
+              }
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(consumerRoot, "index.html"),
+            """
+            <!doctype html>
+            <html lang="en">
+              <head>
+                <meta charset="utf-8" />
+                <title>SDK Consumer Host</title>
+                <!-- razorvue:styles -->
+              </head>
+              <body>
+                <div id="app"></div>
+                <!-- razorvue:script -->
+              </body>
+            </html>
+            """);
+
+        WriteFile(
+            Path.Combine(consumerRoot, "scripts", "run-deno.cs"),
+            """
+            #!/usr/bin/env dotnet run
+            #:package DenoHost.Core@2.7.14
+            #:package DenoHost.Runtime.win-x64@2.7.14
+
+            using DenoHost.Core;
+
+            var consumerRoot = Path.GetDirectoryName(Path.GetDirectoryName(GetScriptPath()))
+                ?? throw new InvalidOperationException("Cannot determine SDK consumer root.");
+
+            await Deno.Execute(
+                new DenoExecuteBaseOptions
+                {
+                    WorkingDirectory = consumerRoot
+                },
+                args);
+
+            static string GetScriptPath([System.Runtime.CompilerServices.CallerFilePath] string path = "")
+                => path;
+            """);
+
+        WriteFile(
+            Path.Combine(consumerRoot, "scripts", "build.ts"),
+            """
+            import { dirname, join, relative, resolve } from "node:path";
+            import { fileURLToPath } from "node:url";
+
+            const consumerRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+            const hostJazorRoot = resolveRequiredEnvironmentPath("RAZORVUE_HOST_JAZOR_ROOT");
+            const hostWwwrootRoot = resolveRequiredEnvironmentPath("RAZORVUE_HOST_WWWROOT_ROOT");
+            const distRoot = resolve(consumerRoot, "dist");
+            const browserBundleDirectory = resolve(distRoot, "jazor");
+            const hostBrowserBundleDirectory = resolve(hostWwwrootRoot, "jazor");
+            const buildRoot = resolve(consumerRoot, ".deno-build", `pid-${Deno.pid}`);
+            const browserGeneratedRoot = resolve(buildRoot, "generated-browser");
+            const ssrGeneratedRoot = resolve(buildRoot, "generated-ssr");
+            const clientEntryPath = resolve(buildRoot, "client-entry.mjs");
+            const ssrEntryPath = resolve(buildRoot, "ssr-entry.mjs");
+            const vueFeatureFlagsPath = resolve(buildRoot, "vue-feature-flags.mjs");
+            const resultPath = resolve(buildRoot, "razorvue-consumer-entry.json");
+            const emitToolPath = readRequiredText("JAZOR_EMIT_TOOL_PATH");
+
+            await emptyDirectory(buildRoot);
+            await emptyDirectory(distRoot);
+            await Deno.mkdir(browserBundleDirectory, { recursive: true });
+
+            const entryOutput = await new Deno.Command("dotnet", {
+              cwd: resolve(consumerRoot, "..", "..", ".."),
+              args: [
+                emitToolPath,
+                "razorvue-consumer-entry",
+                "--host-root", hostJazorRoot,
+                "--out", buildRoot,
+                "--client-runtime", resolve(consumerRoot, "src", "runtime-client.js"),
+                "--ssr-runtime", resolve(consumerRoot, "src", "runtime-ssr.js"),
+                "--client-runtime-export", "mountSdkConsumer",
+                "--ssr-runtime-export", "runSdkConsumerSsr",
+                "--ssr-execute-export", "executeSdkConsumerSsr",
+                "--component", "CatalogPage=id:WebHostConsumerOutput.CatalogPage",
+                "--component", "DetailPage=id:WebHostConsumerOutput.DetailPage",
+                "--mode", "both",
+                "--production", "true",
+                "--clean", "true",
+                "--write-result", resultPath
+              ],
+              stdin: "null",
+              stdout: "piped",
+              stderr: "piped"
+            }).output();
+
+            if (!entryOutput.success) {
+              throw new Error(new TextDecoder().decode(entryOutput.stderr).trim() || "SDK consumer entry generation failed.");
+            }
+
+            const bundleOutput = await new Deno.Command(Deno.execPath(), {
+              cwd: consumerRoot,
+              args: [
+                "bundle",
+                "--platform", "browser",
+                "--format", "esm",
+                "--packages=bundle",
+                "--sourcemap=linked",
+                "--outdir", browserBundleDirectory,
+                clientEntryPath
+              ],
+              stdin: "null",
+              stdout: "piped",
+              stderr: "piped"
+            }).output();
+
+            if (!bundleOutput.success) {
+              throw new Error(new TextDecoder().decode(bundleOutput.stderr).trim() || "SDK consumer browser bundle failed.");
+            }
+
+            const entryFilePath = join(browserBundleDirectory, "client-entry.js");
+            if (!(await fileExists(entryFilePath))) {
+              throw new Error(`SDK consumer bundle did not produce '${entryFilePath}'.`);
+            }
+
+            const cssFiles = (await collectFiles(browserBundleDirectory))
+              .filter((file) => file.endsWith(".css"))
+              .map((file) => `./${relative(distRoot, file).replaceAll("\\\\", "/")}`)
+              .sort((left, right) => left.localeCompare(right, "en"));
+
+            const template = await Deno.readTextFile(resolve(consumerRoot, "index.html"));
+            const cssMarkup = cssFiles.map((file) => `    <link rel="stylesheet" href="${file}" />`).join("\\n");
+            const outputHtml = template
+              .replace("    <!-- razorvue:styles -->", cssMarkup.length === 0 ? "    <!-- razorvue:styles -->" : cssMarkup)
+              .replace(
+                "    <!-- razorvue:script -->",
+                `    <script type="module" src="./${relative(distRoot, entryFilePath).replaceAll("\\\\", "/")}"></script>`
+              );
+
+            await Deno.writeTextFile(resolve(distRoot, "index.html"), outputHtml);
+            await copyDirectory(browserBundleDirectory, hostBrowserBundleDirectory);
+            console.log(`SDK Deno build emitted /jazor/client-entry.js and ${cssFiles.length} CSS asset(s).`);
+
+            function readRequiredText(name: string): string {
+              const value = Deno.env.get(name)?.trim();
+              if (value === undefined || value.length === 0) {
+                throw new Error(`Missing required environment variable '${name}'.`);
+              }
+
+              return value;
+            }
+
+            function resolveRequiredEnvironmentPath(name: string): string {
+              return resolve(readRequiredText(name));
+            }
+
+            async function emptyDirectory(path: string): Promise<void> {
+              await Deno.remove(path, { recursive: true }).catch((error: unknown) => {
+                if (!(error instanceof Deno.errors.NotFound)) {
+                  throw error;
+                }
+              });
+              await Deno.mkdir(path, { recursive: true });
+            }
+
+            async function fileExists(path: string): Promise<boolean> {
+              try {
+                await Deno.stat(path);
+                return true;
+              } catch (error) {
+                if (error instanceof Deno.errors.NotFound) {
+                  return false;
+                }
+
+                throw error;
+              }
+            }
+
+            async function collectFiles(path: string): Promise<string[]> {
+              const files: string[] = [];
+              await collectFilesCore(path, files);
+              return files.sort((left, right) => left.localeCompare(right, "en"));
+            }
+
+            async function collectFilesCore(path: string, files: string[]): Promise<void> {
+              for await (const entry of Deno.readDir(path)) {
+                const entryPath = join(path, entry.name);
+                if (entry.isDirectory) {
+                  await collectFilesCore(entryPath, files);
+                  continue;
+                }
+
+                if (entry.isFile) {
+                  files.push(entryPath);
+                }
+              }
+            }
+
+            async function copyDirectory(source: string, destination: string): Promise<void> {
+              await emptyDirectory(destination);
+              for await (const entry of Deno.readDir(source)) {
+                const sourcePath = join(source, entry.name);
+                const destinationPath = join(destination, entry.name);
+                if (entry.isDirectory) {
+                  await copyDirectory(sourcePath, destinationPath);
+                  continue;
+                }
+
+                if (entry.isFile) {
+                  await Deno.mkdir(dirname(destinationPath), { recursive: true });
+                  await Deno.copyFile(sourcePath, destinationPath);
+                }
+              }
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(consumerRoot, "src", "runtime-client.js"),
+            """
+            import { createApp, h } from "vue";
+            import "vuetify/styles";
+            import "./style.css";
+
+            export function mountSdkConsumer(components, hostRequirements, selector = "#app") {
+              if (hostRequirements === null || typeof hostRequirements !== "object") {
+                throw new Error("Missing RazorVue host requirements.");
+              }
+
+              const app = createApp({
+                render() {
+                  return h("main", { class: "sdk-consumer-shell" }, [
+                    h(components.CatalogPage, { title: "Catalog from SDK consumer" }),
+                    h(components.DetailPage, { title: "Detail from SDK consumer" })
+                  ]);
+                }
+              });
+
+              app.mount(selector);
+              return app;
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(consumerRoot, "src", "runtime-ssr.js"),
+            """
+            export async function runSdkConsumerSsr() {
+              return "<div>sdk-consumer-ssr</div>";
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(consumerRoot, "src", "style.css"),
+            """
+            .sdk-consumer-shell {
+              display: grid;
+              gap: 1rem;
+            }
+            """);
+
+        return projectPath;
+    }
+
     private static string CreatePackagedCustomRazorVueHostProject(
         string hostRoot,
         string jazorPackageVersion,
@@ -2888,7 +3372,7 @@ public sealed class SdkIntegrationTests
     private static string CreateExternalRazorVuePureDenoConsumer(string consumerRoot)
     {
         Directory.CreateDirectory(consumerRoot);
-        var templateRoot = Path.Combine(FindRepoRoot(), "samples", "RazorVue.TodoList", "todo-consumer");
+        var templateRoot = Path.Combine(FindRepoRoot(), "samples", "RazorVue.TodoList", "Todo.Host", "consumer");
 
         WriteFile(
             Path.Combine(consumerRoot, "deno.json"),
@@ -2896,8 +3380,6 @@ public sealed class SdkIntegrationTests
             {
               "nodeModulesDir": "auto",
               "imports": {
-                "@vue/compiler-sfc": "npm:@vue/compiler-sfc@3.5.33",
-                "typescript": "npm:typescript@5.8.3",
                 "vue": "npm:vue@3.5.13",
                 "vue/server-renderer": "npm:@vue/server-renderer@3.5.13",
                 "vuetify": "npm:vuetify@3.8.0",
@@ -2986,13 +3468,21 @@ public sealed class SdkIntegrationTests
             import "vuetify/styles";
             import { assertHostRequirements, createExternalDashboardRootComponent } from "./runtime-common.js";
 
-            export function mountRootComponent(rootComponent, hostRequirements, selector = "#app") {
+            export function mountTodoConsumer(components, hostRequirements, selector = "#app") {
               assertHostRequirements(hostRequirements);
+              const Dashboard = components?.TodoApp;
+              if (typeof Dashboard !== "object" && typeof Dashboard !== "function") {
+                throw new Error("External Deno consumer expected a TodoApp component export.");
+              }
 
-              const app = createApp(createExternalDashboardRootComponent(rootComponent));
+              const app = createApp(createExternalDashboardRootComponent(Dashboard));
               app.use(createVuetify());
               app.mount(selector);
               return app;
+            }
+
+            export function mountRootComponent(rootComponent, hostRequirements, selector = "#app") {
+              return mountTodoConsumer({ TodoApp: rootComponent }, hostRequirements, selector);
             }
             """);
 
@@ -3013,8 +3503,12 @@ public sealed class SdkIntegrationTests
               "Pinned"
             ];
 
-            export async function runSsrSmoke(Dashboard, hostRequirements) {
+            export async function runTodoConsumerSsr(components, hostRequirements) {
               assertHostRequirements(hostRequirements);
+              const Dashboard = components?.TodoApp;
+              if (typeof Dashboard !== "object" && typeof Dashboard !== "function") {
+                throw new Error("External Deno consumer expected a TodoApp component export.");
+              }
 
               const app = createSSRApp({
                 render() {
@@ -3034,6 +3528,10 @@ public sealed class SdkIntegrationTests
               }
 
               return html;
+            }
+
+            export async function runSsrSmoke(Dashboard, hostRequirements) {
+              return await runTodoConsumerSsr({ TodoApp: Dashboard }, hostRequirements);
             }
             """);
 

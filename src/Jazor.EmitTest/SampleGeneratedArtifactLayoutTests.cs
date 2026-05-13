@@ -10,7 +10,7 @@ public sealed class SampleGeneratedArtifactLayoutTests
         Path.Combine("samples", "ECMAScript.Pinia.Counter", "Pinia.Counter.Host", "wwwroot", "jazor", "jazor-manifest.json"),
         Path.Combine("samples", "ECMAScript.VueRoute.MemorySmoke", "VueRoute.MemorySmoke.Host", "wwwroot", "jazor", "jazor-manifest.json"),
         Path.Combine("samples", "Jazor.MultiProject", "Sample.Host", "wwwroot", "jazor", "jazor-manifest.json"),
-        Path.Combine("samples", "RazorVue.TodoList", "Todo.Host", "wwwroot", "jazor", "jazor-manifest.json")
+        Path.Combine("samples", "RazorVue.TodoList", "Todo.Host", "jazor", "jazor-manifest.json")
     ];
 
     [TestMethod]

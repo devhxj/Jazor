@@ -115,6 +115,75 @@ public sealed class JazorAspNetCoreHostingTests
     }
 
     [TestMethod]
+    public async Task UseJazorHost_AppliesDefaultSecurityHeadersToHtmlAndStaticAssets()
+    {
+        using var workspace = new AspNetCoreHostTestWorkspace();
+        var webRoot = Path.Combine(workspace.RootPath, "wwwroot");
+        var developmentJazorRoot = Path.Combine(workspace.RootPath, "jazor");
+        Directory.CreateDirectory(webRoot);
+        Directory.CreateDirectory(developmentJazorRoot);
+        await File.WriteAllTextAsync(Path.Combine(webRoot, "index.html"), "<!doctype html><html><body>ready</body></html>");
+        await File.WriteAllTextAsync(Path.Combine(webRoot, "site.css"), "body{color:black;}");
+        await File.WriteAllTextAsync(Path.Combine(developmentJazorRoot, "jazor-manifest.json"), "{}");
+
+        using var host = await CreateHostAsync(workspace.RootPath, app =>
+        {
+            app.UseJazorHost();
+        });
+
+        var client = host.GetTestClient();
+
+        var htmlResponse = await client.GetAsync("/index.html");
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, htmlResponse.StatusCode);
+        Assert.AreEqual("nosniff", GetSingleHeaderValue(htmlResponse, "X-Content-Type-Options"));
+        Assert.AreEqual("strict-origin-when-cross-origin", GetSingleHeaderValue(htmlResponse, "Referrer-Policy"));
+        Assert.AreEqual("DENY", GetSingleHeaderValue(htmlResponse, "X-Frame-Options"));
+        Assert.AreEqual("same-origin", GetSingleHeaderValue(htmlResponse, "Cross-Origin-Opener-Policy"));
+        Assert.AreEqual("same-origin", GetSingleHeaderValue(htmlResponse, "Cross-Origin-Resource-Policy"));
+        Assert.AreEqual("none", GetSingleHeaderValue(htmlResponse, "X-Permitted-Cross-Domain-Policies"));
+        Assert.AreEqual(JazorSecurityHeaderOptions.DefaultPermissionsPolicy, GetSingleHeaderValue(htmlResponse, "Permissions-Policy"));
+
+        var staticResponse = await client.GetAsync("/site.css");
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, staticResponse.StatusCode);
+        Assert.AreEqual("nosniff", GetSingleHeaderValue(staticResponse, "X-Content-Type-Options"));
+        Assert.IsNotNull(staticResponse.Headers.CacheControl);
+        Assert.IsTrue(staticResponse.Headers.CacheControl.NoCache);
+        Assert.IsTrue(staticResponse.Headers.CacheControl.MustRevalidate);
+    }
+
+    [TestMethod]
+    public async Task UseJazorSecurityHeaders_DoesNotOverrideApplicationSpecificHeaders()
+    {
+        using var workspace = new AspNetCoreHostTestWorkspace();
+
+        using var host = await CreateHostAsync(workspace.RootPath, app =>
+        {
+            app.UseJazorSecurityHeaders(options =>
+            {
+                options.PermissionsPolicy = "geolocation=()";
+                options.AdditionalHeaders["X-Custom-Default"] = "framework";
+            });
+
+            app.MapGet("/", (HttpContext context) =>
+            {
+                context.Response.Headers["Referrer-Policy"] = "same-origin";
+                context.Response.Headers["Permissions-Policy"] = "clipboard-read=(self)";
+                context.Response.Headers["X-Custom-Default"] = "application";
+                return Results.Text("ready");
+            });
+        });
+
+        var client = host.GetTestClient();
+        var response = await client.GetAsync("/");
+
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, response.StatusCode);
+        Assert.AreEqual("same-origin", GetSingleHeaderValue(response, "Referrer-Policy"));
+        Assert.AreEqual("clipboard-read=(self)", GetSingleHeaderValue(response, "Permissions-Policy"));
+        Assert.AreEqual("application", GetSingleHeaderValue(response, "X-Custom-Default"));
+        Assert.AreEqual("nosniff", GetSingleHeaderValue(response, "X-Content-Type-Options"));
+    }
+
+    [TestMethod]
     public async Task UseJazorStaticFiles_ServesSourceMapsAsApplicationJson()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
@@ -333,74 +402,38 @@ public sealed class JazorAspNetCoreHostingTests
     }
 
     [TestMethod]
-    public async Task WikiHostShell_WhenApplicationUsesPathBase_RendersPathBaseAwareAssetUrlsAndCanonicalMetadata()
+    public async Task UseJazorSpaFallback_WhenApplicationUsesPathBase_AllowsConfiguredIndexHtmlSuffixAndPreservesPathBase()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
-        var webRoot = Path.Combine(workspace.RootPath, "wwwroot");
-        Directory.CreateDirectory(webRoot);
-        await File.WriteAllTextAsync(
-            Path.Combine(webRoot, "index.html"),
-            """
-            <!doctype html>
-            <html lang="en">
-            <head>
-              <meta charset="utf-8" />
-              <title>__WIKI_DOCUMENT_TITLE__</title>
-              <meta name="description" content="__WIKI_DOCUMENT_DESCRIPTION__" />
-              <meta name="robots" content="__WIKI_DOCUMENT_ROBOTS__" />
-              <link rel="canonical" href="__WIKI_DOCUMENT_CANONICAL_URL__" />
-              <meta property="og:title" content="__WIKI_OPEN_GRAPH_TITLE__" />
-              <meta property="og:description" content="__WIKI_OPEN_GRAPH_DESCRIPTION__" />
-              <meta property="og:url" content="__WIKI_OPEN_GRAPH_URL__" />
-              <meta name="twitter:title" content="__WIKI_TWITTER_TITLE__" />
-              <meta name="twitter:description" content="__WIKI_TWITTER_DESCRIPTION__" />
-              <link rel="icon" href="__WIKI_FAVICON_URL__" type="image/svg+xml" />
-              <link rel="stylesheet" href="__WIKI_SITE_CSS_URL__" />
-            </head>
-            <body data-wiki-path-base="__WIKI_PATH_BASE__">
-              <div id="app"></div>
-              <script type="importmap" nonce="__WIKI_SCRIPT_NONCE__">
-                {
-                  "imports": {
-                    "System/": "__WIKI_SYSTEM_IMPORT_BASE__",
-                    "vue": "__WIKI_VENDOR_VUE_URL__",
-                    "npm:vue@3": "__WIKI_VENDOR_VUE_URL__"
-                  }
-                }
-              </script>
-              <script type="module" src="__WIKI_MAIN_MODULE_URL__"></script>
-            </body>
-            </html>
-            """);
 
         using var host = await CreateHostAsync(workspace.RootPath, app =>
         {
             app.UsePathBase("/docs");
-            app.Use(async (context, next) =>
-            {
-                if (await Wiki.WikiHostShell.TryHandleHtmlRequestAsync(context, context.RequestAborted))
-                    return;
-
-                await next();
-            });
+            app.UseJazorSpaFallback(
+                WritePathBaseAwareHtmlShellAsync,
+                options => options.AllowedPathSuffixes.Add("/index.html"));
             app.MapGet("/health", () => "ok");
         });
 
         var client = host.GetTestClient();
         client.DefaultRequestHeaders.Host = "wiki.example.test";
 
-        var response = await client.GetAsync("/docs/guides/getting-started");
-        var html = await response.Content.ReadAsStringAsync();
+        var navigationResponse = await client.GetAsync("/docs/guides/getting-started");
+        var navigationHtml = await navigationResponse.Content.ReadAsStringAsync();
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, navigationResponse.StatusCode);
+        StringAssert.Contains(navigationHtml, "href=\"/docs/favicon.svg\"");
+        StringAssert.Contains(navigationHtml, "href=\"/docs/site.css\"");
+        StringAssert.Contains(navigationHtml, "\"System/\": \"/docs/jazor/System/\"");
+        StringAssert.Contains(navigationHtml, "\"vue\": \"/docs/vendor/vue@3.5.16.mjs\"");
+        StringAssert.Contains(navigationHtml, "src=\"/docs/jazor/main.mjs\"");
+        StringAssert.Contains(navigationHtml, "data-path-base=\"/docs\"");
+        StringAssert.Contains(navigationHtml, "href=\"http://wiki.example.test/docs/guides/getting-started\"");
+        StringAssert.Contains(navigationHtml, "content=\"http://wiki.example.test/docs/guides/getting-started\"");
 
-        Assert.AreEqual(System.Net.HttpStatusCode.OK, response.StatusCode);
-        StringAssert.Contains(html, "href=\"/docs/favicon.svg\"");
-        StringAssert.Contains(html, "href=\"/docs/site.css\"");
-        StringAssert.Contains(html, "\"System/\": \"/docs/jazor/System/\"");
-        StringAssert.Contains(html, "\"vue\": \"/docs/vendor/vue@3.5.16.mjs\"");
-        StringAssert.Contains(html, "src=\"/docs/jazor/main.mjs\"");
-        StringAssert.Contains(html, "data-wiki-path-base=\"/docs\"");
-        StringAssert.Contains(html, "href=\"http://wiki.example.test/docs/guides/getting-started\"");
-        StringAssert.Contains(html, "content=\"http://wiki.example.test/docs/guides/getting-started\"");
+        var explicitIndexResponse = await client.GetAsync("/docs/index.html");
+        var explicitIndexHtml = await explicitIndexResponse.Content.ReadAsStringAsync();
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, explicitIndexResponse.StatusCode);
+        StringAssert.Contains(explicitIndexHtml, "href=\"http://wiki.example.test/docs/index.html\"");
     }
 
     private static async Task<IHost> CreateHostAsync(string contentRootPath, Action<WebApplication> configure)
@@ -422,6 +455,42 @@ public sealed class JazorAspNetCoreHostingTests
         return response.Headers.TryGetValues(headerName, out var values)
             ? values.SingleOrDefault()
             : null;
+    }
+
+    private static Task WritePathBaseAwareHtmlShellAsync(HttpContext context, CancellationToken cancellationToken)
+    {
+        var pathBase = context.Request.PathBase.Value ?? string.Empty;
+        var path = context.Request.Path.Value ?? string.Empty;
+        var absoluteUrl = $"{context.Request.Scheme}://{context.Request.Host}{pathBase}{path}";
+        var html =
+            $$"""
+            <!doctype html>
+            <html lang="en">
+            <head>
+              <meta charset="utf-8" />
+              <link rel="canonical" href="{{absoluteUrl}}" />
+              <meta property="og:url" content="{{absoluteUrl}}" />
+              <link rel="icon" href="{{pathBase}}/favicon.svg" type="image/svg+xml" />
+              <link rel="stylesheet" href="{{pathBase}}/site.css" />
+            </head>
+            <body data-path-base="{{pathBase}}">
+              <div id="app"></div>
+              <script type="importmap">
+                {
+                  "imports": {
+                    "System/": "{{pathBase}}/jazor/System/",
+                    "vue": "{{pathBase}}/vendor/vue@3.5.16.mjs"
+                  }
+                }
+              </script>
+              <script type="module" src="{{pathBase}}/jazor/main.mjs"></script>
+            </body>
+            </html>
+            """;
+
+        context.Response.StatusCode = StatusCodes.Status200OK;
+        context.Response.ContentType = "text/html; charset=utf-8";
+        return context.Response.WriteAsync(html, cancellationToken);
     }
 
     private sealed class AspNetCoreHostTestWorkspace : IDisposable

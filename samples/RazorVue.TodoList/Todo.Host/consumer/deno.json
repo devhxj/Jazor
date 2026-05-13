@@ -1,0 +1,17 @@
+{
+  "nodeModulesDir": "auto",
+  "imports": {
+    "vue": "npm:vue@3.5.13",
+    "vue/server-renderer": "npm:@vue/server-renderer@3.5.13",
+    "vuetify": "npm:vuetify@3.8.0",
+    "vuetify/components": "npm:vuetify@3.8.0/components",
+    "vuetify/styles": "npm:vuetify@3.8.0/styles"
+  },
+  "tasks": {
+    "build": "deno run -A scripts/build.ts",
+    "smoke:ssr": "deno run -A scripts/smoke-ssr.ts",
+    "smoke:browser": "deno run -A scripts/smoke-browser.ts",
+    "smoke:bundle-api": "deno run -A --unstable-bundle scripts/smoke-bundle-api.ts",
+    "test": "deno run -A --unstable-bundle scripts/test.ts"
+  }
+}

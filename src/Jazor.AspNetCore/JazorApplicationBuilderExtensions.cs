@@ -13,6 +13,71 @@ public static class JazorApplicationBuilderExtensions
     private const string SourceMapContentType = "application/json";
     private const string MutableAssetCacheControl = "no-cache, must-revalidate";
     private const string XContentTypeOptionsHeaderName = "X-Content-Type-Options";
+    private const string ReferrerPolicyHeaderName = "Referrer-Policy";
+    private const string XFrameOptionsHeaderName = "X-Frame-Options";
+    private const string CrossOriginOpenerPolicyHeaderName = "Cross-Origin-Opener-Policy";
+    private const string CrossOriginResourcePolicyHeaderName = "Cross-Origin-Resource-Policy";
+    private const string PermissionsPolicyHeaderName = "Permissions-Policy";
+    private const string XPermittedCrossDomainPoliciesHeaderName = "X-Permitted-Cross-Domain-Policies";
+
+    public static IApplicationBuilder UseJazorHost(this IApplicationBuilder app)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+        return app.UseJazorHost(configure: null);
+    }
+
+    public static IApplicationBuilder UseJazorHost(
+        this IApplicationBuilder app,
+        Action<JazorHostOptions>? configure)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+
+        var options = new JazorHostOptions();
+        configure?.Invoke(options);
+
+        app.UseJazorSecurityHeaders(options.SecurityHeaders);
+        app.UseJazorWebAssets(options.WebAssets);
+        return app;
+    }
+
+    public static IApplicationBuilder UseJazorSecurityHeaders(this IApplicationBuilder app)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+        return app.UseJazorSecurityHeaders(configure: null);
+    }
+
+    public static IApplicationBuilder UseJazorSecurityHeaders(
+        this IApplicationBuilder app,
+        Action<JazorSecurityHeaderOptions>? configure)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+
+        var options = new JazorSecurityHeaderOptions();
+        configure?.Invoke(options);
+        return app.UseJazorSecurityHeaders(options);
+    }
+
+    public static IApplicationBuilder UseJazorSecurityHeaders(
+        this IApplicationBuilder app,
+        JazorSecurityHeaderOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(options);
+
+        app.Use(async (context, next) =>
+        {
+            context.Response.OnStarting(static state =>
+            {
+                var (response, headerOptions) = ((HttpResponse, JazorSecurityHeaderOptions))state;
+                ApplySecurityHeaders(response.Headers, headerOptions);
+                return Task.CompletedTask;
+            }, (context.Response, options));
+
+            await next();
+        });
+
+        return app;
+    }
 
     public static IApplicationBuilder UseJazorStaticFiles(this IApplicationBuilder app)
     {
@@ -113,6 +178,15 @@ public static class JazorApplicationBuilderExtensions
 
         var options = new JazorWebAssetOptions();
         configure?.Invoke(options);
+        return app.UseJazorWebAssets(options);
+    }
+
+    public static IApplicationBuilder UseJazorWebAssets(
+        this IApplicationBuilder app,
+        JazorWebAssetOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(options);
 
         if (options.ServeDefaultFiles)
             app.UseDefaultFiles();
@@ -265,13 +339,28 @@ public static class JazorApplicationBuilderExtensions
                 return false;
         }
 
-        if (Path.HasExtension(requestPath.Value))
+        if (!IsAllowedSpaFallbackPath(requestPath, fallbackContext))
             return false;
 
         if (fallbackContext.RequireHtmlAcceptHeader && !AcceptsHtmlDocument(request))
             return false;
 
         return true;
+    }
+
+    private static bool IsAllowedSpaFallbackPath(PathString requestPath, JazorSpaFallbackContext fallbackContext)
+    {
+        var pathValue = requestPath.Value ?? string.Empty;
+        if (!Path.HasExtension(pathValue))
+            return true;
+
+        foreach (var allowedPathSuffix in fallbackContext.AllowedPathSuffixes)
+        {
+            if (pathValue.EndsWith(allowedPathSuffix, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        return false;
     }
 
     private static bool AcceptsHtmlDocument(HttpRequest request)
@@ -321,10 +410,34 @@ public static class JazorApplicationBuilderExtensions
     private static void ApplyDefaultStaticAssetHeaders(StaticFileResponseContext context)
     {
         var headers = context.Context.Response.Headers;
-        headers[XContentTypeOptionsHeaderName] = "nosniff";
+        if (!headers.ContainsKey(XContentTypeOptionsHeaderName))
+            headers[XContentTypeOptionsHeaderName] = "nosniff";
 
         if (!headers.ContainsKey(HeaderNames.CacheControl))
             headers.CacheControl = MutableAssetCacheControl;
+    }
+
+    private static void ApplySecurityHeaders(IHeaderDictionary headers, JazorSecurityHeaderOptions options)
+    {
+        ApplyHeaderIfConfigured(headers, XContentTypeOptionsHeaderName, options.XContentTypeOptions);
+        ApplyHeaderIfConfigured(headers, ReferrerPolicyHeaderName, options.ReferrerPolicy);
+        ApplyHeaderIfConfigured(headers, XFrameOptionsHeaderName, options.XFrameOptions);
+        ApplyHeaderIfConfigured(headers, CrossOriginOpenerPolicyHeaderName, options.CrossOriginOpenerPolicy);
+        ApplyHeaderIfConfigured(headers, CrossOriginResourcePolicyHeaderName, options.CrossOriginResourcePolicy);
+        ApplyHeaderIfConfigured(headers, PermissionsPolicyHeaderName, options.PermissionsPolicy);
+        ApplyHeaderIfConfigured(headers, XPermittedCrossDomainPoliciesHeaderName, options.XPermittedCrossDomainPolicies);
+
+        foreach (var header in options.AdditionalHeaders)
+            ApplyHeaderIfConfigured(headers, header.Key, header.Value);
+    }
+
+    private static void ApplyHeaderIfConfigured(IHeaderDictionary headers, string headerName, string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return;
+
+        if (!headers.ContainsKey(headerName))
+            headers[headerName] = value;
     }
 
     private static IContentTypeProvider WrapContentTypeProvider(IContentTypeProvider? contentTypeProvider)
@@ -426,6 +539,7 @@ public static class JazorApplicationBuilderExtensions
 
     private sealed record JazorSpaFallbackContext(
         IReadOnlyList<PathString> ExcludedPathPrefixes,
+        IReadOnlyList<string> AllowedPathSuffixes,
         bool RequireHtmlAcceptHeader)
     {
         public static JazorSpaFallbackContext Create(JazorSpaFallbackOptions options)
@@ -434,8 +548,24 @@ public static class JazorApplicationBuilderExtensions
                 .Select(NormalizeSpaFallbackPathPrefix)
                 .Distinct()
                 .ToArray();
+            var allowedPathSuffixes = options.AllowedPathSuffixes
+                .Select(NormalizeSpaFallbackAllowedSuffix)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
 
-            return new JazorSpaFallbackContext(excludedPathPrefixes, options.RequireHtmlAcceptHeader);
+            return new JazorSpaFallbackContext(excludedPathPrefixes, allowedPathSuffixes, options.RequireHtmlAcceptHeader);
         }
+    }
+
+    private static string NormalizeSpaFallbackAllowedSuffix(string suffix)
+    {
+        if (string.IsNullOrWhiteSpace(suffix))
+            throw new ArgumentException("Jazor SPA fallback allowed path suffixes cannot be empty.", nameof(suffix));
+
+        var normalized = suffix.Trim();
+        if (!normalized.StartsWith('/'))
+            throw new ArgumentException("Jazor SPA fallback allowed path suffixes must start with '/'.", nameof(suffix));
+
+        return normalized;
     }
 }

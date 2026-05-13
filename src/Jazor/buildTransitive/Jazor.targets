@@ -1,6 +1,13 @@
 <Project>
   <PropertyGroup>
     <JazorEmitToolTargetFramework Condition="'$(JazorEmitToolTargetFramework)' == ''">net11.0</JazorEmitToolTargetFramework>
+    <JazorConsumerEnabled Condition="'$(JazorConsumerEnabled)' == '' and '$(JazorConsumerRoot)' != ''">true</JazorConsumerEnabled>
+    <JazorConsumerEnabled Condition="'$(JazorConsumerEnabled)' == ''">false</JazorConsumerEnabled>
+    <JazorConsumerWorkingDirectory Condition="'$(JazorConsumerWorkingDirectory)' == '' and '$(JazorConsumerRoot)' != ''">$(JazorConsumerRoot)</JazorConsumerWorkingDirectory>
+    <JazorConsumerRunScriptPath Condition="'$(JazorConsumerRunScriptPath)' == '' and '$(JazorConsumerRoot)' != ''">$([System.IO.Path]::Combine('$(JazorConsumerRoot)', 'scripts', 'run-deno.cs'))</JazorConsumerRunScriptPath>
+    <JazorConsumerHostJazorRoot Condition="'$(JazorConsumerHostJazorRoot)' == ''">$(JazorOutDir)</JazorConsumerHostJazorRoot>
+    <JazorConsumerHostWwwrootRoot Condition="'$(JazorConsumerHostWwwrootRoot)' == ''">$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', 'wwwroot'))</JazorConsumerHostWwwrootRoot>
+    <JazorConsumerBrowserAssetRoot Condition="'$(JazorConsumerBrowserAssetRoot)' == ''">$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', 'wwwroot', 'jazor'))</JazorConsumerBrowserAssetRoot>
   </PropertyGroup>
 
   <!-- Emit must run after a successful Build so analyzer/source-generator output and TargetPath are both finalized. -->
@@ -10,7 +17,7 @@
     <PropertyGroup>
       <_JazorDefaultDevOutDir>$([System.IO.Path]::GetFullPath('$(JazorDevOutDir)'))</_JazorDefaultDevOutDir>
       <_JazorResolvedRequestedOutDir>$([System.IO.Path]::GetFullPath('$(JazorOutDir)'))</_JazorResolvedRequestedOutDir>
-      <_JazorSelectedOutDir Condition="'$(_IsPublishing)' == 'true' and '$(_JazorResolvedRequestedOutDir)' == '$(_JazorDefaultDevOutDir)'">$(JazorPublishOutDir)</_JazorSelectedOutDir>
+      <_JazorSelectedOutDir Condition="'$(_IsPublishing)' == 'true' and '$(_JazorResolvedRequestedOutDir)' == '$(_JazorDefaultDevOutDir)' and '$(JazorPublishMaterializeEnabled)' != 'true'">$(JazorPublishOutDir)</_JazorSelectedOutDir>
       <_JazorSelectedOutDir Condition="'$(_JazorSelectedOutDir)' == ''">$(JazorOutDir)</_JazorSelectedOutDir>
       <_JazorEmitOutDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(_JazorSelectedOutDir)')), '[\\/]+$', ''))</_JazorEmitOutDir>
       <JazorEmitToolPath Condition="'$(JazorEmitToolPath)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\tools\$(JazorEmitToolTargetFramework)\Jazor.Emit.dll'))</JazorEmitToolPath>
@@ -47,7 +54,7 @@
     <PropertyGroup>
       <_JazorDefaultDevOutDir>$([System.IO.Path]::GetFullPath('$(JazorDevOutDir)'))</_JazorDefaultDevOutDir>
       <_JazorResolvedRequestedOutDir>$([System.IO.Path]::GetFullPath('$(JazorOutDir)'))</_JazorResolvedRequestedOutDir>
-      <_JazorSelectedOutDir Condition="'$(_IsPublishing)' == 'true' and '$(_JazorResolvedRequestedOutDir)' == '$(_JazorDefaultDevOutDir)'">$(JazorPublishOutDir)</_JazorSelectedOutDir>
+      <_JazorSelectedOutDir Condition="'$(_IsPublishing)' == 'true' and '$(_JazorResolvedRequestedOutDir)' == '$(_JazorDefaultDevOutDir)' and '$(JazorPublishMaterializeEnabled)' != 'true'">$(JazorPublishOutDir)</_JazorSelectedOutDir>
       <_JazorSelectedOutDir Condition="'$(_JazorSelectedOutDir)' == ''">$(JazorOutDir)</_JazorSelectedOutDir>
       <JazorManifestPath Condition="'$(JazorManifestPath)' == ''">$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(_JazorSelectedOutDir)')), '[\\/]+$', ''))\jazor-manifest.json</JazorManifestPath>
       <_JazorBundleOut>$([System.IO.Path]::GetFullPath('$(JazorBundleOut)'))</_JazorBundleOut>
@@ -62,5 +69,77 @@
     </PropertyGroup>
 
     <Exec Command="dotnet &quot;$(JazorEmitToolPath)&quot; bundle --in &quot;$(_JazorEmitOutDirForBundle)&quot; --manifest &quot;$(_JazorManifestPathForBundle)&quot; --out &quot;$(_JazorBundleOut)&quot; --previous-manifest &quot;$(JazorPreviousManifestSnapshotPath)&quot; --write-razorvue-update-plan &quot;$(JazorBundleRazorVueUpdatePlanPath)&quot;" />
+  </Target>
+
+  <Target Name="JazorConsumerBuild"
+          AfterTargets="JazorEmit"
+          Condition="'$(DesignTimeBuild)' != 'true'
+            and '$(JazorEmit)' == 'true'
+            and '$(JazorConsumerEnabled)' == 'true'">
+    <Error Text="Jazor consumer runner was not found: $(JazorConsumerRunScriptPath)"
+           Condition="!Exists('$(JazorConsumerRunScriptPath)')" />
+
+    <PropertyGroup>
+      <_JazorConsumerWorkingDirectory>$([System.IO.Path]::GetFullPath('$(JazorConsumerWorkingDirectory)'))</_JazorConsumerWorkingDirectory>
+      <_JazorConsumerRunScriptPath>$([System.IO.Path]::GetFullPath('$(JazorConsumerRunScriptPath)'))</_JazorConsumerRunScriptPath>
+      <_JazorConsumerHostJazorRoot>$([System.IO.Path]::GetFullPath('$(JazorConsumerHostJazorRoot)'))</_JazorConsumerHostJazorRoot>
+      <_JazorConsumerHostWwwrootRoot>$([System.IO.Path]::GetFullPath('$(JazorConsumerHostWwwrootRoot)'))</_JazorConsumerHostWwwrootRoot>
+      <_JazorConsumerEmitToolPath>$([System.IO.Path]::GetFullPath('$(JazorEmitToolPath)'))</_JazorConsumerEmitToolPath>
+      <_JazorConsumerEnvironmentVariables>RAZORVUE_HOST_JAZOR_ROOT=$(_JazorConsumerHostJazorRoot);RAZORVUE_HOST_WWWROOT_ROOT=$(_JazorConsumerHostWwwrootRoot);JAZOR_EMIT_TOOL_PATH=$(_JazorConsumerEmitToolPath)</_JazorConsumerEnvironmentVariables>
+      <_JazorConsumerEnvironmentVariables Condition="'$(JazorConsumerEnvironmentVariables)' != ''">$(_JazorConsumerEnvironmentVariables);$(JazorConsumerEnvironmentVariables)</_JazorConsumerEnvironmentVariables>
+      <_JazorConsumerCommand>dotnet run --file &quot;$(_JazorConsumerRunScriptPath)&quot; -- task $(JazorConsumerBuildTask) $(JazorConsumerBuildArguments)</_JazorConsumerCommand>
+    </PropertyGroup>
+
+    <Exec WorkingDirectory="$(_JazorConsumerWorkingDirectory)"
+          EnvironmentVariables="$(_JazorConsumerEnvironmentVariables)"
+          Command="$(_JazorConsumerCommand)" />
+  </Target>
+
+  <Target Name="JazorPublishMaterialize"
+          AfterTargets="Publish"
+          Condition="'$(JazorEmit)' == 'true'
+            and '$(JazorPublishMaterializeEnabled)' == 'true'
+            and Exists('$(JazorOutDir)')">
+    <PropertyGroup>
+      <_JazorMaterializedSourceRoot>$([System.IO.Path]::GetFullPath('$(JazorOutDir)'))</_JazorMaterializedSourceRoot>
+      <_JazorMaterializedTargetRoot Condition="'$(JazorPublishMaterializedRoot)' == ''">$([System.IO.Path]::Combine('$(PublishDir)', 'wwwroot', 'jazor'))</_JazorMaterializedTargetRoot>
+      <_JazorMaterializedTargetRoot Condition="'$(JazorPublishMaterializedRoot)' != ''">$([System.IO.Path]::GetFullPath('$(JazorPublishMaterializedRoot)'))</_JazorMaterializedTargetRoot>
+      <_JazorPublishedShadowRoot>$([System.IO.Path]::Combine('$(PublishDir)', 'jazor'))</_JazorPublishedShadowRoot>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_JazorMaterializedArtifact Include="$(_JazorMaterializedSourceRoot)\**\*" />
+    </ItemGroup>
+
+    <RemoveDir Directories="$(_JazorMaterializedTargetRoot)" />
+    <MakeDir Directories="$(_JazorMaterializedTargetRoot)" />
+    <Copy SourceFiles="@(_JazorMaterializedArtifact)"
+          DestinationFiles="@(_JazorMaterializedArtifact->'$(_JazorMaterializedTargetRoot)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <RemoveDir Directories="$(_JazorPublishedShadowRoot)"
+               Condition="Exists('$(_JazorPublishedShadowRoot)')" />
+  </Target>
+
+  <Target Name="JazorPublishConsumerBrowserAssets"
+          AfterTargets="JazorPublishMaterialize"
+          Condition="'$(JazorEmit)' == 'true'
+            and '$(JazorPublishMaterializeEnabled)' == 'true'
+            and '$(JazorConsumerEnabled)' == 'true'
+            and Exists('$(JazorConsumerBrowserAssetRoot)')">
+    <PropertyGroup>
+      <_JazorConsumerBrowserAssetRoot>$([System.IO.Path]::GetFullPath('$(JazorConsumerBrowserAssetRoot)'))</_JazorConsumerBrowserAssetRoot>
+      <_JazorMaterializedTargetRoot Condition="'$(JazorPublishMaterializedRoot)' == ''">$([System.IO.Path]::Combine('$(PublishDir)', 'wwwroot', 'jazor'))</_JazorMaterializedTargetRoot>
+      <_JazorMaterializedTargetRoot Condition="'$(JazorPublishMaterializedRoot)' != ''">$([System.IO.Path]::GetFullPath('$(JazorPublishMaterializedRoot)'))</_JazorMaterializedTargetRoot>
+      <_JazorPublishedLegacyAssetsRoot>$([System.IO.Path]::Combine('$(PublishDir)', 'wwwroot', 'assets'))</_JazorPublishedLegacyAssetsRoot>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_JazorConsumerBrowserAsset Include="$(_JazorConsumerBrowserAssetRoot)\**\*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_JazorConsumerBrowserAsset)"
+          DestinationFiles="@(_JazorConsumerBrowserAsset->'$(_JazorMaterializedTargetRoot)\%(RecursiveDir)%(Filename)%(Extension)')"
+          Condition="'@(_JazorConsumerBrowserAsset)' != ''" />
+    <RemoveDir Directories="$(_JazorPublishedLegacyAssetsRoot)"
+               Condition="Exists('$(_JazorPublishedLegacyAssetsRoot)')" />
   </Target>
 </Project>
