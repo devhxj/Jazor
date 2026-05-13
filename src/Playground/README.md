@@ -4,10 +4,10 @@
 
 ## 结构
 
-- `Playground/Playground`：唯一的 .NET Web 项目，负责 API、静态资源和 HTML shell。
-- `Playground/Playground/jazor`：开发/测试阶段的 RazorVue SFC emit 目录，和 `Wiki` 保持同类模式。
-- `Playground/Playground/wwwroot/jazor`：浏览器 bundle 的本地输出目录；发布时会与根 `jazor` emit 合并为最终 `/jazor/*` 静态目录。
-- `playground-consumer`：Deno consumer，消费根 `jazor` 中的 RazorVue SFC 产物，输出浏览器与 SSR 产物。
+- `src/Playground`：唯一的 .NET Web 项目，负责 API、静态资源和 HTML shell。
+- `src/Playground/jazor`：开发/测试阶段的 RazorVue SFC emit 目录，和 `Wiki` 保持同类模式。
+- `src/Playground/wwwroot/jazor`：浏览器 bundle 的本地输出目录；发布时会与根 `jazor` emit 合并为最终 `/jazor/*` 静态目录。
+- `src/Playground/consumer`：DenoHost consumer，消费根 `jazor` 中的 RazorVue SFC 产物，输出浏览器与 SSR 产物。
 
 这不是双宿主方案。运行时只有一个 ASP.NET Core 项目；consumer 只是同仓库内的前端构建管线。
 
@@ -15,35 +15,35 @@
 
 - 不使用 `Jolt`
 - 不使用 `Vite`
-- 使用 `DenoHost` / bundled `deno.exe`
+- 使用 `DenoHost.Core` + bundled runtime assets
 - 生成页面来自 RazorVue SFC emit
-- 浏览器资产写入 `Playground/Playground/wwwroot/jazor`
+- 浏览器资产写入 `src/Playground/wwwroot/jazor`
 - 不使用 `.ps1`，验证与构建辅助都走 `dotnet run --file` 或 MSBuild target
 
 ## 构建与发布契约
 
 `Playground` 参考 `Wiki` 的资源模型：
 
-- 本地 build 生成 `Playground/Playground/jazor`
+- 本地 build 生成 `src/Playground/jazor`
 - 宿主开发时用 `UseJazorDevelopmentAssets()` 从根 `jazor` 提供 `/jazor/*`
-- Deno consumer 在 `JazorEmit` 后自动运行，生成 `wwwroot/jazor/client-entry.*`
+- consumer 在 `JazorEmit` 后自动运行，生成 `wwwroot/jazor/client-entry.*`
 - publish 后只从发布目录的 `wwwroot/jazor` 提供 `/jazor/*`
 - publish 阶段会把根 `jazor` emit 与 `wwwroot/jazor/client-entry.*` 合并到发布目录的 `wwwroot/jazor`
 - 发布根目录不能出现影子 `jazor/` 目录
-- Deno consumer 的中间 build root 默认使用 `.deno-build/pid-*`，避免并行 smoke/build 互相清空目录；需要固定路径时可显式设置 `RAZORVUE_BUILD_ROOT`
+- consumer 的中间 build root 默认使用 `.deno-build/pid-*`，避免并行 smoke/build 互相清空目录；需要固定路径时可显式设置 `RAZORVUE_BUILD_ROOT`
 
 ## 运行方式
 
 1. 构建宿主、生成 RazorVue 产物并打包浏览器资产：
 
 ```powershell
-dotnet build src/Playground/Playground/Playground.csproj -v minimal
+dotnet build src/Playground/Playground.csproj -v minimal
 ```
 
 2. 启动宿主：
 
 ```powershell
-dotnet run --project src/Playground/Playground/Playground.csproj
+dotnet run --project src/Playground/Playground.csproj
 ```
 
 默认页面：
@@ -65,12 +65,12 @@ dotnet run --file scripts/csharp/playground-verify-smoke.cs -- --build
 dotnet run --file scripts/csharp/playground-verify-smoke.cs -- --publish
 ```
 
-Deno consumer focused smoke：
+consumer focused smoke：
 
 ```powershell
-dotnet run --file src/Playground/playground-consumer/scripts/run-deno.cs -- task smoke:ssr
-dotnet run --file src/Playground/playground-consumer/scripts/run-deno.cs -- task build
-dotnet run --file src/Playground/playground-consumer/scripts/run-deno.cs -- task smoke:browser
+dotnet run --file src/Playground/consumer/scripts/run-deno.cs -- task smoke:ssr
+dotnet run --file src/Playground/consumer/scripts/run-deno.cs -- task build
+dotnet run --file src/Playground/consumer/scripts/run-deno.cs -- task smoke:browser
 ```
 
 ## 当前真实边界

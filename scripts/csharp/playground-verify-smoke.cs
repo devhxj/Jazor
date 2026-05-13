@@ -6,7 +6,7 @@ using System.Text.Json;
 
 var options = ScriptArguments.Parse(args);
 var repoRoot = PlaygroundScriptHelpers.RequireRepoRoot();
-var projectRoot = Path.Combine(repoRoot, "src", "Playground", "Playground");
+var projectRoot = Path.Combine(repoRoot, "src", "Playground");
 var projectPath = Path.Combine(projectRoot, "Playground.csproj");
 var publishRoot = Path.Combine(repoRoot, ".tmp", "playground-publish-smoke-" + Environment.ProcessId);
 var dotnetCliHome = Path.Combine(repoRoot, ".dotnet");

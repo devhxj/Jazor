@@ -15,6 +15,7 @@ src/ECMAScript.WebIDL/.vscode/
 *.user
 *.userosscache
 *.sln.docstates
+*.lscache
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -447,3 +448,4 @@ cnblog/
 .tmp-*.json
 .wiki-browser-edge-profile*/
 .tools/
+jazor/

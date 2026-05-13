@@ -336,7 +336,7 @@ function createMockDetailResponse(id: string) {
       Files: [
         "Playground/Program.cs",
         "Playground/Pages/PlaygroundCatalogPage.razor",
-        "playground-consumer/src/router.js"
+        "consumer/src/router.js"
       ],
       UpdatedAtUtc: "2026-05-12T00:00:00Z",
       Featured: true,
@@ -358,8 +358,8 @@ function createMockDetailResponse(id: string) {
         "Expose derived selectors for featured and filtered example lists."
       ],
       Files: [
-        "playground-consumer/src/stores/playground-store.js",
-        "playground-consumer/src/bootstrap-app.js"
+        "consumer/src/stores/playground-store.js",
+        "consumer/src/bootstrap-app.js"
       ],
       UpdatedAtUtc: "2026-05-12T00:00:00Z",
       Featured: true,
@@ -381,7 +381,7 @@ function createMockDetailResponse(id: string) {
         "Keep host fallback handling aligned with client navigation."
       ],
       Files: [
-        "playground-consumer/src/router.js",
+        "consumer/src/router.js",
         "Playground/Program.cs",
         "Playground/wwwroot/index.html"
       ],
@@ -405,9 +405,9 @@ function createMockDetailResponse(id: string) {
         "Bundle browser entry and verify SSR/browser smoke output."
       ],
       Files: [
-        "playground-consumer/scripts/lib/pipeline.ts",
-        "playground-consumer/scripts/build.ts",
-        "playground-consumer/scripts/smoke-ssr.ts"
+        "consumer/scripts/lib/pipeline.ts",
+        "consumer/scripts/build.ts",
+        "consumer/scripts/smoke-ssr.ts"
       ],
       UpdatedAtUtc: "2026-05-12T00:00:00Z",
       Featured: false,

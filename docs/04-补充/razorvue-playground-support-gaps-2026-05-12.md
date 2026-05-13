@@ -11,18 +11,20 @@
 
 这个过程暴露出若干当前不支持点或高摩擦点，需要明确记录，作为后续能力提升项。
 
-## 1. Jazor authored C# module 不能直接消费 RazorVue SFC default export
+## 1. RazorVue SFC default export 不能进入 Jazor 编译器边界
 
 ### 现象
 
-RazorVue 产出的 `.vue` SFC 默认是 `default export` 组件，而当前 Jazor C# authored module 路线不支持：
+Vue SFC 生态默认以 `default export` 表达组件，但 Jazor authored C# module 路线明确不支持：
 
 - default export emit
 - default import consume
 
+这个边界是刻意保留的，不计划通过扩展 Jazor 编译器来支持 default export/import。
+
 ### 当前影响
 
-这意味着不能简单走“全部都在 Jazor C# module 里互相引用”的闭环。真实项目里必须引入一个外部 consumer 层来消费生成的 `.vue` 文件。
+`.vue` 不能作为 Jazor authored module 直接消费的模块边界。真实项目需要一个 build-time bridge，把 Vue SFC 的 default component 语义转换成 Jazor 可接受的 named export/import 语义。
 
 ### 当前落地方式
 
@@ -30,13 +32,15 @@ RazorVue 产出的 `.vue` SFC 默认是 `default export` 组件，而当前 Jazo
 
 - ASP.NET Core 项目开发/测试阶段输出根 `jazor/*.vue`
 - 发布阶段将根 `jazor` 物化到 `wwwroot/jazor`
-- `playground-consumer` 读取 manifest 和 `.vue`
+- `consumer` 读取 manifest 和 `.vue`
 - Deno pipeline 编译并打包到 `wwwroot/jazor/client-entry.*`
+- Deno pipeline 编译 `.vue` 后输出 named-export bridge module，例如 `export { _sfc_main as PlaygroundCatalogPage }`
+- consumer 入口和组件间引用都使用 named import，例如 `import { PlaygroundCatalogPage } from "./pages/playground-catalog-page.mjs"`
 
 ### 后续提升方向
 
-- 在 compiler / module pipeline 中增加 default export / default import 支持
-- 或提供一个官方的一等桥接策略，让 authored Jazor module 可以无痛引用 RazorVue SFC 产物
+- 将当前 Playground 内的 SFC named-export bridge 标准化为 RazorVue 官方 build target / SDK 能力
+- 若未来 authored Jazor module 需要引用 RazorVue 组件，也应引用 bridge module 的 named export，而不是直接引用 `.vue` default export
 
 ## 2. RazorVue Razor IR frontend 对某些静态 HTML attribute 形态仍然脆弱
 
@@ -53,25 +57,29 @@ RazorVue 产出的 `.vue` SFC 默认是 `default export` 组件，而当前 Jazo
 class="playground-page playground-page--catalog"
 ```
 
-在当前前端阶段并不总能稳定通过。
+该问题已在 Razor IR frontend 中修复：当 attribute value 的多个 Razor IR child 都能证明为静态 literal 时，前端会按 Razor IR 的 `Prefix`/token 内容拼接成一个静态字符串，而不是直接判为 mixed content。
 
 ### 当前影响
 
-真实项目不得不把一些 class 设计从多 token 写法改成单 token 规避，例如：
+真实项目不再需要把纯静态 class 设计从多 token 写法改成单 token 规避，例如：
 
 - `playground-page playground-page--catalog`
-- 改成 `playground-page-catalog`
+- 不再需要改成 `playground-page-catalog`
 
-这不是理想 authoring 体验，也会直接影响组件样式组织能力。
+动态 mixed attribute content 仍然不在当前支持边界内，例如静态 literal 与 `@Title` 表达式混写的 `class="todo-card @Title"` 仍会明确失败。这个边界是有意保留的，避免把真实动态内容误降级为静态字符串。
 
 ### 相关代码
 
 - `src/Jazor.RazorVue/RazorSdk/RazorVueRazorIrTemplateFrontend.cs`
+- `src/Jazor.RazorVue/RazorSdk/RazorVueReflectedRazorIrReader.cs`
+- `src/Jazor.RazorVue.RazorIr.Test/RazorVueRazorIrTemplateFrontendTests.cs`
 
-### 后续提升方向
+### 当前落地方式
 
-- 接受更多静态 attribute value IR 组合形式
-- 不要把可确定为静态字符串的多节点 Razor IR 直接判为 unsupported mixed content
+- `RazorVueReflectedRazorIrReader` 读取 Razor IR attribute value 的 `Prefix`/`Suffix` 元数据。
+- `ResolveAttributeValue(...)` 在多 child 场景下先尝试静态 literal 拼接。
+- 只有 `HtmlContent`、`HtmlAttributeValue` 和非 C# `IntermediateToken` 会参与静态拼接。
+- 一旦出现 C# expression、C# token 或未知节点，仍按 mixed attribute content 抛出显式错误。
 
 ## 3. library component 上原样 authoring `class=` 仍有语法/作者体验摩擦
 

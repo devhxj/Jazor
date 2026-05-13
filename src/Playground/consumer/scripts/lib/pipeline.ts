@@ -45,11 +45,11 @@ const detailComponentName = "PlaygroundDetailPage";
 export async function prepareWorkspace(production: boolean): Promise<PreparedWorkspace> {
   const hostJazorRoot = resolvePathFromEnvironment(
     "RAZORVUE_HOST_JAZOR_ROOT",
-    resolve(consumerRoot, "..", "Playground", "jazor")
+    resolve(consumerRoot, "..", "jazor")
   );
   const hostWwwrootRoot = resolvePathFromEnvironment(
     "RAZORVUE_HOST_WWWROOT_ROOT",
-    resolve(consumerRoot, "..", "Playground", "wwwroot")
+    resolve(consumerRoot, "..", "wwwroot")
   );
   const buildRoot = resolvePathFromEnvironment(
     "RAZORVUE_BUILD_ROOT",
@@ -67,48 +67,75 @@ export async function prepareWorkspace(production: boolean): Promise<PreparedWor
   const hostRequirementsModulePath = resolve(hostJazorRoot, "__jazor", "razorvue-host.mjs");
 
   if (!(await fileExists(manifestPath))) {
-    throw new Error(`RazorVue manifest was not found for the Playground Deno consumer: ${manifestPath}`);
+    throw new Error(`RazorVue manifest was not found for the Playground consumer: ${manifestPath}`);
   }
 
   if (!(await fileExists(hostRequirementsModulePath))) {
-    throw new Error(`RazorVue host requirements module was not found for the Playground Deno consumer: ${hostRequirementsModulePath}`);
+    throw new Error(`RazorVue host requirements module was not found for the Playground consumer: ${hostRequirementsModulePath}`);
   }
 
   const manifest = await readJson<RazorVueManifest>(manifestPath);
+  const componentExportNamesByRelativePath = new Map<string, string>();
+  for (const module of manifest.Modules) {
+    componentExportNamesByRelativePath.set(
+      normalizeRelativeModulePath(module.RelativeModulePath),
+      resolveComponentExportName(module)
+    );
+  }
+
   await emptyDirectory(buildRoot);
   await ensureDirectory(browserGeneratedRoot);
   await ensureDirectory(ssrGeneratedRoot);
 
   let browserRootModuleOutputPath: string | null = null;
   let ssrRootModuleOutputPath: string | null = null;
+  let rootComponentExportName: string | null = null;
   let browserDetailModuleOutputPath: string | null = null;
   let ssrDetailModuleOutputPath: string | null = null;
+  let detailComponentExportName: string | null = null;
   for (const module of [...manifest.Modules].sort((left, right) =>
     left.RelativeModulePath.localeCompare(right.RelativeModulePath, "en"))) {
     const sourcePath = resolve(hostJazorRoot, module.RelativeModulePath);
     const browserOutputPath = resolve(browserGeneratedRoot, replaceExtension(module.RelativeModulePath, ".mjs"));
     const ssrOutputPath = resolve(ssrGeneratedRoot, replaceExtension(module.RelativeModulePath, ".mjs"));
-    await compileVueModule(sourcePath, browserOutputPath, production, true);
-    await compileVueModule(sourcePath, ssrOutputPath, production, false);
+    const componentExportName = resolveComponentExportName(module);
+    await compileVueModule(
+      sourcePath,
+      browserOutputPath,
+      production,
+      true,
+      componentExportName,
+      module.RelativeModulePath,
+      componentExportNamesByRelativePath);
+    await compileVueModule(
+      sourcePath,
+      ssrOutputPath,
+      production,
+      false,
+      componentExportName,
+      module.RelativeModulePath,
+      componentExportNamesByRelativePath);
 
     if (module.ComponentId === rootComponentId || module.ComponentName === rootComponentName) {
       browserRootModuleOutputPath = browserOutputPath;
       ssrRootModuleOutputPath = ssrOutputPath;
+      rootComponentExportName = componentExportName;
     }
 
     if (module.ComponentId === detailComponentId || module.ComponentName === detailComponentName) {
       browserDetailModuleOutputPath = browserOutputPath;
       ssrDetailModuleOutputPath = ssrOutputPath;
+      detailComponentExportName = componentExportName;
     }
   }
 
-  if (browserRootModuleOutputPath === null || ssrRootModuleOutputPath === null) {
+  if (browserRootModuleOutputPath === null || ssrRootModuleOutputPath === null || rootComponentExportName === null) {
     throw new Error(
       `RazorVue manifest did not contain root component '${rootComponentId}' or component name '${rootComponentName}'.`
     );
   }
 
-  if (browserDetailModuleOutputPath === null || ssrDetailModuleOutputPath === null) {
+  if (browserDetailModuleOutputPath === null || ssrDetailModuleOutputPath === null || detailComponentExportName === null) {
     throw new Error(
       `RazorVue manifest did not contain detail component '${detailComponentId}' or component name '${detailComponentName}'.`
     );
@@ -132,8 +159,8 @@ export async function prepareWorkspace(production: boolean): Promise<PreparedWor
     clientEntryPath,
     [
       `import ${JSON.stringify(toModuleSpecifier(clientEntryPath, vueFeatureFlagsPath))};`,
-      `import CatalogPage from ${JSON.stringify(toModuleSpecifier(clientEntryPath, browserRootModuleOutputPath))};`,
-      `import DetailPage from ${JSON.stringify(toModuleSpecifier(clientEntryPath, browserDetailModuleOutputPath))};`,
+      `import { ${rootComponentExportName} as CatalogPage } from ${JSON.stringify(toModuleSpecifier(clientEntryPath, browserRootModuleOutputPath))};`,
+      `import { ${detailComponentExportName} as DetailPage } from ${JSON.stringify(toModuleSpecifier(clientEntryPath, browserDetailModuleOutputPath))};`,
       `import { razorVueHostRequirements } from ${JSON.stringify(toModuleSpecifier(clientEntryPath, hostRequirementsModulePath))};`,
       `import { mountPlaygroundApp } from ${JSON.stringify(toModuleSpecifier(clientEntryPath, resolve(consumerRoot, "src", "runtime-client.js")))};`,
       "",
@@ -145,8 +172,8 @@ export async function prepareWorkspace(production: boolean): Promise<PreparedWor
   await writeText(
     ssrEntryPath,
     [
-      `import CatalogPage from ${JSON.stringify(toModuleSpecifier(ssrEntryPath, ssrRootModuleOutputPath))};`,
-      `import DetailPage from ${JSON.stringify(toModuleSpecifier(ssrEntryPath, ssrDetailModuleOutputPath))};`,
+      `import { ${rootComponentExportName} as CatalogPage } from ${JSON.stringify(toModuleSpecifier(ssrEntryPath, ssrRootModuleOutputPath))};`,
+      `import { ${detailComponentExportName} as DetailPage } from ${JSON.stringify(toModuleSpecifier(ssrEntryPath, ssrDetailModuleOutputPath))};`,
       `import { razorVueHostRequirements } from ${JSON.stringify(toModuleSpecifier(ssrEntryPath, hostRequirementsModulePath))};`,
       `import { runSsrSmoke } from ${JSON.stringify(toModuleSpecifier(ssrEntryPath, resolve(consumerRoot, "src", "runtime-ssr.js")))};`,
       "",
@@ -265,6 +292,10 @@ function replaceExtension(path: string, extension: string): string {
   return path.slice(0, path.length - extname(path).length) + extension;
 }
 
+function normalizeRelativeModulePath(path: string): string {
+  return path.replaceAll("\\", "/").replace(/^\.\//u, "");
+}
+
 function toModuleSpecifier(fromPath: string, toPath: string): string {
   const relativePath = relative(dirname(fromPath), toPath).replaceAll("\\", "/");
   return relativePath.startsWith(".") ? relativePath : `./${relativePath}`;
@@ -292,7 +323,10 @@ async function compileVueModule(
   sourcePath: string,
   outputPath: string,
   production: boolean,
-  includeCssImports: boolean
+  includeCssImports: boolean,
+  componentExportName: string,
+  relativeModulePath: string,
+  componentExportNamesByRelativePath: ReadonlyMap<string, string>
 ): Promise<void> {
   const sourceText = normalizeLineEndings(await readText(sourcePath));
   const parsed = parse(sourceText, { filename: sourcePath });
@@ -418,28 +452,79 @@ async function compileVueModule(
     finalParts.push(`_sfc_main.__cssModules = ${JSON.stringify(cssModules, null, 2)};`);
   }
 
-  finalParts.push("export default _sfc_main;");
-  const moduleContent = rewriteRelativeVueSpecifiers(finalParts.filter((part) => part.trim().length > 0).join("\n\n"));
+  finalParts.push(`export { _sfc_main as ${componentExportName} };`);
+  const moduleContent = rewriteRelativeVueSpecifiers(
+    finalParts.filter((part) => part.trim().length > 0).join("\n\n"),
+    relativeModulePath,
+    componentExportNamesByRelativePath);
   await writeText(outputPath, `${moduleContent}\n`);
 }
 
-function rewriteRelativeVueSpecifiers(code: string): string {
+function resolveComponentExportName(module: RazorVueManifestModule): string {
+  const componentName = module.ComponentName.trim();
+  if (!isJavaScriptIdentifier(componentName)) {
+    throw new Error(
+      `RazorVue component '${module.ComponentId}' has component name '${module.ComponentName}', which cannot be used as a JavaScript named export.`
+    );
+  }
+
+  if (componentName === "default") {
+    throw new Error(`RazorVue component '${module.ComponentId}' cannot use reserved export name 'default'.`);
+  }
+
+  return componentName;
+}
+
+function isJavaScriptIdentifier(value: string): boolean {
+  return /^[$_\p{ID_Start}][$\u200C\u200D\p{ID_Continue}]*$/u.test(value);
+}
+
+function rewriteRelativeVueSpecifiers(
+  code: string,
+  relativeModulePath: string,
+  componentExportNamesByRelativePath: ReadonlyMap<string, string>
+): string {
+  const defaultImportPattern =
+    /\bimport\s+(?<local>[$_\p{ID_Start}][$\u200C\u200D\p{ID_Continue}]*)\s+from\s+["'](?<specifier>[^"'`]+\.vue)["'];?/gu;
+  const currentDirectory = dirname(normalizeRelativeModulePath(relativeModulePath)).replaceAll("\\", "/");
+  const rewrittenDefaultImports = code.replace(defaultImportPattern, (match, ...args) => {
+    const groups = args.at(-1) as { local?: string; specifier?: string } | undefined;
+    const local = groups?.local;
+    const specifier = groups?.specifier;
+    if (local === undefined || specifier === undefined || !isRelativeSpecifier(specifier)) {
+      return match;
+    }
+
+    const targetRelativePath = normalizeRelativeModulePath(join(currentDirectory, specifier));
+    const importedExportName = componentExportNamesByRelativePath.get(targetRelativePath);
+    if (importedExportName === undefined) {
+      return match.replace(specifier, `${specifier.slice(0, -4)}.mjs`);
+    }
+
+    const rewrittenSpecifier = `${specifier.slice(0, -4)}.mjs`;
+    return `import { ${importedExportName} as ${local} } from ${JSON.stringify(rewrittenSpecifier)};`;
+  });
+
   const importPattern =
     /\b(?:import|export)\s+(?:[^"'`]*?\s+from\s*)?["'](?<specifier>[^"'`]+)["']|\bimport\s*\(\s*["'](?<dynamic>[^"'`]+)["']\s*\)/g;
 
-  return code.replace(importPattern, (match, ...args) => {
+  return rewrittenDefaultImports.replace(importPattern, (match, ...args) => {
     const groups = args.at(-1) as { specifier?: string; dynamic?: string } | undefined;
     const specifier = groups?.specifier ?? groups?.dynamic;
     if (specifier === undefined || !specifier.endsWith(".vue")) {
       return match;
     }
 
-    if (!specifier.startsWith("./") && !specifier.startsWith("../")) {
+    if (!isRelativeSpecifier(specifier)) {
       return match;
     }
 
     return match.replace(specifier, `${specifier.slice(0, -4)}.mjs`);
   });
+}
+
+function isRelativeSpecifier(specifier: string): boolean {
+  return specifier.startsWith("./") || specifier.startsWith("../");
 }
 
 function resolveStyleSourcePath(documentPath: string, specifier: string | undefined): string | null {
