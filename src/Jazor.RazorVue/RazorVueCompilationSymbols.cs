@@ -7,6 +7,7 @@ internal sealed record RazorVueCompilationSymbols(
     INamedTypeSymbol JazorComponentMarker,
     INamedTypeSymbol VueComponentMarker,
     INamedTypeSymbol ComponentBase,
+    INamedTypeSymbol? RouteAttribute,
     INamedTypeSymbol? ParameterAttribute,
     INamedTypeSymbol? ParameterView,
     INamedTypeSymbol? EventCallback,
@@ -39,6 +40,7 @@ internal sealed record RazorVueCompilationSymbols(
             return null;
         }
 
+        var routeAttribute = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.RouteAttribute");
         var parameterAttribute = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.ParameterAttribute");
         var parameterView = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.ParameterView");
         var eventCallback = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.EventCallback");
@@ -60,6 +62,7 @@ internal sealed record RazorVueCompilationSymbols(
             jazorComponent,
             vueComponent,
             componentBase,
+            routeAttribute,
             parameterAttribute,
             parameterView,
             eventCallback,

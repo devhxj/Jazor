@@ -18,7 +18,4 @@ public partial class PlaygroundCatalogPage : ComponentBase, IVueComponent
 
     [Parameter]
     public EventCallback<VuetifyGroupModelValue?> CategorySelected { get; set; }
-
-    [Parameter]
-    public string DetailQuerySuffix { get; set; } = string.Empty;
 }

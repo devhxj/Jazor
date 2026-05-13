@@ -95,7 +95,7 @@ internal sealed class RazorVueCompilationContext
         if (candidate.EntryKind != RazorVueEntryKind.RazorVueComponent)
             throw new InvalidOperationException($"Only {nameof(RazorVueEntryKind.RazorVueComponent)} candidates can become semantic snapshots.");
 
-        var descriptor = VueComponentDescriptorFactory.Create(candidate, this);
+        var descriptor = ResolveDescriptor(candidate, razorIrCarrier, razorSourceGeneratorDocument);
         var lifecycle = new VueLifecycleDescriptor(
             HasOnInitialized: candidate.OnInitializedMethod is not null,
             HasOnInitializedAsync: candidate.OnInitializedAsyncMethod is not null,
@@ -146,6 +146,24 @@ internal sealed class RazorVueCompilationContext
             candidate.OnAfterRenderAsyncMethod,
             candidate.DisposeMethod,
             candidate.DisposeAsyncMethod);
+    }
+
+    private VueComponentDescriptor ResolveDescriptor(
+        RazorVueComponentCandidate candidate,
+        RazorSdk.RazorVueRazorIrCarrier? razorIrCarrier,
+        RazorSdk.RazorVueRazorSourceGeneratorDocument? razorSourceGeneratorDocument)
+    {
+        var descriptor = VueComponentDescriptorFactory.Create(candidate, this);
+        var resolvedRouteTemplates = VueComponentDescriptorRouteTemplateResolver.Resolve(
+            descriptor.RouteTemplates,
+            razorIrCarrier?.DocumentText ?? razorSourceGeneratorDocument?.PrimaryDocument.Text.ToString());
+        if (resolvedRouteTemplates.SequenceEqual(descriptor.RouteTemplates))
+            return descriptor;
+
+        return descriptor with
+        {
+            RouteTemplates = resolvedRouteTemplates
+        };
     }
 
     private static ImmutableArray<string> CollectImportedNamespaces(

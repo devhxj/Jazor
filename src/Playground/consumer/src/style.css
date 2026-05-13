@@ -1,10 +1,10 @@
 :root {
   color-scheme: light;
-  font-family: "Segoe UI Variable Text", "Segoe UI", sans-serif;
+  font-family: "Microsoft YaHei UI", "Segoe UI Variable Text", "Segoe UI", sans-serif;
   background:
-    radial-gradient(circle at top left, rgba(12, 83, 61, 0.08), transparent 34%),
-    radial-gradient(circle at top right, rgba(173, 118, 21, 0.08), transparent 26%),
-    linear-gradient(180deg, #f4efe6 0%, #f8f7f2 42%, #f2f4ef 100%);
+    radial-gradient(circle at top left, rgba(17, 72, 126, 0.12), transparent 30%),
+    radial-gradient(circle at top right, rgba(9, 111, 92, 0.12), transparent 26%),
+    linear-gradient(180deg, #eef3f8 0%, #f6f8fb 40%, #eef1f5 100%);
 }
 
 html,
@@ -15,7 +15,7 @@ body,
 
 body {
   margin: 0;
-  color: #17211b;
+  color: #15202b;
   background: transparent;
 }
 
@@ -33,63 +33,201 @@ a {
   position: fixed;
   inset: 0;
   background:
-    linear-gradient(140deg, rgba(20, 66, 53, 0.07), transparent 36%),
-    linear-gradient(220deg, rgba(174, 111, 16, 0.07), transparent 28%);
+    linear-gradient(145deg, rgba(16, 67, 116, 0.08), transparent 36%),
+    linear-gradient(220deg, rgba(10, 110, 91, 0.08), transparent 30%);
   pointer-events: none;
 }
 
-.playground-app-shell__content {
+.playground-admin-shell {
   position: relative;
   z-index: 1;
+  display: flex;
+  min-height: 100vh;
 }
 
-.playground-shell-topbar {
+.playground-admin-shell__barline {
+  width: 4.5rem;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
   gap: 1rem;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid rgba(23, 33, 27, 0.08);
-  backdrop-filter: blur(18px);
-  background: rgba(248, 247, 242, 0.78);
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  padding: 1.25rem 0.75rem;
+  border-right: 1px solid rgba(21, 32, 43, 0.08);
+  background: rgba(10, 23, 37, 0.92);
+  color: #f2f6fb;
 }
 
-.playground-shell-topbar__brand {
-  font-size: 1.125rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+.playground-admin-shell__menuline {
+  width: 16rem;
+  padding: 1.5rem 1.25rem;
+  border-right: 1px solid rgba(21, 32, 43, 0.08);
+  background: rgba(248, 250, 253, 0.84);
+  backdrop-filter: blur(16px);
 }
 
-.playground-shell-topbar__meta {
+.playground-admin-shell__workspace {
+  min-width: 0;
+  flex: 1;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  font-size: 0.78rem;
-  color: #516057;
-}
-
-.playground-shell-topbar__meta span {
-  padding: 0.3rem 0.55rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.75);
-  border: 1px solid rgba(23, 33, 27, 0.08);
-}
-
-.playground-shell-main {
-  padding: 1.5rem 0 3rem;
+  flex-direction: column;
+  padding: 1.25rem 1.5rem 1rem;
 }
 
 .playground-route-state {
   max-width: 56rem;
-  margin: 5rem auto 0;
+  margin: 2rem auto 0;
   padding: 1rem 1.25rem;
   border-radius: 1rem;
-  border: 1px solid rgba(23, 33, 27, 0.08);
+  border: 1px solid rgba(21, 32, 43, 0.08);
   background: rgba(255, 255, 255, 0.85);
+}
+
+.playground-brand-mark {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: 0.9rem;
+  background: linear-gradient(135deg, #2780d8 0%, #0da78e 100%);
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.playground-barline__divider {
+  width: 1.5rem;
+  height: 1px;
+  background: rgba(242, 246, 251, 0.18);
+}
+
+.playground-barline__badge {
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.playground-menuline__title {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.playground-menuline__nav {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+}
+
+.playground-menuline__nav a,
+.playground-menuline__chips span {
+  border-radius: 0.9rem;
+  border: 1px solid rgba(21, 32, 43, 0.08);
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.playground-menuline__nav a {
+  padding: 0.8rem 0.9rem;
+  font-weight: 600;
+  color: #1d3142;
+}
+
+.playground-menuline__section {
+  margin-top: 1.5rem;
+}
+
+.playground-menuline__label,
+.playground-urltree__title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5d7183;
+}
+
+.playground-menuline__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 0.85rem;
+}
+
+.playground-menuline__chips span {
+  padding: 0.38rem 0.65rem;
+  font-size: 0.8rem;
+}
+
+.playground-headline,
+.playground-urltree,
+.playground-body,
+.playground-footer {
+  border: 1px solid rgba(21, 32, 43, 0.08);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(14px);
+}
+
+.playground-headline,
+.playground-urltree,
+.playground-footer {
+  border-radius: 1.2rem;
+}
+
+.playground-headline {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+}
+
+.playground-headline__title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.playground-headline__subtitle {
+  max-width: 52rem;
+  margin-top: 0.35rem;
+  color: #5d7183;
+  font-size: 0.92rem;
+}
+
+.playground-urltree {
+  margin-top: 1rem;
+  padding: 1rem 1.25rem;
+}
+
+.playground-urltree__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+}
+
+.playground-urltree__list code {
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.75rem;
+  background: rgba(34, 86, 140, 0.08);
+  color: #1c436c;
+}
+
+.playground-body {
+  margin-top: 1rem;
+  border-radius: 1.4rem;
+  padding: 0.35rem 0.75rem 1.6rem;
+}
+
+.playground-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 0.9rem 1.25rem;
+  color: #5d7183;
+  font-size: 0.86rem;
 }
 
 .playground-hero {
@@ -102,8 +240,8 @@ a {
   min-height: 2rem;
   padding: 0 0.75rem;
   border-radius: 999px;
-  background: rgba(20, 66, 53, 0.08);
-  color: #144235;
+  background: rgba(39, 128, 216, 0.1);
+  color: #1b4d7d;
   font-size: 0.76rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -125,7 +263,7 @@ a {
   max-width: 42rem;
   font-size: 1rem;
   line-height: 1.75;
-  color: #445148;
+  color: #516577;
 }
 
 .playground-toolbar,
@@ -151,7 +289,7 @@ a {
 
 .playground-example-card {
   height: 100%;
-  border-color: rgba(23, 33, 27, 0.08) !important;
+  border-color: rgba(21, 32, 43, 0.08) !important;
   background: rgba(255, 255, 255, 0.82) !important;
   backdrop-filter: blur(18px);
 }
@@ -164,7 +302,7 @@ a {
 
 .playground-example-card__summary {
   margin: 0.9rem 0;
-  color: #516057;
+  color: #586a7a;
   line-height: 1.6;
 }
 
@@ -172,7 +310,7 @@ a {
 .playground-example-card__meta,
 .playground-results-summary,
 .playground-detail__sidebar-row {
-  color: #516057;
+  color: #5d7183;
   font-size: 0.92rem;
 }
 
@@ -185,7 +323,7 @@ a {
 
 .playground-detail__back a {
   font-weight: 600;
-  color: #144235;
+  color: #1d568a;
 }
 
 .playground-detail__sidebar {
@@ -198,7 +336,7 @@ a {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.55rem 0;
-  border-bottom: 1px solid rgba(23, 33, 27, 0.08);
+  border-bottom: 1px solid rgba(21, 32, 43, 0.08);
 }
 
 .playground-detail__sidebar-row:last-of-type {
@@ -206,17 +344,31 @@ a {
 }
 
 @media (max-width: 960px) {
-  .playground-shell-topbar {
-    align-items: flex-start;
+  .playground-admin-shell {
     flex-direction: column;
   }
 
-  .playground-shell-main {
-    padding-top: 1rem;
+  .playground-admin-shell__barline {
+    width: auto;
+    flex-direction: row;
+    justify-content: flex-start;
+    border-right: 0;
+    border-bottom: 1px solid rgba(21, 32, 43, 0.08);
+  }
+
+  .playground-admin-shell__menuline {
+    width: auto;
+    border-right: 0;
+    border-bottom: 1px solid rgba(21, 32, 43, 0.08);
   }
 
   .playground-hero__title,
   .playground-detail__title {
     max-width: none;
+  }
+
+  .playground-headline,
+  .playground-footer {
+    flex-direction: column;
   }
 }

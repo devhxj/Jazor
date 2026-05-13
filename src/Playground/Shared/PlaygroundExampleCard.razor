@@ -10,11 +10,11 @@
             <div>
                 @if (Example.Featured)
                 {
-                    <VChip Size='@("x-small")' Color="warning" Text='@("Featured")' />
+                    <VChip Size='@("x-small")' Color="warning" Text='@("精选")' />
                 }
                 @if (Example.IsFavorite)
                 {
-                    <VChip Size='@("x-small")' Color="secondary" Text='@("Saved")' />
+                    <VChip Size='@("x-small")' Color="secondary" Text='@("已收藏")' />
                 }
             </div>
         </div>
@@ -38,7 +38,7 @@
 
     <VCardActions>
         <VBtn Variant="@VuetifyVariant.Text"
-              Text='@("Open example")'
+              Text='@("查看示例")'
               Href="@DetailHref" />
     </VCardActions>
 </VCard>

@@ -284,6 +284,7 @@ public sealed class RazorVueSfcEmitIntegrationTests
                                 "CounterCard",
                                 "components/counter-card.mjs",
                                 "export default { name: \"CounterCard\" };",
+                                ["/", "/counter"],
                                 ["vue"],
                                 ["vuetify/styles"],
                                 ["vuetify"],
@@ -392,6 +393,7 @@ public sealed class RazorVueSfcEmitIntegrationTests
             Imports: ["vue"],
             Styles: ["vuetify/styles"],
             PluginRequirements: ["vuetify"],
+            RouteTemplates: ["/", "/counter"],
             Identity: new RazorVueEmitSfcArtifactIdentity(
                 "Demo.Components.CounterCard",
                 "components/counter-card.vue",
@@ -526,6 +528,7 @@ public sealed class RazorVueSfcEmitIntegrationTests
                     public string ComponentName => "CounterCard";
                     public string RelativeModulePath => "{{relativeModulePath}}";
                     public string ModuleCode => "export default {};";
+                    public string[] RouteTemplates => new[] { "/", "/counter" };
                     public string[] Imports => new[] { "vue" };
                     public string[] Styles => Array.Empty<string>();
                     public string[] PluginRequirements => Array.Empty<string>();
@@ -615,6 +618,7 @@ public sealed class RazorVueSfcEmitIntegrationTests
                     public GeneratedScriptSetupBlock ScriptSetupBlock => new GeneratedScriptSetupBlock();
                     public GeneratedStyleBlock[] StyleBlocks => new[] { new GeneratedStyleBlock() };
                     public GeneratedCustomBlock[] CustomBlocks => Array.Empty<GeneratedCustomBlock>();
+                    public string[] RouteTemplates => new[] { "/", "/counter" };
                     public string[] Imports => new[] { "vue" };
                     public string[] Styles => Array.Empty<string>();
                     public string[] PluginRequirements => Array.Empty<string>();

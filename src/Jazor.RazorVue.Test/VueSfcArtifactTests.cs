@@ -58,6 +58,7 @@ public sealed class VueSfcArtifactTests
                     SourceFilePath: "Counter.razor",
                     SourceOrigins: [customOrigin])
             ],
+            RouteTemplates: ["/", "/counter"],
             Imports: ["vue"],
             Styles: ["vuetify/styles"],
             PluginRequirements: ["vuetify"],
@@ -81,6 +82,7 @@ public sealed class VueSfcArtifactTests
         Assert.AreEqual("components/counter-card.vue", artifact.RelativeSfcPath);
         Assert.AreEqual("<div>{{ value }}</div>", artifact.TemplateText);
         Assert.AreEqual("const value = 1;", artifact.ScriptSetupText);
+        CollectionAssert.AreEqual(new[] { "/", "/counter" }, artifact.RouteTemplates.ToArray());
         Assert.AreEqual("style-hash", artifact.Identity.StyleHash);
         Assert.IsTrue(artifact.StyleBlocks[0].IsScoped);
         Assert.AreEqual("css", artifact.StyleBlocks[0].Language);

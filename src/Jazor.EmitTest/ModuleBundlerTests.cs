@@ -466,6 +466,7 @@ public sealed class ModuleBundlerTests
                     componentId,
                     moduleId,
                     componentName,
+                    ["/", "/counter"],
                     relativeModulePath,
                     relativeModulePath + ".map",
                     relativeModulePath + ".origins.json",

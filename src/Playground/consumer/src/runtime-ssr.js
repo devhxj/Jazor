@@ -1,32 +1,35 @@
-import { createSSRApp, defineComponent, h } from "vue";
+import { createSSRApp } from "vue";
 import { renderToString } from "vue/server-renderer";
 import { createPinia, setActivePinia } from "pinia";
-import { createRouter, createMemoryHistory, RouterView } from "vue-router";
+import { createRouter, createMemoryHistory } from "vue-router";
 import { createVuetify } from "vuetify";
 import * as directives from "vuetify/directives";
 import * as components from "vuetify/components";
 import "vuetify/styles";
-import { assertHostRequirements } from "./runtime-common.js";
+import { createPlaygroundAppRoot } from "./app-shell.js";
+import { assertHostRequirements, resolveConsumerRoutes } from "./runtime-common.js";
 import { createPlaygroundRoutes } from "./router.js";
 import { usePlaygroundStore } from "./stores/playground-store.js";
 
 const expectedTexts = [
+  "中文后台式 Playground",
+  "后台式验证场",
+  "搜索示例",
   "RazorVue + Vuetify + Pinia + VueRoute on ASP.NET Core",
   "Catalog shell with API-backed discovery",
   "Pinia favorites and persisted operator preferences",
   "DenoHost consumer pipeline for generated SFCs"
 ];
 
-export async function runSsrSmoke(CatalogPage, DetailPage, hostRequirements) {
+export async function runSsrSmoke(CatalogPage, DetailPage, hostRequirements, routeDefinitions) {
   assertHostRequirements(hostRequirements);
-  const VApp = components.VApp;
-  const VMain = components.VMain;
+  const consumerRoutes = resolveConsumerRoutes(routeDefinitions);
 
   const pinia = createPinia();
   setActivePinia(pinia);
   const router = createRouter({
     history: createMemoryHistory("/"),
-    routes: createPlaygroundRoutes()
+    routes: createPlaygroundRoutes(consumerRoutes)
   });
   const vuetify = createVuetify({
     components,
@@ -73,25 +76,22 @@ export async function runSsrSmoke(CatalogPage, DetailPage, hostRequirements) {
     ],
     Categories: ["All", "Architecture", "State", "Tooling"]
   });
-
-  const AppRoot = defineComponent({
-    name: "PlaygroundSsrRoot",
-    render() {
-      return h(VApp, { class: "playground-app-shell" }, {
-        default: () => [
-          h(VMain, { class: "playground-shell-main" }, {
-            default: () => [h(RouterView)]
-          })
-        ]
-      });
-    }
+  const AppRoot = createPlaygroundAppRoot({
+    pinia,
+    CatalogPage,
+    DetailPage,
+    routeDefinitions: consumerRoutes,
+    VApp: components.VApp,
+    VMain: components.VMain
   });
 
   const app = createSSRApp(AppRoot);
   app.use(pinia);
   app.use(router);
   app.use(vuetify);
-  await router.push("/");
+  const catalogRoute = consumerRoutes.find((route) => route.alias === "CatalogPage" && route.path === "/")
+    ?? consumerRoutes.find((route) => route.alias === "CatalogPage");
+  await router.push(catalogRoute?.path ?? "/");
   await router.isReady();
 
   const html = await renderToString(app);
@@ -104,9 +104,10 @@ export async function runSsrSmoke(CatalogPage, DetailPage, hostRequirements) {
   return html;
 }
 
-export async function runPlaygroundConsumerSsr(components, hostRequirements) {
+export async function runPlaygroundConsumerSsr(components, hostRequirements, routeDefinitions) {
   return await runSsrSmoke(
     components.CatalogPage,
     components.DetailPage,
-    hostRequirements);
+    hostRequirements,
+    routeDefinitions);
 }

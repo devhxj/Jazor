@@ -1,3 +1,5 @@
+@page "/examples/{id}"
+
 <div class="playground-page-detail">
     <VContainer Fluid="true">
     <VRow>
@@ -25,13 +27,13 @@
             <VRow>
                 <VCol Cols="12" Md="6">
                     <VCard Variant="@VuetifyVariant.Tonal">
-                        <VCardTitle>Why It Matters</VCardTitle>
+                        <VCardTitle>价值说明</VCardTitle>
                         <VCardText>@Model.Example.WhyItMatters</VCardText>
                     </VCard>
                 </VCol>
                 <VCol Cols="12" Md="6">
                     <VCard Variant="@VuetifyVariant.Tonal">
-                        <VCardTitle>Highlights</VCardTitle>
+                        <VCardTitle>关键亮点</VCardTitle>
                         <VCardText>
                             <VList Density="@VuetifyDensity.Compact">
                                 @foreach (var item in Model.Example.Highlights)
@@ -47,7 +49,7 @@
             <VRow>
                 <VCol Cols="12" Md="7">
                     <VCard Variant="@VuetifyVariant.Outlined">
-                        <VCardTitle>Build Steps</VCardTitle>
+                        <VCardTitle>落地步骤</VCardTitle>
                         <VCardText>
                             <VList Density="@VuetifyDensity.Compact">
                                 @foreach (var step in Model.Example.Steps)
@@ -60,7 +62,7 @@
                 </VCol>
                 <VCol Cols="12" Md="5">
                     <VCard Variant="@VuetifyVariant.Outlined">
-                        <VCardTitle>Files Involved</VCardTitle>
+                        <VCardTitle>涉及文件</VCardTitle>
                         <VCardText>
                             <VList Density="@VuetifyDensity.Compact">
                                 @foreach (var file in Model.Example.Files)
@@ -76,19 +78,19 @@
 
         <VCol Cols="12" Xl="4">
             <VCard class="playground-detail__sidebar" Variant="@VuetifyVariant.Outlined">
-                <VCardTitle>Reference Snapshot</VCardTitle>
+                <VCardTitle>参考快照</VCardTitle>
                 <VCardText>
                     <div class="playground-detail__sidebar-row">
-                        <span>Estimated</span>
-                        <strong>@(Model.Example.EstimatedMinutes + " min")</strong>
+                        <span>预计耗时</span>
+                        <strong>@(Model.Example.EstimatedMinutes + " 分钟")</strong>
                     </div>
                     <div class="playground-detail__sidebar-row">
-                        <span>Updated</span>
+                        <span>更新时间</span>
                         <strong>@Model.Example.UpdatedAtUtc</strong>
                     </div>
                     <div class="playground-detail__sidebar-row">
-                        <span>Featured</span>
-                        <strong>@(Model.Example.Featured ? "Yes" : "No")</strong>
+                        <span>是否精选</span>
+                        <strong>@(Model.Example.Featured ? "是" : "否")</strong>
                     </div>
                     <div class="playground-detail__tag-list">
                         @foreach (var tag in Model.Example.Tags)

@@ -203,7 +203,7 @@ app.MapMethods("/{**path}", ["GET", "HEAD"], ...)
 `Playground` 已改为使用 `Jazor.AspNetCore` 官方 `UseJazorSpaFallback(...)` middleware 处理 HTML shell fallback：
 
 - 先通过 `UseJazorWebAssets(...)` 挂载标准静态资源和开发期 `/jazor/*` 资产
-- 再挂载 `UseJazorSpaFallback(PlaygroundHostPage.WriteHtmlAsync)`
+- 再挂载 `UseJazorSpaFallback("/index.html")`
 - 不使用 `MapMethods("/{**path}", ...)`、`MapFallbackToFile(...)` 等 endpoint catch-all 作为 SPA fallback
 
 ### 当前保护
@@ -352,6 +352,8 @@ jazor-manifest-razorvue.json
 - `razorvue-sfc-bridge` 默认 manifest 路径改为 `<hostJazorRoot>/jazor-manifest.json`。
 - Deno bridge 读取统一 manifest shape，并只处理 `kind = "vue"` 且 `component.model = "sfc"` 的 module。
 - consumer entry 组件选择逻辑只在 component entries 中匹配，普通 `mjs` module 不参与 `id:` / `name:` / `path:` component selector。
+- consumer entry 生成 `razorVueConsumerRoutes`，其数据源是 selected component 的 `routeTemplates`；Playground 这类 consumer runtime 不再把 `router.js` 中的手写 path table 作为路由真相源。
+- 当前 route template 到 Vue Router path 的官方支持边界已收窄并显式化：支持纯 literal segment、纯 `{parameter}` segment 和 `{parameter?}`；constraint、catch-all、default value、mixed segment 会在 consumer entry 生成阶段直接失败。
 - 错误信息应继续明确区分“manifest 不存在”“manifest 没有组件”“selector 无匹配”“selector 匹配多个组件”，不能因为统一 manifest 降低诊断质量。
 - Playground colocated `consumer` 目录继续保留；它是单 .NET 项目中的前端消费构建层，不是第二个运行时 host。命名上使用 `consumer`，不再使用 `playground-consumer` 这类项目特化名称。
 - 已完成（2026-05-13 本轮）：`razorvue-consumer-entry` 在 mixed H/SFC 场景下按 `component.model` 分流，H 组件直接 default import host `.mjs`，SFC 组件才进入 bridge。

@@ -31,6 +31,7 @@ public sealed class RazorVueSfcCatalogReaderTests
         Assert.AreEqual("components/counter-card.vue", artifact.RelativeSfcPath);
         Assert.AreEqual("<div>{{ value }}</div>", artifact.TemplateText);
         Assert.AreEqual("const value = 1;", artifact.ScriptSetupText);
+        CollectionAssert.AreEqual(new[] { "/", "/counter" }, artifact.RouteTemplates.ToArray());
         Assert.AreEqual("style-hash", artifact.Identity.StyleHash);
         Assert.AreEqual(RazorVueSfcOriginKindRecord.Style, artifact.StyleBlocks[0].SourceOrigins[0].OriginKind);
         Assert.AreEqual("category", artifact.CustomBlocks[0].Attributes[0].Name);
@@ -54,6 +55,7 @@ public sealed class RazorVueSfcCatalogReaderTests
             public GeneratedScriptSetupBlock ScriptSetupBlock => new GeneratedScriptSetupBlock();
             public GeneratedStyleBlock[]? StyleBlocks => null;
             public GeneratedCustomBlock[] CustomBlocks => new[] { new GeneratedCustomBlock() };
+            public string[] RouteTemplates => Array.Empty<string>();
             public string[] Imports => new[] { "vue" };
             public string[] Styles => new[] { "vuetify/styles" };
             public string[] PluginRequirements => new[] { "vuetify" };
@@ -128,6 +130,7 @@ public sealed class RazorVueSfcCatalogReaderTests
         public GeneratedScriptSetupBlock ScriptSetupBlock => new GeneratedScriptSetupBlock();
         public GeneratedStyleBlock[] StyleBlocks => new[] { new GeneratedStyleBlock() };
         public GeneratedCustomBlock[] CustomBlocks => new[] { new GeneratedCustomBlock() };
+        public string[] RouteTemplates => new[] { "/", "/counter" };
         public string[] Imports => new[] { "vue", "./button.mjs" };
         public string[] Styles => new[] { "vuetify/styles" };
         public string[] PluginRequirements => new[] { "vuetify" };

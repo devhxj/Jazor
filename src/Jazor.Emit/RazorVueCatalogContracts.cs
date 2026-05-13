@@ -10,6 +10,7 @@ internal sealed record RazorVueEmitArtifactRecord(
     string ComponentName,
     string RelativeModulePath,
     string ModuleCode,
+    IReadOnlyList<string> RouteTemplates,
     IReadOnlyList<string> Imports,
     IReadOnlyList<string> Styles,
     IReadOnlyList<string> PluginRequirements,

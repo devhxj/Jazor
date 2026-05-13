@@ -90,6 +90,7 @@ internal sealed class RazorVueHostRequirementsModuleWriter
                 componentId = module.ComponentId,
                 moduleId = module.ModuleId,
                 componentName = module.ComponentName,
+                routeTemplates = module.RouteTemplates,
                 relativeModulePath = module.RelativeModulePath,
                 sourceMapPath = module.SourceMapPath,
                 originMapPath = module.OriginMapPath,

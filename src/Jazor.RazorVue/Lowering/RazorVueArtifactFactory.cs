@@ -93,6 +93,7 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             ComponentName: descriptor.Name,
             RelativeModulePath: relativeModulePath,
             ModuleCode: moduleCode,
+            RouteTemplates: descriptor.RouteTemplates,
             Imports: BuildImports(resolvedComponents, compilerImports),
             Styles: BuildStyles(descriptor, resolvedComponents),
             PluginRequirements: BuildPluginRequirements(descriptor, resolvedComponents),
@@ -130,6 +131,8 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         descriptorShape.AppendLine(descriptor.SourceKind.ToString());
         descriptorShape.AppendLine(descriptor.ImportSpecifier);
         descriptorShape.AppendLine(descriptor.ExportName);
+        foreach (var routeTemplate in descriptor.RouteTemplates)
+            descriptorShape.AppendLine("route:" + routeTemplate);
         // Keep authoring-contract hash inputs aligned with emitted library metadata so
         // override-only descriptor changes still trigger deterministic update planning.
         descriptorShape.AppendLine("flags:" + descriptor.Flags);

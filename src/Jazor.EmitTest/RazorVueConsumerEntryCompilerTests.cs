@@ -58,16 +58,19 @@ public sealed class RazorVueConsumerEntryCompilerTests
         Assert.Contains("import { razorVueHostRequirements } from \"../../../jazor/__jazor/razorvue-host.mjs\";", clientEntry);
         Assert.Contains("import { mountPlaygroundConsumer } from \"../../src/runtime-client.js\";", clientEntry);
         Assert.Contains("export const razorVueConsumerComponents = Object.freeze({", clientEntry);
+        Assert.Contains("export const razorVueConsumerRoutes = Object.freeze([", clientEntry);
+        Assert.Contains("routeTemplate: \"/catalog\"", clientEntry);
+        Assert.Contains("path: \"/examples/:id\"", clientEntry);
         Assert.Contains("CatalogPage,", clientEntry);
         Assert.Contains("DetailPage,", clientEntry);
-        Assert.Contains("mountPlaygroundConsumer(razorVueConsumerComponents, razorVueHostRequirements);", clientEntry);
+        Assert.Contains("mountPlaygroundConsumer(razorVueConsumerComponents, razorVueHostRequirements, razorVueConsumerRoutes);", clientEntry);
 
         var ssrEntry = await File.ReadAllTextAsync(workspace.SsrEntryPath, TestContext.CancellationTokenSource.Token);
         Assert.Contains("import { CatalogPage } from \"./generated-ssr/pages/catalog-page.mjs\";", ssrEntry);
         Assert.Contains("import { DetailPage } from \"./generated-ssr/pages/detail-page.mjs\";", ssrEntry);
         Assert.Contains("import { runPlaygroundConsumerSsr } from \"../../src/runtime-ssr.js\";", ssrEntry);
         Assert.Contains("export async function executeSsrSmoke() {", ssrEntry);
-        Assert.Contains("return await runPlaygroundConsumerSsr(razorVueConsumerComponents, razorVueHostRequirements);", ssrEntry);
+        Assert.Contains("return await runPlaygroundConsumerSsr(razorVueConsumerComponents, razorVueHostRequirements, razorVueConsumerRoutes);", ssrEntry);
 
         using var resultDocument = JsonDocument.Parse(await File.ReadAllTextAsync(workspace.ResultPath, TestContext.CancellationTokenSource.Token));
         var components = resultDocument.RootElement.GetProperty("Components").EnumerateArray().ToArray();
@@ -77,6 +80,16 @@ public sealed class RazorVueConsumerEntryCompilerTests
         Assert.AreEqual("pages/catalog-page.mjs", components[0].GetProperty("BrowserRelativeOutputPath").GetString());
         Assert.AreEqual("DetailPage", components[1].GetProperty("Alias").GetString());
         Assert.AreEqual("Demo.Pages.DetailPage", components[1].GetProperty("ComponentId").GetString());
+
+        var routes = resultDocument.RootElement.GetProperty("Routes").EnumerateArray().ToArray();
+        Assert.HasCount(3, routes);
+        Assert.AreEqual("CatalogPage", routes[0].GetProperty("Alias").GetString());
+        Assert.AreEqual("/", routes[0].GetProperty("Path").GetString());
+        Assert.AreEqual("/catalog", routes[1].GetProperty("RouteTemplate").GetString());
+        Assert.AreEqual("/examples/:id", routes[2].GetProperty("Path").GetString());
+        CollectionAssert.AreEqual(
+            new[] { "id" },
+            routes[2].GetProperty("ParameterNames").EnumerateArray().Select(static item => item.GetString()).OfType<string>().ToArray());
     }
 
     [TestMethod]
@@ -161,6 +174,32 @@ public sealed class RazorVueConsumerEntryCompilerTests
         Assert.AreEqual("sfc", components[1].GetProperty("ComponentModel").GetString());
         Assert.AreEqual("DetailPage", components[1].GetProperty("ExportName").GetString());
         Assert.AreEqual("pages/detail-page.mjs", components[1].GetProperty("BrowserRelativeOutputPath").GetString());
+
+        var routes = resultDocument.RootElement.GetProperty("Routes").EnumerateArray().ToArray();
+        Assert.HasCount(3, routes);
+        Assert.AreEqual("CatalogPage", routes[0].GetProperty("Alias").GetString());
+        Assert.AreEqual("DetailPage", routes[2].GetProperty("Alias").GetString());
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenRouteTemplateUsesConstraint_FailsWithActionableError()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue") with
+            {
+                RouteTemplates = ["/examples/{id:int}"]
+            });
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(15, result.ExitCode);
+        StringAssert.Contains(result.Error, "route constraints are not supported yet");
+        Assert.IsFalse(File.Exists(workspace.ClientEntryPath));
     }
 
     [TestMethod]
@@ -344,6 +383,12 @@ public sealed class RazorVueConsumerEntryCompilerTests
             ComponentId: componentId,
             ModuleId: componentId,
             ComponentName: componentName,
+            RouteTemplates: componentName switch
+            {
+                "CatalogPage" => ["/", "/catalog"],
+                "DetailPage" => ["/examples/{id}"],
+                _ => []
+            },
             RelativeModulePath: relativeModulePath,
             SourceMapPath: relativeModulePath + ".map",
             OriginMapPath: relativeModulePath + ".origins.json",
@@ -486,6 +531,7 @@ public sealed class RazorVueConsumerEntryCompilerTests
                     module.ComponentId,
                     module.ModuleId,
                     module.ComponentName,
+                    module.RouteTemplates,
                     module.OriginMapPath,
                     module.Imports,
                     module.Styles,

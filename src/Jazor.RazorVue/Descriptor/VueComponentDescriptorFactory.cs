@@ -182,12 +182,61 @@ internal static class VueComponentDescriptorFactory
             ResolutionNamespace: GetResolutionNamespace(componentSymbol),
             ImportSpecifier: importSpecifier,
             ExportName: exportName,
+            RouteTemplates: GetRouteTemplates(componentSymbol, symbols),
             Props: props.ToImmutable(),
             Emits: emits.ToImmutable(),
             Slots: slots.ToImmutable(),
             StyleDependencies: styleDependencies,
             PluginRequirements: pluginRequirements,
             Flags: authoringMetadata.Flags);
+    }
+
+    private static ImmutableArray<string> GetRouteTemplates(
+        INamedTypeSymbol componentSymbol,
+        RazorVueCompilationSymbols symbols)
+    {
+        if (symbols.RouteAttribute is null)
+            return ImmutableArray<string>.Empty;
+
+        var builder = ImmutableArray.CreateBuilder<string>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var attribute in componentSymbol.GetAttributes())
+        {
+            if (!Comparer.Equals(attribute.AttributeClass, symbols.RouteAttribute))
+                continue;
+
+            var template = ReadRouteTemplate(attribute);
+            if (template is null || !seen.Add(template))
+                continue;
+
+            builder.Add(template);
+        }
+
+        return builder.ToImmutable();
+    }
+
+    private static string? ReadRouteTemplate(AttributeData attribute)
+    {
+        if (attribute.ConstructorArguments.Length > 0 &&
+            attribute.ConstructorArguments[0].Value is string constructorTemplate &&
+            !string.IsNullOrWhiteSpace(constructorTemplate))
+        {
+            return constructorTemplate.Trim();
+        }
+
+        foreach (var namedArgument in attribute.NamedArguments)
+        {
+            if (!string.Equals(namedArgument.Key, "Template", StringComparison.Ordinal))
+                continue;
+
+            if (namedArgument.Value.Value is string template &&
+                !string.IsNullOrWhiteSpace(template))
+            {
+                return template.Trim();
+            }
+        }
+
+        return null;
     }
 
     private static ImmutableArray<IPropertySymbol> GetParameterProperties(INamedTypeSymbol componentSymbol, RazorVueCompilationSymbols symbols)

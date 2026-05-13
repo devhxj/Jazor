@@ -27,6 +27,7 @@ namespace Jazor.EmitTest
             var artifact = catalog.Artifacts[0];
             Assert.AreEqual("CounterCard", artifact.ComponentName);
             Assert.AreEqual("components/counter-card.mjs", artifact.RelativeModulePath);
+            CollectionAssert.AreEqual(new[] { "/", "/counter" }, artifact.RouteTemplates.ToArray());
             CollectionAssert.AreEquivalent(new[] { "vue", "./button.mjs" }, artifact.Imports.ToArray());
             CollectionAssert.AreEquivalent(new[] { "vuetify/styles" }, artifact.Styles.ToArray());
             CollectionAssert.AreEquivalent(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
@@ -98,6 +99,7 @@ namespace Jazor.EmitTest
                 public string ComponentName => "CounterCard";
                 public string RelativeModulePath => "components/counter-card.mjs";
                 public string ModuleCode => "export default {};";
+                public string[] RouteTemplates => Array.Empty<string>();
                 public string[] Imports => new[] { "vue" };
                 public string[] Styles => Array.Empty<string>();
                 public string[] PluginRequirements => Array.Empty<string>();
@@ -119,6 +121,7 @@ namespace Jazor.EmitTest
                 public string ComponentName => "CounterCard";
                 public string RelativeModulePath => "components/counter-card.mjs";
                 public string ModuleCode => "export default {};";
+                public string[] RouteTemplates => Array.Empty<string>();
                 public string[] Imports => new[] { "vue" };
                 public string[] Styles => Array.Empty<string>();
                 public string[] PluginRequirements => Array.Empty<string>();
@@ -140,6 +143,7 @@ namespace Jazor.EmitTest
                 public string ComponentName => "CounterCard";
                 public string RelativeModulePath => "components/counter-card.mjs";
                 public string ModuleCode => "export default {};";
+                public string[] RouteTemplates => Array.Empty<string>();
                 public string[]? Imports => null;
                 public string[] Styles => Array.Empty<string>();
                 public GeneratedIdentity Identity => new();
@@ -160,6 +164,7 @@ namespace Jazor.EmitTest
                 public string ComponentName => "CounterCard";
                 public string RelativeModulePath => "components/counter-card.mjs";
                 public string ModuleCode => "export default {};";
+                public string[] RouteTemplates => Array.Empty<string>();
                 public string[] Imports => new string?[] { null };
                 public string[] Styles => Array.Empty<string>();
                 public GeneratedIdentity Identity => new();
@@ -180,6 +185,7 @@ namespace Jazor.EmitTest
                 public string ComponentName => "CounterCard";
                 public string RelativeModulePath => "components/counter-card.mjs";
                 public string ModuleCode => "export default {};";
+                public string[] RouteTemplates => Array.Empty<string>();
                 public string[] Imports => new[] { "vue" };
                 public string[]? Styles => null;
                 public GeneratedIdentity Identity => new();
@@ -200,6 +206,7 @@ namespace Jazor.EmitTest
                 public string ComponentName => "CounterCard";
                 public string RelativeModulePath => "components/counter-card.mjs";
                 public string ModuleCode => "export default {};";
+                public string[] RouteTemplates => Array.Empty<string>();
                 public string[] Imports => new[] { "vue" };
                 public string[] Styles => new string?[] { null };
                 public GeneratedIdentity Identity => new();
@@ -220,6 +227,7 @@ namespace Jazor.EmitTest
                 public string ComponentName => "CounterCard";
                 public string RelativeModulePath => "components/counter-card.mjs";
                 public string ModuleCode => "export default {};";
+                public string[] RouteTemplates => Array.Empty<string>();
                 public string[] Imports => new[] { "vue" };
                 public string[] Styles => Array.Empty<string>();
                 public string[]? PluginRequirements => null;
@@ -241,6 +249,7 @@ namespace Jazor.EmitTest
                 public string ComponentName => "CounterCard";
                 public string RelativeModulePath => "components/counter-card.mjs";
                 public string ModuleCode => "export default {};";
+                public string[] RouteTemplates => Array.Empty<string>();
                 public string[] Imports => new[] { "vue" };
                 public string[] Styles => Array.Empty<string>();
                 public string[] PluginRequirements => new string?[] { null };
@@ -305,6 +314,7 @@ namespace Jazor.EmitTest
             Assert.AreEqual("CounterCard", manifest.Modules[0].ComponentId);
             Assert.AreEqual("components/counter-card.mjs", manifest.Modules[0].ModuleId);
             Assert.AreEqual("CounterCard", manifest.Modules[0].ComponentName);
+            CollectionAssert.AreEqual(new[] { "/", "/counter" }, manifest.Modules[0].RouteTemplates);
             Assert.AreEqual("components/counter-card.mjs", manifest.Modules[0].RelativeModulePath);
             Assert.AreEqual("components/counter-card.mjs.map", manifest.Modules[0].SourceMapPath);
             Assert.AreEqual("components/counter-card.mjs.origins.json", manifest.Modules[0].OriginMapPath);
@@ -328,6 +338,7 @@ namespace Jazor.EmitTest
                 Assert.HasCount(1, loaded.Modules);
                 Assert.AreEqual(manifest.Modules[0].ComponentId, loaded.Modules[0].ComponentId);
                 Assert.AreEqual(manifest.Modules[0].ModuleId, loaded.Modules[0].ModuleId);
+                CollectionAssert.AreEqual(manifest.Modules[0].RouteTemplates, loaded.Modules[0].RouteTemplates);
                 Assert.AreEqual(manifest.Modules[0].SourceMapPath, loaded.Modules[0].SourceMapPath);
                 Assert.AreEqual(manifest.Modules[0].OriginMapPath, loaded.Modules[0].OriginMapPath);
                 Assert.AreEqual(manifest.Modules[0].ContentHash, loaded.Modules[0].ContentHash);
@@ -355,6 +366,7 @@ namespace Jazor.EmitTest
                         "DashboardCard",
                         "components/dashboard-card.mjs",
                         "export default { name: \"DashboardCard\" };",
+                        ["/dashboard"],
                         ["vue", "vuetify/components"],
                         ["vuetify/styles", "vuetify/base", "vuetify/styles"],
                         ["vuetify", "alpha-host", "vuetify"],
@@ -459,6 +471,7 @@ namespace Jazor.EmitTest
             public string ComponentName => "CounterCard";
             public string RelativeModulePath => "components/counter-card.mjs";
             public string ModuleCode => "export default {};";
+            public string[] RouteTemplates => new[] { "/", "/counter" };
             public string[] Imports => new[] { "vue" };
             public string[] Styles => Array.Empty<string>();
             public string[] PluginRequirements => new[] { "vuetify" };
@@ -658,6 +671,7 @@ namespace Jazor.Generated
                 componentName: "CounterCard",
                 relativeModulePath: "components/counter-card.mjs",
                 moduleCode: "export default { name: \"CounterCard\" };",
+                routeTemplates: ["/", "/counter"],
                 imports: ["vue", "./button.mjs"],
                 styles: ["vuetify/styles"],
                 pluginRequirements: ["vuetify"],
@@ -695,6 +709,7 @@ namespace Jazor.Generated
             string componentName,
             string relativeModulePath,
             string moduleCode,
+            string[] routeTemplates,
             string[] imports,
             string[] styles,
             string[] pluginRequirements,
@@ -705,6 +720,7 @@ namespace Jazor.Generated
             public string ComponentName { get; } = componentName;
             public string RelativeModulePath { get; } = relativeModulePath;
             public string ModuleCode { get; } = moduleCode;
+            public string[] RouteTemplates { get; } = routeTemplates;
             public string[] Imports { get; } = imports;
             public string[] Styles { get; } = styles;
             public string[] PluginRequirements { get; } = pluginRequirements;

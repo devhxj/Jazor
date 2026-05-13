@@ -44,6 +44,7 @@ internal static class RazorVueCatalogReader
             ReadString(itemType, item, "ComponentName"),
             NormalizeRelativePath(ReadString(itemType, item, "RelativeModulePath")),
             ReadString(itemType, item, "ModuleCode"),
+            ReadStringArray(itemType, item, "RouteTemplates"),
             ReadStringArray(itemType, item, "Imports"),
             ReadStringArray(itemType, item, "Styles"),
             ReadStringArray(itemType, item, "PluginRequirements"),

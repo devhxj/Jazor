@@ -86,11 +86,24 @@ dotnet run --project src/Jazor.Emit -- razorvue-consumer-entry --host-root <jazo
 consumer runtime export 的稳定签名是：
 
 ```js
-mountRazorVueConsumer(razorVueConsumerComponents, razorVueHostRequirements);
-runRazorVueConsumerSsr(razorVueConsumerComponents, razorVueHostRequirements);
+mountRazorVueConsumer(razorVueConsumerComponents, razorVueHostRequirements, razorVueConsumerRoutes);
+runRazorVueConsumerSsr(razorVueConsumerComponents, razorVueHostRequirements, razorVueConsumerRoutes);
 ```
 
 `razorVueConsumerComponents` 是按 `--component Alias=selector` 生成的 frozen object。selector 支持 `id:...`、`name:...`、`path:...`，不带前缀时会按 ComponentId、ComponentName、RelativeModulePath 匹配；若匹配不唯一，命令会失败并要求显式 selector。
+
+`razorVueConsumerRoutes` 是从统一 manifest 中 RazorVue component metadata 的 `routeTemplates` 投影出的 frozen array。当前只接受能稳定映射到 Vue Router path 的 Razor route 模板：
+
+- 字面量路径，例如 `/`、`/catalog`
+- 纯参数 segment，例如 `/examples/{id}`
+- 可选参数 segment，例如 `/examples/{id?}`
+
+当前会显式拒绝：
+
+- route constraint，例如 `{id:int}`
+- catch-all，例如 `{*path}`
+- default value，例如 `{id=42}`
+- 混合 segment，例如 `post-{id}`
 
 ## Verification
 

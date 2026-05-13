@@ -51,7 +51,12 @@ dotnet run --project src/Playground/Playground.csproj
 默认页面：
 
 - `/`：catalog
+- `/catalog`：catalog alias
 - `/examples/{id}`：detail
+
+这些 client routes 现在以 Razor 页面上的 `@page` 为真相源，经 `RazorVue descriptor -> artifact -> unified jazor-manifest.json -> razorvue-consumer-entry` 投影为 consumer runtime route metadata。
+
+`consumer/src/router.js` 只负责把已生成的 route definitions 映射为 Vue Router records，不再自带手写路由真相表。
 
 ## 验证命令
 

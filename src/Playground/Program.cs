@@ -7,7 +7,7 @@ builder.Services.AddSingleton<PlaygroundExampleRepository>();
 var app = builder.Build();
 
 app.UseJazorHost();
-app.UseJazorSpaFallback(PlaygroundHostPage.WriteHtmlAsync);
+app.UseJazorSpaFallback("/index.html");
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "playground-host" }));
 

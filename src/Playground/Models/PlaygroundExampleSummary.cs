@@ -10,4 +10,5 @@ public sealed record PlaygroundExampleSummary(
     bool Featured,
     int EstimatedMinutes,
     string[] Tags,
-    bool IsFavorite);
+    bool IsFavorite,
+    string DetailHref);

@@ -20,7 +20,24 @@ export function assertHostRequirements(hostRequirements) {
   }
 }
 
-export function installShellNavigationInterception(router) {
+export function resolveConsumerRoutes(routeDefinitions) {
+  if (routeDefinitions == null) {
+    return getLegacyDefaultRoutes();
+  }
+
+  if (!Array.isArray(routeDefinitions)) {
+    throw new Error("Playground consumer routes must be provided as an array.");
+  }
+
+  const normalizedRoutes = routeDefinitions.map((route, index) => normalizeRoute(route, index));
+  if (normalizedRoutes.length === 0) {
+    throw new Error("Playground consumer routes must contain at least one route.");
+  }
+
+  return Object.freeze(normalizedRoutes);
+}
+
+export function installShellNavigationInterception(router, routeDefinitions) {
   if (typeof document === "undefined") {
     return;
   }
@@ -54,7 +71,7 @@ export function installShellNavigationInterception(router) {
       return;
     }
 
-    if (!shouldHandleClientRoute(url.pathname)) {
+    if (!shouldHandleClientRoute(url.pathname, routeDefinitions)) {
       return;
     }
 
@@ -63,6 +80,106 @@ export function installShellNavigationInterception(router) {
   });
 }
 
-function shouldHandleClientRoute(pathname) {
-  return pathname === "/" || pathname.startsWith("/examples/");
+function shouldHandleClientRoute(pathname, routeDefinitions) {
+  return routeDefinitions.some((route) => matchRoutePath(route.path, pathname));
+}
+
+function normalizeRoute(route, index) {
+  if (route === null || typeof route !== "object") {
+    throw new Error(`Playground consumer route at index ${index} is invalid.`);
+  }
+
+  const name = typeof route.name === "string" && route.name.length > 0
+    ? route.name
+    : null;
+  const alias = typeof route.alias === "string" && route.alias.length > 0
+    ? route.alias
+    : null;
+  const path = typeof route.path === "string" && route.path.startsWith("/")
+    ? route.path
+    : null;
+  const parameterNames = Array.isArray(route.parameterNames)
+    ? route.parameterNames.filter((item) => typeof item === "string" && item.length > 0)
+    : [];
+
+  if (!name || !alias || !path) {
+    throw new Error(`Playground consumer route at index ${index} is missing required metadata.`);
+  }
+
+  return Object.freeze({
+    name,
+    alias,
+    componentId: typeof route.componentId === "string" ? route.componentId : "",
+    componentName: typeof route.componentName === "string" ? route.componentName : alias,
+    componentModel: typeof route.componentModel === "string" ? route.componentModel : "",
+    routeTemplate: typeof route.routeTemplate === "string" ? route.routeTemplate : path,
+    path,
+    parameterNames: Object.freeze(parameterNames)
+  });
+}
+
+function getLegacyDefaultRoutes() {
+  return Object.freeze([
+    Object.freeze({
+      name: "CatalogPage__0",
+      alias: "CatalogPage",
+      componentId: "legacy:CatalogPage",
+      componentName: "CatalogPage",
+      componentModel: "legacy",
+      routeTemplate: "/",
+      path: "/",
+      parameterNames: Object.freeze([])
+    }),
+    Object.freeze({
+      name: "DetailPage__0",
+      alias: "DetailPage",
+      componentId: "legacy:DetailPage",
+      componentName: "DetailPage",
+      componentModel: "legacy",
+      routeTemplate: "/examples/{id}",
+      path: "/examples/:id",
+      parameterNames: Object.freeze(["id"])
+    })
+  ]);
+}
+
+function matchRoutePath(routePath, pathname) {
+  if (routePath === "/") {
+    return pathname === "/";
+  }
+
+  const routeSegments = splitPath(routePath);
+  const pathSegments = splitPath(pathname);
+  const requiredRouteSegmentCount = routeSegments.filter((segment) => !isOptionalRouteParameterSegment(segment)).length;
+  if (pathSegments.length < requiredRouteSegmentCount || pathSegments.length > routeSegments.length) {
+    return false;
+  }
+
+  for (let index = 0; index < routeSegments.length; index += 1) {
+    const routeSegment = routeSegments[index];
+    const pathSegment = pathSegments[index];
+    if (routeSegment.startsWith(":")) {
+      if (!pathSegment && !isOptionalRouteParameterSegment(routeSegment)) {
+        return false;
+      }
+
+      continue;
+    }
+
+    if (routeSegment !== pathSegment) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function splitPath(path) {
+  return path
+    .split("/")
+    .filter((segment) => segment.length > 0);
+}
+
+function isOptionalRouteParameterSegment(segment) {
+  return segment.startsWith(":") && segment.endsWith("?");
 }

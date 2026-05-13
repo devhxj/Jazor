@@ -40,6 +40,7 @@ internal static class RazorVueManifestFactory
             artifact.Identity.ComponentId,
             artifact.Identity.ModuleId,
             artifact.ComponentName,
+            RazorVueManifestSerializer.NormalizeRouteTemplates(artifact.RouteTemplates),
             artifact.RelativeModulePath,
             artifact.RelativeModulePath + ".map",
             artifact.RelativeModulePath + ".origins.json",

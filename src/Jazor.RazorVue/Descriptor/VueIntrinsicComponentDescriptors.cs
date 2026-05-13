@@ -20,6 +20,7 @@ internal static class VueIntrinsicComponentDescriptors
             ResolutionNamespace: "ECMAScript.UI.Vue",
             ImportSpecifier: "vue",
             ExportName: name,
+            RouteTemplates: [],
             Props: [],
             Emits: [],
             Slots: [],
@@ -27,4 +28,3 @@ internal static class VueIntrinsicComponentDescriptors
             PluginRequirements: [],
             Flags: VueComponentFlags.None);
 }
-

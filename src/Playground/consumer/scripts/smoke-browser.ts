@@ -17,7 +17,11 @@ type CdpMessage = {
 };
 
 const defaultExpectedTexts = [
-  "Library Mode Showcase",
+  "中文后台式 Playground",
+  "运行导航",
+  "URL Tree",
+  "后台式验证场",
+  "搜索示例",
   "RazorVue + Vuetify + Pinia + VueRoute on ASP.NET Core",
   "Catalog shell with API-backed discovery",
   "Pinia favorites and persisted operator preferences",
@@ -26,9 +30,9 @@ const defaultExpectedTexts = [
 ];
 
 const defaultAfterClickExpectedTexts = [
-  "Why It Matters",
-  "Reference Snapshot",
-  "Back to catalog",
+  "价值说明",
+  "参考快照",
+  "返回目录",
   "Catalog shell with API-backed discovery"
 ];
 
@@ -336,7 +340,7 @@ function createMockDetailResponse(id: string) {
       Files: [
         "Playground/Program.cs",
         "Playground/Pages/PlaygroundCatalogPage.razor",
-        "consumer/src/router.js"
+        "consumer/src/bootstrap-app.js"
       ],
       UpdatedAtUtc: "2026-05-12T00:00:00Z",
       Featured: true,
@@ -377,12 +381,12 @@ function createMockDetailResponse(id: string) {
       Highlights: ["Catalog and detail routes", "Search query retention", "404-safe fallback and host-side shell delivery"],
       Steps: [
         "Create web history using the deployed base path.",
-        "Define catalog/detail routes in the consumer runtime.",
+        "Project catalog/detail routes from unified jazor-manifest.json metadata.",
         "Keep host fallback handling aligned with client navigation."
       ],
       Files: [
         "consumer/src/router.js",
-        "Playground/Program.cs",
+        "Jazor.Emit/RazorVueConsumerEntryCompiler.cs",
         "Playground/wwwroot/index.html"
       ],
       UpdatedAtUtc: "2026-05-12T00:00:00Z",

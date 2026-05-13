@@ -15,6 +15,7 @@ public sealed record RazorVueManifestEntry(
     string ComponentId,
     string ModuleId,
     string ComponentName,
+    List<string> RouteTemplates,
     string RelativeModulePath,
     string SourceMapPath,
     string OriginMapPath,

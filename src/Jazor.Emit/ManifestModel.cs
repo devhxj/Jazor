@@ -146,6 +146,7 @@ internal sealed record ManifestModel(
             ComponentId = NormalizeValue(module.Component.ComponentId, module.AssemblyName + "::" + module.TypeName),
             ModuleId = NormalizeValue(module.Component.ModuleId, relativePath),
             ComponentName = NormalizeValue(module.Component.ComponentName, module.TypeName),
+            RouteTemplates = NormalizeRouteTemplates(module.Component.RouteTemplates),
             OriginMapPath = NormalizeRelativePath(NormalizeValue(module.Component.OriginMapPath, relativePath + ".origins.json")),
             Imports = NormalizeHostRequirementList(module.Component.Imports),
             Styles = NormalizeHostRequirementList(module.Component.Styles),
@@ -184,6 +185,9 @@ internal sealed record ManifestModel(
     private static List<string> NormalizeHostRequirementList(IReadOnlyList<string>? values)
         => RazorVueManifestSerializer.NormalizeHostRequirementList(values ?? []);
 
+    private static List<string> NormalizeRouteTemplates(IReadOnlyList<string>? values)
+        => RazorVueManifestSerializer.NormalizeRouteTemplates(values ?? []);
+
     private static bool IsMatchingComponentModel(ManifestModuleEntry module, string componentModel)
         => module.Component?.Model == componentModel;
 
@@ -202,6 +206,7 @@ internal sealed record ManifestModel(
                 module.ComponentId,
                 module.ModuleId,
                 module.ComponentName,
+                RazorVueManifestSerializer.NormalizeRouteTemplates(module.RouteTemplates),
                 module.OriginMapPath,
                 NormalizeHostRequirementList(module.Imports),
                 NormalizeHostRequirementList(module.Styles),
@@ -225,6 +230,7 @@ internal sealed record ManifestModel(
             component.ComponentId,
             component.ModuleId,
             component.ComponentName,
+            component.RouteTemplates,
             module.RelativePath,
             module.SourceMapPath ?? module.RelativePath + ".map",
             component.OriginMapPath,
@@ -292,6 +298,7 @@ internal sealed record ManifestComponentMetadata(
     string ComponentId,
     string ModuleId,
     string ComponentName,
+    List<string> RouteTemplates,
     string OriginMapPath,
     List<string> Imports,
     List<string> Styles,

@@ -341,6 +341,7 @@ public sealed class RazorVueCanonicalSfcSemanticTests
             ResolutionNamespace: "Demo.Components",
             ImportSpecifier: "./components/broken-card",
             ExportName: "default",
+            RouteTemplates: ImmutableArray<string>.Empty,
             Props: ImmutableArray<VuePropDescriptor>.Empty,
             Emits: ImmutableArray<VueEmitDescriptor>.Empty,
             Slots: ImmutableArray<VueSlotDescriptor>.Empty,

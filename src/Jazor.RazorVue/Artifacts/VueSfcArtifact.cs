@@ -10,6 +10,7 @@ internal sealed record VueSfcArtifact(
     VueSfcScriptSetupBlock ScriptSetupBlock,
     ImmutableArray<VueSfcStyleBlock> StyleBlocks,
     ImmutableArray<VueSfcCustomBlock> CustomBlocks,
+    ImmutableArray<string> RouteTemplates,
     ImmutableArray<string> Imports,
     ImmutableArray<string> Styles,
     ImmutableArray<string> PluginRequirements,

@@ -1,31 +1,34 @@
+@page "/"
+@page "/catalog"
+
 <div class="playground-page-catalog">
     <VContainer Fluid="true">
     <div class="playground-hero">
     <VRow Align="center">
         <VCol Cols="12" Lg="7">
-            <div class="playground-hero__eyebrow">Library Mode Showcase</div>
+            <div class="playground-hero__eyebrow">后台式验证场</div>
             <h1 class="playground-hero__title">RazorVue + Vuetify + Pinia + VueRoute on ASP.NET Core</h1>
             <p class="playground-hero__body">
-                Playground is a production-style catalog app that proves the library-mode route:
-                RazorVue authors the UI, ASP.NET Core serves APIs and static assets, and the Deno consumer wires Vue runtime concerns.
+                Playground 是一个面向生产验证的目录型后台界面：
+                RazorVue 负责页面 authoring，ASP.NET Core 负责 API 与静态资源，consumer 构建层负责接上 Vue runtime 能力。
             </p>
         </VCol>
         <VCol Cols="12" Lg="5">
             <VRow>
                 <VCol Cols="12" Sm="4">
-                    <PlaygroundStatCard Eyebrow="Examples"
+                    <PlaygroundStatCard Eyebrow="示例数"
                                         Value="@Model.TotalExamples.ToString()"
-                                        Caption="Real workflows, not toy snippets" />
+                                        Caption="真实流程，不是玩具片段" />
                 </VCol>
                 <VCol Cols="12" Sm="4">
-                    <PlaygroundStatCard Eyebrow="Featured"
+                    <PlaygroundStatCard Eyebrow="精选"
                                         Value="@Model.FeaturedCount.ToString()"
-                                        Caption="Opinionated reference paths" />
+                                        Caption="收敛后的参考路径" />
                 </VCol>
                 <VCol Cols="12" Sm="4">
-                    <PlaygroundStatCard Eyebrow="Saved"
+                    <PlaygroundStatCard Eyebrow="收藏"
                                         Value="@Model.FavoritesCount.ToString()"
-                                        Caption="Pinned by current operator" />
+                                        Caption="当前操作者已标记" />
                 </VCol>
             </VRow>
         </VCol>
@@ -35,8 +38,8 @@
     <div class="playground-toolbar">
     <VRow Align="center">
         <VCol Cols="12" Md="7">
-            <VTextField Label="Search examples"
-                        Placeholder="Search category, runtime, workflow, API..."
+            <VTextField Label="搜索示例"
+                        Placeholder="按分类、运行时、流程、API 搜索..."
                         Density="@VuetifyDensity.Comfortable"
                         ModelValue="@Model.Query"
                         ModelValueChanged="@QueryChanged" />
@@ -65,7 +68,7 @@
     <div class="playground-results-summary">
     <VRow>
         <VCol Cols="12">
-            <span>@(Model.VisibleCount + " result(s) matched the current view.")</span>
+            <span>@("当前视图共匹配 " + Model.VisibleCount + " 条结果。")</span>
         </VCol>
     </VRow>
     </div>
@@ -86,7 +89,7 @@
             {
                 <VCol Cols="12" Md="6" Xl="4">
                     <PlaygroundExampleCard Example="@example"
-                                           DetailHref="@("/examples/" + example.Id + DetailQuerySuffix)" />
+                                           DetailHref="@example.DetailHref" />
                 </VCol>
             }
         </VRow>

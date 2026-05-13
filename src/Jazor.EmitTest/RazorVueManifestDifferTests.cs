@@ -132,6 +132,7 @@ public sealed class RazorVueManifestDifferTests
             ComponentId: componentId,
             ModuleId: moduleId,
             ComponentName: componentName,
+            RouteTemplates: [],
             RelativeModulePath: relativeModulePath,
             SourceMapPath: string.IsNullOrWhiteSpace(sourceMapPath) ? relativeModulePath + ".map" : sourceMapPath,
             OriginMapPath: relativeModulePath + ".origins.json",

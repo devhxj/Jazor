@@ -57,6 +57,7 @@ public sealed class RazorVueSfcCatalogContractTests
                     SourceFilePath: "Counter.razor",
                     SourceOrigins: [customOrigin])
             ],
+            RouteTemplates: ["/", "/counter"],
             Imports: ["vue"],
             Styles: ["vuetify/styles"],
             PluginRequirements: ["vuetify"],
@@ -85,6 +86,7 @@ public sealed class RazorVueSfcCatalogContractTests
         Assert.AreEqual("<div>{{ value }}</div>", artifact.TemplateText);
         Assert.AreEqual("const value = 1;", artifact.ScriptSetupText);
         Assert.AreEqual("style-hash", artifact.Identity.StyleHash);
+        CollectionAssert.AreEqual(new[] { "/", "/counter" }, artifact.RouteTemplates.ToArray());
         Assert.AreEqual(RazorVueSfcOriginKindRecord.Style, artifact.StyleBlocks[0].SourceOrigins[0].OriginKind);
         Assert.AreEqual("card", artifact.StyleBlocks[0].ModuleName);
         Assert.AreEqual(RazorVueSfcOriginKindRecord.CustomBlock, artifact.CustomBlocks[0].SourceOrigins[0].OriginKind);

@@ -34,6 +34,7 @@ internal static class RazorVueSfcManifestFactory
             artifact.Identity.ComponentId,
             artifact.Identity.ModuleId,
             artifact.ComponentName,
+            RazorVueManifestSerializer.NormalizeRouteTemplates(artifact.RouteTemplates),
             artifact.RelativeSfcPath,
             artifact.RelativeSfcPath + ".map",
             artifact.RelativeSfcPath + ".origins.json",

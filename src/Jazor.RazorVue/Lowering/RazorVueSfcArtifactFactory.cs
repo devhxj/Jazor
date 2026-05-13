@@ -76,6 +76,7 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
                     semantic.ScriptSetupBlock.SourceOrigins),
                 StyleBlocks: styleBlocks,
                 CustomBlocks: customBlocks,
+                RouteTemplates: semantic.Descriptor.RouteTemplates,
                 Imports: semantic.Imports,
                 Styles: semantic.Styles,
                 PluginRequirements: semantic.PluginRequirements,
@@ -848,6 +849,8 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         builder.AppendLine(descriptor.SourceKind.ToString());
         builder.AppendLine(descriptor.ImportSpecifier);
         builder.AppendLine(descriptor.ExportName);
+        foreach (var routeTemplate in descriptor.RouteTemplates)
+            builder.AppendLine("route:" + routeTemplate);
         builder.AppendLine("flags:" + descriptor.Flags);
         foreach (var prop in descriptor.Props.OrderBy(static item => item.PublicName, StringComparer.Ordinal))
             builder.AppendLine(prop.PublicName + "|" + prop.Name + "|" + prop.TypeName + "|" + prop.Required + "|" + prop.AcceptsBinding + "|" + (prop.DefaultExpression ?? string.Empty) + "|" + prop.Kind + "|" + prop.CaptureUnmatchedValues);

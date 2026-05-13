@@ -14,6 +14,7 @@ internal sealed record RazorVueEmitSfcArtifactRecord(
     RazorVueEmitSfcScriptSetupBlockRecord ScriptSetupBlock,
     IReadOnlyList<RazorVueEmitSfcStyleBlockRecord> StyleBlocks,
     IReadOnlyList<RazorVueEmitSfcCustomBlockRecord> CustomBlocks,
+    IReadOnlyList<string> RouteTemplates,
     IReadOnlyList<string> Imports,
     IReadOnlyList<string> Styles,
     IReadOnlyList<string> PluginRequirements,

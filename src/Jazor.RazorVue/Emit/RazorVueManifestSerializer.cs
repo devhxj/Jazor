@@ -43,6 +43,7 @@ public static class RazorVueManifestSerializer
                 ModuleId = NormalizeIdentityValue(
                     module.ModuleId,
                     module.RelativeModulePath),
+                RouteTemplates = NormalizeRouteTemplates(module.RouteTemplates ?? new List<string>()),
                 SourceMapPath = NormalizeSourceMapPath(
                     module.SourceMapPath,
                     module.RelativeModulePath),
@@ -92,6 +93,19 @@ public static class RazorVueManifestSerializer
             .Select(static value => value!)
             .Distinct(StringComparer.Ordinal)
             .OrderBy(static value => value, StringComparer.Ordinal)
+            .ToList();
+    }
+
+    public static List<string> NormalizeRouteTemplates(IReadOnlyList<string> values)
+    {
+        if (values is null)
+            throw new ArgumentNullException(nameof(values));
+
+        return values
+            .Select(static value => value?.Trim())
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value!)
+            .Distinct(StringComparer.Ordinal)
             .ToList();
     }
 
@@ -159,6 +173,7 @@ public static class RazorVueManifestSerializer
             NormalizeIdentityValue(component.ComponentId, module.AssemblyName + "::" + module.TypeName),
             NormalizeIdentityValue(component.ModuleId, relativePath),
             NormalizeIdentityValue(component.ComponentName, module.TypeName),
+            NormalizeRouteTemplates(component.RouteTemplates ?? new List<string>()),
             relativePath,
             NormalizeSourceMapPath(module.SourceMapPath, relativePath),
             NormalizeOriginMapPath(component.OriginMapPath, relativePath),
@@ -244,6 +259,7 @@ public static class RazorVueManifestSerializer
         string? ComponentId,
         string? ModuleId,
         string? ComponentName,
+        List<string>? RouteTemplates,
         string? OriginMapPath,
         List<string>? Imports,
         List<string>? Styles,

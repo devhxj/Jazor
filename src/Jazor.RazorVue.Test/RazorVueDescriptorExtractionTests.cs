@@ -148,6 +148,123 @@ public sealed class RazorVueDescriptorExtractionTests
     }
 
     [TestMethod]
+    public void RazorVue_Snapshot_RouteAttributes_AreProjectedIntoDescriptor()
+    {
+        var snapshot = CreateSingleSnapshot(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./pages/catalog-page")]
+                [Route("/")]
+                [Route("/catalog")]
+                public class CatalogPage : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        CollectionAssert.AreEqual(
+            new[] { "/", "/catalog" },
+            snapshot.Descriptor.RouteTemplates.ToArray());
+    }
+
+    [TestMethod]
+    public void RazorVue_Snapshot_UsesRazorPageDirective_WhenRuntimeRouteAttributesAreMissing()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\CatalogPage.razor";
+        const string razorDocumentText = """
+            @page "/"
+            @page "/catalog"
+            <section>Catalog</section>
+            """;
+
+        var compilation = CSharpCompilation.Create(
+            assemblyName: "RazorVue.Descriptor.RouteFallback.Tests",
+            syntaxTrees:
+            [
+                CSharpSyntaxTree.ParseText(
+                    """
+                    global using static ECMAScript.Vue3;
+                    global using ECMAScript.VueContract;
+                    global using Microsoft.AspNetCore.Components;
+                    """,
+                    path: "RazorVueTestGlobalUsings.g.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    using System;
+
+                    namespace ECMAScript
+                    {
+                        [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                        public sealed class ECMAScriptModuleAttribute : Attribute
+                        {
+                            public ECMAScriptModuleAttribute() { }
+                            public ECMAScriptModuleAttribute(string import) { }
+                        }
+                    }
+
+                    namespace Demo.Pages
+                    {
+                        [ECMAScript.ECMAScriptModule("./pages/catalog-page")]
+                        public partial class CatalogPage : ComponentBase, IVueComponent
+                        {
+                        }
+                    }
+                    """,
+                    path: "CatalogPage.razor.cs"),
+                CSharpSyntaxTree.ParseText(
+                    $$"""
+                    using Microsoft.AspNetCore.Components.Rendering;
+
+                    namespace Demo.Pages
+                    {
+                        public partial class CatalogPage
+                        {
+                            protected override void BuildRenderTree(RenderTreeBuilder __builder)
+                            {
+                    #line 1 "{{documentPath}}"
+                                __builder.AddContent(0, "Catalog");
+                    #line default
+                    #line hidden
+                            }
+                        }
+                    }
+                    """,
+                    path: "CatalogPage.razor.g.cs")
+            ],
+            references: RazorVueMetadataReferences.Create(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        compilation = (CSharpCompilation)InjectCarrierCompilation(
+            compilation,
+            documentPath.Replace('\\', '/'),
+            string.Empty,
+            razorDocumentText,
+            string.Empty);
+        var context = RazorVueCompilationContext.TryCreate(compilation);
+        Assert.IsNotNull(context);
+
+        var snapshot = RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(context).Single();
+        CollectionAssert.AreEqual(
+            new[] { "/", "/catalog" },
+            snapshot.Descriptor.RouteTemplates.ToArray());
+    }
+
+    [TestMethod]
     public void RazorVue_Context_DiscoversLibraryComponentDescriptors_FromStubMetadata()
     {
         var context = CreateContext(
@@ -2947,8 +3064,17 @@ public sealed class RazorVueDescriptorExtractionTests
         if (componentSource.Contains("RazorVueRazorIrCarrierAttribute", StringComparison.Ordinal))
             return componentSource;
 
-        const string marker = "[ECMAScript.ECMAScriptModule(\"./components/todo-app\")]";
-        var replacement = string.Join(
+        const string attributePrefix = "[ECMAScript.ECMAScriptModule";
+        var markerStart = componentSource.IndexOf(attributePrefix, StringComparison.Ordinal);
+        if (markerStart < 0)
+            return componentSource;
+
+        var markerEnd = componentSource.IndexOf(']', markerStart);
+        if (markerEnd < 0)
+            return componentSource;
+
+        var marker = componentSource.Substring(markerStart, markerEnd - markerStart + 1);
+        var insertion = string.Join(
             Environment.NewLine,
             marker,
             "    [Jazor.RazorVue.Runtime.RazorVueRazorIrCarrierAttribute(",
@@ -2956,7 +3082,7 @@ public sealed class RazorVueDescriptorExtractionTests
             "        " + ToVerbatimLiteral(importsJson) + ",",
             "        " + ToVerbatimLiteral(documentText) + ")]");
 
-        return componentSource.Replace(marker, replacement, StringComparison.Ordinal);
+        return componentSource.Remove(markerStart, marker.Length).Insert(markerStart, insertion);
     }
 
     private static string ToVerbatimLiteral(string text)

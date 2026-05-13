@@ -6,6 +6,7 @@ internal sealed record VueCompiledArtifact(
     string ComponentName,
     string RelativeModulePath,
     string ModuleCode,
+    ImmutableArray<string> RouteTemplates,
     ImmutableArray<string> Imports,
     ImmutableArray<string> Styles,
     ImmutableArray<string> PluginRequirements,

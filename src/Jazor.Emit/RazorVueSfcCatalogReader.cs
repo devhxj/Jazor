@@ -48,6 +48,7 @@ internal static class RazorVueSfcCatalogReader
             ReadScriptSetupBlock(itemType, item),
             ReadStyleBlocks(itemType, item),
             ReadCustomBlocks(itemType, item),
+            ReadStringArray(itemType, item, "RouteTemplates"),
             ReadStringArray(itemType, item, "Imports"),
             ReadStringArray(itemType, item, "Styles"),
             ReadStringArray(itemType, item, "PluginRequirements"),

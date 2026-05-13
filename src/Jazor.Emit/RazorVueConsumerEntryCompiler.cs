@@ -14,6 +14,9 @@ internal sealed class RazorVueConsumerEntryCompiler
     private static readonly Regex JavaScriptIdentifierPattern = new(
         @"^[$_\p{L}][$_\p{L}\p{Nd}\p{Mn}\p{Mc}\p{Pc}\u200C\u200D]*$",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex RazorRouteParameterPattern = new(
+        @"^[A-Za-z_][A-Za-z0-9_]*\??$",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
     private static readonly HashSet<string> JavaScriptReservedIdentifiers = new(StringComparer.Ordinal)
     {
         "await",
@@ -145,6 +148,10 @@ internal sealed class RazorVueConsumerEntryCompiler
         if (!resolvedComponentsResult.IsSuccess)
             return RazorVueConsumerEntryResult.Fail(13, resolvedComponentsResult.Error!);
 
+        var routeResults = BuildRouteResults(resolvedComponentsResult.Components!);
+        if (!routeResults.IsSuccess)
+            return RazorVueConsumerEntryResult.Fail(15, routeResults.Error!);
+
         var selectedSfcComponents = resolvedComponentsResult.Components!
             .Where(static component => string.Equals(component.ManifestEntry.ComponentModel, ManifestComponentModel.Sfc, StringComparison.Ordinal))
             .ToArray();
@@ -242,7 +249,8 @@ internal sealed class RazorVueConsumerEntryCompiler
                         hostRequirementsModulePath,
                         options.ClientRuntimeModulePath!,
                         clientRuntimeExportName,
-                        componentResults));
+                        componentResults,
+                        routeResults.Routes!));
             }
 
             if (needsSsr)
@@ -256,7 +264,8 @@ internal sealed class RazorVueConsumerEntryCompiler
                         options.SsrRuntimeModulePath!,
                         ssrRuntimeExportName,
                         ssrExecuteExportName,
-                        componentResults));
+                        componentResults,
+                        routeResults.Routes!));
             }
 
             var resultPath = options.WriteResultPath is null
@@ -278,7 +287,8 @@ internal sealed class RazorVueConsumerEntryCompiler
                             needsBrowser ? vueFeatureFlagsPath : null,
                             needsBrowser ? browserGeneratedRoot : null,
                             needsSsr ? ssrGeneratedRoot : null,
-                            componentResults),
+                            componentResults,
+                            routeResults.Routes!),
                         JsonOptions) + Environment.NewLine);
             }
 
@@ -417,6 +427,44 @@ internal sealed class RazorVueConsumerEntryCompiler
         return components;
     }
 
+    private static ResolveRoutesResult BuildRouteResults(IReadOnlyList<ResolvedConsumerComponent> resolvedComponents)
+    {
+        var routes = new List<RazorVueConsumerRouteResult>();
+        var seenPaths = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var component in resolvedComponents)
+        {
+            var routeTemplates = component.ManifestEntry.RouteTemplates;
+            for (var index = 0; index < routeTemplates.Count; index++)
+            {
+                var routeTemplate = routeTemplates[index];
+                if (!TryConvertRazorRouteTemplate(routeTemplate, out var routePath, out var parameterNames, out var error))
+                {
+                    return ResolveRoutesResult.Fail(
+                        $"RazorVue consumer route template '{routeTemplate}' on component '{component.ManifestEntry.ComponentId}' is not currently supported: {error}");
+                }
+
+                if (!seenPaths.Add(routePath))
+                {
+                    return ResolveRoutesResult.Fail(
+                        $"RazorVue consumer route path '{routePath}' was produced more than once. Route paths must be unique across the selected components.");
+                }
+
+                routes.Add(new RazorVueConsumerRouteResult(
+                    component.Alias + "__" + index.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    component.Alias,
+                    component.ManifestEntry.ComponentId,
+                    component.ManifestEntry.ComponentName,
+                    component.ManifestEntry.ComponentModel,
+                    routeTemplate,
+                    routePath,
+                    parameterNames));
+            }
+        }
+
+        return ResolveRoutesResult.Success(routes);
+    }
+
     private static IReadOnlyDictionary<string, BridgeModuleDocument> BuildBridgeLookup(BridgeResultDocument? bridge)
         => bridge?.Modules.ToDictionary(
             static module => NormalizeRelativeModulePath(module.RelativeModulePath),
@@ -431,7 +479,8 @@ internal sealed class RazorVueConsumerEntryCompiler
         string hostRequirementsModulePath,
         string clientRuntimeModulePath,
         string clientRuntimeExportName,
-        IReadOnlyList<RazorVueConsumerComponentResult> components)
+        IReadOnlyList<RazorVueConsumerComponentResult> components,
+        IReadOnlyList<RazorVueConsumerRouteResult> routes)
     {
         var lines = new List<string>
         {
@@ -445,8 +494,9 @@ internal sealed class RazorVueConsumerEntryCompiler
         lines.Add($"import {{ {clientRuntimeExportName} }} from {JsonSerializer.Serialize(ToModuleSpecifier(clientEntryPath, clientRuntimeModulePath))};");
         lines.Add(string.Empty);
         lines.Add(BuildConsumerComponentsObject(components));
+        lines.Add(BuildConsumerRoutesObject(routes));
         lines.Add("export { razorVueHostRequirements };");
-        lines.Add($"{clientRuntimeExportName}(razorVueConsumerComponents, razorVueHostRequirements);");
+        lines.Add($"{clientRuntimeExportName}(razorVueConsumerComponents, razorVueHostRequirements, razorVueConsumerRoutes);");
         lines.Add(string.Empty);
         return string.Join("\n", lines);
     }
@@ -458,7 +508,8 @@ internal sealed class RazorVueConsumerEntryCompiler
         string ssrRuntimeModulePath,
         string ssrRuntimeExportName,
         string ssrExecuteExportName,
-        IReadOnlyList<RazorVueConsumerComponentResult> components)
+        IReadOnlyList<RazorVueConsumerComponentResult> components,
+        IReadOnlyList<RazorVueConsumerRouteResult> routes)
     {
         var lines = new List<string>();
         foreach (var component in components)
@@ -468,9 +519,10 @@ internal sealed class RazorVueConsumerEntryCompiler
         lines.Add($"import {{ {ssrRuntimeExportName} }} from {JsonSerializer.Serialize(ToModuleSpecifier(ssrEntryPath, ssrRuntimeModulePath))};");
         lines.Add(string.Empty);
         lines.Add(BuildConsumerComponentsObject(components));
+        lines.Add(BuildConsumerRoutesObject(routes));
         lines.Add($"export {{ {ssrRuntimeExportName}, razorVueHostRequirements }};");
         lines.Add($"export async function {ssrExecuteExportName}() {{");
-        lines.Add($"  return await {ssrRuntimeExportName}(razorVueConsumerComponents, razorVueHostRequirements);");
+        lines.Add($"  return await {ssrRuntimeExportName}(razorVueConsumerComponents, razorVueHostRequirements, razorVueConsumerRoutes);");
         lines.Add("}");
         lines.Add(string.Empty);
         return string.Join("\n", lines);
@@ -486,6 +538,34 @@ internal sealed class RazorVueConsumerEntryCompiler
             lines.Add($"  {component.Alias},");
 
         lines.Add("});");
+        return string.Join("\n", lines);
+    }
+
+    private static string BuildConsumerRoutesObject(IReadOnlyList<RazorVueConsumerRouteResult> routes)
+    {
+        if (routes.Count == 0)
+            return "export const razorVueConsumerRoutes = Object.freeze([]);";
+
+        var lines = new List<string>
+        {
+            "export const razorVueConsumerRoutes = Object.freeze(["
+        };
+
+        foreach (var route in routes)
+        {
+            lines.Add("  Object.freeze({");
+            lines.Add($"    name: {JsonSerializer.Serialize(route.Name)},");
+            lines.Add($"    alias: {JsonSerializer.Serialize(route.Alias)},");
+            lines.Add($"    componentId: {JsonSerializer.Serialize(route.ComponentId)},");
+            lines.Add($"    componentName: {JsonSerializer.Serialize(route.ComponentName)},");
+            lines.Add($"    componentModel: {JsonSerializer.Serialize(route.ComponentModel)},");
+            lines.Add($"    routeTemplate: {JsonSerializer.Serialize(route.RouteTemplate)},");
+            lines.Add($"    path: {JsonSerializer.Serialize(route.Path)},");
+            lines.Add($"    parameterNames: Object.freeze({BuildStringArrayLiteral(route.ParameterNames)}),");
+            lines.Add("  }),");
+        }
+
+        lines.Add("]);");
         return string.Join("\n", lines);
     }
 
@@ -682,6 +762,121 @@ internal sealed class RazorVueConsumerEntryCompiler
         return relativePath;
     }
 
+    private static string BuildStringArrayLiteral(IReadOnlyList<string> values)
+        => "[" + string.Join(", ", values.Select(static value => JsonSerializer.Serialize(value))) + "]";
+
+    private static bool TryConvertRazorRouteTemplate(
+        string routeTemplate,
+        out string routePath,
+        out string[] parameterNames,
+        out string? error)
+    {
+        var normalizedTemplate = routeTemplate.Trim();
+        if (normalizedTemplate.Length == 0)
+        {
+            routePath = string.Empty;
+            parameterNames = [];
+            error = "route template cannot be empty.";
+            return false;
+        }
+
+        if (!normalizedTemplate.StartsWith("/", StringComparison.Ordinal))
+            normalizedTemplate = "/" + normalizedTemplate;
+
+        if (normalizedTemplate == "/")
+        {
+            routePath = "/";
+            parameterNames = [];
+            error = null;
+            return true;
+        }
+
+        var trailingSlash = normalizedTemplate.EndsWith("/", StringComparison.Ordinal);
+        var rawSegments = normalizedTemplate.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var convertedSegments = new List<string>(rawSegments.Length);
+        var names = new List<string>();
+
+        foreach (var rawSegment in rawSegments)
+        {
+            if (rawSegment.IndexOf('{') >= 0 || rawSegment.IndexOf('}') >= 0)
+            {
+                if (rawSegment.Length < 2 || rawSegment[0] != '{' || rawSegment[^1] != '}')
+                {
+                    routePath = string.Empty;
+                    parameterNames = [];
+                    error = "composite route segments are not supported; use either a literal segment or a full '{parameter}' segment.";
+                    return false;
+                }
+
+                var parameterToken = rawSegment[1..^1].Trim();
+                if (parameterToken.Length == 0)
+                {
+                    routePath = string.Empty;
+                    parameterNames = [];
+                    error = "route parameter name cannot be empty.";
+                    return false;
+                }
+
+                if (parameterToken.Contains(':', StringComparison.Ordinal))
+                {
+                    routePath = string.Empty;
+                    parameterNames = [];
+                    error = "route constraints are not supported yet.";
+                    return false;
+                }
+
+                if (parameterToken.Contains('=', StringComparison.Ordinal))
+                {
+                    routePath = string.Empty;
+                    parameterNames = [];
+                    error = "route default values are not supported yet.";
+                    return false;
+                }
+
+                if (parameterToken[0] == '*')
+                {
+                    routePath = string.Empty;
+                    parameterNames = [];
+                    error = "catch-all route parameters are not supported yet.";
+                    return false;
+                }
+
+                if (!RazorRouteParameterPattern.IsMatch(parameterToken))
+                {
+                    routePath = string.Empty;
+                    parameterNames = [];
+                    error = $"route parameter '{parameterToken}' is not a supported identifier.";
+                    return false;
+                }
+
+                var isOptional = parameterToken.EndsWith("?", StringComparison.Ordinal);
+                var parameterName = isOptional ? parameterToken[..^1] : parameterToken;
+                if (names.Contains(parameterName, StringComparer.Ordinal))
+                {
+                    routePath = string.Empty;
+                    parameterNames = [];
+                    error = $"route parameter '{parameterName}' was declared more than once.";
+                    return false;
+                }
+
+                names.Add(parameterName);
+                convertedSegments.Add(":" + parameterName + (isOptional ? "?" : string.Empty));
+            }
+            else
+            {
+                convertedSegments.Add(rawSegment);
+            }
+        }
+
+        routePath = "/" + string.Join("/", convertedSegments);
+        if (trailingSlash)
+            routePath += "/";
+
+        parameterNames = names.ToArray();
+        error = null;
+        return true;
+    }
+
     private static string NormalizeRelativeModulePath(string path)
     {
         var normalized = path.Replace('\\', '/').TrimStart('/');
@@ -746,6 +941,18 @@ internal sealed class RazorVueConsumerEntryCompiler
             => new(false, null, error);
     }
 
+    private sealed record ResolveRoutesResult(
+        bool IsSuccess,
+        IReadOnlyList<RazorVueConsumerRouteResult>? Routes,
+        string? Error)
+    {
+        public static ResolveRoutesResult Success(IReadOnlyList<RazorVueConsumerRouteResult> routes)
+            => new(true, routes, null);
+
+        public static ResolveRoutesResult Fail(string error)
+            => new(false, null, error);
+    }
+
     private sealed record ResolvedConsumerComponent(
         string Alias,
         string Selector,
@@ -791,6 +998,16 @@ internal sealed record RazorVueConsumerComponentResult(
     string? SsrRelativeOutputPath,
     string? SsrOutputPath);
 
+internal sealed record RazorVueConsumerRouteResult(
+    string Name,
+    string Alias,
+    string ComponentId,
+    string ComponentName,
+    string ComponentModel,
+    string RouteTemplate,
+    string Path,
+    IReadOnlyList<string> ParameterNames);
+
 internal sealed record RazorVueConsumerEntryResultDocument(
     string ManifestPath,
     string HostJazorRoot,
@@ -802,4 +1019,5 @@ internal sealed record RazorVueConsumerEntryResultDocument(
     string? VueFeatureFlagsPath,
     string? BrowserGeneratedRoot,
     string? SsrGeneratedRoot,
-    IReadOnlyList<RazorVueConsumerComponentResult> Components);
+    IReadOnlyList<RazorVueConsumerComponentResult> Components,
+    IReadOnlyList<RazorVueConsumerRouteResult> Routes);

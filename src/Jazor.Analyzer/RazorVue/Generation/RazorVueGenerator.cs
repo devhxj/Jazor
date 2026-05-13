@@ -569,11 +569,12 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
         builder.AppendLine("        private sealed class GeneratedArtifact");
         builder.AppendLine("        {");
-        builder.AppendLine("            public GeneratedArtifact(string componentName, string relativeModulePath, string moduleCode, string[] imports, string[] styles, string[] pluginRequirements, GeneratedIdentity identity, GeneratedHints hints, GeneratedOrigin[] sourceOrigins)");
+        builder.AppendLine("            public GeneratedArtifact(string componentName, string relativeModulePath, string moduleCode, string[] routeTemplates, string[] imports, string[] styles, string[] pluginRequirements, GeneratedIdentity identity, GeneratedHints hints, GeneratedOrigin[] sourceOrigins)");
         builder.AppendLine("            {");
         builder.AppendLine("                ComponentName = componentName;");
         builder.AppendLine("                RelativeModulePath = relativeModulePath;");
         builder.AppendLine("                ModuleCode = moduleCode;");
+        builder.AppendLine("                RouteTemplates = routeTemplates;");
         builder.AppendLine("                Imports = imports;");
         builder.AppendLine("                Styles = styles;");
         builder.AppendLine("                PluginRequirements = pluginRequirements;");
@@ -585,6 +586,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         builder.AppendLine("            public string ComponentName { get; }");
         builder.AppendLine("            public string RelativeModulePath { get; }");
         builder.AppendLine("            public string ModuleCode { get; }");
+        builder.AppendLine("            public string[] RouteTemplates { get; }");
         builder.AppendLine("            public string[] Imports { get; }");
         builder.AppendLine("            public string[] Styles { get; }");
         builder.AppendLine("            public string[] PluginRequirements { get; }");
@@ -694,6 +696,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             builder.Append("                componentName: ").Append(EscapeCSharpString(artifact.ComponentName)).AppendLine(",");
             builder.Append("                relativeModulePath: ").Append(EscapeCSharpString(artifact.RelativeModulePath)).AppendLine(",");
             builder.Append("                moduleCode: ").Append(EscapeCSharpString(artifact.ModuleCode)).AppendLine(",");
+            builder.Append("                routeTemplates: ").Append(BuildStringArrayLiteral(artifact.RouteTemplates)).AppendLine(",");
             builder.Append("                imports: ").Append(BuildStringArrayLiteral(artifact.Imports)).AppendLine(",");
             builder.Append("                styles: ").Append(BuildStringArrayLiteral(artifact.Styles)).AppendLine(",");
             builder.Append("                pluginRequirements: ").Append(BuildStringArrayLiteral(artifact.PluginRequirements)).AppendLine(",");
@@ -741,6 +744,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         builder.Append("                scriptSetupBlock: ").Append(BuildScriptSetupBlockLiteral(artifact.ScriptSetupBlock)).AppendLine(",");
         builder.Append("                styleBlocks: ").Append(BuildStyleBlocksArrayLiteral(artifact.StyleBlocks)).AppendLine(",");
         builder.Append("                customBlocks: ").Append(BuildCustomBlocksArrayLiteral(artifact.CustomBlocks)).AppendLine(",");
+        builder.Append("                routeTemplates: ").Append(BuildStringArrayLiteral(artifact.RouteTemplates)).AppendLine(",");
         builder.Append("                imports: ").Append(BuildStringArrayLiteral(artifact.Imports)).AppendLine(",");
         builder.Append("                styles: ").Append(BuildStringArrayLiteral(artifact.Styles)).AppendLine(",");
         builder.Append("                pluginRequirements: ").Append(BuildStringArrayLiteral(artifact.PluginRequirements)).AppendLine(",");
@@ -788,7 +792,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
         builder.AppendLine("        private sealed class GeneratedArtifact");
         builder.AppendLine("        {");
-        builder.AppendLine("            public GeneratedArtifact(string componentName, string relativeSfcPath, string sfcText, GeneratedTemplateBlock templateBlock, GeneratedScriptSetupBlock scriptSetupBlock, GeneratedStyleBlock[] styleBlocks, GeneratedCustomBlock[] customBlocks, string[] imports, string[] styles, string[] pluginRequirements, GeneratedIdentity identity, GeneratedHints hints, GeneratedOrigin[] sourceOrigins)");
+        builder.AppendLine("            public GeneratedArtifact(string componentName, string relativeSfcPath, string sfcText, GeneratedTemplateBlock templateBlock, GeneratedScriptSetupBlock scriptSetupBlock, GeneratedStyleBlock[] styleBlocks, GeneratedCustomBlock[] customBlocks, string[] routeTemplates, string[] imports, string[] styles, string[] pluginRequirements, GeneratedIdentity identity, GeneratedHints hints, GeneratedOrigin[] sourceOrigins)");
         builder.AppendLine("            {");
         builder.AppendLine("                ComponentName = componentName;");
         builder.AppendLine("                RelativeSfcPath = relativeSfcPath;");
@@ -797,6 +801,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         builder.AppendLine("                ScriptSetupBlock = scriptSetupBlock;");
         builder.AppendLine("                StyleBlocks = styleBlocks;");
         builder.AppendLine("                CustomBlocks = customBlocks;");
+        builder.AppendLine("                RouteTemplates = routeTemplates;");
         builder.AppendLine("                Imports = imports;");
         builder.AppendLine("                Styles = styles;");
         builder.AppendLine("                PluginRequirements = pluginRequirements;");
@@ -812,6 +817,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         builder.AppendLine("            public GeneratedScriptSetupBlock ScriptSetupBlock { get; }");
         builder.AppendLine("            public GeneratedStyleBlock[] StyleBlocks { get; }");
         builder.AppendLine("            public GeneratedCustomBlock[] CustomBlocks { get; }");
+        builder.AppendLine("            public string[] RouteTemplates { get; }");
         builder.AppendLine("            public string[] Imports { get; }");
         builder.AppendLine("            public string[] Styles { get; }");
         builder.AppendLine("            public string[] PluginRequirements { get; }");

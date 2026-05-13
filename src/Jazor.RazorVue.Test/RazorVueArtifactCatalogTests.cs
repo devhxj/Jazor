@@ -26,6 +26,21 @@ public sealed class RazorVueArtifactCatalogTests
     }
 
     [TestMethod]
+    public void RazorVue_CatalogBuilder_PreservesRouteTemplates()
+    {
+        var builder = new RazorVueCatalogBuilder();
+        var catalog = builder.Build(
+            "Demo.Assembly",
+            [
+                CreateArtifact("CatalogPage", "components/catalog-page.mjs", "/", "/catalog")
+            ]);
+
+        CollectionAssert.AreEqual(
+            new[] { "/", "/catalog" },
+            catalog.Artifacts[0].RouteTemplates.ToArray());
+    }
+
+    [TestMethod]
     public void RazorVue_CatalogBuilder_RejectsEscapingPaths()
     {
         var builder = new RazorVueCatalogBuilder();
@@ -91,11 +106,12 @@ public sealed class RazorVueArtifactCatalogTests
         StringAssert.Contains(exception.Message, "Assembly name cannot be empty");
     }
 
-    private static VueCompiledArtifact CreateArtifact(string componentName, string relativeModulePath)
+    private static VueCompiledArtifact CreateArtifact(string componentName, string relativeModulePath, params string[] routeTemplates)
         => new(
             ComponentName: componentName,
             RelativeModulePath: relativeModulePath,
             ModuleCode: $"export default {{ name: \"{componentName}\" }};",
+            RouteTemplates: routeTemplates.ToImmutableArray(),
             Imports: ImmutableArray.Create("vue"),
             Styles: ImmutableArray<string>.Empty,
             PluginRequirements: ImmutableArray<string>.Empty,
@@ -129,4 +145,3 @@ public sealed class RazorVueArtifactCatalogTests
                     RazorVueOriginProvenance.GeneratedSyntaxLocation)
             ]);
 }
-
