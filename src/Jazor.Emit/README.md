@@ -12,6 +12,7 @@
 - 物化 `.mjs` 或 `.vue`、manifest、RazorVue sidecar manifest 与 `.map` / origins 文件。
 - 通过 `DenoHost` 执行 bundle。
 - 将 RazorVue `.vue` SFC 编译为 Jazor authored-module 可消费的 named-export bridge modules。
+- 生成 RazorVue consumer entry modules，标准化 manifest 解析、组件选择、SFC bridge 调用和 browser/SSR 入口拼接。
 - 生成 RazorVue manifest diff / update plan。
 
 ## Boundaries
@@ -30,6 +31,7 @@
 - `RazorVueSfcCatalogReader.cs`: 读取 `VueSfcArtifact` catalog。
 - `RazorVueSfcModuleWriter.cs`: 写出 RazorVue `.vue` artifact、manifest 和 sidecar metadata。
 - `RazorVueSfcBridgeCompiler.cs` / `Deno/razorvue-sfc-bridge.ts`: 编译 `.vue` SFC 并输出 named-export `.mjs` bridge modules。
+- `RazorVueConsumerEntryCompiler.cs`: 生成 consumer-facing browser/SSR entry modules。
 - `ModuleBundler.cs`: bundle 编排。
 - `RazorVueUpdatePlanWriter.cs`: 生成 RazorVue diff/update plan。
 
@@ -61,6 +63,28 @@ dotnet run --project src/Jazor.Emit -- razorvue-sfc-bridge --host-root <jazor-di
 ```
 
 该 bridge 保持 Jazor 编译器“不支持 default import/export”的边界不变：`.vue` SFC 的 default component 会在 build-time 转换为 manifest 中 `ComponentName` 对应的 named export，组件间相对 `.vue` default import 也会重写为 named `.mjs` import。
+
+RazorVue consumer entry：
+
+```powershell
+dotnet run --project src/Jazor.Emit -- razorvue-consumer-entry --host-root <jazor-dir> --out <build-dir> --client-runtime <runtime-client.js> --ssr-runtime <runtime-ssr.js> --client-runtime-export mountRazorVueConsumer --ssr-runtime-export runRazorVueConsumerSsr --component App=id:My.App.RootComponent
+```
+
+该命令会读取 `jazor-manifest-razorvue.json`，调用 SFC bridge 生成 browser/SSR named-export modules，并写出：
+
+- `client-entry.mjs`
+- `ssr-entry.mjs`
+- `vue-feature-flags.mjs`
+- `razorvue-consumer-entry.json`
+
+consumer runtime export 的稳定签名是：
+
+```js
+mountRazorVueConsumer(razorVueConsumerComponents, razorVueHostRequirements);
+runRazorVueConsumerSsr(razorVueConsumerComponents, razorVueHostRequirements);
+```
+
+`razorVueConsumerComponents` 是按 `--component Alias=selector` 生成的 frozen object。selector 支持 `id:...`、`name:...`、`path:...`，不带前缀时会按 ComponentId、ComponentName、RelativeModulePath 匹配；若匹配不唯一，命令会失败并要求显式 selector。
 
 ## Verification
 
