@@ -32,8 +32,8 @@ Vue SFC 生态默认以 `default export` 表达组件，但 Jazor authored C# mo
 
 - ASP.NET Core 项目开发/测试阶段输出根 `jazor/*.vue`
 - 发布阶段将根 `jazor` 物化到 `wwwroot/jazor`
-- `consumer` 读取 manifest 和 `.vue`
-- Deno pipeline 编译并打包到 `wwwroot/jazor/client-entry.*`
+- `Jazor.Emit razorvue-consumer-entry` 读取 manifest 和 `.vue`，生成 browser/SSR entry modules
+- Deno pipeline 打包生成的 browser entry 到 `wwwroot/jazor/client-entry.*`
 - `Jazor.Emit razorvue-sfc-bridge` 编译 `.vue` 后输出 named-export bridge module，例如 `export { _sfc_main as PlaygroundCatalogPage }`
 - consumer 入口和组件间引用都使用 named import，例如 `import { PlaygroundCatalogPage } from "./pages/playground-catalog-page.mjs"`
 
@@ -43,7 +43,7 @@ Vue SFC 生态默认以 `default export` 表达组件，但 Jazor authored C# mo
 - `src/Jazor.Emit/Deno/razorvue-sfc-bridge.ts` 负责 Vue SFC 编译、default export 转 named export、相对 `.vue` import 转 `.mjs` named import、CSS 输出，以及 browser/SSR 模式差异。
 - `src/Jazor.Emit/RazorVueSfcBridgeCompiler.cs` 通过 DenoHost 在隔离 workspace 中执行 bridge，避免依赖调用方目录中的 `deno.json` 或全局 Deno。
 - `src/Jazor.EmitTest/RazorVueSfcBridgeCompilerTests.cs` 覆盖 named export 输出、相对 `.vue` default import 改写、SSR 模式不注入 CSS import、非法 component export name 和 manifest 缺失错误。
-- `Playground` consumer 只调用官方 bridge，并通过 `JAZOR_EMIT_TOOL_PATH` 在 MSBuild 中复用当前 `Jazor.Emit.dll`，避免维护本地 SFC 编译副本。
+- `Playground` consumer 只调用官方 consumer entry 生成命令，并通过 `JAZOR_EMIT_TOOL_PATH` 在 MSBuild 中复用当前 `Jazor.Emit.dll`，避免维护本地 SFC 编译和 manifest/entry 拼接副本。
 
 若未来 authored Jazor module 需要引用 RazorVue 组件，也应引用 bridge module 的 named export，而不是直接引用 `.vue` default export。
 
@@ -169,10 +169,19 @@ class="playground-page playground-page--catalog"
 
 而不是“完全不需要任何前端 consumer”。
 
+### 当前保护
+
+- `Jazor.Emit razorvue-consumer-entry` 已成为官方 build-time consumer entry 生成入口。
+- 该命令统一负责读取 `jazor-manifest-razorvue.json`、选择组件、调用 SFC named-export bridge、生成 browser/SSR bridge modules，以及写出 `client-entry.mjs` / `ssr-entry.mjs` / `vue-feature-flags.mjs`。
+- 组件选择使用显式 `--component Alias=selector` 契约，selector 支持 `id:`、`name:`、`path:`；模糊匹配会失败并要求显式 selector，避免真实项目在组件重名时静默选错。
+- consumer runtime 不再需要解析 manifest 或知道 `.vue` default export 转换细节，只接收 `razorVueConsumerComponents` 和 `razorVueHostRequirements`。
+- `src/Jazor.EmitTest/RazorVueConsumerEntryCompilerTests.cs` 覆盖 browser/SSR entry 生成、CLI 参数解析、组件选择歧义错误和 clean 模式误删保护。
+- `Playground` 的 `consumer/scripts/lib/pipeline.ts` 已改为调用官方 entry 生成命令，私有脚本只保留最终 Deno bundle、HTML dist 和 smoke verification。
+
 ### 后续提升方向
 
-- 若希望进一步降低接缝，未来可以考虑把 consumer pipeline 标准化为官方 build target / sdk 能力
-- 或让 ASP.NET Core + RazorVue library mode 提供更完整的一体化 build 封装
+- 进一步把 `razorvue-consumer-entry` 封装为 `Jazor` SDK/MSBuild target，减少项目手写 `Exec`。
+- 提供 ASP.NET Core + RazorVue library mode 的标准模板，明确 colocated consumer 目录、runtime entry、bundle 输出和 publish 合并策略。
 
 ## 5. ASP.NET Core fallback 不能使用 catch-all endpoint 抢占静态文件
 
@@ -252,7 +261,7 @@ app.MapMethods("/{**path}", ["GET", "HEAD"], ...)
 建议优先级：
 
 1. default import/export 与 SFC bridge
-2. library-mode 单项目 consumer pipeline 的官方化
+2. library-mode 单项目 consumer pipeline 的 SDK/MSBuild/template 封装
 3. ASP.NET Core fallback/static-file 官方化模板
 4. `/jazor/*` 多来源合并能力官方化
 
@@ -260,3 +269,5 @@ app.MapMethods("/{**path}", ["GET", "HEAD"], ...)
 
 - Razor IR 对纯静态多 token attribute 的稳定接受
 - library component raw `class=` / `style=` fallthrough authoring 体验修复
+- RazorVue SFC named-export bridge 官方化
+- RazorVue consumer entry generation 官方化切片

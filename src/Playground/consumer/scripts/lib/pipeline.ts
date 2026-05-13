@@ -1,17 +1,5 @@
-import { dirname, join, relative, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-
-type RazorVueManifest = {
-  AssemblyName: string;
-  GeneratedAtUtc: string;
-  Modules: RazorVueManifestModule[];
-};
-
-type RazorVueManifestModule = {
-  ComponentId: string;
-  ComponentName: string;
-  RelativeModulePath: string;
-};
 
 type PreparedWorkspace = {
   consumerRoot: string;
@@ -27,32 +15,14 @@ type PreparedWorkspace = {
   clientEntryPath: string;
   ssrEntryPath: string;
   vueFeatureFlagsPath: string;
-  browserRootModuleOutputPath: string;
-  ssrRootModuleOutputPath: string;
-  browserDetailModuleOutputPath: string;
-  ssrDetailModuleOutputPath: string;
-};
-
-type RazorVueSfcBridgeResult = {
-  Modules: RazorVueSfcBridgeResultModule[];
-};
-
-type RazorVueSfcBridgeResultModule = {
-  ComponentId: string;
-  ComponentName: string;
-  ExportName: string;
-  RelativeModulePath: string;
-  RelativeOutputPath: string;
-  OutputPath: string;
-  CssOutputPath: string | null;
 };
 
 const consumerRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const repositoryRoot = resolve(consumerRoot, "..", "..", "..");
-const defaultRootComponentId = "Playground.Pages.PlaygroundCatalogPage";
-const defaultRootComponentName = "PlaygroundCatalogPage";
-const detailComponentId = "Playground.Pages.PlaygroundDetailPage";
-const detailComponentName = "PlaygroundDetailPage";
+const defaultCatalogComponentId = "Playground.Pages.PlaygroundCatalogPage";
+const defaultCatalogComponentName = "PlaygroundCatalogPage";
+const defaultDetailComponentId = "Playground.Pages.PlaygroundDetailPage";
+const defaultDetailComponentName = "PlaygroundDetailPage";
 
 export async function prepareWorkspace(production: boolean): Promise<PreparedWorkspace> {
   const hostJazorRoot = resolvePathFromEnvironment(
@@ -73,123 +43,32 @@ export async function prepareWorkspace(production: boolean): Promise<PreparedWor
   const browserBundleDirectory = resolve(distRoot, "jazor");
   const hostBrowserBundleDirectory = resolve(hostWwwrootRoot, "jazor");
   const legacyHostAssetsDirectory = resolve(hostWwwrootRoot, "assets");
-  const rootComponentId = readConfiguredText("RAZORVUE_ROOT_COMPONENT_ID") ?? defaultRootComponentId;
-  const rootComponentName = readConfiguredText("RAZORVUE_ROOT_COMPONENT_NAME") ?? defaultRootComponentName;
   const manifestPath = resolve(hostJazorRoot, "jazor-manifest-razorvue.json");
   const hostRequirementsModulePath = resolve(hostJazorRoot, "__jazor", "razorvue-host.mjs");
-
-  if (!(await fileExists(manifestPath))) {
-    throw new Error(`RazorVue manifest was not found for the Playground consumer: ${manifestPath}`);
-  }
-
-  if (!(await fileExists(hostRequirementsModulePath))) {
-    throw new Error(`RazorVue host requirements module was not found for the Playground consumer: ${hostRequirementsModulePath}`);
-  }
-
-  await emptyDirectory(buildRoot);
-  const browserBridgeResult = await runOfficialRazorVueSfcBridge(
-    hostJazorRoot,
-    manifestPath,
-    browserGeneratedRoot,
-    "browser",
-    production);
-  const ssrBridgeResult = await runOfficialRazorVueSfcBridge(
-    hostJazorRoot,
-    manifestPath,
-    ssrGeneratedRoot,
-    "ssr",
-    production);
-  const manifest = await readJson<RazorVueManifest>(manifestPath);
-  const browserModules = mapBridgeModulesByRelativePath(browserBridgeResult);
-  const ssrModules = mapBridgeModulesByRelativePath(ssrBridgeResult);
-
-  let browserRootModuleOutputPath: string | null = null;
-  let ssrRootModuleOutputPath: string | null = null;
-  let rootComponentExportName: string | null = null;
-  let browserDetailModuleOutputPath: string | null = null;
-  let ssrDetailModuleOutputPath: string | null = null;
-  let detailComponentExportName: string | null = null;
-  for (const module of [...manifest.Modules].sort((left, right) =>
-    left.RelativeModulePath.localeCompare(right.RelativeModulePath, "en"))) {
-    const relativeModulePath = normalizeRelativeModulePath(module.RelativeModulePath);
-    const browserBridgeModule = browserModules.get(relativeModulePath);
-    const ssrBridgeModule = ssrModules.get(relativeModulePath);
-    if (browserBridgeModule === undefined) {
-      throw new Error(`RazorVue SFC browser bridge did not emit module '${relativeModulePath}'.`);
-    }
-
-    if (ssrBridgeModule === undefined) {
-      throw new Error(`RazorVue SFC SSR bridge did not emit module '${relativeModulePath}'.`);
-    }
-
-    if (module.ComponentId === rootComponentId || module.ComponentName === rootComponentName) {
-      browserRootModuleOutputPath = browserBridgeModule.OutputPath;
-      ssrRootModuleOutputPath = ssrBridgeModule.OutputPath;
-      rootComponentExportName = browserBridgeModule.ExportName;
-    }
-
-    if (module.ComponentId === detailComponentId || module.ComponentName === detailComponentName) {
-      browserDetailModuleOutputPath = browserBridgeModule.OutputPath;
-      ssrDetailModuleOutputPath = ssrBridgeModule.OutputPath;
-      detailComponentExportName = browserBridgeModule.ExportName;
-    }
-  }
-
-  if (browserRootModuleOutputPath === null || ssrRootModuleOutputPath === null || rootComponentExportName === null) {
-    throw new Error(
-      `RazorVue manifest did not contain root component '${rootComponentId}' or component name '${rootComponentName}'.`
-    );
-  }
-
-  if (browserDetailModuleOutputPath === null || ssrDetailModuleOutputPath === null || detailComponentExportName === null) {
-    throw new Error(
-      `RazorVue manifest did not contain detail component '${detailComponentId}' or component name '${detailComponentName}'.`
-    );
-  }
-
   const clientEntryPath = resolve(buildRoot, "client-entry.mjs");
   const ssrEntryPath = resolve(buildRoot, "ssr-entry.mjs");
   const vueFeatureFlagsPath = resolve(buildRoot, "vue-feature-flags.mjs");
 
-  await writeText(
-    vueFeatureFlagsPath,
-    [
-      "globalThis.__VUE_OPTIONS_API__ = true;",
-      "globalThis.__VUE_PROD_DEVTOOLS__ = false;",
-      "globalThis.__VUE_PROD_HYDRATION_MISMATCH_DETAILS__ = false;",
-      ""
-    ].join("\n")
-  );
-
-  await writeText(
+  await runOfficialRazorVueConsumerEntry({
+    hostJazorRoot,
+    manifestPath,
+    hostRequirementsModulePath,
+    buildRoot,
+    browserGeneratedRoot,
+    ssrGeneratedRoot,
     clientEntryPath,
-    [
-      `import ${JSON.stringify(toModuleSpecifier(clientEntryPath, vueFeatureFlagsPath))};`,
-      `import { ${rootComponentExportName} as CatalogPage } from ${JSON.stringify(toModuleSpecifier(clientEntryPath, browserRootModuleOutputPath))};`,
-      `import { ${detailComponentExportName} as DetailPage } from ${JSON.stringify(toModuleSpecifier(clientEntryPath, browserDetailModuleOutputPath))};`,
-      `import { razorVueHostRequirements } from ${JSON.stringify(toModuleSpecifier(clientEntryPath, hostRequirementsModulePath))};`,
-      `import { mountPlaygroundApp } from ${JSON.stringify(toModuleSpecifier(clientEntryPath, resolve(consumerRoot, "src", "runtime-client.js")))};`,
-      "",
-      "mountPlaygroundApp(CatalogPage, DetailPage, razorVueHostRequirements);",
-      ""
-    ].join("\n")
-  );
-
-  await writeText(
     ssrEntryPath,
-    [
-      `import { ${rootComponentExportName} as CatalogPage } from ${JSON.stringify(toModuleSpecifier(ssrEntryPath, ssrRootModuleOutputPath))};`,
-      `import { ${detailComponentExportName} as DetailPage } from ${JSON.stringify(toModuleSpecifier(ssrEntryPath, ssrDetailModuleOutputPath))};`,
-      `import { razorVueHostRequirements } from ${JSON.stringify(toModuleSpecifier(ssrEntryPath, hostRequirementsModulePath))};`,
-      `import { runSsrSmoke } from ${JSON.stringify(toModuleSpecifier(ssrEntryPath, resolve(consumerRoot, "src", "runtime-ssr.js")))};`,
-      "",
-      "export { runSsrSmoke };",
-      "export async function executeSsrSmoke() {",
-      "  return await runSsrSmoke(CatalogPage, DetailPage, razorVueHostRequirements);",
-      "}",
-      ""
-    ].join("\n")
-  );
+    vueFeatureFlagsPath,
+    production,
+    catalogComponentSelector: readConfiguredComponentSelector(
+      "CATALOG",
+      defaultCatalogComponentId,
+      defaultCatalogComponentName),
+    detailComponentSelector: readConfiguredComponentSelector(
+      "DETAIL",
+      defaultDetailComponentId,
+      defaultDetailComponentName)
+  });
 
   return {
     consumerRoot,
@@ -204,11 +83,7 @@ export async function prepareWorkspace(production: boolean): Promise<PreparedWor
     legacyHostAssetsDirectory,
     clientEntryPath,
     ssrEntryPath,
-    vueFeatureFlagsPath,
-    browserRootModuleOutputPath,
-    ssrRootModuleOutputPath,
-    browserDetailModuleOutputPath,
-    ssrDetailModuleOutputPath
+    vueFeatureFlagsPath
   };
 }
 
@@ -285,18 +160,46 @@ function resolvePathFromEnvironment(environmentVariableName: string, defaultPath
     : resolve(consumerRoot, configuredPath);
 }
 
+function readConfiguredComponentSelector(
+  name: "CATALOG" | "DETAIL",
+  defaultComponentId: string,
+  defaultComponentName: string
+): string {
+  const selector = readConfiguredText(`RAZORVUE_${name}_COMPONENT_SELECTOR`);
+  if (selector !== null) {
+    return selector;
+  }
+
+  const id = readConfiguredText(`RAZORVUE_${name}_COMPONENT_ID`);
+  if (id !== null) {
+    return `id:${id}`;
+  }
+
+  const nameValue = readConfiguredText(`RAZORVUE_${name}_COMPONENT_NAME`);
+  if (nameValue !== null) {
+    return `name:${nameValue}`;
+  }
+
+  if (name === "CATALOG") {
+    const legacyRootId = readConfiguredText("RAZORVUE_ROOT_COMPONENT_ID");
+    if (legacyRootId !== null) {
+      return `id:${legacyRootId}`;
+    }
+
+    const legacyRootName = readConfiguredText("RAZORVUE_ROOT_COMPONENT_NAME");
+    if (legacyRootName !== null) {
+      return `name:${legacyRootName}`;
+    }
+  }
+
+  return defaultComponentId.length > 0
+    ? `id:${defaultComponentId}`
+    : `name:${defaultComponentName}`;
+}
+
 function readConfiguredText(environmentVariableName: string): string | null {
   const value = Deno.env.get(environmentVariableName)?.trim();
   return value === undefined || value.length === 0 ? null : value;
-}
-
-function normalizeRelativeModulePath(path: string): string {
-  return path.replaceAll("\\", "/").replace(/^\.\//u, "");
-}
-
-function toModuleSpecifier(fromPath: string, toPath: string): string {
-  const relativePath = relative(dirname(fromPath), toPath).replaceAll("\\", "/");
-  return relativePath.startsWith(".") ? relativePath : `./${relativePath}`;
 }
 
 async function collectFilesCore(path: string, files: string[]): Promise<void> {
@@ -313,31 +216,64 @@ async function collectFilesCore(path: string, files: string[]): Promise<void> {
   }
 }
 
-async function readJson<T>(path: string): Promise<T> {
-  return JSON.parse(await readText(path)) as T;
-}
+type ConsumerEntryInvocation = {
+  hostJazorRoot: string;
+  manifestPath: string;
+  hostRequirementsModulePath: string;
+  buildRoot: string;
+  browserGeneratedRoot: string;
+  ssrGeneratedRoot: string;
+  clientEntryPath: string;
+  ssrEntryPath: string;
+  vueFeatureFlagsPath: string;
+  production: boolean;
+  catalogComponentSelector: string;
+  detailComponentSelector: string;
+};
 
-async function runOfficialRazorVueSfcBridge(
-  hostJazorRoot: string,
-  manifestPath: string,
-  outputRoot: string,
-  mode: "browser" | "ssr",
-  production: boolean
-): Promise<RazorVueSfcBridgeResult> {
-  const resultPath = resolve(outputRoot, `razorvue-sfc-bridge.${mode}.json`);
-  const bridgeArgs = [
+async function runOfficialRazorVueConsumerEntry(invocation: ConsumerEntryInvocation): Promise<void> {
+  const resultPath = resolve(invocation.buildRoot, "razorvue-consumer-entry.json");
+  const entryArgs = [
     "--host-root",
-    hostJazorRoot,
+    invocation.hostJazorRoot,
     "--manifest",
-    manifestPath,
+    invocation.manifestPath,
+    "--host-requirements",
+    invocation.hostRequirementsModulePath,
     "--out",
-    outputRoot,
+    invocation.buildRoot,
+    "--browser-generated-root",
+    invocation.browserGeneratedRoot,
+    "--ssr-generated-root",
+    invocation.ssrGeneratedRoot,
+    "--client-entry",
+    invocation.clientEntryPath,
+    "--ssr-entry",
+    invocation.ssrEntryPath,
+    "--vue-feature-flags",
+    invocation.vueFeatureFlagsPath,
+    "--client-runtime",
+    resolve(consumerRoot, "src", "runtime-client.js"),
+    "--ssr-runtime",
+    resolve(consumerRoot, "src", "runtime-ssr.js"),
+    "--client-runtime-export",
+    "mountPlaygroundConsumer",
+    "--ssr-runtime-export",
+    "runPlaygroundConsumerSsr",
+    "--ssr-execute-export",
+    "executeSsrSmoke",
+    "--component",
+    `CatalogPage=${invocation.catalogComponentSelector}`,
+    "--component",
+    `DetailPage=${invocation.detailComponentSelector}`,
     "--mode",
-    mode,
+    "both",
     "--production",
-    production ? "true" : "false",
+    invocation.production ? "true" : "false",
     "--clean",
-    "true"
+    "true",
+    "--write-result",
+    resultPath
   ];
   const emitToolPath = await resolveConfiguredJazorEmitToolPath();
   const args = emitToolPath === null
@@ -346,13 +282,13 @@ async function runOfficialRazorVueSfcBridge(
       "--project",
       "src/Jazor.Emit/Jazor.Emit.csproj",
       "--",
-      "razorvue-sfc-bridge",
-      ...bridgeArgs
+      "razorvue-consumer-entry",
+      ...entryArgs
     ]
     : [
       emitToolPath,
-      "razorvue-sfc-bridge",
-      ...bridgeArgs
+      "razorvue-consumer-entry",
+      ...entryArgs
     ];
 
   const output = await new Deno.Command("dotnet", {
@@ -368,7 +304,7 @@ async function runOfficialRazorVueSfcBridge(
     const stdout = new TextDecoder().decode(output.stdout).trim();
     throw new Error(
       [
-        `Official RazorVue SFC bridge failed for Playground ${mode} output.`,
+        "Official RazorVue consumer entry generation failed for Playground.",
         stdout.length > 0 ? stdout : null,
         stderr.length > 0 ? stderr : null
       ].filter((line) => line !== null).join("\n")
@@ -376,15 +312,14 @@ async function runOfficialRazorVueSfcBridge(
   }
 
   if (!(await fileExists(resultPath))) {
-    throw new Error(`Official RazorVue SFC bridge did not write result metadata: ${resultPath}`);
+    throw new Error(`Official RazorVue consumer entry generation did not write result metadata: ${resultPath}`);
   }
-
-  return await readJson<RazorVueSfcBridgeResult>(resultPath);
 }
 
 async function resolveConfiguredJazorEmitToolPath(): Promise<string | null> {
   const configuredPath =
     Deno.env.get("JAZOR_EMIT_TOOL_PATH")?.trim() ??
+    Deno.env.get("RAZORVUE_CONSUMER_ENTRY_TOOL_PATH")?.trim() ??
     Deno.env.get("RAZORVUE_SFC_BRIDGE_TOOL_PATH")?.trim();
   if (configuredPath === undefined || configuredPath.length === 0) {
     return null;
@@ -409,15 +344,6 @@ async function isFile(path: string): Promise<boolean> {
 
     throw error;
   }
-}
-
-function mapBridgeModulesByRelativePath(
-  result: RazorVueSfcBridgeResult
-): ReadonlyMap<string, RazorVueSfcBridgeResultModule> {
-  return new Map(result.Modules.map((module) => [
-    normalizeRelativeModulePath(module.RelativeModulePath),
-    module
-  ]));
 }
 
 export type { PreparedWorkspace };

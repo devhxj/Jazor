@@ -103,3 +103,10 @@ export async function runSsrSmoke(CatalogPage, DetailPage, hostRequirements) {
 
   return html;
 }
+
+export async function runPlaygroundConsumerSsr(components, hostRequirements) {
+  return await runSsrSmoke(
+    components.CatalogPage,
+    components.DetailPage,
+    hostRequirements);
+}
