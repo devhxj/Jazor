@@ -115,20 +115,26 @@ public sealed class JazorAspNetCoreHostingTests
     }
 
     [TestMethod]
-    public async Task UseJazorHost_AppliesDefaultSecurityHeadersToHtmlAndStaticAssets()
+    public async Task UseJazorHost_AppliesDefaultSecurityHeadersAndSupportsDeclaredImmutableAssetPrefixes()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
         var webRoot = Path.Combine(workspace.RootPath, "wwwroot");
+        var vendorRoot = Path.Combine(webRoot, "vendor");
         var developmentJazorRoot = Path.Combine(workspace.RootPath, "jazor");
         Directory.CreateDirectory(webRoot);
+        Directory.CreateDirectory(vendorRoot);
         Directory.CreateDirectory(developmentJazorRoot);
         await File.WriteAllTextAsync(Path.Combine(webRoot, "index.html"), "<!doctype html><html><body>ready</body></html>");
         await File.WriteAllTextAsync(Path.Combine(webRoot, "site.css"), "body{color:black;}");
+        await File.WriteAllTextAsync(Path.Combine(vendorRoot, "vue@3.5.16.mjs"), "export const version = '3.5.16';\n");
         await File.WriteAllTextAsync(Path.Combine(developmentJazorRoot, "jazor-manifest.json"), "{}");
 
         using var host = await CreateHostAsync(workspace.RootPath, app =>
         {
-            app.UseJazorHost();
+            app.UseJazorHost(options =>
+            {
+                options.WebAssets.ImmutableCachePathPrefixes.Add("/vendor/");
+            });
         });
 
         var client = host.GetTestClient();
@@ -149,6 +155,15 @@ public sealed class JazorAspNetCoreHostingTests
         Assert.IsNotNull(staticResponse.Headers.CacheControl);
         Assert.IsTrue(staticResponse.Headers.CacheControl.NoCache);
         Assert.IsTrue(staticResponse.Headers.CacheControl.MustRevalidate);
+
+        var vendorResponse = await client.GetAsync("/vendor/vue@3.5.16.mjs");
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, vendorResponse.StatusCode);
+        Assert.IsNotNull(vendorResponse.Headers.CacheControl);
+        Assert.AreEqual(TimeSpan.FromDays(365), vendorResponse.Headers.CacheControl.MaxAge);
+        Assert.IsFalse(vendorResponse.Headers.CacheControl.NoCache);
+        CollectionAssert.AreEqual(
+            new[] { "immutable" },
+            vendorResponse.Headers.CacheControl.Extensions.Select(static extension => extension.Name).ToArray());
     }
 
     [TestMethod]

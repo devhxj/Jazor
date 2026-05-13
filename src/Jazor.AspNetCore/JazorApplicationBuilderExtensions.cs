@@ -12,6 +12,7 @@ public static class JazorApplicationBuilderExtensions
 {
     private const string SourceMapContentType = "application/json";
     private const string MutableAssetCacheControl = "no-cache, must-revalidate";
+    private const string ImmutableAssetCacheControl = "public, max-age=31536000, immutable";
     private const string XContentTypeOptionsHeaderName = "X-Content-Type-Options";
     private const string ReferrerPolicyHeaderName = "Referrer-Policy";
     private const string XFrameOptionsHeaderName = "X-Frame-Options";
@@ -142,7 +143,7 @@ public static class JazorApplicationBuilderExtensions
             FileProvider = new PhysicalFileProvider(mountContext.OutputRootPath),
             RequestPath = mountContext.RequestPath,
             ContentTypeProvider = CreateContentTypeProvider(),
-            OnPrepareResponse = CreateStaticAssetResponseHandler(mountContext.OnPrepareResponse)
+            OnPrepareResponse = CreateStaticAssetResponseHandler(mountContext.OnPrepareResponse, mountContext.ImmutableCachePathPrefixes)
         };
 
         app.UseJazorStaticFiles(staticFileOptions);
@@ -194,7 +195,7 @@ public static class JazorApplicationBuilderExtensions
         if (options.ServeWebRootFiles)
         {
             var staticFileOptions = new StaticFileOptions();
-            staticFileOptions.OnPrepareResponse = CreateStaticAssetResponseHandler(options.OnPrepareResponse);
+            staticFileOptions.OnPrepareResponse = CreateStaticAssetResponseHandler(options.OnPrepareResponse, options.ImmutableCachePathPrefixes);
 
             app.UseJazorStaticFiles(staticFileOptions);
         }
@@ -209,6 +210,10 @@ public static class JazorApplicationBuilderExtensions
 
                 if (options.OnPrepareResponse is not null)
                     developmentOptions.OnPrepareResponse = options.OnPrepareResponse;
+
+                developmentOptions.ImmutableCachePathPrefixes.Clear();
+                foreach (var prefix in options.ImmutableCachePathPrefixes)
+                    developmentOptions.ImmutableCachePathPrefixes.Add(prefix);
 
                 options.ConfigureDevelopmentAssets?.Invoke(developmentOptions);
             });
@@ -294,6 +299,7 @@ public static class JazorApplicationBuilderExtensions
             requestPath,
             outputRootPath,
             options.OnPrepareResponse,
+            options.ImmutableCachePathPrefixes.ToArray(),
             options.ReturnNotFoundWhenMountedPathMisses);
         return true;
     }
@@ -398,23 +404,45 @@ public static class JazorApplicationBuilderExtensions
     }
 
     private static Action<StaticFileResponseContext> CreateStaticAssetResponseHandler(
-        Action<StaticFileResponseContext>? configure)
+        Action<StaticFileResponseContext>? configure,
+        IEnumerable<string> immutableCachePathPrefixes)
     {
         return context =>
         {
-            ApplyDefaultStaticAssetHeaders(context);
+            ApplyDefaultStaticAssetHeaders(context, immutableCachePathPrefixes);
             configure?.Invoke(context);
         };
     }
 
-    private static void ApplyDefaultStaticAssetHeaders(StaticFileResponseContext context)
+    private static void ApplyDefaultStaticAssetHeaders(
+        StaticFileResponseContext context,
+        IEnumerable<string> immutableCachePathPrefixes)
     {
         var headers = context.Context.Response.Headers;
         if (!headers.ContainsKey(XContentTypeOptionsHeaderName))
             headers[XContentTypeOptionsHeaderName] = "nosniff";
 
         if (!headers.ContainsKey(HeaderNames.CacheControl))
-            headers.CacheControl = MutableAssetCacheControl;
+            headers.CacheControl = MatchesImmutableCachePrefix(context.Context.Request.Path.Value, immutableCachePathPrefixes)
+                ? ImmutableAssetCacheControl
+                : MutableAssetCacheControl;
+    }
+
+    private static bool MatchesImmutableCachePrefix(string? requestPath, IEnumerable<string> immutableCachePathPrefixes)
+    {
+        if (string.IsNullOrWhiteSpace(requestPath))
+            return false;
+
+        foreach (var prefix in immutableCachePathPrefixes)
+        {
+            if (string.IsNullOrWhiteSpace(prefix))
+                continue;
+
+            if (requestPath.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        return false;
     }
 
     private static void ApplySecurityHeaders(IHeaderDictionary headers, JazorSecurityHeaderOptions options)
@@ -535,6 +563,7 @@ public static class JazorApplicationBuilderExtensions
         PathString RequestPath,
         string OutputRootPath,
         Action<StaticFileResponseContext>? OnPrepareResponse,
+        IReadOnlyList<string> ImmutableCachePathPrefixes,
         bool ReturnNotFoundWhenMountedPathMisses);
 
     private sealed record JazorSpaFallbackContext(

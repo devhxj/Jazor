@@ -10,6 +10,8 @@ public sealed class JazorWebAssetOptions
         [
             "jazor-manifest.json"
         ];
+
+        ImmutableCachePathPrefixes = [];
     }
 
     public Action<StaticFileResponseContext>? OnPrepareResponse { get; set; }
@@ -21,6 +23,8 @@ public sealed class JazorWebAssetOptions
     public bool ServeDevelopmentAssets { get; set; } = true;
 
     public IList<string> DevelopmentOutputProbeRelativePaths { get; }
+
+    public IList<string> ImmutableCachePathPrefixes { get; }
 
     public Action<JazorDevelopmentAssetOptions>? ConfigureDevelopmentAssets { get; set; }
 }

@@ -368,6 +368,8 @@ jazor-manifest-razorvue.json
 - `UseJazorHost(...)` 作为默认宿主入口，统一挂载通用安全头、标准静态文件、source map content type、开发期 Jazor 输出；项目仅在需要时覆盖站点特有 cache/header 策略。
 - `UseJazorWebAssets(...)` 继续作为更细粒度的低层挂载 API 存在，但不再要求 Playground/Wiki 这类标准宿主手写组合样板。
 - `UseJazorSpaFallback(...)` 继续负责 SPA navigation fallback；Wiki 如果需要 SEO shell 和 discovery document，可以保留项目特定 HTML shell 逻辑，但不应复制静态资源挂载和 Jazor output 探测逻辑。
+- 已完成（2026-05-13 本轮）：`JazorDevelopmentAssetOptions` / `JazorWebAssetOptions` 默认探测仅保留 `jazor-manifest.json`，`Playground` smoke 不再显式依赖旧 manifest 文件名是否 404。
+- 已完成（2026-05-13 本轮）：Wiki 的 `/vendor/*` 长缓存策略已从项目私有 `OnPrepareResponse` delegate 收敛为 `UseJazorHost(...).WebAssets.ImmutableCachePathPrefixes` 声明式 option；标准宿主不再手写基础静态资源 header 逻辑。
 
 ### Playground / Wiki 一致性工作项
 

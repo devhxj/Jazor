@@ -4,8 +4,6 @@
 
 using System.Security.Cryptography;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.StaticFiles;
-
 namespace Wiki;
 
 internal static class WikiHostShell
@@ -36,25 +34,12 @@ internal static class WikiHostShell
     private const string HtmlCacheControl = "no-cache, must-revalidate";
     private const string DiscoveryCacheControl = "public, max-age=300, must-revalidate";
     private const string MutableAssetCacheControl = "no-cache, must-revalidate";
-    private const string ImmutableVersionedAssetCacheControl = "public, max-age=31536000, immutable";
 
     internal const string WikiPathBaseAttributeName = "data-wiki-path-base";
 
     internal static void ApplyDiscoveryDocumentHeaders(IHeaderDictionary headers)
     {
         headers["Cache-Control"] = DiscoveryCacheControl;
-    }
-
-    internal static void ApplyStaticAssetHeaders(StaticFileResponseContext context)
-    {
-        var requestPath = context.Context.Request.Path.Value ?? "";
-        if (requestPath.StartsWith("/vendor/", StringComparison.OrdinalIgnoreCase))
-        {
-            context.Context.Response.Headers["Cache-Control"] = ImmutableVersionedAssetCacheControl;
-            return;
-        }
-
-        context.Context.Response.Headers.CacheControl = MutableAssetCacheControl;
     }
 
     internal static Task WriteHtmlAsync(HttpContext context, CancellationToken cancellationToken = default)

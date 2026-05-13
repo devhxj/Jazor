@@ -82,7 +82,6 @@ else if (options.Build)
 }
 
 var manifestPath = Path.Combine(emittedJazorRoot, "jazor-manifest.json");
-var legacyManifestPath = Path.Combine(emittedJazorRoot, "jazor-manifest-razorvue.json");
 var hostRequirementsPath = Path.Combine(emittedJazorRoot, "__jazor", "razorvue-host.mjs");
 var clientEntryPath = Path.Combine(publicJazorRoot, "client-entry.js");
 var clientCssPath = Path.Combine(publicJazorRoot, "client-entry.css");
@@ -92,12 +91,6 @@ PlaygroundScriptHelpers.EnsureFileExists(clientEntryPath, "browser entry bundle"
 PlaygroundScriptHelpers.EnsureFileExists(clientCssPath, "browser CSS bundle");
 PlaygroundScriptHelpers.EnsureFileExists(manifestPath, "Jazor manifest");
 PlaygroundScriptHelpers.EnsureFileExists(hostRequirementsPath, "RazorVue host requirements module");
-if (File.Exists(legacyManifestPath))
-{
-    throw new InvalidOperationException(
-        "Unexpected legacy RazorVue manifest: " + legacyManifestPath +
-        ". Playground host/consumer contracts must use jazor-manifest.json only.");
-}
 if (Directory.Exists(legacyAssetsRoot))
 {
     throw new InvalidOperationException("Unexpected legacy Playground browser bundle directory: " + legacyAssetsRoot + ". Browser bundles must be emitted under wwwroot/jazor.");
@@ -122,7 +115,6 @@ try
     await AssertEndpointAsync(httpClient, "/jazor/client-entry.js", HttpStatusCode.OK, "text/javascript", "mountPlaygroundApp");
     await AssertEndpointAsync(httpClient, "/jazor/client-entry.css", HttpStatusCode.OK, "text/css", ".playground-app-shell");
     await AssertEndpointAsync(httpClient, "/jazor/jazor-manifest.json", HttpStatusCode.OK, "application/json", "PlaygroundCatalogPage");
-    await AssertStatusAsync(httpClient, "/jazor/jazor-manifest-razorvue.json", HttpStatusCode.NotFound);
     await AssertEndpointAsync(httpClient, "/jazor/__jazor/razorvue-host.mjs", HttpStatusCode.OK, "text/javascript", "razorVueHostRequirements");
 
     using var catalogDocument = JsonDocument.Parse(await httpClient.GetStringAsync("/api/playground/examples"));

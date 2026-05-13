@@ -40,7 +40,7 @@ app.UseJazorHost(options =>
     options.SecurityHeaders.PermissionsPolicy =
         "accelerometer=(), autoplay=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), " +
         "hid=(), microphone=(), payment=(), usb=(), clipboard-read=(self), clipboard-write=(self)";
-    options.WebAssets.OnPrepareResponse = WikiHostShell.ApplyStaticAssetHeaders;
+    options.WebAssets.ImmutableCachePathPrefixes.Add("/vendor/");
 });
 
 app.UseJazorDevelopmentReload();

@@ -11,6 +11,8 @@ public sealed class JazorDevelopmentAssetOptions
         [
             "jazor-manifest.json"
         ];
+
+        ImmutableCachePathPrefixes = [];
     }
 
     public PathString RequestPath { get; set; } = new("/jazor");
@@ -20,6 +22,8 @@ public sealed class JazorDevelopmentAssetOptions
     public string DevelopmentOutputDirectoryName { get; set; } = "jazor";
 
     public IList<string> DevelopmentOutputProbeRelativePaths { get; }
+
+    public IList<string> ImmutableCachePathPrefixes { get; }
 
     public string EntryModuleRelativePath
     {
