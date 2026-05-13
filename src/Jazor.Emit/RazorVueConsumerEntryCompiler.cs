@@ -145,6 +145,30 @@ internal sealed class RazorVueConsumerEntryCompiler
         if (!resolvedComponentsResult.IsSuccess)
             return RazorVueConsumerEntryResult.Fail(13, resolvedComponentsResult.Error!);
 
+        var selectedSfcComponents = resolvedComponentsResult.Components!
+            .Where(static component => string.Equals(component.ManifestEntry.ComponentModel, ManifestComponentModel.Sfc, StringComparison.Ordinal))
+            .ToArray();
+        var selectedSfcEntryModulePaths = selectedSfcComponents
+            .Select(static component => NormalizeRelativeModulePath(component.ManifestEntry.RelativeModulePath))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        foreach (var component in resolvedComponentsResult.Components!)
+        {
+            if (!string.Equals(component.ManifestEntry.ComponentModel, ManifestComponentModel.H, StringComparison.Ordinal))
+                continue;
+
+            var hostComponentModulePath = Path.Combine(
+                options.HostJazorRoot,
+                component.ManifestEntry.RelativeModulePath.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(hostComponentModulePath))
+            {
+                return RazorVueConsumerEntryResult.Fail(
+                    14,
+                    $"RazorVue H component host module was not found: '{hostComponentModulePath}'.");
+            }
+        }
+
         var cleanSafetyError = ValidateCleanSafety(
             options,
             browserGeneratedRoot,
@@ -169,7 +193,7 @@ internal sealed class RazorVueConsumerEntryCompiler
             BridgeResultDocument? browserBridge = null;
             BridgeResultDocument? ssrBridge = null;
 
-            if (needsBrowser)
+            if (needsBrowser && selectedSfcComponents.Length > 0)
             {
                 var result = await bridgeCompiler.CompileAsync(new RazorVueSfcBridgeOptions(
                     options.HostJazorRoot,
@@ -177,14 +201,15 @@ internal sealed class RazorVueConsumerEntryCompiler
                     manifestPath,
                     RazorVueSfcBridgeMode.Browser,
                     options.Production,
-                    options.Clean));
+                    options.Clean,
+                    selectedSfcEntryModulePaths));
                 if (!result.IsSuccess)
                     return RazorVueConsumerEntryResult.Fail(17, result.Error ?? "RazorVue browser SFC bridge failed.");
 
                 browserBridge = await ReadBridgeResultAsync(result.ResultPath);
             }
 
-            if (needsSsr)
+            if (needsSsr && selectedSfcComponents.Length > 0)
             {
                 var result = await bridgeCompiler.CompileAsync(new RazorVueSfcBridgeOptions(
                     options.HostJazorRoot,
@@ -192,7 +217,8 @@ internal sealed class RazorVueConsumerEntryCompiler
                     manifestPath,
                     RazorVueSfcBridgeMode.Ssr,
                     options.Production,
-                    options.Clean));
+                    options.Clean,
+                    selectedSfcEntryModulePaths));
                 if (!result.IsSuccess)
                     return RazorVueConsumerEntryResult.Fail(18, result.Error ?? "RazorVue SSR SFC bridge failed.");
 
@@ -210,6 +236,7 @@ internal sealed class RazorVueConsumerEntryCompiler
                 await WriteTextAsync(
                     clientEntryPath,
                     BuildBrowserEntryModule(
+                        options.HostJazorRoot,
                         clientEntryPath,
                         vueFeatureFlagsPath,
                         hostRequirementsModulePath,
@@ -223,6 +250,7 @@ internal sealed class RazorVueConsumerEntryCompiler
                 await WriteTextAsync(
                     ssrEntryPath,
                     BuildSsrEntryModule(
+                        options.HostJazorRoot,
                         ssrEntryPath,
                         hostRequirementsModulePath,
                         options.SsrRuntimeModulePath!,
@@ -371,11 +399,18 @@ internal sealed class RazorVueConsumerEntryCompiler
                 resolvedComponent.Selector,
                 resolvedComponent.ManifestEntry.ComponentId,
                 resolvedComponent.ManifestEntry.ComponentName,
-                browserModule?.ExportName ?? ssrModule?.ExportName ?? resolvedComponent.ManifestEntry.ComponentName,
+                string.Equals(resolvedComponent.ManifestEntry.ComponentModel, ManifestComponentModel.H, StringComparison.Ordinal)
+                    ? "default"
+                    : browserModule?.ExportName ?? ssrModule?.ExportName ?? resolvedComponent.ManifestEntry.ComponentName,
+                resolvedComponent.ManifestEntry.ComponentModel,
                 relativeModulePath,
-                browserModule?.RelativeOutputPath,
+                string.Equals(resolvedComponent.ManifestEntry.ComponentModel, ManifestComponentModel.H, StringComparison.Ordinal)
+                    ? relativeModulePath
+                    : browserModule?.RelativeOutputPath,
                 browserModule?.OutputPath,
-                ssrModule?.RelativeOutputPath,
+                string.Equals(resolvedComponent.ManifestEntry.ComponentModel, ManifestComponentModel.H, StringComparison.Ordinal)
+                    ? relativeModulePath
+                    : ssrModule?.RelativeOutputPath,
                 ssrModule?.OutputPath));
         }
 
@@ -390,6 +425,7 @@ internal sealed class RazorVueConsumerEntryCompiler
             ?? new Dictionary<string, BridgeModuleDocument>(StringComparer.OrdinalIgnoreCase);
 
     private static string BuildBrowserEntryModule(
+        string hostJazorRoot,
         string clientEntryPath,
         string vueFeatureFlagsPath,
         string hostRequirementsModulePath,
@@ -403,13 +439,7 @@ internal sealed class RazorVueConsumerEntryCompiler
         };
 
         foreach (var component in components)
-        {
-            if (component.BrowserOutputPath is null)
-                throw new InvalidOperationException($"RazorVue browser bridge did not emit selected component '{component.ComponentId}'.");
-
-            lines.Add(
-                $"import {{ {FormatNamedImport(component.ExportName, component.Alias)} }} from {JsonSerializer.Serialize(ToModuleSpecifier(clientEntryPath, component.BrowserOutputPath))};");
-        }
+            lines.Add(BuildBrowserComponentImportLine(hostJazorRoot, clientEntryPath, component));
 
         lines.Add($"import {{ razorVueHostRequirements }} from {JsonSerializer.Serialize(ToModuleSpecifier(clientEntryPath, hostRequirementsModulePath))};");
         lines.Add($"import {{ {clientRuntimeExportName} }} from {JsonSerializer.Serialize(ToModuleSpecifier(clientEntryPath, clientRuntimeModulePath))};");
@@ -422,6 +452,7 @@ internal sealed class RazorVueConsumerEntryCompiler
     }
 
     private static string BuildSsrEntryModule(
+        string hostJazorRoot,
         string ssrEntryPath,
         string hostRequirementsModulePath,
         string ssrRuntimeModulePath,
@@ -431,13 +462,7 @@ internal sealed class RazorVueConsumerEntryCompiler
     {
         var lines = new List<string>();
         foreach (var component in components)
-        {
-            if (component.SsrOutputPath is null)
-                throw new InvalidOperationException($"RazorVue SSR bridge did not emit selected component '{component.ComponentId}'.");
-
-            lines.Add(
-                $"import {{ {FormatNamedImport(component.ExportName, component.Alias)} }} from {JsonSerializer.Serialize(ToModuleSpecifier(ssrEntryPath, component.SsrOutputPath))};");
-        }
+            lines.Add(BuildSsrComponentImportLine(hostJazorRoot, ssrEntryPath, component));
 
         lines.Add($"import {{ razorVueHostRequirements }} from {JsonSerializer.Serialize(ToModuleSpecifier(ssrEntryPath, hostRequirementsModulePath))};");
         lines.Add($"import {{ {ssrRuntimeExportName} }} from {JsonSerializer.Serialize(ToModuleSpecifier(ssrEntryPath, ssrRuntimeModulePath))};");
@@ -462,6 +487,44 @@ internal sealed class RazorVueConsumerEntryCompiler
 
         lines.Add("});");
         return string.Join("\n", lines);
+    }
+
+    private static string BuildBrowserComponentImportLine(
+        string hostJazorRoot,
+        string clientEntryPath,
+        RazorVueConsumerComponentResult component)
+    {
+        if (string.Equals(component.ComponentModel, ManifestComponentModel.H, StringComparison.Ordinal))
+        {
+            var hostModulePath = Path.Combine(
+                hostJazorRoot,
+                component.RelativeModulePath.Replace('/', Path.DirectorySeparatorChar));
+            return $"import {component.Alias} from {JsonSerializer.Serialize(ToModuleSpecifier(clientEntryPath, hostModulePath))};";
+        }
+
+        if (component.BrowserOutputPath is null)
+            throw new InvalidOperationException($"RazorVue browser bridge did not emit selected component '{component.ComponentId}'.");
+
+        return $"import {{ {FormatNamedImport(component.ExportName, component.Alias)} }} from {JsonSerializer.Serialize(ToModuleSpecifier(clientEntryPath, component.BrowserOutputPath))};";
+    }
+
+    private static string BuildSsrComponentImportLine(
+        string hostJazorRoot,
+        string ssrEntryPath,
+        RazorVueConsumerComponentResult component)
+    {
+        if (string.Equals(component.ComponentModel, ManifestComponentModel.H, StringComparison.Ordinal))
+        {
+            var hostModulePath = Path.Combine(
+                hostJazorRoot,
+                component.RelativeModulePath.Replace('/', Path.DirectorySeparatorChar));
+            return $"import {component.Alias} from {JsonSerializer.Serialize(ToModuleSpecifier(ssrEntryPath, hostModulePath))};";
+        }
+
+        if (component.SsrOutputPath is null)
+            throw new InvalidOperationException($"RazorVue SSR bridge did not emit selected component '{component.ComponentId}'.");
+
+        return $"import {{ {FormatNamedImport(component.ExportName, component.Alias)} }} from {JsonSerializer.Serialize(ToModuleSpecifier(ssrEntryPath, component.SsrOutputPath))};";
     }
 
     private static string BuildVueFeatureFlagsModule()
@@ -721,6 +784,7 @@ internal sealed record RazorVueConsumerComponentResult(
     string ComponentId,
     string ComponentName,
     string ExportName,
+    string ComponentModel,
     string RelativeModulePath,
     string? BrowserRelativeOutputPath,
     string? BrowserOutputPath,

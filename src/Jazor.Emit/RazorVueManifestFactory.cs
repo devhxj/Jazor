@@ -52,7 +52,8 @@ internal static class RazorVueManifestFactory
             ComputeSha256Hex(artifact.ModuleCode),
             artifact.Identity.HmrBoundaryKind,
             artifact.Hints.RequiresHydration,
-            artifact.Hints.SupportsSsr);
+            artifact.Hints.SupportsSsr,
+            ComponentModel: ManifestComponentModel.H);
     }
 
     private static string ResolveManifestAssemblyName(string rootAssemblyPath, IReadOnlyList<RazorVueCatalogRecord> catalogs)

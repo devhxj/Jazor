@@ -47,7 +47,8 @@ internal static class RazorVueSfcManifestFactory
             artifact.Identity.HmrBoundaryKind,
             artifact.Hints.RequiresHydration,
             artifact.Hints.SupportsSsr,
-            artifact.Identity.StyleHash);
+            artifact.Identity.StyleHash,
+            ManifestComponentModel.Sfc);
     }
 
     private static string ResolveManifestAssemblyName(string rootAssemblyPath, IReadOnlyList<RazorVueSfcCatalogRecord> catalogs)

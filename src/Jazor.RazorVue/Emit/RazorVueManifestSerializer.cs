@@ -172,7 +172,8 @@ public static class RazorVueManifestSerializer
             component.HmrBoundaryKind,
             component.RequiresHydration,
             component.SupportsSsr,
-            component.StyleHash ?? string.Empty);
+            component.StyleHash ?? string.Empty,
+            componentModel);
     }
 
     private static string NormalizeModuleKind(string? kind)

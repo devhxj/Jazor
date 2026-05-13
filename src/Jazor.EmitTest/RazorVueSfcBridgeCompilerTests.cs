@@ -103,6 +103,51 @@ public sealed class RazorVueSfcBridgeCompilerTests
     }
 
     [TestMethod]
+    public async Task CompileAsync_WithSelectedEntryModulePaths_BridgesOnlySelectedClosure()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            new ManifestModule("Demo.Components.ParentCard", "ParentCard", "components/parent-card.vue"),
+            new ManifestModule("Demo.Components.ChildCard", "ChildCard", "components/child-card.vue"),
+            new ManifestModule("Demo.Components.BrokenCard", "BrokenCard", "components/broken-card.vue"));
+        workspace.WriteVue(
+            "components/child-card.vue",
+            """
+            <template><span class="child-card">Child</span></template>
+            """);
+        workspace.WriteVue(
+            "components/parent-card.vue",
+            """
+            <template><ChildCard /></template>
+            <script setup lang="ts">
+            import ChildCard from "./child-card.vue";
+            </script>
+            """);
+
+        var compiler = new RazorVueSfcBridgeCompiler();
+        var result = await compiler.CompileAsync(new RazorVueSfcBridgeOptions(
+            workspace.HostJazorRoot,
+            workspace.BrowserOutputRoot,
+            workspace.ManifestPath,
+            RazorVueSfcBridgeMode.Browser,
+            Production: true,
+            Clean: true,
+            EntryModulePaths: ["components/parent-card.vue"]));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+        Assert.IsTrue(File.Exists(Path.Combine(workspace.BrowserOutputRoot, "components", "parent-card.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(workspace.BrowserOutputRoot, "components", "child-card.mjs")));
+        Assert.IsFalse(File.Exists(Path.Combine(workspace.BrowserOutputRoot, "components", "broken-card.mjs")));
+
+        using var resultDocument = JsonDocument.Parse(await File.ReadAllTextAsync(result.ResultPath!, TestContext.CancellationTokenSource.Token));
+        var modules = resultDocument.RootElement.GetProperty("Modules").EnumerateArray().ToArray();
+        Assert.HasCount(2, modules);
+        CollectionAssert.AreEquivalent(
+            new[] { "components/child-card.vue", "components/parent-card.vue" },
+            modules.Select(static module => module.GetProperty("RelativeModulePath").GetString()).OfType<string>().ToArray());
+    }
+
+    [TestMethod]
     public async Task CompileAsync_InvalidComponentName_FailsBeforeWritingBridgeModule()
     {
         using var workspace = new TestWorkspace();

@@ -6,7 +6,8 @@ internal sealed record RazorVueSfcBridgeOptions(
     string? ManifestPath,
     RazorVueSfcBridgeMode Mode,
     bool Production,
-    bool Clean)
+    bool Clean,
+    IReadOnlyList<string>? EntryModulePaths = null)
 {
     public static bool TryParse(string[] args, out RazorVueSfcBridgeOptions? options, out string? error)
     {
@@ -19,6 +20,7 @@ internal sealed record RazorVueSfcBridgeOptions(
         var mode = RazorVueSfcBridgeMode.Browser;
         var production = true;
         var clean = true;
+        var entryModulePaths = new List<string>();
 
         for (var i = 0; i < args.Length; i++)
         {
@@ -65,6 +67,15 @@ internal sealed record RazorVueSfcBridgeOptions(
                     }
 
                     break;
+                case "--entry-path":
+                    if (string.IsNullOrWhiteSpace(value))
+                    {
+                        error = "Invalid --entry-path value. Expected a non-empty manifest-relative .vue module path.";
+                        return false;
+                    }
+
+                    entryModulePaths.Add(value.Trim());
+                    break;
                 default:
                     error = $"Unknown argument '{arg}'.";
                     return false;
@@ -92,7 +103,8 @@ internal sealed record RazorVueSfcBridgeOptions(
                 : Path.GetFullPath(manifestPath),
             mode,
             production,
-            clean);
+            clean,
+            entryModulePaths.Count == 0 ? null : entryModulePaths);
         return true;
     }
 

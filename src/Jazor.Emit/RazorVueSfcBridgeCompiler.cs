@@ -72,7 +72,7 @@ internal sealed class RazorVueSfcBridgeCompiler
                 options.Clean ? "true" : "false",
                 "--write-result",
                 resultPath
-            };
+            }.Concat(BuildEntryPathArguments(options.EntryModulePaths)).ToArray();
 
             await Deno.Execute(
                 new DenoExecuteBaseOptions
@@ -154,6 +154,21 @@ internal sealed class RazorVueSfcBridgeCompiler
             RazorVueSfcBridgeMode.Ssr => "ssr",
             _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, "Unsupported RazorVue SFC bridge mode.")
         };
+
+    private static IEnumerable<string> BuildEntryPathArguments(IReadOnlyList<string>? entryModulePaths)
+    {
+        if (entryModulePaths is null)
+            yield break;
+
+        foreach (var entryModulePath in entryModulePaths)
+        {
+            if (string.IsNullOrWhiteSpace(entryModulePath))
+                continue;
+
+            yield return "--entry-path";
+            yield return entryModulePath.Trim();
+        }
+    }
 }
 
 internal sealed record RazorVueSfcBridgeResult(

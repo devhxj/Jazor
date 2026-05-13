@@ -354,6 +354,9 @@ jazor-manifest-razorvue.json
 - consumer entry 组件选择逻辑只在 component entries 中匹配，普通 `mjs` module 不参与 `id:` / `name:` / `path:` component selector。
 - 错误信息应继续明确区分“manifest 不存在”“manifest 没有组件”“selector 无匹配”“selector 匹配多个组件”，不能因为统一 manifest 降低诊断质量。
 - Playground colocated `consumer` 目录继续保留；它是单 .NET 项目中的前端消费构建层，不是第二个运行时 host。命名上使用 `consumer`，不再使用 `playground-consumer` 这类项目特化名称。
+- 已完成（2026-05-13 本轮）：`razorvue-consumer-entry` 在 mixed H/SFC 场景下按 `component.model` 分流，H 组件直接 default import host `.mjs`，SFC 组件才进入 bridge。
+- 已完成（2026-05-13 本轮）：`razorvue-consumer-entry` 只把“被选择的 SFC 组件集合”传给 `razorvue-sfc-bridge`，不再因为 manifest 中未选中的坏 SFC 而整体失败。
+- 已完成（2026-05-13 本轮）：`razorvue-sfc-bridge` 支持显式 entry module path 过滤，并保留相对 `.vue` 依赖闭包编译，保证选中的 SFC 组件间引用仍能稳定工作。
 
 ### ASP.NET Core 宿主工作项
 

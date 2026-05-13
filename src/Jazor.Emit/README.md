@@ -12,7 +12,7 @@
 - 物化 `.mjs` 或 `.vue`、统一 manifest 与 `.map` / origins 文件。
 - 通过 `DenoHost` 执行 bundle。
 - 将 RazorVue `.vue` SFC 编译为 Jazor authored-module 可消费的 named-export bridge modules。
-- 生成 RazorVue consumer entry modules，标准化 manifest 解析、组件选择、SFC bridge 调用和 browser/SSR 入口拼接。
+- 生成 RazorVue consumer entry modules，标准化 manifest 解析、组件选择、mixed H/SFC 组件消费、SFC bridge 调用和 browser/SSR 入口拼接。
 - 生成 RazorVue manifest diff / update plan。
 
 ## Boundaries
@@ -76,6 +76,12 @@ dotnet run --project src/Jazor.Emit -- razorvue-consumer-entry --host-root <jazo
 - `ssr-entry.mjs`
 - `vue-feature-flags.mjs`
 - `razorvue-consumer-entry.json`
+
+混合组件模型下的 consumer 契约是：
+
+- `component.model = "h"` 的 RazorVue H 组件不会经过 SFC bridge，而是从 host `jazor` 根中的 `.mjs` 直接 default import。
+- `component.model = "sfc"` 的 RazorVue SFC 组件才会进入 `razorvue-sfc-bridge`，并以 named-export `.mjs` bridge 形式进入 consumer entry。
+- 当只选择部分 SFC 组件时，bridge 只编译选中的 entry 及其相对 `.vue` 依赖闭包，不会因为 manifest 中未选中的坏 SFC 组件拖垮 consumer build。
 
 consumer runtime export 的稳定签名是：
 

@@ -238,7 +238,8 @@ internal sealed record ManifestModel(
             component.HmrBoundaryKind,
             component.RequiresHydration,
             component.SupportsSsr,
-            component.StyleHash ?? string.Empty);
+            component.StyleHash ?? string.Empty,
+            component.Model);
     }
 
     private static string ResolveArtifactKind(string relativeModulePath)

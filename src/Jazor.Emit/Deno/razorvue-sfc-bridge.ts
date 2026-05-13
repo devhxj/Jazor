@@ -42,6 +42,7 @@ export type RazorVueSfcBridgeOptions = {
   mode?: RazorVueSfcBridgeMode;
   production?: boolean;
   clean?: boolean;
+  entryModulePaths?: string[] | null;
   writeResultPath?: string | null;
 };
 
@@ -89,8 +90,8 @@ export async function compileRazorVueSfcBridgeModules(
   const manifest = normalizedOptions.manifest ?? await readJson<RazorVueSfcBridgeManifest>(normalizedOptions.manifestPath);
   validateManifest(manifest, normalizedOptions.manifestPath);
   const manifestModules = projectManifestModules(manifest);
-
-  const sortedModules = manifestModules.sort((left, right) =>
+  const selectedModules = selectManifestModules(manifestModules, normalizedOptions);
+  const sortedModules = selectedModules.sort((left, right) =>
     normalizeRelativeModulePath(left.RelativeModulePath).localeCompare(
       normalizeRelativeModulePath(right.RelativeModulePath),
       "en"
@@ -622,10 +623,24 @@ function normalizeOptions(options: RazorVueSfcBridgeOptions): Required<RazorVueS
     mode,
     production: options.production ?? true,
     clean: options.clean ?? true,
+    entryModulePaths: normalizeEntryModulePaths(options.entryModulePaths),
     writeResultPath: options.writeResultPath === undefined || options.writeResultPath === null
       ? null
       : resolve(options.writeResultPath)
   };
+}
+
+function normalizeEntryModulePaths(entryModulePaths: string[] | null | undefined): string[] {
+  if (entryModulePaths === undefined || entryModulePaths === null) {
+    return [];
+  }
+
+  return [...new Set(
+    entryModulePaths
+      .map((path) => path.trim())
+      .filter((path) => path.length > 0)
+      .map(normalizeRelativeModulePath)
+  )].sort((left, right) => left.localeCompare(right, "en"));
 }
 
 function resolveRequiredPath(value: string, name: string): string {
@@ -658,6 +673,60 @@ function projectManifestModules(manifest: RazorVueSfcBridgeManifest): RazorVueSf
   return [...(manifest.Modules ?? [])];
 }
 
+function selectManifestModules(
+  manifestModules: RazorVueSfcBridgeManifestModule[],
+  options: Required<RazorVueSfcBridgeOptions>
+): RazorVueSfcBridgeManifestModule[] {
+  if (options.entryModulePaths.length === 0) {
+    return [...manifestModules];
+  }
+
+  const moduleByRelativePath = new Map<string, RazorVueSfcBridgeManifestModule>();
+  for (const module of manifestModules) {
+    moduleByRelativePath.set(normalizeRelativeModulePath(module.RelativeModulePath), module);
+  }
+
+  const missingEntryPaths = options.entryModulePaths
+    .filter((entryPath) => !moduleByRelativePath.has(entryPath));
+  if (missingEntryPaths.length > 0) {
+    throw new Error(
+      `RazorVue SFC bridge manifest '${options.manifestPath}' did not contain selected SFC component module(s): ${missingEntryPaths.map((path) => `'${path}'`).join(", ")}.`
+    );
+  }
+
+  const selectedRelativePaths = new Set<string>();
+  const queue = [...options.entryModulePaths];
+  while (queue.length > 0) {
+    const currentRelativePath = queue.shift()!;
+    if (selectedRelativePaths.has(currentRelativePath)) {
+      continue;
+    }
+
+    selectedRelativePaths.add(currentRelativePath);
+    const sourcePath = resolve(options.hostJazorRoot, currentRelativePath);
+    const sourceText = normalizeLineEndings(readTextSync(sourcePath));
+    for (const dependencyRelativePath of enumerateRelativeVueDependencies(sourceText, currentRelativePath)) {
+      if (!selectedRelativePaths.has(dependencyRelativePath)) {
+        queue.push(dependencyRelativePath);
+      }
+    }
+  }
+
+  const selectedModules = [...selectedRelativePaths]
+    .map((relativePath) => moduleByRelativePath.get(relativePath) ?? null)
+    .filter((module): module is RazorVueSfcBridgeManifestModule => module !== null);
+
+  const missingDependencyPaths = [...selectedRelativePaths]
+    .filter((relativePath) => !moduleByRelativePath.has(relativePath));
+  if (missingDependencyPaths.length > 0) {
+    throw new Error(
+      `RazorVue SFC bridge manifest '${options.manifestPath}' was missing relative .vue dependency module(s): ${missingDependencyPaths.map((path) => `'${path}'`).join(", ")}.`
+    );
+  }
+
+  return selectedModules;
+}
+
 function normalizeManifestKind(kind: string | undefined): string {
   return kind?.trim().toLowerCase() ?? "mjs";
 }
@@ -685,6 +754,48 @@ function replaceExtension(path: string, extension: string): string {
 
 function normalizeRelativeModulePath(path: string): string {
   return path.replaceAll("\\", "/").replace(/^\.\//u, "");
+}
+
+function enumerateRelativeVueDependencies(sourceText: string, relativeModulePath: string): string[] {
+  const dependencies = new Set<string>();
+  const parsed = parse(sourceText, { filename: relativeModulePath });
+  collectRelativeVueSpecifiers(parsed.descriptor.script?.content, relativeModulePath, dependencies);
+  collectRelativeVueSpecifiers(parsed.descriptor.scriptSetup?.content, relativeModulePath, dependencies);
+  return [...dependencies].sort((left, right) => left.localeCompare(right, "en"));
+}
+
+function collectRelativeVueSpecifiers(
+  scriptContent: string | undefined,
+  relativeModulePath: string,
+  dependencies: Set<string>
+): void {
+  if (scriptContent === undefined || scriptContent.trim().length === 0) {
+    return;
+  }
+
+  const sourceFile = ts.createSourceFile(relativeModulePath, scriptContent, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const currentDirectory = dirname(normalizeRelativeModulePath(relativeModulePath)).replaceAll("\\", "/");
+
+  const visit = (node: ts.Node): void => {
+    if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier)) {
+      if (isRelativeVueSpecifier(node.moduleSpecifier.text)) {
+        dependencies.add(normalizeRelativeModulePath(join(currentDirectory, node.moduleSpecifier.text)));
+      }
+    } else if (ts.isExportDeclaration(node) && node.moduleSpecifier !== undefined && ts.isStringLiteral(node.moduleSpecifier)) {
+      if (isRelativeVueSpecifier(node.moduleSpecifier.text)) {
+        dependencies.add(normalizeRelativeModulePath(join(currentDirectory, node.moduleSpecifier.text)));
+      }
+    } else if (isStaticDynamicImport(node)) {
+      const [argument] = node.arguments;
+      if (ts.isStringLiteral(argument) && isRelativeVueSpecifier(argument.text)) {
+        dependencies.add(normalizeRelativeModulePath(join(currentDirectory, argument.text)));
+      }
+    }
+
+    ts.forEachChild(node, visit);
+  };
+
+  visit(sourceFile);
 }
 
 function isSameOrAncestorDirectory(candidateDirectory: string, targetDirectory: string): boolean {
@@ -717,6 +828,18 @@ async function ensureDirectory(path: string): Promise<void> {
 async function readText(path: string): Promise<string> {
   try {
     return await Deno.readTextFile(path);
+  } catch (error) {
+    if (error instanceof Deno.errors.NotFound) {
+      throw new Error(`RazorVue SFC bridge input file was not found: ${path}`);
+    }
+
+    throw error;
+  }
+}
+
+function readTextSync(path: string): string {
+  try {
+    return Deno.readTextFileSync(path);
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
       throw new Error(`RazorVue SFC bridge input file was not found: ${path}`);
@@ -780,6 +903,7 @@ async function runCli(args: string[]): Promise<void> {
 
 function parseCliOptions(args: string[]): RazorVueSfcBridgeOptions {
   const values = new Map<string, string>();
+  const entryModulePaths: string[] = [];
   for (let index = 0; index < args.length; index++) {
     const argument = args[index];
     if (!argument.startsWith("--")) {
@@ -790,7 +914,13 @@ function parseCliOptions(args: string[]): RazorVueSfcBridgeOptions {
       throw new Error(`Missing value for RazorVue SFC bridge argument '${argument}'.`);
     }
 
-    values.set(argument, args[++index]);
+    const value = args[++index];
+    if (argument === "--entry-path") {
+      entryModulePaths.push(value);
+      continue;
+    }
+
+    values.set(argument, value);
   }
 
   const hostJazorRoot = readRequiredCliValue(values, "--host-root");
@@ -804,6 +934,7 @@ function parseCliOptions(args: string[]): RazorVueSfcBridgeOptions {
     mode,
     production: parseOptionalBoolean(values.get("--production"), true, "--production"),
     clean: parseOptionalBoolean(values.get("--clean"), true, "--clean"),
+    entryModulePaths,
     writeResultPath: values.get("--write-result") ?? null
   };
 }

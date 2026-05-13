@@ -101,6 +101,138 @@ public sealed class RazorVueConsumerEntryCompilerTests
     }
 
     [TestMethod]
+    public async Task GenerateAsync_WithMixedHAndSfcComponents_WritesDirectHImportsAndSfcBridgeImports()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.CatalogPage", "CatalogPage", "pages/catalog-page.mjs", ManifestComponentModel.H),
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue", ManifestComponentModel.Sfc));
+        workspace.WriteHostModule(
+            "pages/catalog-page.mjs",
+            """
+            export default {
+              name: "CatalogPage"
+            };
+            """);
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(new RazorVueConsumerEntryOptions(
+            workspace.HostJazorRoot,
+            workspace.BuildRoot,
+            ManifestPath: workspace.ManifestPath,
+            HostRequirementsModulePath: workspace.HostRequirementsModulePath,
+            BrowserGeneratedRoot: workspace.BrowserGeneratedRoot,
+            SsrGeneratedRoot: workspace.SsrGeneratedRoot,
+            ClientEntryPath: workspace.ClientEntryPath,
+            SsrEntryPath: workspace.SsrEntryPath,
+            VueFeatureFlagsPath: workspace.VueFeatureFlagsPath,
+            ClientRuntimeModulePath: workspace.ClientRuntimeModulePath,
+            SsrRuntimeModulePath: workspace.SsrRuntimeModulePath,
+            ClientRuntimeExportName: "mountPlaygroundConsumer",
+            SsrRuntimeExportName: "runPlaygroundConsumerSsr",
+            SsrExecuteExportName: "executeSsrSmoke",
+            Components:
+            [
+                new RazorVueConsumerComponentSelection("CatalogPage", "id:Demo.Pages.CatalogPage"),
+                new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")
+            ],
+            Mode: RazorVueConsumerEntryMode.Both,
+            Production: true,
+            Clean: true,
+            WriteResultPath: workspace.ResultPath));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("import CatalogPage from \"../../../jazor/pages/catalog-page.mjs\";", clientEntry);
+        Assert.Contains("import { DetailPage } from \"./generated-browser/pages/detail-page.mjs\";", clientEntry);
+
+        var ssrEntry = await File.ReadAllTextAsync(workspace.SsrEntryPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("import CatalogPage from \"../../../jazor/pages/catalog-page.mjs\";", ssrEntry);
+        Assert.Contains("import { DetailPage } from \"./generated-ssr/pages/detail-page.mjs\";", ssrEntry);
+
+        using var resultDocument = JsonDocument.Parse(await File.ReadAllTextAsync(workspace.ResultPath, TestContext.CancellationTokenSource.Token));
+        var components = resultDocument.RootElement.GetProperty("Components").EnumerateArray().ToArray();
+        Assert.HasCount(2, components);
+        Assert.AreEqual("h", components[0].GetProperty("ComponentModel").GetString());
+        Assert.AreEqual("default", components[0].GetProperty("ExportName").GetString());
+        Assert.AreEqual("pages/catalog-page.mjs", components[0].GetProperty("BrowserRelativeOutputPath").GetString());
+        Assert.AreEqual("sfc", components[1].GetProperty("ComponentModel").GetString());
+        Assert.AreEqual("DetailPage", components[1].GetProperty("ExportName").GetString());
+        Assert.AreEqual("pages/detail-page.mjs", components[1].GetProperty("BrowserRelativeOutputPath").GetString());
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenOnlyHComponentsAreSelected_SkipsUnselectedBrokenSfcArtifacts()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.CatalogPage", "CatalogPage", "pages/catalog-page.mjs", ManifestComponentModel.H),
+            ManifestEntry("Demo.Pages.BrokenDetailPage", "BrokenDetailPage", "pages/broken-detail.vue", ManifestComponentModel.Sfc));
+        workspace.WriteHostModule(
+            "pages/catalog-page.mjs",
+            """
+            export default {
+              name: "CatalogPage"
+            };
+            """);
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("CatalogPage", "id:Demo.Pages.CatalogPage")));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+        Assert.IsTrue(File.Exists(workspace.ClientEntryPath));
+        Assert.IsFalse(Directory.Exists(workspace.BrowserGeneratedRoot));
+        Assert.IsFalse(Directory.Exists(workspace.SsrGeneratedRoot));
+
+        var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("import CatalogPage from \"../../../jazor/pages/catalog-page.mjs\";", clientEntry);
+        Assert.DoesNotContain(clientEntry, "broken-detail.mjs");
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenOnlySelectedSfcComponentIsHealthy_SkipsUnselectedBrokenSfcArtifacts()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue", ManifestComponentModel.Sfc),
+            ManifestEntry("Demo.Pages.BrokenPage", "BrokenPage", "pages/broken-page.vue", ManifestComponentModel.Sfc));
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+        Assert.IsTrue(File.Exists(workspace.ClientEntryPath));
+        Assert.IsTrue(File.Exists(Path.Combine(workspace.BrowserGeneratedRoot, "pages", "detail-page.mjs")));
+        Assert.IsFalse(File.Exists(Path.Combine(workspace.BrowserGeneratedRoot, "pages", "broken-page.mjs")));
+
+        var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("import { DetailPage } from \"./generated-browser/pages/detail-page.mjs\";", clientEntry);
+        Assert.DoesNotContain(clientEntry, "broken-page.mjs");
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenSelectedHComponentModuleIsMissing_FailsWithActionableError()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.CatalogPage", "CatalogPage", "pages/catalog-page.mjs", ManifestComponentModel.H));
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("CatalogPage", "id:Demo.Pages.CatalogPage")));
+
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(14, result.ExitCode);
+        StringAssert.Contains(result.Error, "RazorVue H component host module was not found");
+        StringAssert.Contains(result.Error, "pages\\catalog-page.mjs");
+    }
+
+    [TestMethod]
     public async Task GenerateAsync_CleanModeRejectsOutputRootThatWouldDeleteConsumerRuntime()
     {
         using var workspace = new TestWorkspace();
@@ -205,7 +337,8 @@ public sealed class RazorVueConsumerEntryCompilerTests
     private static RazorVueManifestEntry ManifestEntry(
         string componentId,
         string componentName,
-        string relativeModulePath)
+        string relativeModulePath,
+        string componentModel = ManifestComponentModel.Sfc)
         => new(
             AssemblyName: "Demo",
             ComponentId: componentId,
@@ -223,7 +356,8 @@ public sealed class RazorVueConsumerEntryCompilerTests
             ContentHash: "content",
             HmrBoundaryKind: RazorVueHmrBoundaryKind.TemplateOnly,
             RequiresHydration: false,
-            SupportsSsr: true);
+            SupportsSsr: true,
+            ComponentModel: componentModel);
 
     private sealed class TestWorkspace : IDisposable
     {
@@ -281,18 +415,13 @@ public sealed class RazorVueConsumerEntryCompilerTests
             => new ManifestModel(
                 RootAssemblyPath: Path.Combine(RootPath, "Demo.dll"),
                 GeneratedAtUtc: DateTime.UtcNow,
-                Modules: [])
-                .WithRazorVueManifest(
-                    new RazorVueManifestModel(
-                        "Demo",
-                        DateTime.UtcNow,
-                        modules.ToList(),
-                        Styles: [],
-                        PluginRequirements: []),
-                    ManifestComponentModel.Sfc)
+                Modules: modules.Select(ToManifestModuleEntry).ToList())
                 .Save(ManifestPath);
 
         public void WriteVue(string relativePath, string content)
+            => WriteText(Path.Combine(HostJazorRoot, relativePath.Replace('/', Path.DirectorySeparatorChar)), content);
+
+        public void WriteHostModule(string relativePath, string content)
             => WriteText(Path.Combine(HostJazorRoot, relativePath.Replace('/', Path.DirectorySeparatorChar)), content);
 
         public RazorVueConsumerEntryOptions CreateDefaultOptions(
@@ -333,12 +462,42 @@ public sealed class RazorVueConsumerEntryCompilerTests
             try
             {
                 if (Directory.Exists(RootPath))
-                    Directory.Delete(RootPath, recursive: true);
+                Directory.Delete(RootPath, recursive: true);
             }
             catch
             {
             }
         }
+
+        private static ManifestModuleEntry ToManifestModuleEntry(RazorVueManifestEntry module)
+            => new(
+                module.AssemblyName,
+                module.ComponentName,
+                module.ComponentId,
+                module.RelativeModulePath,
+                module.ContentHash,
+                module.SourceMapPath,
+                MapHash: null,
+                Kind: string.Equals(module.ComponentModel, ManifestComponentModel.Sfc, StringComparison.Ordinal)
+                    ? ManifestModuleKind.Vue
+                    : ManifestModuleKind.Mjs,
+                Component: new ManifestComponentMetadata(
+                    module.ComponentModel,
+                    module.ComponentId,
+                    module.ModuleId,
+                    module.ComponentName,
+                    module.OriginMapPath,
+                    module.Imports,
+                    module.Styles,
+                    module.PluginRequirements,
+                    module.DescriptorHash,
+                    module.TemplateHash,
+                    module.LogicHash,
+                    module.ContentHash,
+                    module.HmrBoundaryKind,
+                    module.RequiresHydration,
+                    module.SupportsSsr,
+                    module.StyleHash));
     }
 
     public TestContext TestContext { get; set; }
