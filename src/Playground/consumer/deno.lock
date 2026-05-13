@@ -1,10 +1,8 @@
 {
   "version": "5",
   "specifiers": {
-    "npm:@vue/compiler-sfc@3.5.21": "3.5.21",
     "npm:@vue/server-renderer@3.5.21": "3.5.21_vue@3.5.21__typescript@5.9.3_typescript@5.9.3",
     "npm:pinia@3.0.4": "3.0.4_typescript@5.9.3_vue@3.5.21__typescript@5.9.3",
-    "npm:typescript@5.9.3": "5.9.3",
     "npm:vue-router@4.6.3": "4.6.3_vue@3.5.21__typescript@5.9.3_typescript@5.9.3",
     "npm:vue@3.5.21": "3.5.21_typescript@5.9.3",
     "npm:vuetify@3.10.8": "3.10.8_typescript@5.9.3_vue@3.5.21__typescript@5.9.3"
@@ -246,10 +244,8 @@
   },
   "workspace": {
     "dependencies": [
-      "npm:@vue/compiler-sfc@3.5.21",
       "npm:@vue/server-renderer@3.5.21",
       "npm:pinia@3.0.4",
-      "npm:typescript@5.9.3",
       "npm:vue-router@4.6.3",
       "npm:vue@3.5.21",
       "npm:vuetify@3.10.8"

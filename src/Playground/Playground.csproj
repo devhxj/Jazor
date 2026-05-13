@@ -15,6 +15,7 @@
     <JazorEmitToolPath>$(MSBuildProjectDirectory)\..\Jazor.Emit\bin\$(Configuration)\net11.0\Jazor.Emit.dll</JazorEmitToolPath>
     <PlaygroundDenoBuild Condition="'$(PlaygroundDenoBuild)' == ''">true</PlaygroundDenoBuild>
     <PlaygroundConsumerRunDenoScript>$(MSBuildProjectDirectory)\consumer\scripts\run-deno.cs</PlaygroundConsumerRunDenoScript>
+    <PlaygroundJazorEmitToolPath>$(MSBuildProjectDirectory)\..\Jazor.Emit\bin\$(Configuration)\net11.0\Jazor.Emit.dll</PlaygroundJazorEmitToolPath>
   </PropertyGroup>
 
   <Import Project="..\Jazor\buildTransitive\Jazor.props" />
@@ -72,6 +73,7 @@
     <Error Text="Playground Deno runner was not found: $(PlaygroundConsumerRunDenoScript)"
            Condition="!Exists('$(PlaygroundConsumerRunDenoScript)')" />
     <Exec WorkingDirectory="$(MSBuildProjectDirectory)"
+          EnvironmentVariables="JAZOR_EMIT_TOOL_PATH=$(PlaygroundJazorEmitToolPath)"
           Command="dotnet run --file &quot;$(PlaygroundConsumerRunDenoScript)&quot; -- task build" />
   </Target>
 

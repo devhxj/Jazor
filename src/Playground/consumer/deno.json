@@ -1,9 +1,7 @@
 {
   "nodeModulesDir": "auto",
   "imports": {
-    "@vue/compiler-sfc": "npm:@vue/compiler-sfc@3.5.21",
     "pinia": "npm:pinia@3.0.4",
-    "typescript": "npm:typescript@5.9.3",
     "vue": "npm:vue@3.5.21",
     "vue-router": "npm:vue-router@4.6.3",
     "vue/server-renderer": "npm:@vue/server-renderer@3.5.21",

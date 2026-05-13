@@ -34,13 +34,18 @@ Vue SFC 生态默认以 `default export` 表达组件，但 Jazor authored C# mo
 - 发布阶段将根 `jazor` 物化到 `wwwroot/jazor`
 - `consumer` 读取 manifest 和 `.vue`
 - Deno pipeline 编译并打包到 `wwwroot/jazor/client-entry.*`
-- Deno pipeline 编译 `.vue` 后输出 named-export bridge module，例如 `export { _sfc_main as PlaygroundCatalogPage }`
+- `Jazor.Emit razorvue-sfc-bridge` 编译 `.vue` 后输出 named-export bridge module，例如 `export { _sfc_main as PlaygroundCatalogPage }`
 - consumer 入口和组件间引用都使用 named import，例如 `import { PlaygroundCatalogPage } from "./pages/playground-catalog-page.mjs"`
 
-### 后续提升方向
+### 当前保护
 
-- 将当前 Playground 内的 SFC named-export bridge 标准化为 RazorVue 官方 build target / SDK 能力
-- 若未来 authored Jazor module 需要引用 RazorVue 组件，也应引用 bridge module 的 named export，而不是直接引用 `.vue` default export
+- SFC named-export bridge 已收敛为 `Jazor.Emit` 的官方 host-facing build target，而不是 Playground 私有 workaround。
+- `src/Jazor.Emit/Deno/razorvue-sfc-bridge.ts` 负责 Vue SFC 编译、default export 转 named export、相对 `.vue` import 转 `.mjs` named import、CSS 输出，以及 browser/SSR 模式差异。
+- `src/Jazor.Emit/RazorVueSfcBridgeCompiler.cs` 通过 DenoHost 在隔离 workspace 中执行 bridge，避免依赖调用方目录中的 `deno.json` 或全局 Deno。
+- `src/Jazor.EmitTest/RazorVueSfcBridgeCompilerTests.cs` 覆盖 named export 输出、相对 `.vue` default import 改写、SSR 模式不注入 CSS import、非法 component export name 和 manifest 缺失错误。
+- `Playground` consumer 只调用官方 bridge，并通过 `JAZOR_EMIT_TOOL_PATH` 在 MSBuild 中复用当前 `Jazor.Emit.dll`，避免维护本地 SFC 编译副本。
+
+若未来 authored Jazor module 需要引用 RazorVue 组件，也应引用 bridge module 的 named export，而不是直接引用 `.vue` default export。
 
 ## 2. RazorVue Razor IR frontend 对某些静态 HTML attribute 形态仍然脆弱
 
