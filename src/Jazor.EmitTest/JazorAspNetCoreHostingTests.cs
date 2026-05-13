@@ -417,6 +417,105 @@ public sealed class JazorAspNetCoreHostingTests
     }
 
     [TestMethod]
+    public async Task UseJazorSpaFallback_WithStaticPagePath_ServesWwwrootHtmlPage()
+    {
+        using var workspace = new AspNetCoreHostTestWorkspace();
+        var webRoot = Path.Combine(workspace.RootPath, "wwwroot");
+        Directory.CreateDirectory(webRoot);
+        await File.WriteAllTextAsync(
+            Path.Combine(webRoot, "index.html"),
+            "<!doctype html><html><body><div id=\"app\">static shell</div></body></html>");
+        await File.WriteAllTextAsync(Path.Combine(webRoot, "site.css"), "body{color:black;}");
+
+        using var host = await CreateHostAsync(workspace.RootPath, app =>
+        {
+            app.UseStaticFiles();
+            app.UseJazorSpaFallback("/index.html");
+            app.MapGet("/api/status", () => Results.Ok(new { ok = true }));
+        });
+
+        var client = host.GetTestClient();
+
+        using var navigationRequest = new HttpRequestMessage(HttpMethod.Get, "/docs/getting-started");
+        navigationRequest.Headers.Accept.ParseAdd("text/html");
+        var navigationResponse = await client.SendAsync(navigationRequest);
+        var navigationHtml = await navigationResponse.Content.ReadAsStringAsync();
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, navigationResponse.StatusCode);
+        Assert.AreEqual("text/html", navigationResponse.Content.Headers.ContentType?.MediaType);
+        StringAssert.Contains(navigationHtml, "static shell");
+
+        using var headRequest = new HttpRequestMessage(HttpMethod.Head, "/docs/getting-started");
+        headRequest.Headers.Accept.ParseAdd("text/html");
+        var headResponse = await client.SendAsync(headRequest);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, headResponse.StatusCode);
+        Assert.AreEqual(0L, headResponse.Content.Headers.ContentLength ?? 0L);
+
+        var staticFileResponse = await client.GetAsync("/site.css");
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, staticFileResponse.StatusCode);
+
+        using var endpointRequest = new HttpRequestMessage(HttpMethod.Get, "/api/status");
+        endpointRequest.Headers.Accept.ParseAdd("text/html");
+        var endpointResponse = await client.SendAsync(endpointRequest);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, endpointResponse.StatusCode);
+        Assert.AreEqual("application/json", endpointResponse.Content.Headers.ContentType?.MediaType);
+    }
+
+    [TestMethod]
+    public async Task UseJazorSpaFallback_WithStaticPagePath_WhenPathBaseIsApplied_ResolvesWithinWebRoot()
+    {
+        using var workspace = new AspNetCoreHostTestWorkspace();
+        var webRoot = Path.Combine(workspace.RootPath, "wwwroot");
+        Directory.CreateDirectory(webRoot);
+        await File.WriteAllTextAsync(
+            Path.Combine(webRoot, "index.html"),
+            "<!doctype html><html><body><div id=\"app\">path-base shell</div></body></html>");
+
+        using var host = await CreateHostAsync(workspace.RootPath, app =>
+        {
+            app.UsePathBase("/docs");
+            app.UseStaticFiles();
+            app.UseJazorSpaFallback("/index.html");
+        });
+
+        var client = host.GetTestClient();
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/docs/guides/overview");
+        request.Headers.Accept.ParseAdd("text/html");
+        var response = await client.SendAsync(request);
+        var html = await response.Content.ReadAsStringAsync();
+
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, response.StatusCode);
+        StringAssert.Contains(html, "path-base shell");
+    }
+
+    [TestMethod]
+    public async Task UseJazorSpaFallback_WithStaticPagePath_WhenPageIsMissing_FailsActionably()
+    {
+        using var workspace = new AspNetCoreHostTestWorkspace();
+        var webRoot = Path.Combine(workspace.RootPath, "wwwroot");
+        Directory.CreateDirectory(webRoot);
+
+        try
+        {
+            using var host = await CreateHostAsync(workspace.RootPath, app =>
+            {
+                app.UseStaticFiles();
+                app.UseJazorSpaFallback("/index.html");
+            });
+
+            using var client = host.GetTestClient();
+            using var request = new HttpRequestMessage(HttpMethod.Get, "/guides/overview");
+            request.Headers.Accept.ParseAdd("text/html");
+            _ = await client.SendAsync(request);
+            Assert.Fail("Expected static SPA fallback to fail when the configured web-root page is missing.");
+        }
+        catch (InvalidOperationException ex)
+        {
+            StringAssert.Contains(ex.Message, "Jazor SPA fallback static page was not found in web root");
+            StringAssert.Contains(ex.Message, "index.html");
+        }
+    }
+
+    [TestMethod]
     public async Task UseJazorSpaFallback_WhenApplicationUsesPathBase_AllowsConfiguredIndexHtmlSuffixAndPreservesPathBase()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();

@@ -234,6 +234,34 @@ public static class JazorApplicationBuilderExtensions
 
     public static IApplicationBuilder UseJazorSpaFallback(
         this IApplicationBuilder app,
+        string webRootPagePath)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+        return app.UseJazorSpaFallback(webRootPagePath, configure: null);
+    }
+
+    public static IApplicationBuilder UseJazorSpaFallback(
+        this IApplicationBuilder app,
+        string webRootPagePath,
+        Action<JazorSpaFallbackOptions>? configure)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+        var writeHtml = CreateStaticSpaFallbackWriter(webRootPagePath);
+        return app.UseJazorSpaFallback(writeHtml, configure);
+    }
+
+    public static IApplicationBuilder UseJazorSpaFallback(
+        this IApplicationBuilder app,
+        string webRootPagePath,
+        JazorSpaFallbackOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+        var writeHtml = CreateStaticSpaFallbackWriter(webRootPagePath);
+        return app.UseJazorSpaFallback(writeHtml, options);
+    }
+
+    public static IApplicationBuilder UseJazorSpaFallback(
+        this IApplicationBuilder app,
         Func<HttpContext, CancellationToken, Task> writeHtml,
         Action<JazorSpaFallbackOptions>? configure)
     {
@@ -383,6 +411,29 @@ public static class JazorApplicationBuilderExtensions
         }
 
         return false;
+    }
+
+    private static Func<HttpContext, CancellationToken, Task> CreateStaticSpaFallbackWriter(string webRootPagePath)
+    {
+        var normalizedWebRootPagePath = NormalizeStaticSpaFallbackPagePath(webRootPagePath);
+        return async (context, cancellationToken) =>
+        {
+            var environment = context.RequestServices.GetService<IWebHostEnvironment>()
+                ?? throw new InvalidOperationException("Jazor SPA fallback requires IWebHostEnvironment from the ASP.NET Core host.");
+            var pageFile = environment.WebRootFileProvider.GetFileInfo(normalizedWebRootPagePath);
+            if (!pageFile.Exists)
+            {
+                throw new InvalidOperationException(
+                    $"Jazor SPA fallback static page was not found in web root: '{normalizedWebRootPagePath}'.");
+            }
+
+            context.Response.ContentType ??= "text/html; charset=utf-8";
+            if (HttpMethods.IsHead(context.Request.Method))
+                return;
+
+            await using var stream = pageFile.CreateReadStream();
+            await stream.CopyToAsync(context.Response.Body, cancellationToken);
+        };
     }
 
     private static bool IsHtmlDocumentMediaType(MediaTypeHeaderValue mediaType)
@@ -596,5 +647,31 @@ public static class JazorApplicationBuilderExtensions
             throw new ArgumentException("Jazor SPA fallback allowed path suffixes must start with '/'.", nameof(suffix));
 
         return normalized;
+    }
+
+    private static string NormalizeStaticSpaFallbackPagePath(string webRootPagePath)
+    {
+        if (string.IsNullOrWhiteSpace(webRootPagePath))
+            throw new ArgumentException("Jazor SPA fallback static page path cannot be empty.", nameof(webRootPagePath));
+
+        var normalized = webRootPagePath.Trim().Replace('\\', '/');
+        if (!normalized.StartsWith('/'))
+            throw new ArgumentException("Jazor SPA fallback static page path must start with '/'.", nameof(webRootPagePath));
+
+        if (!Path.HasExtension(normalized))
+            throw new ArgumentException("Jazor SPA fallback static page path must point to a file with an extension.", nameof(webRootPagePath));
+
+        var relativePath = normalized.TrimStart('/');
+        if (relativePath.Length == 0)
+            throw new ArgumentException("Jazor SPA fallback static page path cannot point to the web root itself.", nameof(webRootPagePath));
+
+        var segments = relativePath
+            .Split('/', StringSplitOptions.RemoveEmptyEntries)
+            .Where(static segment => segment != ".")
+            .ToArray();
+        if (segments.Any(static segment => segment == ".."))
+            throw new ArgumentException("Jazor SPA fallback static page path cannot escape the web root.", nameof(webRootPagePath));
+
+        return string.Join("/", segments);
     }
 }
