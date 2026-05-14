@@ -49,6 +49,8 @@
     <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.VueRoute\bin\$(Configuration)\net11.0\ECMAScript.VueRoute.pdb" Pack="true" PackagePath="lib\net11.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Vue3\bin\$(Configuration)\net11.0\ECMAScript.Vue3.dll" Pack="true" PackagePath="lib\net11.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Vue3\bin\$(Configuration)\net11.0\ECMAScript.Vue3.pdb" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.TDesign\bin\$(Configuration)\net11.0\ECMAScript.TDesign.dll" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.TDesign\bin\$(Configuration)\net11.0\ECMAScript.TDesign.pdb" Pack="true" PackagePath="lib\net11.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.VueContract\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.dll" Pack="true" PackagePath="lib\net11.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.VueContract\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.pdb" Pack="true" PackagePath="lib\net11.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll" Pack="true" PackagePath="lib\net11.0\" />
@@ -96,6 +98,7 @@
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.VueContract\ECMAScript.VueContract.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript\ECMAScript.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
+    <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.TDesign\ECMAScript.TDesign.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.Pinia\ECMAScript.Pinia.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.Pinia.Testing\ECMAScript.Pinia.Testing.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.VueRoute\ECMAScript.VueRoute.csproj" />

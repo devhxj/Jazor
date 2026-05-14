@@ -330,6 +330,48 @@ public sealed class RazorVueComponentRegistryTests
         }
     }
 
+    [TestMethod]
+    public void RazorVue_Registry_CreateFromCompilationContext_ResolvesTDesignPackageComponents()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host-card")]
+                public class HostCard : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        var registry = context.CreateComponentRegistry();
+        foreach (var componentName in TDesignTestMetadata.RuntimeComponentExportNames)
+        {
+            var result = registry.Resolve(
+                componentName,
+                VueComponentResolutionContext.Create("Demo.Pages", "ECMAScript.TDesign"));
+
+            Assert.AreEqual(VueComponentResolutionStatus.Resolved, result.Status, componentName);
+            Assert.IsNotNull(result.Descriptor, componentName);
+            Assert.AreEqual(VueComponentSourceKind.LibraryComponent, result.Descriptor.SourceKind, componentName);
+            Assert.AreEqual("tdesign-vue-next", result.Descriptor.ImportSpecifier, componentName);
+            CollectionAssert.AreEqual(new[] { "tdesign" }, result.Descriptor.PluginRequirements.ToArray(), componentName);
+        }
+    }
+
     private static VueComponentRegistry CreateRegistry(
         ImmutableArray<VueComponentDescriptor> userComponents,
         ImmutableArray<VueComponentDescriptor> libraryComponents = default(ImmutableArray<VueComponentDescriptor>))

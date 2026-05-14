@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using System.Text.Json;
 using ECMAScript;
+using ECMAScript.TDesign;
 using ECMAScript.Vuetify;
 using static ECMAScript.Vue3;
 
@@ -2435,6 +2436,182 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("ECMAScript.Vuetify.VListItemSlotContext", listItem.Slots.Single(static slot => slot.Name == "append").Parameters[0].TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VListItemTitleSlotContext", listItem.Slots.Single(static slot => slot.Name == "title").Parameters[0].TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VListItemSubtitleSlotContext", listItem.Slots.Single(static slot => slot.Name == "subtitle").Parameters[0].TypeName);
+    }
+
+    [TestMethod]
+    public void RazorVue_Context_DiscoversTDesignPackageLibraryDescriptors_FromReferencedAssembly()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host-card")]
+                public class HostCard : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        var descriptors = context.DiscoverLibraryComponents();
+
+        var tdesignDescriptors = descriptors
+            .Where(static descriptor => descriptor.ResolutionNamespace == "ECMAScript.TDesign")
+            .OrderBy(static descriptor => descriptor.Name, StringComparer.Ordinal)
+            .ToArray();
+
+        foreach (var descriptor in tdesignDescriptors)
+        {
+            var additionalAttributes = descriptor.Props.SingleOrDefault(static prop => prop.PublicName == "AdditionalAttributes");
+            Assert.IsNotNull(additionalAttributes, descriptor.FullName);
+            Assert.AreEqual("additionalAttributes", additionalAttributes!.Name, descriptor.FullName);
+            Assert.IsTrue(additionalAttributes.CaptureUnmatchedValues, descriptor.FullName);
+            Assert.AreEqual("System.Collections.Generic.IReadOnlyDictionary<string, object?>?", additionalAttributes.TypeName, descriptor.FullName);
+            CollectionAssert.AreEqual(new[] { "tdesign-vue-next/es/style/index.css" }, descriptor.StyleDependencies.ToArray(), descriptor.FullName);
+            CollectionAssert.AreEqual(new[] { "tdesign" }, descriptor.PluginRequirements.ToArray(), descriptor.FullName);
+        }
+
+        CollectionAssert.AreEquivalent(
+            TDesignTestMetadata.RuntimeComponentExportNames,
+            tdesignDescriptors.Select(static descriptor => descriptor.Name).ToArray());
+        Assert.AreEqual(TDesignTestMetadata.RuntimeComponentExportNames.Length, tdesignDescriptors.Length);
+        Assert.AreEqual(TDesignTestMetadata.StrongAuthoringComponentNames.Length, tdesignDescriptors.Length);
+
+        var button = tdesignDescriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.TDesign.TButton");
+        Assert.AreEqual("tdesign-vue-next", button.ImportSpecifier);
+        Assert.AreEqual("Button", button.ExportName);
+        Assert.AreEqual("content", button.Props.Single(static prop => prop.PublicName == "Text").Name);
+        Assert.AreEqual("class", button.Props.Single(static prop => prop.PublicName == "CssClass").Name);
+        Assert.AreEqual("style", button.Props.Single(static prop => prop.PublicName == "CssStyle").Name);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignButtonShape?", button.Props.Single(static prop => prop.PublicName == "Shape").TypeName);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignButtonTheme?", button.Props.Single(static prop => prop.PublicName == "Theme").TypeName);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignButtonVariant?", button.Props.Single(static prop => prop.PublicName == "Variant").TypeName);
+        Assert.AreEqual("click", button.Emits.Single(static emit => emit.RazorAlias == "OnClick").Name);
+        Assert.IsTrue(button.Slots.Single(static slot => slot.Name == "icon").Parameters.IsDefaultOrEmpty);
+        Assert.IsTrue(button.Slots.Single(static slot => slot.IsDefault).IsDefault);
+
+        var menu = tdesignDescriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.TDesign.TMenu");
+        Assert.AreEqual("Menu", menu.ExportName);
+        Assert.AreEqual("width", menu.Props.Single(static prop => prop.PublicName == "Width").Name);
+        Assert.AreEqual("value", menu.Props.Single(static prop => prop.PublicName == "Value").Name);
+        Assert.AreEqual("defaultValue", menu.Props.Single(static prop => prop.PublicName == "DefaultValue").Name);
+        Assert.AreEqual("defaultExpanded", menu.Props.Single(static prop => prop.PublicName == "DefaultExpanded").Name);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignMenuWidthValue?", menu.Props.Single(static prop => prop.PublicName == "Width").TypeName);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignMenuValue?", menu.Props.Single(static prop => prop.PublicName == "Value").TypeName);
+        Assert.AreEqual("change", menu.Emits.Single(static emit => emit.RazorAlias == "OnChange").Name);
+        Assert.AreEqual("expand", menu.Emits.Single(static emit => emit.RazorAlias == "OnExpand").Name);
+        Assert.IsTrue(menu.Slots.Single(static slot => slot.Name == "logo").Parameters.IsDefaultOrEmpty);
+        Assert.IsTrue(menu.Slots.Single(static slot => slot.Name == "operations").Parameters.IsDefaultOrEmpty);
+
+        var menuItem = tdesignDescriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.TDesign.TMenuItem");
+        Assert.AreEqual("MenuItem", menuItem.ExportName);
+        Assert.AreEqual("content", menuItem.Props.Single(static prop => prop.PublicName == "Text").Name);
+        Assert.AreEqual("to", menuItem.Props.Single(static prop => prop.PublicName == "To").Name);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignMenuRouteTarget?", menuItem.Props.Single(static prop => prop.PublicName == "To").TypeName);
+        Assert.AreEqual("click", menuItem.Emits.Single(static emit => emit.RazorAlias == "OnClick").Name);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignMenuItemClickContext", menuItem.Emits.Single(static emit => emit.RazorAlias == "OnClick").PayloadTypeName);
+        Assert.IsTrue(menuItem.Slots.Single(static slot => slot.Name == "icon").Parameters.IsDefaultOrEmpty);
+
+        var card = tdesignDescriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.TDesign.TCard");
+        Assert.AreEqual("Card", card.ExportName);
+        Assert.AreEqual("bodyClassName", card.Props.Single(static prop => prop.PublicName == "BodyCssClass").Name);
+        Assert.AreEqual("bodyStyle", card.Props.Single(static prop => prop.PublicName == "BodyCssStyle").Name);
+        Assert.AreEqual("headerClassName", card.Props.Single(static prop => prop.PublicName == "HeaderCssClass").Name);
+        Assert.AreEqual("headerStyle", card.Props.Single(static prop => prop.PublicName == "HeaderCssStyle").Name);
+        Assert.AreEqual("footerClassName", card.Props.Single(static prop => prop.PublicName == "FooterCssClass").Name);
+        Assert.AreEqual("footerStyle", card.Props.Single(static prop => prop.PublicName == "FooterCssStyle").Name);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignStyles?", card.Props.Single(static prop => prop.PublicName == "BodyCssStyle").TypeName);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignCardTheme?", card.Props.Single(static prop => prop.PublicName == "Theme").TypeName);
+        Assert.IsTrue(card.Slots.Any(static slot => slot.Name == "header"));
+        Assert.IsTrue(card.Slots.Any(static slot => slot.Name == "footer"));
+        Assert.IsTrue(card.Slots.Any(static slot => slot.Name == "actions"));
+        Assert.IsTrue(card.Slots.Any(static slot => slot.Name == "avatar"));
+
+        var breadcrumb = tdesignDescriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.TDesign.TBreadcrumb");
+        Assert.AreEqual("Breadcrumb", breadcrumb.ExportName);
+        Assert.AreEqual("maxItemWidth", breadcrumb.Props.Single(static prop => prop.PublicName == "MaxItemWidth").Name);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignBreadcrumbTheme?", breadcrumb.Props.Single(static prop => prop.PublicName == "Theme").TypeName);
+        Assert.IsTrue(breadcrumb.Slots.Any(static slot => slot.Name == "separator"));
+        Assert.IsTrue(breadcrumb.Slots.Any(static slot => slot.Name == "ellipsis"));
+
+        var breadcrumbItem = tdesignDescriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.TDesign.TBreadcrumbItem");
+        Assert.AreEqual("BreadcrumbItem", breadcrumbItem.ExportName);
+        Assert.AreEqual("content", breadcrumbItem.Props.Single(static prop => prop.PublicName == "Text").Name);
+        Assert.AreEqual("to", breadcrumbItem.Props.Single(static prop => prop.PublicName == "To").Name);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignMenuRouteTarget?", breadcrumbItem.Props.Single(static prop => prop.PublicName == "To").TypeName);
+        Assert.AreEqual("click", breadcrumbItem.Emits.Single(static emit => emit.RazorAlias == "OnClick").Name);
+        Assert.AreEqual("MouseEvent", breadcrumbItem.Emits.Single(static emit => emit.RazorAlias == "OnClick").PayloadTypeName);
+        Assert.IsTrue(breadcrumbItem.Slots.Any(static slot => slot.Name == "icon"));
+
+        var link = tdesignDescriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.TDesign.TLink");
+        Assert.AreEqual("Link", link.ExportName);
+        Assert.AreEqual("content", link.Props.Single(static prop => prop.PublicName == "Text").Name);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignLinkDownloadValue?", link.Props.Single(static prop => prop.PublicName == "Download").TypeName);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignLinkTheme?", link.Props.Single(static prop => prop.PublicName == "Theme").TypeName);
+        Assert.AreEqual("click", link.Emits.Single(static emit => emit.RazorAlias == "OnClick").Name);
+        Assert.IsTrue(link.Slots.Any(static slot => slot.Name == "prefixIcon"));
+        Assert.IsTrue(link.Slots.Any(static slot => slot.Name == "suffixIcon"));
+
+        var tabs = tdesignDescriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.TDesign.TTabs");
+        Assert.AreEqual("Tabs", tabs.ExportName);
+        Assert.AreEqual("value", tabs.Props.Single(static prop => prop.PublicName == "Value").Name);
+        Assert.AreEqual("defaultValue", tabs.Props.Single(static prop => prop.PublicName == "DefaultValue").Name);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignTabValue?", tabs.Props.Single(static prop => prop.PublicName == "Value").TypeName);
+        Assert.IsTrue(tabs.Props.Single(static prop => prop.PublicName == "Value").AcceptsBinding);
+        Assert.AreEqual(VuePropKind.Model, tabs.Props.Single(static prop => prop.PublicName == "Value").Kind);
+        Assert.AreEqual("change", tabs.Emits.Single(static emit => emit.RazorAlias == "ValueChanged").Name);
+        Assert.AreEqual(VueEmitKind.ModelUpdate, tabs.Emits.Single(static emit => emit.RazorAlias == "ValueChanged").Kind);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignTabValue", tabs.Emits.Single(static emit => emit.RazorAlias == "ValueChanged").PayloadTypeName);
+        Assert.AreEqual("add", tabs.Emits.Single(static emit => emit.RazorAlias == "OnAdd").Name);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignTabAddContext", tabs.Emits.Single(static emit => emit.RazorAlias == "OnAdd").PayloadTypeName);
+        Assert.AreEqual("dragSort", tabs.Emits.Single(static emit => emit.RazorAlias == "OnDragSort").Name);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignTabsDragSortContext", tabs.Emits.Single(static emit => emit.RazorAlias == "OnDragSort").PayloadTypeName);
+        Assert.AreEqual("remove", tabs.Emits.Single(static emit => emit.RazorAlias == "OnRemove").Name);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignTabRemoveContext", tabs.Emits.Single(static emit => emit.RazorAlias == "OnRemove").PayloadTypeName);
+        Assert.IsTrue(tabs.Slots.Any(static slot => slot.Name == "action"));
+
+        var tabPanel = tdesignDescriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.TDesign.TTabPanel");
+        Assert.AreEqual("TabPanel", tabPanel.ExportName);
+        Assert.AreEqual("label", tabPanel.Props.Single(static prop => prop.PublicName == "LabelText").Name);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignTabValue?", tabPanel.Props.Single(static prop => prop.PublicName == "Value").TypeName);
+        Assert.AreEqual("remove", tabPanel.Emits.Single(static emit => emit.RazorAlias == "OnRemove").Name);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignTabPanelRemoveContext", tabPanel.Emits.Single(static emit => emit.RazorAlias == "OnRemove").PayloadTypeName);
+        Assert.IsTrue(tabPanel.Slots.Any(static slot => slot.Name == "label"));
+        Assert.IsTrue(tabPanel.Slots.Any(static slot => slot.IsDefault));
+
+        var avatar = tdesignDescriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.TDesign.TAvatar");
+        Assert.AreEqual("Avatar", avatar.ExportName);
+        Assert.AreEqual("content", avatar.Props.Single(static prop => prop.PublicName == "Text").Name);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignAvatarShape?", avatar.Props.Single(static prop => prop.PublicName == "Shape").TypeName);
+        Assert.AreEqual("error", avatar.Emits.Single(static emit => emit.RazorAlias == "OnError").Name);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignAvatarErrorContext", avatar.Emits.Single(static emit => emit.RazorAlias == "OnError").PayloadTypeName);
+        Assert.IsTrue(avatar.Slots.Any(static slot => slot.Name == "icon"));
+
+        var avatarGroup = tdesignDescriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.TDesign.TAvatarGroup");
+        Assert.AreEqual("AvatarGroup", avatarGroup.ExportName);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignAvatarGroupCascading?", avatarGroup.Props.Single(static prop => prop.PublicName == "Cascading").TypeName);
+        Assert.IsTrue(avatarGroup.Slots.Any(static slot => slot.Name == "collapseAvatar"));
+
+        var badge = tdesignDescriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.TDesign.TBadge");
+        Assert.AreEqual("Badge", badge.ExportName);
+        Assert.AreEqual("count", badge.Props.Single(static prop => prop.PublicName == "CountValue").Name);
+        Assert.AreEqual("content", badge.Props.Single(static prop => prop.PublicName == "Text").Name);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignBadgeCountValue?", badge.Props.Single(static prop => prop.PublicName == "CountValue").TypeName);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignBadgeOffset?", badge.Props.Single(static prop => prop.PublicName == "Offset").TypeName);
+        Assert.AreEqual("ECMAScript.TDesign.TDesignBadgeShape?", badge.Props.Single(static prop => prop.PublicName == "Shape").TypeName);
+        Assert.IsTrue(badge.Slots.Any(static slot => slot.Name == "count"));
     }
 
     [TestMethod]

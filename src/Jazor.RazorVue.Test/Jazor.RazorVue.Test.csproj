@@ -18,6 +18,7 @@
     <ProjectReference Include="..\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
     <ProjectReference Include="..\ECMAScript.VueRoute\ECMAScript.VueRoute.csproj" />
     <ProjectReference Include="..\ECMAScript.Pinia\ECMAScript.Pinia.csproj" />
+    <ProjectReference Include="..\ECMAScript.TDesign\ECMAScript.TDesign.csproj" />
     <ProjectReference Include="..\Jazor.Common\Jazor.Common.csproj" />
     <ProjectReference Include="..\ECMAScript.Contract\ECMAScript.Contract.csproj" />
     <ProjectReference Include="..\ECMAScript.Vuetify\ECMAScript.Vuetify.csproj" />

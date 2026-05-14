@@ -1,6 +1,7 @@
 using System.Reflection;
 using ECMAScript;
 using ECMAScript.Contract;
+using ECMAScript.TDesign;
 using ECMAScript.Vuetify;
 using Microsoft.AspNetCore.Components;
 using static ECMAScript.Vue3;
@@ -83,6 +84,69 @@ public sealed class EcmaScriptVueProxyTests
 
         foreach (var type in runtimeShapes)
             AssertEcmaScriptSupport(type);
+    }
+
+    [TestMethod]
+    public void TDesign_ImportHosts_UseEcmaScriptImports_InsteadOfModuleEntryMarkers()
+    {
+        AssertEcmaScriptImport(typeof(TDesign), "npm:tdesign-vue-next");
+        AssertEcmaScriptImport(typeof(TDesignComponents), "tdesign-vue-next");
+    }
+
+    [TestMethod]
+    public void TDesign_RuntimeShapes_UseEcmaScriptSupportMarkers_WithoutModuleGeneration()
+    {
+        var runtimeShapes = new[]
+        {
+            typeof(ITDesignComponent),
+            typeof(TDesignPlugin),
+            typeof(TDesignInstallOptions),
+            typeof(TDesignGlobalConfig),
+            typeof(TDesignComponentRegistry),
+            typeof(TDesignStyles),
+            typeof(TDesignMenuQueryData),
+            typeof(TDesignMenuRoute),
+            typeof(TDesignMenuItemClickContext),
+            typeof(TDesignTabAddContext),
+            typeof(TDesignTabRemoveContext),
+            typeof(TDesignTabPanelRemoveContext),
+            typeof(TDesignTabsDragSortContext),
+            typeof(TDesignAvatarErrorContext)
+        };
+
+        foreach (var type in runtimeShapes)
+            AssertEcmaScriptSupport(type);
+    }
+
+    [TestMethod]
+    public void TDesign_PluginAndInstallSurface_UsesStronglyTypedContracts()
+    {
+        var defaultExport = typeof(TDesign).GetProperty(nameof(TDesign.Default), BindingFlags.Public | BindingFlags.Static);
+        var version = typeof(TDesign).GetProperty(nameof(TDesign.Version), BindingFlags.Public | BindingFlags.Static);
+        var installOverloads = typeof(TDesign)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+            .Where(static method => method.Name == nameof(TDesign.Install))
+            .OrderBy(static method => method.GetParameters().Length)
+            .ToArray();
+
+        Assert.IsNotNull(defaultExport);
+        Assert.AreEqual(typeof(TDesignPlugin), defaultExport!.PropertyType);
+        Assert.AreEqual("default", defaultExport.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name);
+
+        Assert.IsNotNull(version);
+        Assert.AreEqual(typeof(string), version!.PropertyType);
+
+        Assert.AreEqual(2, installOverloads.Length);
+        CollectionAssert.AreEqual(
+            new[] { typeof(VueApp) },
+            installOverloads[0].GetParameters().Select(static parameter => parameter.ParameterType).ToArray());
+        CollectionAssert.AreEqual(
+            new[] { typeof(VueApp), typeof(TDesignInstallOptions) },
+            installOverloads[1].GetParameters().Select(static parameter => parameter.ParameterType).ToArray());
+
+        Assert.IsTrue(typeof(VuePlugin).IsAssignableFrom(typeof(TDesignPlugin)));
+        Assert.IsTrue(typeof(VuePluginOptions).IsAssignableFrom(typeof(TDesignInstallOptions)));
+        Assert.AreEqual(typeof(string), typeof(TDesignGlobalConfig).GetProperty(nameof(TDesignGlobalConfig.ClassPrefix), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
     }
 
     [TestMethod]
@@ -3113,6 +3177,53 @@ public sealed class EcmaScriptVueProxyTests
         }
     }
 
+    [TestMethod]
+    public void TDesign_AuthoringComponents_ExposeOnlyAdditionalAttributesAsObjectSink()
+    {
+        var componentTypes = typeof(TDesign).Assembly
+            .GetTypes()
+            .Where(static type =>
+                type.Namespace == "ECMAScript.TDesign" &&
+                type.IsClass &&
+                !type.IsAbstract &&
+                typeof(ComponentBase).IsAssignableFrom(type) &&
+                typeof(IVueLibraryComponent).IsAssignableFrom(type))
+            .OrderBy(static type => type.FullName, StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.IsTrue(componentTypes.Length > 0);
+        CollectionAssert.AreEquivalent(
+            GetTDesignRuntimeComponentNames()
+                .OrderBy(static name => name, StringComparer.Ordinal)
+                .ToArray(),
+            componentTypes
+                .Select(static type => type.Name)
+                .OrderBy(static name => name, StringComparer.Ordinal)
+                .ToArray());
+
+        foreach (var componentType in componentTypes)
+        {
+            var additionalAttributes = componentType.GetProperty("AdditionalAttributes", BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
+            Assert.IsNotNull(additionalAttributes, componentType.FullName);
+            Assert.AreEqual(
+                typeof(IReadOnlyDictionary<string, object?>),
+                additionalAttributes!.PropertyType.UnwrapNullable(),
+                componentType.FullName);
+
+            var parameter = additionalAttributes.GetCustomAttribute<ParameterAttribute>(inherit: true);
+            Assert.IsNotNull(parameter, componentType.FullName);
+            Assert.IsTrue(parameter!.CaptureUnmatchedValues, componentType.FullName);
+
+            foreach (var property in componentType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+            {
+                if (property.Name == "AdditionalAttributes")
+                    continue;
+
+                AssertNotObject(property.PropertyType, $"{componentType.Name}.{property.Name}");
+            }
+        }
+    }
+
     private static IEnumerable<string> GetVuetifyRuntimeComponentNames()
         => GetVuetifyRuntimeComponentNames(typeof(VuetifyComponents))
             .Concat(GetVuetifyRuntimeComponentNames(typeof(VuetifyLabsComponents)));
@@ -3121,6 +3232,12 @@ public sealed class EcmaScriptVueProxyTests
         => exportHost
             .GetProperties(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
             .Where(static property => property.PropertyType == typeof(IVuetifyComponent))
+            .Select(static property => property.Name);
+
+    private static IEnumerable<string> GetTDesignRuntimeComponentNames()
+        => typeof(TDesignComponents)
+            .GetProperties(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+            .Where(static property => property.PropertyType == typeof(ITDesignComponent))
             .Select(static property => property.Name);
 
     [TestMethod]
@@ -3372,6 +3489,118 @@ public sealed class EcmaScriptVueProxyTests
             typeof(VuetifyDataTableHeader),
             typeof(VuetifyDataTableItems),
             typeof(VuetifyDataTableItem));
+    }
+
+    [TestMethod]
+    public void TDesign_ValueAndUnionTypes_ExposeStronglyTypedContracts()
+    {
+        CollectionAssert.AreEqual(
+            new[] { "button", "reset", "submit" },
+            GetStringEnumRuntimeValues(typeof(TDesignButtonType)));
+        CollectionAssert.AreEqual(
+            new[] { "base", "dashed", "outline", "text" },
+            GetStringEnumRuntimeValues(typeof(TDesignButtonVariant)));
+        CollectionAssert.AreEqual(
+            new[] { "dark", "light" },
+            GetStringEnumRuntimeValues(typeof(TDesignMenuTheme)));
+        CollectionAssert.AreEqual(
+            new[] { "horizontal", "vertical" },
+            GetStringEnumRuntimeValues(typeof(TDesignDividerLayout)));
+        CollectionAssert.AreEqual(
+            new[] { "light" },
+            GetStringEnumRuntimeValues(typeof(TDesignBreadcrumbTheme)));
+        CollectionAssert.AreEqual(
+            new[] { "color", "underline" },
+            GetStringEnumRuntimeValues(typeof(TDesignLinkHover)));
+        CollectionAssert.AreEqual(
+            new[] { "danger", "default", "primary", "success", "warning" },
+            GetStringEnumRuntimeValues(typeof(TDesignLinkTheme)));
+        CollectionAssert.AreEqual(
+            new[] { "bottom", "left", "right", "top" },
+            GetStringEnumRuntimeValues(typeof(TDesignTabsPlacement)));
+        CollectionAssert.AreEqual(
+            new[] { "auto", "center", "end", "start" },
+            GetStringEnumRuntimeValues(typeof(TDesignTabsScrollPosition)));
+        CollectionAssert.AreEqual(
+            new[] { "large", "medium" },
+            GetStringEnumRuntimeValues(typeof(TDesignTabsSize)));
+        CollectionAssert.AreEqual(
+            new[] { "card", "normal" },
+            GetStringEnumRuntimeValues(typeof(TDesignTabsTheme)));
+        CollectionAssert.AreEqual(
+            new[] { "circle", "round" },
+            GetStringEnumRuntimeValues(typeof(TDesignAvatarShape)));
+        CollectionAssert.AreEqual(
+            new[] { "left-up", "right-up" },
+            GetStringEnumRuntimeValues(typeof(TDesignAvatarGroupCascading)));
+        CollectionAssert.AreEqual(
+            new[] { "circle", "round" },
+            GetStringEnumRuntimeValues(typeof(TDesignBadgeShape)));
+        CollectionAssert.AreEqual(
+            new[] { "medium", "small" },
+            GetStringEnumRuntimeValues(typeof(TDesignBadgeSize)));
+
+        Assert.AreEqual(typeof(string), typeof(TDesignCssStyleValue).GetProperty(nameof(TDesignCssStyleValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueProps), typeof(TDesignCssStyleValue).GetProperty(nameof(TDesignCssStyleValue.AsProps), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(TDesignCssStyleValues), typeof(TDesignCssStyleValue).GetProperty(nameof(TDesignCssStyleValue.AsValues), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(TDesignDimensionValue), typeof(TDesignMenuWidthValue).GetProperty(nameof(TDesignMenuWidthValue.AsValue), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(TDesignDimensionValues), typeof(TDesignMenuWidthValue).GetProperty(nameof(TDesignMenuWidthValue.AsValues), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(Number), typeof(TDesignMenuValue).GetProperty(nameof(TDesignMenuValue.AsNumber), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(string), typeof(TDesignMenuValue).GetProperty(nameof(TDesignMenuValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(string), typeof(TDesignMenuRouteTarget).GetProperty(nameof(TDesignMenuRouteTarget.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(TDesignMenuRoute), typeof(TDesignMenuRouteTarget).GetProperty(nameof(TDesignMenuRouteTarget.AsRoute), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(MouseEvent), typeof(TDesignMenuItemClickContext).GetProperty(nameof(TDesignMenuItemClickContext.Event), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
+        Assert.AreEqual(typeof(TDesignMenuValue), typeof(TDesignMenuItemClickContext).GetProperty(nameof(TDesignMenuItemClickContext.Value), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
+        Assert.AreEqual(typeof(bool), typeof(TDesignLinkDownloadValue).GetProperty(nameof(TDesignLinkDownloadValue.AsBool), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(string), typeof(TDesignLinkDownloadValue).GetProperty(nameof(TDesignLinkDownloadValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(double), typeof(TDesignTabValue).GetProperty(nameof(TDesignTabValue.AsNumber), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(string), typeof(TDesignTabValue).GetProperty(nameof(TDesignTabValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(double), typeof(TDesignBadgeCountValue).GetProperty(nameof(TDesignBadgeCountValue.AsNumber), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(string), typeof(TDesignBadgeCountValue).GetProperty(nameof(TDesignBadgeCountValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(double), typeof(TDesignBadgeOffsetValue).GetProperty(nameof(TDesignBadgeOffsetValue.AsNumber), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(string), typeof(TDesignBadgeOffsetValue).GetProperty(nameof(TDesignBadgeOffsetValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(TDesignBadgeOffsetValue[]), typeof(TDesignBadgeOffset).GetProperty(nameof(TDesignBadgeOffset.AsValues), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(MouseEvent), typeof(TDesignTabAddContext).GetProperty(nameof(TDesignTabAddContext.Event), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
+        Assert.AreEqual(typeof(TDesignTabValue), typeof(TDesignTabRemoveContext).GetProperty(nameof(TDesignTabRemoveContext.Value), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
+        Assert.AreEqual(typeof(int), typeof(TDesignTabRemoveContext).GetProperty(nameof(TDesignTabRemoveContext.Index), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
+        Assert.AreEqual(typeof(MouseEvent), typeof(TDesignTabRemoveContext).GetProperty(nameof(TDesignTabRemoveContext.Event), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
+        Assert.AreEqual(typeof(TDesignTabValue), typeof(TDesignTabPanelRemoveContext).GetProperty(nameof(TDesignTabPanelRemoveContext.Value), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
+        Assert.AreEqual(typeof(MouseEvent), typeof(TDesignTabPanelRemoveContext).GetProperty(nameof(TDesignTabPanelRemoveContext.Event), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
+        Assert.AreEqual(typeof(int), typeof(TDesignTabsDragSortContext).GetProperty(nameof(TDesignTabsDragSortContext.CurrentIndex), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
+        Assert.AreEqual(typeof(TDesignTabValue), typeof(TDesignTabsDragSortContext).GetProperty(nameof(TDesignTabsDragSortContext.Current), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
+        Assert.AreEqual(typeof(int), typeof(TDesignTabsDragSortContext).GetProperty(nameof(TDesignTabsDragSortContext.TargetIndex), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
+        Assert.AreEqual(typeof(TDesignTabValue), typeof(TDesignTabsDragSortContext).GetProperty(nameof(TDesignTabsDragSortContext.Target), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
+        Assert.AreEqual(typeof(Event), typeof(TDesignAvatarErrorContext).GetProperty(nameof(TDesignAvatarErrorContext.Event), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
+
+        AssertNoPublicMemberUsesObject(
+            typeof(TDesignCssStyleValue),
+            typeof(TDesignCssStyleValues),
+            typeof(TDesignDimensionValue),
+            typeof(TDesignDimensionValues),
+            typeof(TDesignMenuWidthValue),
+            typeof(TDesignSpaceSizeValue),
+            typeof(TDesignSpaceSizeValues),
+            typeof(TDesignSpaceSize),
+            typeof(TDesignMenuValue),
+            typeof(TDesignMenuQueryValue),
+            typeof(TDesignMenuRouteTarget),
+            typeof(TDesignLinkDownloadValue),
+            typeof(TDesignTabValue),
+            typeof(TDesignBadgeCountValue),
+            typeof(TDesignBadgeOffsetValue),
+            typeof(TDesignBadgeOffset));
+
+        AssertNotObject(typeof(TDesignGlobalConfig), nameof(TDesignGlobalConfig));
+        AssertNotObject(typeof(TDesignComponentRegistry), nameof(TDesignComponentRegistry));
+        AssertNotObject(typeof(TDesignStyles), nameof(TDesignStyles));
+        AssertNotObject(typeof(TDesignMenuQueryData), nameof(TDesignMenuQueryData));
+        AssertNotObject(typeof(TDesignMenuRoute), nameof(TDesignMenuRoute));
+        AssertNotObject(typeof(TDesignMenuItemClickContext), nameof(TDesignMenuItemClickContext));
+        AssertNotObject(typeof(TDesignTabAddContext), nameof(TDesignTabAddContext));
+        AssertNotObject(typeof(TDesignTabRemoveContext), nameof(TDesignTabRemoveContext));
+        AssertNotObject(typeof(TDesignTabPanelRemoveContext), nameof(TDesignTabPanelRemoveContext));
+        AssertNotObject(typeof(TDesignTabsDragSortContext), nameof(TDesignTabsDragSortContext));
+        AssertNotObject(typeof(TDesignAvatarErrorContext), nameof(TDesignAvatarErrorContext));
     }
 
     private static string[] GetStringEnumRuntimeValues(Type enumType)

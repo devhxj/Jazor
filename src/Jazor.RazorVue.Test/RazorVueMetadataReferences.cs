@@ -1,6 +1,7 @@
 using Basic.Reference.Assemblies;
 using ECMAScript;
 using ECMAScript.Contract;
+using ECMAScript.TDesign;
 using ECMAScript.Vuetify;
 using Microsoft.AspNetCore.Components;
 using Microsoft.CodeAnalysis;
@@ -39,6 +40,7 @@ internal static class RazorVueMetadataReferences
         AddAssemblyReference(references, seenPaths, typeof(VueRoute));
         AddAssemblyReference(references, seenPaths, typeof(Pinia));
         AddAssemblyReference(references, seenPaths, typeof(ECMAScript.VueContract.VueLibraryComponentAttribute));
+        AddAssemblyReference(references, seenPaths, typeof(TButton));
         AddAssemblyReference(references, seenPaths, typeof(VBtn));
         AddAssemblyReference(references, seenPaths, typeof(Jazor.RazorVue.JazorVueCompiler));
 
