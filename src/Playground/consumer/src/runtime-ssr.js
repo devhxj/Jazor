@@ -7,7 +7,7 @@ import * as directives from "vuetify/directives";
 import * as components from "vuetify/components";
 import "vuetify/styles";
 import { createPlaygroundAppRoot } from "./app-shell.js";
-import { assertHostRequirements, resolveConsumerRoutes } from "./runtime-common.js";
+import { assertHostRequirements, resolveConsumerRoutes, resolveRequiredComponentExport } from "./runtime-common.js";
 import { createPlaygroundRoutes } from "./router.js";
 import { usePlaygroundStore } from "./stores/playground-store.js";
 
@@ -105,9 +105,12 @@ export async function runSsrSmoke(CatalogPage, DetailPage, hostRequirements, rou
 }
 
 export async function runPlaygroundConsumerSsr(components, hostRequirements, routeDefinitions) {
+  const CatalogPage = resolveRequiredComponentExport(components, "CatalogPage");
+  const DetailPage = resolveRequiredComponentExport(components, "DetailPage");
+
   return await runSsrSmoke(
-    components.CatalogPage,
-    components.DetailPage,
+    CatalogPage,
+    DetailPage,
     hostRequirements,
     routeDefinitions);
 }

@@ -1,5 +1,5 @@
 import { assertEquals, assertThrows } from "jsr:@std/assert";
-import { resolveConsumerRoutes } from "./runtime-common.js";
+import { resolveConsumerRoutes, resolveRequiredComponentExport } from "./runtime-common.js";
 
 Deno.test("resolveConsumerRoutes rejects missing route definitions", () => {
   assertThrows(
@@ -40,4 +40,25 @@ Deno.test("resolveConsumerRoutes normalizes generated route metadata", () => {
   assertEquals(Object.isFrozen(routes), true);
   assertEquals(Object.isFrozen(routes[0]), true);
   assertEquals(Object.isFrozen(routes[1].parameterNames), true);
+});
+
+Deno.test("resolveRequiredComponentExport rejects missing component object", () => {
+  assertThrows(
+    () => resolveRequiredComponentExport(undefined, "CatalogPage"),
+    Error,
+    "Playground consumer component exports must be provided as an object."
+  );
+});
+
+Deno.test("resolveRequiredComponentExport rejects missing named export", () => {
+  assertThrows(
+    () => resolveRequiredComponentExport({}, "DetailPage"),
+    Error,
+    "Playground consumer expected a 'DetailPage' component export."
+  );
+});
+
+Deno.test("resolveRequiredComponentExport returns valid component export", () => {
+  const component = () => null;
+  assertEquals(resolveRequiredComponentExport({ CatalogPage: component }, "CatalogPage"), component);
 });

@@ -20,6 +20,19 @@ export function assertHostRequirements(hostRequirements) {
   }
 }
 
+export function resolveRequiredComponentExport(components, exportName) {
+  if (components === null || typeof components !== "object") {
+    throw new Error("Playground consumer component exports must be provided as an object.");
+  }
+
+  const component = components[exportName];
+  if (typeof component !== "object" && typeof component !== "function") {
+    throw new Error(`Playground consumer expected a '${exportName}' component export.`);
+  }
+
+  return component;
+}
+
 export function resolveConsumerRoutes(routeDefinitions) {
   if (routeDefinitions == null) {
     throw new Error("Playground consumer routes must be provided by the generated RazorVue consumer entry.");
