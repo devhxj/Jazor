@@ -1,7 +1,7 @@
 namespace ECMAScript.Vben;
 
 [ECMAScriptModule("./components/vben-page-container")]
-public partial class VbenPageContainer : VbenContentComponentBase
+public partial class VbenPageContainer : VbenContentComponentBase, IVueContainerComponent
 {
     [Parameter]
     public string? Title { get; set; }

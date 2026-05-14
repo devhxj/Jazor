@@ -31,6 +31,7 @@
 - 页面容器语义
 - 工具栏/动作区语义
 - 状态与插槽边界
+- 容器 contract / implementation 注入边界
 
 这些都不该依赖 `TLayout`、`TMenu`、`TButton` 这样的具体组件名。
 
@@ -100,6 +101,14 @@
 - `VbenSidebar`
 - `VbenHeaderBar`
 - `VbenPageContainer`
+
+并且这些公开壳层组件本身应直接承担容器 contract 角色：
+
+- authored public component：`ComponentBase + IVueComponent + IVueContainerComponent`
+- injected implementation：`IVueContainerImplementation<TContainer>`
+- implementation 选择：`[assembly: VueInject(...)]`
+
+这里不再额外保留 `IVbenUiAdapter` 一类平行抽象。`Vben` 的可替换能力统一收口到 `VueContract` 容器机制。
 
 这里的组件如果存在，应该是：
 
@@ -196,15 +205,39 @@
 
 1. `Vben` 提供稳定结构组件和 slot
 2. 应用层决定某个 slot 里放什么第三方组件
-3. 应用层自己完成第三方 props 映射
+3. 如需替换整个结构组件，则通过 `IVueContainerImplementation<T>` + `[VueInject]` 做编译期实现注入
+4. 应用层自己完成第三方 props 映射
 
 也就是说：
 
 - `Vben` 负责“框架结构”
 - 第三方库负责“具体控件”
-- 应用层负责“二者组合”
+- 应用层负责“二者组合”和“容器实现注入”
 
 这个依赖方向才是稳定的。
+
+## 容器机制为什么要放在 `VueContract`
+
+你前面提出的目标本质是：
+
+- authored 代码面对稳定容器组件
+- 转译/编译时再查出当前配置的具体实现组件
+- 这个实现可以来自 Element Plus，也可以来自 Vuetify 或应用自定义组件
+
+这正是 `IVueContainerComponent + IVueContainerImplementation<T> + [VueInject]` 机制的职责。  
+因此正确动作不是在 `Vben` 再造一套 adapter/interface，而是让 `Vben` 公开组件直接使用这套通用容器机制。
+
+这样有三个直接收益：
+
+1. `Vben` 不发明第二套扩展协议
+2. RazorVue descriptor / inject / identity / lowering 可以复用同一条生产链路
+3. 第三方库替换能力存在，但不会反向污染 `Vben` 的 public authoring surface
+
+截至 2026-05-15，这个机制在 `Vben` 公开壳层上已经不是停留在概念层：
+
+- 四个公开壳层组件都已按 container contract 参与编译期注入回归；
+- 默认原生解析与 injected library runtime shape 均已验证；
+- 主要非法注入声明也已经有 focused 失败诊断回归，容器机制本身已进入可依赖的生产约束面。
 
 ## Phase 1 正确交付物
 

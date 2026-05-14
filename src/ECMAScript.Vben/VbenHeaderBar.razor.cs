@@ -1,7 +1,7 @@
 namespace ECMAScript.Vben;
 
 [ECMAScriptModule("./components/vben-header-bar")]
-public partial class VbenHeaderBar : VbenComponentBase
+public partial class VbenHeaderBar : VbenComponentBase, IVueContainerComponent
 {
     [Parameter]
     public string? Title { get; set; }

@@ -40,10 +40,24 @@
 - `VbenPageContainer`
 - `VbenBreadcrumb`
 - `VbenNavItem`
-- `IVbenUiAdapter`
 
 这层不依赖某个 UI 库的菜单项、按钮、布局 props 细节。  
 它只描述后台框架需要的稳定结构与交互边界。
+
+### 1.1 容器化扩展边界
+
+`Vben` 不再额外定义 `IVbenUiAdapter` 这类自有 adapter 空接口。  
+统一扩展边界直接复用 `VueContract` 的容器机制：
+
+- authored 原生壳层组件实现 `IVueContainerComponent`
+- 第三方或应用层具体实现组件实现 `IVueContainerImplementation<TContainer>`
+- 最终装配选择通过 `[assembly: VueInject(typeof(TContainer), typeof(TImplementation))]`
+
+这样做的直接收益是：
+
+- 不引入第二套与 RazorVue 平行的扩展协议
+- `Vben` 保持“稳定 authoring contract + 可替换 runtime implementation”模型
+- 应用层可按需把 `VbenPageContainer`、`VbenHeaderBar` 等映射到 Element Plus / Vuetify / 自定义实现，而不需要新增 `ECMAScript.Vben.*第三方库*` 主线项目
 
 ### 2. 第三方组件绑定：`ECMAScript.TDesign` / `ECMAScript.ElementPlus`
 
@@ -148,6 +162,8 @@
 
 - 使用命名 record / enum / union 表达稳定后台语义
 - 把底层差异收口到 adapter 内部
+
+这里的 adapter 指应用层或具体实现组件内部映射，不是 `Vben` 再公开一套新的 adapter 接口。
 
 ### 3. 结构优先于细节
 

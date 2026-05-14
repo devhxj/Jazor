@@ -1,4 +1,4 @@
-# ECMAScript.Vben 状态（2026-05-14）
+# ECMAScript.Vben 状态（2026-05-15）
 
 > Status: 当前状态快照  
 > Positioning: `src/ECMAScript.Vben/` 后台壳层抽象与原生 RazorVue 实现的仓库级状态快照  
@@ -12,8 +12,10 @@
 
 - `ECMAScript.Vben` 的定位是 **抽象层 + 自有原生实现**，不是某个第三方 UI 库的 adapter 命名空间；
 - 原生组件继续走 RazorVue 用户组件路径：`ComponentBase + IVueComponent + [ECMAScriptModule(...)]`；
+- 公开壳层组件现在同时承担 `IVueContainerComponent` 容器契约角色，可被应用层通过 `[VueInject]` 编译期替换到具体实现；
 - `CssClass` / `CssStyle` / `AdditionalAttributes` 等 authoring 基底统一建立在 `ECMAScript.Vue3` 与通用 Vue contract 上；
 - 通用 prop/slot 元数据已经收口到 `VueProp` / `VueSlot`，不再把 `VueLibraryProp` / `VueLibrarySlot` 兼容别名当作现行契约；
+- 早期设想的 `IVbenUiAdapter` 空接口已被移除，Vben 不再维护与 `VueContract` 平行的第二套 adapter 协议；
 - `src/ECMAScript.Vben.Test/` 已建立独立聚焦测试，不再把 Vben 演进绑死在其他外部库线的在制状态上。
 
 当前更准确的判断是：**产品边界已经纠偏，原生壳层主线已经可构建、可测试、可被 RazorVue 发现与消费。**
@@ -51,6 +53,11 @@
 - 顶部栏
 - 页面容器
 
+并且从 2026-05-15 起，这四个公开壳层组件已经正式进入“默认原生实现 + 容器 contract”双重角色：
+
+- 默认情况下直接解析到 `ECMAScript.Vben` 原生实现
+- 如应用层声明 `[VueInject]`，则 RazorVue 会保留 `Vben` authoring contract，同时切换到具体 implementation 的 runtime import / prop / slot 名称
+
 ### 3. 公共语义模型已经建立
 
 当前已进入 `src/ECMAScript.Vben/` 的核心语义包括：
@@ -85,6 +92,17 @@
 - 后续 native component、library component、RazorVue descriptor extraction 可以共享同一套通用 authoring 语义；
 - 这条线对未来更多组件库协同是减耦，而不是增耦。
 
+### 5. 容器注入扩展边界已开始落地
+
+当前已经落地的判断是：
+
+- `Vben` 不需要额外定义 `IVbenUiAdapter`
+- 容器 contract 统一复用 `ECMAScript.VueContract`
+- 第三方库或应用层想替换整个结构组件时，应实现 `IVueContainerImplementation<TContainer>`
+- 当前装配选择通过 `[assembly: VueInject(...)]`
+
+这意味着“可替换实现”已经进入正式主线，但仍然没有把 `ECMAScript.Vben` 重新做成第三方库 adapter 包。
+
 ## 当前验证基线
 
 当前已形成的聚焦验证包括：
@@ -96,13 +114,19 @@
   - 所有原生组件统一暴露 `CssClass` / `CssStyle`；
   - `Vben` public contracts 不泄漏 `TDesign` / `ElementPlus` / `Vuetify` 类型；
   - RazorVue 组件注册器可以把 `ECMAScript.Vben` 中的原生组件作为用户组件发现并解析；
+- `VbenContainerInjectTests` 校验：
+  - 公开壳层组件确实声明为 `IVueContainerComponent`；
+  - 默认解析路径仍使用 `ECMAScript.Vben` 原生实现；
+  - `[VueInject]` 可以把 `VbenAdminLayout` / `VbenSidebarMenu` / `VbenHeaderBar` / `VbenPageContainer` 切换到第三方 library implementation，同时保留 `Vben` authoring contract；
+  - `missing prop` / `prop type mismatch` / `emit payload mismatch` / `default slot mismatch` / `CaptureUnmatchedValues mismatch` / `duplicate [VueInject]` / `mismatched IVueContainerImplementation<TContainer>` 都已有 focused failure-path 回归；
 - `VueAuthoringMetadataTests` 校验：
   - 通用 `VueProp` / `VueSlot` 元数据可被 RazorVue descriptor extraction 正常识别；
   - `ECMAScript.VueContract` 当前只保留 canonical 的 `VuePropAttribute` / `VueSlotAttribute`。
 
-2026-05-14 当前基线复核：
+2026-05-15 当前基线复核：
 
-- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj -v minimal`：已通过；
+- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenContainerInjectTests' -v minimal`：已通过（13/13）；
+- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenContainerInjectTests|FullyQualifiedName~VbenAuthoringSurfaceTests|FullyQualifiedName~VueAuthoringMetadataTests' -v minimal`：已通过；
 - `RazorVue` 聚焦回归已覆盖 Vben 相关 descriptor / authoring contract 收口，不再依赖旧兼容别名。
 
 ## 当前仍未完成的部分
@@ -113,7 +137,7 @@
 - 权限系统、主题系统、国际化闭环；
 - 多 UI 库 feature parity；
 - 与现有 TS `src/vben` 工程等价的产品面积；
-- 明确稳定的应用层 adapter/plugin 扩展协议。
+- 大面积 sample 级第三方容器实现矩阵。
 
 这不是缺陷陈述，而是当前阶段边界。
 
@@ -127,7 +151,14 @@
 - 导航项层级/选中/展开的边界测试；
 - 页面头部 action/slot 组合的 descriptor 与 lowering 回归。
 
-### 2. 补状态文档与实现对应关系
+### 2. 扩展容器注入覆盖面
+
+优先补足：
+
+- sample 级第三方容器实现映射，验证真实应用组合方式；
+- lowering / artifact 层针对 injected runtime shape 的 Vben 专项回归；
+
+### 3. 补状态文档与实现对应关系
 
 后续每次推进都应继续维护三层文档一致性：
 
@@ -135,7 +166,7 @@
 - `docs/02-计划/ecmascript.vben/`：下一步怎么做；
 - `docs/03-完成/ecmascript.vben/`：当前已经落到了哪里。
 
-### 3. 把第三方库协同留在应用层或 sample 层
+### 4. 把第三方库协同留在应用层或 sample 层
 
 如果后续要验证 `ElementPlus`/`TDesign` 协同，优先策略应是：
 

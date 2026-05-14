@@ -2,10 +2,6 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vben;
 
-public interface IVbenUiAdapter
-{
-}
-
 [ECMAScript]
 [Description("@#")]
 public sealed record VbenAdminLayoutState : VueProps

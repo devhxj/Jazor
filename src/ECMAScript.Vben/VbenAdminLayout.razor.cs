@@ -1,7 +1,7 @@
 namespace ECMAScript.Vben;
 
 [ECMAScriptModule("./components/vben-admin-layout")]
-public partial class VbenAdminLayout : VbenContentComponentBase
+public partial class VbenAdminLayout : VbenContentComponentBase, IVueContainerComponent
 {
     [Parameter]
     public VbenLayoutMode Mode { get; set; } = VbenLayoutMode.Sidebar;

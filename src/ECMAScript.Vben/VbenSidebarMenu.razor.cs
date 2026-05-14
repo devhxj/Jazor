@@ -1,7 +1,7 @@
 namespace ECMAScript.Vben;
 
 [ECMAScriptModule("./components/vben-sidebar-menu")]
-public partial class VbenSidebarMenu : VbenComponentBase
+public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
 {
     [Parameter]
     public bool Collapsed { get; set; }

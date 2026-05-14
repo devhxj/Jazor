@@ -1,7 +1,7 @@
 # ECMAScript.Vben 第一阶段实施计划
 
 > Status: 活跃计划  
-> Updated: 2026-05-14  
+> Updated: 2026-05-15  
 > Positioning: 基于 `docs/01-目标/ecmascript.vben/` 的设计边界，为 `src/ECMAScript.Vben/` 建立第一阶段可落地实施顺序。当前关注点是后台壳层核心与原生实现闭环，而不是完整复刻前端后台框架，也不是为第三方组件库建立专属 adapter project。
 
 ## 当前纠偏状态
@@ -19,6 +19,9 @@
 - `src/ECMAScript.Vben/` 已形成原生 Razor 壳层组件骨架并可构建
 - `src/ECMAScript.Vben.Test/` 已建立独立聚焦验证，不再依赖当前被 `ECMAScript.ElementPlus` 阻塞的共享测试主线
 - RazorVue 已补齐“引用程序集中的原生 `IVueComponent` 组件也可进入组件注册解析”的能力，确保 `Vben` 作为独立包时仍可被消费
+- `VbenAdminLayout` / `VbenSidebarMenu` / `VbenHeaderBar` / `VbenPageContainer` 已明确承担 `IVueContainerComponent` 容器契约角色
+- 原先设想的 `IVbenUiAdapter` 空接口不再保留，统一收口到 `VueContract` 容器注入机制
+- 四个公开壳层都已具备 inject success-path 回归，且 Vben 语义下的主要 failure-path 兼容性诊断已进入 focused tests
 
 ## 0. 第一阶段目标
 
@@ -159,8 +162,8 @@
 先定义可控的扩展边界，而不是第三方库 adapter：
 
 - slot / template contract
-- 可选的 render policy / nav renderer contract
 - 应用层可组合的 shell extension point
+- `IVueContainerComponent + IVueContainerImplementation<T> + [VueInject]` 容器注入边界
 
 这一层的价值在于让 `Vben` 保持抽象稳定，同时允许应用层把第三方组件填进来。
 
@@ -190,6 +193,11 @@
 - `VbenHeaderBar` 负责 logo/title/actions/user-region 这类顶部结构
 - `VbenPageContainer` 负责页面标题、副标题、extra actions、正文容器
 
+当前补充约束：
+
+- 以上公开壳层组件默认就是原生实现，同时也是正式容器 contract
+- 若应用层要替换整个 `VbenPageContainer` 或 `VbenHeaderBar`，必须通过 `VueInject` 选择实现，而不是引入 `Vben.*第三方库*` 主线工程
+
 ### B3. 动态菜单节点渲染允许局部 `h(...)`
 
 递归菜单节点是第一阶段最合理使用 `h(...)` 的地方之一。  
@@ -209,9 +217,16 @@
 
 - 项目 build 通过
 - RazorVue descriptor / lowering 回归
+- 容器 contract 默认解析与 `[VueInject]` 替换回归
 - 最小 sample 编译产物验证
 
 如果测试面还不值得独立工程，至少要有 focused build/smoke 验证。
+
+当前这一项的已完成部分：
+
+- 默认原生解析回归
+- `VbenAdminLayout` / `VbenSidebarMenu` / `VbenHeaderBar` / `VbenPageContainer` 的 `[VueInject]` 替换回归
+- 容器兼容性失败诊断回归（prop / emit / slot / capture-unmatched-values / duplicate inject / wrong contract）
 
 ### C2. 建议增加最小 sample
 
@@ -274,4 +289,4 @@
 2. 核心后台壳层组件存在且可编译
 3. 有一套自有原生后台壳层主线
 4. 有 focused verification 证明主链路可用
-5. 文档能清楚说明去第三方库耦合的分层边界与后续扩展方式
+5. 文档能清楚说明去第三方库耦合的分层边界、容器注入扩展方式与后续扩展方向
