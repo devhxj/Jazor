@@ -88,19 +88,28 @@ public sealed class EcmaScriptPiniaTestingLayoutGuardTests
 	}
 
 	[TestMethod]
-	public void PiniaTesting_JazorPackageProject_IncludesLibraryArtifactsAndBuildTarget()
+	public void PiniaTesting_ProjectFile_StaysIndependentlyPackable_WithoutJazorBundling()
 	{
 		var repoRoot = ResolveRepositoryRoot();
-		var projectPath = Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj");
+		var projectPath = Path.Combine(repoRoot, "src", "ECMAScript.Pinia.Testing", "ECMAScript.Pinia.Testing.csproj");
 		var source = System.IO.File.ReadAllText(projectPath);
+		var nuspecPath = Path.Combine(repoRoot, "src", "ECMAScript.Pinia.Testing", "ECMAScript.Pinia.Testing.nuspec");
+		var nuspec = System.IO.File.ReadAllText(nuspecPath);
 
-		StringAssert.Contains(source, "$(JazorPackageBuildOutputRoot)ECMAScript.Pinia.Testing\\bin\\$(Configuration)\\net11.0\\ECMAScript.Pinia.Testing.dll");
-		StringAssert.Contains(source, "$(JazorPackageBuildOutputRoot)ECMAScript.Pinia.Testing\\bin\\$(Configuration)\\net11.0\\ECMAScript.Pinia.Testing.pdb");
-		StringAssert.Contains(source, "..\\ECMAScript.Pinia.Testing\\ECMAScript.Pinia.Testing.csproj");
-		StringAssert.Contains(source, "<JazorPackageBuildOutputRoot Condition=\"'$(JazorPackageBuildOutputRoot)' == '' and '$(JazorIsolatedBaseOutputRoot)' != ''\">");
-		StringAssert.Contains(source, "<JazorPackageArtifactRestoreProperties>Configuration=$(Configuration);BuildInParallel=false</JazorPackageArtifactRestoreProperties>");
-		StringAssert.Contains(source, "<JazorPackageArtifactBuildProperties>$(JazorPackageArtifactRestoreProperties);BuildProjectReferences=false</JazorPackageArtifactBuildProperties>");
-		StringAssert.Contains(source, "BuildInParallel=\"false\"");
+		StringAssert.Contains(source, "<IsPackable>true</IsPackable>");
+		StringAssert.Contains(source, "<ProjectReference Include=\"..\\ECMAScript\\ECMAScript.csproj\" />");
+		StringAssert.Contains(source, "<ProjectReference Include=\"..\\ECMAScript.Vue3\\ECMAScript.Vue3.csproj\" />");
+		StringAssert.Contains(source, "<ProjectReference Include=\"..\\ECMAScript.Pinia\\ECMAScript.Pinia.csproj\" />");
+		StringAssert.Contains(source, "<NuspecFile>ECMAScript.Pinia.Testing.nuspec</NuspecFile>");
+		StringAssert.Contains(nuspec, "<dependency id=\"ECMAScript.Pinia\" version=\"$dependencyVersion$\" />");
+
+		var jazorPackageProject = System.IO.File.ReadAllText(Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj"));
+		Assert.IsFalse(
+			jazorPackageProject.Contains("ECMAScript.Pinia.Testing\\bin\\$(Configuration)\\net11.0\\ECMAScript.Pinia.Testing.dll", StringComparison.Ordinal),
+			"Jazor package should not bundle ECMAScript.Pinia.Testing anymore.");
+		Assert.IsFalse(
+			jazorPackageProject.Contains("..\\ECMAScript.Pinia.Testing\\ECMAScript.Pinia.Testing.csproj", StringComparison.Ordinal),
+			"Jazor package artifact preparation should not build ECMAScript.Pinia.Testing as a bundled payload anymore.");
 	}
 
 	[TestMethod]

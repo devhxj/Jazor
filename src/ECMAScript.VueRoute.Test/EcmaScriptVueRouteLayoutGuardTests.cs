@@ -87,16 +87,27 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
     }
 
     [TestMethod]
-    public void VueRoute_JazorPackageProject_IncludesLibraryArtifactsAndBuildTarget()
+    public void VueRoute_ProjectFile_StaysIndependentlyPackable_WithoutJazorBundling()
     {
         var repoRoot = ResolveRepositoryRoot();
-        var projectPath = System.IO.Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj");
+        var projectPath = System.IO.Path.Combine(repoRoot, "src", "ECMAScript.VueRoute", "ECMAScript.VueRoute.csproj");
         var source = System.IO.File.ReadAllText(projectPath);
+        var nuspecPath = System.IO.Path.Combine(repoRoot, "src", "ECMAScript.VueRoute", "ECMAScript.VueRoute.nuspec");
+        var nuspec = System.IO.File.ReadAllText(nuspecPath);
 
-        StringAssert.Contains(source, "$(JazorPackageBuildOutputRoot)ECMAScript.VueRoute\\bin\\$(Configuration)\\net11.0\\ECMAScript.VueRoute.dll");
-        StringAssert.Contains(source, "$(JazorPackageBuildOutputRoot)ECMAScript.VueRoute\\bin\\$(Configuration)\\net11.0\\ECMAScript.VueRoute.pdb");
-        StringAssert.Contains(source, "..\\ECMAScript.VueRoute\\ECMAScript.VueRoute.csproj");
-        StringAssert.Contains(source, "<JazorPackageBuildOutputRoot");
+        StringAssert.Contains(source, "<IsPackable>true</IsPackable>");
+        StringAssert.Contains(source, "<ProjectReference Include=\"..\\ECMAScript\\ECMAScript.csproj\" />");
+        StringAssert.Contains(source, "<ProjectReference Include=\"..\\ECMAScript.Vue3\\ECMAScript.Vue3.csproj\" />");
+        StringAssert.Contains(source, "<NuspecFile>ECMAScript.VueRoute.nuspec</NuspecFile>");
+        StringAssert.Contains(nuspec, "<dependency id=\"Jazor\" version=\"$dependencyVersion$\" />");
+
+        var jazorPackageProject = System.IO.File.ReadAllText(System.IO.Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj"));
+        Assert.IsFalse(
+            jazorPackageProject.Contains("ECMAScript.VueRoute\\bin\\$(Configuration)\\net11.0\\ECMAScript.VueRoute.dll", StringComparison.Ordinal),
+            "Jazor package should not bundle ECMAScript.VueRoute anymore.");
+        Assert.IsFalse(
+            jazorPackageProject.Contains("..\\ECMAScript.VueRoute\\ECMAScript.VueRoute.csproj", StringComparison.Ordinal),
+            "Jazor package artifact preparation should not build ECMAScript.VueRoute as a bundled payload anymore.");
     }
 
     [TestMethod]

@@ -2,6 +2,17 @@
 
 `ECMAScript.VueRoute` 是参照 `ECMAScript.Vue3` 风格建立的独立外部库项目，负责把 `vue-router` 4 的高频运行时 API 映射成可在 C# / Jazor authoring 中直接使用的宿主绑定。
 
+## Install
+
+```xml
+<ItemGroup>
+  <PackageReference Include="Jazor" Version="0.1.22" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.22" />
+</ItemGroup>
+```
+
+`ECMAScript.VueRoute` 作为独立前端库发布，不再由 `Jazor` 主包默认捆绑。
+
 ## Current Scope
 
 - `createRouter()` / `createWebHistory()` / `createWebHashHistory()` / `createMemoryHistory()`

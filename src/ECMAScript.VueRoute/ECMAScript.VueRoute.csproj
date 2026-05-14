@@ -2,18 +2,28 @@
   <PropertyGroup>
     <TargetFramework>net11.0</TargetFramework>
     <IsPackable>true</IsPackable>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
     <PackageId>ECMAScript.VueRoute</PackageId>
     <RootNamespace>ECMAScript</RootNamespace>
     <Version Condition="'$(Version)' == ''">0.1.0</Version>
     <Authors>hanxj</Authors>
     <Description>Vue Router 4 host bindings for ECMAScript runtime authoring.</Description>
+    <PackageProjectUrl>https://github.com/devhxj/Jazor</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/devhxj/Jazor</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <NuspecFile>ECMAScript.VueRoute.nuspec</NuspecFile>
     <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
     <NoWarn>CS0618,CS0626,CS0824,IDE0130,CA1822,IDE0060,IDE1006</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MinVer" Version="6.*" PrivateAssets="All" />
     <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
     <ProjectReference Include="..\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
   </ItemGroup>
+
+  <Import Project="..\Packaging\JazorFrontendNuspec.targets" />
 </Project>

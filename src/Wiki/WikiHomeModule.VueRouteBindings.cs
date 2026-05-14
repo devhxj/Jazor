@@ -70,7 +70,7 @@ src/Jazor/Jazor.csproj
                 [
                     H("li", "独立测试项目锁定结构、反射表面和编译器边界行为。"),
                     H("li", "Emit 集成测试证明本地打包的 `Jazor` 包可以在消费者项目中恢复、构建和发射 Vue Router 导入。"),
-                    H("li", "打包将 `ECMAScript.VueRoute.dll` 与现有运行时库一起打包到交付的 `Jazor` 包中。")
+                    H("li", "`ECMAScript.VueRoute` 作为独立前端库发布，消费方在引用 `Jazor` 之外还需要显式安装它。")
                 ])
             ]),
             PageSection("where-to-extend-next", "下一步扩展方向",

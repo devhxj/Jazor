@@ -2,6 +2,25 @@
 
 `ECMAScript.Pinia` 是参照 `ECMAScript.Vue3` 建立的独立外部库项目，用于承载 Pinia 运行时绑定，而不是把状态库语义重新塞回 compiler 特判。
 
+## Install
+
+```xml
+<ItemGroup>
+  <PackageReference Include="Jazor" Version="0.1.22" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.22" />
+</ItemGroup>
+```
+
+如果需要 `@pinia/testing` 绑定，再额外引用：
+
+```xml
+<ItemGroup>
+  <PackageReference Include="ECMAScript.Pinia.Testing" Version="0.1.22" />
+</ItemGroup>
+```
+
+`ECMAScript.Pinia` 与 `ECMAScript.Pinia.Testing` 都作为独立前端库发布，不再由 `Jazor` 主包默认捆绑。
+
 ## Responsibilities
 
 - 提供 `createPinia()`、`getActivePinia()`、`setActivePinia()`、`setActivePinia(undefined)`、`disposePinia()`、`defineStore()`、`storeToRefs()`、HMR/hydration 相关的 C# host binding。

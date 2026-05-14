@@ -1,0 +1,14 @@
+<Project>
+  <Target Name="PrepareJazorFrontendNuspecProperties"
+          BeforeTargets="GenerateNuspec"
+          Condition="'$(NuspecFile)' != ''">
+    <PropertyGroup>
+      <_JazorFrontendPackageVersion>$(PackageVersion)</_JazorFrontendPackageVersion>
+      <_JazorFrontendPackageVersion Condition="'$(_JazorFrontendPackageVersion)' == '' and '$(Version)' != ''">$(Version)</_JazorFrontendPackageVersion>
+      <_JazorFrontendPackageVersion Condition="'$(_JazorFrontendPackageVersion)' == ''">1.0.0</_JazorFrontendPackageVersion>
+      <_JazorFrontendBuildOutputDir>$([MSBuild]::EnsureTrailingSlash('$(TargetDir)'))</_JazorFrontendBuildOutputDir>
+      <_JazorFrontendProjectDir>$([MSBuild]::EnsureTrailingSlash('$(MSBuildProjectDirectory)'))</_JazorFrontendProjectDir>
+      <NuspecProperties>packageId=$(PackageId);packageVersion=$(_JazorFrontendPackageVersion);packageAuthors=$(Authors);packageDescription=$(Description);repositoryUrl=$(RepositoryUrl);repositoryType=$(RepositoryType);dependencyVersion=$(_JazorFrontendPackageVersion);buildOutputDir=$(_JazorFrontendBuildOutputDir);projectDir=$(_JazorFrontendProjectDir);packageReadmeFile=$(PackageReadmeFile)</NuspecProperties>
+    </PropertyGroup>
+  </Target>
+</Project>

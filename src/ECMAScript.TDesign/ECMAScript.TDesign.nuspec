@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>$packageId$</id>
+    <version>$packageVersion$</version>
+    <authors>$packageAuthors$</authors>
+    <description>$packageDescription$</description>
+    <projectUrl>$repositoryUrl$</projectUrl>
+    <repository type="$repositoryType$" url="$repositoryUrl$" />
+    <readme>$packageReadmeFile$</readme>
+    <dependencies>
+      <group targetFramework="net11.0">
+        <dependency id="Jazor" version="$dependencyVersion$" />
+      </group>
+    </dependencies>
+    <frameworkReferences>
+      <group targetFramework="net11.0">
+        <frameworkReference name="Microsoft.AspNetCore.App" />
+      </group>
+    </frameworkReferences>
+  </metadata>
+  <files>
+    <file src="$buildOutputDir$ECMAScript.TDesign.dll" target="lib/net11.0" />
+    <file src="$buildOutputDir$ECMAScript.TDesign.pdb" target="lib/net11.0" />
+    <file src="$projectDir$$packageReadmeFile$" target="" />
+  </files>
+</package>

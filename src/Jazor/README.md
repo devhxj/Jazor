@@ -2,7 +2,7 @@
 
 Write JavaScript in C#.
 
-Jazor is a C#-to-JavaScript compiler that translates Roslyn `IOperation` semantics into standard ECMAScript AST. It ships as a single NuGet package with runtime, analyzer, source generator, emit tool, and MSBuild integration.
+Jazor is a C#-to-JavaScript compiler that translates Roslyn `IOperation` semantics into standard ECMAScript AST. The `Jazor` package carries the core runtime, analyzer, source generator, emit tool, MSBuild integration, and the baseline Vue 3 authoring surface.
 
 ## Features
 
@@ -34,6 +34,23 @@ Every project that declares `[ECMAScriptModule]` must reference `Jazor`:
 ```
 
 Keep `JazorEmit` disabled (default) in library projects.
+
+### Optional frontend ecosystem packages
+
+`Jazor` no longer bundles higher-level Vue ecosystem libraries by default. Add them explicitly when your authoring surface needs them:
+
+```xml
+<ItemGroup>
+  <PackageReference Include="Jazor" Version="0.1.22" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.22" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.22" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.22" />
+  <PackageReference Include="ECMAScript.TDesign" Version="0.1.22" />
+</ItemGroup>
+```
+
+- `ECMAScript.Vue3` remains part of the default `Jazor` package.
+- `ECMAScript.Pinia.Testing` is a separate opt-in testing package layered on top of `ECMAScript.Pinia`.
 
 ### Host / executable projects
 

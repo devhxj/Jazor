@@ -13,5 +13,6 @@
 
   <ItemGroup>
     <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+    <PackageReference Include="ECMAScript.VueRoute" Version="$(JazorPackageVersion)" />
   </ItemGroup>
 </Project>

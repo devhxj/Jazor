@@ -30,12 +30,6 @@ public sealed class SdkIntegrationTests
             {
                 "lib/net11.0/ECMAScript.dll",
                 "lib/net11.0/ECMAScript.pdb",
-                "lib/net11.0/ECMAScript.Pinia.dll",
-                "lib/net11.0/ECMAScript.Pinia.pdb",
-                "lib/net11.0/ECMAScript.Pinia.Testing.dll",
-                "lib/net11.0/ECMAScript.Pinia.Testing.pdb",
-                "lib/net11.0/ECMAScript.VueRoute.dll",
-                "lib/net11.0/ECMAScript.VueRoute.pdb",
                 "lib/net11.0/ECMAScript.Contract.dll",
                 "lib/net11.0/ECMAScript.Contract.pdb",
                 "lib/net11.0/ECMAScript.VueContract.dll",
@@ -51,9 +45,7 @@ public sealed class SdkIntegrationTests
                 "lib/net11.0/Jazor.Common.dll",
                 "lib/net11.0/Jazor.Common.pdb",
                 "lib/net11.0/Jazor.RazorVue.dll",
-                "lib/net11.0/Jazor.RazorVue.pdb",
-                "lib/net11.0/ECMAScript.Vuetify.dll",
-                "lib/net11.0/ECMAScript.Vuetify.pdb"
+                "lib/net11.0/Jazor.RazorVue.pdb"
             },
             entryNames.Where(static entry => entry.StartsWith("lib/net11.0/", StringComparison.Ordinal)).ToArray());
         CollectionAssert.AreEquivalent(
@@ -105,9 +97,51 @@ public sealed class SdkIntegrationTests
         var entryNames = archive.Entries
             .Select(static entry => entry.FullName.Replace('\\', '/'))
             .ToArray();
+        var nuspec = ReadPackageEntryText(package.VuetifyPackagePath, "ECMAScript.Vuetify.nuspec");
 
         CollectionAssert.Contains(entryNames, "lib/net11.0/ECMAScript.Vuetify.dll");
         CollectionAssert.Contains(entryNames, "ECMAScript.Vuetify.nuspec");
+        StringAssert.Contains(nuspec, "<dependency id=\"Jazor\"");
+    }
+
+    [TestMethod]
+    public async Task CreateLocalPackage_IncludesVueRouteAuthoringPackage()
+    {
+        var package = await LocalPackage.Value;
+
+        using var archive = ZipFile.OpenRead(package.VueRoutePackagePath);
+        var entryNames = archive.Entries
+            .Select(static entry => entry.FullName.Replace('\\', '/'))
+            .ToArray();
+        var nuspec = ReadPackageEntryText(package.VueRoutePackagePath, "ECMAScript.VueRoute.nuspec");
+
+        CollectionAssert.Contains(entryNames, "lib/net11.0/ECMAScript.VueRoute.dll");
+        CollectionAssert.Contains(entryNames, "ECMAScript.VueRoute.nuspec");
+        StringAssert.Contains(nuspec, "<dependency id=\"Jazor\"");
+    }
+
+    [TestMethod]
+    public async Task CreateLocalPackage_IncludesPiniaPackages()
+    {
+        var package = await LocalPackage.Value;
+
+        using var piniaArchive = ZipFile.OpenRead(package.PiniaPackagePath);
+        var piniaEntryNames = piniaArchive.Entries
+            .Select(static entry => entry.FullName.Replace('\\', '/'))
+            .ToArray();
+        var piniaNuspec = ReadPackageEntryText(package.PiniaPackagePath, "ECMAScript.Pinia.nuspec");
+        CollectionAssert.Contains(piniaEntryNames, "lib/net11.0/ECMAScript.Pinia.dll");
+        CollectionAssert.Contains(piniaEntryNames, "ECMAScript.Pinia.nuspec");
+        StringAssert.Contains(piniaNuspec, "<dependency id=\"Jazor\"");
+
+        using var piniaTestingArchive = ZipFile.OpenRead(package.PiniaTestingPackagePath);
+        var piniaTestingEntryNames = piniaTestingArchive.Entries
+            .Select(static entry => entry.FullName.Replace('\\', '/'))
+            .ToArray();
+        var piniaTestingNuspec = ReadPackageEntryText(package.PiniaTestingPackagePath, "ECMAScript.Pinia.Testing.nuspec");
+        CollectionAssert.Contains(piniaTestingEntryNames, "lib/net11.0/ECMAScript.Pinia.Testing.dll");
+        CollectionAssert.Contains(piniaTestingEntryNames, "ECMAScript.Pinia.Testing.nuspec");
+        StringAssert.Contains(piniaTestingNuspec, "<dependency id=\"ECMAScript.Pinia\"");
     }
 
     [TestMethod]
@@ -624,6 +658,7 @@ public sealed class SdkIntegrationTests
 
               <ItemGroup>
                 <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+                <PackageReference Include="ECMAScript.VueRoute" Version="$(JazorPackageVersion)" />
               </ItemGroup>
             </Project>
             """);
@@ -742,6 +777,7 @@ public sealed class SdkIntegrationTests
 
               <ItemGroup>
                 <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+                <PackageReference Include="ECMAScript.VueRoute" Version="$(JazorPackageVersion)" />
               </ItemGroup>
             </Project>
             """);
@@ -899,6 +935,7 @@ public sealed class SdkIntegrationTests
 
               <ItemGroup>
                 <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+                <PackageReference Include="ECMAScript.VueRoute" Version="$(JazorPackageVersion)" />
               </ItemGroup>
             </Project>
             """);
@@ -2073,6 +2110,30 @@ public sealed class SdkIntegrationTests
             packageBuildIntermediateRoot);
         await EnsureProjectBuiltAsync(
             repoRoot,
+            Path.Combine(repoRoot, "src", "ECMAScript.VueRoute", "ECMAScript.VueRoute.csproj"),
+            Path.Combine(packageBuildOutputRoot, "ECMAScript.VueRoute", "bin", "Debug", "net11.0", "ECMAScript.VueRoute.dll"),
+            packageBuildOutputRoot,
+            packageBuildIntermediateRoot);
+        await EnsureProjectBuiltAsync(
+            repoRoot,
+            Path.Combine(repoRoot, "src", "ECMAScript.Pinia", "ECMAScript.Pinia.csproj"),
+            Path.Combine(packageBuildOutputRoot, "ECMAScript.Pinia", "bin", "Debug", "net11.0", "ECMAScript.Pinia.dll"),
+            packageBuildOutputRoot,
+            packageBuildIntermediateRoot);
+        await EnsureProjectBuiltAsync(
+            repoRoot,
+            Path.Combine(repoRoot, "src", "ECMAScript.Pinia.Testing", "ECMAScript.Pinia.Testing.csproj"),
+            Path.Combine(packageBuildOutputRoot, "ECMAScript.Pinia.Testing", "bin", "Debug", "net11.0", "ECMAScript.Pinia.Testing.dll"),
+            packageBuildOutputRoot,
+            packageBuildIntermediateRoot);
+        await EnsureProjectBuiltAsync(
+            repoRoot,
+            Path.Combine(repoRoot, "src", "ECMAScript.TDesign", "ECMAScript.TDesign.csproj"),
+            Path.Combine(packageBuildOutputRoot, "ECMAScript.TDesign", "bin", "Debug", "net11.0", "ECMAScript.TDesign.dll"),
+            packageBuildOutputRoot,
+            packageBuildIntermediateRoot);
+        await EnsureProjectBuiltAsync(
+            repoRoot,
             Path.Combine(repoRoot, "src", "Jazor.Analyzer", "Jazor.Analyzer.csproj"),
             analyzerOutput,
             packageBuildOutputRoot,
@@ -2128,6 +2189,66 @@ public sealed class SdkIntegrationTests
                 "/nr:false",
                 "-p:UseSharedCompilation=false"
             ]);
+        await RunDotNetAndAssertAsync(
+            repoRoot,
+            [
+                "pack",
+                Path.Combine(repoRoot, "src", "ECMAScript.VueRoute", "ECMAScript.VueRoute.csproj"),
+                "-c",
+                "Debug",
+                "--no-build",
+                "-o",
+                packageOutputDirectory,
+                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
+                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
+                "/nr:false",
+                "-p:UseSharedCompilation=false"
+            ]);
+        await RunDotNetAndAssertAsync(
+            repoRoot,
+            [
+                "pack",
+                Path.Combine(repoRoot, "src", "ECMAScript.Pinia", "ECMAScript.Pinia.csproj"),
+                "-c",
+                "Debug",
+                "--no-build",
+                "-o",
+                packageOutputDirectory,
+                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
+                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
+                "/nr:false",
+                "-p:UseSharedCompilation=false"
+            ]);
+        await RunDotNetAndAssertAsync(
+            repoRoot,
+            [
+                "pack",
+                Path.Combine(repoRoot, "src", "ECMAScript.Pinia.Testing", "ECMAScript.Pinia.Testing.csproj"),
+                "-c",
+                "Debug",
+                "--no-build",
+                "-o",
+                packageOutputDirectory,
+                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
+                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
+                "/nr:false",
+                "-p:UseSharedCompilation=false"
+            ]);
+        await RunDotNetAndAssertAsync(
+            repoRoot,
+            [
+                "pack",
+                Path.Combine(repoRoot, "src", "ECMAScript.TDesign", "ECMAScript.TDesign.csproj"),
+                "-c",
+                "Debug",
+                "--no-build",
+                "-o",
+                packageOutputDirectory,
+                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
+                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
+                "/nr:false",
+                "-p:UseSharedCompilation=false"
+            ]);
 
         var packageVersion = DiscoverPackageVersion(packageOutputDirectory, "Jazor");
 
@@ -2137,6 +2258,9 @@ public sealed class SdkIntegrationTests
             packageOutputDirectory,
             GetPackagePath(packageOutputDirectory, packageVersion),
             GetPackagePath(packageOutputDirectory, "ECMAScript.Vuetify", packageVersion),
+            GetPackagePath(packageOutputDirectory, "ECMAScript.VueRoute", packageVersion),
+            GetPackagePath(packageOutputDirectory, "ECMAScript.Pinia", packageVersion),
+            GetPackagePath(packageOutputDirectory, "ECMAScript.Pinia.Testing", packageVersion),
             GetBundledDenoPath(emitPublishDirectory));
     }
 
@@ -2391,6 +2515,17 @@ public sealed class SdkIntegrationTests
             throw new FileNotFoundException($"Bundled Deno runtime was not found under '{emitPublishDirectory}'.", denoPath);
 
         return denoPath;
+    }
+
+    private static string ReadPackageEntryText(string packagePath, string entryName)
+    {
+        using var archive = ZipFile.OpenRead(packagePath);
+        var entry = archive.GetEntry(entryName)
+            ?? throw new FileNotFoundException($"Package entry '{entryName}' was not found in '{packagePath}'.", entryName);
+
+        using var stream = entry.Open();
+        using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+        return reader.ReadToEnd();
     }
 
     private static void CopyDirectory(string sourceDirectory, string destinationDirectory)
@@ -3704,6 +3839,9 @@ public sealed class SdkIntegrationTests
         string PackageOutputDirectory,
         string PackagePath,
         string VuetifyPackagePath,
+        string VueRoutePackagePath,
+        string PiniaPackagePath,
+        string PiniaTestingPackagePath,
         string DenoExePath);
 
     private sealed class TestWorkspace : IDisposable

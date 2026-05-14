@@ -13,5 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+    <PackageReference Include="ECMAScript.Pinia" Version="$(JazorPackageVersion)" />
+    <PackageReference Include="ECMAScript.Pinia.Testing" Version="$(JazorPackageVersion)" />
   </ItemGroup>
 </Project>
