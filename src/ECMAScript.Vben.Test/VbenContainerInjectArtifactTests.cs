@@ -656,4 +656,93 @@ public sealed partial class VbenContainerInjectTests
         CollectionAssert.AreEqual(new[] { "element-plus/theme-chalk/el-menu.css" }, artifact.Styles.ToArray());
         CollectionAssert.AreEqual(new[] { "element-plus" }, artifact.PluginRequirements.ToArray());
     }
+
+    [TestMethod]
+    public void Vben_SidebarMenu_ContainerInject_LowersInjectedRuntimeShape_IntoVueSfcArtifact()
+    {
+        var context = CreateContext(
+            """
+            using System.Collections.Generic;
+            using ECMAScript;
+            using ECMAScript.Vben;
+            using ECMAScript.VueContract;
+            using ECMAScript.VueContract.Descriptor;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            [assembly: VueInject(
+                typeof(ECMAScript.Vben.VbenSidebarMenu),
+                typeof(Demo.Implementations.ElementSidebarMenu))]
+
+            namespace Demo.Implementations
+            {
+                [VueLibraryComponent("element-plus", "ElMenu")]
+                [VueLibraryStyle("element-plus/theme-chalk/el-menu.css")]
+                [VueLibraryPluginRequirement("element-plus")]
+                [VueProp(nameof(VbenSidebarMenu.Collapsed), Name = "collapse")]
+                [VueProp(nameof(VbenSidebarMenu.SelectedKey), VuePropKind.Model, Name = "selected-key", AcceptsBinding = true)]
+                [VueLibraryEmit(nameof(VbenSidebarMenu.SelectedKeyChanged), VueEmitKind.ModelUpdate, Name = "update:selected-key", PayloadTypeName = "System.String")]
+                [VueProp(nameof(VbenSidebarMenu.ExpandedKeys), VuePropKind.Model, Name = "expanded-keys", AcceptsBinding = true)]
+                [VueLibraryEmit(nameof(VbenSidebarMenu.ExpandedKeysChanged), VueEmitKind.ModelUpdate, Name = "update:expanded-keys", PayloadTypeName = "System.String[]")]
+                [VueProp(nameof(VbenSidebarMenu.Items), Name = "menus")]
+                [VueProp(nameof(VbenComponentBase.CssClass), Name = "class")]
+                [VueProp(nameof(VbenComponentBase.CssStyle), Name = "style")]
+                [VueProp(nameof(VbenComponentBase.AdditionalAttributes), Name = "attrs")]
+                [VueSlot(nameof(VbenSidebarMenu.Logo), Name = "logo")]
+                public sealed class ElementSidebarMenu : ComponentBase, IVueLibraryComponent, IVueContainerImplementation<VbenSidebarMenu>
+                {
+                    [Parameter] public bool Collapsed { get; set; }
+                    [Parameter] public string? SelectedKey { get; set; }
+                    [Parameter] public EventCallback<string> SelectedKeyChanged { get; set; }
+                    [Parameter] public string[]? ExpandedKeys { get; set; }
+                    [Parameter] public EventCallback<string[]> ExpandedKeysChanged { get; set; }
+                    [Parameter] public VbenNavItems? Items { get; set; }
+                    [Parameter] public VueClassValue? CssClass { get; set; }
+                    [Parameter] public VueStyleValue? CssStyle { get; set; }
+                    [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+                    [Parameter] public RenderFragment? Logo { get; set; }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./pages/sidebar-page")]
+                public sealed class SidebarPage : ComponentBase, IVueComponent
+                {
+                    [Parameter] public string? SelectedKey { get; set; }
+                    [Parameter] public EventCallback<string> SelectedKeyChanged { get; set; }
+                    [Parameter] public string[]? ExpandedKeys { get; set; }
+                    [Parameter] public EventCallback<string[]> ExpandedKeysChanged { get; set; }
+                    [Parameter] public RenderFragment? Logo { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent(0, typeof(VbenSidebarMenu));
+                        builder.AddComponentParameter(1, nameof(VbenSidebarMenu.Collapsed), true);
+                        builder.AddComponentParameter(2, nameof(VbenSidebarMenu.SelectedKey), SelectedKey);
+                        builder.AddComponentParameter(3, nameof(VbenSidebarMenu.SelectedKeyChanged), SelectedKeyChanged);
+                        builder.AddComponentParameter(4, nameof(VbenSidebarMenu.ExpandedKeys), ExpandedKeys);
+                        builder.AddComponentParameter(5, nameof(VbenSidebarMenu.ExpandedKeysChanged), ExpandedKeysChanged);
+                        builder.AddComponentParameter(6, nameof(VbenSidebarMenu.Logo), Logo);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots()
+            .Single(static item => item.ComponentSymbol.Name == "SidebarPage");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ScriptSetupText, "import { ElMenu as ElMenu } from \"element-plus\";");
+        StringAssert.Contains(artifact.TemplateText, "<ElMenu :collapse=\"true\" :selected-key=\"props.selectedKey\" @update:selected-key=\"(__value) =&gt; emit(&quot;update:selectedKey&quot;, __value)\"");
+        StringAssert.Contains(artifact.TemplateText, ":expanded-keys=\"props.expandedKeys\"");
+        StringAssert.Contains(artifact.TemplateText, "@update:expanded-keys=\"(__value) =&gt; emit(&quot;update:expandedKeys&quot;, __value)\"");
+        StringAssert.Contains(artifact.TemplateText, "<template #logo>");
+        StringAssert.Contains(artifact.TemplateText, "<slot name=\"logo\" />");
+        Assert.IsFalse(artifact.TemplateText.Contains("selectedKey=", StringComparison.Ordinal), artifact.TemplateText);
+        Assert.IsFalse(artifact.TemplateText.Contains("expandedKeys=", StringComparison.Ordinal), artifact.TemplateText);
+        CollectionAssert.Contains(artifact.Imports.ToArray(), "element-plus");
+        CollectionAssert.AreEqual(new[] { "element-plus/theme-chalk/el-menu.css" }, artifact.Styles.ToArray());
+        CollectionAssert.AreEqual(new[] { "element-plus" }, artifact.PluginRequirements.ToArray());
+    }
 }
