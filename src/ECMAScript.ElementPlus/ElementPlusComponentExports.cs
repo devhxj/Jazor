@@ -1,3 +1,5 @@
+#nullable enable
+
 namespace ECMAScript.ElementPlus;
 
 /// <summary>
@@ -192,9 +194,6 @@ public static class ElementPlusComponents
     [ECMAScriptName("ElOptionGroup")]
     public extern static IElementPlusComponent ElOptionGroup { get; }
 
-    [ECMAScriptName("ElOwn")]
-    public extern static IElementPlusComponent ElOwn { get; }
-
     [ECMAScriptName("ElPageHeader")]
     public extern static IElementPlusComponent ElPageHeader { get; }
 
@@ -323,9 +322,6 @@ public static class ElementPlusComponents
 
     [ECMAScriptName("ElUpload")]
     public extern static IElementPlusComponent ElUpload { get; }
-
-    [ECMAScriptName("ElVirtualizedSelect")]
-    public extern static IElementPlusComponent ElVirtualizedSelect { get; }
 
     [ECMAScriptName("ElWatermark")]
     public extern static IElementPlusComponent ElWatermark { get; }

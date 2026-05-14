@@ -1,3 +1,5 @@
+#nullable enable
+
 namespace ECMAScript.ElementPlus;
 
 /// <summary>
@@ -193,9 +195,6 @@ public sealed record ElementPlusComponentRegistry : VueComponentRegistry
     [Description("@#ElOptionGroup")]
     public IElementPlusComponent? ElOptionGroup { get; init; }
 
-    [Description("@#ElOwn")]
-    public IElementPlusComponent? ElOwn { get; init; }
-
     [Description("@#ElPageHeader")]
     public IElementPlusComponent? ElPageHeader { get; init; }
 
@@ -324,9 +323,6 @@ public sealed record ElementPlusComponentRegistry : VueComponentRegistry
 
     [Description("@#ElUpload")]
     public IElementPlusComponent? ElUpload { get; init; }
-
-    [Description("@#ElVirtualizedSelect")]
-    public IElementPlusComponent? ElVirtualizedSelect { get; init; }
 
     [Description("@#ElWatermark")]
     public IElementPlusComponent? ElWatermark { get; init; }

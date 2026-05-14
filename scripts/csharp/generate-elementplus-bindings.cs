@@ -1,11 +1,16 @@
 #!/usr/bin/env dotnet run
+#:project ../../src/ECMAScript.Vue3/ECMAScript.Vue3.csproj
 
+#nullable enable
+
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Collections.Generic;
+using static ECMAScript.Vue3;
 
 internal static class Program
 {
@@ -14,27 +19,91 @@ internal static class Program
     private const string AdditionalAttributesPropertyName = "AdditionalAttributes";
     private const string ChildContentPropertyName = "ChildContent";
 
+    private static readonly string[] ReservedPropertyNames =
+    [
+        CssClassPropertyName,
+        CssStylePropertyName,
+        AdditionalAttributesPropertyName,
+        ChildContentPropertyName
+    ];
+
+    private static readonly Dictionary<string, Type> RuntimeTypeMap = new(StringComparer.Ordinal)
+    {
+        ["bool"] = typeof(bool),
+        ["byte"] = typeof(byte),
+        ["sbyte"] = typeof(sbyte),
+        ["short"] = typeof(short),
+        ["ushort"] = typeof(ushort),
+        ["int"] = typeof(int),
+        ["uint"] = typeof(uint),
+        ["long"] = typeof(long),
+        ["ulong"] = typeof(ulong),
+        ["float"] = typeof(float),
+        ["double"] = typeof(double),
+        ["decimal"] = typeof(decimal),
+        ["string"] = typeof(string),
+        ["object"] = typeof(object),
+        ["Delegate"] = typeof(Delegate),
+        ["Number"] = typeof(ECMAScript.Number),
+        ["BigInt"] = typeof(ECMAScript.BigInt),
+        ["Element"] = typeof(ECMAScript.Element),
+        ["HTMLElement"] = typeof(ECMAScript.HTMLElement),
+        ["Headers"] = typeof(ECMAScript.Headers),
+        ["XMLHttpRequest"] = typeof(ECMAScript.XMLHttpRequest),
+        ["File"] = typeof(ECMAScript.File),
+        ["Blob"] = typeof(ECMAScript.Blob),
+        ["Error"] = typeof(ECMAScript.Error),
+        ["IVueComponent"] = typeof(IVueComponent),
+        ["VueValue"] = typeof(VueValue),
+        ["VueProps"] = typeof(VueProps),
+        ["VueDictionary"] = typeof(VueDictionary),
+        ["VueClassValue"] = typeof(VueClassValue),
+        ["VueStyleValue"] = typeof(VueStyleValue),
+        ["VueTeleportTarget"] = typeof(VueTeleportTarget),
+        ["VueStringNumberValue"] = typeof(VueStringNumberValue),
+        ["VueBooleanStringValue"] = typeof(VueBooleanStringValue),
+        ["VueBooleanStringNumberValue"] = typeof(VueBooleanStringNumberValue),
+        ["VueStringComponentValue"] = typeof(VueStringComponentValue)
+    };
+
     private static void Main()
     {
         var repositoryRoot = ResolveRepositoryRoot();
         var packageRoot = Path.Combine(repositoryRoot, "src", "ECMAScript.ElementPlus");
-        var webTypesPath = Path.Combine(repositoryRoot, ".tmp", "elementplus-inspect", "package", "web-types.json");
+        var metadataRoot = Path.Combine(repositoryRoot, ".tmp", "elementplus-inspect", "package");
 
-        if (!File.Exists(webTypesPath))
-            throw new InvalidOperationException("Missing Element Plus web-types metadata: " + webTypesPath);
+        var webTypesPath = Path.Combine(metadataRoot, "web-types.json");
+        var attributesPath = Path.Combine(metadataRoot, "attributes.json");
+        var componentsIndexPath = Path.Combine(metadataRoot, "es", "components", "index.d.ts");
+        var eventConstantsPath = Path.Combine(metadataRoot, "es", "constants", "event.d.ts");
+
+        EnsureFileExists(webTypesPath, "Element Plus web-types metadata");
+        EnsureFileExists(attributesPath, "Element Plus attributes metadata");
+        EnsureFileExists(componentsIndexPath, "Element Plus component export metadata");
+        EnsureFileExists(eventConstantsPath, "Element Plus event constants metadata");
+
+        var attributeCatalog = ReadAttributeCatalog(attributesPath);
+        var validComponentExports = ReadValidComponentExports(componentsIndexPath);
+        var updateModelEventName = ReadUpdateModelEventName(eventConstantsPath);
 
         using var webTypes = JsonDocument.Parse(File.ReadAllText(webTypesPath));
         var html = webTypes.RootElement.GetProperty("contributions").GetProperty("html");
+
         var components = html.GetProperty("vue-components")
             .EnumerateArray()
-            .Select(ElementPlusComponentMetadata.FromJson)
+            .Select(static element => RawComponentMetadata.FromJson(element))
+            .Where(component => validComponentExports.Contains(component.ExportName))
             .GroupBy(static component => component.ExportName, StringComparer.Ordinal)
-            .Select(static group => ElementPlusComponentMetadata.Merge(group))
+            .Select(group => ElementPlusComponentMetadata.Merge(
+                group.ToArray(),
+                attributeCatalog,
+                updateModelEventName))
             .OrderBy(static component => component.ClassName, StringComparer.Ordinal)
             .ToArray();
+
         var directives = html.GetProperty("attributes")
             .EnumerateArray()
-            .Select(ElementPlusDirectiveMetadata.FromJson)
+            .Select(static element => ElementPlusDirectiveMetadata.FromJson(element))
             .GroupBy(static directive => directive.ExportName, StringComparer.Ordinal)
             .Select(static group => group.First())
             .OrderBy(static directive => directive.ExportName, StringComparer.Ordinal)
@@ -50,7 +119,7 @@ internal static class Program
 
         WriteFile(
             Path.Combine(packageRoot, "ElementPlus.Components.generated.cs"),
-            RenderComponentDefinitions(components));
+            RenderComponentDefinitions(components, webTypesPath, attributesPath, componentsIndexPath));
 
         WriteFile(
             Path.Combine(packageRoot, "ElementPlusDirectiveExports.cs"),
@@ -66,6 +135,8 @@ internal static class Program
     private static string RenderComponentExports(ElementPlusComponentMetadata[] components)
     {
         var builder = new StringBuilder();
+        builder.AppendLine("#nullable enable");
+        builder.AppendLine();
         builder.AppendLine("namespace ECMAScript.ElementPlus;");
         builder.AppendLine();
         builder.AppendLine("/// <summary>");
@@ -89,6 +160,8 @@ internal static class Program
     private static string RenderComponentRegistry(ElementPlusComponentMetadata[] components)
     {
         var builder = new StringBuilder();
+        builder.AppendLine("#nullable enable");
+        builder.AppendLine();
         builder.AppendLine("namespace ECMAScript.ElementPlus;");
         builder.AppendLine();
         builder.AppendLine("/// <summary>");
@@ -110,27 +183,41 @@ internal static class Program
         return builder.ToString();
     }
 
-    private static string RenderComponentDefinitions(ElementPlusComponentMetadata[] components)
+    private static string RenderComponentDefinitions(
+        ElementPlusComponentMetadata[] components,
+        string webTypesPath,
+        string attributesPath,
+        string componentsIndexPath)
     {
         var builder = new StringBuilder();
+        builder.AppendLine("#nullable enable");
+        builder.AppendLine();
         builder.AppendLine("using Microsoft.AspNetCore.Components;");
         builder.AppendLine();
         builder.AppendLine("namespace ECMAScript.ElementPlus;");
         builder.AppendLine();
         builder.AppendLine("// <auto-generated />");
-        builder.AppendLine("// Generated from .tmp/elementplus-inspect/package/web-types.json");
+        builder.AppendLine("// Generated from:");
+        builder.AppendLine($"// - {GetRepositoryRelativePath(webTypesPath)}");
+        builder.AppendLine($"// - {GetRepositoryRelativePath(attributesPath)}");
+        builder.AppendLine($"// - {GetRepositoryRelativePath(componentsIndexPath)}");
         builder.AppendLine();
 
         foreach (var component in components)
         {
             builder.AppendLine("/// <summary>");
-            builder.AppendLine($"/// {EscapeXml(component.Description ?? component.TagName)}");
+            builder.AppendLine($"/// {EscapeXml(component.Description)}");
             builder.AppendLine("/// </summary>");
             builder.AppendLine($"[VueLibraryComponent(\"element-plus\", \"{component.ExportName}\")]");
             builder.AppendLine("[VueLibraryStyle(\"element-plus/dist/index.css\")]");
             builder.AppendLine("[VueLibraryPluginRequirement(\"element-plus\")]");
             builder.AppendLine("[VueProp(nameof(CssClass), Name = \"class\")]");
             builder.AppendLine("[VueProp(nameof(CssStyle), Name = \"style\")]");
+
+            foreach (var prop in component.Props.Where(static prop => !prop.IsSkipped))
+            {
+                builder.AppendLine(RenderVuePropAttribute(prop));
+            }
 
             foreach (var slot in component.Slots)
             {
@@ -146,19 +233,16 @@ internal static class Program
 
             foreach (var emit in component.Emits)
             {
-                builder.AppendLine($"[VueLibraryEmit(nameof({emit.PropertyName}), Name = \"{emit.RuntimeName}\")]");
+                builder.AppendLine(RenderVueEmitAttribute(emit));
             }
 
             builder.AppendLine($"public sealed class {component.ClassName} : {(component.HasDefaultSlot ? "ElementPlusContentComponentBase" : "ElementPlusComponentBase")}");
             builder.AppendLine("{");
 
-            foreach (var prop in component.Props)
+            foreach (var prop in component.Props.Where(static prop => !prop.IsSkipped))
             {
-                if (prop.IsSkipped)
-                    continue;
-
                 builder.AppendLine("    [Parameter]");
-                builder.AppendLine($"    public {prop.TypeName} {prop.PropertyName} {{ get; set; }}");
+                builder.AppendLine($"    public {prop.Type.SourceText} {prop.PropertyName} {{ get; set; }}");
                 builder.AppendLine();
             }
 
@@ -172,7 +256,7 @@ internal static class Program
             foreach (var emit in component.Emits)
             {
                 builder.AppendLine("    [Parameter]");
-                builder.AppendLine($"    public EventCallback {emit.PropertyName} {{ get; set; }}");
+                builder.AppendLine($"    public {emit.CallbackTypeSourceText} {emit.PropertyName} {{ get; set; }}");
                 builder.AppendLine();
             }
 
@@ -186,6 +270,8 @@ internal static class Program
     private static string RenderDirectiveExports(ElementPlusDirectiveMetadata[] directives)
     {
         var builder = new StringBuilder();
+        builder.AppendLine("#nullable enable");
+        builder.AppendLine();
         builder.AppendLine("namespace ECMAScript.ElementPlus;");
         builder.AppendLine();
         builder.AppendLine("/// <summary>");
@@ -209,6 +295,8 @@ internal static class Program
     private static string RenderDirectiveRegistry(ElementPlusDirectiveMetadata[] directives)
     {
         var builder = new StringBuilder();
+        builder.AppendLine("#nullable enable");
+        builder.AppendLine();
         builder.AppendLine("namespace ECMAScript.ElementPlus;");
         builder.AppendLine();
         builder.AppendLine("/// <summary>");
@@ -230,9 +318,122 @@ internal static class Program
         return builder.ToString();
     }
 
+    private static string RenderVuePropAttribute(ElementPlusPropMetadata prop)
+    {
+        var arguments = new List<string>
+        {
+            $"nameof({prop.PropertyName})"
+        };
+
+        if (prop.AcceptsBinding)
+        {
+            arguments.Add("VuePropKind.Model");
+        }
+
+        var namedArguments = new List<string>
+        {
+            $"Name = \"{prop.RuntimeName}\""
+        };
+
+        if (prop.Required)
+        {
+            namedArguments.Add("Required = true");
+        }
+
+        if (prop.AcceptsBinding)
+        {
+            namedArguments.Add("AcceptsBinding = true");
+        }
+
+        return $"[VueProp({string.Join(", ", arguments.Concat(namedArguments))})]";
+    }
+
+    private static string RenderVueEmitAttribute(ElementPlusEmitMetadata emit)
+    {
+        if (emit.IsModelUpdate)
+        {
+            return $"[VueLibraryEmit(nameof({emit.PropertyName}), VueEmitKind.ModelUpdate, Name = \"{emit.RuntimeName}\", PayloadTypeName = \"{EscapeCSharpString(emit.PayloadTypeRuntimeName ?? emit.PayloadTypeSourceText ?? "void")}\")]";
+        }
+
+        return $"[VueLibraryEmit(nameof({emit.PropertyName}), Name = \"{emit.RuntimeName}\")]";
+    }
+
+    private static ElementPlusAttributeCatalog ReadAttributeCatalog(string path)
+    {
+        using var document = JsonDocument.Parse(File.ReadAllText(path));
+        var byTag = new Dictionary<string, TagAttributeMetadata>(StringComparer.Ordinal);
+
+        foreach (var property in document.RootElement.EnumerateObject())
+        {
+            var separatorIndex = property.Name.IndexOf('/', StringComparison.Ordinal);
+            if (separatorIndex <= 0 || separatorIndex >= property.Name.Length - 1)
+                continue;
+
+            var tagName = property.Name[..separatorIndex];
+            var memberName = property.Name[(separatorIndex + 1)..];
+            if (!byTag.TryGetValue(tagName, out var metadata))
+            {
+                metadata = new TagAttributeMetadata(tagName);
+                byTag.Add(tagName, metadata);
+            }
+
+            var type = property.Value.TryGetProperty("type", out var typeElement) && typeElement.ValueKind == JsonValueKind.String
+                ? typeElement.GetString()
+                : null;
+            var description = property.Value.TryGetProperty("description", out var descriptionElement) && descriptionElement.ValueKind == JsonValueKind.String
+                ? descriptionElement.GetString()
+                : null;
+
+            if (string.Equals(type, "event", StringComparison.Ordinal))
+            {
+                metadata.AddEvent(new RawEventMetadata(memberName, description));
+            }
+            else
+            {
+                metadata.AddProp(new RawPropMetadata(
+                    memberName,
+                    description,
+                    type,
+                    false));
+            }
+        }
+
+        return new ElementPlusAttributeCatalog(byTag);
+    }
+
+    private static HashSet<string> ReadValidComponentExports(string path)
+    {
+        var content = File.ReadAllText(path);
+        return Regex.Matches(content, @"\bEl[A-Z][A-Za-z0-9]*\b", RegexOptions.CultureInvariant)
+            .Select(static match => match.Value)
+            .Where(static name => !string.Equals(name, "ElLoadingDirective", StringComparison.Ordinal))
+            .Distinct(StringComparer.Ordinal)
+            .ToHashSet(StringComparer.Ordinal);
+    }
+
+    private static string ReadUpdateModelEventName(string path)
+    {
+        var content = File.ReadAllText(path);
+        var match = Regex.Match(
+            content,
+            @"UPDATE_MODEL_EVENT\s*=\s*""(?<value>[^""]+)""",
+            RegexOptions.CultureInvariant);
+
+        return match.Success && match.Groups["value"].Value.Length > 0
+            ? match.Groups["value"].Value
+            : "update:modelValue";
+    }
+
+    private static void EnsureFileExists(string path, string description)
+    {
+        if (!File.Exists(path))
+            throw new InvalidOperationException($"Missing {description}: {path}");
+    }
+
     private static void WriteFile(string path, string content)
     {
-        var normalized = content.Replace("\r\n", "\n", StringComparison.Ordinal).Replace("\n", Environment.NewLine, StringComparison.Ordinal);
+        var normalized = content.Replace("\r\n", "\n", StringComparison.Ordinal)
+            .Replace("\n", Environment.NewLine, StringComparison.Ordinal);
         File.WriteAllText(path, normalized, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
     }
 
@@ -250,11 +451,22 @@ internal static class Program
         throw new InvalidOperationException("Could not locate repository root from current directory.");
     }
 
+    private static string GetRepositoryRelativePath(string path)
+    {
+        var repositoryRoot = ResolveRepositoryRoot();
+        return Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/');
+    }
+
     private static string EscapeXml(string value)
         => value
             .Replace("&", "&amp;", StringComparison.Ordinal)
             .Replace("<", "&lt;", StringComparison.Ordinal)
             .Replace(">", "&gt;", StringComparison.Ordinal);
+
+    private static string EscapeCSharpString(string value)
+        => value
+            .Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("\"", "\\\"", StringComparison.Ordinal);
 
     private static string ToPascalCase(string value)
     {
@@ -298,27 +510,673 @@ internal static class Program
         return builder.ToString();
     }
 
-    private static string ToEventPropertyName(string runtimeName)
+    private static string ToLowerCamelCase(string value)
     {
-        var pascalName = ToPascalCase(runtimeName);
-        if (pascalName.StartsWith("Update", StringComparison.Ordinal))
-            return pascalName + "Event";
+        if (string.IsNullOrEmpty(value))
+            return value;
 
-        return "On" + pascalName;
+        return value.Length == 1
+            ? char.ToLowerInvariant(value[0]).ToString()
+            : char.ToLowerInvariant(value[0]) + value[1..];
     }
 
-    private sealed record ElementPlusComponentMetadata(
-        string TagName,
-        string ClassName,
-        string ExportName,
-        string? Description,
-        ElementPlusPropMetadata[] Props,
-        ElementPlusSlotMetadata[] Slots,
-        ElementPlusEmitMetadata[] Emits)
+    private static string NormalizePropRuntimeName(string rawName)
     {
-        public bool HasDefaultSlot => Slots.Any(static slot => slot.IsDefault);
+        if (string.Equals(rawName, "class", StringComparison.Ordinal) ||
+            string.Equals(rawName, "style", StringComparison.Ordinal))
+        {
+            return rawName;
+        }
 
-        public static ElementPlusComponentMetadata FromJson(JsonElement element)
+        return ToLowerCamelCase(ToPascalCase(rawName));
+    }
+
+    private static string NormalizeEventRuntimeName(string rawName)
+    {
+        if (!rawName.StartsWith("update:", StringComparison.Ordinal))
+            return rawName;
+
+        var suffix = rawName["update:".Length..];
+        return "update:" + NormalizePropRuntimeName(suffix);
+    }
+
+    private static string GetUpdateEventRuntimeName(string propRuntimeName, string updateModelEventName)
+        => string.Equals(propRuntimeName, "modelValue", StringComparison.Ordinal)
+            ? updateModelEventName
+            : "update:" + propRuntimeName;
+
+    private static string GetUniquePropPropertyName(string basePropertyName, HashSet<string> occupiedNames)
+    {
+        var normalizedBaseName = string.IsNullOrWhiteSpace(basePropertyName)
+            ? "Value"
+            : basePropertyName;
+        if (!occupiedNames.Contains(normalizedBaseName))
+            return normalizedBaseName;
+
+        var suffixed = normalizedBaseName.EndsWith("Value", StringComparison.Ordinal)
+            ? normalizedBaseName
+            : normalizedBaseName + "Value";
+        if (!occupiedNames.Contains(suffixed))
+            return suffixed;
+
+        for (var suffix = 2; ; suffix++)
+        {
+            var candidate = suffixed + suffix;
+            if (!occupiedNames.Contains(candidate))
+                return candidate;
+        }
+    }
+
+    private static string GetUniqueEmitPropertyName(string basePropertyName, HashSet<string> occupiedNames)
+    {
+        var normalizedBaseName = string.IsNullOrWhiteSpace(basePropertyName)
+            ? "OnEvent"
+            : basePropertyName;
+        if (!occupiedNames.Contains(normalizedBaseName))
+            return normalizedBaseName;
+
+        var suffixed = normalizedBaseName.EndsWith("Event", StringComparison.Ordinal)
+            ? normalizedBaseName
+            : normalizedBaseName + "Event";
+        if (!occupiedNames.Contains(suffixed))
+            return suffixed;
+
+        for (var suffix = 2; ; suffix++)
+        {
+            var candidate = suffixed + suffix;
+            if (!occupiedNames.Contains(candidate))
+                return candidate;
+        }
+    }
+
+    private static string GetUniqueSlotPropertyName(string basePropertyName, HashSet<string> occupiedNames)
+    {
+        var normalizedBaseName = string.IsNullOrWhiteSpace(basePropertyName)
+            ? "Slot"
+            : basePropertyName;
+        if (!occupiedNames.Contains(normalizedBaseName))
+            return normalizedBaseName;
+
+        var suffixed = normalizedBaseName.EndsWith("Slot", StringComparison.Ordinal)
+            ? normalizedBaseName
+            : normalizedBaseName + "Slot";
+        if (!occupiedNames.Contains(suffixed))
+            return suffixed;
+
+        for (var suffix = 2; ; suffix++)
+        {
+            var candidate = suffixed + suffix;
+            if (!occupiedNames.Contains(candidate))
+                return candidate;
+        }
+    }
+
+    private static string ToNormalEventPropertyName(string runtimeName)
+        => "On" + ToPascalCase(runtimeName);
+
+    private static GeneratedType ResolvePropType(RawPropMetadata prop)
+    {
+        if (string.Equals(prop.RawName, "class", StringComparison.Ordinal) ||
+            string.Equals(prop.RawName, "style", StringComparison.Ordinal))
+        {
+            return GeneratedType.Reference("VueValue?");
+        }
+
+        if (prop.RawName.StartsWith("[", StringComparison.Ordinal) ||
+            prop.RawName.Contains('/', StringComparison.Ordinal))
+        {
+            return GeneratedType.Reference("VueValue?");
+        }
+
+        var expression = NormalizeTypeExpression(prop.TypeExpression);
+        if (string.IsNullOrWhiteSpace(expression))
+            return GeneratedType.Reference("VueValue?");
+
+        if (ContainsTopLevelArrow(expression))
+            return GeneratedType.Reference("Delegate?");
+
+        var tokens = SplitTopLevel(expression, '|')
+            .Select(NormalizeTypeToken)
+            .Where(static token => !string.IsNullOrWhiteSpace(token))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        if (tokens.Length == 0)
+            return GeneratedType.Reference("VueValue?");
+
+        if (IsTeleportTarget(tokens))
+            return GeneratedType.Value("VueTeleportTarget").AsOptional(prop.Required);
+
+        if (IsStringComponent(tokens))
+            return GeneratedType.Value("VueStringComponentValue").AsOptional(prop.Required);
+
+        if (IsBooleanStringNumber(tokens))
+            return GeneratedType.Value("VueBooleanStringNumberValue").AsOptional(prop.Required);
+
+        if (IsBooleanString(tokens))
+            return GeneratedType.Value("VueBooleanStringValue").AsOptional(prop.Required);
+
+        if (IsStringNumber(tokens))
+            return GeneratedType.Value("VueStringNumberValue").AsOptional(prop.Required);
+
+        if (tokens.All(IsStringLikeToken))
+        {
+            if (HasExactStringLiteralSet(tokens, "large", "default", "small"))
+                return GeneratedType.Value("ElementPlusComponentSize").AsOptional(prop.Required);
+
+            if (HasExactStringLiteralSet(tokens, "dark", "light"))
+                return GeneratedType.Value("ElementPlusPopperEffect").AsOptional(prop.Required);
+
+            return GeneratedType.Reference("string?").AsOptional(prop.Required);
+        }
+
+        if (tokens.Any(IsObjectLikeToken))
+        {
+            if (tokens.Length == 2 && tokens.Any(static token => token == "string"))
+            {
+                if (prop.RuntimeName.Contains("class", StringComparison.OrdinalIgnoreCase))
+                    return GeneratedType.Value("VueClassValue").AsOptional(prop.Required);
+
+                if (prop.RuntimeName.Contains("style", StringComparison.OrdinalIgnoreCase))
+                    return GeneratedType.Value("VueStyleValue").AsOptional(prop.Required);
+            }
+
+            if (tokens.Length == 1)
+                return GeneratedType.Reference("VueDictionary?").AsOptional(prop.Required);
+
+            return GeneratedType.Reference("VueValue?").AsOptional(prop.Required);
+        }
+
+        if (tokens.Length == 1)
+            return MapSingleToken(tokens[0], prop.Required);
+
+        if (tokens.Any(static token => token.Contains("Awaitable", StringComparison.Ordinal) ||
+                                       token.Contains("Promise<", StringComparison.Ordinal) ||
+                                       token.Contains("unknown", StringComparison.OrdinalIgnoreCase) ||
+                                       token.Contains("any", StringComparison.OrdinalIgnoreCase)))
+        {
+            return GeneratedType.Reference("VueValue?").AsOptional(prop.Required);
+        }
+
+        return GeneratedType.Reference("VueValue?").AsOptional(prop.Required);
+    }
+
+    private static GeneratedType MapSingleToken(string token, bool required)
+    {
+        if (ContainsTopLevelArrow(token) || string.Equals(token, "Function", StringComparison.Ordinal))
+            return GeneratedType.Reference("Delegate?").AsOptional(required);
+
+        return token switch
+        {
+            "boolean" => GeneratedType.Value("bool").AsOptional(required),
+            "number" => GeneratedType.Value("Number").AsOptional(required),
+            "string" => GeneratedType.Reference("string?").AsOptional(required),
+            "string[]" => GeneratedType.Reference("string[]?").AsOptional(required),
+            "number[]" => GeneratedType.Reference("Number[]?").AsOptional(required),
+            "VueProps" => GeneratedType.Reference("VueProps?").AsOptional(required),
+            "VueDictionary" => GeneratedType.Reference("VueDictionary?").AsOptional(required),
+            "CSSProperties" => GeneratedType.Value("VueStyleValue").AsOptional(required),
+            "CSSSelector" => GeneratedType.Reference("string?").AsOptional(required),
+            "HTMLElement" => GeneratedType.Reference("HTMLElement?").AsOptional(required),
+            "Element" => GeneratedType.Reference("Element?").AsOptional(required),
+            "Component" => GeneratedType.Reference("IVueComponent?").AsOptional(required),
+            "RouteLocationRaw" => GeneratedType.Reference("VueValue?").AsOptional(required),
+            "Headers" => GeneratedType.Reference("Headers?").AsOptional(required),
+            "XMLHttpRequest" => GeneratedType.Reference("XMLHttpRequest?").AsOptional(required),
+            "File" => GeneratedType.Reference("File?").AsOptional(required),
+            "Blob" => GeneratedType.Reference("Blob?").AsOptional(required),
+            "Error" => GeneratedType.Reference("Error?").AsOptional(required),
+            "object" => GeneratedType.Reference("VueDictionary?").AsOptional(required),
+            _ when token.StartsWith("Array<", StringComparison.Ordinal) => MapArrayToken(token, required),
+            _ when token.EndsWith("[]", StringComparison.Ordinal) => MapArrayShorthandToken(token, required),
+            _ when token.StartsWith("[", StringComparison.Ordinal) => MapTupleToken(token, required),
+            _ when token.StartsWith("Record<", StringComparison.Ordinal) => GeneratedType.Reference("VueDictionary?").AsOptional(required),
+            _ when token.Contains("Record<", StringComparison.Ordinal) => GeneratedType.Reference("VueDictionary?").AsOptional(required),
+            _ when token.Contains("Awaitable", StringComparison.Ordinal) => GeneratedType.Reference("VueValue?").AsOptional(required),
+            _ when token.Contains("Promise<", StringComparison.Ordinal) => GeneratedType.Reference("VueValue?").AsOptional(required),
+            _ when token.Contains("unknown", StringComparison.OrdinalIgnoreCase) => GeneratedType.Reference("VueValue?").AsOptional(required),
+            _ when token.Contains("any", StringComparison.OrdinalIgnoreCase) => GeneratedType.Reference("VueValue?").AsOptional(required),
+            _ when IsStringLiteralToken(token) => GeneratedType.Reference("string?").AsOptional(required),
+            _ => GeneratedType.Reference("VueValue?").AsOptional(required)
+        };
+    }
+
+    private static GeneratedType MapArrayToken(string token, bool required)
+    {
+        var inner = token[6..^1];
+        var parts = SplitTopLevel(inner, '|')
+            .Select(NormalizeTypeToken)
+            .Where(static part => !string.IsNullOrWhiteSpace(part))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        if (parts.Length == 1)
+        {
+            if (parts[0] == "string")
+                return GeneratedType.Reference("string[]?").AsOptional(required);
+
+            if (parts[0] == "number")
+                return GeneratedType.Reference("Number[]?").AsOptional(required);
+        }
+
+        if (IsStringNumber(parts))
+            return GeneratedType.Reference("VueValue[]?").AsOptional(required);
+
+        if (parts.All(static part => part == "string"))
+            return GeneratedType.Reference("string[]?").AsOptional(required);
+
+        return GeneratedType.Reference("VueValue[]?").AsOptional(required);
+    }
+
+    private static GeneratedType MapArrayShorthandToken(string token, bool required)
+    {
+        if (string.Equals(token, "string[]", StringComparison.Ordinal))
+            return GeneratedType.Reference("string[]?").AsOptional(required);
+
+        if (string.Equals(token, "number[]", StringComparison.Ordinal))
+            return GeneratedType.Reference("Number[]?").AsOptional(required);
+
+        return GeneratedType.Reference("VueValue[]?").AsOptional(required);
+    }
+
+    private static GeneratedType MapTupleToken(string token, bool required)
+    {
+        if (string.Equals(token, "[number, number]", StringComparison.Ordinal))
+            return GeneratedType.Reference("Number[]?").AsOptional(required);
+
+        if (string.Equals(token, "[Font]", StringComparison.Ordinal))
+            return GeneratedType.Reference("VueProps?").AsOptional(required);
+
+        return GeneratedType.Reference("VueValue?").AsOptional(required);
+    }
+
+    private static string NormalizeTypeExpression(string? expression)
+    {
+        if (string.IsNullOrWhiteSpace(expression))
+            return string.Empty;
+
+        var normalized = expression.Trim();
+        normalized = normalized.Replace("string|string[]", "string | string[]", StringComparison.Ordinal);
+        normalized = normalized.Replace("string|number", "string | number", StringComparison.Ordinal);
+        normalized = normalized.Replace("number|string", "number | string", StringComparison.Ordinal);
+        normalized = normalized.Replace("boolean|string", "boolean | string", StringComparison.Ordinal);
+        normalized = normalized.Replace("string|boolean", "string | boolean", StringComparison.Ordinal);
+        normalized = normalized.Replace("boolean|string|number", "boolean | string | number", StringComparison.Ordinal);
+        normalized = normalized.Replace("string|number|boolean", "string | number | boolean", StringComparison.Ordinal);
+        normalized = normalized.Replace("objectrefer to  doc", "object", StringComparison.OrdinalIgnoreCase);
+        normalized = Regex.Replace(normalized, @"\s+", " ");
+        return normalized.Trim();
+    }
+
+    private static string NormalizeTypeToken(string token)
+    {
+        var normalized = NormalizeTypeExpression(token);
+        if (normalized.Length == 0)
+            return string.Empty;
+
+        if (string.Equals(normalized, "Array", StringComparison.Ordinal))
+            return "Array";
+
+        if (string.Equals(normalized, "object", StringComparison.OrdinalIgnoreCase))
+            return "object";
+
+        if (string.Equals(normalized, "Function", StringComparison.Ordinal))
+            return "Function";
+
+        if (string.Equals(normalized, "CSSProperties", StringComparison.Ordinal))
+            return "CSSProperties";
+
+        if (string.Equals(normalized, "Component", StringComparison.Ordinal))
+            return "Component";
+
+        if (string.Equals(normalized, "HTMLElement", StringComparison.Ordinal))
+            return "HTMLElement";
+
+        if (string.Equals(normalized, "Element", StringComparison.Ordinal))
+            return "Element";
+
+        if (string.Equals(normalized, "CSSSelector", StringComparison.Ordinal))
+            return "CSSSelector";
+
+        if (string.Equals(normalized, "RouteLocationRaw", StringComparison.Ordinal))
+            return "RouteLocationRaw";
+
+        if (string.Equals(normalized, "Headers", StringComparison.Ordinal))
+            return "Headers";
+
+        if (string.Equals(normalized, "XMLHttpRequest", StringComparison.Ordinal))
+            return "XMLHttpRequest";
+
+        if (string.Equals(normalized, "File", StringComparison.Ordinal))
+            return "File";
+
+        if (string.Equals(normalized, "Blob", StringComparison.Ordinal))
+            return "Blob";
+
+        if (string.Equals(normalized, "Error", StringComparison.Ordinal))
+            return "Error";
+
+        if (normalized.StartsWith("Record<", StringComparison.Ordinal) ||
+            normalized.Contains("Record<", StringComparison.Ordinal) ||
+            normalized.StartsWith("Array<", StringComparison.Ordinal) ||
+            normalized.EndsWith("[]", StringComparison.Ordinal) ||
+            normalized.StartsWith("[", StringComparison.Ordinal) ||
+            normalized.Contains("Awaitable", StringComparison.Ordinal) ||
+            normalized.Contains("Promise<", StringComparison.Ordinal) ||
+            normalized.Contains("=>", StringComparison.Ordinal))
+        {
+            return normalized;
+        }
+
+        return normalized;
+    }
+
+    private static bool ContainsTopLevelArrow(string expression)
+    {
+        var depthAngle = 0;
+        var depthParen = 0;
+        var depthBracket = 0;
+        var depthBrace = 0;
+        var inSingleQuote = false;
+        var inDoubleQuote = false;
+
+        for (var index = 0; index < expression.Length - 1; index++)
+        {
+            var current = expression[index];
+            var next = expression[index + 1];
+
+            ToggleQuoteState(current, ref inSingleQuote, ref inDoubleQuote);
+            if (inSingleQuote || inDoubleQuote)
+                continue;
+
+            UpdateDepth(current, ref depthAngle, ref depthParen, ref depthBracket, ref depthBrace);
+            if (current == '=' &&
+                next == '>' &&
+                depthAngle == 0 &&
+                depthParen == 0 &&
+                depthBracket == 0 &&
+                depthBrace == 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static string[] SplitTopLevel(string value, char separator)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return [];
+
+        var result = new List<string>();
+        var depthAngle = 0;
+        var depthParen = 0;
+        var depthBracket = 0;
+        var depthBrace = 0;
+        var inSingleQuote = false;
+        var inDoubleQuote = false;
+        var start = 0;
+
+        for (var index = 0; index < value.Length; index++)
+        {
+            var current = value[index];
+            ToggleQuoteState(current, ref inSingleQuote, ref inDoubleQuote);
+            if (!inSingleQuote && !inDoubleQuote)
+            {
+                UpdateDepth(current, ref depthAngle, ref depthParen, ref depthBracket, ref depthBrace);
+                if (current == separator &&
+                    depthAngle == 0 &&
+                    depthParen == 0 &&
+                    depthBracket == 0 &&
+                    depthBrace == 0)
+                {
+                    result.Add(value[start..index].Trim());
+                    start = index + 1;
+                }
+            }
+        }
+
+        result.Add(value[start..].Trim());
+        return result.ToArray();
+    }
+
+    private static void ToggleQuoteState(char current, ref bool inSingleQuote, ref bool inDoubleQuote)
+    {
+        if (current == '\'' && !inDoubleQuote)
+        {
+            inSingleQuote = !inSingleQuote;
+            return;
+        }
+
+        if (current == '"' && !inSingleQuote)
+        {
+            inDoubleQuote = !inDoubleQuote;
+        }
+    }
+
+    private static void UpdateDepth(
+        char current,
+        ref int depthAngle,
+        ref int depthParen,
+        ref int depthBracket,
+        ref int depthBrace)
+    {
+        switch (current)
+        {
+            case '<':
+                depthAngle++;
+                break;
+            case '>':
+                if (depthAngle > 0)
+                    depthAngle--;
+                break;
+            case '(':
+                depthParen++;
+                break;
+            case ')':
+                if (depthParen > 0)
+                    depthParen--;
+                break;
+            case '[':
+                depthBracket++;
+                break;
+            case ']':
+                if (depthBracket > 0)
+                    depthBracket--;
+                break;
+            case '{':
+                depthBrace++;
+                break;
+            case '}':
+                if (depthBrace > 0)
+                    depthBrace--;
+                break;
+        }
+    }
+
+    private static bool IsTeleportTarget(string[] tokens)
+        => tokens.All(static token => token is "CSSSelector" or "HTMLElement" or "Element") &&
+           tokens.Length >= 1 &&
+           tokens.Length <= 2;
+
+    private static bool IsStringComponent(string[] tokens)
+    {
+        var filtered = tokens.Where(static token => token != "string" && !IsStringLiteralToken(token)).ToArray();
+        return filtered.Length == 1 && filtered[0] == "Component";
+    }
+
+    private static bool IsBooleanStringNumber(string[] tokens)
+        => tokens.Any(static token => token == "boolean") &&
+           tokens.Any(IsNumberLikeToken) &&
+           tokens.Any(IsStringLikeToken) &&
+           tokens.All(static token => token == "boolean" || IsNumberLikeToken(token) || IsStringLikeToken(token));
+
+    private static bool IsBooleanString(string[] tokens)
+        => tokens.Any(static token => token == "boolean") &&
+           tokens.Any(IsStringLikeToken) &&
+           tokens.All(static token => token == "boolean" || IsStringLikeToken(token));
+
+    private static bool IsStringNumber(string[] tokens)
+        => tokens.Any(IsNumberLikeToken) &&
+           tokens.Any(IsStringLikeToken) &&
+           tokens.All(static token => IsNumberLikeToken(token) || IsStringLikeToken(token));
+
+    private static bool HasExactStringLiteralSet(string[] tokens, params string[] expected)
+    {
+        var values = tokens
+            .Where(IsStringLikeToken)
+            .Select(GetStringLiteralValueOrToken)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static item => item, StringComparer.Ordinal)
+            .ToArray();
+        var expectedValues = expected
+            .OrderBy(static item => item, StringComparer.Ordinal)
+            .ToArray();
+        return values.SequenceEqual(expectedValues, StringComparer.Ordinal);
+    }
+
+    private static bool IsNumberLikeToken(string token)
+        => token == "number";
+
+    private static bool IsStringLikeToken(string token)
+        => token == "string" || IsStringLiteralToken(token);
+
+    private static bool IsStringLiteralToken(string token)
+        => token.Length >= 2 &&
+           token[0] == '\'' &&
+           token[^1] == '\'';
+
+    private static string GetStringLiteralValueOrToken(string token)
+        => IsStringLiteralToken(token)
+            ? token[1..^1]
+            : token;
+
+    private static bool IsObjectLikeToken(string token)
+        => token == "object" ||
+           token == "VueProps" ||
+           token == "VueDictionary" ||
+           token.StartsWith("Record<", StringComparison.Ordinal) ||
+           token.Contains("Record<", StringComparison.Ordinal);
+
+    private static bool TryResolveRuntimeType(string sourceText, out Type? type)
+    {
+        var normalized = sourceText.Trim();
+        if (normalized.EndsWith("?", StringComparison.Ordinal))
+        {
+            var innerSource = normalized[..^1];
+            if (TryResolveRuntimeType(innerSource, out var innerType) && innerType is not null)
+            {
+                if (innerType.IsValueType)
+                {
+                    type = typeof(Nullable<>).MakeGenericType(innerType);
+                    return true;
+                }
+
+                type = innerType;
+                return true;
+            }
+
+            type = null;
+            return false;
+        }
+
+        if (normalized.EndsWith("[]", StringComparison.Ordinal))
+        {
+            var elementSource = normalized[..^2];
+            if (TryResolveRuntimeType(elementSource, out var elementType) && elementType is not null)
+            {
+                type = elementType.MakeArrayType();
+                return true;
+            }
+
+            type = null;
+            return false;
+        }
+
+        if (RuntimeTypeMap.TryGetValue(normalized, out var resolvedType))
+        {
+            type = resolvedType;
+            return true;
+        }
+
+        type = null;
+        return false;
+    }
+
+    private static string? ResolveRuntimeTypeName(string sourceText)
+    {
+        if (TryResolveRuntimeType(sourceText, out var runtimeType) &&
+            runtimeType?.FullName is { Length: > 0 } runtimeTypeName)
+        {
+            return runtimeTypeName;
+        }
+
+        return null;
+    }
+
+    private sealed class ElementPlusAttributeCatalog
+    {
+        private readonly Dictionary<string, TagAttributeMetadata> _byTag;
+
+        public ElementPlusAttributeCatalog(Dictionary<string, TagAttributeMetadata> byTag)
+        {
+            _byTag = byTag;
+        }
+
+        public bool TryGetTag(string tagName, out TagAttributeMetadata metadata)
+            => _byTag.TryGetValue(tagName, out metadata!);
+    }
+
+    private sealed class TagAttributeMetadata
+    {
+        private readonly Dictionary<string, RawPropMetadata> _propsByRuntimeName = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, RawEventMetadata> _eventsByRuntimeName = new(StringComparer.Ordinal);
+        private readonly List<RawPropMetadata> _props = new();
+        private readonly List<RawEventMetadata> _events = new();
+
+        public TagAttributeMetadata(string tagName)
+        {
+            TagName = tagName;
+        }
+
+        public string TagName { get; }
+
+        public IReadOnlyList<RawPropMetadata> Props => _props;
+
+        public IReadOnlyList<RawEventMetadata> Events => _events;
+
+        public void AddProp(RawPropMetadata prop)
+        {
+            var key = NormalizePropRuntimeName(prop.RawName);
+            if (_propsByRuntimeName.ContainsKey(key))
+                return;
+
+            _propsByRuntimeName.Add(key, prop);
+            _props.Add(prop);
+        }
+
+        public void AddEvent(RawEventMetadata emit)
+        {
+            var key = NormalizeEventRuntimeName(emit.RawName);
+            if (_eventsByRuntimeName.ContainsKey(key))
+                return;
+
+            _eventsByRuntimeName.Add(key, emit);
+            _events.Add(emit);
+        }
+    }
+
+    private sealed record RawComponentMetadata(
+        string TagName,
+        string ExportName,
+        string ClassName,
+        string Description,
+        IReadOnlyList<RawPropMetadata> Props,
+        IReadOnlyList<RawSlotMetadata> Slots,
+        IReadOnlyList<RawEventMetadata> Events)
+    {
+        public static RawComponentMetadata FromJson(JsonElement element)
         {
             var tagName = element.GetProperty("name").GetString()
                           ?? throw new InvalidOperationException("Element Plus component is missing tag name.");
@@ -327,343 +1185,400 @@ internal static class Program
                              symbol.ValueKind == JsonValueKind.String
                 ? symbol.GetString()!
                 : ToPascalCase(tagName);
-            var className = exportName;
-            var description = element.TryGetProperty("description", out var descriptionElement) && descriptionElement.ValueKind == JsonValueKind.String
-                ? descriptionElement.GetString()
-                : null;
+            var description = element.TryGetProperty("description", out var descriptionElement) &&
+                              descriptionElement.ValueKind == JsonValueKind.String
+                ? descriptionElement.GetString() ?? tagName
+                : tagName;
 
             var props = element.TryGetProperty("props", out var propsElement)
-                ? propsElement.EnumerateArray().Select(ElementPlusPropMetadata.FromJson).ToArray()
+                ? propsElement.EnumerateArray().Select(ReadRawPropMetadata).ToArray()
                 : [];
             var slots = element.TryGetProperty("slots", out var slotsElement)
-                ? slotsElement.EnumerateArray().Select(ElementPlusSlotMetadata.FromJson).ToArray()
+                ? slotsElement.EnumerateArray().Select(ReadRawSlotMetadata).ToArray()
                 : [];
-            var emits = element.TryGetProperty("js", out var jsElement) &&
-                        jsElement.TryGetProperty("events", out var eventsElement)
-                ? eventsElement.EnumerateArray().Select(ElementPlusEmitMetadata.FromJson).ToArray()
+            var events = element.TryGetProperty("js", out var jsElement) &&
+                         jsElement.TryGetProperty("events", out var eventsElement)
+                ? eventsElement.EnumerateArray().Select(ReadRawEventMetadata).ToArray()
                 : [];
 
-            return new ElementPlusComponentMetadata(tagName, className, exportName, description, props, slots, emits);
-        }
-
-        public static ElementPlusComponentMetadata Merge(IEnumerable<ElementPlusComponentMetadata> components)
-        {
-            var items = components.ToArray();
-            if (items.Length == 0)
-                throw new InvalidOperationException("Element Plus component merge received no items.");
-
-            var first = items[0];
-            var description = items
-                .Select(static item => item.Description)
-                .FirstOrDefault(static item => !string.IsNullOrWhiteSpace(item));
-            var props = items
-                .SelectMany(static item => item.Props)
-                .GroupBy(static item => item.RuntimeName, StringComparer.Ordinal)
-                .Select(static group => group.First())
-                .ToArray();
-            var emits = items
-                .SelectMany(static item => item.Emits)
-                .GroupBy(static item => item.RuntimeName, StringComparer.Ordinal)
-                .Select(static group => group.First())
-                .ToArray();
-            var slots = ResolveSlotPropertyNames(
-                props,
-                items.SelectMany(static item => item.Slots)
-                    .GroupBy(static item => item.RuntimeName, StringComparer.Ordinal)
-                    .Select(static group => group.First())
-                    .ToArray(),
-                emits);
-
-            return new ElementPlusComponentMetadata(
-                first.TagName,
-                first.ClassName,
-                first.ExportName,
+            return new RawComponentMetadata(
+                tagName,
+                exportName,
+                exportName,
                 description,
                 props,
                 slots,
-                emits);
+                events);
         }
 
-        private static ElementPlusSlotMetadata[] ResolveSlotPropertyNames(
-            ElementPlusPropMetadata[] props,
-            ElementPlusSlotMetadata[] slots,
-            ElementPlusEmitMetadata[] emits)
+        private static RawPropMetadata ReadRawPropMetadata(JsonElement element)
         {
-            var occupiedNames = new HashSet<string>(StringComparer.Ordinal)
-            {
-                CssClassPropertyName,
-                CssStylePropertyName,
-                AdditionalAttributesPropertyName,
-                ChildContentPropertyName
-            };
+            var rawName = element.GetProperty("name").GetString()
+                          ?? throw new InvalidOperationException("Element Plus prop is missing name.");
+            var description = element.TryGetProperty("description", out var descriptionElement) &&
+                              descriptionElement.ValueKind == JsonValueKind.String
+                ? descriptionElement.GetString()
+                : null;
+            var typeExpression = element.TryGetProperty("type", out var typeElement)
+                ? ReadTypeExpression(typeElement)
+                : null;
+            var required = element.TryGetProperty("required", out var requiredElement) &&
+                           requiredElement.ValueKind == JsonValueKind.True;
 
-            foreach (var prop in props)
-            {
-                if (!prop.IsSkipped)
-                    occupiedNames.Add(prop.PropertyName);
-            }
-
-            foreach (var emit in emits)
-                occupiedNames.Add(emit.PropertyName);
-
-            var resolved = new List<ElementPlusSlotMetadata>(slots.Length);
-            foreach (var slot in slots)
-            {
-                if (slot.IsDefault)
-                {
-                    resolved.Add(slot with { PropertyName = ChildContentPropertyName });
-                    continue;
-                }
-
-                var basePropertyName = ToPascalCase(slot.RuntimeName);
-                var propertyName = GetUniqueSlotPropertyName(basePropertyName, occupiedNames);
-                occupiedNames.Add(propertyName);
-                resolved.Add(slot with { PropertyName = propertyName });
-            }
-
-            return resolved.ToArray();
+            return new RawPropMetadata(rawName, description, typeExpression, required);
         }
 
-        private static string GetUniqueSlotPropertyName(string basePropertyName, HashSet<string> occupiedNames)
+        private static RawSlotMetadata ReadRawSlotMetadata(JsonElement element)
         {
-            var normalizedBaseName = string.IsNullOrWhiteSpace(basePropertyName)
-                ? "Slot"
-                : basePropertyName;
-            if (!occupiedNames.Contains(normalizedBaseName))
-                return normalizedBaseName;
+            var rawName = element.GetProperty("name").GetString()
+                          ?? throw new InvalidOperationException("Element Plus slot is missing name.");
+            var description = element.TryGetProperty("description", out var descriptionElement) &&
+                              descriptionElement.ValueKind == JsonValueKind.String
+                ? descriptionElement.GetString()
+                : null;
+            return new RawSlotMetadata(rawName, description);
+        }
 
-            var slotName = normalizedBaseName.EndsWith("Slot", StringComparison.Ordinal)
-                ? normalizedBaseName
-                : normalizedBaseName + "Slot";
-            if (!occupiedNames.Contains(slotName))
-                return slotName;
+        private static RawEventMetadata ReadRawEventMetadata(JsonElement element)
+        {
+            var rawName = element.GetProperty("name").GetString()
+                          ?? throw new InvalidOperationException("Element Plus event is missing name.");
+            var description = element.TryGetProperty("description", out var descriptionElement) &&
+                              descriptionElement.ValueKind == JsonValueKind.String
+                ? descriptionElement.GetString()
+                : null;
+            return new RawEventMetadata(rawName, description);
+        }
 
-            for (var suffix = 2; ; suffix++)
-            {
-                var candidate = slotName + suffix;
-                if (!occupiedNames.Contains(candidate))
-                    return candidate;
-            }
+        private static string? ReadTypeExpression(JsonElement typeElement)
+        {
+            if (typeElement.ValueKind == JsonValueKind.String)
+                return typeElement.GetString();
+
+            if (typeElement.ValueKind != JsonValueKind.Array || typeElement.GetArrayLength() == 0)
+                return null;
+
+            return string.Join(
+                " | ",
+                typeElement.EnumerateArray()
+                    .Select(static item => item.ValueKind switch
+                    {
+                        JsonValueKind.String => item.GetString(),
+                        JsonValueKind.Object when item.TryGetProperty("name", out var name) && name.ValueKind == JsonValueKind.String
+                            => name.GetString(),
+                        _ => null
+                    })
+                    .Where(static item => !string.IsNullOrWhiteSpace(item)));
+        }
+    }
+
+    private sealed record RawPropMetadata(
+        string RawName,
+        string? Description,
+        string? TypeExpression,
+        bool Required)
+    {
+        public string RuntimeName => NormalizePropRuntimeName(RawName);
+    }
+
+    private sealed record RawSlotMetadata(
+        string RawName,
+        string? Description);
+
+    private sealed record RawEventMetadata(
+        string RawName,
+        string? Description)
+    {
+        public string RuntimeName => NormalizeEventRuntimeName(RawName);
+    }
+
+    private sealed record GeneratedType(
+        string SourceText,
+        bool IsValueType)
+    {
+        public static GeneratedType Value(string sourceText)
+            => new(sourceText, true);
+
+        public static GeneratedType Reference(string sourceText)
+            => new(sourceText, false);
+
+        public GeneratedType AsOptional(bool required)
+        {
+            if (required || SourceText.EndsWith("?", StringComparison.Ordinal))
+                return this;
+
+            return this with { SourceText = SourceText + "?" };
         }
     }
 
     private sealed record ElementPlusPropMetadata(
         string RuntimeName,
         string PropertyName,
-        string TypeName,
-        bool IsSkipped)
-    {
-        public static ElementPlusPropMetadata FromJson(JsonElement element)
-        {
-            var runtimeName = element.GetProperty("name").GetString()
-                              ?? throw new InvalidOperationException("Element Plus prop is missing name.");
-
-            if (string.Equals(runtimeName, "class", StringComparison.Ordinal) ||
-                string.Equals(runtimeName, "style", StringComparison.Ordinal))
-            {
-                return new ElementPlusPropMetadata(runtimeName, ToPascalCase(runtimeName), "VueValue?", true);
-            }
-
-            if (runtimeName.StartsWith("[", StringComparison.Ordinal) ||
-                runtimeName.Contains('/', StringComparison.Ordinal))
-            {
-                return new ElementPlusPropMetadata(runtimeName, ToPascalCase(runtimeName), "VueValue?", true);
-            }
-
-            var propertyName = ToPascalCase(runtimeName);
-            var typeName = MapType(element.TryGetProperty("type", out var typeElement) ? typeElement : default);
-            return new ElementPlusPropMetadata(runtimeName, propertyName, typeName, false);
-        }
-
-        private static string MapType(JsonElement typeElement)
-        {
-            if (typeElement.ValueKind != JsonValueKind.Array || typeElement.GetArrayLength() == 0)
-                return "VueValue?";
-
-            var options = typeElement.EnumerateArray()
-                .Select(NormalizeTypeToken)
-                .Where(static token => !string.IsNullOrWhiteSpace(token))
-                .Distinct(StringComparer.Ordinal)
-                .ToArray();
-
-            if (options.Length == 0)
-                return "VueValue?";
-
-            if (options.All(static token => token == "boolean"))
-                return "bool";
-
-            if (options.All(static token => token == "number"))
-                return "Number?";
-
-            if (options.All(static token => token == "string"))
-                return "string?";
-
-            if (options.All(static token => token == "Component") ||
-                options.SequenceEqual(["string", "Component"], StringComparer.Ordinal) ||
-                options.SequenceEqual(["Component", "string"], StringComparer.Ordinal))
-            {
-                return "VueStringComponentValue?";
-            }
-
-            if (options.SequenceEqual(["string", "number"], StringComparer.Ordinal) ||
-                options.SequenceEqual(["number", "string"], StringComparer.Ordinal))
-            {
-                return "ElementPlusStringNumberValue?";
-            }
-
-            if (options.All(static token => token is "HTMLElement" or "CSSSelector") &&
-                options.Length <= 2)
-            {
-                return "VueTeleportTarget?";
-            }
-
-            if (options.All(static token => token == "string[]"))
-                return "ElementPlusStringArray?";
-
-            if (options.Length == 1)
-                return MapSingleType(options[0]);
-
-            if (options.Any(static token => token.Contains("=>", StringComparison.Ordinal)))
-                return "Delegate?";
-
-            if (options.All(static token => token.StartsWith("'", StringComparison.Ordinal) || token == "string"))
-                return "string?";
-
-            if (options.Any(static token => token == "boolean") && options.Any(static token => token == "string"))
-                return "VueBooleanStringValue?";
-
-            if (options.Any(static token => token == "VueProps") || options.Any(static token => token == "object"))
-                return "VueProps?";
-
-            return "VueValue?";
-        }
-
-        private static string MapSingleType(string typeToken)
-            => typeToken switch
-            {
-                "boolean" => "bool",
-                "number" => "Number?",
-                "string" => "string?",
-                "string[]" => "ElementPlusStringArray?",
-                "VueProps" => "VueProps?",
-                "CSSProperties" => "VueStyleValue?",
-                "CSSSelector" => "string?",
-                "HTMLElement" => "HTMLElement?",
-                "Component" => "IVueComponent?",
-                "RouteLocationRaw" => "VueValue?",
-                "Headers" => "Headers?",
-                "XMLHttpRequest" => "XMLHttpRequest?",
-                "File" => "File?",
-                "Blob" => "Blob?",
-                "Error" => "Error?",
-                "Function" => "Delegate?",
-                _ when typeToken.Contains("=>", StringComparison.Ordinal) => "Delegate?",
-                _ when typeToken.StartsWith("Array<", StringComparison.Ordinal) => MapArrayType(typeToken),
-                _ when typeToken.StartsWith("[", StringComparison.Ordinal) => MapTupleType(typeToken),
-                _ when typeToken.StartsWith("Record<", StringComparison.Ordinal) => "VueDictionary?",
-                _ when typeToken.Contains("Record<", StringComparison.Ordinal) => "VueDictionary?",
-                _ when typeToken.Contains("Awaitable", StringComparison.Ordinal) => "VueValue?",
-                _ when typeToken.Contains("any", StringComparison.OrdinalIgnoreCase) => "VueValue?",
-                _ when typeToken.Contains("object", StringComparison.OrdinalIgnoreCase) => "VueProps?",
-                _ => "VueValue?"
-            };
-
-        private static string MapArrayType(string typeToken)
-        {
-            if (string.Equals(typeToken, "Array<string | number>", StringComparison.Ordinal) ||
-                string.Equals(typeToken, "Array<number | string>", StringComparison.Ordinal))
-            {
-                return "VueValue?";
-            }
-
-            if (string.Equals(typeToken, "Array<string>", StringComparison.Ordinal))
-                return "ElementPlusStringArray?";
-
-            return "VueValue?";
-        }
-
-        private static string MapTupleType(string typeToken)
-        {
-            if (string.Equals(typeToken, "[number, number]", StringComparison.Ordinal))
-                return "Number[]?";
-
-            if (string.Equals(typeToken, "[Font]", StringComparison.Ordinal))
-                return "VueProps?";
-
-            return "VueValue?";
-        }
-
-        private static string NormalizeTypeToken(JsonElement element)
-            => element.ValueKind switch
-            {
-                JsonValueKind.String => NormalizeRawTypeToken(element.GetString() ?? string.Empty),
-                JsonValueKind.Object => element.TryGetProperty("name", out var name)
-                    ? NormalizeRawTypeToken(name.GetString() ?? string.Empty)
-                    : "VueValue",
-                _ => "VueValue"
-            };
-
-        private static string NormalizeRawTypeToken(string value)
-        {
-            var token = value.Trim();
-            if (string.IsNullOrWhiteSpace(token))
-                return string.Empty;
-
-            token = token.Replace(" | ", "|", StringComparison.Ordinal);
-            token = Regex.Replace(token, @"\s+", " ");
-
-            return token switch
-            {
-                "object" => "object",
-                "Array" => "Array",
-                "Function" => "Function",
-                "CSSProperties" => "CSSProperties",
-                "Component" => "Component",
-                "HTMLElement" => "HTMLElement",
-                "CSSSelector" => "CSSSelector",
-                "RouteLocationRaw" => "RouteLocationRaw",
-                "Headers" => "Headers",
-                "XMLHttpRequest" => "XMLHttpRequest",
-                "File" => "File",
-                "Blob" => "Blob",
-                "Error" => "Error",
-                _ when token.StartsWith("Array<", StringComparison.Ordinal) => token,
-                _ when token.StartsWith("[", StringComparison.Ordinal) => token,
-                _ when token.Contains("=>", StringComparison.Ordinal) => token,
-                _ when token.StartsWith("Record<", StringComparison.Ordinal) => token,
-                _ when token.Contains("Record<", StringComparison.Ordinal) => token,
-                _ when token.Contains("Awaitable", StringComparison.Ordinal) => token,
-                _ => token
-            };
-        }
-    }
+        GeneratedType Type,
+        bool Required,
+        bool IsSkipped,
+        bool AcceptsBinding);
 
     private sealed record ElementPlusSlotMetadata(
         string RuntimeName,
         string PropertyName,
-        bool IsDefault)
-    {
-        public static ElementPlusSlotMetadata FromJson(JsonElement element)
-        {
-            var runtimeName = element.GetProperty("name").GetString()
-                              ?? throw new InvalidOperationException("Element Plus slot is missing name.");
-            var isDefault = string.Equals(runtimeName, "default", StringComparison.Ordinal);
-            return new ElementPlusSlotMetadata(
-                runtimeName,
-                isDefault ? "ChildContent" : ToPascalCase(runtimeName),
-                isDefault);
-        }
-    }
+        bool IsDefault);
 
     private sealed record ElementPlusEmitMetadata(
         string RuntimeName,
-        string PropertyName)
+        string PropertyName,
+        bool IsModelUpdate,
+        string? PayloadTypeSourceText,
+        string? PayloadTypeRuntimeName)
     {
-        public static ElementPlusEmitMetadata FromJson(JsonElement element)
+        public string CallbackTypeSourceText
+            => PayloadTypeSourceText is null
+                ? "EventCallback"
+                : $"EventCallback<{PayloadTypeSourceText}>";
+    }
+
+    private sealed record ElementPlusComponentMetadata(
+        string TagName,
+        string ClassName,
+        string ExportName,
+        string Description,
+        ElementPlusPropMetadata[] Props,
+        ElementPlusSlotMetadata[] Slots,
+        ElementPlusEmitMetadata[] Emits)
+    {
+        public bool HasDefaultSlot => Slots.Any(static slot => slot.IsDefault);
+
+        public static ElementPlusComponentMetadata Merge(
+            RawComponentMetadata[] components,
+            ElementPlusAttributeCatalog attributeCatalog,
+            string updateModelEventName)
         {
-            var runtimeName = element.GetProperty("name").GetString()
-                              ?? throw new InvalidOperationException("Element Plus event is missing name.");
-            return new ElementPlusEmitMetadata(runtimeName, ToEventPropertyName(runtimeName));
+            if (components.Length == 0)
+                throw new InvalidOperationException("Element Plus component merge received no items.");
+
+            var first = components[0];
+            var description = components
+                .Select(static component => component.Description)
+                .FirstOrDefault(static item => !string.IsNullOrWhiteSpace(item))
+                ?? first.TagName;
+
+            var rawProps = MergeProps(first.TagName, components, attributeCatalog);
+            var rawEvents = MergeEvents(first.TagName, components, attributeCatalog);
+            var rawSlots = MergeSlots(components);
+
+            var updateEvents = rawEvents
+                .Select(static item => item.RuntimeName)
+                .Where(static item => item.StartsWith("update:", StringComparison.Ordinal))
+                .ToHashSet(StringComparer.Ordinal);
+
+            var propOccupiedNames = new HashSet<string>(ReservedPropertyNames, StringComparer.Ordinal);
+            var props = new List<ElementPlusPropMetadata>(rawProps.Count);
+            var bindablePropsByUpdateEvent = new Dictionary<string, ElementPlusPropMetadata>(StringComparer.Ordinal);
+
+            foreach (var rawProp in rawProps)
+            {
+                var isSkipped = string.Equals(rawProp.RawName, "class", StringComparison.Ordinal) ||
+                                string.Equals(rawProp.RawName, "style", StringComparison.Ordinal) ||
+                                rawProp.RawName.StartsWith("[", StringComparison.Ordinal) ||
+                                rawProp.RawName.Contains('/', StringComparison.Ordinal);
+                var propertyName = GetUniquePropPropertyName(ToPascalCase(rawProp.RawName), propOccupiedNames);
+                if (!isSkipped)
+                    propOccupiedNames.Add(propertyName);
+
+                var type = ResolvePropType(rawProp);
+                var updateEventRuntimeName = GetUpdateEventRuntimeName(rawProp.RuntimeName, updateModelEventName);
+                var acceptsBinding = !isSkipped && updateEvents.Contains(updateEventRuntimeName);
+                var prop = new ElementPlusPropMetadata(
+                    rawProp.RuntimeName,
+                    propertyName,
+                    type,
+                    rawProp.Required,
+                    isSkipped,
+                    acceptsBinding);
+                props.Add(prop);
+
+                if (acceptsBinding)
+                    bindablePropsByUpdateEvent[updateEventRuntimeName] = prop;
+            }
+
+            var emitOccupiedNames = new HashSet<string>(propOccupiedNames, StringComparer.Ordinal);
+            var emits = new List<ElementPlusEmitMetadata>(rawEvents.Count);
+            foreach (var rawEvent in rawEvents)
+            {
+                if (bindablePropsByUpdateEvent.TryGetValue(rawEvent.RuntimeName, out var bindableProp))
+                {
+                    var propertyName = bindableProp.PropertyName + "Changed";
+                    var uniquePropertyName = GetUniqueEmitPropertyName(propertyName, emitOccupiedNames);
+                    emitOccupiedNames.Add(uniquePropertyName);
+
+                    emits.Add(new ElementPlusEmitMetadata(
+                        rawEvent.RuntimeName,
+                        uniquePropertyName,
+                        IsModelUpdate: true,
+                        bindableProp.Type.SourceText,
+                        ResolveRuntimeTypeName(bindableProp.Type.SourceText)));
+                    continue;
+                }
+
+                var emitPropertyName = GetUniqueEmitPropertyName(
+                    ToNormalEventPropertyName(rawEvent.RuntimeName),
+                    emitOccupiedNames);
+                emitOccupiedNames.Add(emitPropertyName);
+
+                emits.Add(new ElementPlusEmitMetadata(
+                    rawEvent.RuntimeName,
+                    emitPropertyName,
+                    IsModelUpdate: false,
+                    PayloadTypeSourceText: null,
+                    PayloadTypeRuntimeName: null));
+            }
+
+            var slots = ResolveSlotPropertyNames(rawSlots, propOccupiedNames, emitOccupiedNames);
+
+            return new ElementPlusComponentMetadata(
+                first.TagName,
+                first.ClassName,
+                first.ExportName,
+                description,
+                props.ToArray(),
+                slots,
+                emits.ToArray());
+        }
+
+        private static List<RawPropMetadata> MergeProps(
+            string tagName,
+            RawComponentMetadata[] components,
+            ElementPlusAttributeCatalog attributeCatalog)
+        {
+            var merged = new List<RawPropMetadata>();
+            var indexes = new Dictionary<string, int>(StringComparer.Ordinal);
+
+            foreach (var component in components)
+            {
+                foreach (var prop in component.Props)
+                {
+                    AddOrMergeProp(merged, indexes, prop);
+                }
+            }
+
+            if (attributeCatalog.TryGetTag(tagName, out var attributeMetadata))
+            {
+                foreach (var prop in attributeMetadata.Props)
+                {
+                    AddOrMergeProp(merged, indexes, prop, preferIncomingType: true);
+                }
+            }
+
+            return merged;
+        }
+
+        private static void AddOrMergeProp(
+            List<RawPropMetadata> merged,
+            Dictionary<string, int> indexes,
+            RawPropMetadata incoming,
+            bool preferIncomingType = false)
+        {
+            var key = incoming.RuntimeName;
+            if (!indexes.TryGetValue(key, out var index))
+            {
+                indexes.Add(key, merged.Count);
+                merged.Add(incoming);
+                return;
+            }
+
+            var current = merged[index];
+            var typeExpression = preferIncomingType && !string.IsNullOrWhiteSpace(incoming.TypeExpression)
+                ? incoming.TypeExpression
+                : string.IsNullOrWhiteSpace(current.TypeExpression)
+                    ? incoming.TypeExpression
+                    : current.TypeExpression;
+            var description = !string.IsNullOrWhiteSpace(current.Description)
+                ? current.Description
+                : incoming.Description;
+            var required = current.Required || incoming.Required;
+
+            merged[index] = current with
+            {
+                Description = description,
+                TypeExpression = typeExpression,
+                Required = required
+            };
+        }
+
+        private static List<RawEventMetadata> MergeEvents(
+            string tagName,
+            RawComponentMetadata[] components,
+            ElementPlusAttributeCatalog attributeCatalog)
+        {
+            var merged = new List<RawEventMetadata>();
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+
+            foreach (var component in components)
+            {
+                foreach (var emit in component.Events)
+                {
+                    if (seen.Add(emit.RuntimeName))
+                        merged.Add(emit with { RawName = emit.RuntimeName });
+                }
+            }
+
+            if (attributeCatalog.TryGetTag(tagName, out var attributeMetadata))
+            {
+                foreach (var emit in attributeMetadata.Events)
+                {
+                    var runtimeName = emit.RuntimeName;
+                    if (seen.Add(runtimeName))
+                        merged.Add(emit with { RawName = runtimeName });
+                }
+            }
+
+            return merged;
+        }
+
+        private static List<RawSlotMetadata> MergeSlots(RawComponentMetadata[] components)
+        {
+            var merged = new List<RawSlotMetadata>();
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+
+            foreach (var component in components)
+            {
+                foreach (var slot in component.Slots)
+                {
+                    if (seen.Add(slot.RawName))
+                        merged.Add(slot);
+                }
+            }
+
+            return merged;
+        }
+
+        private static ElementPlusSlotMetadata[] ResolveSlotPropertyNames(
+            List<RawSlotMetadata> rawSlots,
+            HashSet<string> propOccupiedNames,
+            HashSet<string> emitOccupiedNames)
+        {
+            var occupiedNames = new HashSet<string>(ReservedPropertyNames, StringComparer.Ordinal);
+            foreach (var name in propOccupiedNames)
+                occupiedNames.Add(name);
+            foreach (var name in emitOccupiedNames)
+                occupiedNames.Add(name);
+
+            var resolved = new List<ElementPlusSlotMetadata>(rawSlots.Count);
+            foreach (var slot in rawSlots)
+            {
+                var isDefault = string.Equals(slot.RawName, "default", StringComparison.Ordinal);
+                if (isDefault)
+                {
+                    resolved.Add(new ElementPlusSlotMetadata(slot.RawName, ChildContentPropertyName, true));
+                    continue;
+                }
+
+                var propertyName = GetUniqueSlotPropertyName(ToPascalCase(slot.RawName), occupiedNames);
+                occupiedNames.Add(propertyName);
+                resolved.Add(new ElementPlusSlotMetadata(slot.RawName, propertyName, false));
+            }
+
+            return resolved.ToArray();
         }
     }
 

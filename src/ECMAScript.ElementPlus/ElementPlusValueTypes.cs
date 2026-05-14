@@ -24,34 +24,6 @@ public enum ElementPlusPopperEffect
 }
 
 [ECMAScript]
-[Description("@#")]
-public readonly union ElementPlusStringArray(string[])
-{
-    public string[]? AsArray => Value as string[];
-}
-
-[ECMAScript]
-[Description("@#")]
-public readonly union ElementPlusStringNumberValue(Number, string)
-{
-    public Number? AsNumber => Value is Number value ? value : default(Number?);
-
-    public string? AsString => Value as string;
-
-    public static implicit operator ElementPlusStringNumberValue(byte value) => (Number)value;
-    public static implicit operator ElementPlusStringNumberValue(sbyte value) => (Number)value;
-    public static implicit operator ElementPlusStringNumberValue(short value) => (Number)value;
-    public static implicit operator ElementPlusStringNumberValue(ushort value) => (Number)value;
-    public static implicit operator ElementPlusStringNumberValue(int value) => (Number)value;
-    public static implicit operator ElementPlusStringNumberValue(uint value) => (Number)value;
-    public static implicit operator ElementPlusStringNumberValue(long value) => (Number)(double)value;
-    public static implicit operator ElementPlusStringNumberValue(ulong value) => (Number)(double)value;
-    public static implicit operator ElementPlusStringNumberValue(float value) => (Number)value;
-    public static implicit operator ElementPlusStringNumberValue(double value) => (Number)value;
-    public static implicit operator ElementPlusStringNumberValue(decimal value) => (Number)value;
-}
-
-[ECMAScript]
 [Description("@#Styles")]
 public sealed record ElementPlusStyles : VueDictionary<VueStringNumberValue>
 {
