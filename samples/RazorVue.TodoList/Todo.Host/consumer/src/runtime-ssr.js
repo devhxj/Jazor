@@ -12,8 +12,9 @@ const expectedTexts = [
   "Pinned"
 ];
 
-export async function runTodoConsumerSsr(components, hostRequirements) {
+export async function runTodoConsumerSsr(components, hostRequirements, razorVueConsumerRoutes) {
   assertHostRequirements(hostRequirements);
+  void razorVueConsumerRoutes;
 
   const TodoApp = components?.TodoApp;
   if (typeof TodoApp !== "object" && typeof TodoApp !== "function") {
@@ -54,6 +55,6 @@ export async function runTodoConsumerSsr(components, hostRequirements) {
   return html;
 }
 
-export async function runSsrSmoke(TodoApp, hostRequirements) {
-  return await runTodoConsumerSsr({ TodoApp }, hostRequirements);
+export async function runSsrSmoke(TodoApp, hostRequirements, razorVueConsumerRoutes) {
+  return await runTodoConsumerSsr({ TodoApp }, hostRequirements, razorVueConsumerRoutes);
 }

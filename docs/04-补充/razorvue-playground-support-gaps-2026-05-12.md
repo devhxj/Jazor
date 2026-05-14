@@ -364,6 +364,7 @@ jazor-manifest-razorvue.json
 - 已完成（2026-05-14 本轮）：`Playground` consumer runtime 已移除缺失 `routeDefinitions` 时的 legacy 手写路由回退；运行时现在必须消费 `razorvue-consumer-entry` 生成的 `razorVueConsumerRoutes`，确保 Razor `@page -> unified manifest routeTemplates -> consumer runtime` 是唯一路由真相源。
 - 已完成（2026-05-14 本轮）：sample / pure Deno consumer runtime 已与官方 `razorvue-consumer-entry` 的三参调用契约对齐；运行时会把第 3 个参数识别为 route metadata，而不是误当成 `app.mount(...)` selector，修复了浏览器 smoke 中的 `parent.insertBefore is not a function` 挂载错误。
 - 已完成（2026-05-14 本轮）：SDK colocated consumer 模板运行时也已对齐同一三参契约；`Publish_LocalJazorPackage_WebSdkHost_WithColocatedConsumer_UsesSdkConsumerBuildAndUnifiedJazorPublishRoot` 现会回归锁定 `razorVueConsumerRoutes` 调用与 `Array.isArray(routesOrSelector)` 兼容逻辑，防止模板再次漂移回旧 selector-only 签名。
+- 已完成（2026-05-14 本轮）：sample 与 external pure Deno 的 SSR runtime export 也已显式声明并透传第 3 个 `razorVueConsumerRoutes` 参数，避免“浏览器 runtime 已升级、SSR runtime 仍停留在旧双参签名”的模板契约漂移。
 
 ### ASP.NET Core 宿主工作项
 

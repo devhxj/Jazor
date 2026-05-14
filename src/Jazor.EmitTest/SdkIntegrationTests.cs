@@ -3522,8 +3522,9 @@ public sealed class SdkIntegrationTests
               "Pinned"
             ];
 
-            export async function runTodoConsumerSsr(components, hostRequirements) {
+            export async function runTodoConsumerSsr(components, hostRequirements, razorVueConsumerRoutes) {
               assertHostRequirements(hostRequirements);
+              void razorVueConsumerRoutes;
               const Dashboard = components?.TodoApp;
               if (typeof Dashboard !== "object" && typeof Dashboard !== "function") {
                 throw new Error("External Deno consumer expected a TodoApp component export.");
@@ -3549,8 +3550,8 @@ public sealed class SdkIntegrationTests
               return html;
             }
 
-            export async function runSsrSmoke(Dashboard, hostRequirements) {
-              return await runTodoConsumerSsr({ TodoApp: Dashboard }, hostRequirements);
+            export async function runSsrSmoke(Dashboard, hostRequirements, razorVueConsumerRoutes) {
+              return await runTodoConsumerSsr({ TodoApp: Dashboard }, hostRequirements, razorVueConsumerRoutes);
             }
             """);
 
