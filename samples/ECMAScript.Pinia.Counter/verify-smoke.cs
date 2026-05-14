@@ -6,7 +6,7 @@ var repoRoot = FindRepositoryRoot(Directory.GetCurrentDirectory());
 var sampleRoot = Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter");
 var consumerRoot = Path.Combine(sampleRoot, "pinia-consumer");
 var hostRoot = Path.Combine(sampleRoot, "Pinia.Counter.Host");
-var packageProject = Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj");
+var publishScriptPath = Path.Combine(repoRoot, "scripts", "csharp", "publish-nuget.cs");
 var hostProject = Path.Combine(hostRoot, "Pinia.Counter.Host.csproj");
 var packageOutput = Path.Combine(repoRoot, ".tmp", "nupkg-sample");
 PackageInfo? resolvedPackageInfo = null;
@@ -24,13 +24,18 @@ if (!options.FrontendOnly || options.BuildLocal)
 
     var packArguments = new List<string>
     {
-        "pack",
-        packageProject,
-        "-c", options.Configuration,
-        "-o", packageOutput,
-        "-v", "minimal"
+        "run",
+        "--file",
+        publishScriptPath,
+        "--",
+        "--configuration", options.Configuration,
+        "--output-directory", packageOutput,
+        "--skip-push",
+        "--package", "jazor",
+        "--package", "pinia",
+        "--package", "pinia-testing"
     };
-    packArguments.AddRange(GetIsolationArguments(options));
+    packArguments.AddRange(GetPublishIsolationArguments(options));
     RunDotNet(repoRoot, packArguments);
 
     resolvedPackageInfo = ResolveLatestPackage(packageOutput);
@@ -49,7 +54,7 @@ if (!options.FrontendOnly || options.BuildLocal)
         $"-p:JazorPackageVersion={resolvedPackageInfo.Value.Version}",
         $"-p:JazorOutDir={generatedOutputRoot}"
     };
-    buildArguments.AddRange(GetIsolationArguments(options));
+    buildArguments.AddRange(GetBuildIsolationArguments(options));
     buildArguments.AddRange(new[]
     {
         "/nr:false",
@@ -102,7 +107,25 @@ static void SetCommonEnvironment(string repoRoot)
     Environment.SetEnvironmentVariable("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "1");
 }
 
-static string[] GetIsolationArguments(SmokeOptions options)
+static string[] GetPublishIsolationArguments(SmokeOptions options)
+{
+    var arguments = new List<string>();
+    if (!string.IsNullOrWhiteSpace(options.BaseOutputPath))
+    {
+        arguments.Add("--base-output-path");
+        arguments.Add(GetIsolatedBuildRoot(options.BaseOutputPath!, repoRoot: null));
+    }
+
+    if (!string.IsNullOrWhiteSpace(options.BaseIntermediateOutputPath))
+    {
+        arguments.Add("--base-intermediate-output-path");
+        arguments.Add(GetIsolatedBuildRoot(options.BaseIntermediateOutputPath!, repoRoot: null));
+    }
+
+    return arguments.ToArray();
+}
+
+static string[] GetBuildIsolationArguments(SmokeOptions options)
 {
     var arguments = new List<string>();
     if (!string.IsNullOrWhiteSpace(options.BaseOutputPath))

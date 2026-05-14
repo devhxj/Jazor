@@ -1,11 +1,12 @@
-name: Publish NuGet
+name: Publish NuGet From Ref
 
 on:
-  push:
-    tags:
-      - "v*"
   workflow_dispatch:
     inputs:
+      release_ref:
+        description: "Git ref to publish from, for example v0.1.23"
+        required: true
+        type: string
       dry_run:
         description: "Pack only, do not push to nuget.org"
         required: false
@@ -13,25 +14,22 @@ on:
         type: boolean
 
 permissions:
-  contents: write
+  contents: read
   id-token: write
   packages: write
 
 jobs:
-  verify-pinia:
-    uses: ./.github/workflows/pinia-verify.yml
-
   publish:
-    needs: verify-pinia
     runs-on: windows-latest
     env:
       NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
       NUGET_USER: ${{ secrets.NUGET_USER }}
 
     steps:
-      - name: Checkout
+      - name: Checkout requested ref
         uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.release_ref }}
           fetch-depth: 0
 
       - name: Setup .NET
@@ -39,7 +37,7 @@ jobs:
         with:
           global-json-file: global.json
 
-      - name: Pack Jazor
+      - name: Pack packages
         shell: pwsh
         run: |
           dotnet run --file ./scripts/csharp/publish-nuget.cs -- `
@@ -72,12 +70,12 @@ jobs:
       - name: Upload package artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Jazor.${{ steps.package.outputs.version }}.nupkg
+          name: Jazor.${{ steps.package.outputs.version }}.${{ inputs.release_ref }}.nupkg
           path: artifacts/packages/*
           if-no-files-found: error
 
       - name: Ensure publish auth is configured
-        if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.dry_run != 'true' }}
+        if: ${{ github.event.inputs.dry_run != 'true' }}
         shell: pwsh
         run: |
           if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY) -and [string]::IsNullOrWhiteSpace($env:NUGET_USER))
@@ -86,7 +84,7 @@ jobs:
           }
 
       - name: NuGet trusted publishing login
-        if: ${{ (github.event_name != 'workflow_dispatch' || github.event.inputs.dry_run != 'true') && env.NUGET_USER != '' }}
+        if: ${{ github.event.inputs.dry_run != 'true' && env.NUGET_USER != '' }}
         id: nuget_login
         continue-on-error: true
         uses: NuGet/login@v1
@@ -94,7 +92,7 @@ jobs:
           user: ${{ secrets.NUGET_USER }}
 
       - name: Push package with trusted publishing
-        if: ${{ (github.event_name != 'workflow_dispatch' || github.event.inputs.dry_run != 'true') && steps.nuget_login.outcome == 'success' }}
+        if: ${{ github.event.inputs.dry_run != 'true' && steps.nuget_login.outcome == 'success' }}
         shell: pwsh
         run: |
           $packages = Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg' | Sort-Object Name
@@ -104,50 +102,11 @@ jobs:
           }
 
       - name: Push package with API key fallback
-        if: ${{ (github.event_name != 'workflow_dispatch' || github.event.inputs.dry_run != 'true') && steps.nuget_login.outcome != 'success' && env.NUGET_API_KEY != '' }}
+        if: ${{ github.event.inputs.dry_run != 'true' && steps.nuget_login.outcome != 'success' && env.NUGET_API_KEY != '' }}
         shell: pwsh
         run: |
           $packages = Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg' | Sort-Object Name
           if (-not $packages) { throw 'No packages found in artifacts/packages.' }
           foreach ($pkg in $packages) {
             dotnet nuget push $pkg.FullName --api-key '${{ secrets.NUGET_API_KEY }}' --source 'https://api.nuget.org/v3/index.json' --skip-duplicate
-          }
-
-      - name: Push to GitHub Packages
-        if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.dry_run != 'true' }}
-        shell: pwsh
-        run: |
-          $packages = Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg' | Sort-Object Name
-          if (-not $packages) { throw 'No packages found in artifacts/packages.' }
-          foreach ($pkg in $packages) {
-            dotnet nuget push $pkg.FullName --api-key '${{ secrets.GITHUB_TOKEN }}' --source 'https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json' --skip-duplicate
-          }
-
-      - name: Generate release notes
-        if: startsWith(github.ref, 'refs/tags/')
-        id: release_notes
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Path 'artifacts' -Force | Out-Null
-          $notesPath = Join-Path (Resolve-Path 'artifacts') 'release-notes.md'
-          dotnet run --file ./scripts/csharp/release-notes.cs -- `
-            --tag '${{ github.ref_name }}' `
-            --repository '${{ github.repository }}' |
-            Set-Content -LiteralPath $notesPath -Encoding UTF8
-          "notes_path=$notesPath" >> $env:GITHUB_OUTPUT
-
-      - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          $tag = '${{ github.ref_name }}'
-          $notesPath = '${{ steps.release_notes.outputs.notes_path }}'
-
-          gh release view $tag --repo "${{ github.repository }}" *> $null
-          if ($LASTEXITCODE -eq 0) {
-            gh release edit $tag --repo "${{ github.repository }}" --title $tag --notes-file $notesPath --latest
-          } else {
-            gh release create $tag --repo "${{ github.repository }}" --title $tag --notes-file $notesPath --latest
           }
