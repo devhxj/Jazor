@@ -1,4 +1,7 @@
 using Jazor.Emit;
+using Basic.Reference.Assemblies;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
@@ -390,6 +393,184 @@ public sealed class RazorVueEmitIntegrationTests
             if (Directory.Exists(root))
                 Directory.Delete(root, recursive: true);
         }
+    }
+
+    [TestMethod]
+    public async Task EmitCli_Clean_WhenPlainModuleSupersedesLegacyRazorVuePath_PreservesNewPlainModule()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+        var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
+        var manifestPath = Path.Combine(outputDirectory, "jazor-manifest.json");
+        var emitAssemblyPath = typeof(EmitOptions).Assembly.Location;
+        var plainAssemblyPath = Path.Combine(root, "Plain.Host.dll");
+        var modulePath = Path.Combine(outputDirectory, "components", "counter-card.mjs");
+        var mapPath = modulePath + ".map";
+        var originPath = modulePath + ".origins.json";
+
+        try
+        {
+            Directory.CreateDirectory(root);
+            CreatePlainCatalogAssembly(plainAssemblyPath);
+            Directory.CreateDirectory(Path.GetDirectoryName(modulePath)!);
+            File.WriteAllText(modulePath, "export default { legacy: true };\n");
+            File.WriteAllText(mapPath, "legacy-map");
+            File.WriteAllText(originPath, "legacy-origin");
+
+            new ManifestModel(
+                Path.Combine(root, "Sample.Host.dll"),
+                new DateTime(2026, 5, 14, 0, 0, 0, DateTimeKind.Utc),
+                [
+                    new ManifestModuleEntry(
+                        "Sample.Host",
+                        "Demo.Components.CounterCard",
+                        "Demo.Components.CounterCard",
+                        "components/counter-card.mjs",
+                        "legacy-component-hash",
+                        "components/counter-card.mjs.map",
+                        "legacy-component-map-hash",
+                        ManifestModuleKind.Mjs,
+                        new ManifestComponentMetadata(
+                            ManifestComponentModel.H,
+                            "Demo.Components.CounterCard",
+                            "components/counter-card.mjs",
+                            "CounterCard",
+                            ["/counter"],
+                            "components/counter-card.mjs.origins.json",
+                            ["vue"],
+                            ["vuetify/styles"],
+                            ["vuetify"],
+                            "descriptor-hash",
+                            "template-hash",
+                            "logic-hash",
+                            "legacy-component-hash",
+                            RazorVueHmrBoundaryKind.LogicSafe,
+                            RequiresHydration: false,
+                            SupportsSsr: true))
+                ]).Save(manifestPath);
+
+            var result = await RunDotNetAsync(root,
+                [
+                    "exec",
+                    emitAssemblyPath,
+                    "--root",
+                    plainAssemblyPath,
+                    "--out",
+                    outputDirectory,
+                    "--write-manifest",
+                    manifestPath,
+                    "--clean",
+                    "true",
+                    "--fail-on-path-conflict",
+                    "true"
+                ]);
+
+            Assert.AreEqual(0, result.ExitCode, result.ToString());
+            Assert.IsTrue(File.Exists(modulePath), "Plain module output was deleted by a stale RazorVue clean pass after taking ownership of the path.");
+            Assert.IsTrue(File.Exists(mapPath), "Plain module sourcemap should remain after ownership transfer.");
+            Assert.IsFalse(File.Exists(originPath), "Legacy RazorVue origin sidecar must be removed when the path becomes a plain module.");
+
+            var manifest = ManifestModel.TryLoad(manifestPath);
+            Assert.IsNotNull(manifest);
+            var module = manifest.Modules.Single(static module => string.Equals(module.RelativePath, "components/counter-card.mjs", StringComparison.OrdinalIgnoreCase));
+            Assert.IsNull(module.Component, "Unified manifest should describe the path as a plain module after ownership transfer.");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    private static void CreatePlainCatalogAssembly(string assemblyPath)
+    {
+        const string source =
+            """
+            namespace Jazor.Generated
+            {
+                internal static partial class ModuleCatalog
+                {
+                    internal static System.Collections.IEnumerable GetModules() => _modules;
+
+                    private static readonly GeneratedModule[] _modules =
+                    [
+                        new GeneratedModule(
+                            assemblyName: "Sample.Host",
+                            typeName: "Demo.Modules.CounterCard",
+                            id: "Demo.Modules.CounterCard",
+                            relativePath: "components/counter-card.mjs",
+                            content: "export const counter = 1;",
+                            hash: "plain-hash")
+                    ];
+
+                    private sealed class GeneratedModule
+                    {
+                        public GeneratedModule(string assemblyName, string typeName, string id, string relativePath, string content, string hash)
+                        {
+                            AssemblyName = assemblyName;
+                            TypeName = typeName;
+                            Id = id;
+                            RelativePath = relativePath;
+                            Content = content;
+                            Hash = hash;
+                        }
+
+                        public string AssemblyName { get; }
+                        public string TypeName { get; }
+                        public string Id { get; }
+                        public string RelativePath { get; }
+                        public string Content { get; }
+                        public string Hash { get; }
+                    }
+                }
+
+                internal static partial class ModuleSourceMapCatalog
+                {
+                    internal static System.Collections.IEnumerable GetModules() => _modules;
+
+                    private static readonly GeneratedModuleSourceMap[] _modules =
+                    [
+                        new GeneratedModuleSourceMap(
+                            id: "Demo.Modules.CounterCard",
+                            sourceMapRelativePath: "components/counter-card.mjs.map",
+                            sourceMapContent: "{\"version\":3,\"file\":\"components/counter-card.mjs\",\"sources\":[],\"names\":[],\"mappings\":\"\"}",
+                            mapHash: "plain-map-hash")
+                    ];
+
+                    private sealed class GeneratedModuleSourceMap
+                    {
+                        public GeneratedModuleSourceMap(string id, string sourceMapRelativePath, string sourceMapContent, string mapHash)
+                        {
+                            Id = id;
+                            SourceMapRelativePath = sourceMapRelativePath;
+                            SourceMapContent = sourceMapContent;
+                            MapHash = mapHash;
+                        }
+
+                        public string Id { get; }
+                        public string SourceMapRelativePath { get; }
+                        public string SourceMapContent { get; }
+                        public string MapHash { get; }
+                    }
+                }
+            }
+            """;
+
+        var compilation = CSharpCompilation.Create(
+            assemblyName: Path.GetFileNameWithoutExtension(assemblyPath),
+            syntaxTrees:
+            [
+                CSharpSyntaxTree.ParseText(source, path: "Plain.Host.g.cs")
+            ],
+            references: Net110.References.All.Cast<MetadataReference>(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var directory = Path.GetDirectoryName(assemblyPath);
+        if (!string.IsNullOrEmpty(directory))
+            Directory.CreateDirectory(directory);
+
+        using var stream = new FileStream(assemblyPath, FileMode.Create, FileAccess.Write, FileShare.None);
+        var emitResult = compilation.Emit(stream);
+        Assert.IsTrue(emitResult.Success, string.Join("\n", emitResult.Diagnostics.Select(static diagnostic => diagnostic.ToString())));
     }
 
     private static RazorVueManifestModel CreateManifest(string templateHash, string logicHash, string contentHash, RazorVueHmrBoundaryKind boundaryKind)

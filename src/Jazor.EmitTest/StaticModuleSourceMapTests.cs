@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using Basic.Reference.Assemblies;
 using Jazor.Emit;
+using Jazor.RazorVue;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -366,6 +367,104 @@ public sealed class StaticModuleSourceMapTests
             Assert.IsNotNull(manifest);
             Assert.HasCount(1, manifest.Modules);
             Assert.AreEqual("components/wiki-home.mjs", manifest.Modules[0].RelativePath);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void ModuleWriter_Write_WhenPlainModuleSupersedesLegacyRazorVueComponent_HealsUnifiedManifest()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+        var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
+        var manifestPath = Path.Combine(outputDirectory, "jazor-manifest.json");
+        var rootAssemblyPath = Path.Combine(root, "Sample.Host.dll");
+        const string moduleRelativePath = "components/counter-card.mjs";
+        const string mapRelativePath = "components/counter-card.mjs.map";
+        const string originRelativePath = "components/counter-card.mjs.origins.json";
+        var modulePath = Path.Combine(outputDirectory, "components", "counter-card.mjs");
+        var mapPath = modulePath + ".map";
+        var originPath = modulePath + ".origins.json";
+        const string mapContent = "{\"version\":3,\"file\":\"components/counter-card.mjs\",\"sources\":[],\"names\":[],\"mappings\":\"\"}";
+
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(modulePath)!);
+            File.WriteAllText(modulePath, "export default { legacy: true };\n");
+            File.WriteAllText(mapPath, "legacy-map");
+            File.WriteAllText(originPath, "legacy-origin");
+
+            new ManifestModel(
+                rootAssemblyPath,
+                new DateTime(2026, 5, 14, 0, 0, 0, DateTimeKind.Utc),
+                [
+                    new ManifestModuleEntry(
+                        "Sample.Host",
+                        "Demo.Components.CounterCard",
+                        "Demo.Components.CounterCard",
+                        moduleRelativePath,
+                        "legacy-component-hash",
+                        mapRelativePath,
+                        "legacy-component-map-hash",
+                        ManifestModuleKind.Mjs,
+                        new ManifestComponentMetadata(
+                            ManifestComponentModel.H,
+                            "Demo.Components.CounterCard",
+                            moduleRelativePath,
+                            "CounterCard",
+                            ["/counter"],
+                            originRelativePath,
+                            ["vue"],
+                            ["vuetify/styles"],
+                            ["vuetify"],
+                            "descriptor-hash",
+                            "template-hash",
+                            "logic-hash",
+                            "legacy-component-hash",
+                            RazorVueHmrBoundaryKind.LogicSafe,
+                            RequiresHydration: false,
+                            SupportsSsr: true))
+                ]).Save(manifestPath);
+
+            var writer = new ModuleWriter();
+            var result = writer.Write(
+                rootAssemblyPath,
+                outputDirectory,
+                manifestPath,
+                [
+                    new EmitModuleRecord(
+                        SourceAssemblyPath: rootAssemblyPath,
+                        AssemblyName: "Sample.Host",
+                        TypeName: "Demo.Modules.CounterCard",
+                        Id: "Demo.Modules.CounterCard",
+                        RelativePath: moduleRelativePath,
+                        Content: "export const counter = 1;\n",
+                        Hash: "plain-hash",
+                        SourceMapRelativePath: mapRelativePath,
+                        SourceMapContent: mapContent,
+                        MapHash: "plain-map-hash")
+                ],
+                clean: true);
+
+            Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+            Assert.IsTrue(File.Exists(modulePath));
+            Assert.IsTrue(File.Exists(mapPath));
+            Assert.IsFalse(File.Exists(originPath), "Superseded RazorVue origin sidecar should be removed when a plain module takes over the same relative path.");
+            Assert.AreEqual(mapContent, File.ReadAllText(mapPath));
+
+            var moduleCode = File.ReadAllText(modulePath);
+            StringAssert.Contains(moduleCode, "export const counter = 1;");
+            StringAssert.Contains(moduleCode, "//# sourceMappingURL=counter-card.mjs.map");
+
+            var manifest = ManifestModel.TryLoad(manifestPath);
+            Assert.IsNotNull(manifest);
+            Assert.HasCount(1, manifest.Modules);
+            Assert.AreEqual(moduleRelativePath, manifest.Modules[0].RelativePath);
+            Assert.AreEqual(mapRelativePath, manifest.Modules[0].SourceMapPath);
+            Assert.IsNull(manifest.Modules[0].Component, "Superseded RazorVue component metadata must not survive in the unified manifest once a plain module owns the path.");
         }
         finally
         {

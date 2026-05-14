@@ -40,9 +40,7 @@ internal sealed record ManifestModel(
         if (manifest is null)
             return null;
 
-        var normalizedModules = manifest.Modules
-            .Select(NormalizeModule)
-            .ToList();
+        var normalizedModules = NormalizeModules(manifest.Modules);
 
         return manifest with { Modules = normalizedModules };
     }
@@ -103,7 +101,36 @@ internal sealed record ManifestModel(
         if (!string.IsNullOrEmpty(directory))
             Directory.CreateDirectory(directory);
 
-        File.WriteAllText(manifestPath, JsonSerializer.Serialize(this, JsonOptions));
+        var normalized = this with
+        {
+            Modules = NormalizeModules(Modules)
+        };
+
+        File.WriteAllText(manifestPath, JsonSerializer.Serialize(normalized, JsonOptions));
+    }
+
+    private static List<ManifestModuleEntry> NormalizeModules(IEnumerable<ManifestModuleEntry> modules)
+    {
+        var normalizedModules = new List<ManifestModuleEntry>();
+        var indexByRelativePath = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var module in modules)
+        {
+            var normalizedModule = NormalizeModule(module);
+            if (indexByRelativePath.TryGetValue(normalizedModule.RelativePath, out var existingIndex))
+            {
+                // Relative paths are the physical file identity for the unified manifest.
+                // Keeping the later entry lets newer writer ownership heal stale duplicate rows
+                // produced by older mixed-writer runs.
+                normalizedModules[existingIndex] = normalizedModule;
+                continue;
+            }
+
+            indexByRelativePath.Add(normalizedModule.RelativePath, normalizedModules.Count);
+            normalizedModules.Add(normalizedModule);
+        }
+
+        return normalizedModules;
     }
 
     private static ManifestModuleEntry NormalizeModule(ManifestModuleEntry module)
