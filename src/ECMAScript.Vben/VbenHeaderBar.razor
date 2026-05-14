@@ -1,0 +1,26 @@
+@inherits VbenComponentBase
+
+<div class="@RootCssClass" style="@CssStyle" @attributes="AdditionalAttributes">
+    <div class='@("vben-header__main")'>
+        @if (Logo is not null)
+        {
+            <div class='@("vben-header__logo")'>@Logo</div>
+        }
+
+        <div class='@("vben-header__titles")'>
+            @if (!string.IsNullOrWhiteSpace(Title))
+            {
+                <div class='@("vben-header__title")'>@Title</div>
+            }
+            @if (!string.IsNullOrWhiteSpace(Subtitle))
+            {
+                <div class='@("vben-header__subtitle")'>@Subtitle</div>
+            }
+        </div>
+    </div>
+
+    <div class='@("vben-header__actions")'>
+        @Actions
+        @UserRegion
+    </div>
+</div>

@@ -1,5 +1,8 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace ECMAScript;
 
@@ -177,6 +180,141 @@ public static partial class Vue3
 		/// Returns the mixed value array when the value was created from values; otherwise null.
 		/// </summary>
 		public VueValue[]? AsValues => Value as VueValue[];
+	}
+
+	/// <summary>
+	/// Vue authoring 中常见的布尔或字符串联合值。适用于运行时同时接受启用标记或具名字面量的高频属性。
+	/// Common boolean-or-string union value for Vue authoring. Use this when a runtime
+	/// contract accepts either an enable/disable flag or a named string literal.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public readonly union VueBooleanStringValue(bool, string)
+	{
+		/// <summary>
+		/// 当值为布尔值时返回该值；否则返回 null。
+		/// Returns the boolean when the value was created from a bool; otherwise null.
+		/// </summary>
+		public bool? AsBool => Value is bool value ? value : default(bool?);
+
+		/// <summary>
+		/// 当值为字符串时返回该字符串；否则返回 null。
+		/// Returns the string when the value was created from a string; otherwise null.
+		/// </summary>
+		public string? AsString => Value as string;
+	}
+
+	/// <summary>
+	/// 接受字符串名或组件值的公共 Vue 联合类型。适用于图标、动态子组件入口或组件覆写槽位等高频 authoring 场景。
+	/// Shared Vue union type that accepts either a string token or a component value.
+	/// This fits common authoring scenarios such as icon/component overrides and
+	/// dynamic component entry points.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public readonly union VueStringComponentValue(string, IVueComponent)
+	{
+		/// <summary>
+		/// 当值为字符串时返回该字符串；否则返回 null。
+		/// Returns the string when the value was created from a string; otherwise null.
+		/// </summary>
+		public string? AsString => Value as string;
+
+		/// <summary>
+		/// 当值为组件时返回该组件；否则返回 null。
+		/// Returns the component when the value was created from a component; otherwise null.
+		/// </summary>
+		public IVueComponent? AsComponent => Value as IVueComponent;
+	}
+
+	/// <summary>
+	/// Vue <c>style</c> 绑定值的联合类型。可以是字符串、对象形式或混合样式数组。
+	/// Union type for Vue <c>style</c> binding values. Can be a string, object form, or
+	/// mixed style arrays.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public readonly union VueStyleValue(string, VueProps, VueStyleValues)
+	{
+		/// <summary>
+		/// 当值为字符串时返回该字符串；否则返回 null。
+		/// Returns the string when the value was created from a string; otherwise null.
+		/// </summary>
+		public string? AsString => Value as string;
+
+		/// <summary>
+		/// 当值为对象形式时返回该对象；否则返回 null。
+		/// Returns the props object when the value was created from object form; otherwise null.
+		/// </summary>
+		public VueProps? AsProps => Value as VueProps;
+
+		/// <summary>
+		/// 当值为样式值数组时返回该数组；否则返回 null。
+		/// Returns the style values when the value was created from an array; otherwise null.
+		/// </summary>
+		public VueStyleValues? AsValues => Value is VueStyleValues value ? value : default(VueStyleValues?);
+
+		public static implicit operator VueStyleValue(string value)
+			=> new(value);
+
+		public static implicit operator VueStyleValue(VueProps value)
+			=> new(value);
+
+		public static implicit operator VueStyleValue(VueDictionary value)
+			=> new(value);
+
+		public static implicit operator VueStyleValue(VueStyleValues value)
+			=> new(value);
+
+		public static implicit operator VueStyleValue(VueStyleValue[] values)
+			=> new((VueStyleValues)values);
+
+		public static implicit operator VueStyleValue(string[] values)
+			=> new((VueStyleValues)values);
+
+		public static implicit operator VueStyleValue(VueProps[] values)
+			=> new((VueStyleValues)values);
+
+		public static implicit operator VueStyleValue(VueDictionary[] values)
+			=> new((VueStyleValues)values);
+	}
+
+	/// <summary>
+	/// Vue <c>style</c> 数组 authoring 值。保留集合表达式 authoring。
+	/// Array authoring surface for Vue <c>style</c> values, preserving collection-expression
+	/// authoring.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	[CollectionBuilder(typeof(VueStyleValuesCollectionBuilder), nameof(VueStyleValuesCollectionBuilder.Create))]
+	public readonly union VueStyleValues(VueStyleValue[]) : IEnumerable<VueStyleValue>
+	{
+		public VueStyleValue[]? AsArray => Value as VueStyleValue[];
+
+		IEnumerator<VueStyleValue> IEnumerable<VueStyleValue>.GetEnumerator()
+			=> ((IEnumerable<VueStyleValue>)(AsArray ?? Array.Empty<VueStyleValue>())).GetEnumerator();
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+			=> ((IEnumerable<VueStyleValue>)this).GetEnumerator();
+
+		public static implicit operator VueStyleValues(VueStyleValue[] values)
+			=> new(values);
+
+		public static implicit operator VueStyleValues(string[] values)
+			=> new(Array.ConvertAll(values, static value => (VueStyleValue)value));
+
+		public static implicit operator VueStyleValues(VueProps[] values)
+			=> new(Array.ConvertAll(values, static value => (VueStyleValue)value));
+
+		public static implicit operator VueStyleValues(VueDictionary[] values)
+			=> new(Array.ConvertAll(values, static value => (VueStyleValue)value));
+	}
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public static class VueStyleValuesCollectionBuilder
+	{
+		public static VueStyleValues Create(ReadOnlySpan<VueStyleValue> values)
+			=> values.ToArray();
 	}
 
 	/// <summary>

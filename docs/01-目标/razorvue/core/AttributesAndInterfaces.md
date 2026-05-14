@@ -11,8 +11,8 @@
 - 提供编译器扩展点接口（Extensibility）
 
 **源文件位置**：
-- 属性定义：`src/Jazor.RazorVue/VueLibrary*.cs`（6 个属性文件）
-- 接口定义：`src/Jazor.RazorVue/IVue*.cs`
+- 属性定义：`src/ECMAScript.VueContract/*.cs`
+- 接口定义：`src/ECMAScript.Vue3/*.cs`
 - 扩展性接口：`src/Jazor.RazorVue/Extensibility/` 目录
 
 ## 2. 核心类型
@@ -23,7 +23,7 @@ RazorVue 提供了一套完整的声明式属性系统，用于描述外部 Vue 
 
 #### 2.1.1 VueLibraryComponentAttribute
 
-**文件**：`src/Jazor.RazorVue/VueLibraryComponentAttribute.cs`
+**文件**：`src/ECMAScript.VueContract/VueLibraryComponentAttribute.cs`
 
 **用途**：标记类为 Vue 库组件桩（stub），声明其导入路径和导出名称。
 
@@ -47,7 +47,7 @@ public sealed class VBtn : IVueLibraryComponent
 
 #### 2.1.2 VueLibraryStyleAttribute
 
-**文件**：`src/Jazor.RazorVue/VueLibraryStyleAttribute.cs`
+**文件**：`src/ECMAScript.VueContract/VueLibraryStyleAttribute.cs`
 
 **用途**：声明库组件的 CSS 样式依赖。
 
@@ -68,7 +68,7 @@ public sealed class VBtn : IVueLibraryComponent
 
 #### 2.1.3 VueLibraryPluginRequirementAttribute
 
-**文件**：`src/Jazor.RazorVue/VueLibraryPluginRequirementAttribute.cs`
+**文件**：`src/ECMAScript.VueContract/VueLibraryPluginRequirementAttribute.cs`
 
 **用途**：声明库组件对 Vue 插件的依赖，例如 Vuetify 需要注册插件才能正常工作。
 
@@ -87,9 +87,9 @@ public sealed class VBtn : IVueLibraryComponent
 **特性约束**：
 - `AllowMultiple = true`：组件可能依赖多个插件
 
-#### 2.1.4 VueLibraryPropAttribute
+#### 2.1.4 VuePropAttribute
 
-**文件**：`src/Jazor.RazorVue/VueLibraryPropAttribute.cs`
+**文件**：`src/ECMAScript.VueContract/VuePropAttribute.cs`
 
 **用途**：声明库组件的 props（属性），包括其类型、是否必填、是否支持 v-model 等。
 
@@ -114,9 +114,9 @@ public sealed class VBtn : IVueLibraryComponent
 **使用示例**：
 ```csharp
 [VueLibraryComponent("vuetify/lib/components/VBtn/VBtn.mjs", "VBtn")]
-[VueLibraryProp("color", Required = false, DefaultExpression = "'primary'")]
-[VueLibraryProp("model-value", VuePropKind.Model, AcceptsBinding = true)]
-[VueLibraryProp("disabled", VuePropKind.HtmlLike)]
+[VueProp("color", Required = false, DefaultExpression = "'primary'")]
+[VueProp("model-value", VuePropKind.Model, AcceptsBinding = true)]
+[VueProp("disabled", VuePropKind.HtmlLike)]
 public sealed class VBtn : IVueLibraryComponent
 {
 }
@@ -127,7 +127,7 @@ public sealed class VBtn : IVueLibraryComponent
 
 #### 2.1.5 VueLibraryEmitAttribute
 
-**文件**：`src/Jazor.RazorVue/VueLibraryEmitAttribute.cs`
+**文件**：`src/ECMAScript.VueContract/VueLibraryEmitAttribute.cs`
 
 **用途**：声明库组件的 emits（事件），包括事件名称和负载类型。
 
@@ -160,9 +160,9 @@ public sealed class VBtn : IVueLibraryComponent
 **特性约束**：
 - `AllowMultiple = true`：组件可以有多个 emits
 
-#### 2.1.6 VueLibrarySlotAttribute
+#### 2.1.6 VueSlotAttribute
 
-**文件**：`src/Jazor.RazorVue/VueLibrarySlotAttribute.cs`
+**文件**：`src/ECMAScript.VueContract/VueSlotAttribute.cs`
 
 **用途**：声明库组件的 slots（插槽），包括插槽名称、是否为默认插槽、作用域上下文等。
 
@@ -179,8 +179,8 @@ public sealed class VBtn : IVueLibraryComponent
 **使用示例**：
 ```csharp
 [VueLibraryComponent("vuetify/lib/components/VDialog/VDialog.mjs", "VDialog")]
-[VueLibrarySlot("default", IsDefault = true)]
-[VueLibrarySlot("activator", ContextTypeName = "ActivatorContext", ContextParameterName = "contextProps")]
+[VueSlot("default", IsDefault = true)]
+[VueSlot("activator", ContextTypeName = "ActivatorContext", ContextParameterName = "contextProps")]
 public sealed class VDialog : IVueLibraryComponent
 {
 }
@@ -191,7 +191,7 @@ public sealed class VDialog : IVueLibraryComponent
 
 #### 2.1.7 VueLibraryComponentFlagsAttribute
 
-**文件**：`src/Jazor.RazorVue/VueLibraryComponentFlagsAttribute.cs`
+**文件**：`src/ECMAScript.VueContract/VueLibraryComponentFlagsAttribute.cs`
 
 **用途**：声明库组件的特殊标志，如是否支持 v-model、是否为表单控件等。
 
@@ -268,6 +268,100 @@ public sealed class VBtn : IVueLibraryComponent
     // 无需实现，仅作为元数据载体
 }
 ```
+
+#### 2.2.3 IVueContainerComponent
+
+**文件**：`src/ECMAScript.VueContract/IVueContainerComponent.cs`
+
+**用途**：标记一个 authored 组件是“容器契约组件”。它表达的是抽象槽位，而不是最终必须发射的具体 Vue 组件实现。
+
+**继承关系**：
+```csharp
+public interface IVueContainerComponent : IUIComponent
+{
+}
+```
+
+**设计意图**：
+- 让上层框架先声明稳定的 authoring contract
+- 不把 authoring 面直接耦合到 Element Plus / Vuetify / TDesign 某个具体库
+- 容器是否被替换、替换成谁，交由编译期注入机制决定
+
+**使用示例**：
+```csharp
+[ECMAScriptModule("./containers/nav-shell")]
+public sealed class NavShell : ComponentBase, IVueComponent, IVueContainerComponent
+{
+    [Parameter]
+    public string? Title { get; set; }
+}
+```
+
+#### 2.2.4 IVueContainerImplementation<TContainer>
+
+**文件**：`src/ECMAScript.VueContract/IVueContainerImplementation.cs`
+
+**用途**：标记一个具体组件是某个容器契约的编译期实现。
+
+**接口定义**：
+```csharp
+public interface IVueContainerImplementation<TContainer>
+    where TContainer : class, IVueContainerComponent
+{
+}
+```
+
+**设计意图**：
+- 用泛型把“这个实现对应哪个 contract”明确写进类型系统
+- 让编译器在读取 `[VueInject]` 时做一致性校验
+- 避免仅靠命名约定或外部表驱动造成漂移
+
+**使用示例**：
+```csharp
+[VueLibraryComponent("element-plus", "ElMenu")]
+public sealed class ElementPlusNavShell
+    : ComponentBase,
+      IVueLibraryComponent,
+      IVueContainerImplementation<NavShell>
+{
+    [Parameter]
+    public string? Title { get; set; }
+}
+```
+
+### 2.2.5 VueInjectAttribute
+
+**文件**：`src/ECMAScript.VueContract/VueInjectAttribute.cs`
+
+**用途**：在装配级声明“容器契约组件应注入为哪个具体实现组件”。
+
+**构造参数**：
+- `contractComponentType`（Type）：容器契约组件类型
+- `implementationComponentType`（Type）：具体实现组件类型
+
+**接口定义**：
+```csharp
+[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true, Inherited = false)]
+public sealed class VueInjectAttribute : Attribute
+{
+    public VueInjectAttribute(Type contractComponentType, Type implementationComponentType) { ... }
+}
+```
+
+**使用示例**：
+```csharp
+[assembly: VueInject(
+    typeof(Demo.Containers.NavShell),
+    typeof(Demo.Implementations.ElementPlusNavShell))]
+```
+
+**编译期约束**：
+- 同一个容器契约不能重复声明多个 `[VueInject]`
+- implementation 必须在当前 RazorVue 组件注册表中可见
+- implementation 必须实现 `IVueContainerImplementation<TContainer>`
+- `TContainer` 必须与 `[VueInject]` 的 contract 参数一致
+
+这组规则让容器机制更接近“编译期依赖注入”，但仍保持静态、可验证、可诊断。
 
 ### 2.3 扩展性接口
 

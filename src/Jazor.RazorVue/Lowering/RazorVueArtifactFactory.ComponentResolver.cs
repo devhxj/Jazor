@@ -24,6 +24,7 @@ internal sealed partial class RazorVueArtifactFactory
             return ImmutableDictionary<string, VueComponentDescriptor>.Empty;
 
         var registry = context.CreateComponentRegistry();
+        var injectRegistry = VueInjectRegistry.Resolve(context);
         var resolutionContext = new VueComponentResolutionContext(
             snapshot.Descriptor.ResolutionNamespace,
             snapshot.ImportedNamespaces);
@@ -35,7 +36,10 @@ internal sealed partial class RazorVueArtifactFactory
             if (result.Status != VueComponentResolutionStatus.Resolved || result.Descriptor is null)
                 throw CreateResolutionIssueException(result, snapshot.Descriptor.FullName, component);
 
-            builder[component.ComponentName] = result.Descriptor;
+            builder[component.ComponentName] = injectRegistry.ResolveImplementation(
+                result.Descriptor,
+                registry,
+                component.Origins.IsDefaultOrEmpty ? null : component.Origins[0]);
         }
 
         return builder.ToImmutable();

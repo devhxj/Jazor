@@ -24,6 +24,7 @@ JAZORVUE013 | RazorVue | Error | RazorVue library style dependency declaration i
 JAZORVUE014 | RazorVue | Error | RazorVue library plugin requirement declaration is invalid
 JAZORVUE015 | RazorVue | Error | RazorVue child content parameter value is missing
 JAZORVUE016 | RazorVue | Error | RazorVue component declaration is invalid
+JAZORVUE018 | RazorVue | Error | RazorVue container inject declaration is invalid
 JAZORVGA001 | Jazor.RazorVue.Analysis | Error | RazorVue catalog generation failed
 JAZORVGA002 | Jazor.RazorVue.Analysis | Error | RazorVue component not found
 JAZORVGA003 | Jazor.RazorVue.Analysis | Error | RazorVue component name is ambiguous
@@ -44,3 +45,4 @@ JAZORVGA017 | Jazor.RazorVue.Analysis | Error | RazorVue component declaration i
 JAZORVGA018 | Jazor.RazorVue.Analysis | Error | RazorVue Razor SG integration is not active
 JAZORVGA019 | Jazor.RazorVue.Analysis | Error | RazorVue Razor SG integration is incompatible with the current SDK
 JAZORVGA020 | Jazor.RazorVue.Analysis | Error | RazorVue Razor SG tail output failed
+JAZORVGA021 | Jazor.RazorVue.Analysis | Error | RazorVue container inject declaration is invalid

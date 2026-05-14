@@ -1,0 +1,41 @@
+@inherits VbenContentComponentBase
+
+<div class="@RootCssClass" style="@CssStyle" @attributes="AdditionalAttributes">
+    <aside class='@("vben-shell__sidebar")'>
+        @if (Sidebar is not null)
+        {
+            @Sidebar
+        }
+        else if (NavItems is not null)
+        {
+            <VbenSidebarMenu Items="@NavItems"
+                             Collapsed="@Collapsed"
+                             SelectedKey="@SelectedKey"
+                             ExpandedKeys="@ExpandedKeys"
+                             SelectedKeyChanged="@SelectedKeyChanged"
+                             ExpandedKeysChanged="@ExpandedKeysChanged"
+                             Logo="@Logo" />
+        }
+    </aside>
+
+    <div class='@("vben-shell__main")'>
+        <header class='@("vben-shell__header")'>
+            @if (Header is not null)
+            {
+                @Header
+            }
+            else
+            {
+                <VbenHeaderBar Title="@Title"
+                               Subtitle="@Subtitle"
+                               Logo="@Logo"
+                               Actions="@HeaderActions"
+                               UserRegion="@UserRegion" />
+            }
+        </header>
+
+        <main class='@("vben-shell__content")'>
+            @ChildContent
+        </main>
+    </div>
+</div>

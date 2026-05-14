@@ -21,6 +21,7 @@ internal enum RazorVueIssueCode
     InvalidLibraryComponentDeclaration,
     InvalidLibraryStyleDependencyDeclaration,
     InvalidLibraryPluginRequirementDeclaration,
+    InvalidContainerInjectDeclaration,
     UnknownParameter,
     InvalidBindTarget,
     UnknownSlot,

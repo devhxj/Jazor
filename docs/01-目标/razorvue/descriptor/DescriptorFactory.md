@@ -11,6 +11,7 @@
 3. **双向绑定推断**：从 `Foo` + `FooChanged` 模式推断 v-model 支持
 4. **库组件元数据**：支持通过特性覆盖默认行为
 5. **命名约定转换**：自动处理 PascalCase 到 camelCase 转换
+6. **容器契约投影**：支持容器契约组件与具体实现组件的编译期关联
 
 ## 实现思路
 
@@ -31,6 +32,7 @@ public static VueComponentDescriptor Create(
         VueComponentSourceKind.UserComponent,
         GetUserImportSpecifier(candidate.ComponentSymbol, context.Symbols),
         "default",
+        GetContainerContractFullName(candidate.ComponentSymbol, context.Symbols),
         [],
         []);
 }
@@ -62,6 +64,7 @@ public static VueComponentDescriptor CreateLibraryComponent(
         VueComponentSourceKind.LibraryComponent,
         metadata.ImportSpecifier,
         metadata.ExportName,
+        GetContainerContractFullName(componentSymbol, symbols),
         metadata.StyleDependencies,
         metadata.PluginRequirements);
 }
@@ -130,7 +133,7 @@ if (IsRenderFragment(property.Type, symbols))
     {
         throw CreateInvalidLibraryComponentDeclarationException(
             componentSymbol,
-            $"Library component '{FormatFullName(componentSymbol)}' can only apply [VueLibraryProp] to regular [Parameter] properties. '{property.Name}' is a slot parameter.");
+            $"Library component '{FormatFullName(componentSymbol)}' can only apply [VueProp] to regular [Parameter] properties. '{property.Name}' is a slot parameter.");
     }
 
     slots.Add(CreateSlotDescriptor(property, symbols, slotOverride));
@@ -160,7 +163,7 @@ if (IsEventCallback(property.Type, symbols))
     {
         throw CreateInvalidLibraryComponentDeclarationException(
             componentSymbol,
-            $"Library component '{FormatFullName(componentSymbol)}' can only apply [VueLibraryProp] to regular [Parameter] properties. '{property.Name}' is an event callback parameter.");
+            $"Library component '{FormatFullName(componentSymbol)}' can only apply [VueProp] to regular [Parameter] properties. '{property.Name}' is an event callback parameter.");
     }
 
     continue;  // 稍后在 emit 循环中处理
@@ -253,6 +256,62 @@ AcceptsBinding: true         // Value 被标记为可绑定
 Kind: VuePropKind.Model      // Value 被分类为 Model
 ```
 
+### 容器契约投影
+
+描述符工厂现在还负责把容器抽象投影到 `VueComponentDescriptor.ContainerContractFullName`，但不会引入新的 `SourceKind`。
+
+原因是容器不是“第四类组件”，而是 user component / library component 之上的一层抽象语义：
+
+- authored 容器组件本身仍然是 `UserComponent`
+- 来自 Element Plus / Vuetify / TDesign 的实现组件仍然是 `LibraryComponent`
+- 是否发生替换，由后续装配级 `[VueInject]` 决定
+
+工厂只做契约归属识别：
+
+```csharp
+private static string? GetContainerContractFullName(
+    INamedTypeSymbol componentSymbol,
+    RazorVueCompilationSymbols symbols)
+{
+    if (symbols.IVueContainerComponent is not null &&
+        componentSymbol.AllInterfaces.Any(candidate => Comparer.Equals(candidate.OriginalDefinition, symbols.IVueContainerComponent)))
+    {
+        return FormatFullName(componentSymbol);
+    }
+
+    if (symbols.IVueContainerImplementation is null)
+        return null;
+
+    foreach (var interfaceSymbol in componentSymbol.AllInterfaces)
+    {
+        if (!Comparer.Equals(interfaceSymbol.OriginalDefinition, symbols.IVueContainerImplementation))
+            continue;
+
+        if (interfaceSymbol.TypeArguments.Length != 1 || interfaceSymbol.TypeArguments[0] is not INamedTypeSymbol contractType)
+            continue;
+
+        return FormatFullName(contractType);
+    }
+
+    return null;
+}
+```
+
+语义规则：
+
+1. `IVueContainerComponent`
+   - 当前组件就是容器契约
+   - `ContainerContractFullName = 当前组件 FullName`
+
+2. `IVueContainerImplementation<TContainer>`
+   - 当前组件是某个容器契约的实现
+   - `ContainerContractFullName = TContainer.FullName`
+
+3. 其他组件
+   - `ContainerContractFullName = null`
+
+这样后续的 `VueInjectRegistry` 就能在组件解析完成后，把 authored 容器组件替换成装配配置的具体实现，而不需要在描述符阶段硬编码任何具体组件库。
+
 ### 库组件元数据
 
 #### 1. 组件级别元数据
@@ -310,13 +369,13 @@ private static LibraryComponentMetadata GetLibraryMetadata(
 #### 2. 属性级别元数据
 
 ```csharp
-[VueLibraryProp("color", Required = true)]
+[VueProp("color", Required = true)]
 [Parameter] public string Color { get; set; }
 
-[VueLibraryProp("model-value", AcceptsBinding = true, Kind = VuePropKind.Model)]
+[VueProp("model-value", AcceptsBinding = true, Kind = VuePropKind.Model)]
 [Parameter] public object Value { get; set; }
 
-[VueLibraryProp("density", DefaultExpression = "'comfortable'")]
+[VueProp("density", DefaultExpression = "'comfortable'")]
 [Parameter] public string? Density { get; set; }
 ```
 
@@ -328,7 +387,7 @@ private static ImmutableDictionary<string, LibraryPropOverride> GetLibraryPropOv
     RazorVueCompilationSymbols symbols,
     ImmutableDictionary<string, IPropertySymbol> parameterLookup)
 {
-    if (symbols.VueLibraryPropAttribute is null)
+    if (symbols.VuePropAttribute is null)
         return ImmutableDictionary<string, LibraryPropOverride>.Empty
             .WithComparers(StringComparer.Ordinal);
 
@@ -337,20 +396,20 @@ private static ImmutableDictionary<string, LibraryPropOverride> GetLibraryPropOv
 
     foreach (var attribute in componentSymbol.GetAttributes())
     {
-        if (!Comparer.Equals(attribute.AttributeClass, symbols.VueLibraryPropAttribute))
+        if (!Comparer.Equals(attribute.AttributeClass, symbols.VuePropAttribute))
             continue;
 
         var publicName = GetRequiredConstructorStringArgument(
             attribute,
             0,
             componentSymbol,
-            "VueLibraryProp");
+            "VueProp");
 
         var property = GetRequiredParameter(
             componentSymbol,
             parameterLookup,
             publicName,
-            "VueLibraryProp");
+            "VueProp");
 
         // 验证：只能应用于普通 [Parameter] 属性
         if (IsEventCallback(property.Type, symbols) ||
@@ -358,7 +417,7 @@ private static ImmutableDictionary<string, LibraryPropOverride> GetLibraryPropOv
         {
             throw CreateInvalidLibraryComponentDeclarationException(
                 componentSymbol,
-                $"Library component '{FormatFullName(componentSymbol)}' can only apply [VueLibraryProp] to regular [Parameter] properties. '{publicName}' is not a prop parameter.");
+                $"Library component '{FormatFullName(componentSymbol)}' can only apply [VueProp] to regular [Parameter] properties. '{publicName}' is not a prop parameter.");
         }
 
         // 验证：防止重复声明
@@ -366,14 +425,14 @@ private static ImmutableDictionary<string, LibraryPropOverride> GetLibraryPropOv
         {
             throw CreateInvalidLibraryComponentDeclarationException(
                 componentSymbol,
-                $"Library component '{FormatFullName(componentSymbol)}' declares duplicate [VueLibraryProp] metadata for '{publicName}'.");
+                $"Library component '{FormatFullName(componentSymbol)}' declares duplicate [VueProp] metadata for '{publicName}'.");
         }
 
         builder[publicName] = new LibraryPropOverride(
-            GetOptionalNamedStringArgument(attribute, "Name", componentSymbol, "VueLibraryProp"),
+            GetOptionalNamedStringArgument(attribute, "Name", componentSymbol, "VueProp"),
             GetOptionalNamedBoolArgument(attribute, "Required"),
             GetOptionalNamedBoolArgument(attribute, "AcceptsBinding"),
-            GetOptionalNamedStringArgument(attribute, "DefaultExpression", componentSymbol, "VueLibraryProp"),
+            GetOptionalNamedStringArgument(attribute, "DefaultExpression", componentSymbol, "VueProp"),
             attribute.ConstructorArguments.Length >= 2 && attribute.ConstructorArguments[1].Value is int propKind
                 ? (VuePropKind)propKind
                 : VuePropKind.Normal,
@@ -458,10 +517,10 @@ private static ImmutableDictionary<string, LibraryEmitOverride> GetLibraryEmitOv
 #### 4. 插槽级别元数据
 
 ```csharp
-[VueLibrarySlot("default", IsDefault = true)]
+[VueSlot("default", IsDefault = true)]
 [Parameter] public RenderFragment ChildContent { get; set; }
 
-[VueLibrarySlot("items", ContextTypeName = "ItemContext", ContextParameterName = "item")]
+[VueSlot("items", ContextTypeName = "ItemContext", ContextParameterName = "item")]
 [Parameter] public RenderFragment<ItemContext> Items { get; set; }
 ```
 
@@ -473,7 +532,7 @@ private static ImmutableDictionary<string, LibrarySlotOverride> GetLibrarySlotOv
     RazorVueCompilationSymbols symbols,
     ImmutableDictionary<string, IPropertySymbol> parameterLookup)
 {
-    if (symbols.VueLibrarySlotAttribute is null)
+    if (symbols.VueSlotAttribute is null)
         return ImmutableDictionary<string, LibrarySlotOverride>.Empty
             .WithComparers(StringComparer.Ordinal);
 
@@ -482,27 +541,27 @@ private static ImmutableDictionary<string, LibrarySlotOverride> GetLibrarySlotOv
 
     foreach (var attribute in componentSymbol.GetAttributes())
     {
-        if (!Comparer.Equals(attribute.AttributeClass, symbols.VueLibrarySlotAttribute))
+        if (!Comparer.Equals(attribute.AttributeClass, symbols.VueSlotAttribute))
             continue;
 
         var publicName = GetRequiredConstructorStringArgument(
             attribute,
             0,
             componentSymbol,
-            "VueLibrarySlot");
+            "VueSlot");
 
         var property = GetRequiredParameter(
             componentSymbol,
             parameterLookup,
             publicName,
-            "VueLibrarySlot");
+            "VueSlot");
 
         // 验证：只能应用于 RenderFragment
         if (!IsRenderFragment(property.Type, symbols))
         {
             throw CreateInvalidLibraryComponentDeclarationException(
                 componentSymbol,
-                $"Library component '{FormatFullName(componentSymbol)}' can only apply [VueLibrarySlot] to RenderFragment parameters. '{publicName}' is not a slot parameter.");
+                $"Library component '{FormatFullName(componentSymbol)}' can only apply [VueSlot] to RenderFragment parameters. '{publicName}' is not a slot parameter.");
         }
 
         // 验证：防止重复声明
@@ -510,10 +569,10 @@ private static ImmutableDictionary<string, LibrarySlotOverride> GetLibrarySlotOv
         {
             throw CreateInvalidLibraryComponentDeclarationException(
                 componentSymbol,
-                $"Library component '{FormatFullName(componentSymbol)}' declares duplicate [VueLibrarySlot] metadata for '{publicName}'.");
+                $"Library component '{FormatFullName(componentSymbol)}' declares duplicate [VueSlot] metadata for '{publicName}'.");
         }
 
-        var slotName = GetOptionalNamedStringArgument(attribute, "Name", componentSymbol, "VueLibrarySlot");
+        var slotName = GetOptionalNamedStringArgument(attribute, "Name", componentSymbol, "VueSlot");
         var isDefault = GetOptionalNamedBoolArgument(attribute, "IsDefault");
 
         // 验证：默认插槽必须命名为 "default"
@@ -522,14 +581,14 @@ private static ImmutableDictionary<string, LibrarySlotOverride> GetLibrarySlotOv
         {
             throw CreateInvalidLibraryComponentDeclarationException(
                 componentSymbol,
-                $"Library component '{FormatFullName(componentSymbol)}' must use slot name 'default' when [VueLibrarySlot] marks '{publicName}' as the default slot.");
+                $"Library component '{FormatFullName(componentSymbol)}' must use slot name 'default' when [VueSlot] marks '{publicName}' as the default slot.");
         }
 
         var contextTypeName = GetOptionalNamedStringArgument(
             attribute,
             "ContextTypeName",
             componentSymbol,
-            "VueLibrarySlot");
+            "VueSlot");
 
         // 验证：只有 RenderFragment<T> 才能声明上下文类型
         if (contextTypeName is not null && !IsTypedRenderFragment(property.Type, symbols))
@@ -541,7 +600,7 @@ private static ImmutableDictionary<string, LibrarySlotOverride> GetLibrarySlotOv
 
         var contextParameterName = contextTypeName is null
             ? null
-            : GetOptionalNamedStringArgument(attribute, "ContextParameterName", componentSymbol, "VueLibrarySlot")
+            : GetOptionalNamedStringArgument(attribute, "ContextParameterName", componentSymbol, "VueSlot")
                 ?? "context";
 
         builder[publicName] = new LibrarySlotOverride(
@@ -682,6 +741,7 @@ private static string NormalizeImportPath(string importPath)
 ## 文件位置
 
 - **工厂类**：`src/Jazor.RazorVue/Descriptor/VueComponentDescriptorFactory.cs`
+- **容器注入注册表**：`src/Jazor.RazorVue/Descriptor/VueInjectRegistry.cs`
 
 ## 相关文档
 
@@ -693,5 +753,5 @@ private static string NormalizeImportPath(string importPath)
 ---
 
 **维护者**：developerhan
-**最后更新**：2026-04-21
-**文档版本**：v1.0
+**最后更新**：2026-05-14
+**文档版本**：v1.1

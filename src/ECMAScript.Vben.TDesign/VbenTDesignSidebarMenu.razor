@@ -1,0 +1,21 @@
+@inherits VbenComponentBase
+
+<TMenu Collapsed="@Collapsed"
+       Value="@MenuValue"
+       Expanded="@ExpandedMenuValues"
+       Theme="@TDesignMenuTheme.Light"
+       OnChange="@OnMenuChanged"
+       OnExpand="@OnMenuExpanded">
+    @if (Logo is not null)
+    {
+        @Logo
+    }
+
+    @if (Items?.AsArray is { Length: > 0 } navItems)
+    {
+        @foreach (var item in navItems)
+        {
+            @RenderItem(item)
+        }
+    }
+</TMenu>

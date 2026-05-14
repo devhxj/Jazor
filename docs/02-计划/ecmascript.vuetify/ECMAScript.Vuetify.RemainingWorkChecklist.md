@@ -198,7 +198,7 @@
 
 - Razor 组件标签上的 lowercase `class` / `style` 走 `AdditionalAttributes` fallthrough
 - 需要强类型 C# 表达式时，已显式建模组件提供 `CssClass` / `CssStyle`
-- `CssClass` / `CssStyle` 通过 `VueLibraryProp` 映射到 Vue runtime 的 `class` / `style`
+- `CssClass` / `CssStyle` 通过 `VueProp` 映射到 Vue runtime 的 `class` / `style`
 
 不要在 top-level Vuetify authoring component 上提供 `[Parameter] Class` / `[Parameter] Style`。这些名称会与官方 Razor SG 对 lowercase `class` / `style` 的组件参数绑定规则冲突，导致 raw attribute 不能自然 fallthrough。
 

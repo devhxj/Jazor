@@ -4,7 +4,7 @@
 
 ## 为什么需要
 
-RazorVue 编译时分析需要访问大量类型符号（如 `ComponentBase`、`JazorComponent`、`ParameterAttribute` 等）。这些符号分布在不同的命名空间和程序集中，需要统一的符号表提供以下功能：
+RazorVue 编译时分析需要访问大量类型符号（如 `ComponentBase`、`IUIComponent`、`IVueComponent`、`ParameterAttribute` 等）。这些符号分布在不同的命名空间和程序集中，需要统一的符号表提供以下功能：
 
 1. **集中管理**：一次性解析所有需要的类型符号
 2. **带回退解析**：支持过渡期的元数据名称变更（如 `Jazor.Razor.JazorComponent` → `Jazor.Compiler.Razor.JazorComponent`）
@@ -15,15 +15,15 @@ RazorVue 编译时分析需要访问大量类型符号（如 `ComponentBase`、`
 
 ### 符号结构
 
-`RazorVueCompilationSymbols` 是一个 `public record`，包含 18 个类型符号：
+`RazorVueCompilationSymbols` 是一个内部 record，集中保存当前编译所需的类型符号：
 
 #### 必需符号（不可为 null）
 
 | 符号名 | 类型 | 用途 | 元数据名称 |
 |--------|------|------|-----------|
 | `ECMAScriptModuleAttribute` | `INamedTypeSymbol` | 检测 ECMAScript 模块入口 | `ECMAScript.ECMAScriptModuleAttribute` |
-| `JazorComponent` | `INamedTypeSymbol` | 检测 RazorVue 组件基类 | `Jazor.Razor.JazorComponent`（回退到 `Jazor.Compiler.Razor.JazorComponent`） |
-| `VueComponent` | `INamedTypeSymbol` | Vue 组件描述符基类 | `Jazor.RazorVue.VueComponent`（回退到 `Jazor.Compiler.RazorVue.VueComponent`） |
+| `JazorComponentMarker` | `INamedTypeSymbol` | 检测 RazorVue 组件 authoring marker | `ECMAScript.Contract.IUIComponent` |
+| `VueComponentMarker` | `INamedTypeSymbol` | 检测 Vue 组件 authoring marker | `ECMAScript.Vue3+IVueComponent` |
 | `ComponentBase` | `INamedTypeSymbol` | ASP.NET Components 基类 | `Microsoft.AspNetCore.Components.ComponentBase` |
 
 **必需性验证**：如果这 4 个符号任何一个解析失败，`TryCreate` 返回 `null`，整个 RazorVue 编译流程终止。
@@ -38,14 +38,18 @@ RazorVue 编译时分析需要访问大量类型符号（如 `ComponentBase`、`
 | `EventCallbackOfT` | `INamedTypeSymbol?` | 泛型事件回调类型 | `Microsoft.AspNetCore.Components.EventCallback`1` |
 | `RenderFragment` | `INamedTypeSymbol?` | 渲染片段委托类型 | `Microsoft.AspNetCore.Components.RenderFragment` |
 | `RenderFragmentOfT` | `INamedTypeSymbol?` | 泛型渲染片段委托类型 | `Microsoft.AspNetCore.Components.RenderFragment`1` |
-| `VueLibraryComponent` | `INamedTypeSymbol?` | 库组件接口 | `Jazor.RazorVue.VueLibraryComponent` |
-| `VueLibraryComponentAttribute` | `INamedTypeSymbol?` | 库组件特性 | `Jazor.RazorVue.VueLibraryComponentAttribute` |
-| `VueLibraryStyleAttribute` | `INamedTypeSymbol?` | 库组件样式特性 | `Jazor.RazorVue.VueLibraryStyleAttribute` |
-| `VueLibraryPluginRequirementAttribute` | `INamedTypeSymbol?` | 库组件插件依赖特性 | `Jazor.RazorVue.VueLibraryPluginRequirementAttribute` |
-| `VueLibraryPropAttribute` | `INamedTypeSymbol?` | 库组件属性特性 | `Jazor.RazorVue.VueLibraryPropAttribute` |
-| `VueLibraryEmitAttribute` | `INamedTypeSymbol?` | 库组件事件特性 | `Jazor.RazorVue.VueLibraryEmitAttribute` |
-| `VueLibrarySlotAttribute` | `INamedTypeSymbol?` | 库组件插槽特性 | `Jazor.RazorVue.VueLibrarySlotAttribute` |
-| `VueLibraryComponentFlagsAttribute` | `INamedTypeSymbol?` | 库组件标志特性 | `Jazor.RazorVue.VueLibraryComponentFlagsAttribute` |
+| `VueLibraryComponent` | `INamedTypeSymbol?` | 库组件 authoring 基类/marker | `Jazor.RazorVue.VueLibraryComponent` |
+| `IVueLibraryComponent` | `INamedTypeSymbol?` | 库组件接口 marker | `ECMAScript.Vue3+IVueLibraryComponent` |
+| `VueLibraryComponentAttribute` | `INamedTypeSymbol?` | 库组件特性 | `ECMAScript.VueContract.VueLibraryComponentAttribute` |
+| `VueLibraryStyleAttribute` | `INamedTypeSymbol?` | 库组件样式特性 | `ECMAScript.VueContract.VueLibraryStyleAttribute` |
+| `VueLibraryPluginRequirementAttribute` | `INamedTypeSymbol?` | 库组件插件依赖特性 | `ECMAScript.VueContract.VueLibraryPluginRequirementAttribute` |
+| `VuePropAttribute` | `INamedTypeSymbol?` | 通用 prop 元数据特性 | `ECMAScript.VueContract.VuePropAttribute` |
+| `VueLibraryEmitAttribute` | `INamedTypeSymbol?` | 库组件事件特性 | `ECMAScript.VueContract.VueLibraryEmitAttribute` |
+| `VueSlotAttribute` | `INamedTypeSymbol?` | 通用 slot 元数据特性 | `ECMAScript.VueContract.VueSlotAttribute` |
+| `VueLibraryComponentFlagsAttribute` | `INamedTypeSymbol?` | 库组件标志特性 | `ECMAScript.VueContract.VueLibraryComponentFlagsAttribute` |
+| `IVueContainerComponent` | `INamedTypeSymbol?` | 容器组件契约接口 | `ECMAScript.VueContract.IVueContainerComponent` |
+| `IVueContainerImplementation` | `INamedTypeSymbol?` | 容器实现组件接口 | `ECMAScript.VueContract.IVueContainerImplementation\`1` |
+| `VueInjectAttribute` | `INamedTypeSymbol?` | 装配级容器注入声明 | `ECMAScript.VueContract.VueInjectAttribute` |
 
 **可选性处理**：这些符号解析失败不会终止编译流程，但会禁用相关功能（如库组件支持）。
 
@@ -58,14 +62,8 @@ public static RazorVueCompilationSymbols? TryCreate(Compilation compilation)
 {
     // 1. 解析必需符号
     var ecmaScriptModuleAttribute = compilation.GetTypeByMetadataName("ECMAScript.ECMAScriptModuleAttribute");
-    var jazorComponent = GetTypeByMetadataName(
-        compilation,
-        "Jazor.Razor.JazorComponent",
-        "Jazor.Compiler.Razor.JazorComponent");
-    var vueComponent = GetTypeByMetadataName(
-        compilation,
-        "Jazor.RazorVue.VueComponent",
-        "Jazor.Compiler.RazorVue.VueComponent");
+    var jazorComponent = compilation.GetTypeByMetadataName("ECMAScript.Contract.IUIComponent");
+    var vueComponent = compilation.GetTypeByMetadataName("ECMAScript.Vue3+IVueComponent");
     var componentBase = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.ComponentBase");
 
     // 2. 验证必需符号
@@ -85,13 +83,17 @@ public static RazorVueCompilationSymbols? TryCreate(Compilation compilation)
     var renderFragment = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.RenderFragment");
     var renderFragmentOfT = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.RenderFragment`1");
     var vueLibraryComponent = compilation.GetTypeByMetadataName("Jazor.RazorVue.VueLibraryComponent");
-    var vueLibraryComponentAttribute = compilation.GetTypeByMetadataName("Jazor.RazorVue.VueLibraryComponentAttribute");
-    var vueLibraryStyleAttribute = compilation.GetTypeByMetadataName("Jazor.RazorVue.VueLibraryStyleAttribute");
-    var vueLibraryPluginRequirementAttribute = compilation.GetTypeByMetadataName("Jazor.RazorVue.VueLibraryPluginRequirementAttribute");
-    var vueLibraryPropAttribute = compilation.GetTypeByMetadataName("Jazor.RazorVue.VueLibraryPropAttribute");
-    var vueLibraryEmitAttribute = compilation.GetTypeByMetadataName("Jazor.RazorVue.VueLibraryEmitAttribute");
-    var vueLibrarySlotAttribute = compilation.GetTypeByMetadataName("Jazor.RazorVue.VueLibrarySlotAttribute");
-    var vueLibraryComponentFlagsAttribute = compilation.GetTypeByMetadataName("Jazor.RazorVue.VueLibraryComponentFlagsAttribute");
+    var iVueLibraryComponent = compilation.GetTypeByMetadataName("ECMAScript.Vue3+IVueLibraryComponent");
+    var vueLibraryComponentAttribute = compilation.GetTypeByMetadataName("ECMAScript.VueContract.VueLibraryComponentAttribute");
+    var vueLibraryStyleAttribute = compilation.GetTypeByMetadataName("ECMAScript.VueContract.VueLibraryStyleAttribute");
+    var vueLibraryPluginRequirementAttribute = compilation.GetTypeByMetadataName("ECMAScript.VueContract.VueLibraryPluginRequirementAttribute");
+    var vuePropAttribute = compilation.GetTypeByMetadataName("ECMAScript.VueContract.VuePropAttribute");
+    var vueLibraryEmitAttribute = compilation.GetTypeByMetadataName("ECMAScript.VueContract.VueLibraryEmitAttribute");
+    var vueSlotAttribute = compilation.GetTypeByMetadataName("ECMAScript.VueContract.VueSlotAttribute");
+    var vueLibraryComponentFlagsAttribute = compilation.GetTypeByMetadataName("ECMAScript.VueContract.VueLibraryComponentFlagsAttribute");
+    var iVueContainerComponent = compilation.GetTypeByMetadataName("ECMAScript.VueContract.IVueContainerComponent");
+    var iVueContainerImplementation = compilation.GetTypeByMetadataName("ECMAScript.VueContract.IVueContainerImplementation`1");
+    var vueInjectAttribute = compilation.GetTypeByMetadataName("ECMAScript.VueContract.VueInjectAttribute");
 
     // 4. 构建符号表
     return new RazorVueCompilationSymbols(
@@ -106,56 +108,24 @@ public static RazorVueCompilationSymbols? TryCreate(Compilation compilation)
         renderFragment,
         renderFragmentOfT,
         vueLibraryComponent,
+        iVueLibraryComponent,
         vueLibraryComponentAttribute,
         vueLibraryStyleAttribute,
         vueLibraryPluginRequirementAttribute,
-        vueLibraryPropAttribute,
+        vuePropAttribute,
         vueLibraryEmitAttribute,
-        vueLibrarySlotAttribute,
-        vueLibraryComponentFlagsAttribute);
+        vueSlotAttribute,
+        vueLibraryComponentFlagsAttribute,
+        iVueContainerComponent,
+        iVueContainerImplementation,
+        vueInjectAttribute);
 }
 ```
 
 **关键特性**：
 1. **必需符号验证**：4 个必需符号全部解析成功后才继续
 2. **可选符号容错**：可选符号解析失败不影响符号表创建
-3. **回退元数据名**：支持过渡期的多个候选元数据名称
-
-### 回退元数据名解析
-
-#### `GetTypeByMetadataName(Compilation, params string[])`
-
-```csharp
-private static INamedTypeSymbol? GetTypeByMetadataName(Compilation compilation, params string[] metadataNames)
-{
-    foreach (var metadataName in metadataNames)
-    {
-        var symbol = compilation.GetTypeByMetadataName(metadataName);
-        if (symbol is not null)
-            return symbol;
-    }
-
-    return null;
-}
-```
-
-**回退策略**：
-
-| 符号 | 主名称 | 回退名称 | 原因 |
-|------|--------|----------|------|
-| `JazorComponent` | `Jazor.Razor.JazorComponent` | `Jazor.Compiler.Razor.JazorComponent` | 命名空间重构 |
-| `VueComponent` | `Jazor.RazorVue.VueComponent` | `Jazor.Compiler.RazorVue.VueComponent` | 命名空间重构 |
-
-**设计原因**：
-- 支持测试代码和中间分支使用旧命名空间
-- 向后兼容：旧的测试输入仍能加载
-- 渐进式迁移：新旧命名空间共存期间的平滑过渡
-
-**注释说明**：
-```csharp
-// Prefer the final public runtime libraries but keep transitional
-// fallbacks so older test inputs and intermediate branches still load.
-```
+3. **组件边界去基类化**：当前 authoring 面通过 `IUIComponent` + `IVueComponent` marker 判定组件，不再依赖历史 `JazorComponent` / `VueComponent` 基类
 
 ## 符号用途映射
 
@@ -164,9 +134,9 @@ private static INamedTypeSymbol? GetTypeByMetadataName(Compilation compilation, 
 | 符号 | 用途 | 使用位置 |
 |------|------|----------|
 | `ECMAScriptModuleAttribute` | 检测 `[ECMAScriptModule]` 特性 | `EntryClassifier.HasECMAScriptModuleAttribute` |
-| `JazorComponent` | 检测 RazorVue 组件继承 | `EntryClassifier.Classify` |
+| `JazorComponentMarker` | 检测 RazorVue 组件 authoring marker | `EntryClassifier.Classify` |
 | `ComponentBase` | 检测 ASP.NET Components 基类 | `EntryClassifier.Classify` |
-| `VueComponent` | Vue 组件描述符基类 | `VueComponentDescriptorFactory` |
+| `VueComponentMarker` | 检测 Vue 组件 authoring marker | `EntryClassifier.Classify` |
 
 ### 参数系统
 
@@ -188,14 +158,38 @@ private static INamedTypeSymbol? GetTypeByMetadataName(Compilation compilation, 
 
 | 符号 | 用途 | 使用位置 |
 |------|------|----------|
-| `VueLibraryComponent` | 检测库组件接口 | `EntryClassifier.IsLibraryComponent` |
+| `VueLibraryComponent` | 检测库组件 authoring 基类 | `EntryClassifier.IsLibraryComponent` |
+| `IVueLibraryComponent` | 检测库组件接口 marker | `EntryClassifier.IsLibraryComponent` |
 | `VueLibraryComponentAttribute` | 检测库组件特性 | `VueComponentDescriptorFactory.CreateLibraryComponent` |
 | `VueLibraryStyleAttribute` | 检测样式依赖特性 | `VueComponentDescriptorFactory.ExtractLibraryStyleRequirements` |
 | `VueLibraryPluginRequirementAttribute` | 检测插件依赖特性 | `VueComponentDescriptorFactory.ExtractLibraryPluginRequirements` |
-| `VueLibraryPropAttribute` | 检测库组件属性特性 | `VueComponentDescriptorFactory.ExtractLibraryComponentProps` |
+| `VuePropAttribute` | 检测库组件属性特性 | `VueComponentDescriptorFactory.ExtractLibraryComponentProps` |
 | `VueLibraryEmitAttribute` | 检测库组件事件特性 | `VueComponentDescriptorFactory.ExtractLibraryComponentEmits` |
-| `VueLibrarySlotAttribute` | 检测库组件插槽特性 | `VueComponentDescriptorFactory.ExtractLibraryComponentSlots` |
+| `VueSlotAttribute` | 检测库组件插槽特性 | `VueComponentDescriptorFactory.ExtractLibraryComponentSlots` |
 | `VueLibraryComponentFlagsAttribute` | 检测库组件标志特性 | `VueComponentDescriptorFactory.ExtractLibraryComponentFlags` |
+| `IVueContainerComponent` | 检测 authored 容器契约组件 | `VueComponentDescriptorFactory.GetContainerContractFullName` |
+| `IVueContainerImplementation` | 检测具体容器实现组件 | `VueComponentDescriptorFactory.GetContainerContractFullName` |
+| `VueInjectAttribute` | 读取装配级容器注入映射 | `VueInjectRegistry.Resolve` |
+
+### 容器注入机制
+
+容器组件机制是 RazorVue 的一条独立抽象维度，不属于 `UserComponent / Intrinsic / LibraryComponent` 之外的新 source kind。
+
+- `IVueContainerComponent`：标记 authored 组件是“容器契约”
+- `IVueContainerImplementation<TContainer>`：标记某个具体组件实现了该容器契约
+- `[assembly: VueInject(typeof(TContainer), typeof(TImplementation))]`：声明当前编译装配选择哪个实现参与最终编译
+
+这组符号的职责边界如下：
+
+1. `RazorVueCompilationSymbols` 负责发现契约接口和装配级注入声明。
+2. `VueComponentDescriptorFactory` 负责把容器契约信息投影到 `VueComponentDescriptor.ContainerContractFullName`。
+3. `VueInjectRegistry` 负责读取 `[VueInject]` 并校验：
+   - 同一 contract 不能重复注入多个实现
+   - implementation 必须在当前组件注册表中可见
+   - implementation 必须声明匹配的 `IVueContainerImplementation<TContainer>`
+4. `RazorVueArtifactFactory.ComponentResolver` 在组件解析完成后执行容器实现替换。
+
+这个设计刻意避免引入 `ECMAScript.Vben.TDesign` 这类按库名耦合的框架层。Vben 之类上层只消费容器契约与注入机制，不定义新的解析路径。
 
 ## 设计权衡
 
@@ -212,21 +206,16 @@ private static INamedTypeSymbol? GetTypeByMetadataName(Compilation compilation, 
 - 库组件符号：仅在使用库组件功能时需要
 - 渲染片段符号：可能在仅 JavaScript 转译场景中不需要
 
-### 2. 回退元数据名策略
+### 2. 组件边界 marker 策略
 
 **优点**：
-- 支持渐进式重构
-- 旧测试用例无需修改
-- 多分支协同开发
+- 组件 authoring 边界直接落在公共 contract 上
+- 被引用程序集中的原生 `IVueComponent` 组件可直接参与发现
+- 不再要求 consumer 继承历史兼容基类
 
-**缺点**：
-- 增加符号解析复杂度
-- 可能掩盖命名不一致问题
-
-**缓解措施**：
-- 注释明确说明回退原因
-- 优先使用最终公共命名空间
-- 测试覆盖新旧两种命名空间
+**代价**：
+- 文档和旧测试输入需要同步迁移到 marker 模型
+- 设计期工具不能再假设存在单一运行时基类
 
 ### 3. record 类型选择
 

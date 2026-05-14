@@ -1,0 +1,18 @@
+@inherits VbenComponentBase
+
+<nav class="@RootCssClass" style="@CssStyle" @attributes="AdditionalAttributes">
+    @if (Logo is not null)
+    {
+        <div class='@("vben-sidebar__logo")'>@Logo</div>
+    }
+
+    @if (Items?.AsArray is { Length: > 0 } navItems)
+    {
+        <ul class='@("vben-sidebar__list")'>
+            @foreach (var item in navItems)
+            {
+                @RenderItem(item)
+            }
+        </ul>
+    }
+</nav>

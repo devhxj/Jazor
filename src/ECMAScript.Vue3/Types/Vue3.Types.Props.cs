@@ -364,11 +364,11 @@ public static partial class Vue3
 
 		/// <summary>
 		/// 标准 Vue <c>style</c> 绑定。使用类型化记录或便捷的 <see cref="VueDictionary"/> 处理任意键。
-		/// Standard Vue <c>style</c> binding. Use a typed record or the convenience
-		/// <see cref="VueDictionary"/> for arbitrary keys.
+		/// Standard Vue <c>style</c> binding. Accepts string, object forms, or mixed
+		/// arrays through <see cref="VueStyleValue"/>.
 		/// </summary>
 		[Description("@#style")]
-		public VueProps? Style { get; init; }
+		public VueStyleValue? Style { get; init; }
 
 		/// <summary>
 		/// 命名模板引用键，旨在与 <see cref="UseTemplateRef{TElement}(string)"/> 配对使用。回调和 ref 对象形式仍是独立的类型化编写设计界面。

@@ -28,7 +28,8 @@ public sealed class RazorVueAuthoringAnalyzer : DiagnosticAnalyzer
         RazorVueDiagnosticDescriptors.InvalidComponentDeclaration,
         RazorVueDiagnosticDescriptors.InvalidLibraryComponentDeclaration,
         RazorVueDiagnosticDescriptors.InvalidLibraryStyleDependencyDeclaration,
-        RazorVueDiagnosticDescriptors.InvalidLibraryPluginRequirementDeclaration
+        RazorVueDiagnosticDescriptors.InvalidLibraryPluginRequirementDeclaration,
+        RazorVueDiagnosticDescriptors.InvalidContainerInjectDeclaration
     ];
 
     public override void Initialize(AnalysisContext context)
@@ -256,6 +257,9 @@ public sealed class RazorVueAuthoringAnalyzer : DiagnosticAnalyzer
                 return true;
             case RazorVueIssueCode.InvalidLibraryPluginRequirementDeclaration:
                 descriptor = RazorVueDiagnosticDescriptors.InvalidLibraryPluginRequirementDeclaration;
+                return true;
+            case RazorVueIssueCode.InvalidContainerInjectDeclaration:
+                descriptor = RazorVueDiagnosticDescriptors.InvalidContainerInjectDeclaration;
                 return true;
             default:
                 descriptor = RazorVueDiagnosticDescriptors.InvalidLibraryComponentDeclaration;

@@ -498,7 +498,7 @@ public static partial class Vue3
 		/// Reads the fallthrough <c>style</c> binding.
 		/// </summary>
 		[Description("@#style")]
-		public extern VueProps? Style { get; }
+		public extern VueStyleValue? Style { get; }
 
 		/// <summary>
 		/// 读取透传 <c>id</c> 属性。

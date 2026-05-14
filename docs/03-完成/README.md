@@ -17,6 +17,8 @@
 | `sourcemap/` | `src/Jazor.Common/SourceMaps/` + `src/Jazor.Emit/SourceMaps/` | SourceMap 状态快照 |
 | `ecmascript.vue3/` | `src/ECMAScript.Vue3/` | 外部库 Vue3 线的状态快照 |
 | `ecmascript.pinia/` | `src/ECMAScript.Pinia/` | 外部库 Pinia 线的状态快照 |
+| `ecmascript.vben/` | `src/ECMAScript.Vben/` | 后台壳层抽象、原生 RazorVue 实现与通用 `VueProp` / `VueSlot` 收口状态 |
+| `razorvue/` 内相关状态材料 | `src/Jazor.RazorVue/` + `src/ECMAScript.VueContract/` + `src/ECMAScript.Vben/` | 组件发现/descriptor 与通用 `VueProp` / `VueSlot` authoring 收口状态；以当前实现与聚焦测试为准，不再把 `VueLibraryProp` / `VueLibrarySlot` 兼容别名视为现行契约 |
 | `wiki/` | `src/Wiki/` | 传统 ASP.NET Core 宿主线的状态快照 |
 
 ## 推荐入口
@@ -26,4 +28,5 @@
 - emit 当前状态 → [emit/status.md](./emit/status.md)
 - ECMAScript.Vue3 当前状态 → [ecmascript.vue3/status.md](./ecmascript.vue3/status.md)
 - ECMAScript.Pinia 当前状态 → [ecmascript.pinia/status.md](./ecmascript.pinia/status.md)
+- ECMAScript.Vben 当前状态 → [ecmascript.vben/status.md](./ecmascript.vben/status.md)
 - Wiki 当前状态 → [wiki/status.md](./wiki/status.md)

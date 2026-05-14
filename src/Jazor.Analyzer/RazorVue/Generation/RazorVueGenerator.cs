@@ -161,6 +161,14 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    private static readonly DiagnosticDescriptor RazorVueInvalidContainerInjectDeclaration = new(
+        id: "JAZORVGA021",
+        title: "RazorVue container inject declaration is invalid",
+        messageFormat: "{0}",
+        category: "Jazor.RazorVue.Analysis",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     private static readonly DiagnosticDescriptor RazorVueRazorSgIntegrationNotActive = new(
         id: "JAZORVGA018",
         title: "RazorVue Razor SG integration is not active",
@@ -451,6 +459,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             RazorVueIssueCode.InvalidLibraryComponentDeclaration => RazorVueInvalidLibraryComponentDeclaration,
             RazorVueIssueCode.InvalidLibraryStyleDependencyDeclaration => RazorVueInvalidLibraryStyleDependencyDeclaration,
             RazorVueIssueCode.InvalidLibraryPluginRequirementDeclaration => RazorVueInvalidLibraryPluginRequirementDeclaration,
+            RazorVueIssueCode.InvalidContainerInjectDeclaration => RazorVueInvalidContainerInjectDeclaration,
             RazorVueIssueCode.UnknownParameter => RazorVueUnknownParameter,
             RazorVueIssueCode.InvalidBindTarget => RazorVueInvalidBindTarget,
             RazorVueIssueCode.UnknownSlot => RazorVueUnknownSlot,

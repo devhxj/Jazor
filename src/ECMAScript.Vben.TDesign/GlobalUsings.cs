@@ -1,0 +1,10 @@
+global using System;
+global using System.Collections.Generic;
+global using System.ComponentModel;
+global using System.Linq;
+global using System.Threading.Tasks;
+global using ECMAScript;
+global using ECMAScript.TDesign;
+global using ECMAScript.Vben;
+global using Microsoft.AspNetCore.Components;
+global using static ECMAScript.Vue3;

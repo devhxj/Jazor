@@ -14,6 +14,7 @@ WBS、里程碑、阶段拆分，以及各工作流的当前执行进度。
 |------|---------|------|
 | `ecmascript/` | `src/ECMAScript/` | ECMAScript 平台内核相关执行级计划 |
 | `ecmascript.vue3/` | `src/ECMAScript.Vue3/` | ECMAScript.Vue3 外部库 authoring surface 的执行级落地计划 |
+| `ecmascript.vben/` | `src/ECMAScript.Vben/` | 后台壳层核心、首个 UI 适配闭环与后续扩展顺序的执行级计划 |
 | `ecmascript.pinia/` | `src/ECMAScript.Pinia/` | ECMAScript.Pinia 外部库 authoring surface 的执行级收口清单 |
 | `ecmascript.vuetify/` | `src/ECMAScript.Vuetify/` | ECMAScript.Vuetify 作为 Vuetify 代理层与 RazorVue authoring 层的执行级收口清单与组件覆盖矩阵 |
 | `wiki/` | `src/Wiki/` | `jazor.wiki` sample 的阶段划分、收口计划与产品化分流边界 |

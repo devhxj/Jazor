@@ -453,3 +453,4 @@ jazor/
 !samples/RazorVue.TodoList/Todo.Host/jazor/**
 !samples/RazorVue.TodoList/Todo.Host/wwwroot/jazor/
 !samples/RazorVue.TodoList/Todo.Host/wwwroot/jazor/**
+src/vben/

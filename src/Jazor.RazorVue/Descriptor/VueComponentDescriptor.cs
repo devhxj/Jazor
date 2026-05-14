@@ -10,6 +10,7 @@ internal sealed record VueComponentDescriptor(
     string ResolutionNamespace,
     string ImportSpecifier,
     string ExportName,
+    string? ContainerContractFullName,
     ImmutableArray<string> RouteTemplates,
     ImmutableArray<VuePropDescriptor> Props,
     ImmutableArray<VueEmitDescriptor> Emits,

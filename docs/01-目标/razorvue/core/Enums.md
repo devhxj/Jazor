@@ -169,7 +169,7 @@ public enum VuePropKind
 
 **使用场景**：
 - `VuePropDescriptor.Kind` 字段
-- `VueLibraryPropAttribute` 构造参数
+- `VuePropAttribute` 构造参数
 - 编译器绑定策略选择
 
 **语义差异**：

@@ -1,0 +1,44 @@
+@inherits VbenContentComponentBase
+
+<TLayout CssClass="@RootCssClass" CssStyle="@CssStyle" @attributes="AdditionalAttributes">
+    @if (IsSidebarLayout)
+    {
+        <TAside Width="@(Collapsed ? "64px" : "240px")">
+            @if (Sidebar is not null)
+            {
+                @Sidebar
+            }
+            else
+            {
+                <VbenTDesignSidebarMenu Items="@NavItems"
+                                        Collapsed="@Collapsed"
+                                        SelectedKey="@SelectedKey"
+                                        ExpandedKeys="@ExpandedKeys"
+                                        SelectedKeyChanged="@SelectedKeyChanged"
+                                        ExpandedKeysChanged="@ExpandedKeysChanged"
+                                        Logo="@Logo" />
+            }
+        </TAside>
+    }
+
+    <TLayout>
+        <THeader Height="64px">
+            @if (Header is not null)
+            {
+                @Header
+            }
+            else
+            {
+                <VbenTDesignHeaderBar Title="@Title"
+                                      Subtitle="@Subtitle"
+                                      Logo="@Logo"
+                                      Actions="@HeaderActions"
+                                      UserRegion="@UserRegion" />
+            }
+        </THeader>
+
+        <TContent>
+            @ChildContent
+        </TContent>
+    </TLayout>
+</TLayout>

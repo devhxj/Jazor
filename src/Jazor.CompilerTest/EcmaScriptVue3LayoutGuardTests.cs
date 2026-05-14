@@ -142,11 +142,15 @@ public sealed class EcmaScriptVue3LayoutGuardTests
         AssertUsesNativeUnion(unionSource, "VueInjectFrom");
         AssertUsesNativeUnion(unionSource, "VuePropDeclaration");
         AssertUsesNativeUnion(unionSource, "VueClassValue");
+        AssertUsesNativeUnion(unionSource, "VueBooleanStringValue");
+        AssertUsesNativeUnion(unionSource, "VueStringComponentValue");
         AssertUsesNativeUnion(unionSource, "VueStringNumberValue");
         AssertUsesNativeUnion(unionSource, "VueWatchDeep");
         AssertUsesNativeUnion(unionSource, "VueTransitionDurationValue");
         AssertUsesNativeUnion(unionSource, "VueKeepAliveMatch");
         AssertUsesNativeUnion(unionSource, "VueIntStringValue");
+        AssertUsesNativeUnion(unionSource, "VueStyleValue");
+        AssertUsesNativeUnion(unionSource, "VueStyleValues");
         AssertUsesNativeUnion(unionSource, "VueTeleportTarget");
     }
 

@@ -2648,10 +2648,10 @@ public sealed class SdkIntegrationTests
             [VueLibraryStyle("demo/button.css")]
             [VueLibraryPluginRequirement("demo-host")]
             [VueLibraryComponentFlags(VueComponentFlags.SupportsModelValue | VueComponentFlags.RequiresExplicitChildren)]
-            [VueLibraryProp(nameof(Label), Name = "text")]
-            [VueLibraryProp(nameof(Value), Name = "modelValue", AcceptsBinding = true, Required = true)]
+            [VueProp(nameof(Label), Name = "text")]
+            [VueProp(nameof(Value), Name = "modelValue", AcceptsBinding = true, Required = true)]
             [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-            [VueLibrarySlot(nameof(Header), Name = "header", ContextTypeName = "string", ContextParameterName = "slotProps")]
+            [VueSlot(nameof(Header), Name = "header", ContextTypeName = "string", ContextParameterName = "slotProps")]
             public sealed class DemoButton : ComponentBase, IVueLibraryComponent
             {
                 [Parameter]

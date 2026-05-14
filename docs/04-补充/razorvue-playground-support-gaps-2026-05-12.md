@@ -114,7 +114,7 @@ class="playground-page playground-page--catalog"
 该问题已在 authoring surface 层修复：
 
 - 组件标签上的 lowercase `class` / `style` 走 `AdditionalAttributes` fallthrough，保持 Razor SG 原生可编译。
-- 强类型 C# authoring 入口统一使用 `CssClass` / `CssStyle`，通过 `[VueLibraryProp(..., Name = "class" / "style")]` 映射到 Vue runtime prop。
+- 强类型 C# authoring 入口统一使用 `CssClass` / `CssStyle`，通过 `[VueProp(..., Name = "class" / "style")]` 映射到 Vue runtime prop。
 - 不再在 top-level Vuetify authoring component 上暴露 `[Parameter] Class` / `[Parameter] Style`，避免与 Razor SG 的 lowercase attribute 绑定规则冲突。
 
 因此真实项目可以恢复自然写法：

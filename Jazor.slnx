@@ -24,8 +24,10 @@
   <Project Path="src/ECMAScript.Contract/ECMAScript.Contract.csproj" />
   <Project Path="src/ECMAScript.Pinia/ECMAScript.Pinia.csproj" />
   <Project Path="src/ECMAScript.TDesign/ECMAScript.TDesign.csproj" />
-  <Project Path="src/ECMAScript.Pinia.Testing/ECMAScript.Pinia.Testing.csproj" />
-  <Project Path="src/ECMAScript.VueContract/ECMAScript.VueContract.csproj" />
+  <Project Path="src/ECMAScript.Vben/ECMAScript.Vben.csproj" />
+    <Project Path="src/ECMAScript.Pinia.Testing/ECMAScript.Pinia.Testing.csproj" />
+    <Project Path="src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj" />
+    <Project Path="src/ECMAScript.VueContract/ECMAScript.VueContract.csproj" />
   <Project Path="src/ECMAScript.Vue3/ECMAScript.Vue3.csproj" />
   <Project Path="src/ECMAScript.VueRoute/ECMAScript.VueRoute.csproj" />
   <Project Path="src/ECMAScript.Vuetify/ECMAScript.Vuetify.csproj" />

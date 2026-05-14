@@ -20,6 +20,7 @@ internal static class VueIntrinsicComponentDescriptors
             ResolutionNamespace: "ECMAScript.UI.Vue",
             ImportSpecifier: "vue",
             ExportName: name,
+            ContainerContractFullName: null,
             RouteTemplates: [],
             Props: [],
             Emits: [],

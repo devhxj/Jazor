@@ -1,0 +1,45 @@
+@inherits VbenContentComponentBase
+
+<section class="@RootCssClass" style="@CssStyle" @attributes="AdditionalAttributes">
+    <div class='@("vben-page__header")'>
+        <div class='@("vben-page__titles")'>
+            @if (BreadcrumbItems is { Length: > 0 } breadcrumbItems)
+            {
+                <nav class='@("vben-page__breadcrumb")'>
+                    @foreach (var item in breadcrumbItems)
+                    {
+                        <span class='@("vben-page__breadcrumb-item")'>@item.Title</span>
+                    }
+                </nav>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Title))
+            {
+                <h1 class='@("vben-page__title")'>@Title</h1>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Subtitle))
+            {
+                <p class='@("vben-page__subtitle")'>@Subtitle</p>
+            }
+        </div>
+
+        @if ((Actions?.Length ?? 0) > 0 || Extra is not null)
+        {
+            <div class='@("vben-page__actions")'>
+                @if (Actions is not null)
+                {
+                    @foreach (var action in Actions)
+                    {
+                        <button type="button" disabled="@(action.Disabled ?? false)">@action.Text</button>
+                    }
+                }
+                @Extra
+            </div>
+        }
+    </div>
+
+    <div class='@("vben-page__body")'>
+        @ChildContent
+    </div>
+</section>
