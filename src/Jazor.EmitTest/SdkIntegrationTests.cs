@@ -3468,21 +3468,23 @@ public sealed class SdkIntegrationTests
             import "vuetify/styles";
             import { assertHostRequirements, createExternalDashboardRootComponent } from "./runtime-common.js";
 
-            export function mountTodoConsumer(components, hostRequirements, selector = "#app") {
+            export function mountTodoConsumer(components, hostRequirements, routesOrSelector = "#app", maybeSelector = "#app") {
               assertHostRequirements(hostRequirements);
               const Dashboard = components?.TodoApp;
               if (typeof Dashboard !== "object" && typeof Dashboard !== "function") {
                 throw new Error("External Deno consumer expected a TodoApp component export.");
               }
 
+              const hasExplicitRoutes = Array.isArray(routesOrSelector);
+              const selector = hasExplicitRoutes ? maybeSelector : routesOrSelector;
               const app = createApp(createExternalDashboardRootComponent(Dashboard));
               app.use(createVuetify());
               app.mount(selector);
               return app;
             }
 
-            export function mountRootComponent(rootComponent, hostRequirements, selector = "#app") {
-              return mountTodoConsumer({ TodoApp: rootComponent }, hostRequirements, selector);
+            export function mountRootComponent(rootComponent, hostRequirements, routesOrSelector = "#app", maybeSelector = "#app") {
+              return mountTodoConsumer({ TodoApp: rootComponent }, hostRequirements, routesOrSelector, maybeSelector);
             }
             """);
 

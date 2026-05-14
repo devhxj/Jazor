@@ -93,6 +93,55 @@ public sealed class RazorVueConsumerEntryCompilerTests
     }
 
     [TestMethod]
+    public async Task GenerateAsync_EmitsRouteArgumentCallers_ForRuntimeExports()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.CatalogPage", "CatalogPage", "pages/catalog-page.vue"),
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue"));
+        workspace.WriteVue("pages/catalog-page.vue", "<template><section>Catalog</section></template>");
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(new RazorVueConsumerEntryOptions(
+            workspace.HostJazorRoot,
+            workspace.BuildRoot,
+            ManifestPath: workspace.ManifestPath,
+            HostRequirementsModulePath: workspace.HostRequirementsModulePath,
+            BrowserGeneratedRoot: workspace.BrowserGeneratedRoot,
+            SsrGeneratedRoot: workspace.SsrGeneratedRoot,
+            ClientEntryPath: workspace.ClientEntryPath,
+            SsrEntryPath: workspace.SsrEntryPath,
+            VueFeatureFlagsPath: workspace.VueFeatureFlagsPath,
+            ClientRuntimeModulePath: workspace.ClientRuntimeModulePath,
+            SsrRuntimeModulePath: workspace.SsrRuntimeModulePath,
+            ClientRuntimeExportName: "mountPlaygroundConsumer",
+            SsrRuntimeExportName: "runPlaygroundConsumerSsr",
+            SsrExecuteExportName: "executeSsrSmoke",
+            Components:
+            [
+                new RazorVueConsumerComponentSelection("CatalogPage", "id:Demo.Pages.CatalogPage"),
+                new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")
+            ],
+            Mode: RazorVueConsumerEntryMode.Both,
+            Production: true,
+            Clean: true,
+            WriteResultPath: null));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains(
+            "mountPlaygroundConsumer(razorVueConsumerComponents, razorVueHostRequirements, razorVueConsumerRoutes);",
+            clientEntry);
+
+        var ssrEntry = await File.ReadAllTextAsync(workspace.SsrEntryPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains(
+            "return await runPlaygroundConsumerSsr(razorVueConsumerComponents, razorVueHostRequirements, razorVueConsumerRoutes);",
+            ssrEntry);
+    }
+
+    [TestMethod]
     public async Task GenerateAsync_WhenComponentSelectorIsAmbiguous_FailsWithActionableError()
     {
         using var workspace = new TestWorkspace();
