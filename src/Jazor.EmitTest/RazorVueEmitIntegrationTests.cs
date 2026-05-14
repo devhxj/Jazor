@@ -376,7 +376,7 @@ public sealed class RazorVueEmitIntegrationTests
                     previousManifestPath,
                     "--current",
                     currentManifestPath,
-                    "--write-plan",
+                    "--out",
                     planPath
                 ]);
 
@@ -387,6 +387,52 @@ public sealed class RazorVueEmitIntegrationTests
             Assert.AreEqual("TemplatePatch", plan.RootElement.GetProperty("Action").GetString());
             Assert.AreEqual("Demo.Host.ProfileForm", plan.RootElement.GetProperty("Modules")[0].GetProperty("ComponentId").GetString());
             Assert.AreEqual("TemplatePatch", plan.RootElement.GetProperty("Modules")[0].GetProperty("Action").GetString());
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task EmitCli_RazorVueDiff_AcceptsLegacyWritePlanAlias()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+        var emitAssemblyPath = typeof(EmitOptions).Assembly.Location;
+        var previousManifestPath = Path.Combine(root, "previous-jazor-manifest.json");
+        var currentManifestPath = Path.Combine(root, "current-jazor-manifest.json");
+        var planPath = Path.Combine(root, "razorvue-update-plan.json");
+
+        try
+        {
+            Directory.CreateDirectory(root);
+
+            var rootAssemblyPath = Path.Combine(root, "Demo.Host.dll");
+            SaveUnifiedManifest(
+                previousManifestPath,
+                rootAssemblyPath,
+                CreateManifest("template-a", "logic-a", "content-a", RazorVueHmrBoundaryKind.TemplateOnly));
+            SaveUnifiedManifest(
+                currentManifestPath,
+                rootAssemblyPath,
+                CreateManifest("template-b", "logic-a", "content-b", RazorVueHmrBoundaryKind.TemplateOnly));
+
+            var result = await RunDotNetAsync(root,
+                [
+                    "exec",
+                    emitAssemblyPath,
+                    "razorvue-diff",
+                    "--previous",
+                    previousManifestPath,
+                    "--current",
+                    currentManifestPath,
+                    "--write-plan",
+                    planPath
+                ]);
+
+            Assert.AreEqual(0, result.ExitCode, result.ToString());
+            Assert.IsTrue(File.Exists(planPath));
         }
         finally
         {

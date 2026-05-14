@@ -55,6 +55,8 @@ RazorVue diff：
 dotnet run --project src/Jazor.Emit -- razorvue-diff --previous <old.json> --current <new.json> --out <plan.json>
 ```
 
+`--out` 是当前推荐参数名；`--write-plan` 作为兼容别名继续接受。
+
 RazorVue SFC named-export bridge：
 
 ```powershell

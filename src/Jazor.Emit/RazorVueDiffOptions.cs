@@ -32,6 +32,7 @@ internal sealed record RazorVueDiffOptions(
                 case "--current":
                     currentManifestPath = value;
                     break;
+                case "--out":
                 case "--write-plan":
                     outputPath = value;
                     break;
@@ -55,7 +56,7 @@ internal sealed record RazorVueDiffOptions(
 
         if (string.IsNullOrWhiteSpace(outputPath))
         {
-            error = "Missing required argument --write-plan.";
+            error = "Missing required argument --out.";
             return false;
         }
 
