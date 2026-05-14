@@ -327,7 +327,7 @@ namespace Jazor.EmitTest
             CollectionAssert.AreEquivalent(new[] { "vuetify" }, manifest.PluginRequirements);
             Assert.IsFalse(string.IsNullOrWhiteSpace(manifest.Modules[0].ContentHash));
 
-            var manifestPath = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"), "razorvue-manifest.json");
+            var manifestPath = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"), "jazor-manifest.json");
             try
             {
                 manifest.Save(manifestPath);
@@ -398,9 +398,9 @@ namespace Jazor.EmitTest
         }
 
         [TestMethod]
-        public void RazorVueManifestModel_TryLoad_BackfillsTopLevelRequirements_FromLegacyManifestJson()
+        public void RazorVueManifestModel_TryLoad_BackfillsTopLevelRequirements_FromLegacyPayload_InUnifiedManifestPath()
         {
-            var manifestPath = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"), "legacy-razorvue-manifest.json");
+            var manifestPath = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"), "jazor-manifest.json");
 
             try
             {
@@ -457,6 +457,50 @@ namespace Jazor.EmitTest
                 Assert.AreEqual("components/counter-card.mjs", manifest.Modules[0].ModuleId);
                 Assert.AreEqual("components/counter-card.mjs.map", manifest.Modules[0].SourceMapPath);
                 Assert.AreEqual("components/counter-card.mjs.origins.json", manifest.Modules[0].OriginMapPath);
+            }
+            finally
+            {
+                var directory = Path.GetDirectoryName(manifestPath);
+                if (!string.IsNullOrWhiteSpace(directory) && Directory.Exists(directory))
+                    Directory.Delete(directory, recursive: true);
+            }
+        }
+
+        [TestMethod]
+        public void RazorVueManifestModel_Load_ReportsNoComponentEntries_WhenUnifiedManifestContainsOnlyPlainModules()
+        {
+            var manifestPath = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"), "jazor-manifest.json");
+
+            try
+            {
+                var directory = Path.GetDirectoryName(manifestPath);
+                if (!string.IsNullOrWhiteSpace(directory))
+                    Directory.CreateDirectory(directory);
+
+                File.WriteAllText(
+                    manifestPath,
+                    """
+                    {
+                      "rootAssemblyPath": "D:/demo/Demo.Host.dll",
+                      "generatedAtUtc": "2026-05-14T00:00:00Z",
+                      "modules": [
+                        {
+                          "assemblyName": "Demo.Host",
+                          "typeName": "Demo.Host.AppModule",
+                          "id": "Demo.Host.AppModule",
+                          "relativePath": "host/app.mjs",
+                          "hash": "content-hash",
+                          "kind": "mjs"
+                        }
+                      ]
+                    }
+                    """.ReplaceLineEndings("\n"));
+
+                var loadResult = RazorVueManifestSerializer.Load(manifestPath);
+
+                Assert.AreEqual(RazorVueManifestLoadStatus.NoComponentEntries, loadResult.Status);
+                Assert.IsFalse(loadResult.IsSuccess);
+                Assert.IsNull(loadResult.Manifest);
             }
             finally
             {

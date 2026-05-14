@@ -5,11 +5,13 @@ namespace Jazor.AspNetCore;
 
 public sealed class JazorDevelopmentAssetOptions
 {
+    public const string DefaultDevelopmentOutputProbeRelativePath = "jazor-manifest.json";
+
     public JazorDevelopmentAssetOptions()
     {
         DevelopmentOutputProbeRelativePaths =
         [
-            "jazor-manifest.json"
+            DefaultDevelopmentOutputProbeRelativePath
         ];
 
         ImmutableCachePathPrefixes = [];
@@ -25,7 +27,7 @@ public sealed class JazorDevelopmentAssetOptions
 
     public IList<string> ImmutableCachePathPrefixes { get; }
 
-    public string EntryModuleRelativePath
+    public string DevelopmentOutputProbeRelativePath
     {
         get => DevelopmentOutputProbeRelativePaths.Count == 0
             ? string.Empty
@@ -37,6 +39,13 @@ public sealed class JazorDevelopmentAssetOptions
             DevelopmentOutputProbeRelativePaths.Clear();
             DevelopmentOutputProbeRelativePaths.Add(value);
         }
+    }
+
+    // Compatibility alias for older host code. Prefer DevelopmentOutputProbeRelativePath.
+    public string EntryModuleRelativePath
+    {
+        get => DevelopmentOutputProbeRelativePath;
+        set => DevelopmentOutputProbeRelativePath = value;
     }
 
     public Action<StaticFileResponseContext>? OnPrepareResponse { get; set; }

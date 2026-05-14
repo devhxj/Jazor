@@ -8,7 +8,7 @@ public sealed class JazorWebAssetOptions
     {
         DevelopmentOutputProbeRelativePaths =
         [
-            "jazor-manifest.json"
+            JazorDevelopmentAssetOptions.DefaultDevelopmentOutputProbeRelativePath
         ];
 
         ImmutableCachePathPrefixes = [];

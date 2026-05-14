@@ -13,7 +13,7 @@
 - 通过 `DenoHost` 执行 bundle。
 - 将 RazorVue `.vue` SFC 编译为 Jazor authored-module 可消费的 named-export bridge modules。
 - 生成 RazorVue consumer entry modules，标准化 manifest 解析、组件选择、mixed H/SFC 组件消费、SFC bridge 调用和 browser/SSR 入口拼接。
-- 生成 RazorVue manifest diff / update plan。
+- 基于统一 `jazor-manifest.json` 中的 RazorVue component projection 生成 diff / update plan。
 
 ## Boundaries
 

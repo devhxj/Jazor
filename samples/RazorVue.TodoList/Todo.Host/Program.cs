@@ -10,10 +10,7 @@ internal static class Program
         var app = builder.Build();
 
         app.UseJazorHost();
-        app.UseJazorSpaFallback(static (context, cancellationToken) =>
-            context.Response.SendFileAsync(
-                Path.Combine("wwwroot", "index.html"),
-                cancellationToken));
+        app.UseJazorSpaFallback("/index.html");
 
         app.Run();
     }

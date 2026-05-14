@@ -1170,7 +1170,7 @@ public sealed class SdkIntegrationTests
 
         using var updatePlan = JsonDocument.Parse(await File.ReadAllTextAsync(updatePlanPath));
         Assert.AreEqual("FullReload", updatePlan.RootElement.GetProperty("Action").GetString());
-        Assert.AreEqual("Previous RazorVue manifest is missing.", updatePlan.RootElement.GetProperty("Reason").GetString());
+        Assert.AreEqual("Previous Jazor manifest component projection is missing.", updatePlan.RootElement.GetProperty("Reason").GetString());
         Assert.AreEqual(0, updatePlan.RootElement.GetProperty("Modules").GetArrayLength());
 
     }

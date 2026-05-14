@@ -30,7 +30,7 @@ internal static class VueComponentDescriptorRouteTemplateResolver
         if (string.IsNullOrWhiteSpace(razorDocumentText))
             return ImmutableArray<string>.Empty;
 
-        return ParseRazorPageDirectives(razorDocumentText);
+        return ParseRazorPageDirectives(razorDocumentText!);
     }
 
     private static ImmutableArray<string> ParseRazorPageDirectives(string razorDocumentText)
@@ -51,7 +51,7 @@ internal static class VueComponentDescriptorRouteTemplateResolver
             if (string.IsNullOrWhiteSpace(routeTemplate))
                 continue;
 
-            var normalized = routeTemplate.Trim();
+            var normalized = routeTemplate!.Trim();
             if (seen.Add(normalized))
                 builder.Add(normalized);
         }

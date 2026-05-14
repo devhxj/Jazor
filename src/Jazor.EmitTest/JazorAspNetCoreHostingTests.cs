@@ -83,6 +83,31 @@ public sealed class JazorAspNetCoreHostingTests
     }
 
     [TestMethod]
+    public async Task UseJazorDevelopmentAssets_SupportsStableProbeProperty_WhileKeepingLegacyAliasCompatible()
+    {
+        using var workspace = new AspNetCoreHostTestWorkspace();
+        var jazorRoot = Path.Combine(workspace.RootPath, "jazor");
+        Directory.CreateDirectory(jazorRoot);
+        await File.WriteAllTextAsync(Path.Combine(jazorRoot, "custom.probe.json"), "{}");
+        await File.WriteAllTextAsync(Path.Combine(jazorRoot, "feature.mjs"), "export const value = 1;\n");
+
+        using var host = await CreateHostAsync(workspace.RootPath, app =>
+        {
+            app.UseJazorDevelopmentAssets(options =>
+            {
+                options.DevelopmentOutputProbeRelativePath = "custom.probe.json";
+                Assert.AreEqual("custom.probe.json", options.EntryModuleRelativePath);
+            });
+            app.MapGet("/", () => "ready");
+        });
+
+        var client = host.GetTestClient();
+        var mountedAssetResponse = await client.GetAsync("/jazor/feature.mjs");
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, mountedAssetResponse.StatusCode);
+        Assert.AreEqual("export const value = 1;\n", await mountedAssetResponse.Content.ReadAsStringAsync());
+    }
+
+    [TestMethod]
     public async Task UseJazorWebAssets_ServesWebRootAssetsBeforeDevelopmentAssets()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
@@ -458,6 +483,56 @@ public sealed class JazorAspNetCoreHostingTests
         var endpointResponse = await client.SendAsync(endpointRequest);
         Assert.AreEqual(System.Net.HttpStatusCode.OK, endpointResponse.StatusCode);
         Assert.AreEqual("application/json", endpointResponse.Content.Headers.ContentType?.MediaType);
+    }
+
+    [TestMethod]
+    public async Task UseJazorHost_AndStaticSpaFallback_FormTheDefaultSingleHostContract()
+    {
+        using var workspace = new AspNetCoreHostTestWorkspace();
+        var webRoot = Path.Combine(workspace.RootPath, "wwwroot");
+        var publishedJazorRoot = Path.Combine(webRoot, "jazor");
+        var developmentJazorRoot = Path.Combine(workspace.RootPath, "jazor");
+        Directory.CreateDirectory(publishedJazorRoot);
+        Directory.CreateDirectory(developmentJazorRoot);
+        await File.WriteAllTextAsync(
+            Path.Combine(webRoot, "index.html"),
+            "<!doctype html><html><body><div id=\"app\">default host shell</div></body></html>");
+        await File.WriteAllTextAsync(Path.Combine(publishedJazorRoot, "client-entry.js"), "export const browser = true;\n");
+        await File.WriteAllTextAsync(Path.Combine(developmentJazorRoot, "jazor-manifest.json"), "{}");
+
+        using var host = await CreateHostAsync(workspace.RootPath, app =>
+        {
+            app.UseJazorHost();
+            app.UseJazorSpaFallback("/index.html");
+            app.MapGet("/api/status", () => Results.Ok(new { ok = true }));
+        });
+
+        var client = host.GetTestClient();
+
+        using var navigationRequest = new HttpRequestMessage(HttpMethod.Get, "/examples/detail");
+        navigationRequest.Headers.Accept.ParseAdd("text/html");
+        var navigationResponse = await client.SendAsync(navigationRequest);
+        var navigationHtml = await navigationResponse.Content.ReadAsStringAsync();
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, navigationResponse.StatusCode);
+        Assert.AreEqual("text/html", navigationResponse.Content.Headers.ContentType?.MediaType);
+        StringAssert.Contains(navigationHtml, "default host shell");
+
+        var browserBundleResponse = await client.GetAsync("/jazor/client-entry.js");
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, browserBundleResponse.StatusCode);
+        Assert.AreEqual("export const browser = true;\n", await browserBundleResponse.Content.ReadAsStringAsync());
+
+        var manifestResponse = await client.GetAsync("/jazor/jazor-manifest.json");
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, manifestResponse.StatusCode);
+        Assert.AreEqual("{}", await manifestResponse.Content.ReadAsStringAsync());
+
+        using var apiRequest = new HttpRequestMessage(HttpMethod.Get, "/api/status");
+        apiRequest.Headers.Accept.ParseAdd("text/html");
+        var apiResponse = await client.SendAsync(apiRequest);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, apiResponse.StatusCode);
+        Assert.AreEqual("application/json", apiResponse.Content.Headers.ContentType?.MediaType);
+
+        var missingAssetResponse = await client.GetAsync("/jazor/missing.js");
+        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, missingAssetResponse.StatusCode);
     }
 
     [TestMethod]

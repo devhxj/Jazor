@@ -21,53 +21,50 @@ public static class RazorVueManifestSerializer
         PropertyNameCaseInsensitive = true
     };
 
+    public static RazorVueManifestLoadResult Load(string manifestPath)
+        => Load(manifestPath, componentModel: null);
+
+    public static RazorVueManifestLoadResult Load(string manifestPath, string? componentModel)
+    {
+        if (string.IsNullOrWhiteSpace(manifestPath))
+            throw new ArgumentException("Manifest path is required.", nameof(manifestPath));
+
+        if (!File.Exists(manifestPath))
+            return RazorVueManifestLoadResult.FileNotFound(manifestPath);
+
+        try
+        {
+            var json = File.ReadAllText(manifestPath);
+            if (TryLoadUnifiedManifest(json, componentModel, out var unifiedManifest))
+            {
+                return unifiedManifest.Modules.Count == 0
+                    ? RazorVueManifestLoadResult.NoComponentEntries(manifestPath)
+                    : RazorVueManifestLoadResult.Success(manifestPath, unifiedManifest);
+            }
+
+            var legacyManifest = JsonSerializer.Deserialize<RazorVueManifestModel>(json, JsonOptions);
+            if (legacyManifest is null)
+            {
+                return RazorVueManifestLoadResult.Invalid(
+                    manifestPath,
+                    "Manifest JSON could not be deserialized.");
+            }
+
+            var normalizedManifest = NormalizeManifest(legacyManifest);
+            var projectedManifest = FilterByComponentModelIfNeeded(normalizedManifest, componentModel);
+            return projectedManifest.Modules.Count == 0
+                ? RazorVueManifestLoadResult.NoComponentEntries(manifestPath)
+                : RazorVueManifestLoadResult.Success(manifestPath, projectedManifest);
+        }
+        catch (Exception ex) when (ex is JsonException or InvalidDataException or InvalidOperationException)
+        {
+            return RazorVueManifestLoadResult.Invalid(manifestPath, ex.Message);
+        }
+    }
+
     public static RazorVueManifestModel? TryLoad(string manifestPath)
     {
-        if (!File.Exists(manifestPath))
-            return null;
-
-        var json = File.ReadAllText(manifestPath);
-        var manifest = TryDeserializeUnifiedManifest(json)
-            ?? JsonSerializer.Deserialize<RazorVueManifestModel>(json, JsonOptions);
-        if (manifest is null)
-            return null;
-
-        manifest = ProjectUnifiedManifestIfNeeded(manifest);
-
-        var normalizedModules = manifest.Modules
-            .Select(static module => module with
-            {
-                ComponentId = NormalizeIdentityValue(
-                    module.ComponentId,
-                    module.AssemblyName + "::" + module.ComponentName),
-                ModuleId = NormalizeIdentityValue(
-                    module.ModuleId,
-                    module.RelativeModulePath),
-                RouteTemplates = NormalizeRouteTemplates(module.RouteTemplates ?? new List<string>()),
-                SourceMapPath = NormalizeSourceMapPath(
-                    module.SourceMapPath,
-                    module.RelativeModulePath),
-                OriginMapPath = NormalizeOriginMapPath(
-                    module.OriginMapPath,
-                    module.RelativeModulePath),
-                StyleHash = module.StyleHash ?? string.Empty,
-                Styles = NormalizeHostRequirementList(module.Styles),
-                PluginRequirements = NormalizeHostRequirementList(module.PluginRequirements)
-            })
-            .ToList();
-
-        return manifest with
-        {
-            Modules = normalizedModules,
-            Styles = NormalizeHostRequirementList(
-                manifest.Styles is not null
-                    ? manifest.Styles
-                    : normalizedModules.SelectMany(static module => module.Styles).ToList()),
-            PluginRequirements = NormalizeHostRequirementList(
-                manifest.PluginRequirements is not null
-                    ? manifest.PluginRequirements
-                    : normalizedModules.SelectMany(static module => module.PluginRequirements).ToList())
-        };
+        return Load(manifestPath).Manifest;
     }
 
     public static void Save(this RazorVueManifestModel manifest, string manifestPath)
@@ -118,35 +115,95 @@ public static class RazorVueManifestSerializer
     private static string NormalizeOriginMapPath(string? currentValue, string relativeModulePath)
         => string.IsNullOrWhiteSpace(currentValue) ? relativeModulePath + ".origins.json" : currentValue!;
 
-    private static RazorVueManifestModel? TryDeserializeUnifiedManifest(string json)
+    private static bool TryLoadUnifiedManifest(string json, string? componentModel, out RazorVueManifestModel manifest)
     {
-        var manifest = JsonSerializer.Deserialize<UnifiedJazorManifestModel>(json, UnifiedManifestJsonOptions);
-        if (manifest?.Modules is null)
-            return null;
+        var unifiedManifest = JsonSerializer.Deserialize<UnifiedJazorManifestModel>(json, UnifiedManifestJsonOptions);
+        if (unifiedManifest?.Modules is null || !LooksLikeUnifiedManifest(unifiedManifest))
+        {
+            manifest = null!;
+            return false;
+        }
 
-        var componentModules = manifest.Modules
+        var componentModules = unifiedManifest.Modules
             .Where(static module => module.Component is not null)
             .Select(ToRazorVueManifestEntry)
+            .Where(module => MatchesComponentModel(module, componentModel))
             .OrderBy(static module => module.RelativeModulePath, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static module => module.ComponentName, StringComparer.Ordinal)
             .ToList();
-        if (componentModules.Count == 0)
-            return null;
 
-        return new RazorVueManifestModel(
-            ResolveManifestAssemblyName(manifest.RootAssemblyPath, componentModules),
-            manifest.GeneratedAtUtc,
+        manifest = new RazorVueManifestModel(
+            ResolveManifestAssemblyName(unifiedManifest.RootAssemblyPath, componentModules),
+            unifiedManifest.GeneratedAtUtc,
             componentModules,
             NormalizeHostRequirementList(componentModules.SelectMany(static module => module.Styles).ToList()),
             NormalizeHostRequirementList(componentModules.SelectMany(static module => module.PluginRequirements).ToList()));
+        return true;
     }
 
-    private static RazorVueManifestModel ProjectUnifiedManifestIfNeeded(RazorVueManifestModel manifest)
+    private static bool LooksLikeUnifiedManifest(UnifiedJazorManifestModel manifest)
+        => !string.IsNullOrWhiteSpace(manifest.RootAssemblyPath)
+           || manifest.Modules.Any(static module =>
+               !string.IsNullOrWhiteSpace(module.RelativePath)
+               || !string.IsNullOrWhiteSpace(module.Kind)
+               || !string.IsNullOrWhiteSpace(module.TypeName)
+               || !string.IsNullOrWhiteSpace(module.Id)
+               || module.Component is not null);
+
+    private static RazorVueManifestModel NormalizeManifest(RazorVueManifestModel manifest)
     {
-        if (manifest.Modules.Count != 0)
+        var normalizedModules = manifest.Modules
+            .Select(static module => module with
+            {
+                ComponentId = NormalizeIdentityValue(
+                    module.ComponentId,
+                    module.AssemblyName + "::" + module.ComponentName),
+                ModuleId = NormalizeIdentityValue(
+                    module.ModuleId,
+                    module.RelativeModulePath),
+                RouteTemplates = NormalizeRouteTemplates(module.RouteTemplates ?? new List<string>()),
+                SourceMapPath = NormalizeSourceMapPath(
+                    module.SourceMapPath,
+                    module.RelativeModulePath),
+                OriginMapPath = NormalizeOriginMapPath(
+                    module.OriginMapPath,
+                    module.RelativeModulePath),
+                StyleHash = module.StyleHash ?? string.Empty,
+                ComponentModel = NormalizeComponentModel(module.ComponentModel),
+                Styles = NormalizeHostRequirementList(module.Styles),
+                PluginRequirements = NormalizeHostRequirementList(module.PluginRequirements)
+            })
+            .ToList();
+
+        return manifest with
+        {
+            Modules = normalizedModules,
+            Styles = NormalizeHostRequirementList(
+                manifest.Styles is not null
+                    ? manifest.Styles
+                    : normalizedModules.SelectMany(static module => module.Styles).ToList()),
+            PluginRequirements = NormalizeHostRequirementList(
+                manifest.PluginRequirements is not null
+                    ? manifest.PluginRequirements
+                    : normalizedModules.SelectMany(static module => module.PluginRequirements).ToList())
+        };
+    }
+
+    private static RazorVueManifestModel FilterByComponentModelIfNeeded(RazorVueManifestModel manifest, string? componentModel)
+    {
+        if (string.IsNullOrWhiteSpace(componentModel))
             return manifest;
 
-        return manifest;
+        var filteredModules = manifest.Modules
+            .Where(module => MatchesComponentModel(module, componentModel))
+            .ToList();
+
+        return manifest with
+        {
+            Modules = filteredModules,
+            Styles = NormalizeHostRequirementList(filteredModules.SelectMany(static module => module.Styles).ToList()),
+            PluginRequirements = NormalizeHostRequirementList(filteredModules.SelectMany(static module => module.PluginRequirements).ToList())
+        };
     }
 
     private static RazorVueManifestEntry ToRazorVueManifestEntry(UnifiedJazorManifestModule module)
@@ -206,6 +263,13 @@ public static class RazorVueManifestSerializer
 
         return model!.Trim().ToLowerInvariant();
     }
+
+    private static bool MatchesComponentModel(RazorVueManifestEntry module, string? componentModel)
+        => string.IsNullOrWhiteSpace(componentModel)
+           || string.Equals(
+               NormalizeComponentModel(module.ComponentModel),
+               NormalizeComponentModel(componentModel),
+               StringComparison.Ordinal);
 
     private static string NormalizeRelativeModulePath(string relativePath)
     {
@@ -272,4 +336,33 @@ public static class RazorVueManifestSerializer
         bool RequiresHydration,
         bool SupportsSsr,
         string? StyleHash);
+}
+
+public enum RazorVueManifestLoadStatus
+{
+    Success,
+    FileNotFound,
+    NoComponentEntries,
+    Invalid
+}
+
+public sealed record RazorVueManifestLoadResult(
+    string ManifestPath,
+    RazorVueManifestLoadStatus Status,
+    RazorVueManifestModel? Manifest,
+    string? Error)
+{
+    public bool IsSuccess => Status == RazorVueManifestLoadStatus.Success;
+
+    public static RazorVueManifestLoadResult Success(string manifestPath, RazorVueManifestModel manifest)
+        => new(manifestPath, RazorVueManifestLoadStatus.Success, manifest, null);
+
+    public static RazorVueManifestLoadResult FileNotFound(string manifestPath)
+        => new(manifestPath, RazorVueManifestLoadStatus.FileNotFound, null, null);
+
+    public static RazorVueManifestLoadResult NoComponentEntries(string manifestPath)
+        => new(manifestPath, RazorVueManifestLoadStatus.NoComponentEntries, null, null);
+
+    public static RazorVueManifestLoadResult Invalid(string manifestPath, string error)
+        => new(manifestPath, RazorVueManifestLoadStatus.Invalid, null, error);
 }

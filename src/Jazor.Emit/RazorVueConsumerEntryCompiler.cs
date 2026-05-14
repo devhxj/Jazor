@@ -111,7 +111,7 @@ internal sealed class RazorVueConsumerEntryCompiler
             return RazorVueConsumerEntryResult.Fail(6, $"RazorVue host output root was not found: '{options.HostJazorRoot}'.");
 
         if (!File.Exists(manifestPath))
-            return RazorVueConsumerEntryResult.Fail(7, $"RazorVue manifest was not found: '{manifestPath}'.");
+            return RazorVueConsumerEntryResult.Fail(7, $"Jazor manifest was not found: '{manifestPath}'.");
 
         if (!File.Exists(hostRequirementsModulePath))
             return RazorVueConsumerEntryResult.Fail(8, $"RazorVue host requirements module was not found: '{hostRequirementsModulePath}'.");
@@ -128,9 +128,24 @@ internal sealed class RazorVueConsumerEntryCompiler
         if (needsSsr && !File.Exists(options.SsrRuntimeModulePath))
             return RazorVueConsumerEntryResult.Fail(10, $"RazorVue SSR runtime module was not found: '{options.SsrRuntimeModulePath}'.");
 
-        var manifest = RazorVueManifestSerializer.TryLoad(manifestPath);
+        var manifestLoad = RazorVueManifestSerializer.Load(manifestPath);
+        if (manifestLoad.Status == RazorVueManifestLoadStatus.NoComponentEntries)
+        {
+            return RazorVueConsumerEntryResult.Fail(
+                11,
+                $"Jazor manifest '{manifestPath}' did not contain any RazorVue component entries.");
+        }
+
+        if (manifestLoad.Status == RazorVueManifestLoadStatus.Invalid)
+        {
+            return RazorVueConsumerEntryResult.Fail(
+                7,
+                $"Jazor manifest could not be read: '{manifestPath}'. {manifestLoad.Error}");
+        }
+
+        var manifest = manifestLoad.Manifest;
         if (manifest is null)
-            return RazorVueConsumerEntryResult.Fail(7, $"RazorVue manifest was not found or could not be read: '{manifestPath}'.");
+            return RazorVueConsumerEntryResult.Fail(7, $"Jazor manifest was not found: '{manifestPath}'.");
 
         var validationError = ValidateJavaScriptIdentifier(clientRuntimeExportName, "--client-runtime-export");
         if (validationError is not null)
@@ -325,7 +340,7 @@ internal sealed class RazorVueConsumerEntryCompiler
             if (matches.Count == 0)
             {
                 return ResolveComponentsResult.Fail(
-                    $"RazorVue manifest did not contain a component matching selector '{selector}'. Use 'id:', 'name:', or 'path:' to make the selector explicit.");
+                    $"Jazor manifest did not contain a RazorVue component matching selector '{selector}'. Use 'id:', 'name:', or 'path:' to make the selector explicit.");
             }
 
             if (matches.Count > 1)
@@ -336,7 +351,7 @@ internal sealed class RazorVueConsumerEntryCompiler
                         .OrderBy(static module => module.ComponentId, StringComparer.Ordinal)
                         .Select(static module => $"'{module.ComponentId}' at '{module.RelativeModulePath}'"));
                 return ResolveComponentsResult.Fail(
-                    $"RazorVue consumer component selector '{selector}' matched multiple RazorVue components: {candidates}. Use 'id:', 'name:', or 'path:' to make the selector explicit.");
+                    $"RazorVue consumer component selector '{selector}' matched multiple RazorVue component entries in the Jazor manifest: {candidates}. Use 'id:', 'name:', or 'path:' to make the selector explicit.");
             }
 
             components.Add(new ResolvedConsumerComponent(alias, selection.Selector, matches[0]));

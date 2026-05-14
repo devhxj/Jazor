@@ -429,6 +429,100 @@ public sealed class ModuleBundlerTests
         Assert.AreEqual("Template hash changed while descriptor and logic stayed stable.", plan.RootElement.GetProperty("Modules")[0].GetProperty("Reason").GetString());
     }
 
+    [TestMethod]
+    public async Task BundleAsync_WithPreviousManifestWithoutRazorVueComponents_WritesBootstrapFullReloadPlan()
+    {
+        using var workspace = new TestWorkspace();
+        WriteModule(workspace.InputDirectory, "host/app.mjs",
+            """
+            export function Boot() {
+              return "ready";
+            }
+            """);
+
+        var manifest = new ManifestModel(
+            RootAssemblyPath: Path.Combine(workspace.RootPath, "Sample.Host.dll"),
+            GeneratedAtUtc: DateTime.UtcNow,
+            Modules:
+            [
+                new ManifestModuleEntry("Sample.Host", "Sample.Host.AppModule", "Sample.Host.AppModule", "host/app.mjs", "hash-1")
+            ]);
+        manifest.Save(workspace.ManifestPath);
+        manifest.Save(workspace.PreviousManifestPath);
+
+        SaveUnifiedManifest(
+            workspace.ManifestPath,
+            manifest,
+            CreateRazorVueManifest(
+                "template-b",
+                "logic-a",
+                "content-b"));
+
+        var bundler = new ModuleBundler();
+        var result = await bundler.BundleAsync(new BundleOptions(
+            workspace.InputDirectory,
+            workspace.ManifestPath,
+            workspace.OutputPath,
+            workspace.PreviousManifestPath,
+            workspace.RazorVueUpdatePlanPath));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+        Assert.IsTrue(File.Exists(workspace.RazorVueUpdatePlanPath));
+
+        using var plan = await ReadJsonAsync(workspace.RazorVueUpdatePlanPath);
+        Assert.AreEqual("FullReload", plan.RootElement.GetProperty("Action").GetString());
+        Assert.AreEqual("Previous Jazor manifest component projection is missing.", plan.RootElement.GetProperty("Reason").GetString());
+        Assert.AreEqual(0, plan.RootElement.GetProperty("Modules").GetArrayLength());
+    }
+
+    [TestMethod]
+    public async Task BundleAsync_WithInvalidPreviousManifest_WritesActionableFullReloadPlan()
+    {
+        using var workspace = new TestWorkspace();
+        WriteModule(workspace.InputDirectory, "host/app.mjs",
+            """
+            export function Boot() {
+              return "ready";
+            }
+            """);
+
+        var manifest = new ManifestModel(
+            RootAssemblyPath: Path.Combine(workspace.RootPath, "Sample.Host.dll"),
+            GeneratedAtUtc: DateTime.UtcNow,
+            Modules:
+            [
+                new ManifestModuleEntry("Sample.Host", "Sample.Host.AppModule", "Sample.Host.AppModule", "host/app.mjs", "hash-1")
+            ]);
+        manifest.Save(workspace.ManifestPath);
+        File.WriteAllText(workspace.PreviousManifestPath, "{ invalid json", new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+        SaveUnifiedManifest(
+            workspace.ManifestPath,
+            manifest,
+            CreateRazorVueManifest(
+                "template-b",
+                "logic-a",
+                "content-b"));
+
+        var bundler = new ModuleBundler();
+        var result = await bundler.BundleAsync(new BundleOptions(
+            workspace.InputDirectory,
+            workspace.ManifestPath,
+            workspace.OutputPath,
+            workspace.PreviousManifestPath,
+            workspace.RazorVueUpdatePlanPath));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+        Assert.IsTrue(File.Exists(workspace.RazorVueUpdatePlanPath));
+
+        using var plan = await ReadJsonAsync(workspace.RazorVueUpdatePlanPath);
+        Assert.AreEqual("FullReload", plan.RootElement.GetProperty("Action").GetString());
+        StringAssert.StartsWith(
+            plan.RootElement.GetProperty("Reason").GetString(),
+            "Previous Jazor manifest component projection could not be read: '");
+        Assert.AreEqual(0, plan.RootElement.GetProperty("Modules").GetArrayLength());
+    }
+
     private static RazorVueManifestModel CreateRazorVueManifest(string templateHash, string logicHash, string contentHash)
         => CreateRazorVueManifest(
             componentId: "Sample.Host.ProfileForm",

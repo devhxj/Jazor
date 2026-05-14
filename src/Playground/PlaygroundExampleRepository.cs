@@ -59,7 +59,7 @@ internal sealed class PlaygroundExampleRepository
             "This is the critical integration seam that replaces Vite with a repo-native DenoHost path and keeps generated .vue consumption explicit.",
             ["deno", "bundle", "ssr", "consumer"],
             ["Generated browser/SSR module trees", "Linked source maps", "Browser smoke and SSR smoke hooks"],
-            ["Read RazorVue manifest from host output.", "Compile generated .vue files into local .mjs modules.", "Bundle browser entry and verify SSR/browser smoke output."],
+            ["Read unified jazor-manifest.json component metadata from host output.", "Compile generated .vue files into local .mjs modules.", "Bundle browser entry and verify SSR/browser smoke output."],
             ["consumer/scripts/lib/pipeline.ts", "consumer/scripts/build.ts", "consumer/scripts/smoke-ssr.ts"],
             "2026-05-12T00:00:00Z",
             false,

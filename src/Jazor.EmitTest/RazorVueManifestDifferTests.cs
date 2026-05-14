@@ -103,6 +103,18 @@ public sealed class RazorVueManifestDifferTests
         StringAssert.Contains(diff.Modules[0].Reason, "Style block content changed");
     }
 
+    [TestMethod]
+    public void RazorVueManifestDiffer_ReportsUnifiedManifestProjectionReason_WhenPreviousProjectionIsMissing()
+    {
+        var current = CreateManifest(CreateEntry());
+
+        var diff = RazorVueManifestDiffer.Diff(previous: null, current);
+
+        Assert.AreEqual(RazorVueHotUpdateAction.FullReload, diff.Action);
+        Assert.AreEqual("Previous Jazor manifest component projection is missing.", diff.Reason);
+        Assert.IsTrue(diff.TopLevelMetadataChanged);
+    }
+
     private static RazorVueManifestModel CreateManifest(
         RazorVueManifestEntry first,
         string[]? styles = null,

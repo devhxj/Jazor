@@ -404,7 +404,7 @@ function createMockDetailResponse(id: string) {
       Tags: ["deno", "bundle", "ssr", "consumer"],
       Highlights: ["Generated browser/SSR module trees", "Linked source maps", "Browser smoke and SSR smoke hooks"],
       Steps: [
-        "Read RazorVue manifest from host output.",
+        "Read unified jazor-manifest.json component metadata from host output.",
         "Compile generated .vue files into local .mjs modules.",
         "Bundle browser entry and verify SSR/browser smoke output."
       ],

@@ -13,8 +13,8 @@ public static class RazorVueManifestDiffer
             return new RazorVueManifestDiffResult(
                 RazorVueHotUpdateAction.FullReload,
                 previous is null
-                    ? "Previous RazorVue manifest is missing."
-                    : "Current RazorVue manifest is missing.",
+                    ? "Previous Jazor manifest component projection is missing."
+                    : "Current Jazor manifest component projection is missing.",
                 [],
                 TopLevelMetadataChanged: true);
         }

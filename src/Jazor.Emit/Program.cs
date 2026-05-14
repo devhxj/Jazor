@@ -163,20 +163,22 @@ static int RunRazorVueDiff(string[] args)
 
     try
     {
-        var previous = RazorVueManifestSerializer.TryLoad(options.PreviousManifestPath);
-        if (previous is null)
+        var previousLoad = RazorVueManifestSerializer.Load(options.PreviousManifestPath);
+        if (!previousLoad.IsSuccess)
         {
-            Console.Error.WriteLine($"Previous RazorVue manifest was not found: '{options.PreviousManifestPath}'.");
+            Console.Error.WriteLine(FormatManifestLoadFailure("Previous", previousLoad));
             return 6;
         }
 
-        var current = RazorVueManifestSerializer.TryLoad(options.CurrentManifestPath);
-        if (current is null)
+        var currentLoad = RazorVueManifestSerializer.Load(options.CurrentManifestPath);
+        if (!currentLoad.IsSuccess)
         {
-            Console.Error.WriteLine($"Current RazorVue manifest was not found: '{options.CurrentManifestPath}'.");
+            Console.Error.WriteLine(FormatManifestLoadFailure("Current", currentLoad));
             return 7;
         }
 
+        var previous = previousLoad.Manifest!;
+        var current = currentLoad.Manifest!;
         var diff = RazorVueManifestDiffer.Diff(previous, current);
         var writer = new RazorVueUpdatePlanWriter();
         writer.Write(options.OutputPath, previous, current, diff);
@@ -259,4 +261,18 @@ static WriteResult CombineWriteResults(WriteResult left, WriteResult right)
         left.Written + right.Written,
         left.Skipped + right.Skipped,
         left.Deleted + right.Deleted);
+}
+
+static string FormatManifestLoadFailure(string label, Jazor.RazorVue.Emit.RazorVueManifestLoadResult loadResult)
+{
+    return loadResult.Status switch
+    {
+        Jazor.RazorVue.Emit.RazorVueManifestLoadStatus.FileNotFound
+            => $"{label} Jazor manifest was not found: '{loadResult.ManifestPath}'.",
+        Jazor.RazorVue.Emit.RazorVueManifestLoadStatus.NoComponentEntries
+            => $"{label} Jazor manifest did not contain any RazorVue component entries: '{loadResult.ManifestPath}'.",
+        Jazor.RazorVue.Emit.RazorVueManifestLoadStatus.Invalid
+            => $"{label} Jazor manifest could not be read: '{loadResult.ManifestPath}'. {loadResult.Error}",
+        _ => $"{label} Jazor manifest could not be loaded: '{loadResult.ManifestPath}'."
+    };
 }

@@ -185,7 +185,27 @@ public sealed class RazorVueSfcBridgeCompilerTests
 
         Assert.IsFalse(result.IsSuccess);
         Assert.AreEqual(7, result.ExitCode);
-        StringAssert.Contains(result.Error, "RazorVue manifest was not found");
+        StringAssert.Contains(result.Error, "Jazor manifest was not found");
+    }
+
+    [TestMethod]
+    public async Task CompileAsync_ManifestWithoutSfcComponents_FailsWithActionableError()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteNonComponentManifest();
+        var compiler = new RazorVueSfcBridgeCompiler();
+
+        var result = await compiler.CompileAsync(new RazorVueSfcBridgeOptions(
+            workspace.HostJazorRoot,
+            workspace.BrowserOutputRoot,
+            workspace.ManifestPath,
+            RazorVueSfcBridgeMode.Browser,
+            Production: true,
+            Clean: true));
+
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(7, result.ExitCode);
+        StringAssert.Contains(result.Error, "did not contain any RazorVue SFC component entries");
     }
 
     [TestMethod]
@@ -271,6 +291,31 @@ public sealed class RazorVueSfcBridgeCompilerTests
                     }
                 }).ToArray()
             };
+            WriteText(ManifestPath, JsonSerializer.Serialize(manifest));
+        }
+
+        public void WriteNonComponentManifest()
+        {
+            var manifest = new
+            {
+                rootAssemblyPath = Path.Combine(RootPath, "Demo.Components.dll"),
+                generatedAtUtc = DateTime.UtcNow,
+                modules = new[]
+                {
+                    new
+                    {
+                        assemblyName = "Demo.Components",
+                        typeName = "Demo.Components.AppModule",
+                        id = "Demo.Components.AppModule",
+                        relativePath = "host/app.mjs",
+                        hash = "content-hash",
+                        sourceMapPath = "host/app.mjs.map",
+                        kind = "mjs",
+                        component = (object?)null
+                    }
+                }
+            };
+
             WriteText(ManifestPath, JsonSerializer.Serialize(manifest));
         }
 

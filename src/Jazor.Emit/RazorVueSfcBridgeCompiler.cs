@@ -25,7 +25,24 @@ internal sealed class RazorVueSfcBridgeCompiler
             return RazorVueSfcBridgeResult.Fail(6, $"RazorVue host output root was not found: '{options.HostJazorRoot}'.");
 
         if (!File.Exists(manifestPath))
-            return RazorVueSfcBridgeResult.Fail(7, $"RazorVue manifest was not found: '{manifestPath}'.");
+            return RazorVueSfcBridgeResult.Fail(7, $"Jazor manifest was not found: '{manifestPath}'.");
+
+        var manifestLoad = Jazor.RazorVue.Emit.RazorVueManifestSerializer.Load(
+            manifestPath,
+            componentModel: ManifestComponentModel.Sfc);
+        if (manifestLoad.Status == Jazor.RazorVue.Emit.RazorVueManifestLoadStatus.NoComponentEntries)
+        {
+            return RazorVueSfcBridgeResult.Fail(
+                7,
+                $"Jazor manifest '{manifestPath}' did not contain any RazorVue SFC component entries.");
+        }
+
+        if (manifestLoad.Status == Jazor.RazorVue.Emit.RazorVueManifestLoadStatus.Invalid)
+        {
+            return RazorVueSfcBridgeResult.Fail(
+                7,
+                $"Jazor manifest could not be read: '{manifestPath}'. {manifestLoad.Error}");
+        }
 
         var bridgeScriptPath = ResolveBridgeScriptPath();
         if (!File.Exists(bridgeScriptPath))

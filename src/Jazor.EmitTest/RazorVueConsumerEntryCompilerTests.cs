@@ -108,8 +108,24 @@ public sealed class RazorVueConsumerEntryCompilerTests
 
         Assert.IsFalse(result.IsSuccess);
         Assert.AreEqual(13, result.ExitCode);
-        StringAssert.Contains(result.Error, "matched multiple RazorVue components");
+        StringAssert.Contains(result.Error, "matched multiple RazorVue component entries in the Jazor manifest");
         StringAssert.Contains(result.Error, "Use 'id:', 'name:', or 'path:'");
+        Assert.IsFalse(File.Exists(workspace.ClientEntryPath));
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenManifestContainsNoRazorVueComponents_FailsWithActionableError()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WritePlainManifest();
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("CatalogPage", "id:Demo.Pages.CatalogPage")));
+
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(11, result.ExitCode);
+        StringAssert.Contains(result.Error, "did not contain any RazorVue component entries");
         Assert.IsFalse(File.Exists(workspace.ClientEntryPath));
     }
 
@@ -461,6 +477,25 @@ public sealed class RazorVueConsumerEntryCompilerTests
                 RootAssemblyPath: Path.Combine(RootPath, "Demo.dll"),
                 GeneratedAtUtc: DateTime.UtcNow,
                 Modules: modules.Select(ToManifestModuleEntry).ToList())
+                .Save(ManifestPath);
+
+        public void WritePlainManifest()
+            => new ManifestModel(
+                RootAssemblyPath: Path.Combine(RootPath, "Demo.dll"),
+                GeneratedAtUtc: DateTime.UtcNow,
+                Modules:
+                [
+                    new ManifestModuleEntry(
+                        "Demo",
+                        "Demo.AppModule",
+                        "Demo.AppModule",
+                        "host/app.mjs",
+                        "content-hash",
+                        "host/app.mjs.map",
+                        MapHash: null,
+                        Kind: ManifestModuleKind.Mjs,
+                        Component: null)
+                ])
                 .Save(ManifestPath);
 
         public void WriteVue(string relativePath, string content)

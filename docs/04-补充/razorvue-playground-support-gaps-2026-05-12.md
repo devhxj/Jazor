@@ -359,6 +359,7 @@ jazor-manifest-razorvue.json
 - 已完成（2026-05-13 本轮）：`razorvue-consumer-entry` 在 mixed H/SFC 场景下按 `component.model` 分流，H 组件直接 default import host `.mjs`，SFC 组件才进入 bridge。
 - 已完成（2026-05-13 本轮）：`razorvue-consumer-entry` 只把“被选择的 SFC 组件集合”传给 `razorvue-sfc-bridge`，不再因为 manifest 中未选中的坏 SFC 而整体失败。
 - 已完成（2026-05-13 本轮）：`razorvue-sfc-bridge` 支持显式 entry module path 过滤，并保留相对 `.vue` 依赖闭包编译，保证选中的 SFC 组件间引用仍能稳定工作。
+- 已完成（2026-05-14 本轮）：统一 manifest 的 RazorVue component projection 诊断已细分为“manifest 不存在”“manifest 存在但没有 RazorVue component entries”“selector 无匹配”“selector 匹配多个组件”；`razorvue-diff` 的缺失原因也改为统一 Jazor manifest projection 语义，避免继续泄漏废弃的第二 manifest 公共契约。
 
 ### ASP.NET Core 宿主工作项
 
@@ -373,6 +374,8 @@ jazor-manifest-razorvue.json
 - `UseJazorSpaFallback("/index.html")` 这类静态页面回退应作为官方宿主 API 提供：标准 SPA 宿主可以直接复用 `wwwroot/index.html`，而不必总是手写 `HttpContext -> WriteHtmlAsync` 委托。
 - 已完成（2026-05-13 本轮）：`JazorDevelopmentAssetOptions` / `JazorWebAssetOptions` 默认探测仅保留 `jazor-manifest.json`，`Playground` smoke 不再显式依赖旧 manifest 文件名是否 404。
 - 已完成（2026-05-13 本轮）：Wiki 的 `/vendor/*` 长缓存策略已从项目私有 `OnPrepareResponse` delegate 收敛为 `UseJazorHost(...).WebAssets.ImmutableCachePathPrefixes` 声明式 option；标准宿主不再手写基础静态资源 header 逻辑。
+- 已完成（2026-05-14 本轮）：`Playground` 与 `samples/RazorVue.TodoList/Todo.Host` 均已收敛到 `UseJazorHost()` + `UseJazorSpaFallback("/index.html")` 默认宿主契约；`JazorAspNetCoreHostingTests` 新增默认单宿主组合回归，防止样例重新退回私有 `SendFileAsync` fallback。
+- 已完成（2026-05-14 本轮）：开发期输出探针的公共宿主 API 已收敛为 `DevelopmentOutputProbeRelativePath` / `DevelopmentOutputProbeRelativePaths`，默认即为统一 `jazor-manifest.json`；旧 `EntryModuleRelativePath` 仅保留兼容别名，不再作为推荐语义。
 
 ### Playground / Wiki 一致性工作项
 
