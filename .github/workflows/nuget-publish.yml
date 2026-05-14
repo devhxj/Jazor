@@ -45,6 +45,12 @@ jobs:
           dotnet run --file ./scripts/csharp/publish-nuget.cs -- `
             --configuration Release `
             --output-directory 'artifacts/packages' `
+            --package jazor `
+            --package pinia `
+            --package pinia-testing `
+            --package vueroute `
+            --package vuetify `
+            --package tdesign `
             --skip-push
 
       - name: Discover package version
@@ -90,22 +96,31 @@ jobs:
         if: ${{ (github.event_name != 'workflow_dispatch' || github.event.inputs.dry_run != 'true') && env.NUGET_API_KEY != '' }}
         shell: pwsh
         run: |
-          $pkg = Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg' | Select-Object -First 1
-          dotnet nuget push $pkg.FullName --api-key '${{ secrets.NUGET_API_KEY }}' --source 'https://api.nuget.org/v3/index.json' --skip-duplicate
+          $packages = Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg' | Sort-Object Name
+          if (-not $packages) { throw 'No packages found in artifacts/packages.' }
+          foreach ($pkg in $packages) {
+            dotnet nuget push $pkg.FullName --api-key '${{ secrets.NUGET_API_KEY }}' --source 'https://api.nuget.org/v3/index.json' --skip-duplicate
+          }
 
       - name: Push package with trusted publishing
         if: ${{ (github.event_name != 'workflow_dispatch' || github.event.inputs.dry_run != 'true') && env.NUGET_API_KEY == '' && env.NUGET_USER != '' }}
         shell: pwsh
         run: |
-          $pkg = Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg' | Select-Object -First 1
-          dotnet nuget push $pkg.FullName --api-key '${{ steps.nuget_login.outputs.NUGET_API_KEY }}' --source 'https://api.nuget.org/v3/index.json' --skip-duplicate
+          $packages = Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg' | Sort-Object Name
+          if (-not $packages) { throw 'No packages found in artifacts/packages.' }
+          foreach ($pkg in $packages) {
+            dotnet nuget push $pkg.FullName --api-key '${{ steps.nuget_login.outputs.NUGET_API_KEY }}' --source 'https://api.nuget.org/v3/index.json' --skip-duplicate
+          }
 
       - name: Push to GitHub Packages
         if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.dry_run != 'true' }}
         shell: pwsh
         run: |
-          $pkg = Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg' | Select-Object -First 1
-          dotnet nuget push $pkg.FullName --api-key '${{ secrets.GITHUB_TOKEN }}' --source 'https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json' --skip-duplicate
+          $packages = Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg' | Sort-Object Name
+          if (-not $packages) { throw 'No packages found in artifacts/packages.' }
+          foreach ($pkg in $packages) {
+            dotnet nuget push $pkg.FullName --api-key '${{ secrets.GITHUB_TOKEN }}' --source 'https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json' --skip-duplicate
+          }
 
       - name: Generate release notes
         if: startsWith(github.ref, 'refs/tags/')

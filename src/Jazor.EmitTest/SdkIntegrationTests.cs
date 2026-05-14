@@ -145,6 +145,23 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    public async Task CreateLocalPackage_IncludesTDesignAuthoringPackage()
+    {
+        var package = await LocalPackage.Value;
+
+        using var archive = ZipFile.OpenRead(package.TDesignPackagePath);
+        var entryNames = archive.Entries
+            .Select(static entry => entry.FullName.Replace('\\', '/'))
+            .ToArray();
+        var nuspec = ReadPackageEntryText(package.TDesignPackagePath, "ECMAScript.TDesign.nuspec");
+
+        CollectionAssert.Contains(entryNames, "lib/net11.0/ECMAScript.TDesign.dll");
+        CollectionAssert.Contains(entryNames, "ECMAScript.TDesign.nuspec");
+        StringAssert.Contains(nuspec, "<dependency id=\"Jazor\"");
+        StringAssert.Contains(nuspec, "<frameworkReference name=\"Microsoft.AspNetCore.App\" />");
+    }
+
+    [TestMethod]
     public async Task Build_LocalJazorPackage_MultiProjectSample_EmitsModulesAndBundle()
     {
         var package = await LocalPackage.Value;
@@ -1163,10 +1180,10 @@ public sealed class SdkIntegrationTests
         var razorVueManifest = LoadRazorVueManifestProjection(manifestPath);
         CollectionAssert.AreEqual(
             new[] { "vuetify/styles" },
-            razorVueManifest.Styles.ToArray());
+            RequireManifestStringList(razorVueManifest.Styles, nameof(RazorVueManifestModel.Styles), manifestPath).ToArray());
         CollectionAssert.AreEqual(
             new[] { "vuetify" },
-            razorVueManifest.PluginRequirements.ToArray());
+            RequireManifestStringList(razorVueManifest.PluginRequirements, nameof(RazorVueManifestModel.PluginRequirements), manifestPath).ToArray());
         var sourceManifestModule = razorVueManifest.Modules[0];
         Assert.AreEqual(
             "components/profile-form.mjs",
@@ -1435,10 +1452,10 @@ public sealed class SdkIntegrationTests
         var manifest = LoadRazorVueManifestProjection(manifestPath);
         CollectionAssert.AreEqual(
             new[] { "demo/button.css" },
-            manifest.Styles.ToArray());
+            RequireManifestStringList(manifest.Styles, nameof(RazorVueManifestModel.Styles), manifestPath).ToArray());
         CollectionAssert.AreEqual(
             new[] { "demo-host" },
-            manifest.PluginRequirements.ToArray());
+            RequireManifestStringList(manifest.PluginRequirements, nameof(RazorVueManifestModel.PluginRequirements), manifestPath).ToArray());
         Assert.AreEqual("CounterCard", manifest.Modules[0].ComponentName);
     }
 
@@ -1531,10 +1548,10 @@ public sealed class SdkIntegrationTests
         var manifest = LoadRazorVueManifestProjection(manifestPath);
         CollectionAssert.AreEqual(
             new[] { "demo/button.css" },
-            manifest.Styles.ToArray());
+            RequireManifestStringList(manifest.Styles, nameof(RazorVueManifestModel.Styles), manifestPath).ToArray());
         CollectionAssert.AreEqual(
             new[] { "demo-host" },
-            manifest.PluginRequirements.ToArray());
+            RequireManifestStringList(manifest.PluginRequirements, nameof(RazorVueManifestModel.PluginRequirements), manifestPath).ToArray());
         var expectedHmrBoundary = (int)manifest.Modules[0].HmrBoundaryKind;
         var expectedRequiresHydration = manifest.Modules[0].RequiresHydration;
         var expectedSupportsSsr = manifest.Modules[0].SupportsSsr;
@@ -1710,10 +1727,10 @@ public sealed class SdkIntegrationTests
         var manifest = LoadRazorVueManifestProjection(manifestPath);
         CollectionAssert.AreEqual(
             new[] { "vuetify/styles" },
-            manifest.Styles.ToArray());
+            RequireManifestStringList(manifest.Styles, nameof(RazorVueManifestModel.Styles), manifestPath).ToArray());
         CollectionAssert.AreEqual(
             new[] { "vuetify" },
-            manifest.PluginRequirements.ToArray());
+            RequireManifestStringList(manifest.PluginRequirements, nameof(RazorVueManifestModel.PluginRequirements), manifestPath).ToArray());
         var expectedPackagedHmrBoundary = (int)manifest.Modules[0].HmrBoundaryKind;
         var expectedPackagedRequiresHydration = manifest.Modules[0].RequiresHydration;
         var expectedPackagedSupportsSsr = manifest.Modules[0].SupportsSsr;
@@ -1815,10 +1832,10 @@ public sealed class SdkIntegrationTests
         var razorVueManifest = LoadRazorVueManifestProjection(manifestPath);
         CollectionAssert.AreEqual(
             new[] { "vuetify/styles" },
-            razorVueManifest.Styles.ToArray());
+            RequireManifestStringList(razorVueManifest.Styles, nameof(RazorVueManifestModel.Styles), manifestPath).ToArray());
         CollectionAssert.AreEqual(
             new[] { "vuetify" },
-            razorVueManifest.PluginRequirements.ToArray());
+            RequireManifestStringList(razorVueManifest.PluginRequirements, nameof(RazorVueManifestModel.PluginRequirements), manifestPath).ToArray());
 
         var module = razorVueManifest.Modules[0];
         Assert.AreEqual("ExternalRazorVueSfcConsumer.ExternalDashboard", module.ComponentId);
@@ -1979,10 +1996,10 @@ public sealed class SdkIntegrationTests
         var razorVueManifest = LoadRazorVueManifestProjection(manifestPath);
         CollectionAssert.AreEqual(
             new[] { "vuetify/styles" },
-            razorVueManifest.Styles.ToArray());
+            RequireManifestStringList(razorVueManifest.Styles, nameof(RazorVueManifestModel.Styles), manifestPath).ToArray());
         CollectionAssert.AreEqual(
             new[] { "vuetify" },
-            razorVueManifest.PluginRequirements.ToArray());
+            RequireManifestStringList(razorVueManifest.PluginRequirements, nameof(RazorVueManifestModel.PluginRequirements), manifestPath).ToArray());
 
         var denoEnvironment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -2261,6 +2278,7 @@ public sealed class SdkIntegrationTests
             GetPackagePath(packageOutputDirectory, "ECMAScript.VueRoute", packageVersion),
             GetPackagePath(packageOutputDirectory, "ECMAScript.Pinia", packageVersion),
             GetPackagePath(packageOutputDirectory, "ECMAScript.Pinia.Testing", packageVersion),
+            GetPackagePath(packageOutputDirectory, "ECMAScript.TDesign", packageVersion),
             GetBundledDenoPath(emitPublishDirectory));
     }
 
@@ -3802,6 +3820,13 @@ public sealed class SdkIntegrationTests
             .OfType<string>()
             .ToArray();
 
+    private static IReadOnlyList<string> RequireManifestStringList(
+        List<string>? values,
+        string propertyName,
+        string manifestPath)
+        => values ?? throw new InvalidOperationException(
+            $"Manifest property '{propertyName}' must be materialized for '{manifestPath}'.");
+
     private static RazorVueManifestModel LoadRazorVueManifestProjection(string manifestPath)
     {
         var manifest = ManifestModel.TryLoad(manifestPath)
@@ -3842,6 +3867,7 @@ public sealed class SdkIntegrationTests
         string VueRoutePackagePath,
         string PiniaPackagePath,
         string PiniaTestingPackagePath,
+        string TDesignPackagePath,
         string DenoExePath);
 
     private sealed class TestWorkspace : IDisposable

@@ -116,6 +116,12 @@ jobs:
             --configuration Release `
             --output-directory artifacts/packages `
             --skip-push `
+            --package jazor `
+            --package pinia `
+            --package pinia-testing `
+            --package vueroute `
+            --package vuetify `
+            --package tdesign `
             --base-output-path 'artifacts/out/pinia-pack/' `
             --base-intermediate-output-path 'artifacts/obj/pinia-pack/'
 
@@ -127,6 +133,12 @@ jobs:
             --output-directory artifacts/packages-nobuild `
             --skip-push `
             --no-build `
+            --package jazor `
+            --package pinia `
+            --package pinia-testing `
+            --package vueroute `
+            --package vuetify `
+            --package tdesign `
             --base-output-path 'artifacts/out/pinia-pack/' `
             --base-intermediate-output-path 'artifacts/obj/pinia-pack/'
 

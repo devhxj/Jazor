@@ -87,6 +87,15 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 
 		StringAssert.Contains(source, "AssertNoBuildPackInputsExist");
 		StringAssert.Contains(source, "GetNoBuildPackInputRoots");
+		StringAssert.Contains(source, "PackageCatalog.ResolveSelectedPackages");
+		StringAssert.Contains(source, "Default package set: Jazor, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.Vuetify, ECMAScript.TDesign");
+		StringAssert.Contains(source, "Selected packages: ");
+		StringAssert.Contains(source, "case \"--package\"");
+		StringAssert.Contains(source, "PackageAliases");
+		StringAssert.Contains(source, "[\"tdesign\"] = \"ECMAScript.TDesign\"");
+		StringAssert.Contains(source, "RequiresJazorEmitPublishOutput: true");
+		StringAssert.Contains(source, "DisableJazorPreparePackageArtifactsOnNoBuild: true");
+		StringAssert.Contains(source, "DisableJazorPreparePackageArtifactsOnNoBuild: false");
 		StringAssert.Contains(source, "Run publish-nuget.cs once without --no-build to prepare the full package artifacts.");
 		StringAssert.Contains(source, "if (options.NoBuild)");
 		StringAssert.Contains(source, "packArguments.Add(\"--no-build\")");
@@ -149,6 +158,12 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "--output-directory artifacts/packages `");
 		StringAssert.Contains(source, "--output-directory artifacts/packages-nobuild `");
 		StringAssert.Contains(source, "--no-build `");
+		StringAssert.Contains(source, "--package jazor `");
+		StringAssert.Contains(source, "--package pinia `");
+		StringAssert.Contains(source, "--package pinia-testing `");
+		StringAssert.Contains(source, "--package vueroute `");
+		StringAssert.Contains(source, "--package vuetify `");
+		StringAssert.Contains(source, "--package tdesign `");
 		StringAssert.Contains(source, "--base-output-path 'artifacts/out/pinia/'");
 		StringAssert.Contains(source, "--base-intermediate-output-path 'artifacts/obj/pinia/'");
 		StringAssert.Contains(source, "--base-output-path 'artifacts/out/pinia-testing/'");
@@ -169,6 +184,14 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "verify-pinia:");
 		StringAssert.Contains(source, "uses: ./.github/workflows/pinia-verify.yml");
 		StringAssert.Contains(source, "needs: verify-pinia");
+		StringAssert.Contains(source, "--package jazor `");
+		StringAssert.Contains(source, "--package pinia `");
+		StringAssert.Contains(source, "--package pinia-testing `");
+		StringAssert.Contains(source, "--package vueroute `");
+		StringAssert.Contains(source, "--package vuetify `");
+		StringAssert.Contains(source, "--package tdesign `");
+		StringAssert.Contains(source, "Get-ChildItem 'artifacts/packages/Jazor.*.nupkg'");
+		StringAssert.Contains(source, "Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg'");
 	}
 
 	[TestMethod]
