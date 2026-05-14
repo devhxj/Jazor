@@ -311,26 +311,41 @@ internal sealed partial class RazorVueExpressionEmitter
                 }
 
                 var slotName = slot.SlotName;
-                var slotExpression = EmitScopedExpression(attribute.Value!, allowedLocalSymbols, allowedParameterSymbols);
-                if (!slotDescriptor.Parameters.IsDefaultOrEmpty &&
-                    !IsCallableSlotValue(attribute.Value!))
+                if (TryGetCurrentComponentSlotDescriptor(attribute.Value!, out var currentSlot))
                 {
-                    throw CreateAuthoringIssue(
-                        RazorVueIssueCode.SlotContextMisuse,
-                        $"Child content parameter '{attribute.Name}' on component '{GetComponentDisplayName(component)}' expects a callable template that accepts '{DescribeSlotContext(slotDescriptor)}'.",
-                        attribute);
-                }
-
-                if (slotDescriptor.Parameters.IsDefaultOrEmpty || !IsCallableSlotExpression(attribute.Value!))
-                {
-                    slotEntries.Add(FormatObjectPropertyKey(slotName) + ": () => " + slotExpression);
+                    if (slotDescriptor.Parameters.IsDefaultOrEmpty)
+                    {
+                        slotEntries.Add(FormatObjectPropertyKey(slotName) + ": () => " + EmitCurrentComponentSlotInvocation(currentSlot));
+                    }
+                    else
+                    {
+                        var slotParameterName = slotDescriptor.Parameters[0].Name;
+                        slotEntries.Add(FormatObjectPropertyKey(slotName) + ": (" + slotParameterName + ") => " + EmitCurrentComponentSlotInvocation(currentSlot, slotParameterName));
+                    }
                 }
                 else
                 {
-                    // Preserve the declared slot context name so generated authoring
-                    // code matches the library contract instead of hard-coding "context".
-                    var slotParameterName = slotDescriptor.Parameters[0].Name;
-                    slotEntries.Add(FormatObjectPropertyKey(slotName) + ": (" + slotParameterName + ") => " + slotExpression + "(" + slotParameterName + ")");
+                    var slotExpression = EmitScopedExpression(attribute.Value!, allowedLocalSymbols, allowedParameterSymbols);
+                    if (!slotDescriptor.Parameters.IsDefaultOrEmpty &&
+                        !IsCallableSlotValue(attribute.Value!))
+                    {
+                        throw CreateAuthoringIssue(
+                            RazorVueIssueCode.SlotContextMisuse,
+                            $"Child content parameter '{attribute.Name}' on component '{GetComponentDisplayName(component)}' expects a callable template that accepts '{DescribeSlotContext(slotDescriptor)}'.",
+                            attribute);
+                    }
+
+                    if (slotDescriptor.Parameters.IsDefaultOrEmpty || !IsCallableSlotExpression(attribute.Value!))
+                    {
+                        slotEntries.Add(FormatObjectPropertyKey(slotName) + ": () => " + slotExpression);
+                    }
+                    else
+                    {
+                        // Preserve the declared slot context name so generated authoring
+                        // code matches the library contract instead of hard-coding "context".
+                        var slotParameterName = slotDescriptor.Parameters[0].Name;
+                        slotEntries.Add(FormatObjectPropertyKey(slotName) + ": (" + slotParameterName + ") => " + slotExpression + "(" + slotParameterName + ")");
+                    }
                 }
 
                 continue;
@@ -687,6 +702,19 @@ internal sealed partial class RazorVueExpressionEmitter
 
     private static string FormatObjectPropertyKey(string name)
         => IsSimpleJavaScriptIdentifier(name) ? name : ToJavaScriptString(name);
+
+    private static string EmitCurrentComponentSlotInvocation(VueSlotDescriptor slotDescriptor, string? argumentExpression = null)
+    {
+        var slotAccess = GetSlotAccessExpression(slotDescriptor.Name);
+        return string.IsNullOrEmpty(argumentExpression)
+            ? slotAccess + " ? " + slotAccess + "() : null"
+            : slotAccess + " ? " + slotAccess + "(" + argumentExpression + ") : null";
+    }
+
+    private static string GetSlotAccessExpression(string slotName)
+        => IsSimpleJavaScriptIdentifier(slotName)
+            ? "slots." + slotName
+            : "slots[" + ToJavaScriptString(slotName) + "]";
 
     private static bool IsSimpleJavaScriptIdentifier(string value)
     {

@@ -818,6 +818,257 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersTDesignPackageButtonToNamedImport()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.TDesign;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using static ECMAScript.Vue3;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/toolbar-card")]
+                public class ToolbarCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<TButton>(0);
+                        builder.AddAttribute(1, nameof(TButton.Text), "保存");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ToolbarCard");
+
+        CollectionAssert.Contains(artifact.Imports.ToArray(), "tdesign-vue-next");
+        CollectionAssert.Contains(artifact.Styles.ToArray(), "tdesign-vue-next/es/style/index.css");
+        CollectionAssert.AreEqual(new[] { "tdesign" }, artifact.PluginRequirements.ToArray());
+        StringAssert.Contains(artifact.ModuleCode, "import { Button as TButtonComponent } from \"tdesign-vue-next\";");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(TButtonComponent, { \"content\": \"保存\" });");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_AggregatesTDesignLibraryImportsFromSameSpecifier()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.TDesign;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using static ECMAScript.Vue3;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/toolbar-card")]
+                public class ToolbarCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.OpenComponent<TButton>(1);
+                        builder.CloseComponent();
+                        builder.OpenComponent<TCard>(2);
+                        builder.CloseComponent();
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ToolbarCard");
+
+        CollectionAssert.AreEquivalent(new[] { "vue", "tdesign-vue-next" }, artifact.Imports.ToArray());
+        CollectionAssert.AreEqual(new[] { "tdesign-vue-next/es/style/index.css" }, artifact.Styles.ToArray());
+        CollectionAssert.AreEqual(new[] { "tdesign" }, artifact.PluginRequirements.ToArray());
+        StringAssert.Contains(artifact.ModuleCode, "import { Button as TButtonComponent, Card as TCardComponent } from \"tdesign-vue-next\";");
+        Assert.AreEqual(1, artifact.ModuleCode.Split("from \"tdesign-vue-next\";", StringSplitOptions.None).Length - 1, artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersTDesignPackageEventAndSlots()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.TDesign;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/nav-card")]
+                public class NavCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public EventCallback<TDesignMenuItemClickContext> OnMenuClick { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? CardHeader { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.OpenComponent<TMenuItem>(1);
+                        builder.AddAttribute(2, nameof(TMenuItem.Text), "概览");
+                        builder.AddAttribute(3, nameof(TMenuItem.OnClick), OnMenuClick);
+                        builder.CloseComponent();
+                        builder.OpenComponent<TCard>(4);
+                        builder.AddAttribute(5, nameof(TCard.Header), CardHeader);
+                        builder.AddAttribute(6, nameof(TCard.Title), "控制台");
+                        builder.CloseComponent();
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "import { Card as TCardComponent, MenuItem as TMenuItemComponent } from \"tdesign-vue-next\";");
+        StringAssert.Contains(artifact.ModuleCode, "\"content\": \"概览\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"onClick\": (__value) => emit(\"menuClick\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"title\": \"控制台\"");
+        StringAssert.Contains(artifact.ModuleCode, "header: () => slots.cardHeader ? slots.cardHeader() : null");
+        CollectionAssert.AreEqual(new[] { "tdesign-vue-next/es/style/index.css" }, artifact.Styles.ToArray());
+        CollectionAssert.AreEqual(new[] { "tdesign" }, artifact.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersTDesignSecondBatchComponents_WithStableImportsBindingsAndSlots()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.TDesign;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/admin-shell")]
+                public class AdminShell : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public TDesignTabValue ActiveTab { get; set; }
+
+                    [Parameter]
+                    public EventCallback<TDesignTabValue> ActiveTabChanged { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? Actions { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+
+                        builder.OpenComponent<TBreadcrumb>(1);
+                        builder.OpenComponent<TBreadcrumbItem>(2);
+                        builder.AddAttribute(3, nameof(TBreadcrumbItem.Text), "首页");
+                        builder.CloseComponent();
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<TLink>(4);
+                        builder.AddAttribute(5, nameof(TLink.Text), "帮助中心");
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<TTabs>(6);
+                        builder.AddAttribute(7, nameof(TTabs.Value), ActiveTab);
+                        builder.AddAttribute(8, nameof(TTabs.ValueChanged), ActiveTabChanged);
+                        builder.AddAttribute(9, nameof(TTabs.Action), Actions);
+                        builder.OpenComponent<TTabPanel>(10);
+                        builder.AddAttribute(11, nameof(TTabPanel.LabelText), "概览");
+                        builder.AddAttribute(12, nameof(TTabPanel.Value), "overview");
+                        builder.CloseComponent();
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<TAvatarGroup>(13);
+                        builder.OpenComponent<TAvatar>(14);
+                        builder.AddAttribute(15, nameof(TAvatar.Text), "管");
+                        builder.CloseComponent();
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<TBadge>(16);
+                        builder.AddAttribute(17, nameof(TBadge.CountValue), 12);
+                        builder.AddAttribute(18, nameof(TBadge.Text), "消息");
+                        builder.CloseComponent();
+
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        CollectionAssert.AreEquivalent(new[] { "vue", "tdesign-vue-next" }, artifact.Imports.ToArray());
+        CollectionAssert.AreEqual(new[] { "tdesign-vue-next/es/style/index.css" }, artifact.Styles.ToArray());
+        CollectionAssert.AreEqual(new[] { "tdesign" }, artifact.PluginRequirements.ToArray());
+        StringAssert.Contains(
+            artifact.ModuleCode,
+            "import { Avatar as TAvatarComponent, AvatarGroup as TAvatarGroupComponent, Badge as TBadgeComponent, Breadcrumb as TBreadcrumbComponent, BreadcrumbItem as TBreadcrumbItemComponent, Link as TLinkComponent, TabPanel as TTabPanelComponent, Tabs as TTabsComponent } from \"tdesign-vue-next\";");
+        StringAssert.Contains(artifact.ModuleCode, "\"content\": \"首页\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"content\": \"帮助中心\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"content\": 12");
+        StringAssert.Contains(artifact.ModuleCode, "\"value\": props.activeTab");
+        StringAssert.Contains(artifact.ModuleCode, "\"onChange\": (__value) => emit(\"activeTabChanged\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "action: () => slots.actions ? slots.actions() : null");
+        StringAssert.Contains(artifact.ModuleCode, "\"label\": \"概览\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"value\": \"overview\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"content\": \"管\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"content\": \"消息\"");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersCustomLibraryComponent_WithStylesAndPluginRequirements()
     {
         var context = CreateContext(
@@ -1228,7 +1479,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"tag\": \"button\"");
         StringAssert.Contains(artifact.ModuleCode, "\"value\": \"support\"");
         StringAssert.Contains(artifact.ModuleCode, "\"ripple\": false");
-        StringAssert.Contains(artifact.ModuleCode, "default: () => props.fabContent");
+        StringAssert.Contains(artifact.ModuleCode, "default: () => slots.fabContent ? slots.fabContent() : null");
         StringAssert.Contains(artifact.ModuleCode, "[\"class\", \"support-fab\"]");
         StringAssert.Contains(artifact.ModuleCode, "[\"aria-label\", \"Open support panel\"]");
         StringAssert.Contains(artifact.ModuleCode, "[\"data-testid\", \"support-fab\"]");
@@ -1369,13 +1620,13 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"reset\": \"VBtn\"");
         StringAssert.Contains(artifact.ModuleCode, "\"root\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"scoped\": true");
-        StringAssert.Contains(artifact.ModuleCode, "default: () => props.defaultsContent");
+        StringAssert.Contains(artifact.ModuleCode, "default: () => slots.defaultsContent ? slots.defaultsContent() : null");
         StringAssert.Contains(artifact.ModuleCode, "[\"data-defaults-scope\", \"feed\"]");
         StringAssert.Contains(artifact.ModuleCode, "\"itemHeight\": 72");
         StringAssert.Contains(artifact.ModuleCode, "\"itemKey\": \"id\"");
         StringAssert.Contains(artifact.ModuleCode, "\"items\": [\"alpha\", \"beta\", 3]");
         StringAssert.Contains(artifact.ModuleCode, "\"renderless\": true");
-        StringAssert.Contains(artifact.ModuleCode, "default: (context) => props.virtualItem(context)");
+        StringAssert.Contains(artifact.ModuleCode, "default: (context) => slots.virtualItem ? slots.virtualItem(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "[\"class\", \"feed-virtual-scroll\"]");
         StringAssert.Contains(artifact.ModuleCode, "\"tag\": \"section\"");
         StringAssert.Contains(artifact.ModuleCode, "\"height\": 480");
@@ -1388,10 +1639,10 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"loadMoreText\": \"Load more records\"");
         StringAssert.Contains(artifact.ModuleCode, "\"emptyText\": \"No more records\"");
         StringAssert.Contains(artifact.ModuleCode, "\"onLoad\": (__value) => emit(\"loadMore\", __value)");
-        StringAssert.Contains(artifact.ModuleCode, "loading: (context) => props.loadingContent(context)");
-        StringAssert.Contains(artifact.ModuleCode, "error: (context) => props.errorContent(context)");
-        StringAssert.Contains(artifact.ModuleCode, "empty: (context) => props.emptyContent(context)");
-        StringAssert.Contains(artifact.ModuleCode, "\"load-more\": (context) => props.loadMoreContent(context)");
+        StringAssert.Contains(artifact.ModuleCode, "loading: (context) => slots.loadingContent ? slots.loadingContent(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "error: (context) => slots.errorContent ? slots.errorContent(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "empty: (context) => slots.emptyContent ? slots.emptyContent(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "\"load-more\": (context) => slots.loadMoreContent ? slots.loadMoreContent(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "[\"class\", \"feed-infinite-scroll\"]");
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
@@ -1625,7 +1876,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"type\": \"submit\"");
         StringAssert.Contains(artifact.ModuleCode, "\"value\": \"save\"");
         StringAssert.Contains(artifact.ModuleCode, "\"ripple\": false");
-        StringAssert.Contains(artifact.ModuleCode, "loader: () => props.buttonLoader");
+        StringAssert.Contains(artifact.ModuleCode, "loader: () => slots.buttonLoader ? slots.buttonLoader() : null");
         StringAssert.Contains(artifact.ModuleCode, "\"placeholder\": \"name@example.com\"");
         StringAssert.Contains(artifact.ModuleCode, "\"hint\": \"Work email\"");
         StringAssert.Contains(artifact.ModuleCode, "\"persistentHint\": true");
@@ -1666,10 +1917,10 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"flat\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"trueIcon\": \"$on\"");
         StringAssert.Contains(artifact.ModuleCode, "\"falseIcon\": \"$off\"");
-        StringAssert.Contains(artifact.ModuleCode, "\"append-inner\": (context) => props.fieldAppendInner(context)");
-        StringAssert.Contains(artifact.ModuleCode, "details: (context) => props.fieldDetails(context)");
-        StringAssert.Contains(artifact.ModuleCode, "label: (context) => props.selectionLabel(context)");
-        StringAssert.Contains(artifact.ModuleCode, "thumb: (context) => props.switchThumb(context)");
+        StringAssert.Contains(artifact.ModuleCode, "\"append-inner\": (context) => slots.fieldAppendInner ? slots.fieldAppendInner(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "details: (context) => slots.fieldDetails ? slots.fieldDetails(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "label: (context) => slots.selectionLabel ? slots.selectionLabel(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "thumb: (context) => slots.switchThumb ? slots.switchThumb(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:modelValue\", __value)");
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
@@ -2059,11 +2310,11 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "emit(\"update:searchText\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "emit(\"update:preference\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "emit(\"update:dialogOpen\", __value)");
-        StringAssert.Contains(artifact.ModuleCode, "item: (context) => props.selectItem(context)");
-        StringAssert.Contains(artifact.ModuleCode, "chip: (context) => props.selectChip(context)");
-        StringAssert.Contains(artifact.ModuleCode, "selection: (context) => props.selectSelection(context)");
-        StringAssert.Contains(artifact.ModuleCode, "\"no-data\": () => props.selectNoData");
-        StringAssert.Contains(artifact.ModuleCode, "\"prepend-item\": () => props.selectNoData");
+        StringAssert.Contains(artifact.ModuleCode, "item: (context) => slots.selectItem ? slots.selectItem(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "chip: (context) => slots.selectChip ? slots.selectChip(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "selection: (context) => slots.selectSelection ? slots.selectSelection(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "\"no-data\": () => slots.selectNoData ? slots.selectNoData() : null");
+        StringAssert.Contains(artifact.ModuleCode, "\"prepend-item\": () => slots.selectNoData ? slots.selectNoData() : null");
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
@@ -2323,17 +2574,17 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"rules\": [true, \"Must pass\", validateRequired]");
         StringAssert.Contains(artifact.ModuleCode, "\"validateOn\": \"blur eager\"");
         StringAssert.Contains(artifact.ModuleCode, "\"validationValue\": \"validation-source\"");
-        StringAssert.Contains(artifact.ModuleCode, "default: (context) => props.inputDefault(context)");
-        StringAssert.Contains(artifact.ModuleCode, "details: (context) => props.inputDetails(context)");
-        StringAssert.Contains(artifact.ModuleCode, "message: (context) => props.inputMessage(context)");
+        StringAssert.Contains(artifact.ModuleCode, "default: (context) => slots.inputDefault ? slots.inputDefault(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "details: (context) => slots.inputDetails ? slots.inputDetails(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "message: (context) => slots.inputMessage ? slots.inputMessage(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "\"rounded\": \"lg\"");
         StringAssert.Contains(artifact.ModuleCode, "\"loading\": \"primary\"");
         StringAssert.Contains(artifact.ModuleCode, "\"appendInnerIcon\": \"$appendInner\"");
         StringAssert.Contains(artifact.ModuleCode, "\"centerAffix\": false");
         StringAssert.Contains(artifact.ModuleCode, "\"singleLine\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"variant\": \"solo-filled\"");
-        StringAssert.Contains(artifact.ModuleCode, "label: (context) => props.fieldLabel(context)");
-        StringAssert.Contains(artifact.ModuleCode, "loader: (context) => props.fieldLoader(context)");
+        StringAssert.Contains(artifact.ModuleCode, "label: (context) => slots.fieldLabel ? slots.fieldLabel(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "loader: (context) => slots.fieldLoader ? slots.fieldLoader(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "\"defaultsTarget\": \"VSelectionControl\"");
         StringAssert.Contains(artifact.ModuleCode, "\"multiple\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"multiple\": null");
@@ -2343,7 +2594,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"value\": \"choice-a\"");
         StringAssert.Contains(artifact.ModuleCode, "\"trueValue\": \"yes\"");
         StringAssert.Contains(artifact.ModuleCode, "\"falseValue\": \"no\"");
-        StringAssert.Contains(artifact.ModuleCode, "input: (context) => props.selectionInput(context)");
+        StringAssert.Contains(artifact.ModuleCode, "input: (context) => slots.selectionInput ? slots.selectionInput(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "emit(\"update:rawValue\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "emit(\"update:inputFocused\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "emit(\"update:fieldValue\", __value)");
@@ -2500,8 +2751,8 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"halfIcon\": \"$star-half\"");
         StringAssert.Contains(artifact.ModuleCode, "\"length\": 5");
         StringAssert.Contains(artifact.ModuleCode, "\"ripple\": false");
-        StringAssert.Contains(artifact.ModuleCode, "item: (context) => props.ratingItem(context)");
-        StringAssert.Contains(artifact.ModuleCode, "\"item-label\": (context) => props.ratingItemLabel(context)");
+        StringAssert.Contains(artifact.ModuleCode, "item: (context) => slots.ratingItem ? slots.ratingItem(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "\"item-label\": (context) => slots.ratingItemLabel ? slots.ratingItemLabel(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "\"fixedHeader\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"fixedFooter\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"hover\": true");
@@ -2703,10 +2954,10 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"direction\": \"vertical\"");
         StringAssert.Contains(artifact.ModuleCode, "\"selectedClass\": \"window-active\"");
         StringAssert.Contains(artifact.ModuleCode, "\"mandatory\": \"force\"");
-        StringAssert.Contains(artifact.ModuleCode, "default: (context) => props.windowDefault(context)");
-        StringAssert.Contains(artifact.ModuleCode, "additional: (context) => props.windowAdditional(context)");
-        StringAssert.Contains(artifact.ModuleCode, "prev: (context) => props.windowPrev(context)");
-        StringAssert.Contains(artifact.ModuleCode, "next: (context) => props.windowNext(context)");
+        StringAssert.Contains(artifact.ModuleCode, "default: (context) => slots.windowDefault ? slots.windowDefault(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "additional: (context) => slots.windowAdditional ? slots.windowAdditional(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "prev: (context) => slots.windowPrev ? slots.windowPrev(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "next: (context) => slots.windowNext ? slots.windowNext(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.tabsValue");
         StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:tabsValue\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"direction\": \"horizontal\"");
@@ -2730,10 +2981,10 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"prevIcon\": \"$carousel-prev\"");
         StringAssert.Contains(artifact.ModuleCode, "\"touch\": false");
         StringAssert.Contains(artifact.ModuleCode, "\"selectedClass\": \"carousel-active\"");
-        StringAssert.Contains(artifact.ModuleCode, "default: (context) => props.carouselDefault(context)");
-        StringAssert.Contains(artifact.ModuleCode, "prev: (context) => props.carouselPrev(context)");
-        StringAssert.Contains(artifact.ModuleCode, "next: (context) => props.carouselNext(context)");
-        StringAssert.Contains(artifact.ModuleCode, "item: (context) => props.carouselItem(context)");
+        StringAssert.Contains(artifact.ModuleCode, "default: (context) => slots.carouselDefault ? slots.carouselDefault(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "prev: (context) => slots.carouselPrev ? slots.carouselPrev(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "next: (context) => slots.carouselNext ? slots.carouselNext(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "item: (context) => slots.carouselItem ? slots.carouselItem(context) : null");
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
@@ -2916,16 +3167,16 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"width\": \"100%\"");
         StringAssert.Contains(artifact.ModuleCode, "\"border\": \"thin\"");
         StringAssert.Contains(artifact.ModuleCode, "\"color\": \"primary\"");
-        StringAssert.Contains(artifact.ModuleCode, "default: (context) => props.stepperDefault(context)");
-        StringAssert.Contains(artifact.ModuleCode, "actions: (context) => props.stepperActions(context)");
-        StringAssert.Contains(artifact.ModuleCode, "header: (context) => props.stepperHeader(context)");
-        StringAssert.Contains(artifact.ModuleCode, "\"header-item\": (context) => props.stepperHeaderItem(context)");
-        StringAssert.Contains(artifact.ModuleCode, "icon: (context) => props.stepperIcon(context)");
-        StringAssert.Contains(artifact.ModuleCode, "title: (context) => props.stepperTitle(context)");
-        StringAssert.Contains(artifact.ModuleCode, "subtitle: (context) => props.stepperSubtitle(context)");
-        StringAssert.Contains(artifact.ModuleCode, "item: (context) => props.stepperItem(context)");
-        StringAssert.Contains(artifact.ModuleCode, "prev: (context) => props.stepperPrev(context)");
-        StringAssert.Contains(artifact.ModuleCode, "next: (context) => props.stepperNext(context)");
+        StringAssert.Contains(artifact.ModuleCode, "default: (context) => slots.stepperDefault ? slots.stepperDefault(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "actions: (context) => slots.stepperActions ? slots.stepperActions(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "header: (context) => slots.stepperHeader ? slots.stepperHeader(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "\"header-item\": (context) => slots.stepperHeaderItem ? slots.stepperHeaderItem(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "icon: (context) => slots.stepperIcon ? slots.stepperIcon(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "title: (context) => slots.stepperTitle ? slots.stepperTitle(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "subtitle: (context) => slots.stepperSubtitle ? slots.stepperSubtitle(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "item: (context) => slots.stepperItem ? slots.stepperItem(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "prev: (context) => slots.stepperPrev ? slots.stepperPrev(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "next: (context) => slots.stepperNext ? slots.stepperNext(context) : null");
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
@@ -3212,8 +3463,8 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "value: \"profile\"");
         StringAssert.Contains(artifact.ModuleCode, "\"header-item.profile\": (item) => h(\"strong\", null, item.Step)");
         StringAssert.Contains(artifact.ModuleCode, "\"item.profile\": (item) => h(\"section\", null, item.Title)");
-        StringAssert.Contains(artifact.ModuleCode, "default: (context) => props.stepperDefault(context)");
-        StringAssert.Contains(artifact.ModuleCode, "actions: (context) => props.stepperActions(context)");
+        StringAssert.Contains(artifact.ModuleCode, "default: (context) => slots.stepperDefault ? slots.stepperDefault(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "actions: (context) => slots.stepperActions ? slots.stepperActions(context) : null");
         Assert.IsFalse(artifact.ModuleCode.Contains("\"header-item\": (item) => h(\"strong\"", StringComparison.Ordinal), artifact.ModuleCode);
         Assert.IsFalse(artifact.ModuleCode.Contains("item: (item) => h(\"section\"", StringComparison.Ordinal), artifact.ModuleCode);
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
@@ -3420,10 +3671,10 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"landscape\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"title\": \"Accent color\"");
         StringAssert.Contains(artifact.ModuleCode, "\"hideHeader\": false");
-        StringAssert.Contains(artifact.ModuleCode, "default: () => props.pickerBody");
-        StringAssert.Contains(artifact.ModuleCode, "header: () => props.pickerHeader");
-        StringAssert.Contains(artifact.ModuleCode, "actions: () => props.pickerActions");
-        StringAssert.Contains(artifact.ModuleCode, "title: () => props.pickerTitle");
+        StringAssert.Contains(artifact.ModuleCode, "default: () => slots.pickerBody ? slots.pickerBody() : null");
+        StringAssert.Contains(artifact.ModuleCode, "header: () => slots.pickerHeader ? slots.pickerHeader() : null");
+        StringAssert.Contains(artifact.ModuleCode, "actions: () => slots.pickerActions ? slots.pickerActions() : null");
+        StringAssert.Contains(artifact.ModuleCode, "title: () => slots.pickerTitle ? slots.pickerTitle() : null");
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
@@ -3596,10 +3847,10 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"border\": \"thin\"");
         StringAssert.Contains(artifact.ModuleCode, "\"bgColor\": \"surface\"");
         StringAssert.Contains(artifact.ModuleCode, "\"title\": \"Schedule\"");
-        StringAssert.Contains(artifact.ModuleCode, "default: () => props.pickerBody");
-        StringAssert.Contains(artifact.ModuleCode, "header: (context) => props.pickerHeader(context)");
-        StringAssert.Contains(artifact.ModuleCode, "actions: () => props.pickerActions");
-        StringAssert.Contains(artifact.ModuleCode, "title: () => props.pickerTitle");
+        StringAssert.Contains(artifact.ModuleCode, "default: () => slots.pickerBody ? slots.pickerBody() : null");
+        StringAssert.Contains(artifact.ModuleCode, "header: (context) => slots.pickerHeader ? slots.pickerHeader(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "actions: () => slots.pickerActions ? slots.pickerActions() : null");
+        StringAssert.Contains(artifact.ModuleCode, "title: () => slots.pickerTitle ? slots.pickerTitle() : null");
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
@@ -3747,9 +3998,9 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"bgColor\": \"surface\"");
         StringAssert.Contains(artifact.ModuleCode, "\"divided\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"title\": \"Start time\"");
-        StringAssert.Contains(artifact.ModuleCode, "default: () => props.clockBody");
-        StringAssert.Contains(artifact.ModuleCode, "actions: () => props.pickerActions");
-        StringAssert.Contains(artifact.ModuleCode, "title: () => props.pickerTitle");
+        StringAssert.Contains(artifact.ModuleCode, "default: () => slots.clockBody ? slots.clockBody() : null");
+        StringAssert.Contains(artifact.ModuleCode, "actions: () => slots.pickerActions ? slots.pickerActions() : null");
+        StringAssert.Contains(artifact.ModuleCode, "title: () => slots.pickerTitle ? slots.pickerTitle() : null");
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
@@ -3910,8 +4161,8 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"hideWeekNumber\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"onNext\": () => emit(\"nextClicked\")");
         StringAssert.Contains(artifact.ModuleCode, "\"onPrev\": () => emit(\"prevClicked\")");
-        StringAssert.Contains(artifact.ModuleCode, "header: (context) => props.calendarHeader(context)");
-        StringAssert.Contains(artifact.ModuleCode, "event: (context) => props.calendarEvent(context)");
+        StringAssert.Contains(artifact.ModuleCode, "header: (context) => slots.calendarHeader ? slots.calendarHeader(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "event: (context) => slots.calendarEvent ? slots.calendarEvent(context) : null");
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
@@ -4103,7 +4354,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"lines\": \"two\"");
         StringAssert.Contains(artifact.ModuleCode, "\"position\": \"sticky\"");
         StringAssert.Contains(artifact.ModuleCode, "\"stacked\": true");
-        StringAssert.Contains(artifact.ModuleCode, "actions: () => props.bannerActions");
+        StringAssert.Contains(artifact.ModuleCode, "actions: () => slots.bannerActions ? slots.bannerActions() : null");
         StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.selectedNavigationValue");
         StringAssert.Contains(artifact.ModuleCode, "\"active\": props.bottomNavigationOpen");
         StringAssert.Contains(artifact.ModuleCode, "\"color\": \"primary\"");
@@ -4119,12 +4370,12 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"activatorProps\": { class: \"sheet-trigger\" }");
         StringAssert.Contains(artifact.ModuleCode, "\"contentProps\": { class: \"sheet-content\" }");
         StringAssert.Contains(artifact.ModuleCode, "\"scrim\": \"rgba(0,0,0,.4)\"");
-        StringAssert.Contains(artifact.ModuleCode, "activator: (context) => props.sheetActivator(context)");
+        StringAssert.Contains(artifact.ModuleCode, "activator: (context) => slots.sheetActivator ? slots.sheetActivator(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "\"collapseIcon\": \"$collapse\"");
         StringAssert.Contains(artifact.ModuleCode, "\"expandIcon\": \"$expand\"");
         StringAssert.Contains(artifact.ModuleCode, "\"hideActions\": \"readonly\"");
         StringAssert.Contains(artifact.ModuleCode, "\"value\": \"advanced\"");
-        StringAssert.Contains(artifact.ModuleCode, "title: (context) => props.panelTitle(context)");
+        StringAssert.Contains(artifact.ModuleCode, "title: (context) => slots.panelTitle ? slots.panelTitle(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "\"actionText\": \"Create item\"");
         StringAssert.Contains(artifact.ModuleCode, "\"icon\": \"$empty\"");
         StringAssert.Contains(artifact.ModuleCode, "\"image\": \"/empty.svg\"");
@@ -4133,11 +4384,11 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"textWidth\": 420");
         StringAssert.Contains(artifact.ModuleCode, "\"href\": \"/records/new\"");
         StringAssert.Contains(artifact.ModuleCode, "\"onClick:action\": (__value) => emit(\"emptyStateAction\", __value)");
-        StringAssert.Contains(artifact.ModuleCode, "actions: (context) => props.emptyStateActions(context)");
-        StringAssert.Contains(artifact.ModuleCode, "headline: () => props.emptyStateHeadline");
-        StringAssert.Contains(artifact.ModuleCode, "title: () => props.emptyStateTitle");
-        StringAssert.Contains(artifact.ModuleCode, "media: () => props.emptyStateMedia");
-        StringAssert.Contains(artifact.ModuleCode, "text: () => props.emptyStateText");
+        StringAssert.Contains(artifact.ModuleCode, "actions: (context) => slots.emptyStateActions ? slots.emptyStateActions(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "headline: () => slots.emptyStateHeadline ? slots.emptyStateHeadline() : null");
+        StringAssert.Contains(artifact.ModuleCode, "title: () => slots.emptyStateTitle ? slots.emptyStateTitle() : null");
+        StringAssert.Contains(artifact.ModuleCode, "media: () => slots.emptyStateMedia ? slots.emptyStateMedia() : null");
+        StringAssert.Contains(artifact.ModuleCode, "text: () => slots.emptyStateText ? slots.emptyStateText() : null");
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
@@ -4381,8 +4632,8 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"scrim\": false");
         StringAssert.Contains(artifact.ModuleCode, "\"transition\": { name: \"fade-transition\", appear: true }");
         StringAssert.Contains(artifact.ModuleCode, "\"zIndex\": 2400");
-        StringAssert.Contains(artifact.ModuleCode, "activator: (context) => props.overlayActivator(context)");
-        StringAssert.Contains(artifact.ModuleCode, "default: (context) => props.hoverContent(context)");
+        StringAssert.Contains(artifact.ModuleCode, "activator: (context) => slots.overlayActivator ? slots.overlayActivator(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "default: (context) => slots.hoverContent ? slots.hoverContent(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "\"minHeight\": 180");
         StringAssert.Contains(artifact.ModuleCode, "\"options\": { rootMargin: \"64px\", threshold: [0.25, 0.75] }");
         StringAssert.Contains(artifact.ModuleCode, "\"transition\": false");
@@ -4390,7 +4641,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"contentClass\": \"media-frame\"");
         StringAssert.Contains(artifact.ModuleCode, "\"mandatory\": \"force\"");
         StringAssert.Contains(artifact.ModuleCode, "\"valueComparator\": compareValues");
-        StringAssert.Contains(artifact.ModuleCode, "default: (context) => props.itemGroupContent(context)");
+        StringAssert.Contains(artifact.ModuleCode, "default: (context) => slots.itemGroupContent ? slots.itemGroupContent(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "\"centerActive\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"direction\": \"vertical\"");
         StringAssert.Contains(artifact.ModuleCode, "\"showArrows\": \"always\"");
@@ -4402,9 +4653,9 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"nextIcon\": \"$next\"");
         StringAssert.Contains(artifact.ModuleCode, "\"prevIcon\": \"$prev\"");
         StringAssert.Contains(artifact.ModuleCode, "\"showArrows\": \"desktop\"");
-        StringAssert.Contains(artifact.ModuleCode, "default: (context) => props.slideGroupContent(context)");
-        StringAssert.Contains(artifact.ModuleCode, "prev: (context) => props.slideGroupPrev(context)");
-        StringAssert.Contains(artifact.ModuleCode, "next: (context) => props.slideGroupNext(context)");
+        StringAssert.Contains(artifact.ModuleCode, "default: (context) => slots.slideGroupContent ? slots.slideGroupContent(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "prev: (context) => slots.slideGroupPrev ? slots.slideGroupPrev(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "next: (context) => slots.slideGroupNext ? slots.slideGroupNext(context) : null");
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
@@ -4495,7 +4746,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"loading\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"loadingText\": \"Loading dashboard\"");
         StringAssert.Contains(artifact.ModuleCode, "\"type\": [\"card\", \"paragraph\", \"table-row\"]");
-        StringAssert.Contains(artifact.ModuleCode, "default: () => props.skeletonContent");
+        StringAssert.Contains(artifact.ModuleCode, "default: () => slots.skeletonContent ? slots.skeletonContent() : null");
         StringAssert.Contains(artifact.ModuleCode, "[\"class\", \"skeleton-panel\"]");
         StringAssert.Contains(artifact.ModuleCode, "[\"aria-busy\", \"true\"]");
         StringAssert.Contains(artifact.ModuleCode, "\"type\": \"article\"");
@@ -4567,10 +4818,10 @@ public sealed class RazorVuePipelineTests
             artifact.ModuleCode,
             "import { VParallax as VParallaxComponent } from \"vuetify/components\";");
         StringAssert.Contains(artifact.ModuleCode, "\"scale\": \"0.6\"");
-        StringAssert.Contains(artifact.ModuleCode, "default: () => props.parallaxContent");
-        StringAssert.Contains(artifact.ModuleCode, "placeholder: () => props.parallaxPlaceholder");
-        StringAssert.Contains(artifact.ModuleCode, "error: () => props.parallaxError");
-        StringAssert.Contains(artifact.ModuleCode, "sources: () => props.parallaxSources");
+        StringAssert.Contains(artifact.ModuleCode, "default: () => slots.parallaxContent ? slots.parallaxContent() : null");
+        StringAssert.Contains(artifact.ModuleCode, "placeholder: () => slots.parallaxPlaceholder ? slots.parallaxPlaceholder() : null");
+        StringAssert.Contains(artifact.ModuleCode, "error: () => slots.parallaxError ? slots.parallaxError() : null");
+        StringAssert.Contains(artifact.ModuleCode, "sources: () => slots.parallaxSources ? slots.parallaxSources() : null");
         StringAssert.Contains(artifact.ModuleCode, "[\"src\", \"/hero.jpg\"]");
         StringAssert.Contains(artifact.ModuleCode, "[\"class\", \"hero-parallax\"]");
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
@@ -4727,10 +4978,10 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"onLoadstart\": (__value) => emit(\"imageLoadStart\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"onLoad\": (__value) => emit(\"imageLoad\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"onError\": (__value) => emit(\"imageError\", __value)");
-        StringAssert.Contains(artifact.ModuleCode, "default: () => props.imageDefault");
-        StringAssert.Contains(artifact.ModuleCode, "placeholder: () => props.imagePlaceholder");
-        StringAssert.Contains(artifact.ModuleCode, "error: () => props.imageErrorContent");
-        StringAssert.Contains(artifact.ModuleCode, "sources: () => props.imageSources");
+        StringAssert.Contains(artifact.ModuleCode, "default: () => slots.imageDefault ? slots.imageDefault() : null");
+        StringAssert.Contains(artifact.ModuleCode, "placeholder: () => slots.imagePlaceholder ? slots.imagePlaceholder() : null");
+        StringAssert.Contains(artifact.ModuleCode, "error: () => slots.imageErrorContent ? slots.imageErrorContent() : null");
+        StringAssert.Contains(artifact.ModuleCode, "sources: () => slots.imageSources ? slots.imageSources() : null");
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
@@ -4787,7 +5038,7 @@ public sealed class RazorVuePipelineTests
             artifact.ModuleCode,
             "import { VCode as VCodeComponent } from \"vuetify/components\";");
         StringAssert.Contains(artifact.ModuleCode, "\"tag\": \"pre\"");
-        StringAssert.Contains(artifact.ModuleCode, "default: () => props.codeContent");
+        StringAssert.Contains(artifact.ModuleCode, "default: () => slots.codeContent ? slots.codeContent() : null");
         StringAssert.Contains(artifact.ModuleCode, "[\"class\", \"code-block\"]");
         StringAssert.Contains(artifact.ModuleCode, "[\"data-language\", \"csharp\"]");
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
@@ -4876,7 +5127,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"lineThickness\": 4");
         StringAssert.Contains(artifact.ModuleCode, "\"lineColor\": \"warning\"");
         StringAssert.Contains(artifact.ModuleCode, "\"truncateLine\": \"both\"");
-        StringAssert.Contains(artifact.ModuleCode, "default: () => props.timelineContent");
+        StringAssert.Contains(artifact.ModuleCode, "default: () => slots.timelineContent ? slots.timelineContent() : null");
         StringAssert.Contains(artifact.ModuleCode, "[\"class\", \"release-timeline\"]");
         StringAssert.Contains(artifact.ModuleCode, "[\"data-stream\", \"deployments\"]");
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
@@ -5036,15 +5287,15 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"max\": 120");
         StringAssert.Contains(artifact.ModuleCode, "\"value\": 80");
         StringAssert.Contains(artifact.ModuleCode, "\"transition\": false");
-        StringAssert.Contains(artifact.ModuleCode, "default: (context) => props.counterContent(context)");
+        StringAssert.Contains(artifact.ModuleCode, "default: (context) => slots.counterContent ? slots.counterContent(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "\"messages\": [\"Required\", \"Too short\"]");
         StringAssert.Contains(artifact.ModuleCode, "\"transition\": { name: \"fade-transition\", appear: true }");
-        StringAssert.Contains(artifact.ModuleCode, "message: (context) => props.messageContent(context)");
+        StringAssert.Contains(artifact.ModuleCode, "message: (context) => slots.messageContent ? slots.messageContent(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "\"locale\": \"zh-Hans\"");
         StringAssert.Contains(artifact.ModuleCode, "\"fallbackLocale\": \"en\"");
         StringAssert.Contains(artifact.ModuleCode, "\"messages\": { hello: \"Hello\", nested: { save: \"Save\" } }");
         StringAssert.Contains(artifact.ModuleCode, "\"rtl\": false");
-        StringAssert.Contains(artifact.ModuleCode, "default: () => props.localeContent");
+        StringAssert.Contains(artifact.ModuleCode, "default: () => slots.localeContent ? slots.localeContent() : null");
         StringAssert.Contains(artifact.ModuleCode, "[\"class\", \"locale-scope\"]");
         StringAssert.Contains(artifact.ModuleCode, "[\"data-locale-scope\", \"dashboard\"]");
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
@@ -5255,8 +5506,8 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"search\": props.tagSearch");
         StringAssert.Contains(artifact.ModuleCode, "\"filterMode\": \"every\"");
         StringAssert.Contains(artifact.ModuleCode, "\"filterKeys\": \"title\"");
-        StringAssert.Contains(artifact.ModuleCode, "item: (context) => props.tagItem(context)");
-        StringAssert.Contains(artifact.ModuleCode, "selection: (context) => props.tagSelection(context)");
+        StringAssert.Contains(artifact.ModuleCode, "item: (context) => slots.tagItem ? slots.tagItem(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "selection: (context) => slots.tagSelection ? slots.tagSelection(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "\"accept\": \"image/*\"");
         StringAssert.Contains(artifact.ModuleCode, "\"counter\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"showSize\": 1024");
@@ -5352,7 +5603,7 @@ public sealed class RazorVuePipelineTests
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "import { VDialog as VDialogComponent } from \"vuetify/components\";");
-        StringAssert.Contains(artifact.ModuleCode, "activator: (context) => props.activator(context)");
+        StringAssert.Contains(artifact.ModuleCode, "activator: (context) => slots.activator ? slots.activator(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "\"activator\": 'parent'");
         StringAssert.Contains(artifact.ModuleCode, "\"data-active\": context.IsActive");
         StringAssert.Contains(artifact.ModuleCode, "\"data-props\": context.Props");
@@ -5575,9 +5826,9 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"hover\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"link\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"href\": \"/dashboard\"");
-        StringAssert.Contains(artifact.ModuleCode, "title: () => props.titleContent");
-        StringAssert.Contains(artifact.ModuleCode, "text: () => props.textContent");
-        StringAssert.Contains(artifact.ModuleCode, "actions: () => props.actions");
+        StringAssert.Contains(artifact.ModuleCode, "title: () => slots.titleContent ? slots.titleContent() : null");
+        StringAssert.Contains(artifact.ModuleCode, "text: () => slots.textContent ? slots.textContent() : null");
+        StringAssert.Contains(artifact.ModuleCode, "actions: () => slots.actions ? slots.actions() : null");
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
@@ -5771,17 +6022,17 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"height\": 96");
         StringAssert.Contains(artifact.ModuleCode, "\"image\": \"/hero-toolbar.png\"");
         StringAssert.Contains(artifact.ModuleCode, "\"title\": \"Preferences\"");
-        StringAssert.Contains(artifact.ModuleCode, "image: () => props.toolbarImage");
-        StringAssert.Contains(artifact.ModuleCode, "prepend: () => props.toolbarPrepend");
-        StringAssert.Contains(artifact.ModuleCode, "append: () => props.toolbarAppend");
-        StringAssert.Contains(artifact.ModuleCode, "title: () => props.toolbarTitle");
-        StringAssert.Contains(artifact.ModuleCode, "extension: () => props.toolbarExtension");
+        StringAssert.Contains(artifact.ModuleCode, "image: () => slots.toolbarImage ? slots.toolbarImage() : null");
+        StringAssert.Contains(artifact.ModuleCode, "prepend: () => slots.toolbarPrepend ? slots.toolbarPrepend() : null");
+        StringAssert.Contains(artifact.ModuleCode, "append: () => slots.toolbarAppend ? slots.toolbarAppend() : null");
+        StringAssert.Contains(artifact.ModuleCode, "title: () => slots.toolbarTitle ? slots.toolbarTitle() : null");
+        StringAssert.Contains(artifact.ModuleCode, "extension: () => slots.toolbarExtension ? slots.toolbarExtension() : null");
         StringAssert.Contains(artifact.ModuleCode, "new Map([[\"data-surface\", \"toolbar\"]])");
         StringAssert.Contains(artifact.ModuleCode, "\"text\": \"Preferences\"");
         StringAssert.Contains(artifact.ModuleCode, "\"tag\": \"h2\"");
         StringAssert.Contains(artifact.ModuleCode, "\"class\": [\"toolbar-title\", \"toolbar-title--main\"]");
         StringAssert.Contains(artifact.ModuleCode, "\"style\": \"letter-spacing: 0.02em\"");
-        StringAssert.Contains(artifact.ModuleCode, "text: () => props.toolbarTitleText");
+        StringAssert.Contains(artifact.ModuleCode, "text: () => slots.toolbarTitleText ? slots.toolbarTitleText() : null");
         StringAssert.Contains(artifact.ModuleCode, "\"color\": \"secondary\"");
         StringAssert.Contains(artifact.ModuleCode, "\"variant\": \"text\"");
         StringAssert.Contains(artifact.ModuleCode, "\"class\": \"toolbar-actions\"");
@@ -6089,11 +6340,11 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"prominent\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"title\": \"Saved\"");
         StringAssert.Contains(artifact.ModuleCode, "\"text\": \"Settings were saved\"");
-        StringAssert.Contains(artifact.ModuleCode, "prepend: () => props.alertPrepend");
-        StringAssert.Contains(artifact.ModuleCode, "title: () => props.alertTitle");
-        StringAssert.Contains(artifact.ModuleCode, "text: () => props.alertText");
-        StringAssert.Contains(artifact.ModuleCode, "append: () => props.alertAppend");
-        StringAssert.Contains(artifact.ModuleCode, "close: (context) => props.alertClose(context)");
+        StringAssert.Contains(artifact.ModuleCode, "prepend: () => slots.alertPrepend ? slots.alertPrepend() : null");
+        StringAssert.Contains(artifact.ModuleCode, "title: () => slots.alertTitle ? slots.alertTitle() : null");
+        StringAssert.Contains(artifact.ModuleCode, "text: () => slots.alertText ? slots.alertText() : null");
+        StringAssert.Contains(artifact.ModuleCode, "append: () => slots.alertAppend ? slots.alertAppend() : null");
+        StringAssert.Contains(artifact.ModuleCode, "close: (context) => slots.alertClose ? slots.alertClose(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "\"density\": \"compact\"");
         StringAssert.Contains(artifact.ModuleCode, "props.additionalAttributes");
         StringAssert.Contains(artifact.ModuleCode, "\"nav\": true");
@@ -6115,7 +6366,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"activeClass\": \"active-nav\"");
         StringAssert.Contains(artifact.ModuleCode, "\"ripple\": false");
         StringAssert.Contains(artifact.ModuleCode, "\"href\": \"/settings\"");
-        StringAssert.Contains(artifact.ModuleCode, "append: (context) => props.listItemAppend(context)");
+        StringAssert.Contains(artifact.ModuleCode, "append: (context) => slots.listItemAppend ? slots.listItemAppend(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.chipVisible");
         StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:chipVisible\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"onClick:close\": (__value) => emit(\"chipClosed\", __value)");
@@ -6150,12 +6401,12 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"appendIcon\": \"$chevronRight\"");
         StringAssert.Contains(artifact.ModuleCode, "\"rounded\": \"pill\"");
         StringAssert.Contains(artifact.ModuleCode, "\"onClick\": () => emit(\"pin\")");
-        StringAssert.Contains(artifact.ModuleCode, "default: (context) => props.chipDefault(context)");
-        StringAssert.Contains(artifact.ModuleCode, "label: () => props.chipLabel");
-        StringAssert.Contains(artifact.ModuleCode, "prepend: () => props.chipPrepend");
-        StringAssert.Contains(artifact.ModuleCode, "append: () => props.chipAppend");
-        StringAssert.Contains(artifact.ModuleCode, "close: () => props.chipClose");
-        StringAssert.Contains(artifact.ModuleCode, "filter: () => props.chipFilter");
+        StringAssert.Contains(artifact.ModuleCode, "default: (context) => slots.chipDefault ? slots.chipDefault(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "label: () => slots.chipLabel ? slots.chipLabel() : null");
+        StringAssert.Contains(artifact.ModuleCode, "prepend: () => slots.chipPrepend ? slots.chipPrepend() : null");
+        StringAssert.Contains(artifact.ModuleCode, "append: () => slots.chipAppend ? slots.chipAppend() : null");
+        StringAssert.Contains(artifact.ModuleCode, "close: () => slots.chipClose ? slots.chipClose() : null");
+        StringAssert.Contains(artifact.ModuleCode, "filter: () => slots.chipFilter ? slots.chipFilter() : null");
         StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.enabled");
         StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:enabled\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"rows\": 4");
@@ -6263,7 +6514,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"transition\": \"fade-transition\"");
         StringAssert.Contains(artifact.ModuleCode, "\"activatorProps\": { \"aria-label\": \"Field help\" }");
         StringAssert.Contains(artifact.ModuleCode, "\"contentProps\": { class: \"help-tooltip\" }");
-        StringAssert.Contains(artifact.ModuleCode, "activator: (context) => props.activator(context)");
+        StringAssert.Contains(artifact.ModuleCode, "activator: (context) => slots.activator ? slots.activator(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "props.additionalAttributes");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
@@ -6610,12 +6861,12 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"height\": \"auto\"");
         StringAssert.Contains(artifact.ModuleCode, "\"onClick:open\": (__value) => emit(\"openClicked\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"onClick:select\": (__value) => emit(\"selectClicked\", __value)");
-        StringAssert.Contains(artifact.ModuleCode, "default: () => props.treeBody");
-        StringAssert.Contains(artifact.ModuleCode, "prepend: (context) => props.prependNode(context)");
-        StringAssert.Contains(artifact.ModuleCode, "append: (context) => props.appendNode(context)");
-        StringAssert.Contains(artifact.ModuleCode, "title: (context) => props.titleNode(context)");
-        StringAssert.Contains(artifact.ModuleCode, "subtitle: (context) => props.subtitleNode(context)");
-        StringAssert.Contains(artifact.ModuleCode, "item: (context) => props.itemNode(context)");
+        StringAssert.Contains(artifact.ModuleCode, "default: () => slots.treeBody ? slots.treeBody() : null");
+        StringAssert.Contains(artifact.ModuleCode, "prepend: (context) => slots.prependNode ? slots.prependNode(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "append: (context) => slots.appendNode ? slots.appendNode(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "title: (context) => slots.titleNode ? slots.titleNode(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "subtitle: (context) => slots.subtitleNode ? slots.subtitleNode(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "item: (context) => slots.itemNode ? slots.itemNode(context) : null");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
 
@@ -6782,8 +7033,8 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"zIndex\": 2400");
         StringAssert.Contains(artifact.ModuleCode, "\"activatorProps\": { \"aria-label\": \"Open actions\" }");
         StringAssert.Contains(artifact.ModuleCode, "\"contentProps\": { class: \"speed-dial-content\" }");
-        StringAssert.Contains(artifact.ModuleCode, "default: (context) => props.speedDialContent(context)");
-        StringAssert.Contains(artifact.ModuleCode, "activator: (context) => props.speedDialActivator(context)");
+        StringAssert.Contains(artifact.ModuleCode, "default: (context) => slots.speedDialContent ? slots.speedDialContent(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "activator: (context) => slots.speedDialActivator ? slots.speedDialActivator(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.notifications ?? [\"Saved\", {");
         StringAssert.Contains(artifact.ModuleCode, "text: \"Failed\"");
         StringAssert.Contains(artifact.ModuleCode, "color: \"error\"");
@@ -6799,8 +7050,8 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"timer\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"closable\": \"primary\"");
         StringAssert.Contains(artifact.ModuleCode, "\"closeText\": \"Close\"");
-        StringAssert.Contains(artifact.ModuleCode, "text: (context) => props.notificationText(context)");
-        StringAssert.Contains(artifact.ModuleCode, "actions: (context) => props.notificationActions(context)");
+        StringAssert.Contains(artifact.ModuleCode, "text: (context) => slots.notificationText ? slots.notificationText(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "actions: (context) => slots.notificationActions ? slots.notificationActions(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "\"autoDraw\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"autoDrawDuration\": 1200");
         StringAssert.Contains(artifact.ModuleCode, "\"autoDrawEasing\": \"ease-in-out\"");
@@ -6813,7 +7064,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": [4, { value: 7 }, 11]");
         StringAssert.Contains(artifact.ModuleCode, "\"smooth\": 6");
         StringAssert.Contains(artifact.ModuleCode, "\"type\": \"bar\"");
-        StringAssert.Contains(artifact.ModuleCode, "label: (context) => props.sparklineLabel(context)");
+        StringAssert.Contains(artifact.ModuleCode, "label: (context) => slots.sparklineLabel ? slots.sparklineLabel(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "function __jazorVueMergeAttributes(...sources) {");
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
@@ -6941,7 +7192,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"hideActions\": false");
         StringAssert.Contains(artifact.ModuleCode, "\"onSave\": (__value) => emit(\"draftSaved\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"onCancel\": () => emit(\"draftCanceled\")");
-        StringAssert.Contains(artifact.ModuleCode, "default: (context) => props.confirmEditor(context)");
+        StringAssert.Contains(artifact.ModuleCode, "default: (context) => slots.confirmEditor ? slots.confirmEditor(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "\"focused\": props.validationFocused");
         StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:focused\": (__value) => emit(\"update:validationFocused\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"disabled\": null");
@@ -6955,7 +7206,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:validatedValue\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"validateOn\": \"invalid-input lazy\"");
         StringAssert.Contains(artifact.ModuleCode, "\"validationValue\": props.draft");
-        StringAssert.Contains(artifact.ModuleCode, "default: (context) => props.validationStatus(context)");
+        StringAssert.Contains(artifact.ModuleCode, "default: (context) => slots.validationStatus ? slots.validationStatus(context) : null");
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
@@ -7185,7 +7436,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"transition\": \"scale-transition\"");
         StringAssert.Contains(artifact.ModuleCode, "\"activatorProps\": { \"aria-haspopup\": \"menu\" }");
         StringAssert.Contains(artifact.ModuleCode, "\"contentProps\": { class: \"profile-menu\" }");
-        StringAssert.Contains(artifact.ModuleCode, "activator: (context) => props.menuActivator(context)");
+        StringAssert.Contains(artifact.ModuleCode, "activator: (context) => slots.menuActivator ? slots.menuActivator(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "\"content\": 3");
         StringAssert.Contains(artifact.ModuleCode, "\"color\": \"error\"");
         StringAssert.Contains(artifact.ModuleCode, "\"max\": \"9\"");
@@ -7208,7 +7459,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:badgeVisible\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"offsetY\": 6");
         StringAssert.Contains(artifact.ModuleCode, "\"textColor\": \"white\"");
-        StringAssert.Contains(artifact.ModuleCode, "badge: () => props.badgeContent");
+        StringAssert.Contains(artifact.ModuleCode, "badge: () => slots.badgeContent ? slots.badgeContent() : null");
         StringAssert.Contains(artifact.ModuleCode, "\"size\": 48");
         StringAssert.Contains(artifact.ModuleCode, "\"rounded\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"icon\": \"$account\"");
@@ -7248,7 +7499,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"reverse\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"striped\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"roundedBar\": true");
-        StringAssert.Contains(artifact.ModuleCode, "default: (context) => props.linearProgressContent(context)");
+        StringAssert.Contains(artifact.ModuleCode, "default: (context) => slots.linearProgressContent ? slots.linearProgressContent(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "\"indeterminate\": \"disable-shrink\"");
         StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": 42");
         StringAssert.Contains(artifact.ModuleCode, "\"width\": 6");
@@ -7256,7 +7507,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"class\": \"profile-progress-circular\"");
         StringAssert.Contains(artifact.ModuleCode, "\"style\": { \"--progress-circular-gap\": \"1px\" }");
         StringAssert.Contains(artifact.ModuleCode, "\"rotate\": 90");
-        StringAssert.Contains(artifact.ModuleCode, "default: (context) => props.circularProgressContent(context)");
+        StringAssert.Contains(artifact.ModuleCode, "default: (context) => slots.circularProgressContent ? slots.circularProgressContent(context) : null");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
 
@@ -7493,9 +7744,9 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"onAfterLeave\": () => emit(\"snackbarAfterLeave\")");
         StringAssert.Contains(artifact.ModuleCode, "\"onClick:outside\": (__value) => emit(\"snackbarClickOutside\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"onKeydown\": (__value) => emit(\"snackbarKeydown\", __value)");
-        StringAssert.Contains(artifact.ModuleCode, "activator: (context) => props.snackbarActivator(context)");
-        StringAssert.Contains(artifact.ModuleCode, "text: () => props.snackbarText");
-        StringAssert.Contains(artifact.ModuleCode, "actions: (context) => props.snackbarActions(context)");
+        StringAssert.Contains(artifact.ModuleCode, "activator: (context) => slots.snackbarActivator ? slots.snackbarActivator(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "text: () => slots.snackbarText ? slots.snackbarText() : null");
+        StringAssert.Contains(artifact.ModuleCode, "actions: (context) => slots.snackbarActions ? slots.snackbarActions(context) : null");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
 
@@ -7882,12 +8133,12 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"itemsPerPageText\": \"Rows\"");
         StringAssert.Contains(artifact.ModuleCode, "\"pageText\": \"{0}-{1} of {2}\"");
         StringAssert.Contains(artifact.ModuleCode, "\"showCurrentPage\": true");
-        StringAssert.Contains(artifact.ModuleCode, "top: (context) => props.tableTop(context)");
-        StringAssert.Contains(artifact.ModuleCode, "headers: (context) => props.headers(context)");
-        StringAssert.Contains(artifact.ModuleCode, "\"header.data-table-select\": (context) => props.headerSelect(context)");
-        StringAssert.Contains(artifact.ModuleCode, "item: (context) => props.item(context)");
-        StringAssert.Contains(artifact.ModuleCode, "\"footer.prepend\": () => props.footerPrepend");
-        StringAssert.Contains(artifact.ModuleCode, "\"no-data\": () => props.noData");
+        StringAssert.Contains(artifact.ModuleCode, "top: (context) => slots.tableTop ? slots.tableTop(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "headers: (context) => slots.headers ? slots.headers(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "\"header.data-table-select\": (context) => slots.headerSelect ? slots.headerSelect(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "item: (context) => slots.item ? slots.item(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "\"footer.prepend\": () => slots.footerPrepend ? slots.footerPrepend() : null");
+        StringAssert.Contains(artifact.ModuleCode, "\"no-data\": () => slots.noData ? slots.noData() : null");
         StringAssert.Contains(artifact.ModuleCode, "h(VDataIteratorComponent, {");
         StringAssert.Contains(artifact.ModuleCode, "id: \"finance\"");
         StringAssert.Contains(artifact.ModuleCode, "name: \"Finance\"");
@@ -7912,11 +8163,11 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"filterMode\": \"every\"");
         StringAssert.Contains(artifact.ModuleCode, "\"tag\": \"section\"");
         StringAssert.Contains(artifact.ModuleCode, "\"transition\": \"fade-transition\"");
-        StringAssert.Contains(artifact.ModuleCode, "default: (context) => props.iteratorDefault(context)");
-        StringAssert.Contains(artifact.ModuleCode, "header: (context) => props.iteratorHeader(context)");
-        StringAssert.Contains(artifact.ModuleCode, "footer: (context) => props.iteratorFooter(context)");
-        StringAssert.Contains(artifact.ModuleCode, "loader: (context) => props.iteratorLoader(context)");
-        StringAssert.Contains(artifact.ModuleCode, "\"no-data\": () => props.iteratorNoData");
+        StringAssert.Contains(artifact.ModuleCode, "default: (context) => slots.iteratorDefault ? slots.iteratorDefault(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "header: (context) => slots.iteratorHeader ? slots.iteratorHeader(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "footer: (context) => slots.iteratorFooter ? slots.iteratorFooter(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "loader: (context) => slots.iteratorLoader ? slots.iteratorLoader(context) : null");
+        StringAssert.Contains(artifact.ModuleCode, "\"no-data\": () => slots.iteratorNoData ? slots.iteratorNoData() : null");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
 
@@ -8281,7 +8532,7 @@ public sealed class RazorVuePipelineTests
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "import { VForm as VFormComponent } from \"vuetify/components\";");
-        StringAssert.Contains(artifact.ModuleCode, "default: (context) => props.formDefault(context)");
+        StringAssert.Contains(artifact.ModuleCode, "default: (context) => slots.formDefault ? slots.formDefault(context) : null");
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
