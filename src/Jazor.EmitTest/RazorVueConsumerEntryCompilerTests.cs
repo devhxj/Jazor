@@ -268,6 +268,91 @@ public sealed class RazorVueConsumerEntryCompilerTests
     }
 
     [TestMethod]
+    public async Task GenerateAsync_WhenRouteTemplateUsesOptionalParameter_EmitsOptionalVueRouteSegment()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue") with
+            {
+                RouteTemplates = ["/examples/{id?}"]
+            });
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("path: \"/examples/:id?\"", clientEntry);
+        Assert.Contains("parameterNames: Object.freeze([\"id\"])", clientEntry);
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenRouteTemplateUsesCatchAll_FailsWithActionableError()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue") with
+            {
+                RouteTemplates = ["/examples/{*path}"]
+            });
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(15, result.ExitCode);
+        StringAssert.Contains(result.Error, "catch-all route parameters are not supported yet");
+        Assert.IsFalse(File.Exists(workspace.ClientEntryPath));
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenRouteTemplateUsesDefaultValue_FailsWithActionableError()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue") with
+            {
+                RouteTemplates = ["/examples/{id=42}"]
+            });
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(15, result.ExitCode);
+        StringAssert.Contains(result.Error, "route default values are not supported yet");
+        Assert.IsFalse(File.Exists(workspace.ClientEntryPath));
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenRouteTemplateUsesCompositeSegment_FailsWithActionableError()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue") with
+            {
+                RouteTemplates = ["/examples/post-{id}"]
+            });
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(15, result.ExitCode);
+        StringAssert.Contains(result.Error, "composite route segments are not supported");
+        Assert.IsFalse(File.Exists(workspace.ClientEntryPath));
+    }
+
+    [TestMethod]
     public async Task GenerateAsync_WhenOnlyHComponentsAreSelected_SkipsUnselectedBrokenSfcArtifacts()
     {
         using var workspace = new TestWorkspace();
