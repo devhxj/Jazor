@@ -10,6 +10,7 @@ namespace Jazor.RazorVue.Descriptor;
 internal static class VueComponentDescriptorFactory
 {
     private static readonly SymbolEqualityComparer Comparer = SymbolEqualityComparer.Default;
+    private const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
     private static readonly SymbolDisplayFormat TypeDisplayFormat = new(
         globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
         typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
@@ -27,6 +28,26 @@ internal static class VueComponentDescriptorFactory
             VueComponentSourceKind.UserComponent,
             GetUserImportSpecifier(candidate.ComponentSymbol, context.Symbols),
             "default",
+            GetContainerContractFullName(candidate.ComponentSymbol, context.Symbols),
+            [],
+            []);
+    }
+
+    public static VueComponentDescriptor CreateReferencedUserComponent(INamedTypeSymbol componentSymbol, RazorVueCompilationContext context)
+    {
+        if (componentSymbol is null)
+            throw new ArgumentNullException(nameof(componentSymbol));
+        if (context is null)
+            throw new ArgumentNullException(nameof(context));
+
+        return CreateDescriptor(
+            componentSymbol,
+            context.Compilation,
+            context.Symbols,
+            VueComponentSourceKind.UserComponent,
+            GetUserImportSpecifier(componentSymbol, context.Symbols),
+            "default",
+            GetContainerContractFullName(componentSymbol, context.Symbols),
             [],
             []);
     }
@@ -47,6 +68,7 @@ internal static class VueComponentDescriptorFactory
             VueComponentSourceKind.LibraryComponent,
             metadata.ImportSpecifier,
             metadata.ExportName,
+            GetContainerContractFullName(componentSymbol, symbols),
             metadata.StyleDependencies,
             metadata.PluginRequirements);
     }
@@ -58,6 +80,7 @@ internal static class VueComponentDescriptorFactory
         VueComponentSourceKind sourceKind,
         string importSpecifier,
         string exportName,
+        string? containerContractFullName,
         ImmutableArray<string> styleDependencies,
         ImmutableArray<string> pluginRequirements)
     {
@@ -84,7 +107,7 @@ internal static class VueComponentDescriptorFactory
                 {
                     throw CreateInvalidLibraryComponentDeclarationException(
                         componentSymbol,
-                        $"Library component '{FormatFullName(componentSymbol)}' can only apply [VueLibraryProp] to regular [Parameter] properties. '{property.Name}' is a slot parameter.");
+                        $"Library component '{FormatFullName(componentSymbol)}' can only apply [VueProp] to regular [Parameter] properties. '{property.Name}' is a slot parameter.");
                 }
 
                 slots.Add(CreateSlotDescriptor(property, symbols, slotOverride));
@@ -95,7 +118,7 @@ internal static class VueComponentDescriptorFactory
             {
                 throw CreateInvalidLibraryComponentDeclarationException(
                     componentSymbol,
-                    $"Library component '{FormatFullName(componentSymbol)}' can only apply [VueLibrarySlot] to RenderFragment parameters. '{property.Name}' is not a slot parameter.");
+                    $"Library component '{FormatFullName(componentSymbol)}' can only apply [VueSlot] to RenderFragment parameters. '{property.Name}' is not a slot parameter.");
             }
 
             if (IsEventCallback(property.Type, symbols))
@@ -104,7 +127,7 @@ internal static class VueComponentDescriptorFactory
                 {
                     throw CreateInvalidLibraryComponentDeclarationException(
                         componentSymbol,
-                        $"Library component '{FormatFullName(componentSymbol)}' can only apply [VueLibraryProp] to regular [Parameter] properties. '{property.Name}' is an event callback parameter.");
+                        $"Library component '{FormatFullName(componentSymbol)}' can only apply [VueProp] to regular [Parameter] properties. '{property.Name}' is an event callback parameter.");
                 }
 
                 continue;
@@ -182,6 +205,7 @@ internal static class VueComponentDescriptorFactory
             ResolutionNamespace: GetResolutionNamespace(componentSymbol),
             ImportSpecifier: importSpecifier,
             ExportName: exportName,
+            ContainerContractFullName: containerContractFullName,
             RouteTemplates: GetRouteTemplates(componentSymbol, symbols),
             Props: props.ToImmutable(),
             Emits: emits.ToImmutable(),
@@ -381,7 +405,7 @@ internal static class VueComponentDescriptorFactory
     {
         foreach (var attribute in componentSymbol.GetAttributes())
         {
-            if (!Comparer.Equals(attribute.AttributeClass, symbols.ECMAScriptModuleAttribute))
+            if (!IsECMAScriptModuleAttribute(attribute.AttributeClass, symbols))
                 continue;
 
             if (attribute.ConstructorArguments.Length == 1 &&
@@ -400,6 +424,11 @@ internal static class VueComponentDescriptorFactory
             ? $"{assemblyName}/{fileName}"
             : $"{assemblyName}/{namespaceName}/{fileName}";
     }
+
+    private static bool IsECMAScriptModuleAttribute(INamedTypeSymbol? attributeSymbol, RazorVueCompilationSymbols symbols)
+        => attributeSymbol is not null &&
+           (Comparer.Equals(attributeSymbol, symbols.ECMAScriptModuleAttribute) ||
+            string.Equals(attributeSymbol.ToDisplayString(), ECMAScriptModuleAttributeMetadataName, StringComparison.Ordinal));
 
     private static LibraryComponentMetadata GetLibraryMetadata(INamedTypeSymbol componentSymbol, RazorVueCompilationSymbols symbols)
     {
@@ -451,36 +480,36 @@ internal static class VueComponentDescriptorFactory
         RazorVueCompilationSymbols symbols,
         ImmutableDictionary<string, IPropertySymbol> parameterLookup)
     {
-        if (symbols.VueLibraryPropAttribute is null)
+        if (symbols.VuePropAttribute is null)
             return ImmutableDictionary<string, LibraryPropOverride>.Empty.WithComparers(StringComparer.Ordinal);
 
         var builder = ImmutableDictionary.CreateBuilder<string, LibraryPropOverride>(StringComparer.Ordinal);
         foreach (var attribute in componentSymbol.GetAttributes())
         {
-            if (!Comparer.Equals(attribute.AttributeClass, symbols.VueLibraryPropAttribute))
+            if (!Comparer.Equals(attribute.AttributeClass, symbols.VuePropAttribute))
                 continue;
 
-            var publicName = GetRequiredConstructorStringArgument(attribute, 0, componentSymbol, "VueLibraryProp");
-            var property = GetRequiredParameter(componentSymbol, parameterLookup, publicName, "VueLibraryProp");
+            var publicName = GetRequiredConstructorStringArgument(attribute, 0, componentSymbol, "VueProp");
+            var property = GetRequiredParameter(componentSymbol, parameterLookup, publicName, "VueProp");
             if (IsEventCallback(property.Type, symbols) || IsRenderFragment(property.Type, symbols))
             {
                 throw CreateInvalidLibraryComponentDeclarationException(
                     componentSymbol,
-                    $"Library component '{FormatFullName(componentSymbol)}' can only apply [VueLibraryProp] to regular [Parameter] properties. '{publicName}' is not a prop parameter.");
+                    $"Library component '{FormatFullName(componentSymbol)}' can only apply [VueProp] to regular [Parameter] properties. '{publicName}' is not a prop parameter.");
             }
 
             if (builder.ContainsKey(publicName))
             {
                 throw CreateInvalidLibraryComponentDeclarationException(
                     componentSymbol,
-                    $"Library component '{FormatFullName(componentSymbol)}' declares duplicate [VueLibraryProp] metadata for '{publicName}'.");
+                    $"Library component '{FormatFullName(componentSymbol)}' declares duplicate [VueProp] metadata for '{publicName}'.");
             }
 
             builder[publicName] = new LibraryPropOverride(
-                GetOptionalNamedStringArgument(attribute, "Name", componentSymbol, "VueLibraryProp"),
+                GetOptionalNamedStringArgument(attribute, "Name", componentSymbol, "VueProp"),
                 GetOptionalNamedBoolArgument(attribute, "Required"),
                 GetOptionalNamedBoolArgument(attribute, "AcceptsBinding"),
-                GetOptionalNamedStringArgument(attribute, "DefaultExpression", componentSymbol, "VueLibraryProp"),
+                GetOptionalNamedStringArgument(attribute, "DefaultExpression", componentSymbol, "VueProp"),
                 attribute.ConstructorArguments.Length >= 2 && attribute.ConstructorArguments[1].Value is int propKind
                     ? (VuePropKind)propKind
                     : VuePropKind.Normal,
@@ -537,47 +566,47 @@ internal static class VueComponentDescriptorFactory
         RazorVueCompilationSymbols symbols,
         ImmutableDictionary<string, IPropertySymbol> parameterLookup)
     {
-        if (symbols.VueLibrarySlotAttribute is null)
+        if (symbols.VueSlotAttribute is null)
             return ImmutableDictionary<string, LibrarySlotOverride>.Empty.WithComparers(StringComparer.Ordinal);
 
         var builder = ImmutableDictionary.CreateBuilder<string, LibrarySlotOverride>(StringComparer.Ordinal);
         foreach (var attribute in componentSymbol.GetAttributes())
         {
-            if (!Comparer.Equals(attribute.AttributeClass, symbols.VueLibrarySlotAttribute))
+            if (!Comparer.Equals(attribute.AttributeClass, symbols.VueSlotAttribute))
                 continue;
 
-            var publicName = GetRequiredConstructorStringArgument(attribute, 0, componentSymbol, "VueLibrarySlot");
-            var property = GetRequiredParameter(componentSymbol, parameterLookup, publicName, "VueLibrarySlot");
+            var publicName = GetRequiredConstructorStringArgument(attribute, 0, componentSymbol, "VueSlot");
+            var property = GetRequiredParameter(componentSymbol, parameterLookup, publicName, "VueSlot");
             if (!IsRenderFragment(property.Type, symbols))
             {
                 throw CreateInvalidLibraryComponentDeclarationException(
                     componentSymbol,
-                    $"Library component '{FormatFullName(componentSymbol)}' can only apply [VueLibrarySlot] to RenderFragment parameters. '{publicName}' is not a slot parameter.");
+                    $"Library component '{FormatFullName(componentSymbol)}' can only apply [VueSlot] to RenderFragment parameters. '{publicName}' is not a slot parameter.");
             }
 
             if (builder.ContainsKey(publicName))
             {
                 throw CreateInvalidLibraryComponentDeclarationException(
                     componentSymbol,
-                    $"Library component '{FormatFullName(componentSymbol)}' declares duplicate [VueLibrarySlot] metadata for '{publicName}'.");
+                    $"Library component '{FormatFullName(componentSymbol)}' declares duplicate [VueSlot] metadata for '{publicName}'.");
             }
 
-            var slotName = GetOptionalNamedStringArgument(attribute, "Name", componentSymbol, "VueLibrarySlot");
-            var namePattern = GetOptionalNamedStringArgument(attribute, "NamePattern", componentSymbol, "VueLibrarySlot");
+            var slotName = GetOptionalNamedStringArgument(attribute, "Name", componentSymbol, "VueSlot");
+            var namePattern = GetOptionalNamedStringArgument(attribute, "NamePattern", componentSymbol, "VueSlot");
             var patternOnly = GetOptionalNamedBoolArgument(attribute, "PatternOnly") ?? false;
             var isDefault = GetOptionalNamedBoolArgument(attribute, "IsDefault");
             if (isDefault == true && slotName is not null && !string.Equals(slotName, "default", StringComparison.Ordinal))
             {
                 throw CreateInvalidLibraryComponentDeclarationException(
                     componentSymbol,
-                    $"Library component '{FormatFullName(componentSymbol)}' must use slot name 'default' when [VueLibrarySlot] marks '{publicName}' as the default slot.");
+                    $"Library component '{FormatFullName(componentSymbol)}' must use slot name 'default' when [VueSlot] marks '{publicName}' as the default slot.");
             }
 
             if (isDefault == true && namePattern is not null)
             {
                 throw CreateInvalidLibraryComponentDeclarationException(
                     componentSymbol,
-                    $"Library component '{FormatFullName(componentSymbol)}' cannot declare [VueLibrarySlot] NamePattern for default slot '{publicName}'.");
+                    $"Library component '{FormatFullName(componentSymbol)}' cannot declare [VueSlot] NamePattern for default slot '{publicName}'.");
             }
 
             if (namePattern is not null)
@@ -586,10 +615,10 @@ internal static class VueComponentDescriptorFactory
             {
                 throw CreateInvalidLibraryComponentDeclarationException(
                     componentSymbol,
-                    $"Library component '{FormatFullName(componentSymbol)}' cannot declare [VueLibrarySlot] PatternOnly for '{publicName}' without NamePattern.");
+                    $"Library component '{FormatFullName(componentSymbol)}' cannot declare [VueSlot] PatternOnly for '{publicName}' without NamePattern.");
             }
 
-            var contextTypeName = GetOptionalNamedStringArgument(attribute, "ContextTypeName", componentSymbol, "VueLibrarySlot");
+            var contextTypeName = GetOptionalNamedStringArgument(attribute, "ContextTypeName", componentSymbol, "VueSlot");
             if (contextTypeName is not null && !IsTypedRenderFragment(property.Type, symbols))
             {
                 throw CreateInvalidLibraryComponentDeclarationException(
@@ -597,7 +626,7 @@ internal static class VueComponentDescriptorFactory
                     $"Library component '{FormatFullName(componentSymbol)}' can only declare an explicit slot context type for RenderFragment<T> parameters. '{publicName}' is not typed child content.");
             }
 
-            var contextParameterName = GetOptionalNamedStringArgument(attribute, "ContextParameterName", componentSymbol, "VueLibrarySlot");
+            var contextParameterName = GetOptionalNamedStringArgument(attribute, "ContextParameterName", componentSymbol, "VueSlot");
 
             builder[publicName] = new LibrarySlotOverride(
                 slotName,
@@ -801,9 +830,9 @@ internal static class VueComponentDescriptorFactory
             wildcardIndex != namePattern.LastIndexOf(wildcard, StringComparison.Ordinal) ||
             namePattern.Length == wildcard.Length)
         {
-            throw CreateInvalidLibraryComponentDeclarationException(
-                componentSymbol,
-                $"Library component '{FormatFullName(componentSymbol)}' declares invalid [VueLibrarySlot] NamePattern '{namePattern}' for '{publicName}'. Patterns must contain exactly one '${{string}}' placeholder and at least one literal character.");
+                throw CreateInvalidLibraryComponentDeclarationException(
+                    componentSymbol,
+                    $"Library component '{FormatFullName(componentSymbol)}' declares invalid [VueSlot] NamePattern '{namePattern}' for '{publicName}'. Patterns must contain exactly one '${{string}}' placeholder and at least one literal character.");
         }
     }
 
@@ -994,6 +1023,33 @@ internal static class VueComponentDescriptorFactory
             return value;
 
         return char.ToLowerInvariant(value[0]) + value.Substring(1);
+    }
+
+    private static string? GetContainerContractFullName(
+        INamedTypeSymbol componentSymbol,
+        RazorVueCompilationSymbols symbols)
+    {
+        if (symbols.IVueContainerComponent is not null &&
+            componentSymbol.AllInterfaces.Any(candidate => Comparer.Equals(candidate.OriginalDefinition, symbols.IVueContainerComponent)))
+        {
+            return FormatFullName(componentSymbol);
+        }
+
+        if (symbols.IVueContainerImplementation is null)
+            return null;
+
+        foreach (var interfaceSymbol in componentSymbol.AllInterfaces)
+        {
+            if (!Comparer.Equals(interfaceSymbol.OriginalDefinition, symbols.IVueContainerImplementation))
+                continue;
+
+            if (interfaceSymbol.TypeArguments.Length != 1 || interfaceSymbol.TypeArguments[0] is not INamedTypeSymbol contractType)
+                continue;
+
+            return FormatFullName(contractType);
+        }
+
+        return null;
     }
 
     private sealed record LibraryComponentMetadata(

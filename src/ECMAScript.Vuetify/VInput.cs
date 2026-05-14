@@ -14,11 +14,11 @@ namespace ECMAScript.Vuetify;
 [VueLibraryEmit(nameof(FocusedChanged), VueEmitKind.ModelUpdate, Name = "update:focused")]
 [VueLibraryEmit(nameof(PrependClick), VueEmitKind.LibrarySpecific, Name = "click:prepend")]
 [VueLibraryEmit(nameof(AppendClick), VueEmitKind.LibrarySpecific, Name = "click:append")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
-[VueLibrarySlot(nameof(Prepend), Name = "prepend")]
-[VueLibrarySlot(nameof(Append), Name = "append")]
-[VueLibrarySlot(nameof(Details), Name = "details")]
-[VueLibrarySlot(nameof(Message), Name = "message")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(Prepend), Name = "prepend")]
+[VueSlot(nameof(Append), Name = "append")]
+[VueSlot(nameof(Details), Name = "details")]
+[VueSlot(nameof(Message), Name = "message")]
 public sealed class VInput : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

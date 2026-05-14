@@ -1058,9 +1058,9 @@ public sealed class RazorVuePipelineTests
             "import { Avatar as TAvatarComponent, AvatarGroup as TAvatarGroupComponent, Badge as TBadgeComponent, Breadcrumb as TBreadcrumbComponent, BreadcrumbItem as TBreadcrumbItemComponent, Link as TLinkComponent, TabPanel as TTabPanelComponent, Tabs as TTabsComponent } from \"tdesign-vue-next\";");
         StringAssert.Contains(artifact.ModuleCode, "\"content\": \"首页\"");
         StringAssert.Contains(artifact.ModuleCode, "\"content\": \"帮助中心\"");
-        StringAssert.Contains(artifact.ModuleCode, "\"content\": 12");
+        StringAssert.Contains(artifact.ModuleCode, "\"count\": 12");
         StringAssert.Contains(artifact.ModuleCode, "\"value\": props.activeTab");
-        StringAssert.Contains(artifact.ModuleCode, "\"onChange\": (__value) => emit(\"activeTabChanged\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"onChange\": (__value) => emit(\"update:activeTab\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "action: () => slots.actions ? slots.actions() : null");
         StringAssert.Contains(artifact.ModuleCode, "\"label\": \"概览\"");
         StringAssert.Contains(artifact.ModuleCode, "\"value\": \"overview\"");
@@ -1215,9 +1215,9 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Authoring
             {
                 [VueLibraryComponent("demo/components", "DemoButton")]
-                [VueLibraryProp(nameof(Label), VuePropKind.LibrarySpecific, Name = "buttonLabel", Required = true)]
+                [VueProp(nameof(Label), VuePropKind.LibrarySpecific, Name = "buttonLabel", Required = true)]
                 [VueLibraryEmit(nameof(OnSubmit), VueEmitKind.LibrarySpecific, Name = "onSaveNow")]
-                [VueLibrarySlot(nameof(Footer), Name = "actions")]
+                [VueSlot(nameof(Footer), Name = "actions")]
                 public sealed class DemoButton : ComponentBase, IVueLibraryComponent
                 {
                     [Parameter]
@@ -9378,7 +9378,7 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
 
-        StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (context) => props.itemTemplate(context)");
+        StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (context) => slots.itemTemplate ? slots.itemTemplate(context) : null");
     }
 
     [TestMethod]
@@ -9618,7 +9618,7 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
 
-        StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (context) => props.itemTemplate(context)");
+        StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (context) => slots.itemTemplate ? slots.itemTemplate(context) : null");
     }
 
     [TestMethod]

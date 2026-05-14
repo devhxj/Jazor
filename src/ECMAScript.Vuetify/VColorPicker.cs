@@ -12,10 +12,10 @@ namespace ECMAScript.Vuetify;
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibraryEmit(nameof(ModeChanged), VueEmitKind.ModelUpdate, Name = "update:mode")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
-[VueLibrarySlot(nameof(Header), Name = "header")]
-[VueLibrarySlot(nameof(Actions), Name = "actions")]
-[VueLibrarySlot(nameof(TitleContent), Name = "title")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(Header), Name = "header")]
+[VueSlot(nameof(Actions), Name = "actions")]
+[VueSlot(nameof(TitleContent), Name = "title")]
 public sealed class VColorPicker : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

@@ -14,13 +14,13 @@ namespace ECMAScript.Vuetify;
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibraryEmit(nameof(FocusedChanged), VueEmitKind.ModelUpdate, Name = "update:focused")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
-[VueLibrarySlot(nameof(Prepend), Name = "prepend")]
-[VueLibrarySlot(nameof(Append), Name = "append")]
-[VueLibrarySlot(nameof(Details), Name = "details")]
-[VueLibrarySlot(nameof(Message), Name = "message")]
-[VueLibrarySlot(nameof(LabelContent), Name = "label")]
-[VueLibrarySlot(nameof(Input), Name = "input")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(Prepend), Name = "prepend")]
+[VueSlot(nameof(Append), Name = "append")]
+[VueSlot(nameof(Details), Name = "details")]
+[VueSlot(nameof(Message), Name = "message")]
+[VueSlot(nameof(LabelContent), Name = "label")]
+[VueSlot(nameof(Input), Name = "input")]
 public sealed class VCheckbox : VSelectionControlComponentBase, IVueLibraryComponent
 {
     /// <summary>

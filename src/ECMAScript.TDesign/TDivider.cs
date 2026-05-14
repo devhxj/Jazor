@@ -5,10 +5,10 @@ namespace ECMAScript.TDesign;
 [VueLibraryComponent("tdesign-vue-next", "Divider")]
 [VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
 [VueLibraryPluginRequirement("tdesign")]
-[VueLibraryProp(nameof(CssClass), Name = "class")]
-[VueLibraryProp(nameof(CssStyle), Name = "style")]
-[VueLibraryProp(nameof(Text), Name = "content")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+[VueProp(nameof(CssClass), Name = "class")]
+[VueProp(nameof(CssStyle), Name = "style")]
+[VueProp(nameof(Text), Name = "content")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class TDivider : TDesignContentComponentBase
 {
     [Parameter]

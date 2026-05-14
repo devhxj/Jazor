@@ -11,16 +11,16 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VSelect")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-[VueLibraryProp(nameof(SelectedValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
+[VueProp(nameof(SelectedValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueLibraryEmit(nameof(SelectedValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibraryEmit(nameof(FocusedChanged), VueEmitKind.ModelUpdate, Name = "update:focused")]
 [VueLibraryEmit(nameof(MenuChanged), VueEmitKind.ModelUpdate, Name = "update:menu")]
-[VueLibrarySlot(nameof(Item), Name = "item")]
-[VueLibrarySlot(nameof(Chip), Name = "chip")]
-[VueLibrarySlot(nameof(Selection), Name = "selection")]
-[VueLibrarySlot(nameof(PrependItem), Name = "prepend-item")]
-[VueLibrarySlot(nameof(AppendItem), Name = "append-item")]
-[VueLibrarySlot(nameof(NoData), Name = "no-data")]
+[VueSlot(nameof(Item), Name = "item")]
+[VueSlot(nameof(Chip), Name = "chip")]
+[VueSlot(nameof(Selection), Name = "selection")]
+[VueSlot(nameof(PrependItem), Name = "prepend-item")]
+[VueSlot(nameof(AppendItem), Name = "append-item")]
+[VueSlot(nameof(NoData), Name = "no-data")]
 public sealed class VSelect : VSelectLikeComponentBase, IVueLibraryComponent
 {
     /// <summary>

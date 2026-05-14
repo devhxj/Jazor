@@ -8,10 +8,10 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VBanner")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-[VueLibrarySlot(nameof(Prepend), Name = "prepend")]
-[VueLibrarySlot(nameof(TextContent), Name = "text")]
-[VueLibrarySlot(nameof(Actions), Name = "actions")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(Prepend), Name = "prepend")]
+[VueSlot(nameof(TextContent), Name = "text")]
+[VueSlot(nameof(Actions), Name = "actions")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
 /// <summary>
 /// Vuetify 横幅组件。
 /// Vuetify banner component.

@@ -10,10 +10,10 @@ namespace ECMAScript.Vuetify;
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
-[VueLibrarySlot(nameof(Additional), Name = "additional")]
-[VueLibrarySlot(nameof(Prev), Name = "prev")]
-[VueLibrarySlot(nameof(Next), Name = "next")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(Additional), Name = "additional")]
+[VueSlot(nameof(Prev), Name = "prev")]
+[VueSlot(nameof(Next), Name = "next")]
 public sealed class VWindow : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

@@ -14,11 +14,11 @@ namespace ECMAScript.Vuetify;
 [VueLibraryEmit(nameof(MonthChanged), VueEmitKind.ModelUpdate, Name = "update:month")]
 [VueLibraryEmit(nameof(YearChanged), VueEmitKind.ModelUpdate, Name = "update:year")]
 [VueLibraryEmit(nameof(ViewModeChanged), VueEmitKind.ModelUpdate, Name = "update:viewMode")]
-[VueLibraryProp(nameof(HeaderText), Name = "header")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
-[VueLibrarySlot(nameof(Actions), Name = "actions")]
-[VueLibrarySlot(nameof(HeaderContent), Name = "header")]
-[VueLibrarySlot(nameof(TitleContent), Name = "title")]
+[VueProp(nameof(HeaderText), Name = "header")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(Actions), Name = "actions")]
+[VueSlot(nameof(HeaderContent), Name = "header")]
+[VueSlot(nameof(TitleContent), Name = "title")]
 public sealed class VDatePicker : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

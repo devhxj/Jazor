@@ -12,7 +12,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibraryEmit(nameof(RailChanged), VueEmitKind.ModelUpdate, Name = "update:rail")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VNavigationDrawer : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

@@ -232,13 +232,46 @@ internal sealed class RazorVueCompilationContext
         return builder.ToImmutable();
     }
 
+    public ImmutableArray<VueComponentDescriptor> DiscoverReferencedUserComponents()
+    {
+        var builder = ImmutableArray.CreateBuilder<VueComponentDescriptor>();
+        var currentAssembly = Compilation.Assembly;
+        foreach (var assemblySymbol in GetReferencedAssemblies())
+        {
+            foreach (var symbol in EnumerateNamedTypes(assemblySymbol.GlobalNamespace))
+            {
+                if (RazorVueEntryClassifier.Classify(symbol, Symbols) != RazorVueEntryKind.RazorVueComponent)
+                    continue;
+
+                if (SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, currentAssembly))
+                    continue;
+
+                builder.Add(VueComponentDescriptorFactory.CreateReferencedUserComponent(symbol, this));
+            }
+        }
+
+        return builder.ToImmutable();
+    }
+
     public VueComponentRegistry CreateComponentRegistry(ImmutableArray<VueComponentDescriptor> libraryComponents = default(ImmutableArray<VueComponentDescriptor>))
     {
+        var userSnapshots = CreateSemanticSnapshots();
+        var referencedUserComponents = DiscoverReferencedUserComponents();
         var discoveredLibraryComponents = DiscoverLibraryComponents();
         if (!libraryComponents.IsDefaultOrEmpty)
             discoveredLibraryComponents = MergeLibraryComponents(discoveredLibraryComponents, libraryComponents);
 
-        return VueComponentRegistry.Create(CreateSemanticSnapshots(), discoveredLibraryComponents);
+        if (referencedUserComponents.IsDefaultOrEmpty)
+            return VueComponentRegistry.Create(userSnapshots, discoveredLibraryComponents);
+
+        var userComponents = userSnapshots.IsDefaultOrEmpty
+            ? referencedUserComponents
+            : userSnapshots
+                .Select(static snapshot => snapshot.Descriptor)
+                .Concat(referencedUserComponents)
+                .ToImmutableArray();
+
+        return VueComponentRegistry.Create(userComponents, discoveredLibraryComponents);
     }
 
     private static ImmutableArray<VueComponentDescriptor> MergeLibraryComponents(
@@ -281,6 +314,20 @@ internal sealed class RazorVueCompilationContext
         {
             foreach (var childType in EnumerateNamedTypes(childNamespace))
                 yield return childType;
+        }
+    }
+
+    private IEnumerable<IAssemblySymbol> GetReferencedAssemblies()
+    {
+        var seen = new HashSet<IAssemblySymbol>(SymbolEqualityComparer.Default);
+
+        foreach (var reference in Compilation.References)
+        {
+            if (Compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assemblySymbol &&
+                seen.Add(assemblySymbol))
+            {
+                yield return assemblySymbol;
+            }
         }
     }
 

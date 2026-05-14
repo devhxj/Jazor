@@ -13,7 +13,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibraryEmit(nameof(Save), VueEmitKind.LibrarySpecific, Name = "save")]
 [VueLibraryEmit(nameof(Cancel), VueEmitKind.LibrarySpecific, Name = "cancel")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VConfirmEdit : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

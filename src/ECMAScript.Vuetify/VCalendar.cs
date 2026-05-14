@@ -13,8 +13,8 @@ namespace ECMAScript.Vuetify;
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibraryEmit(nameof(Next), VueEmitKind.LibrarySpecific, Name = "next")]
 [VueLibraryEmit(nameof(Prev), VueEmitKind.LibrarySpecific, Name = "prev")]
-[VueLibrarySlot(nameof(Header), Name = "header")]
-[VueLibrarySlot(nameof(EventContent), Name = "event")]
+[VueSlot(nameof(Header), Name = "header")]
+[VueSlot(nameof(EventContent), Name = "event")]
 public sealed class VCalendar : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

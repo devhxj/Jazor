@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VCardTitle")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
 /// <summary>
 /// Vuetify 卡片标题组件。
 /// Vuetify card title component.

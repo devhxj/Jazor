@@ -11,8 +11,8 @@ namespace ECMAScript.Vuetify;
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibraryEmit(nameof(Load), VueEmitKind.LibrarySpecific, Name = "load")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
-[VueLibrarySlot(nameof(PullDownPanel), Name = "pullDownPanel")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(PullDownPanel), Name = "pullDownPanel")]
 public sealed class VPullToRefresh : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

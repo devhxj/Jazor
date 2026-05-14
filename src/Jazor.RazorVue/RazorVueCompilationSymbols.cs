@@ -19,10 +19,13 @@ internal sealed record RazorVueCompilationSymbols(
     INamedTypeSymbol? VueLibraryComponentAttribute,
     INamedTypeSymbol? VueLibraryStyleAttribute,
     INamedTypeSymbol? VueLibraryPluginRequirementAttribute,
-    INamedTypeSymbol? VueLibraryPropAttribute,
+    INamedTypeSymbol? VuePropAttribute,
     INamedTypeSymbol? VueLibraryEmitAttribute,
-    INamedTypeSymbol? VueLibrarySlotAttribute,
-    INamedTypeSymbol? VueLibraryComponentFlagsAttribute)
+    INamedTypeSymbol? VueSlotAttribute,
+    INamedTypeSymbol? VueLibraryComponentFlagsAttribute,
+    INamedTypeSymbol? IVueContainerComponent,
+    INamedTypeSymbol? IVueContainerImplementation,
+    INamedTypeSymbol? VueInjectAttribute)
 {
     public static RazorVueCompilationSymbols? TryCreate(Compilation compilation)
     {
@@ -52,10 +55,13 @@ internal sealed record RazorVueCompilationSymbols(
         var vueLibraryComponentAttribute = compilation.GetTypeByMetadataName("ECMAScript.VueContract.VueLibraryComponentAttribute");
         var vueLibraryStyleAttribute = compilation.GetTypeByMetadataName("ECMAScript.VueContract.VueLibraryStyleAttribute");
         var vueLibraryPluginRequirementAttribute = compilation.GetTypeByMetadataName("ECMAScript.VueContract.VueLibraryPluginRequirementAttribute");
-        var vueLibraryPropAttribute = compilation.GetTypeByMetadataName("ECMAScript.VueContract.VueLibraryPropAttribute");
+        var vuePropAttribute = compilation.GetTypeByMetadataName("ECMAScript.VueContract.VuePropAttribute");
         var vueLibraryEmitAttribute = compilation.GetTypeByMetadataName("ECMAScript.VueContract.VueLibraryEmitAttribute");
-        var vueLibrarySlotAttribute = compilation.GetTypeByMetadataName("ECMAScript.VueContract.VueLibrarySlotAttribute");
+        var vueSlotAttribute = compilation.GetTypeByMetadataName("ECMAScript.VueContract.VueSlotAttribute");
         var vueLibraryComponentFlagsAttribute = compilation.GetTypeByMetadataName("ECMAScript.VueContract.VueLibraryComponentFlagsAttribute");
+        var iVueContainerComponent = compilation.GetTypeByMetadataName("ECMAScript.VueContract.IVueContainerComponent");
+        var iVueContainerImplementation = compilation.GetTypeByMetadataName("ECMAScript.VueContract.IVueContainerImplementation`1");
+        var vueInjectAttribute = compilation.GetTypeByMetadataName("ECMAScript.VueContract.VueInjectAttribute");
 
         return new RazorVueCompilationSymbols(
             ecmaScriptModuleAttribute,
@@ -74,10 +80,13 @@ internal sealed record RazorVueCompilationSymbols(
             vueLibraryComponentAttribute,
             vueLibraryStyleAttribute,
             vueLibraryPluginRequirementAttribute,
-            vueLibraryPropAttribute,
+            vuePropAttribute,
             vueLibraryEmitAttribute,
-            vueLibrarySlotAttribute,
-            vueLibraryComponentFlagsAttribute);
+            vueSlotAttribute,
+            vueLibraryComponentFlagsAttribute,
+            iVueContainerComponent,
+            iVueContainerImplementation,
+            vueInjectAttribute);
     }
 
 }

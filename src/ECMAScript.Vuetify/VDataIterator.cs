@@ -19,11 +19,11 @@ namespace ECMAScript.Vuetify;
 [VueLibraryEmit(nameof(ExpandedChanged), VueEmitKind.ModelUpdate, Name = "update:expanded")]
 [VueLibraryEmit(nameof(OptionsChanged), VueEmitKind.ModelUpdate, Name = "update:options")]
 [VueLibraryEmit(nameof(CurrentItemsChanged), VueEmitKind.ModelUpdate, Name = "update:currentItems")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
-[VueLibrarySlot(nameof(Header), Name = "header")]
-[VueLibrarySlot(nameof(Footer), Name = "footer")]
-[VueLibrarySlot(nameof(Loader), Name = "loader")]
-[VueLibrarySlot(nameof(NoData), Name = "no-data")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(Header), Name = "header")]
+[VueSlot(nameof(Footer), Name = "footer")]
+[VueSlot(nameof(Loader), Name = "loader")]
+[VueSlot(nameof(NoData), Name = "no-data")]
 public sealed class VDataIterator : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

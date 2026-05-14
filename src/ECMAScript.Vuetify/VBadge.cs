@@ -6,11 +6,11 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VBadge")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-[VueLibraryProp(nameof(CssClass), Name = "class")]
-[VueLibraryProp(nameof(CssStyle), Name = "style")]
+[VueProp(nameof(CssClass), Name = "class")]
+[VueProp(nameof(CssStyle), Name = "style")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibrarySlot(nameof(BadgeContent), Name = "badge")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(BadgeContent), Name = "badge")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
 /// <summary>
 /// Vuetify 徽章组件。
 /// Vuetify badge component.

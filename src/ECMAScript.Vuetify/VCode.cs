@@ -10,7 +10,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VCode")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VCode : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

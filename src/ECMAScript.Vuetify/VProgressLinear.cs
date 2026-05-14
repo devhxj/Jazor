@@ -10,10 +10,10 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VProgressLinear")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-[VueLibraryProp(nameof(CssClass), Name = "class")]
-[VueLibraryProp(nameof(CssStyle), Name = "style")]
+[VueProp(nameof(CssClass), Name = "class")]
+[VueProp(nameof(CssStyle), Name = "style")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VProgressLinear : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

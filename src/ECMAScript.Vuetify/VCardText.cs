@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VCardText")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
 /// <summary>
 /// Vuetify 卡片文本区域组件。
 /// Vuetify card text section component.

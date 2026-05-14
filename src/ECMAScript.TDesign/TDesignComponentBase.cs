@@ -8,7 +8,7 @@ public abstract class TDesignComponentBase : ComponentBase, IVueLibraryComponent
     public VueClassValue? CssClass { get; set; }
 
     [Parameter]
-    public TDesignCssStyleValue? CssStyle { get; set; }
+    public VueStyleValue? CssStyle { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }

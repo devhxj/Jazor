@@ -1,6 +1,7 @@
 using System.Reflection;
 using ECMAScript;
 using ECMAScript.Contract;
+using ECMAScript.ElementPlus;
 using ECMAScript.TDesign;
 using ECMAScript.Vuetify;
 using Microsoft.AspNetCore.Components;
@@ -485,6 +486,10 @@ public sealed class EcmaScriptVueProxyTests
         AssertNet11UnionContract(typeof(VueInjectFrom<int>), typeof(string), typeof(VueInjectionKey<int>), typeof(Symbol));
         AssertNet11UnionContract(typeof(VuePropDeclaration<int>), typeof(VuePropType), typeof(VuePropType[]), typeof(VuePropOptions<int>));
         AssertNet11UnionContract(typeof(VueClassValue), typeof(string), typeof(string[]), typeof(VueProps), typeof(VueValue[]));
+        AssertNet11UnionContract(typeof(VueBooleanStringValue), typeof(bool), typeof(string));
+        AssertNet11UnionContract(typeof(VueStringComponentValue), typeof(string), typeof(IVueComponent));
+        AssertNet11UnionContract(typeof(VueStyleValue), typeof(string), typeof(VueProps), typeof(VueStyleValues));
+        AssertNet11UnionContract(typeof(VueStyleValues), typeof(VueStyleValue[]));
         AssertNet11UnionContract(typeof(VueStringNumberValue), typeof(double), typeof(string));
         AssertNet11UnionContract(typeof(VueWatchDeep), typeof(bool), typeof(int));
         AssertNet11UnionContract(typeof(VueTransitionDurationValue), typeof(Number), typeof(VueTransitionDuration));
@@ -531,6 +536,14 @@ public sealed class EcmaScriptVueProxyTests
                 vueObjectType.GetProperty(memberName, BindingFlags.Public | BindingFlags.Instance),
                 $"VueObject should keep {memberName} out of first-class convenience members and route it through Attrs/Dataset/indexer instead.");
         }
+    }
+
+    [TestMethod]
+    public void ElementPlus_UsesSharedVueUnionContracts_ForCommonAuthoringShapes()
+    {
+        Assert.AreEqual(typeof(VueStyleValue), typeof(ElementPlusComponentBase).GetProperty(nameof(ElementPlusComponentBase.CssStyle), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueTeleportTarget), typeof(ElementPlusLoadingOptions).GetProperty(nameof(ElementPlusLoadingOptions.Target), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueBooleanStringValue), typeof(ElementPlusLinkConfig).GetProperty(nameof(ElementPlusLinkConfig.Underline), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
     }
 
     [TestMethod]
@@ -1405,7 +1418,7 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual(typeof(VueSlotCallback<string>), scopedSlotsIndexer.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(bool), modifierIndexer.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueClassValue), attrsClass.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(VueProps), attrsStyle.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueStyleValue), attrsStyle.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), attrsId.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), attrsTitle.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), attrsFor.PropertyType.UnwrapNullable());
@@ -3540,9 +3553,7 @@ public sealed class EcmaScriptVueProxyTests
             new[] { "medium", "small" },
             GetStringEnumRuntimeValues(typeof(TDesignBadgeSize)));
 
-        Assert.AreEqual(typeof(string), typeof(TDesignCssStyleValue).GetProperty(nameof(TDesignCssStyleValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(VueProps), typeof(TDesignCssStyleValue).GetProperty(nameof(TDesignCssStyleValue.AsProps), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(TDesignCssStyleValues), typeof(TDesignCssStyleValue).GetProperty(nameof(TDesignCssStyleValue.AsValues), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueStyleValue), typeof(TDesignComponentBase).GetProperty(nameof(TDesignComponentBase.CssStyle), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(TDesignDimensionValue), typeof(TDesignMenuWidthValue).GetProperty(nameof(TDesignMenuWidthValue.AsValue), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(TDesignDimensionValues), typeof(TDesignMenuWidthValue).GetProperty(nameof(TDesignMenuWidthValue.AsValues), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(Number), typeof(TDesignMenuValue).GetProperty(nameof(TDesignMenuValue.AsNumber), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
@@ -3573,8 +3584,6 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual(typeof(Event), typeof(TDesignAvatarErrorContext).GetProperty(nameof(TDesignAvatarErrorContext.Event), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
 
         AssertNoPublicMemberUsesObject(
-            typeof(TDesignCssStyleValue),
-            typeof(TDesignCssStyleValues),
             typeof(TDesignDimensionValue),
             typeof(TDesignDimensionValues),
             typeof(TDesignMenuWidthValue),
@@ -3688,6 +3697,12 @@ public sealed class EcmaScriptVueProxyTests
     private static bool IsUnionValueProperty(PropertyInfo property)
         => property.Name == nameof(System.Runtime.CompilerServices.IUnion.Value) &&
            typeof(System.Runtime.CompilerServices.IUnion).IsAssignableFrom(property.DeclaringType);
+
+    private static Type GetPropertyType(PropertyInfo? property)
+    {
+        Assert.IsNotNull(property);
+        return property!.PropertyType.UnwrapNullable();
+    }
 
     private static Type[] GetUnionConstructorBranchTypes(Type unionType)
         => unionType

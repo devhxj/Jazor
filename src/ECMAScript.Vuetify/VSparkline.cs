@@ -10,8 +10,8 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VSparkline")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
-[VueLibrarySlot(nameof(Label), Name = "label")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(Label), Name = "label")]
 public sealed class VSparkline : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

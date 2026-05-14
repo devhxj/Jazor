@@ -15,9 +15,9 @@ namespace ECMAScript.Vuetify;
 [VueLibraryEmit(nameof(AfterLeave), VueEmitKind.LibrarySpecific, Name = "afterLeave")]
 [VueLibraryEmit(nameof(ClickOutside), VueEmitKind.LibrarySpecific, Name = "click:outside")]
 [VueLibraryEmit(nameof(Keydown), VueEmitKind.LibrarySpecific, Name = "keydown")]
-[VueLibraryProp(nameof(ZIndex), Name = "zIndex")]
-[VueLibrarySlot(nameof(Activator), Name = "activator")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+[VueProp(nameof(ZIndex), Name = "zIndex")]
+[VueSlot(nameof(Activator), Name = "activator")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VOverlay : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

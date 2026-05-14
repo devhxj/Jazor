@@ -10,10 +10,10 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/labs/components", "VPicker")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-[VueLibrarySlot(nameof(Header), Name = "header")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
-[VueLibrarySlot(nameof(Actions), Name = "actions")]
-[VueLibrarySlot(nameof(TitleContent), Name = "title")]
+[VueSlot(nameof(Header), Name = "header")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(Actions), Name = "actions")]
+[VueSlot(nameof(TitleContent), Name = "title")]
 public sealed class VPicker : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

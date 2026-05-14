@@ -348,7 +348,7 @@ public sealed class RazorVueDescriptorExtractionTests
                 public sealed record ItemSlotContext;
 
                 [VueLibraryComponent("demo/components", "DynamicSlotHost")]
-                [VueLibrarySlot(nameof(Item), Name = "item", NamePattern = "item.${string}", PatternOnly = true, ContextParameterName = "item")]
+                [VueSlot(nameof(Item), Name = "item", NamePattern = "item.${string}", PatternOnly = true, ContextParameterName = "item")]
                 public sealed class DynamicSlotHost : ComponentBase, IVueLibraryComponent
                 {
                     [Parameter]
@@ -2179,8 +2179,8 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("rounded", badge.Props.Single(static prop => prop.PublicName == "Rounded").Name);
         Assert.AreEqual("tile", badge.Props.Single(static prop => prop.PublicName == "Tile").Name);
         Assert.AreEqual("location", badge.Props.Single(static prop => prop.PublicName == "Location").Name);
-        Assert.AreEqual("class", badge.Props.Single(static prop => prop.PublicName == "Class").Name);
-        Assert.AreEqual("style", badge.Props.Single(static prop => prop.PublicName == "Style").Name);
+        Assert.AreEqual("class", badge.Props.Single(static prop => prop.PublicName == "CssClass").Name);
+        Assert.AreEqual("style", badge.Props.Single(static prop => prop.PublicName == "CssStyle").Name);
         Assert.AreEqual("bordered", badge.Props.Single(static prop => prop.PublicName == "Bordered").Name);
         Assert.AreEqual("content", badge.Props.Single(static prop => prop.PublicName == "Content").Name);
         Assert.AreEqual("icon", badge.Props.Single(static prop => prop.PublicName == "Icon").Name);
@@ -2205,8 +2205,8 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("theme", progressCircular.Props.Single(static prop => prop.PublicName == "Theme").Name);
         Assert.AreEqual("tag", progressCircular.Props.Single(static prop => prop.PublicName == "Tag").Name);
         Assert.AreEqual("size", progressCircular.Props.Single(static prop => prop.PublicName == "Size").Name);
-        Assert.AreEqual("class", progressCircular.Props.Single(static prop => prop.PublicName == "Class").Name);
-        Assert.AreEqual("style", progressCircular.Props.Single(static prop => prop.PublicName == "Style").Name);
+        Assert.AreEqual("class", progressCircular.Props.Single(static prop => prop.PublicName == "CssClass").Name);
+        Assert.AreEqual("style", progressCircular.Props.Single(static prop => prop.PublicName == "CssStyle").Name);
         Assert.AreEqual("modelValue", progressCircular.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
         Assert.AreEqual("bgColor", progressCircular.Props.Single(static prop => prop.PublicName == "BgColor").Name);
         Assert.AreEqual("rotate", progressCircular.Props.Single(static prop => prop.PublicName == "Rotate").Name);
@@ -2224,8 +2224,8 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("rounded", progressLinear.Props.Single(static prop => prop.PublicName == "Rounded").Name);
         Assert.AreEqual("tile", progressLinear.Props.Single(static prop => prop.PublicName == "Tile").Name);
         Assert.AreEqual("location", progressLinear.Props.Single(static prop => prop.PublicName == "Location").Name);
-        Assert.AreEqual("class", progressLinear.Props.Single(static prop => prop.PublicName == "Class").Name);
-        Assert.AreEqual("style", progressLinear.Props.Single(static prop => prop.PublicName == "Style").Name);
+        Assert.AreEqual("class", progressLinear.Props.Single(static prop => prop.PublicName == "CssClass").Name);
+        Assert.AreEqual("style", progressLinear.Props.Single(static prop => prop.PublicName == "CssStyle").Name);
         Assert.AreEqual("absolute", progressLinear.Props.Single(static prop => prop.PublicName == "Absolute").Name);
         Assert.AreEqual("active", progressLinear.Props.Single(static prop => prop.PublicName == "Active").Name);
         Assert.AreEqual("modelValue", progressLinear.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
@@ -2360,8 +2360,8 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.IsTrue(tab.Slots.Single(static slot => slot.IsDefault).IsDefault);
 
         var spacer = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VSpacer");
-        Assert.AreEqual("class", spacer.Props.Single(static prop => prop.PublicName == "Class").Name);
-        Assert.AreEqual("style", spacer.Props.Single(static prop => prop.PublicName == "Style").Name);
+        Assert.AreEqual("class", spacer.Props.Single(static prop => prop.PublicName == "CssClass").Name);
+        Assert.AreEqual("style", spacer.Props.Single(static prop => prop.PublicName == "CssStyle").Name);
         Assert.AreEqual("tag", spacer.Props.Single(static prop => prop.PublicName == "Tag").Name);
         Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", spacer.Props.Single(static prop => prop.PublicName == "CssClass").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", spacer.Props.Single(static prop => prop.PublicName == "CssStyle").TypeName);
@@ -2552,7 +2552,7 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("to", breadcrumbItem.Props.Single(static prop => prop.PublicName == "To").Name);
         Assert.AreEqual("ECMAScript.TDesign.TDesignMenuRouteTarget?", breadcrumbItem.Props.Single(static prop => prop.PublicName == "To").TypeName);
         Assert.AreEqual("click", breadcrumbItem.Emits.Single(static emit => emit.RazorAlias == "OnClick").Name);
-        Assert.AreEqual("MouseEvent", breadcrumbItem.Emits.Single(static emit => emit.RazorAlias == "OnClick").PayloadTypeName);
+        Assert.AreEqual("ECMAScript.MouseEvent", breadcrumbItem.Emits.Single(static emit => emit.RazorAlias == "OnClick").PayloadTypeName);
         Assert.IsTrue(breadcrumbItem.Slots.Any(static slot => slot.Name == "icon"));
 
         var link = tdesignDescriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.TDesign.TLink");
@@ -2742,9 +2742,9 @@ public sealed class RazorVueDescriptorExtractionTests
             namespace Demo.Ui.Custom
             {
                 [VueLibraryComponent("demo/components", "DemoButton")]
-                [VueLibraryProp(nameof(Label), VuePropKind.HtmlLike, Name = "buttonLabel", Required = true, DefaultExpression = "'Save'", AcceptsBinding = true)]
+                [VueProp(nameof(Label), VuePropKind.HtmlLike, Name = "buttonLabel", Required = true, DefaultExpression = "'Save'", AcceptsBinding = true)]
                 [VueLibraryEmit(nameof(OnSubmit), VueEmitKind.LibrarySpecific, Name = "onSaveNow", PayloadTypeName = "Demo.Payload")]
-                [VueLibrarySlot(nameof(Footer), Name = "actions", Required = true, ContextTypeName = "Demo.FooterContext", ContextParameterName = "item")]
+                [VueSlot(nameof(Footer), Name = "actions", Required = true, ContextTypeName = "Demo.FooterContext", ContextParameterName = "item")]
                 [VueLibraryComponentFlags(VueComponentFlags.RequiresExplicitChildren | VueComponentFlags.IsFormControl)]
                 public sealed class DemoButton : ComponentBase, IVueLibraryComponent
                 {

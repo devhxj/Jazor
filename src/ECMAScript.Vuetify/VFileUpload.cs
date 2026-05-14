@@ -11,13 +11,13 @@ namespace ECMAScript.Vuetify;
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3.File[]?")]
-[VueLibrarySlot(nameof(Browse), Name = "browse")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
-[VueLibrarySlot(nameof(IconContent), Name = "icon")]
-[VueLibrarySlot(nameof(InputContent), Name = "input")]
-[VueLibrarySlot(nameof(ItemContent), Name = "item")]
-[VueLibrarySlot(nameof(TitleContent), Name = "title")]
-[VueLibrarySlot(nameof(DividerContent), Name = "divider")]
+[VueSlot(nameof(Browse), Name = "browse")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(IconContent), Name = "icon")]
+[VueSlot(nameof(InputContent), Name = "input")]
+[VueSlot(nameof(ItemContent), Name = "item")]
+[VueSlot(nameof(TitleContent), Name = "title")]
+[VueSlot(nameof(DividerContent), Name = "divider")]
 public sealed class VFileUpload : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

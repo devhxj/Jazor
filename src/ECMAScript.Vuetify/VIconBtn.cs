@@ -11,8 +11,8 @@ namespace ECMAScript.Vuetify;
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibraryEmit(nameof(ActiveChanged), VueEmitKind.ModelUpdate, Name = "update:active")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
-[VueLibrarySlot(nameof(Loader), Name = "loader")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(Loader), Name = "loader")]
 public sealed class VIconBtn : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

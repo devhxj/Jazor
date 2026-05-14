@@ -11,8 +11,8 @@ namespace ECMAScript.Vuetify;
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibrarySlot(nameof(Activator), Name = "activator")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(Activator), Name = "activator")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VMenu : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

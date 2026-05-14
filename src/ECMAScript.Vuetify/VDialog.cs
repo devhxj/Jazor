@@ -10,17 +10,17 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VDialog")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-[VueLibraryProp(nameof(CssClass), Name = "class")]
-[VueLibraryProp(nameof(CssStyle), Name = "style")]
+[VueProp(nameof(CssClass), Name = "class")]
+[VueProp(nameof(CssStyle), Name = "style")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibraryEmit(nameof(AfterEnter), VueEmitKind.LibrarySpecific, Name = "afterEnter")]
 [VueLibraryEmit(nameof(AfterLeave), VueEmitKind.LibrarySpecific, Name = "afterLeave")]
 [VueLibraryEmit(nameof(ClickOutside), VueEmitKind.LibrarySpecific, Name = "click:outside")]
 [VueLibraryEmit(nameof(Keydown), VueEmitKind.LibrarySpecific, Name = "keydown")]
-[VueLibraryProp(nameof(ZIndex), Name = "zIndex")]
-[VueLibraryProp(nameof(ActivatorTarget), Name = "activator")]
-[VueLibrarySlot(nameof(Activator), Name = "activator")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+[VueProp(nameof(ZIndex), Name = "zIndex")]
+[VueProp(nameof(ActivatorTarget), Name = "activator")]
+[VueSlot(nameof(Activator), Name = "activator")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VDialog : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

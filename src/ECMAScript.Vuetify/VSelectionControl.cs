@@ -11,9 +11,9 @@ namespace ECMAScript.Vuetify;
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
-[VueLibrarySlot(nameof(LabelContent), Name = "label")]
-[VueLibrarySlot(nameof(Input), Name = "input")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(LabelContent), Name = "label")]
+[VueSlot(nameof(Input), Name = "input")]
 public sealed class VSelectionControl : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

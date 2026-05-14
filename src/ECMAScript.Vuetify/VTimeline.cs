@@ -10,7 +10,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VTimeline")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VTimeline : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

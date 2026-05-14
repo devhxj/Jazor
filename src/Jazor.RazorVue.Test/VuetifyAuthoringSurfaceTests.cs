@@ -65,7 +65,7 @@ public sealed class VuetifyAuthoringSurfaceTests
 
             var hasCssClassMapping = false;
             var hasCssStyleMapping = false;
-            foreach (var mapping in component.GetCustomAttributes<VueLibraryPropAttribute>(inherit: false))
+            foreach (var mapping in component.GetCustomAttributes<VuePropAttribute>(inherit: false))
             {
                 if (mapping.Name == "class")
                 {
@@ -354,7 +354,7 @@ public sealed class VuetifyAuthoringSurfaceTests
             $"{component.FullName}.{propertyName}");
 
         var mapping = component
-            .GetCustomAttributes<VueLibraryPropAttribute>(inherit: false)
+            .GetCustomAttributes<VuePropAttribute>(inherit: false)
             .SingleOrDefault(attribute => attribute.PublicName == propertyName);
         Assert.IsNotNull(mapping, $"{component.FullName}.{propertyName}");
         Assert.IsTrue(hasMapping, $"{component.FullName}.{propertyName}");

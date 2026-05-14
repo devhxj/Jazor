@@ -4,14 +4,14 @@ using ECMAScript.VueContract.Descriptor;
 namespace ECMAScript.VueContract;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-public sealed class VueLibraryPropAttribute : Attribute
+public class VuePropAttribute : Attribute
 {
-    public VueLibraryPropAttribute(string publicName)
+    public VuePropAttribute(string publicName)
     {
         PublicName = publicName;
     }
 
-    public VueLibraryPropAttribute(string publicName, VuePropKind kind)
+    public VuePropAttribute(string publicName, VuePropKind kind)
         : this(publicName)
     {
         Kind = kind;

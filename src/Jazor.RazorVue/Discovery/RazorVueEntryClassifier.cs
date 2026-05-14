@@ -10,9 +10,12 @@ namespace Jazor.RazorVue.Discovery;
 internal static class RazorVueEntryClassifier
 {
     private static readonly SymbolEqualityComparer Comparer = SymbolEqualityComparer.Default;
+    private const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
 
     public static bool HasECMAScriptModuleAttribute(INamedTypeSymbol symbol, RazorVueCompilationSymbols symbols)
-        => symbol.GetAttributes().Any(attribute => Comparer.Equals(attribute.AttributeClass, symbols.ECMAScriptModuleAttribute));
+        => symbol.GetAttributes().Any(attribute =>
+            Comparer.Equals(attribute.AttributeClass, symbols.ECMAScriptModuleAttribute) ||
+            string.Equals(attribute.AttributeClass?.ToDisplayString(), ECMAScriptModuleAttributeMetadataName, StringComparison.Ordinal));
 
     public static RazorVueEntryKind Classify(INamedTypeSymbol symbol, RazorVueCompilationSymbols symbols)
     {

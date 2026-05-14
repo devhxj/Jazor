@@ -14,14 +14,14 @@ namespace ECMAScript.Vuetify;
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibraryEmit(nameof(FocusedChanged), VueEmitKind.ModelUpdate, Name = "update:focused")]
-[VueLibrarySlot(nameof(Prepend), Name = "prepend")]
-[VueLibrarySlot(nameof(Append), Name = "append")]
-[VueLibrarySlot(nameof(PrependInner), Name = "prepend-inner")]
-[VueLibrarySlot(nameof(AppendInner), Name = "append-inner")]
-[VueLibrarySlot(nameof(Clear), Name = "clear")]
-[VueLibrarySlot(nameof(LabelContent), Name = "label")]
-[VueLibrarySlot(nameof(Details), Name = "details")]
-[VueLibrarySlot(nameof(CounterContent), Name = "counter")]
+[VueSlot(nameof(Prepend), Name = "prepend")]
+[VueSlot(nameof(Append), Name = "append")]
+[VueSlot(nameof(PrependInner), Name = "prepend-inner")]
+[VueSlot(nameof(AppendInner), Name = "append-inner")]
+[VueSlot(nameof(Clear), Name = "clear")]
+[VueSlot(nameof(LabelContent), Name = "label")]
+[VueSlot(nameof(Details), Name = "details")]
+[VueSlot(nameof(CounterContent), Name = "counter")]
 public sealed class VTextField : VInputComponentBase, IVueLibraryComponent
 {
     /// <summary>

@@ -12,10 +12,10 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VBtn")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-[VueLibrarySlot(nameof(Prepend), Name = "prepend")]
-[VueLibrarySlot(nameof(Append), Name = "append")]
-[VueLibrarySlot(nameof(Loader), Name = "loader")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(Prepend), Name = "prepend")]
+[VueSlot(nameof(Append), Name = "append")]
+[VueSlot(nameof(Loader), Name = "loader")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VBtn : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

@@ -9,10 +9,10 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VParallax")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
-[VueLibrarySlot(nameof(Placeholder), Name = "placeholder")]
-[VueLibrarySlot(nameof(Error), Name = "error")]
-[VueLibrarySlot(nameof(Sources), Name = "sources")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(Placeholder), Name = "placeholder")]
+[VueSlot(nameof(Error), Name = "error")]
+[VueSlot(nameof(Sources), Name = "sources")]
 public sealed class VParallax : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

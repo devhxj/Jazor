@@ -10,8 +10,8 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VListItem")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-[VueLibrarySlot(nameof(TitleContent), Name = "title")]
-[VueLibrarySlot(nameof(SubtitleContent), Name = "subtitle")]
+[VueSlot(nameof(TitleContent), Name = "title")]
+[VueSlot(nameof(SubtitleContent), Name = "subtitle")]
 public sealed class VListItem : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

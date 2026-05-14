@@ -5,12 +5,12 @@ namespace ECMAScript.TDesign;
 [VueLibraryComponent("tdesign-vue-next", "Link")]
 [VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
 [VueLibraryPluginRequirement("tdesign")]
-[VueLibraryProp(nameof(CssClass), Name = "class")]
-[VueLibraryProp(nameof(CssStyle), Name = "style")]
-[VueLibraryProp(nameof(Text), Name = "content")]
-[VueLibrarySlot(nameof(PrefixIcon), Name = "prefixIcon")]
-[VueLibrarySlot(nameof(SuffixIcon), Name = "suffixIcon")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+[VueProp(nameof(CssClass), Name = "class")]
+[VueProp(nameof(CssStyle), Name = "style")]
+[VueProp(nameof(Text), Name = "content")]
+[VueSlot(nameof(PrefixIcon), Name = "prefixIcon")]
+[VueSlot(nameof(SuffixIcon), Name = "suffixIcon")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class TLink : TDesignContentComponentBase
 {
     [Parameter]

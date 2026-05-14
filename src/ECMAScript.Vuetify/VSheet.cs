@@ -10,9 +10,9 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VSheet")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-[VueLibraryProp(nameof(CssClass), Name = "class")]
-[VueLibraryProp(nameof(CssStyle), Name = "style")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+[VueProp(nameof(CssClass), Name = "class")]
+[VueProp(nameof(CssStyle), Name = "style")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VSheet : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

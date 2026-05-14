@@ -10,7 +10,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VResponsive")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-[VueLibrarySlot(nameof(Additional), Name = "additional")]
+[VueSlot(nameof(Additional), Name = "additional")]
 public sealed class VResponsive : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

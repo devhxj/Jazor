@@ -11,11 +11,11 @@ namespace ECMAScript.Vuetify;
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibraryEmit(nameof(Load), VueEmitKind.LibrarySpecific, Name = "load")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
-[VueLibrarySlot(nameof(Loading), Name = "loading")]
-[VueLibrarySlot(nameof(Error), Name = "error")]
-[VueLibrarySlot(nameof(Empty), Name = "empty")]
-[VueLibrarySlot(nameof(LoadMore), Name = "load-more")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(Loading), Name = "loading")]
+[VueSlot(nameof(Error), Name = "error")]
+[VueSlot(nameof(Empty), Name = "empty")]
+[VueSlot(nameof(LoadMore), Name = "load-more")]
 public sealed class VInfiniteScroll : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

@@ -10,14 +10,14 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VToolbar")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-[VueLibraryProp(nameof(CssClass), Name = "class")]
-[VueLibraryProp(nameof(CssStyle), Name = "style")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
-[VueLibrarySlot(nameof(ImageContent), Name = "image")]
-[VueLibrarySlot(nameof(Prepend), Name = "prepend")]
-[VueLibrarySlot(nameof(Append), Name = "append")]
-[VueLibrarySlot(nameof(TitleContent), Name = "title")]
-[VueLibrarySlot(nameof(Extension), Name = "extension")]
+[VueProp(nameof(CssClass), Name = "class")]
+[VueProp(nameof(CssStyle), Name = "style")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(ImageContent), Name = "image")]
+[VueSlot(nameof(Prepend), Name = "prepend")]
+[VueSlot(nameof(Append), Name = "append")]
+[VueSlot(nameof(TitleContent), Name = "title")]
+[VueSlot(nameof(Extension), Name = "extension")]
 public sealed class VToolbar : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

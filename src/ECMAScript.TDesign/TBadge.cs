@@ -5,12 +5,12 @@ namespace ECMAScript.TDesign;
 [VueLibraryComponent("tdesign-vue-next", "Badge")]
 [VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
 [VueLibraryPluginRequirement("tdesign")]
-[VueLibraryProp(nameof(CssClass), Name = "class")]
-[VueLibraryProp(nameof(CssStyle), Name = "style")]
-[VueLibraryProp(nameof(CountValue), Name = "count")]
-[VueLibraryProp(nameof(Text), Name = "content")]
-[VueLibrarySlot(nameof(Count), Name = "count")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+[VueProp(nameof(CssClass), Name = "class")]
+[VueProp(nameof(CssStyle), Name = "style")]
+[VueProp(nameof(CountValue), Name = "count")]
+[VueProp(nameof(Text), Name = "content")]
+[VueSlot(nameof(Count), Name = "count")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class TBadge : TDesignContentComponentBase
 {
     [Parameter]

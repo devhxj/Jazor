@@ -10,10 +10,10 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VToolbarTitle")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-[VueLibraryProp(nameof(CssClass), Name = "class")]
-[VueLibraryProp(nameof(CssStyle), Name = "style")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
-[VueLibrarySlot(nameof(TextContent), Name = "text")]
+[VueProp(nameof(CssClass), Name = "class")]
+[VueProp(nameof(CssStyle), Name = "style")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(TextContent), Name = "text")]
 public sealed class VToolbarTitle : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

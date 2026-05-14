@@ -16,9 +16,9 @@ namespace ECMAScript.Vuetify;
 [VueLibraryEmit(nameof(HourChanged), VueEmitKind.ModelUpdate, Name = "update:hour")]
 [VueLibraryEmit(nameof(MinuteChanged), VueEmitKind.ModelUpdate, Name = "update:minute")]
 [VueLibraryEmit(nameof(SecondChanged), VueEmitKind.ModelUpdate, Name = "update:second")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
-[VueLibrarySlot(nameof(Actions), Name = "actions")]
-[VueLibrarySlot(nameof(TitleContent), Name = "title")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(Actions), Name = "actions")]
+[VueSlot(nameof(TitleContent), Name = "title")]
 public sealed class VTimePicker : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

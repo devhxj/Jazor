@@ -4,6 +4,7 @@ using ECMAScript;
 using ECMAScript.TDesign;
 using ECMAScript.VueContract;
 using Microsoft.AspNetCore.Components;
+using static ECMAScript.Vue3;
 
 namespace Jazor.RazorVue.Test;
 
@@ -69,7 +70,7 @@ public sealed class TDesignAuthoringSurfaceTests
                 component,
                 "CssStyle",
                 "style",
-                typeof(TDesignCssStyleValue?));
+                typeof(VueStyleValue?));
         }
     }
 
@@ -192,7 +193,7 @@ public sealed class TDesignAuthoringSurfaceTests
         Assert.IsNotNull(property.GetCustomAttribute<ParameterAttribute>(inherit: true), $"{component.FullName}.{propertyName}");
 
         var mapping = component
-            .GetCustomAttributes<VueLibraryPropAttribute>(inherit: false)
+            .GetCustomAttributes<VuePropAttribute>(inherit: false)
             .SingleOrDefault(attribute => attribute.PublicName == propertyName);
         Assert.IsNotNull(mapping, $"{component.FullName}.{propertyName}");
         Assert.AreEqual(runtimeName, mapping!.Name, $"{component.FullName}.{propertyName}");

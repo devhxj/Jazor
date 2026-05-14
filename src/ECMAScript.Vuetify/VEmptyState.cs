@@ -11,12 +11,12 @@ namespace ECMAScript.Vuetify;
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibraryEmit(nameof(ActionClick), VueEmitKind.LibrarySpecific, Name = "click:action")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
-[VueLibrarySlot(nameof(Actions), Name = "actions")]
-[VueLibrarySlot(nameof(HeadlineContent), Name = "headline")]
-[VueLibrarySlot(nameof(TitleContent), Name = "title")]
-[VueLibrarySlot(nameof(Media), Name = "media")]
-[VueLibrarySlot(nameof(TextContent), Name = "text")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(Actions), Name = "actions")]
+[VueSlot(nameof(HeadlineContent), Name = "headline")]
+[VueSlot(nameof(TitleContent), Name = "title")]
+[VueSlot(nameof(Media), Name = "media")]
+[VueSlot(nameof(TextContent), Name = "text")]
 public sealed class VEmptyState : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

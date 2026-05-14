@@ -11,10 +11,10 @@ namespace ECMAScript.Vuetify;
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibraryProp(nameof(ZIndex), Name = "zIndex")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
-[VueLibrarySlot(nameof(TextContent), Name = "text")]
-[VueLibrarySlot(nameof(Actions), Name = "actions")]
+[VueProp(nameof(ZIndex), Name = "zIndex")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(TextContent), Name = "text")]
+[VueSlot(nameof(Actions), Name = "actions")]
 public sealed class VSnackbarQueue : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

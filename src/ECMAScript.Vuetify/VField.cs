@@ -14,12 +14,12 @@ namespace ECMAScript.Vuetify;
 [VueLibraryEmit(nameof(ClearClick), VueEmitKind.LibrarySpecific, Name = "click:clear")]
 [VueLibraryEmit(nameof(AppendInnerClick), VueEmitKind.LibrarySpecific, Name = "click:appendInner")]
 [VueLibraryEmit(nameof(PrependInnerClick), VueEmitKind.LibrarySpecific, Name = "click:prependInner")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
-[VueLibrarySlot(nameof(PrependInner), Name = "prepend-inner")]
-[VueLibrarySlot(nameof(AppendInner), Name = "append-inner")]
-[VueLibrarySlot(nameof(Clear), Name = "clear")]
-[VueLibrarySlot(nameof(LabelContent), Name = "label")]
-[VueLibrarySlot(nameof(Loader), Name = "loader")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(PrependInner), Name = "prepend-inner")]
+[VueSlot(nameof(AppendInner), Name = "append-inner")]
+[VueSlot(nameof(Clear), Name = "clear")]
+[VueSlot(nameof(LabelContent), Name = "label")]
+[VueSlot(nameof(Loader), Name = "loader")]
 public sealed class VField : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

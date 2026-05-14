@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VApp")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
 /// <summary>
 /// Vuetify 应用根包装组件。
 /// Vuetify app root wrapper component.

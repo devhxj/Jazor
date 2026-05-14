@@ -9,7 +9,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VCounter")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VCounter : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

@@ -11,9 +11,9 @@ namespace ECMAScript.Vuetify;
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibraryProp(nameof(ZIndex), Name = "zIndex")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
-[VueLibrarySlot(nameof(Activator), Name = "activator")]
+[VueProp(nameof(ZIndex), Name = "zIndex")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(Activator), Name = "activator")]
 public sealed class VSpeedDial : ComponentBase, IVueLibraryComponent
 {
     /// <summary>

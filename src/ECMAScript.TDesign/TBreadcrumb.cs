@@ -5,11 +5,11 @@ namespace ECMAScript.TDesign;
 [VueLibraryComponent("tdesign-vue-next", "Breadcrumb")]
 [VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
 [VueLibraryPluginRequirement("tdesign")]
-[VueLibraryProp(nameof(CssClass), Name = "class")]
-[VueLibraryProp(nameof(CssStyle), Name = "style")]
-[VueLibrarySlot(nameof(Separator), Name = "separator")]
-[VueLibrarySlot(nameof(Ellipsis), Name = "ellipsis")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+[VueProp(nameof(CssClass), Name = "class")]
+[VueProp(nameof(CssStyle), Name = "style")]
+[VueSlot(nameof(Separator), Name = "separator")]
+[VueSlot(nameof(Ellipsis), Name = "ellipsis")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class TBreadcrumb : TDesignContentComponentBase
 {
     [Parameter]
@@ -37,11 +37,11 @@ public sealed class TBreadcrumb : TDesignContentComponentBase
 [VueLibraryComponent("tdesign-vue-next", "BreadcrumbItem")]
 [VueLibraryStyle("tdesign-vue-next/es/style/index.css")]
 [VueLibraryPluginRequirement("tdesign")]
-[VueLibraryProp(nameof(CssClass), Name = "class")]
-[VueLibraryProp(nameof(CssStyle), Name = "style")]
-[VueLibraryProp(nameof(Text), Name = "content")]
-[VueLibrarySlot(nameof(Icon), Name = "icon")]
-[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+[VueProp(nameof(CssClass), Name = "class")]
+[VueProp(nameof(CssStyle), Name = "style")]
+[VueProp(nameof(Text), Name = "content")]
+[VueSlot(nameof(Icon), Name = "icon")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class TBreadcrumbItem : TDesignContentComponentBase
 {
     [Parameter]
