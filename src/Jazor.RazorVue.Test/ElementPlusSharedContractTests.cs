@@ -32,6 +32,19 @@ public sealed class ElementPlusSharedContractTests
     }
 
     [TestMethod]
+    public void ElementPlus_ComponentContracts_ReuseSharedVueUnions()
+    {
+        Assert.AreEqual(typeof(VueStringNumberValue?), typeof(ElDialog).GetProperty(nameof(ElDialog.Width))?.PropertyType);
+        Assert.AreEqual(typeof(VueBooleanStringNumberValue?), typeof(ElSwitch).GetProperty(nameof(ElSwitch.ModelValue))?.PropertyType);
+        Assert.AreEqual(typeof(VueBooleanStringNumberValue?), typeof(ElSwitch).GetProperty(nameof(ElSwitch.ActiveValue))?.PropertyType);
+        Assert.AreEqual(typeof(VueBooleanStringNumberValue?), typeof(ElSwitch).GetProperty(nameof(ElSwitch.InactiveValue))?.PropertyType);
+        Assert.AreEqual(typeof(VueStringNumberValue?), typeof(ElInput).GetProperty(nameof(ElInput.ModelValue))?.PropertyType);
+        Assert.AreEqual(typeof(VueStringNumberValue?), typeof(ElInput).GetProperty(nameof(ElInput.Minlength))?.PropertyType);
+        Assert.AreEqual(typeof(VueStringNumberValue?), typeof(ElInputOtp).GetProperty(nameof(ElInputOtp.ModelValue))?.PropertyType);
+        Assert.AreEqual(typeof(string[]), typeof(ElInputTag).GetProperty(nameof(ElInputTag.ModelValue))?.PropertyType);
+    }
+
+    [TestMethod]
     public void ElementPlus_PublicNamespace_DoesNotReintroduceDuplicatedCommonVueUnions()
     {
         var publicTypeNames = typeof(ElementPlus).Assembly
@@ -46,6 +59,8 @@ public sealed class ElementPlusSharedContractTests
         CollectionAssert.DoesNotContain(publicTypeNames, "ElementPlusSelectorOrElement");
         CollectionAssert.DoesNotContain(publicTypeNames, "ElementPlusCssStyleValue");
         CollectionAssert.DoesNotContain(publicTypeNames, "ElementPlusCssStyleValues");
+        CollectionAssert.DoesNotContain(publicTypeNames, "ElementPlusStringNumberValue");
+        CollectionAssert.DoesNotContain(publicTypeNames, "ElementPlusStringArray");
     }
 
     [TestMethod]

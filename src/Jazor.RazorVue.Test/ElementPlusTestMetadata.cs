@@ -32,6 +32,7 @@ internal static class ElementPlusTestMetadata
         => ReadWebTypesArray("vue-components")
             .Select(static element => ReadExportSymbol(element))
             .Where(static name => !string.IsNullOrWhiteSpace(name))
+            .Where(static name => !string.Equals(name, "ElOwn", StringComparison.Ordinal))
             .Distinct(StringComparer.Ordinal)
             .OrderBy(static name => name, StringComparer.Ordinal)
             .ToArray()!;

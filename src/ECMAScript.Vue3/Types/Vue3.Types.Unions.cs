@@ -205,6 +205,36 @@ public static partial class Vue3
 	}
 
 	/// <summary>
+	/// Vue authoring 中常见的布尔、字符串或数字联合值。适用于 modelValue、activeValue 等同时接受
+	/// 布尔开关、具名字面量或标量编号的高频属性。
+	/// Common boolean-or-string-or-number union value for Vue authoring. Use this when a
+	/// runtime contract accepts booleans, named string literals, or scalar numeric values
+	/// such as modelValue or active/inactive state props.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public readonly union VueBooleanStringNumberValue(bool, double, string)
+	{
+		/// <summary>
+		/// 当值为布尔值时返回该值；否则返回 null。
+		/// Returns the boolean when the value was created from a bool; otherwise null.
+		/// </summary>
+		public bool? AsBool => Value is bool value ? value : default(bool?);
+
+		/// <summary>
+		/// 当值为数字时返回该数字；否则返回 null。
+		/// Returns the number when the value was created from a number; otherwise null.
+		/// </summary>
+		public double? AsNumber => Value is double value ? value : default(double?);
+
+		/// <summary>
+		/// 当值为字符串时返回该字符串；否则返回 null。
+		/// Returns the string when the value was created from a string; otherwise null.
+		/// </summary>
+		public string? AsString => Value as string;
+	}
+
+	/// <summary>
 	/// 接受字符串名或组件值的公共 Vue 联合类型。适用于图标、动态子组件入口或组件覆写槽位等高频 authoring 场景。
 	/// Shared Vue union type that accepts either a string token or a component value.
 	/// This fits common authoring scenarios such as icon/component overrides and
