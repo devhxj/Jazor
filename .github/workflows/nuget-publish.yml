@@ -27,6 +27,7 @@ jobs:
     environment: production
     env:
       NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      NUGET_USER: ${{ secrets.NUGET_USER }}
 
     steps:
       - name: Checkout
@@ -80,16 +81,18 @@ jobs:
         if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.dry_run != 'true' }}
         shell: pwsh
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY))
+          if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY) -and [string]::IsNullOrWhiteSpace($env:NUGET_USER))
           {
-              throw 'Configure NUGET_API_KEY before publishing to nuget.org.'
+              throw 'Configure NUGET_API_KEY or NUGET_USER before publishing to nuget.org.'
           }
 
       - name: NuGet trusted publishing login
-        if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.dry_run != 'true' }}
+        if: ${{ (github.event_name != 'workflow_dispatch' || github.event.inputs.dry_run != 'true') && env.NUGET_USER != '' }}
         id: nuget_login
         continue-on-error: true
         uses: NuGet/login@v1
+        with:
+          user: ${{ secrets.NUGET_USER }}
 
       - name: Push package with trusted publishing
         if: ${{ (github.event_name != 'workflow_dispatch' || github.event.inputs.dry_run != 'true') && steps.nuget_login.outcome == 'success' }}
