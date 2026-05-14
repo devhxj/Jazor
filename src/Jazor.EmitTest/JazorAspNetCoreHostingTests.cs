@@ -14,6 +14,37 @@ namespace Jazor.EmitTest;
 public sealed class JazorAspNetCoreHostingTests
 {
     [TestMethod]
+    public void JazorWebApplication_ResolveContentRootPath_PrefersAppBaseDirectoryWhenPublishedWebRootExists()
+    {
+        using var workspace = new AspNetCoreHostTestWorkspace();
+        var appBaseDirectory = Path.Combine(workspace.RootPath, "publish");
+        var sourceFilePath = Path.Combine(workspace.RootPath, "src", "Playground", "Program.cs");
+        Directory.CreateDirectory(Path.Combine(appBaseDirectory, "wwwroot"));
+        Directory.CreateDirectory(Path.GetDirectoryName(sourceFilePath)!);
+        File.WriteAllText(sourceFilePath, "var builder = JazorWebApplication.CreateBuilder(args);");
+
+        var resolved = JazorWebApplication.ResolveContentRootPath(appBaseDirectory, sourceFilePath);
+
+        Assert.AreEqual(Path.GetFullPath(appBaseDirectory), resolved);
+    }
+
+    [TestMethod]
+    public void JazorWebApplication_ResolveContentRootPath_FallsBackToSourceDirectoryWhenPublishedWebRootIsMissing()
+    {
+        using var workspace = new AspNetCoreHostTestWorkspace();
+        var appBaseDirectory = Path.Combine(workspace.RootPath, "bin", "Debug", "net11.0");
+        var sourceDirectory = Path.Combine(workspace.RootPath, "src", "Playground");
+        var sourceFilePath = Path.Combine(sourceDirectory, "Program.cs");
+        Directory.CreateDirectory(appBaseDirectory);
+        Directory.CreateDirectory(sourceDirectory);
+        File.WriteAllText(sourceFilePath, "var builder = JazorWebApplication.CreateBuilder(args);");
+
+        var resolved = JazorWebApplication.ResolveContentRootPath(appBaseDirectory, sourceFilePath);
+
+        Assert.AreEqual(Path.GetFullPath(sourceDirectory), resolved);
+    }
+
+    [TestMethod]
     public async Task UseJazorDevelopmentAssets_ServesMountedAssetsAndReturns404ForMissingMountedFile()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();

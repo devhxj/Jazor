@@ -242,7 +242,7 @@ app.MapMethods("/{**path}", ["GET", "HEAD"], ...)
 
 ### 后续提升方向
 
-- 对 `dotnet run --project` 从仓库根启动的场景增加官方示例验证
+- 已完成（2026-05-14 本轮）：`JazorWebApplication.ResolveContentRootPath(...)` 已由 `JazorAspNetCoreHostingTests` 独立锁定“发布/输出目录存在 `wwwroot` 时优先使用 `AppContext.BaseDirectory`，否则回退源码目录”的双分支语义，避免后续把内容根解析悄悄漂回固定源码路径。
 
 ## 7. 浏览器 bundle 与 RazorVue emit 复用 `/jazor/*` 需要明确合并语义
 
@@ -344,8 +344,8 @@ jazor-manifest-razorvue.json
 - 已完成（2026-05-13 本轮）：`RazorVueModuleWriter` / `RazorVueSfcModuleWriter` 的宿主 metadata 生成逻辑收敛为共享 `RazorVueHostRequirementsModuleWriter`，避免 mixed 场景下 host requirements 被最后一个 writer 覆盖。
 - 已完成（2026-05-13 本轮）：`ModuleBundler` 仅将非 component entries 视为 bundle 输入模块，RazorVue host requirements 则直接从统一 manifest 生成，不再依赖输入目录中预先存在的 `__jazor/razorvue-host.mjs`。
 - 已完成（2026-05-14 本轮）：`ModuleWriter` 在统一 manifest 下已收敛为“普通 `.mjs` 仅保留未被同路径 plain module 接管的 component entries”；当 plain module 接管旧 RazorVue H 路径时，会同步移除旧 `component` metadata 与 `.origins.json` sidecar，避免后续 RazorVue clean 把新 plain module 误删。
-- MSBuild target 移除公开的 `JazorRazorVueManifestPath` 默认值和 `jazor-manifest-razorvue.json` 引用；previous snapshot 使用统一 manifest 的快照路径。
-- `razorvue-diff`、bundle update plan、host asset sidecar 仍可复用 RazorVue diff 模型，但输入源必须是统一 manifest 投影后的 component 集合。
+- 已完成（2026-05-14 本轮）：MSBuild target 已移除公开的 `JazorRazorVueManifestPath` 默认值和 `jazor-manifest-razorvue.json` 引用；bundle 前快照统一收敛为 `JazorPreviousManifestSnapshotPath -> previous-jazor-manifest.json`，并由 `Jazor.targets` 直接传给 `bundle --previous-manifest`。
+- 已完成（2026-05-14 本轮）：`razorvue-diff`、bundle update plan 与 host asset sidecar 现已统一从 `jazor-manifest.json` 的 component projection 读取输入；`ModuleBundlerTests` / `RazorVueManifestDifferTests` / `SdkIntegrationTests` 已锁定“projection missing / invalid”语义，避免回退到第二 manifest 契约。
 
 ### Consumer 与 SFC bridge 工作项
 

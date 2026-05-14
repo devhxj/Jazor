@@ -14,13 +14,16 @@ public static class JazorWebApplication
         return WebApplication.CreateBuilder(new WebApplicationOptions
         {
             Args = args,
-            ContentRootPath = ResolveContentRootPath(sourceFilePath)
+            ContentRootPath = ResolveContentRootPath(AppContext.BaseDirectory, sourceFilePath)
         });
     }
 
-    private static string ResolveContentRootPath(string sourceFilePath)
+    internal static string ResolveContentRootPath(string appBaseDirectory, string sourceFilePath)
     {
-        var appBaseDirectory = Path.GetFullPath(AppContext.BaseDirectory);
+        ArgumentException.ThrowIfNullOrWhiteSpace(appBaseDirectory);
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourceFilePath);
+
+        appBaseDirectory = Path.GetFullPath(appBaseDirectory);
         if (Directory.Exists(Path.Combine(appBaseDirectory, "wwwroot")))
             return appBaseDirectory;
 
