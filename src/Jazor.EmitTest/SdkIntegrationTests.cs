@@ -516,6 +516,8 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(browserEntry, "CatalogPage");
         StringAssert.Contains(browserEntry, "DetailPage");
         StringAssert.Contains(browserEntry, "razorVueHostRequirements");
+        StringAssert.Contains(browserEntry, "razorVueConsumerRoutes");
+        StringAssert.Contains(browserEntry, "Array.isArray(routesOrSelector)");
         Assert.IsFalse(
             ContainsVueModuleSpecifier(browserEntry),
             "Published colocated consumer browser entry should not retain unresolved .vue imports.");
@@ -3090,16 +3092,28 @@ public sealed class SdkIntegrationTests
             import "vuetify/styles";
             import "./style.css";
 
-            export function mountSdkConsumer(components, hostRequirements, selector = "#app") {
+            export function mountSdkConsumer(components, hostRequirements, routesOrSelector = "#app", maybeSelector = "#app") {
               if (hostRequirements === null || typeof hostRequirements !== "object") {
                 throw new Error("Missing RazorVue host requirements.");
               }
 
+              const CatalogPage = components?.CatalogPage;
+              if (typeof CatalogPage !== "object" && typeof CatalogPage !== "function") {
+                throw new Error("SDK consumer expected a CatalogPage component export.");
+              }
+
+              const DetailPage = components?.DetailPage;
+              if (typeof DetailPage !== "object" && typeof DetailPage !== "function") {
+                throw new Error("SDK consumer expected a DetailPage component export.");
+              }
+
+              const hasExplicitRoutes = Array.isArray(routesOrSelector);
+              const selector = hasExplicitRoutes ? maybeSelector : routesOrSelector;
               const app = createApp({
                 render() {
                   return h("main", { class: "sdk-consumer-shell" }, [
-                    h(components.CatalogPage, { title: "Catalog from SDK consumer" }),
-                    h(components.DetailPage, { title: "Detail from SDK consumer" })
+                    h(CatalogPage, { title: "Catalog from SDK consumer" }),
+                    h(DetailPage, { title: "Detail from SDK consumer" })
                   ]);
                 }
               });
@@ -3112,7 +3126,10 @@ public sealed class SdkIntegrationTests
         WriteFile(
             Path.Combine(consumerRoot, "src", "runtime-ssr.js"),
             """
-            export async function runSdkConsumerSsr() {
+            export async function runSdkConsumerSsr(components, hostRequirements, razorVueConsumerRoutes) {
+              void components;
+              void hostRequirements;
+              void razorVueConsumerRoutes;
               return "<div>sdk-consumer-ssr</div>";
             }
             """);
