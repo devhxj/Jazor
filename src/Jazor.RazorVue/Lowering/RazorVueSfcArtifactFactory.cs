@@ -98,7 +98,10 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         => new(
             ComponentId: semantic.ComponentFullName,
             ModuleId: semantic.RelativeSfcPath,
-            DescriptorHash: ComputeSha256Hex(BuildDescriptorShape(semantic.Descriptor)),
+            DescriptorHash: ComputeSha256Hex(
+                RazorVueDescriptorIdentityShapeBuilder.BuildForCanonicalTemplate(
+                    semantic.Descriptor,
+                    semantic.TemplateBlock.Template)),
             TemplateHash: ComputeSha256Hex(templateText),
             LogicHash: ComputeSha256Hex(scriptSetupText),
             StyleHash: ComputeSha256Hex(string.Join("\n---\n", styleBlocks.Select(static block => block.Text + "|" + (block.SourceFilePath ?? string.Empty)))),
@@ -840,27 +843,6 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
             .OrderBy(static emit => emit.Name, StringComparer.Ordinal)
             .Select(static emit => "(event: \"" + emit.Name + "\", payload?: any): void");
         return "{ " + string.Join("; ", members) + " }";
-    }
-
-    private static string BuildDescriptorShape(VueComponentDescriptor descriptor)
-    {
-        var builder = new StringBuilder();
-        builder.AppendLine(descriptor.FullName);
-        builder.AppendLine(descriptor.SourceKind.ToString());
-        builder.AppendLine(descriptor.ImportSpecifier);
-        builder.AppendLine(descriptor.ExportName);
-        foreach (var routeTemplate in descriptor.RouteTemplates)
-            builder.AppendLine("route:" + routeTemplate);
-        builder.AppendLine("flags:" + descriptor.Flags);
-        foreach (var prop in descriptor.Props.OrderBy(static item => item.PublicName, StringComparer.Ordinal))
-            builder.AppendLine(prop.PublicName + "|" + prop.Name + "|" + prop.TypeName + "|" + prop.Required + "|" + prop.AcceptsBinding + "|" + (prop.DefaultExpression ?? string.Empty) + "|" + prop.Kind + "|" + prop.CaptureUnmatchedValues);
-        foreach (var emit in descriptor.Emits.OrderBy(static item => item.RazorAlias, StringComparer.Ordinal))
-            builder.AppendLine(emit.RazorAlias + "|" + emit.Name + "|" + emit.PayloadTypeName + "|" + emit.Kind);
-        foreach (var slot in descriptor.Slots.OrderBy(static item => item.Name, StringComparer.Ordinal))
-            builder.AppendLine(slot.PublicName + "|" + slot.Name + "|" + (slot.NamePattern ?? string.Empty) + "|" + slot.PatternOnly + "|" + slot.IsDefault + "|" + slot.Required + "|" + string.Join(",", slot.Parameters.Select(static parameter => parameter.Name + ":" + parameter.TypeName)));
-        foreach (var pluginRequirement in descriptor.PluginRequirements.OrderBy(static item => item, StringComparer.Ordinal))
-            builder.AppendLine("plugin:" + pluginRequirement);
-        return builder.ToString();
     }
 
     private static string CreateImportAlias(string importSpecifier)

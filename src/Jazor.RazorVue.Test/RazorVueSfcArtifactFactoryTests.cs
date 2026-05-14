@@ -339,6 +339,304 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_InjectedRuntimeShapeChangesAffectDescriptorHash()
+    {
+        var identityA = CreateInjectedContainerHomePageSfcIdentity(
+            contractMembers:
+            """
+            [Parameter]
+            public string? Title { get; set; }
+
+            [Parameter]
+            public string? Value { get; set; }
+
+            [Parameter]
+            public EventCallback<string?> ValueChanged { get; set; }
+
+            [Parameter]
+            public RenderFragment? Header { get; set; }
+            """,
+            implementationAttributes:
+            """
+            [VueProp(nameof(Title), Name = "menuTitle")]
+            [VueProp(nameof(Value), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
+            [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.String?")]
+            [VueSlot(nameof(Header), Name = "header")]
+            """,
+            implementationMembers:
+            """
+            [Parameter]
+            public string? Title { get; set; }
+
+            [Parameter]
+            public string? Value { get; set; }
+
+            [Parameter]
+            public EventCallback<string?> ValueChanged { get; set; }
+
+            [Parameter]
+            public RenderFragment? Header { get; set; }
+            """,
+            renderStatements:
+            """
+            builder.AddComponentParameter(1, nameof(Demo.Containers.NavShell.Title), "Overview");
+            builder.AddComponentParameter(2, nameof(Demo.Containers.NavShell.Value), Value);
+            builder.AddComponentParameter(3, nameof(Demo.Containers.NavShell.ValueChanged), ValueChanged);
+            builder.AddComponentParameter(4, nameof(Demo.Containers.NavShell.Header), (RenderFragment)((slotBuilder) =>
+            {
+                slotBuilder.OpenElement(5, "strong");
+                slotBuilder.AddContent(6, "Overview");
+                slotBuilder.CloseElement();
+            }));
+            """,
+            pageMembers:
+            """
+            [Parameter]
+            public string? Value { get; set; }
+
+            [Parameter]
+            public EventCallback<string?> ValueChanged { get; set; }
+            """);
+
+        var identityB = CreateInjectedContainerHomePageSfcIdentity(
+            contractMembers:
+            """
+            [Parameter]
+            public string? Title { get; set; }
+
+            [Parameter]
+            public string? Value { get; set; }
+
+            [Parameter]
+            public EventCallback<string?> ValueChanged { get; set; }
+
+            [Parameter]
+            public RenderFragment? Header { get; set; }
+            """,
+            implementationAttributes:
+            """
+            [VueProp(nameof(Title), Name = "navigationTitle")]
+            [VueProp(nameof(Value), VuePropKind.Model, Name = "selectedValue", AcceptsBinding = true)]
+            [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:selectedValue", PayloadTypeName = "System.String?")]
+            [VueSlot(nameof(Header), Name = "top")]
+            """,
+            implementationMembers:
+            """
+            [Parameter]
+            public string? Title { get; set; }
+
+            [Parameter]
+            public string? Value { get; set; }
+
+            [Parameter]
+            public EventCallback<string?> ValueChanged { get; set; }
+
+            [Parameter]
+            public RenderFragment? Header { get; set; }
+            """,
+            renderStatements:
+            """
+            builder.AddComponentParameter(1, nameof(Demo.Containers.NavShell.Title), "Overview");
+            builder.AddComponentParameter(2, nameof(Demo.Containers.NavShell.Value), Value);
+            builder.AddComponentParameter(3, nameof(Demo.Containers.NavShell.ValueChanged), ValueChanged);
+            builder.AddComponentParameter(4, nameof(Demo.Containers.NavShell.Header), (RenderFragment)((slotBuilder) =>
+            {
+                slotBuilder.OpenElement(5, "strong");
+                slotBuilder.AddContent(6, "Overview");
+                slotBuilder.CloseElement();
+            }));
+            """,
+            pageMembers:
+            """
+            [Parameter]
+            public string? Value { get; set; }
+
+            [Parameter]
+            public EventCallback<string?> ValueChanged { get; set; }
+            """);
+
+        Assert.AreNotEqual(identityA.DescriptorHash, identityB.DescriptorHash);
+        Assert.AreEqual(identityA.LogicHash, identityB.LogicHash);
+        Assert.AreEqual(identityA.StyleHash, identityB.StyleHash);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_UnusedInjectedPropRuntimeShapeDoesNotAffectDescriptorHash()
+    {
+        var identityA = CreateInjectedContainerHomePageSfcIdentity(
+            contractMembers:
+            """
+            [Parameter]
+            public string? Title { get; set; }
+
+            [Parameter]
+            public string? AccentColor { get; set; }
+            """,
+            implementationAttributes:
+            """
+            [VueProp(nameof(Title), Name = "menuTitle")]
+            [VueProp(nameof(AccentColor), Name = "accentColor")]
+            """,
+            implementationMembers:
+            """
+            [Parameter]
+            public string? Title { get; set; }
+
+            [Parameter]
+            public string? AccentColor { get; set; }
+            """,
+            renderStatements:
+            """
+            builder.AddComponentParameter(1, nameof(Demo.Containers.NavShell.Title), "Overview");
+            """);
+
+        var identityB = CreateInjectedContainerHomePageSfcIdentity(
+            contractMembers:
+            """
+            [Parameter]
+            public string? Title { get; set; }
+
+            [Parameter]
+            public string? AccentColor { get; set; }
+            """,
+            implementationAttributes:
+            """
+            [VueProp(nameof(Title), Name = "menuTitle")]
+            [VueProp(nameof(AccentColor), Name = "highlightColor")]
+            """,
+            implementationMembers:
+            """
+            [Parameter]
+            public string? Title { get; set; }
+
+            [Parameter]
+            public string? AccentColor { get; set; }
+            """,
+            renderStatements:
+            """
+            builder.AddComponentParameter(1, nameof(Demo.Containers.NavShell.Title), "Overview");
+            """);
+
+        Assert.AreEqual(identityA.DescriptorHash, identityB.DescriptorHash);
+        Assert.AreEqual(identityA.TemplateHash, identityB.TemplateHash);
+        Assert.AreEqual(identityA.LogicHash, identityB.LogicHash);
+        Assert.AreEqual(identityA.StyleHash, identityB.StyleHash);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_UsedDynamicPatternSlotShapeAffectsDescriptorHash()
+    {
+        var contextA = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using ECMAScript.VueContract.Descriptor;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Library
+            {
+                [VueLibraryComponent("demo-grid", "DemoGrid")]
+                [VueSlot(nameof(ItemTemplate), Name = "item", NamePattern = "item.${string}", PatternOnly = true, ContextTypeName = "System.String", ContextParameterName = "item")]
+                public sealed class GridShell : ComponentBase, IVueLibraryComponent
+                {
+                    [Parameter]
+                    public RenderFragment<string>? ItemTemplate { get; set; }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./pages/home-page")]
+                public sealed class HomePage : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<Demo.Library.GridShell>(0);
+                        builder.AddAttribute(1, "item.profile", (RenderFragment<string>)((item) => (slotBuilder) =>
+                        {
+                            slotBuilder.OpenElement(2, "span");
+                            slotBuilder.AddContent(3, item);
+                            slotBuilder.CloseElement();
+                        }));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshotA = contextA.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "HomePage");
+        var artifactA = CreateBuildRenderTreeArtifactFactory().Lower(contextA, snapshotA);
+
+        var contextB = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using ECMAScript.VueContract.Descriptor;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Library
+            {
+                [VueLibraryComponent("demo-grid", "DemoGrid")]
+                [VueSlot(nameof(ItemTemplate), Name = "item", NamePattern = "item.${string}", PatternOnly = true, Required = true, ContextTypeName = "System.String", ContextParameterName = "item")]
+                public sealed class GridShell : ComponentBase, IVueLibraryComponent
+                {
+                    [Parameter]
+                    public RenderFragment<string>? ItemTemplate { get; set; }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./pages/home-page")]
+                public sealed class HomePage : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<Demo.Library.GridShell>(0);
+                        builder.AddAttribute(1, "item.profile", (RenderFragment<string>)((item) => (slotBuilder) =>
+                        {
+                            slotBuilder.OpenElement(2, "span");
+                            slotBuilder.AddContent(3, item);
+                            slotBuilder.CloseElement();
+                        }));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshotB = contextB.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "HomePage");
+        var artifactB = CreateBuildRenderTreeArtifactFactory().Lower(contextB, snapshotB);
+
+        Assert.AreNotEqual(artifactA.Identity.DescriptorHash, artifactB.Identity.DescriptorHash);
+        Assert.AreEqual(artifactA.Identity.TemplateHash, artifactB.Identity.TemplateHash);
+        Assert.AreEqual(artifactA.Identity.LogicHash, artifactB.Identity.LogicHash);
+        Assert.AreEqual(artifactA.Identity.StyleHash, artifactB.Identity.StyleHash);
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_LowersControlFlowIntoTemplateAndSetupBindings()
     {
         var context = CreateContext(
@@ -2789,4 +3087,84 @@ public sealed class RazorVueSfcArtifactFactoryTests
                         ImmutableArray.Create<RazorVueRenderNode>(
                             new RazorVueTextNode(text, ImmutableArray<RazorVueSourceOrigin>.Empty))),
                     ImmutableArray<RazorVueSourceOrigin>.Empty)));
+
+    private static VueSfcArtifactIdentity CreateInjectedContainerHomePageSfcIdentity(
+        string contractMembers,
+        string implementationAttributes,
+        string implementationMembers,
+        string renderStatements,
+        string pageMembers = "")
+    {
+        var context = CreateContext(
+            CreateInjectedContainerHomePageSource(
+                contractMembers,
+                implementationAttributes,
+                implementationMembers,
+                renderStatements,
+                pageMembers));
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "HomePage");
+        return CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot).Identity;
+    }
+
+    private static string CreateInjectedContainerHomePageSource(
+        string contractMembers,
+        string implementationAttributes,
+        string implementationMembers,
+        string renderStatements,
+        string pageMembers)
+        => $$"""
+        using System;
+        using ECMAScript.VueContract;
+        using ECMAScript.VueContract.Descriptor;
+        using Microsoft.AspNetCore.Components;
+        using Microsoft.AspNetCore.Components.Rendering;
+
+        [assembly: VueInject(
+            typeof(Demo.Containers.NavShell),
+            typeof(Demo.Implementations.ElementPlusNavShell))]
+
+        namespace ECMAScript
+        {
+            [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+            public sealed class ECMAScriptModuleAttribute : Attribute
+            {
+                public ECMAScriptModuleAttribute() { }
+                public ECMAScriptModuleAttribute(string import) { }
+            }
+        }
+
+        namespace Demo.Containers
+        {
+            [ECMAScript.ECMAScriptModule("./containers/nav-shell")]
+            public sealed class NavShell : ComponentBase, IVueComponent, IVueContainerComponent
+            {
+        {{contractMembers}}
+            }
+        }
+
+        namespace Demo.Implementations
+        {
+            [VueLibraryComponent("element-plus", "ElMenu")]
+        {{implementationAttributes}}
+            public sealed class ElementPlusNavShell : ComponentBase, IVueLibraryComponent, IVueContainerImplementation<Demo.Containers.NavShell>
+            {
+        {{implementationMembers}}
+            }
+        }
+
+        namespace Demo.Pages
+        {
+            [ECMAScript.ECMAScriptModule("./pages/home-page")]
+            public sealed class HomePage : ComponentBase, IVueComponent
+            {
+        {{pageMembers}}
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.OpenComponent(0, typeof(Demo.Containers.NavShell));
+        {{renderStatements}}
+                    builder.CloseComponent();
+                }
+            }
+        }
+        """;
 }

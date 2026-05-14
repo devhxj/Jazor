@@ -11497,6 +11497,212 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_UnusedInjectedPropRuntimeShapeDoesNotAffectDescriptorHash()
+    {
+        var identityA = CreateInjectedContainerHomePageIdentity(
+            contractMembers:
+            """
+            [Parameter]
+            public string? Title { get; set; }
+
+            [Parameter]
+            public string? AccentColor { get; set; }
+            """,
+            implementationAttributes:
+            """
+            [VueProp(nameof(Title), Name = "menuTitle")]
+            [VueProp(nameof(AccentColor), Name = "accentColor")]
+            """,
+            implementationMembers:
+            """
+            [Parameter]
+            public string? Title { get; set; }
+
+            [Parameter]
+            public string? AccentColor { get; set; }
+            """,
+            renderStatements:
+            """
+            builder.AddComponentParameter(1, nameof(Demo.Containers.NavShell.Title), "Overview");
+            """);
+
+        var identityB = CreateInjectedContainerHomePageIdentity(
+            contractMembers:
+            """
+            [Parameter]
+            public string? Title { get; set; }
+
+            [Parameter]
+            public string? AccentColor { get; set; }
+            """,
+            implementationAttributes:
+            """
+            [VueProp(nameof(Title), Name = "menuTitle")]
+            [VueProp(nameof(AccentColor), Name = "highlightColor")]
+            """,
+            implementationMembers:
+            """
+            [Parameter]
+            public string? Title { get; set; }
+
+            [Parameter]
+            public string? AccentColor { get; set; }
+            """,
+            renderStatements:
+            """
+            builder.AddComponentParameter(1, nameof(Demo.Containers.NavShell.Title), "Overview");
+            """);
+
+        Assert.AreEqual(identityA.DescriptorHash, identityB.DescriptorHash);
+        Assert.AreEqual(identityA.TemplateHash, identityB.TemplateHash);
+        Assert.AreEqual(identityA.LogicHash, identityB.LogicHash);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_UnusedInjectedEmitRuntimeShapeDoesNotAffectDescriptorHash()
+    {
+        var identityA = CreateInjectedContainerHomePageIdentity(
+            contractMembers:
+            """
+            [Parameter]
+            public EventCallback OnOpen { get; set; }
+
+            [Parameter]
+            public EventCallback OnClose { get; set; }
+            """,
+            implementationAttributes:
+            """
+            [VueLibraryEmit(nameof(OnOpen), Name = "open")]
+            [VueLibraryEmit(nameof(OnClose), Name = "close")]
+            """,
+            implementationMembers:
+            """
+            [Parameter]
+            public EventCallback OnOpen { get; set; }
+
+            [Parameter]
+            public EventCallback OnClose { get; set; }
+            """,
+            renderStatements:
+            """
+            builder.AddComponentParameter(1, nameof(Demo.Containers.NavShell.OnOpen), OnOpen);
+            """,
+            pageMembers:
+            """
+            [Parameter]
+            public EventCallback OnOpen { get; set; }
+            """);
+
+        var identityB = CreateInjectedContainerHomePageIdentity(
+            contractMembers:
+            """
+            [Parameter]
+            public EventCallback OnOpen { get; set; }
+
+            [Parameter]
+            public EventCallback OnClose { get; set; }
+            """,
+            implementationAttributes:
+            """
+            [VueLibraryEmit(nameof(OnOpen), Name = "open")]
+            [VueLibraryEmit(nameof(OnClose), Name = "dismiss")]
+            """,
+            implementationMembers:
+            """
+            [Parameter]
+            public EventCallback OnOpen { get; set; }
+
+            [Parameter]
+            public EventCallback OnClose { get; set; }
+            """,
+            renderStatements:
+            """
+            builder.AddComponentParameter(1, nameof(Demo.Containers.NavShell.OnOpen), OnOpen);
+            """,
+            pageMembers:
+            """
+            [Parameter]
+            public EventCallback OnOpen { get; set; }
+            """);
+
+        Assert.AreEqual(identityA.DescriptorHash, identityB.DescriptorHash);
+        Assert.AreEqual(identityA.TemplateHash, identityB.TemplateHash);
+        Assert.AreEqual(identityA.LogicHash, identityB.LogicHash);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_UnusedInjectedSlotRuntimeShapeDoesNotAffectDescriptorHash()
+    {
+        var identityA = CreateInjectedContainerHomePageIdentity(
+            contractMembers:
+            """
+            [Parameter]
+            public RenderFragment? Header { get; set; }
+
+            [Parameter]
+            public RenderFragment? Footer { get; set; }
+            """,
+            implementationAttributes:
+            """
+            [VueSlot(nameof(Header), Name = "header")]
+            [VueSlot(nameof(Footer), Name = "footer")]
+            """,
+            implementationMembers:
+            """
+            [Parameter]
+            public RenderFragment? Header { get; set; }
+
+            [Parameter]
+            public RenderFragment? Footer { get; set; }
+            """,
+            renderStatements:
+            """
+            builder.AddComponentParameter(1, nameof(Demo.Containers.NavShell.Header), (RenderFragment)((slotBuilder) =>
+            {
+                slotBuilder.OpenElement(2, "strong");
+                slotBuilder.AddContent(3, "Overview");
+                slotBuilder.CloseElement();
+            }));
+            """);
+
+        var identityB = CreateInjectedContainerHomePageIdentity(
+            contractMembers:
+            """
+            [Parameter]
+            public RenderFragment? Header { get; set; }
+
+            [Parameter]
+            public RenderFragment? Footer { get; set; }
+            """,
+            implementationAttributes:
+            """
+            [VueSlot(nameof(Header), Name = "header")]
+            [VueSlot(nameof(Footer), Name = "bottom")]
+            """,
+            implementationMembers:
+            """
+            [Parameter]
+            public RenderFragment? Header { get; set; }
+
+            [Parameter]
+            public RenderFragment? Footer { get; set; }
+            """,
+            renderStatements:
+            """
+            builder.AddComponentParameter(1, nameof(Demo.Containers.NavShell.Header), (RenderFragment)((slotBuilder) =>
+            {
+                slotBuilder.OpenElement(2, "strong");
+                slotBuilder.AddContent(3, "Overview");
+                slotBuilder.CloseElement();
+            }));
+            """);
+
+        Assert.AreEqual(identityA.DescriptorHash, identityB.DescriptorHash);
+        Assert.AreEqual(identityA.TemplateHash, identityB.TemplateHash);
+        Assert.AreEqual(identityA.LogicHash, identityB.LogicHash);
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_InheritedNoOpLifecycleDoesNotChangeLogicHash()
     {
         var identityWithoutLifecycle = CreateBuildRenderTreePipeline().Execute(CreateContext(
@@ -19828,6 +20034,85 @@ public sealed class RazorVuePipelineTests
                         ImmutableArray.Create<RazorVueRenderNode>(
                             new RazorVueTextNode(text, ImmutableArray<RazorVueSourceOrigin>.Empty))),
                     ImmutableArray<RazorVueSourceOrigin>.Empty)));
+
+    private static VueArtifactIdentity CreateInjectedContainerHomePageIdentity(
+        string contractMembers,
+        string implementationAttributes,
+        string implementationMembers,
+        string renderStatements,
+        string pageMembers = "")
+        => CreateBuildRenderTreePipeline().Execute(CreateContext(
+            CreateInjectedContainerHomePageSource(
+                contractMembers,
+                implementationAttributes,
+                implementationMembers,
+                renderStatements,
+                pageMembers)))
+            .Artifacts
+            .Single(static artifact => artifact.ComponentName == "HomePage")
+            .Identity;
+
+    private static string CreateInjectedContainerHomePageSource(
+        string contractMembers,
+        string implementationAttributes,
+        string implementationMembers,
+        string renderStatements,
+        string pageMembers)
+        => $$"""
+        using System;
+        using ECMAScript.VueContract;
+        using ECMAScript.VueContract.Descriptor;
+        using Microsoft.AspNetCore.Components;
+        using Microsoft.AspNetCore.Components.Rendering;
+
+        [assembly: VueInject(
+            typeof(Demo.Containers.NavShell),
+            typeof(Demo.Implementations.ElementPlusNavShell))]
+
+        namespace ECMAScript
+        {
+            [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+            public sealed class ECMAScriptModuleAttribute : Attribute
+            {
+                public ECMAScriptModuleAttribute() { }
+                public ECMAScriptModuleAttribute(string import) { }
+            }
+        }
+
+        namespace Demo.Containers
+        {
+            [ECMAScript.ECMAScriptModule("./containers/nav-shell")]
+            public sealed class NavShell : ComponentBase, IVueComponent, IVueContainerComponent
+            {
+        {{contractMembers}}
+            }
+        }
+
+        namespace Demo.Implementations
+        {
+            [VueLibraryComponent("element-plus", "ElMenu")]
+        {{implementationAttributes}}
+            public sealed class ElementPlusNavShell : ComponentBase, IVueLibraryComponent, IVueContainerImplementation<Demo.Containers.NavShell>
+            {
+        {{implementationMembers}}
+            }
+        }
+
+        namespace Demo.Pages
+        {
+            [ECMAScript.ECMAScriptModule("./pages/home-page")]
+            public sealed class HomePage : ComponentBase, IVueComponent
+            {
+        {{pageMembers}}
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.OpenComponent(0, typeof(Demo.Containers.NavShell));
+        {{renderStatements}}
+                    builder.CloseComponent();
+                }
+            }
+        }
+        """;
 
     private static RazorVueManifestModel CreateManifest(VueCompiledArtifact artifact)
     {

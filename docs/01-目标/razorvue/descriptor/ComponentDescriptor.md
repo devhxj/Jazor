@@ -211,10 +211,14 @@ container inject 不只是影响最终生成代码，它还必须显式进入 ow
 当前约束是：
 
 1. compiled pipeline 的 `DescriptorHash` 不能只由 owner 自身 authored descriptor 决定
-2. 当模板里实际引用了某个 container contract，并且该 contract 通过 `[VueInject]` 解析到 implementation 时：
+2. SFC pipeline 的 `DescriptorHash` 也必须使用同一份 resolved runtime surface 规则，不能和 compiled pipeline 各自维护一套 descriptor identity 拼装逻辑
+3. 当模板里实际引用了某个 container contract，并且该 contract 通过 `[VueInject]` 解析到 implementation 时：
    - owner artifact 的 `DescriptorHash` 必须额外纳入该 resolved runtime surface
    - 至少包含当前模板真实消费到的 runtime prop / emit / slot 名称，以及该 resolved component 的 import / export / source kind / flags / styles / plugins
-3. `TemplateHash` 与 `LogicHash` 仍然只表达模板结构和逻辑 lowering 本身
+4. `LogicHash` 仍然只表达逻辑 lowering 本身
+5. `TemplateHash` 的具体语义按产物线区分：
+   - compiled pipeline：`TemplateHash` 表达 render/template shape，本身不应因为 inject runtime 命名漂移而变化
+   - SFC pipeline：`TemplateHash` 当前基于最终 `.vue` template 文本，因此 inject runtime prop / emit / slot 名称变化可能同时反映到 `TemplateHash`
 
 这样做的原因不是“让 hash 更敏感”，而是保证 hot-update 分类语义正确：
 
@@ -230,6 +234,9 @@ container inject 不只是影响最终生成代码，它还必须显式进入 ow
 
 - 进入 owner `DescriptorHash` 的不是“整个 registry 的所有 resolved component descriptor”
 - 而是“当前 render tree 实际引用到、并且当前模板真实消费到的 runtime surface”
+- 这个“真实消费到”规则同时适用于 compiled pipeline 和 SFC canonical pipeline
+- 未被当前模板消费的 injected prop / emit / slot 运行时命名漂移，不得改变 owner `DescriptorHash`
+- 对动态 pattern slot（例如 `item.${string}`）的使用统计，必须按实际命中的 runtime slot 名回查到 contract slot descriptor，不能因为只做静态 `Name` 精确匹配而漏算
 
 这样可以避免未被当前模板使用的 implementation 细节漂移，错误地扩大为 owner artifact 的 descriptor drift。
 
@@ -525,4 +532,4 @@ private static string ToEmitName(string propertyName)
 
 **维护者**：developerhan
 **最后更新**：2026-05-14
-**文档版本**：v1.1
+**文档版本**：v1.2
