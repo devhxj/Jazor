@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
 
@@ -41,7 +42,8 @@ public sealed class JazorDevelopmentAssetOptions
         }
     }
 
-    // Compatibility alias for older host code. Prefer DevelopmentOutputProbeRelativePath.
+    [Obsolete("Prefer DevelopmentOutputProbeRelativePath.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public string EntryModuleRelativePath
     {
         get => DevelopmentOutputProbeRelativePath;

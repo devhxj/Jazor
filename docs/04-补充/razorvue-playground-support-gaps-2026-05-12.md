@@ -381,7 +381,8 @@ jazor-manifest-razorvue.json
 - 已完成（2026-05-13 本轮）：`JazorDevelopmentAssetOptions` / `JazorWebAssetOptions` 默认探测仅保留 `jazor-manifest.json`，`Playground` smoke 不再显式依赖旧 manifest 文件名是否 404。
 - 已完成（2026-05-13 本轮）：Wiki 的 `/vendor/*` 长缓存策略已从项目私有 `OnPrepareResponse` delegate 收敛为 `UseJazorHost(...).WebAssets.ImmutableCachePathPrefixes` 声明式 option；标准宿主不再手写基础静态资源 header 逻辑。
 - 已完成（2026-05-14 本轮）：`Playground` 与 `samples/RazorVue.TodoList/Todo.Host` 均已收敛到 `UseJazorHost()` + `UseJazorSpaFallback("/index.html")` 默认宿主契约；`JazorAspNetCoreHostingTests` 新增默认单宿主组合回归，防止样例重新退回私有 `SendFileAsync` fallback。
-- 已完成（2026-05-14 本轮）：开发期输出探针的公共宿主 API 已收敛为 `DevelopmentOutputProbeRelativePath` / `DevelopmentOutputProbeRelativePaths`，默认即为统一 `jazor-manifest.json`；旧 `EntryModuleRelativePath` 仅保留兼容别名，不再作为推荐语义。
+- 已完成（2026-05-14 本轮）：开发期输出探针的公共宿主 API 已收敛为 `DevelopmentOutputProbeRelativePath` / `DevelopmentOutputProbeRelativePaths`，默认即为统一 `jazor-manifest.json`；旧 `EntryModuleRelativePath` 仅保留显式弃用的兼容别名，不再作为推荐语义。
+- 已完成（2026-05-14 本轮）：高层 `UseJazorHost(...).WebAssets` 入口现已补齐 `DevelopmentOutputProbeRelativePath` 单值配置，与低层 `UseJazorDevelopmentAssets(...)` 保持同一公共 probe 语义；`JazorAspNetCoreHostingTests` 已锁定该高层入口不会退回到只能手改 list 的半收敛状态。
 
 ### Playground / Wiki 一致性工作项
 

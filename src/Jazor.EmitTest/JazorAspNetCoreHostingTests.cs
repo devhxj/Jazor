@@ -45,6 +45,23 @@ public sealed class JazorAspNetCoreHostingTests
     }
 
     [TestMethod]
+    public void JazorDevelopmentAssetOptions_EntryModuleRelativePath_RemainsCompatibilityAliasAndIsObsolete()
+    {
+        var options = new JazorDevelopmentAssetOptions
+        {
+#pragma warning disable CS0618
+            EntryModuleRelativePath = "custom.probe.json"
+#pragma warning restore CS0618
+        };
+
+        Assert.AreEqual("custom.probe.json", options.DevelopmentOutputProbeRelativePath);
+
+        var property = typeof(JazorDevelopmentAssetOptions).GetProperty("EntryModuleRelativePath");
+        Assert.IsNotNull(property);
+        Assert.IsTrue(Attribute.IsDefined(property, typeof(ObsoleteAttribute)));
+    }
+
+    [TestMethod]
     public async Task UseJazorDevelopmentAssets_ServesMountedAssetsAndReturns404ForMissingMountedFile()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
@@ -127,7 +144,9 @@ public sealed class JazorAspNetCoreHostingTests
             app.UseJazorDevelopmentAssets(options =>
             {
                 options.DevelopmentOutputProbeRelativePath = "custom.probe.json";
+#pragma warning disable CS0618
                 Assert.AreEqual("custom.probe.json", options.EntryModuleRelativePath);
+#pragma warning restore CS0618
             });
             app.MapGet("/", () => "ready");
         });
@@ -220,6 +239,31 @@ public sealed class JazorAspNetCoreHostingTests
         CollectionAssert.AreEqual(
             new[] { "immutable" },
             vendorResponse.Headers.CacheControl.Extensions.Select(static extension => extension.Name).ToArray());
+    }
+
+    [TestMethod]
+    public async Task UseJazorHost_WebAssetsSupportsStableSingleProbeProperty()
+    {
+        using var workspace = new AspNetCoreHostTestWorkspace();
+        var jazorRoot = Path.Combine(workspace.RootPath, "jazor");
+        Directory.CreateDirectory(jazorRoot);
+        await File.WriteAllTextAsync(Path.Combine(jazorRoot, "custom.probe.json"), "{}");
+        await File.WriteAllTextAsync(Path.Combine(jazorRoot, "feature.mjs"), "export const value = 1;\n");
+
+        using var host = await CreateHostAsync(workspace.RootPath, app =>
+        {
+            app.UseJazorHost(options =>
+            {
+                options.WebAssets.DevelopmentOutputProbeRelativePath = "custom.probe.json";
+            });
+
+            app.MapGet("/", () => "ready");
+        });
+
+        var client = host.GetTestClient();
+        var mountedAssetResponse = await client.GetAsync("/jazor/feature.mjs");
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, mountedAssetResponse.StatusCode);
+        Assert.AreEqual("export const value = 1;\n", await mountedAssetResponse.Content.ReadAsStringAsync());
     }
 
     [TestMethod]

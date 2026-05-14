@@ -26,5 +26,19 @@ public sealed class JazorWebAssetOptions
 
     public IList<string> ImmutableCachePathPrefixes { get; }
 
+    public string DevelopmentOutputProbeRelativePath
+    {
+        get => DevelopmentOutputProbeRelativePaths.Count == 0
+            ? string.Empty
+            : DevelopmentOutputProbeRelativePaths[0];
+        set
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(value);
+
+            DevelopmentOutputProbeRelativePaths.Clear();
+            DevelopmentOutputProbeRelativePaths.Add(value);
+        }
+    }
+
     public Action<JazorDevelopmentAssetOptions>? ConfigureDevelopmentAssets { get; set; }
 }
