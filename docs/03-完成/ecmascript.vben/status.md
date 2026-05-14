@@ -118,6 +118,10 @@
   - 公开壳层组件确实声明为 `IVueContainerComponent`；
   - 默认解析路径仍使用 `ECMAScript.Vben` 原生实现；
   - `[VueInject]` 可以把 `VbenAdminLayout` / `VbenSidebarMenu` / `VbenHeaderBar` / `VbenPageContainer` 切换到第三方 library implementation，同时保留 `Vben` authoring contract；
+  - `VbenPageContainer` 的 injected runtime shape 已进入 Vue SFC artifact 与 pipeline artifact 回归；
+  - `VbenAdminLayout` 的 injected runtime shape 已进入 Vue SFC artifact 与 pipeline artifact 回归，覆盖 model prop / model emit / kebab-case slot 映射；
+  - `VbenHeaderBar` 的 injected runtime shape 已进入 Vue SFC artifact 与 pipeline artifact 回归；
+  - `VbenSidebarMenu` 的 injected runtime shape 已进入 pipeline artifact 回归；
   - `missing prop` / `prop type mismatch` / `emit payload mismatch` / `default slot mismatch` / `CaptureUnmatchedValues mismatch` / `duplicate [VueInject]` / `mismatched IVueContainerImplementation<TContainer>` 都已有 focused failure-path 回归；
 - `VueAuthoringMetadataTests` 校验：
   - 通用 `VueProp` / `VueSlot` 元数据可被 RazorVue descriptor extraction 正常识别；
@@ -125,8 +129,9 @@
 
 2026-05-15 当前基线复核：
 
-- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenContainerInjectTests' -v minimal`：已通过（13/13）；
+- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenContainerInjectTests' -v minimal`：已通过（20/20）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenContainerInjectTests|FullyQualifiedName~VbenAuthoringSurfaceTests|FullyQualifiedName~VueAuthoringMetadataTests' -v minimal`：已通过；
+- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj -v minimal`：已通过（27/27）；
 - `RazorVue` 聚焦回归已覆盖 Vben 相关 descriptor / authoring contract 收口，不再依赖旧兼容别名。
 
 ## 当前仍未完成的部分
@@ -149,14 +154,14 @@
 
 - 布局状态与交互行为的更细粒度验证；
 - 导航项层级/选中/展开的边界测试；
-- 页面头部 action/slot 组合的 descriptor 与 lowering 回归。
+- 原生壳层组合行为的更细粒度 lowering 回归。
 
 ### 2. 扩展容器注入覆盖面
 
 优先补足：
 
 - sample 级第三方容器实现映射，验证真实应用组合方式；
-- lowering / artifact 层针对 injected runtime shape 的 Vben 专项回归；
+- 将 `SidebarMenu` 的 artifact 回归从 pipeline 扩展到 Vue SFC artifact；
 
 ### 3. 补状态文档与实现对应关系
 

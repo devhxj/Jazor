@@ -226,6 +226,7 @@
 
 - 默认原生解析回归
 - `VbenAdminLayout` / `VbenSidebarMenu` / `VbenHeaderBar` / `VbenPageContainer` 的 `[VueInject]` 替换回归
+- 四个公开壳层的 injected runtime shape artifact 回归（其中 `SidebarMenu` 当前已覆盖 pipeline artifact）
 - 容器兼容性失败诊断回归（prop / emit / slot / capture-unmatched-values / duplicate inject / wrong contract）
 
 ### C2. 建议增加最小 sample

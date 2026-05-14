@@ -9,6 +9,12 @@ namespace ECMAScript.Vben.Test;
 [TestClass]
 public sealed partial class VbenContainerInjectTests
 {
+    private static RazorVueSfcArtifactFactory CreateBuildRenderTreeArtifactFactory()
+        => new(BuildRenderTreeTemplateFrontend.Instance);
+
+    private static RazorVuePipeline CreateBuildRenderTreePipeline()
+        => new(BuildRenderTreeTemplateFrontend.Instance);
+
     [TestMethod]
     public void Vben_NativeShellComponents_AreDeclaredAsContainerContracts()
     {

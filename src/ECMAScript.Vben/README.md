@@ -21,6 +21,7 @@ Verified baseline:
 
 - Default registry resolution keeps `VbenAdminLayout`, `VbenSidebarMenu`, `VbenHeaderBar`, and `VbenPageContainer` on the native `ECMAScript.Vben` implementation path
 - `[VueInject]` replacement is regression-covered for all four public shell components
+- Injected runtime shape lowering is regression-covered at Vue SFC and/or pipeline artifact levels for all four public Vben shell components
 - Container compatibility failures are regression-covered for missing props, prop type mismatch, emit payload mismatch, default-slot mismatch, `CaptureUnmatchedValues` mismatch, duplicate registrations, and mismatched `IVueContainerImplementation<TContainer>` contracts
 
 This package is the semantic and implementation core. Third-party UI-library cooperation belongs in samples or app-level composition, not in `ECMAScript.Vben.*` adapter packages.
