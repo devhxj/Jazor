@@ -360,6 +360,7 @@ jazor-manifest-razorvue.json
 - 已完成（2026-05-13 本轮）：`razorvue-consumer-entry` 只把“被选择的 SFC 组件集合”传给 `razorvue-sfc-bridge`，不再因为 manifest 中未选中的坏 SFC 而整体失败。
 - 已完成（2026-05-13 本轮）：`razorvue-sfc-bridge` 支持显式 entry module path 过滤，并保留相对 `.vue` 依赖闭包编译，保证选中的 SFC 组件间引用仍能稳定工作。
 - 已完成（2026-05-14 本轮）：统一 manifest 的 RazorVue component projection 诊断已细分为“manifest 不存在”“manifest 存在但没有 RazorVue component entries”“selector 无匹配”“selector 匹配多个组件”；`razorvue-diff` 的缺失原因也改为统一 Jazor manifest projection 语义，避免继续泄漏废弃的第二 manifest 公共契约。
+- 已完成（2026-05-14 本轮）：`Playground` consumer runtime 已移除缺失 `routeDefinitions` 时的 legacy 手写路由回退；运行时现在必须消费 `razorvue-consumer-entry` 生成的 `razorVueConsumerRoutes`，确保 Razor `@page -> unified manifest routeTemplates -> consumer runtime` 是唯一路由真相源。
 
 ### ASP.NET Core 宿主工作项
 

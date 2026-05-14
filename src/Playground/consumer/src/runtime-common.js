@@ -22,7 +22,7 @@ export function assertHostRequirements(hostRequirements) {
 
 export function resolveConsumerRoutes(routeDefinitions) {
   if (routeDefinitions == null) {
-    return getLegacyDefaultRoutes();
+    throw new Error("Playground consumer routes must be provided by the generated RazorVue consumer entry.");
   }
 
   if (!Array.isArray(routeDefinitions)) {
@@ -116,31 +116,6 @@ function normalizeRoute(route, index) {
     path,
     parameterNames: Object.freeze(parameterNames)
   });
-}
-
-function getLegacyDefaultRoutes() {
-  return Object.freeze([
-    Object.freeze({
-      name: "CatalogPage__0",
-      alias: "CatalogPage",
-      componentId: "legacy:CatalogPage",
-      componentName: "CatalogPage",
-      componentModel: "legacy",
-      routeTemplate: "/",
-      path: "/",
-      parameterNames: Object.freeze([])
-    }),
-    Object.freeze({
-      name: "DetailPage__0",
-      alias: "DetailPage",
-      componentId: "legacy:DetailPage",
-      componentName: "DetailPage",
-      componentModel: "legacy",
-      routeTemplate: "/examples/{id}",
-      path: "/examples/:id",
-      parameterNames: Object.freeze(["id"])
-    })
-  ]);
 }
 
 function matchRoutePath(routePath, pathname) {
