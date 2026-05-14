@@ -97,7 +97,7 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             Imports: BuildImports(resolvedComponents, compilerImports),
             Styles: BuildStyles(descriptor, resolvedComponents),
             PluginRequirements: BuildPluginRequirements(descriptor, resolvedComponents),
-            Identity: BuildIdentity(context, snapshot, renderTree, expressionEmitter, relativeModulePath),
+            Identity: BuildIdentity(context, snapshot, renderTree, expressionEmitter, relativeModulePath, resolvedComponents),
             Hints: BuildHints(moduleCode),
             SourceOrigins: sourceOrigins);
     }
@@ -107,10 +107,11 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         RazorVueSemanticSnapshot snapshot,
         RazorVueRenderFragment renderTree,
         RazorVueExpressionEmitter expressionEmitter,
-        string relativeModulePath)
+        string relativeModulePath,
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
     {
         var descriptor = snapshot.Descriptor;
-        var descriptorShape = BuildDescriptorShape(descriptor);
+        var descriptorShape = BuildDescriptorShape(descriptor, renderTree, resolvedComponents);
         var templateShape = expressionEmitter.DescribeFragment(renderTree);
         var logicShape = BuildLogicShape(context, snapshot, renderTree, expressionEmitter);
         var boundaryKind = ClassifyHmrBoundary(renderTree, snapshot);
@@ -124,7 +125,10 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             HmrBoundaryKind: boundaryKind);
     }
 
-    private static string BuildDescriptorShape(VueComponentDescriptor descriptor)
+    private static string BuildDescriptorShape(
+        VueComponentDescriptor descriptor,
+        RazorVueRenderFragment renderTree,
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
     {
         var descriptorShape = new StringBuilder();
         descriptorShape.AppendLine(descriptor.FullName);
@@ -159,8 +163,234 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
                 string.Join(",", slot.Parameters.Select(static parameter => parameter.Name + ":" + parameter.TypeName)));
         foreach (var pluginRequirement in descriptor.PluginRequirements.OrderBy(static item => item, StringComparer.Ordinal))
             descriptorShape.AppendLine("plugin:" + pluginRequirement);
+        AppendResolvedComponentRuntimeShape(descriptorShape, renderTree, resolvedComponents);
 
         return descriptorShape.ToString();
+    }
+
+    private static void AppendResolvedComponentRuntimeShape(
+        StringBuilder builder,
+        RazorVueRenderFragment renderTree,
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
+    {
+        if (resolvedComponents.IsEmpty)
+            return;
+
+        var referencedComponents = CollectReferencedComponents(renderTree, resolvedComponents);
+        foreach (var component in referencedComponents)
+        {
+            builder.AppendLine("resolved:" + component.ComponentKey);
+            builder.AppendLine("resolved:sourceKind=" + component.Descriptor.SourceKind);
+            builder.AppendLine("resolved:import=" + component.Descriptor.ImportSpecifier);
+            builder.AppendLine("resolved:export=" + component.Descriptor.ExportName);
+            builder.AppendLine("resolved:container=" + (component.Descriptor.ContainerContractFullName ?? string.Empty));
+            builder.AppendLine("resolved:flags=" + component.Descriptor.Flags);
+
+            foreach (var usedProp in component.UsedProps.OrderBy(static item => item.PublicName, StringComparer.Ordinal))
+            {
+                builder.AppendLine(
+                    "resolved:prop:" +
+                    usedProp.PublicName + "|" +
+                    usedProp.Name + "|" +
+                    usedProp.TypeName + "|" +
+                    usedProp.Required + "|" +
+                    usedProp.AcceptsBinding + "|" +
+                    (usedProp.DefaultExpression ?? string.Empty) + "|" +
+                    usedProp.Kind + "|" +
+                    usedProp.CaptureUnmatchedValues);
+            }
+
+            foreach (var usedEmit in component.UsedEmits.OrderBy(static item => item.RazorAlias, StringComparer.Ordinal))
+                builder.AppendLine("resolved:emit:" + (usedEmit.RazorAlias ?? string.Empty) + "|" + usedEmit.Name + "|" + usedEmit.PayloadTypeName + "|" + usedEmit.Kind);
+
+            foreach (var usedSlot in component.UsedSlots.OrderBy(static item => item.PublicName, StringComparer.Ordinal))
+            {
+                builder.AppendLine(
+                    "resolved:slot:" +
+                    usedSlot.PublicName + "|" +
+                    usedSlot.Name + "|" +
+                    (usedSlot.NamePattern ?? string.Empty) + "|" +
+                    usedSlot.PatternOnly + "|" +
+                    usedSlot.IsDefault + "|" +
+                    usedSlot.Required + "|" +
+                    string.Join(",", usedSlot.Parameters.Select(static parameter => parameter.Name + ":" + parameter.TypeName)));
+            }
+
+            foreach (var style in component.Descriptor.StyleDependencies.OrderBy(static item => item, StringComparer.Ordinal))
+                builder.AppendLine("resolved:style:" + style);
+            foreach (var pluginRequirement in component.Descriptor.PluginRequirements.OrderBy(static item => item, StringComparer.Ordinal))
+                builder.AppendLine("resolved:plugin:" + pluginRequirement);
+        }
+    }
+
+    private static ImmutableArray<ResolvedComponentRuntimeUsage> CollectReferencedComponents(
+        RazorVueRenderFragment renderTree,
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
+    {
+        if (resolvedComponents.IsEmpty)
+            return ImmutableArray<ResolvedComponentRuntimeUsage>.Empty;
+
+        var usageByComponent = new Dictionary<string, ReferencedRuntimeSurfaceBuilder>(StringComparer.Ordinal);
+        CollectReferencedComponents(renderTree, resolvedComponents, usageByComponent);
+
+        return usageByComponent
+            .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+            .Select(static pair => pair.Value.Build())
+            .ToImmutableArray();
+    }
+
+    private static void CollectReferencedComponents(
+        RazorVueRenderFragment fragment,
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
+        Dictionary<string, ReferencedRuntimeSurfaceBuilder> usageByComponent)
+    {
+        if (fragment.Children.IsDefaultOrEmpty)
+            return;
+
+        foreach (var child in fragment.Children)
+            CollectReferencedComponents(child, resolvedComponents, usageByComponent);
+    }
+
+    private static void CollectReferencedComponents(
+        RazorVueRenderNode node,
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
+        Dictionary<string, ReferencedRuntimeSurfaceBuilder> usageByComponent)
+    {
+        switch (node)
+        {
+            case RazorVueElementNode element:
+                CollectReferencedComponents(element.Children, resolvedComponents, usageByComponent);
+                break;
+            case RazorVueComponentNode component:
+                CollectReferencedComponent(component, resolvedComponents, usageByComponent);
+                CollectReferencedComponents(component.Children, resolvedComponents, usageByComponent);
+                foreach (var slotTemplate in component.SlotTemplates)
+                    CollectReferencedComponents(slotTemplate.Children, resolvedComponents, usageByComponent);
+                break;
+            case RazorVueConditionalNode conditional:
+                CollectReferencedComponents(conditional.WhenTrue, resolvedComponents, usageByComponent);
+                CollectReferencedComponents(conditional.WhenFalse, resolvedComponents, usageByComponent);
+                break;
+            case RazorVueForEachNode loop:
+                CollectReferencedComponents(loop.Body, resolvedComponents, usageByComponent);
+                break;
+            case RazorVueForNode loop:
+                CollectReferencedComponents(loop.Body, resolvedComponents, usageByComponent);
+                break;
+        }
+    }
+
+    private static void CollectReferencedComponent(
+        RazorVueComponentNode component,
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
+        Dictionary<string, ReferencedRuntimeSurfaceBuilder> usageByComponent)
+    {
+        if (!resolvedComponents.TryGetValue(component.ComponentName, out var descriptor))
+            return;
+
+        if (!usageByComponent.TryGetValue(component.ComponentName, out var usage))
+        {
+            usage = new ReferencedRuntimeSurfaceBuilder(component.ComponentName, descriptor);
+            usageByComponent.Add(component.ComponentName, usage);
+        }
+
+        foreach (var attributeEntry in component.Attributes)
+        {
+            if (attributeEntry is RazorVueAttributeSpreadNode)
+            {
+                usage.MarkAllPropsAndEmits();
+                continue;
+            }
+
+            var attribute = (RazorVueAttributeNode)attributeEntry;
+            if (VueSlotResolver.TryResolve(descriptor.Slots, attribute.Name, out var slotResolution))
+            {
+                usage.MarkSlot(slotResolution.Descriptor);
+                continue;
+            }
+
+            if (VuePropResolver.TryResolve(descriptor.Props, attribute.Name, out var propResolution))
+            {
+                usage.MarkProp(propResolution.Descriptor);
+                continue;
+            }
+
+            if (!string.IsNullOrWhiteSpace(attribute.Name) &&
+                descriptor.Emits.Any(emit => string.Equals(emit.RazorAlias, attribute.Name, StringComparison.Ordinal)))
+            {
+                usage.MarkEmitByAlias(attribute.Name);
+            }
+        }
+
+        if (!component.Children.Children.IsDefaultOrEmpty &&
+            VueSlotResolver.TryResolve(descriptor.Slots, "ChildContent", out var childContentSlot))
+        {
+            usage.MarkSlot(childContentSlot.Descriptor);
+        }
+
+        foreach (var slotTemplate in component.SlotTemplates)
+        {
+            if (VueSlotResolver.TryResolve(descriptor.Slots, slotTemplate.PublicName, out var slotResolution))
+                usage.MarkSlot(slotResolution.Descriptor);
+        }
+    }
+
+    private sealed record ResolvedComponentRuntimeUsage(
+        string ComponentKey,
+        VueComponentDescriptor Descriptor,
+        ImmutableArray<VuePropDescriptor> UsedProps,
+        ImmutableArray<VueEmitDescriptor> UsedEmits,
+        ImmutableArray<VueSlotDescriptor> UsedSlots);
+
+    private sealed class ReferencedRuntimeSurfaceBuilder
+    {
+        private readonly Dictionary<string, VuePropDescriptor> _props = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, VueEmitDescriptor> _emits = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, VueSlotDescriptor> _slots = new(StringComparer.Ordinal);
+
+        public ReferencedRuntimeSurfaceBuilder(string componentKey, VueComponentDescriptor descriptor)
+        {
+            ComponentKey = componentKey;
+            Descriptor = descriptor;
+        }
+
+        public string ComponentKey { get; }
+
+        public VueComponentDescriptor Descriptor { get; }
+
+        public void MarkAllPropsAndEmits()
+        {
+            foreach (var prop in Descriptor.Props)
+                MarkProp(prop);
+            foreach (var emit in Descriptor.Emits)
+                MarkEmit(emit);
+        }
+
+        public void MarkProp(VuePropDescriptor descriptor)
+            => _props[descriptor.PublicName] = descriptor;
+
+        public void MarkEmitByAlias(string razorAlias)
+        {
+            foreach (var emit in Descriptor.Emits)
+            {
+                if (string.Equals(emit.RazorAlias, razorAlias, StringComparison.Ordinal))
+                    MarkEmit(emit);
+            }
+        }
+
+        public void MarkSlot(VueSlotDescriptor descriptor)
+            => _slots[descriptor.PublicName] = descriptor;
+
+        public ResolvedComponentRuntimeUsage Build()
+            => new(
+                ComponentKey,
+                Descriptor,
+                _props.Values.ToImmutableArray(),
+                _emits.Values.ToImmutableArray(),
+                _slots.Values.ToImmutableArray());
+
+        private void MarkEmit(VueEmitDescriptor descriptor)
+            => _emits[descriptor.RazorAlias ?? descriptor.Name] = descriptor;
     }
 
     private static string BuildLogicShape(

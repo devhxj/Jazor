@@ -1,6 +1,7 @@
 using Jazor.RazorVue;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
+using Jazor.RazorVue.Emit;
 using Jazor.RazorVue.Extensibility;
 using Jazor.RazorVue.Lowering;
 using Jazor.RazorVue.RenderTree;
@@ -10,6 +11,8 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using System.Collections.Immutable;
 using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 
 namespace Jazor.RazorVue.Test;
@@ -11085,6 +11088,415 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_InjectedRuntimeShapeChangesAffectDescriptorHash()
+    {
+        var identityA = CreateBuildRenderTreePipeline().Execute(CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using ECMAScript.VueContract.Descriptor;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            [assembly: VueInject(
+                typeof(Demo.Containers.NavShell),
+                typeof(Demo.Implementations.ElementPlusNavShell))]
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Contracts
+            {
+                public sealed record HeaderContext(string Title);
+            }
+
+            namespace Demo.Containers
+            {
+                [ECMAScript.ECMAScriptModule("./containers/nav-shell")]
+                public sealed class NavShell : ComponentBase, IVueComponent, IVueContainerComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public string? Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+                }
+            }
+
+            namespace Demo.Implementations
+            {
+                [VueLibraryComponent("element-plus", "ElMenu")]
+                [VueProp(nameof(Title), Name = "menuTitle")]
+                [VueProp(nameof(Value), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
+                [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.String?")]
+                [VueSlot(nameof(Header), Name = "header", ContextTypeName = "Demo.Contracts.HeaderContext", ContextParameterName = "headerContext")]
+                public sealed class ElementPlusNavShell : ComponentBase, IVueLibraryComponent, IVueContainerImplementation<Demo.Containers.NavShell>
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public string? Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./pages/home-page")]
+                public sealed class HomePage : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent(0, typeof(Demo.Containers.NavShell));
+                        builder.AddComponentParameter(1, nameof(Demo.Containers.NavShell.Title), "Overview");
+                        builder.AddComponentParameter(2, nameof(Demo.Containers.NavShell.Value), Value);
+                        builder.AddComponentParameter(3, nameof(Demo.Containers.NavShell.ValueChanged), ValueChanged);
+                        builder.AddComponentParameter(4, nameof(Demo.Containers.NavShell.Header), Header);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """)).Artifacts.Single(static artifact => artifact.ComponentName == "HomePage").Identity;
+
+        var identityB = CreateBuildRenderTreePipeline().Execute(CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using ECMAScript.VueContract.Descriptor;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            [assembly: VueInject(
+                typeof(Demo.Containers.NavShell),
+                typeof(Demo.Implementations.ElementPlusNavShell))]
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Contracts
+            {
+                public sealed record HeaderContext(string Title);
+            }
+
+            namespace Demo.Containers
+            {
+                [ECMAScript.ECMAScriptModule("./containers/nav-shell")]
+                public sealed class NavShell : ComponentBase, IVueComponent, IVueContainerComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public string? Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+                }
+            }
+
+            namespace Demo.Implementations
+            {
+                [VueLibraryComponent("element-plus", "ElMenu")]
+                [VueProp(nameof(Title), Name = "navigationTitle")]
+                [VueProp(nameof(Value), VuePropKind.Model, Name = "selectedValue", AcceptsBinding = true)]
+                [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:selectedValue", PayloadTypeName = "System.String?")]
+                [VueSlot(nameof(Header), Name = "top", ContextTypeName = "Demo.Contracts.HeaderContext", ContextParameterName = "headerContext")]
+                public sealed class ElementPlusNavShell : ComponentBase, IVueLibraryComponent, IVueContainerImplementation<Demo.Containers.NavShell>
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public string? Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./pages/home-page")]
+                public sealed class HomePage : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent(0, typeof(Demo.Containers.NavShell));
+                        builder.AddComponentParameter(1, nameof(Demo.Containers.NavShell.Title), "Overview");
+                        builder.AddComponentParameter(2, nameof(Demo.Containers.NavShell.Value), Value);
+                        builder.AddComponentParameter(3, nameof(Demo.Containers.NavShell.ValueChanged), ValueChanged);
+                        builder.AddComponentParameter(4, nameof(Demo.Containers.NavShell.Header), Header);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """)).Artifacts.Single(static artifact => artifact.ComponentName == "HomePage").Identity;
+
+        Assert.AreNotEqual(identityA.DescriptorHash, identityB.DescriptorHash);
+        Assert.AreEqual(identityA.TemplateHash, identityB.TemplateHash);
+        Assert.AreEqual(identityA.LogicHash, identityB.LogicHash);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_InjectedRuntimeShapeChanges_ClassifyAsPublicDescriptorDrift()
+    {
+        var artifactA = CreateBuildRenderTreePipeline().Execute(CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using ECMAScript.VueContract.Descriptor;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            [assembly: VueInject(
+                typeof(Demo.Containers.NavShell),
+                typeof(Demo.Implementations.ElementPlusNavShell))]
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Contracts
+            {
+                public sealed record HeaderContext(string Title);
+            }
+
+            namespace Demo.Containers
+            {
+                [ECMAScript.ECMAScriptModule("./containers/nav-shell")]
+                public sealed class NavShell : ComponentBase, IVueComponent, IVueContainerComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public string? Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+                }
+            }
+
+            namespace Demo.Implementations
+            {
+                [VueLibraryComponent("element-plus", "ElMenu")]
+                [VueProp(nameof(Title), Name = "menuTitle")]
+                [VueProp(nameof(Value), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
+                [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.String?")]
+                [VueSlot(nameof(Header), Name = "header", ContextTypeName = "Demo.Contracts.HeaderContext", ContextParameterName = "headerContext")]
+                public sealed class ElementPlusNavShell : ComponentBase, IVueLibraryComponent, IVueContainerImplementation<Demo.Containers.NavShell>
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public string? Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./pages/home-page")]
+                public sealed class HomePage : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent(0, typeof(Demo.Containers.NavShell));
+                        builder.AddComponentParameter(1, nameof(Demo.Containers.NavShell.Title), "Overview");
+                        builder.AddComponentParameter(2, nameof(Demo.Containers.NavShell.Value), Value);
+                        builder.AddComponentParameter(3, nameof(Demo.Containers.NavShell.ValueChanged), ValueChanged);
+                        builder.AddComponentParameter(4, nameof(Demo.Containers.NavShell.Header), Header);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """)).Artifacts.Single(static artifact => artifact.ComponentName == "HomePage");
+
+        var artifactB = CreateBuildRenderTreePipeline().Execute(CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using ECMAScript.VueContract.Descriptor;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            [assembly: VueInject(
+                typeof(Demo.Containers.NavShell),
+                typeof(Demo.Implementations.ElementPlusNavShell))]
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Contracts
+            {
+                public sealed record HeaderContext(string Title);
+            }
+
+            namespace Demo.Containers
+            {
+                [ECMAScript.ECMAScriptModule("./containers/nav-shell")]
+                public sealed class NavShell : ComponentBase, IVueComponent, IVueContainerComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public string? Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+                }
+            }
+
+            namespace Demo.Implementations
+            {
+                [VueLibraryComponent("element-plus", "ElMenu")]
+                [VueProp(nameof(Title), Name = "navigationTitle")]
+                [VueProp(nameof(Value), VuePropKind.Model, Name = "selectedValue", AcceptsBinding = true)]
+                [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:selectedValue", PayloadTypeName = "System.String?")]
+                [VueSlot(nameof(Header), Name = "top", ContextTypeName = "Demo.Contracts.HeaderContext", ContextParameterName = "headerContext")]
+                public sealed class ElementPlusNavShell : ComponentBase, IVueLibraryComponent, IVueContainerImplementation<Demo.Containers.NavShell>
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public string? Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./pages/home-page")]
+                public sealed class HomePage : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent(0, typeof(Demo.Containers.NavShell));
+                        builder.AddComponentParameter(1, nameof(Demo.Containers.NavShell.Title), "Overview");
+                        builder.AddComponentParameter(2, nameof(Demo.Containers.NavShell.Value), Value);
+                        builder.AddComponentParameter(3, nameof(Demo.Containers.NavShell.ValueChanged), ValueChanged);
+                        builder.AddComponentParameter(4, nameof(Demo.Containers.NavShell.Header), Header);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """)).Artifacts.Single(static artifact => artifact.ComponentName == "HomePage");
+
+        var diff = RazorVueManifestDiffer.Diff(
+            CreateManifest(artifactA),
+            CreateManifest(artifactB));
+
+        Assert.AreEqual(RazorVueHotUpdateAction.FullReload, diff.Action);
+        Assert.AreEqual("Public component descriptor changed.", diff.Reason);
+        Assert.AreEqual(1, diff.Modules.Count);
+        Assert.AreEqual(RazorVueHotUpdateAction.FullReload, diff.Modules[0].Action);
+        Assert.IsTrue(diff.Modules[0].DescriptorChanged);
+        Assert.IsFalse(diff.Modules[0].TemplateChanged);
+        Assert.IsFalse(diff.Modules[0].LogicChanged);
+        Assert.AreEqual("Public component descriptor changed.", diff.Modules[0].Reason);
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_InheritedNoOpLifecycleDoesNotChangeLogicHash()
     {
         var identityWithoutLifecycle = CreateBuildRenderTreePipeline().Execute(CreateContext(
@@ -19416,4 +19828,54 @@ public sealed class RazorVuePipelineTests
                         ImmutableArray.Create<RazorVueRenderNode>(
                             new RazorVueTextNode(text, ImmutableArray<RazorVueSourceOrigin>.Empty))),
                     ImmutableArray<RazorVueSourceOrigin>.Empty)));
+
+    private static RazorVueManifestModel CreateManifest(VueCompiledArtifact artifact)
+    {
+        var entry = new RazorVueManifestEntry(
+            AssemblyName: "RazorVue.Pipeline.Tests",
+            ComponentId: artifact.Identity.ComponentId,
+            ModuleId: artifact.Identity.ModuleId,
+            ComponentName: artifact.ComponentName,
+            RouteTemplates: artifact.RouteTemplates.ToList(),
+            RelativeModulePath: artifact.RelativeModulePath,
+            SourceMapPath: artifact.RelativeModulePath + ".map",
+            OriginMapPath: artifact.RelativeModulePath + ".origins.json",
+            Imports: artifact.Imports.ToList(),
+            Styles: artifact.Styles.ToList(),
+            PluginRequirements: artifact.PluginRequirements.ToList(),
+            DescriptorHash: artifact.Identity.DescriptorHash,
+            TemplateHash: artifact.Identity.TemplateHash,
+            LogicHash: artifact.Identity.LogicHash,
+            ContentHash: ComputeSha256Hex(artifact.ModuleCode),
+            HmrBoundaryKind: ToManifestBoundaryKind(artifact.Identity.HmrBoundaryKind),
+            RequiresHydration: artifact.Hints.RequiresHydration,
+            SupportsSsr: artifact.Hints.SupportsSsr);
+
+        return new RazorVueManifestModel(
+            AssemblyName: "RazorVue.Pipeline.Tests",
+            GeneratedAtUtc: DateTime.UtcNow,
+            Modules: [entry],
+            Styles: artifact.Styles.ToList(),
+            PluginRequirements: artifact.PluginRequirements.ToList());
+    }
+
+    private static RazorVueHmrBoundaryKind ToManifestBoundaryKind(HmrBoundaryKind boundaryKind)
+        => boundaryKind switch
+        {
+            HmrBoundaryKind.Unknown => RazorVueHmrBoundaryKind.Unknown,
+            HmrBoundaryKind.TemplateOnly => RazorVueHmrBoundaryKind.TemplateOnly,
+            HmrBoundaryKind.LogicSafe => RazorVueHmrBoundaryKind.LogicSafe,
+            HmrBoundaryKind.FullReloadRequired => RazorVueHmrBoundaryKind.FullReloadRequired,
+            _ => throw new ArgumentOutOfRangeException(nameof(boundaryKind), boundaryKind, "Unsupported HMR boundary kind.")
+        };
+
+    private static string ComputeSha256Hex(string content)
+    {
+        using var sha = SHA256.Create();
+        var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(content ?? string.Empty));
+        var builder = new StringBuilder(bytes.Length * 2);
+        foreach (var item in bytes)
+            builder.Append(item.ToString("X2"));
+        return builder.ToString();
+    }
 }

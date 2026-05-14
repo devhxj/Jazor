@@ -204,6 +204,35 @@ public sealed record VueSlotDescriptor(
 - analyzer、generator、lowering 使用同一套 inject 兼容性语义
 - container contract 的 authoring 面在提交前就能得到稳定、确定的诊断
 
+#### 容器 inject 的 artifact identity / HMR 分类规则
+
+container inject 不只是影响最终生成代码，它还必须显式进入 owner artifact 的 identity 计算。
+
+当前约束是：
+
+1. compiled pipeline 的 `DescriptorHash` 不能只由 owner 自身 authored descriptor 决定
+2. 当模板里实际引用了某个 container contract，并且该 contract 通过 `[VueInject]` 解析到 implementation 时：
+   - owner artifact 的 `DescriptorHash` 必须额外纳入该 resolved runtime surface
+   - 至少包含当前模板真实消费到的 runtime prop / emit / slot 名称，以及该 resolved component 的 import / export / source kind / flags / styles / plugins
+3. `TemplateHash` 与 `LogicHash` 仍然只表达模板结构和逻辑 lowering 本身
+
+这样做的原因不是“让 hash 更敏感”，而是保证 hot-update 分类语义正确：
+
+- 如果 injected runtime prop / emit / slot 名称发生变化，上层组件的 host-facing runtime contract 实际已经变化
+- 这类变化必须被 `RazorVueManifestDiffer` 识别为：
+  - `DescriptorHash` drift
+  - reason: `Public component descriptor changed.`
+- 不能退化为：
+  - 只有 `ContentHash` 变化
+  - reason: `Module content changed outside split hash classification.`
+
+这里有一个重要边界：
+
+- 进入 owner `DescriptorHash` 的不是“整个 registry 的所有 resolved component descriptor”
+- 而是“当前 render tree 实际引用到、并且当前模板真实消费到的 runtime surface”
+
+这样可以避免未被当前模板使用的 implementation 细节漂移，错误地扩大为 owner artifact 的 descriptor drift。
+
 **插槽参数描述符**（作用域插槽）：
 
 ```csharp
@@ -495,5 +524,5 @@ private static string ToEmitName(string propertyName)
 ---
 
 **维护者**：developerhan
-**最后更新**：2026-04-21
-**文档版本**：v1.0
+**最后更新**：2026-05-14
+**文档版本**：v1.1
