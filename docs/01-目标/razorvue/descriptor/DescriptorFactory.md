@@ -312,6 +312,76 @@ private static string? GetContainerContractFullName(
 
 这样后续的 `VueInjectRegistry` 就能在组件解析完成后，把 authored 容器组件替换成装配配置的具体实现，而不需要在描述符阶段硬编码任何具体组件库。
 
+### 容器注入后的 merged descriptor 规则
+
+`VueComponentDescriptorFactory` 只负责把容器归属投影到 `ContainerContractFullName`，  
+真正的注入发生在 `VueInjectRegistry.ResolveImplementation(...)`。
+
+这里有一个容易误用的点：
+
+- **注入不是直接返回 implementation descriptor**
+- **注入返回的是 contract + implementation 合成后的 merged descriptor**
+
+当前合成规则：
+
+| 字段 | 来源 |
+|------|------|
+| `Name` | contract |
+| `FullName` | contract |
+| `ResolutionNamespace` | contract |
+| `RouteTemplates` | contract |
+| `Flags` | contract |
+| `SourceKind` | implementation |
+| `ImportSpecifier` | implementation |
+| `ExportName` | implementation |
+| `StyleDependencies` | implementation |
+| `PluginRequirements` | implementation |
+| `Props` | 按 `PublicName` 配对，contract 保留 authoring 语义，implementation 提供 runtime `Name` |
+| `Emits` | 按 `RazorAlias` 配对，contract 保留 authoring 语义，implementation 提供 runtime `Name` |
+| `Slots` | 按 `PublicName` 配对，contract 保留 authoring 语义，implementation 提供 runtime `Name` |
+
+这样设计的原因很直接：
+
+1. authoring contract 必须稳定，不能因为底层库切换而改变上层 authoring 面。
+2. runtime import / export / style / plugin 依赖必须来自真实 implementation。
+3. prop / emit / slot 描述符同时承载 authoring 名和 runtime 名，所以不能整组沿用 contract 或 implementation，必须成员级别合成。
+
+### 容器注入兼容性验证
+
+`VueInjectRegistry` 在返回 merged descriptor 之前会做 contract/implementation 一致性校验。
+
+当前校验方式是“按 authoring 键配对，再检查 implementation 是否能替代 contract”：
+
+- `Props`：按 `PublicName`
+- `Emits`：按 `RazorAlias`
+- `Slots`：按 `PublicName`
+
+校验目标：
+
+- implementation 不能缺少 contract 已公开的成员
+- implementation 不能把 contract 已公开的 authoring 保证收窄
+- 运行时命名允许变化，但 authoring 语义不允许漂移
+
+当前严格要求的字段包括：
+
+- prop: `TypeName` / `Required` / `AcceptsBinding` / `CaptureUnmatchedValues` / `Kind`
+- emit: `PayloadTypeName` / `Kind`
+- slot: `PatternOnly` / `IsDefault` / `Required` / `NamePattern` / context 参数数量 / context 参数类型
+- component flags: `Flags`
+
+另外，类型名比较做了一个很窄的规范化，只处理 `string` / `System.String` 这类 Roslyn 展示差异，不会把真正不兼容的类型放过。
+
+### 注入触发边界
+
+注入只在“当前解析到的 descriptor 就是容器 contract 本体”时触发。
+
+也就是说：
+
+- authored `<NavShell />` 会根据 `[VueInject]` 解析到具体实现
+- authored `<ElementPlusNavShell />` 不会再被反向重写
+
+这条规则保证 implementation 组件自身仍然可以被显式引用、诊断和测试，不会因为容器注入而产生隐式递归替换。
+
 ### 库组件元数据
 
 #### 1. 组件级别元数据

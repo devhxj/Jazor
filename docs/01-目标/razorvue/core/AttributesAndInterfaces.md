@@ -360,6 +360,72 @@ public sealed class VueInjectAttribute : Attribute
 - implementation 必须在当前 RazorVue 组件注册表中可见
 - implementation 必须实现 `IVueContainerImplementation<TContainer>`
 - `TContainer` 必须与 `[VueInject]` 的 contract 参数一致
+- 容器注入只在“当前解析到的组件就是容器契约本体”时生效；直接引用某个具体实现组件时，不会再次经过注入重写
+
+### 2.2.6 容器注入后的描述符合成规则
+
+容器机制不是简单地“把 contract descriptor 整个替换成 implementation descriptor”。  
+如果直接整体替换，authoring 面会泄漏为 Element Plus / Vuetify / TDesign 的具体库细节，容器抽象会立即失效。
+
+RazorVue 当前采用 **merged descriptor** 规则：
+
+- **保留 contract authoring identity**
+  - `Name`
+  - `FullName`
+  - `ResolutionNamespace`
+  - `RouteTemplates`
+  - `Flags`
+- **切换到 implementation runtime surface**
+  - `SourceKind`
+  - `ImportSpecifier`
+  - `ExportName`
+  - `StyleDependencies`
+  - `PluginRequirements`
+- **成员级别逐项合成**
+  - `Props`：按 `PublicName` 配对，authoring 语义保留 contract，运行时 prop 名 `Name` 取 implementation
+  - `Emits`：按 `RazorAlias` 配对，authoring 语义保留 contract，运行时 emit 名 `Name` 取 implementation
+  - `Slots`：按 `PublicName` 配对，authoring 语义保留 contract，运行时 slot 名 `Name` 取 implementation
+
+这意味着：
+
+1. 上层 authoring 永远面对稳定的容器 contract。
+2. 具体组件库差异只体现在 runtime prop / event / slot 名称与导入依赖上。
+3. 容器实现切换不会把上层框架重新耦合到某个具体库的 authoring metadata。
+
+### 2.2.7 容器 contract 与 implementation 的兼容性规则
+
+`[VueInject]` 不只是声明映射，还会触发编译期兼容性验证。  
+当前验证目标是：**implementation 不能收窄 contract 已公开的 authoring 保证。**
+
+当前规则如下：
+
+- **Props**
+  - implementation 必须包含 contract 的每个 `PublicName`
+  - `TypeName` 必须兼容（当前按规范化后的类型名相等比较）
+  - `Required` 必须一致
+  - `AcceptsBinding` 必须一致
+  - `CaptureUnmatchedValues` 必须一致
+  - `Kind` 必须一致
+- **Emits**
+  - implementation 必须包含 contract 的每个 `RazorAlias`
+  - `PayloadTypeName` 必须兼容
+  - `Kind` 必须一致
+  - 运行时 `Name` 可以不同，最终以 implementation 为准
+- **Slots**
+  - implementation 必须包含 contract 的每个 `PublicName`
+  - `PatternOnly` / `IsDefault` / `Required` / `NamePattern` 必须一致
+  - slot context 参数个数必须一致
+  - 每个 slot context 参数 `TypeName` 必须兼容
+  - 运行时 `Name` 可以不同，最终以 implementation 为准
+- **Flags**
+  - 当前 `VueComponentFlags` 仍属于 authoring contract 面，所以要求一致
+
+这里有一个刻意保守的设计：
+
+- 对于还没有拆成独立 authoring/runtime 两套字段的元数据，RazorVue 当前优先要求严格一致
+- 只有已经明确分层的运行时命名（prop name / emit name / slot name）才允许 implementation 覆盖
+
+这样可以保证容器抽象先稳定，再逐步扩展更细粒度的兼容规则，而不是提前放松后再靠例外修补。
 
 这组规则让容器机制更接近“编译期依赖注入”，但仍保持静态、可验证、可诊断。
 

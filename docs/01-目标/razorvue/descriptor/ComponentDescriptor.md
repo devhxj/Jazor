@@ -11,6 +11,7 @@ Vue 组件描述符是 RazorVue 编译时分析的核心数据结构，负责将
 3. **生命周期检测**：识别组件使用的生命周期钩子
 4. **命名转换**：处理 C# PascalCase 到 Vue camelCase 的命名约定
 5. **依赖声明**：跟踪样式依赖和插件需求
+6. **容器抽象投影**：在不新增 source kind 的前提下承载 container contract 归属
 
 ## 实现思路
 
@@ -30,6 +31,7 @@ public sealed record VueComponentDescriptor(
     string ResolutionNamespace,                     // 解析命名空间
     string ImportSpecifier,                         // 导入说明符（模块路径）
     string ExportName,                              // 导出名称
+    string? ContainerContractFullName,              // 容器契约完全限定名
     ImmutableArray<VuePropDescriptor> Props,        // 属性列表
     ImmutableArray<VueEmitDescriptor> Emits,        // 事件列表
     ImmutableArray<VueSlotDescriptor> Slots,        // 插槽列表
@@ -76,7 +78,8 @@ public sealed record VuePropDescriptor(
     bool Required,                  // 是否必需
     bool AcceptsBinding,            // 是否接受双向绑定
     string? DefaultExpression,      // 默认值表达式
-    VuePropKind Kind);              // prop 类型
+    VuePropKind Kind,               // prop 类型
+    bool CaptureUnmatchedValues);   // 是否是任意属性汇聚槽
 ```
 
 **Prop 类型**：
@@ -123,10 +126,83 @@ public enum VueEmitKind
 public sealed record VueSlotDescriptor(
     string Name,                    // slot 名称（如 "default", "header"）
     string PublicName,              // 公共名称（C# 属性名，如 "ChildContent", "Header"）
+    string? NamePattern,            // 动态 slot 名称模式（如 "item.${string}"）
+    bool PatternOnly,               // 是否只允许模式命中
     bool IsDefault,                 // 是否为默认插槽
     ImmutableArray<VueSlotParameterDescriptor> Parameters,  // 插槽参数（作用域插槽）
     bool Required);                 // 是否必需
 ```
+
+#### 容器契约归属字段
+
+`ContainerContractFullName` 表示当前 descriptor 隶属于哪个容器 contract。
+
+- authored 容器 contract 本体：
+  - `ContainerContractFullName == FullName`
+- 容器 implementation：
+  - `ContainerContractFullName == 对应 contract FullName`
+- 普通组件：
+  - `ContainerContractFullName == null`
+
+它不是新的组件来源类型，也不单独改变解析路径。  
+真正的实现替换发生在 `VueInjectRegistry` 读取装配级 `[VueInject]` 之后。
+
+#### 容器 inject 的 merged descriptor 运行规则
+
+当 `IVueContainerComponent` contract 命中装配级 `[VueInject]` 时，RazorVue 不会直接把 contract descriptor 整体替换成 implementation descriptor，而是创建一个 merged descriptor。
+
+合并后的字段归属必须固定如下：
+
+- contract 侧保留 authoring 身份：
+  - `Name`
+  - `FullName`
+  - `ResolutionNamespace`
+  - `ContainerContractFullName`
+  - `RouteTemplates`
+  - `Flags`
+  - props / emits / slots 的 authoring 语义
+- implementation 侧提供 runtime 依赖面：
+  - `SourceKind`
+  - `ImportSpecifier`
+  - `ExportName`
+  - `StyleDependencies`
+  - `PluginRequirements`
+  - props / emits / slots 的 runtime `Name`
+
+这意味着：
+
+1. C# authoring 仍然只面向 container contract 的公共成员名，例如 `Title`、`ValueChanged`、`Header`
+2. 生成的 Vue SFC / module 产物必须使用 implementation 的 runtime 名称，例如：
+   - prop `Title -> menuTitle`
+   - model prop `Value -> modelValue`
+   - emit `ValueChanged -> update:modelValue`
+   - slot `Header -> header`
+3. contract 不能被 implementation 偷偷收窄。任何 prop / emit / slot / flags 不兼容都必须在 inject 解析阶段失败，而不是带着不一致继续生成产物
+
+这是容器抽象成立的基础约束：authoring surface 和 runtime surface 分层存在，但两者通过 merged descriptor 精确拼接，而不是相互泄漏或整体覆盖。
+
+#### 容器 inject 的 analyzer 前置校验规则
+
+`[VueInject]` 不是只有在某个页面实际引用 container contract 时才允许失败。
+
+从生产约束看，assembly 级 inject 声明本身就是 public authoring contract，因此 analyzer 必须在 compilation 阶段主动完成两类校验：
+
+1. 注册级校验
+   - 同一 contract 不能声明多个 implementation
+   - implementation 必须能在当前 component registry 中解析到
+   - implementation 必须声明匹配的 `IVueContainerImplementation<TContract>`
+2. 兼容性校验
+   - 即使当前编译里没有任何 usage site 引用该 contract，也必须校验：
+     - props
+     - emits
+     - slots
+     - flags
+
+这样可以保证：
+
+- 错误的 `[VueInject]` 声明不会因为“当前还没人用到”而潜伏进主干
+- analyzer、generator、lowering 使用同一套 inject 兼容性语义
+- container contract 的 authoring 面在提交前就能得到稳定、确定的诊断
 
 **插槽参数描述符**（作用域插槽）：
 
@@ -286,6 +362,62 @@ VueEmitDescriptor(
     RazorAlias: "ValueChanged",
     Kind: VueEmitKind.ModelUpdate)
 ```
+
+## 容器注入后的 descriptor 语义
+
+容器注入成功后，编译器消费的是 merged descriptor，而不是原始 implementation descriptor。
+
+字段边界如下：
+
+- **contract authoring identity**
+  - `Name`
+  - `FullName`
+  - `ResolutionNamespace`
+  - `RouteTemplates`
+  - `Flags`
+- **implementation runtime dependency surface**
+  - `SourceKind`
+  - `ImportSpecifier`
+  - `ExportName`
+  - `StyleDependencies`
+  - `PluginRequirements`
+- **成员级别合成**
+  - `Props`：按 `PublicName` 配对，authoring 语义保留 contract，runtime `Name` 取 implementation
+  - `Emits`：按 `RazorAlias` 配对，authoring 语义保留 contract，runtime `Name` 取 implementation
+  - `Slots`：按 `PublicName` 配对，authoring 语义保留 contract，runtime `Name` 取 implementation
+
+这个设计解决的是一个很具体的问题：
+
+- 如果整体替换成 implementation descriptor，上层 authoring 面会泄漏为具体库的 props/emits/slots
+- 如果整体保留 contract descriptor，最终生成的 runtime prop/event/slot 名又会错误
+
+因此当前实现必须使用 merged descriptor。
+
+## 容器 compatibility 约束
+
+为了让 merged descriptor 可信，注入前会校验 contract/implementation 是否兼容。
+
+当前规则：
+
+- `Props`
+  - implementation 必须包含每个 contract `PublicName`
+  - `TypeName` / `Required` / `AcceptsBinding` / `CaptureUnmatchedValues` / `Kind` 必须兼容
+- `Emits`
+  - implementation 必须包含每个 contract `RazorAlias`
+  - `PayloadTypeName` / `Kind` 必须兼容
+- `Slots`
+  - implementation 必须包含每个 contract `PublicName`
+  - `PatternOnly` / `IsDefault` / `Required` / `NamePattern` 必须兼容
+  - slot context 参数个数与参数类型必须兼容
+- `Flags`
+  - 当前要求一致
+
+兼容性的核心原则是：
+
+- 运行时命名可以替换
+- authoring 语义不能收窄或漂移
+
+另外，类型名比较做了一个窄范围规范化，只消除 `string` / `System.String` 这类展示差异，不放宽真实类型不兼容。
 
 ### 命名转换规则
 

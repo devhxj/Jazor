@@ -55,6 +55,24 @@ public sealed class RazorVueAuthoringAnalyzer : DiagnosticAnalyzer
         if (compilationContext is null)
             return;
 
+        try
+        {
+            var injectRegistry = VueInjectRegistry.Resolve(compilationContext);
+            injectRegistry.ValidateRegisteredCompatibility(
+                compilationContext.CreateComponentRegistry(),
+                static _ => null);
+        }
+        catch (RazorVueCompilationIssueException exception)
+        {
+            if (TryGetDescriptor(exception.Issue.Code, out var injectDescriptor))
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    injectDescriptor,
+                    GetDiagnosticLocation(compilationContext.Compilation.Assembly, exception.Origin),
+                    exception.Issue.Message));
+            }
+        }
+
         // This analyzer runs from compilation-only context and does not receive the
         // bound Razor AdditionalText set, so its authoring validation stays on the
         // explicit BuildRenderTree lowering path instead of inferring a host default.
@@ -292,5 +310,24 @@ public sealed class RazorVueAuthoringAnalyzer : DiagnosticAnalyzer
         return buildRenderTreeMethod?.Locations.FirstOrDefault(static location => location.IsInSource) ??
                componentSymbol.Locations.FirstOrDefault(static location => location.IsInSource) ??
                Location.None;
+    }
+
+    private static Location GetDiagnosticLocation(
+        IAssemblySymbol assemblySymbol,
+        RazorVueSourceOrigin? origin)
+    {
+        var sourceTree = assemblySymbol.DeclaringSyntaxReferences
+            .Select(static reference => reference.SyntaxTree)
+            .FirstOrDefault();
+        if (origin is not null &&
+            sourceTree is not null &&
+            origin.SourceSpanStart >= 0 &&
+            origin.SourceSpanLength >= 0 &&
+            origin.SourceSpanStart + origin.SourceSpanLength <= sourceTree.Length)
+        {
+            return Location.Create(sourceTree, new TextSpan(origin.SourceSpanStart, origin.SourceSpanLength));
+        }
+
+        return assemblySymbol.Locations.FirstOrDefault(static location => location.IsInSource) ?? Location.None;
     }
 }

@@ -1114,6 +1114,158 @@ public sealed class RazorVueAnalyzerTests
         AssertNoDiagnostic(diagnostics, "JAZORVUE012", "JAZORVUE013", "JAZORVUE014", "JAZORVUE015", "JAZORVUE016");
     }
 
+    [TestMethod]
+    public async Task RazorVue_ContainerInject_DuplicateRegistrations_ReportJAZORVUE018_WithoutUsageSite()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            [assembly: VueInject(
+                typeof(Demo.Containers.NavShell),
+                typeof(Demo.Implementations.ElementPlusNavShell))]
+            [assembly: VueInject(
+                typeof(Demo.Containers.NavShell),
+                typeof(Demo.Implementations.VuetifyNavShell))]
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Containers
+            {
+                [ECMAScript.ECMAScriptModule("./containers/nav-shell")]
+                public sealed class NavShell : ComponentBase, IVueComponent, IVueContainerComponent
+                {
+                }
+            }
+
+            namespace Demo.Implementations
+            {
+                [VueLibraryComponent("element-plus", "ElMenu")]
+                public sealed class ElementPlusNavShell : ComponentBase, IVueLibraryComponent, IVueContainerImplementation<Demo.Containers.NavShell>
+                {
+                }
+
+                [VueLibraryComponent("vuetify/components", "VNavigationDrawer")]
+                public sealed class VuetifyNavShell : ComponentBase, IVueLibraryComponent, IVueContainerImplementation<Demo.Containers.NavShell>
+                {
+                }
+            }
+            """);
+
+        AssertHasDiagnosticContaining(diagnostics, "JAZORVUE018", "duplicate implementations");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_ContainerInject_MissingCompatibleImplementationProp_ReportJAZORVUE018_WithoutUsageSite()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            [assembly: VueInject(
+                typeof(Demo.Containers.NavShell),
+                typeof(Demo.Implementations.ElementPlusNavShell))]
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Containers
+            {
+                [ECMAScript.ECMAScriptModule("./containers/nav-shell")]
+                public sealed class NavShell : ComponentBase, IVueComponent, IVueContainerComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public string? Subtitle { get; set; }
+                }
+            }
+
+            namespace Demo.Implementations
+            {
+                [VueLibraryComponent("element-plus", "ElMenu")]
+                [VueProp(nameof(Title), Name = "title")]
+                public sealed class ElementPlusNavShell : ComponentBase, IVueLibraryComponent, IVueContainerImplementation<Demo.Containers.NavShell>
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """);
+
+        AssertHasDiagnosticContaining(diagnostics, "JAZORVUE018", "missing compatible prop");
+        AssertHasDiagnosticContaining(diagnostics, "JAZORVUE018", "Subtitle");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_ContainerInject_MismatchedImplementationContract_ReportJAZORVUE018_WithoutUsageSite()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            [assembly: VueInject(
+                typeof(Demo.Containers.NavShell),
+                typeof(Demo.Implementations.WrongNavShell))]
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Containers
+            {
+                [ECMAScript.ECMAScriptModule("./containers/nav-shell")]
+                public sealed class NavShell : ComponentBase, IVueComponent, IVueContainerComponent
+                {
+                }
+
+                [ECMAScript.ECMAScriptModule("./containers/secondary-shell")]
+                public sealed class SecondaryShell : ComponentBase, IVueComponent, IVueContainerComponent
+                {
+                }
+            }
+
+            namespace Demo.Implementations
+            {
+                [VueLibraryComponent("element-plus", "ElMenu")]
+                public sealed class WrongNavShell : ComponentBase, IVueLibraryComponent, IVueContainerImplementation<Demo.Containers.SecondaryShell>
+                {
+                }
+            }
+            """);
+
+        AssertHasDiagnosticContaining(diagnostics, "JAZORVUE018", "declares container contract");
+        AssertHasDiagnosticContaining(diagnostics, "JAZORVUE018", "Demo.Containers.SecondaryShell");
+    }
+
     private static async Task<ImmutableArray<Diagnostic>> GetAnalyzerDiagnosticsAsync(string source)
     {
         var compilation = CreateCompilation(source);
@@ -1146,6 +1298,13 @@ public sealed class RazorVueAnalyzerTests
         => Assert.IsTrue(
             diagnostics.Any(diagnostic => diagnostic.Id == id),
             $"Expected diagnostic {id}, actual: {string.Join(Environment.NewLine, diagnostics.Select(static x => x.ToString()))}");
+
+    private static void AssertHasDiagnosticContaining(IEnumerable<Diagnostic> diagnostics, string id, string fragment)
+        => Assert.IsTrue(
+            diagnostics.Any(diagnostic =>
+                diagnostic.Id == id &&
+                diagnostic.GetMessage().Contains(fragment, StringComparison.Ordinal)),
+            $"Expected diagnostic {id} containing '{fragment}', actual: {string.Join(Environment.NewLine, diagnostics.Select(static x => x.ToString()))}");
 
     private static void AssertNoDiagnostic(IEnumerable<Diagnostic> diagnostics, params string[] ids)
     {

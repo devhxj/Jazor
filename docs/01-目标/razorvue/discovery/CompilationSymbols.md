@@ -189,6 +189,13 @@ public static RazorVueCompilationSymbols? TryCreate(Compilation compilation)
    - implementation 必须声明匹配的 `IVueContainerImplementation<TContainer>`
 4. `RazorVueArtifactFactory.ComponentResolver` 在组件解析完成后执行容器实现替换。
 
+补充边界：
+
+- 注入替换只在“当前解析结果就是容器 contract 本体”时触发
+- 如果 authored 代码直接引用某个具体 implementation 组件，该引用保持原样，不会再次经过容器映射
+
+这条边界是故意的。否则 implementation 自身会被反向重写，导致显式引用、调试、测试与诊断结果都失去稳定性。
+
 这个设计刻意避免引入 `ECMAScript.Vben.TDesign` 这类按库名耦合的框架层。Vben 之类上层只消费容器契约与注入机制，不定义新的解析路径。
 
 ## 设计权衡
