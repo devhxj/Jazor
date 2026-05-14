@@ -226,7 +226,8 @@
 
 - 默认原生解析回归
 - `VbenAdminLayout` / `VbenSidebarMenu` / `VbenHeaderBar` / `VbenPageContainer` 的 `[VueInject]` 替换回归
-- 四个公开壳层的 injected runtime shape artifact 回归（其中 `SidebarMenu` 当前已覆盖 pipeline artifact）
+- 四个公开壳层的 injected runtime shape artifact 回归（Vue SFC + pipeline）
+- 多壳层组合页的 injected runtime shape artifact 回归（Vue SFC + pipeline），覆盖 import 聚合、style/plugin 聚合与嵌套壳层 slot/prop/model 映射
 - 容器兼容性失败诊断回归（prop / emit / slot / capture-unmatched-values / duplicate inject / wrong contract）
 
 ### C2. 建议增加最小 sample
@@ -238,6 +239,11 @@
 - 页面容器可组合
 - 头部 action 与 child content 可落到最终工件
 - 第三方库如需协同，也是在 sample 层完成，而不是新建 adapter project
+
+当前优先级说明：
+
+- 由于组合级 artifact 回归已经补齐，下一步 sample 的价值不再是“证明 lowering 能不能做”，而是“证明真实工程消费路径、目录组织和装配方式是否顺手且稳定”；
+- 因此 sample 应直接对齐多壳层同时注入场景，而不是再做一个只覆盖单组件替换的演示。
 
 ## 6. 第一阶段切片顺序
 
