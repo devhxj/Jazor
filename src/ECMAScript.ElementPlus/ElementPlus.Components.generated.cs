@@ -175,7 +175,7 @@ public sealed class ElAside : ElementPlusContentComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Placeholder), Name = "placeholder")]
 [VueProp(nameof(Clearable), Name = "clearable")]
 [VueProp(nameof(Disabled), Name = "disabled")]
@@ -212,6 +212,7 @@ public sealed class ElAside : ElementPlusContentComponentBase
 [VueLibraryEmit(nameof(OnClear), Name = "clear")]
 [VueLibraryEmit(nameof(OnSelect), Name = "select")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.String")]
 public sealed class ElAutocomplete : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -321,6 +322,9 @@ public sealed class ElAutocomplete : ElementPlusContentComponentBase
 
     [Parameter]
     public EventCallback OnChange { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> ModelValueChanged { get; set; }
 
 }
 
@@ -687,12 +691,13 @@ public sealed class ElButtonGroup : ElementPlusContentComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Range), Name = "range")]
 [VueProp(nameof(ControllerType), Name = "controllerType")]
 [VueProp(nameof(Formatter), Name = "formatter")]
 [VueSlot(nameof(DateCell), Name = "date-cell")]
 [VueSlot(nameof(Header), Name = "header")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
 public sealed class ElCalendar : ElementPlusComponentBase
 {
     [Parameter]
@@ -712,6 +717,9 @@ public sealed class ElCalendar : ElementPlusComponentBase
 
     [Parameter]
     public RenderFragment? Header { get; set; }
+
+    [Parameter]
+    public EventCallback<VueValue?> ModelValueChanged { get; set; }
 
 }
 
@@ -862,7 +870,7 @@ public sealed class ElCarouselItem : ElementPlusContentComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Options), Name = "options")]
 [VueProp(nameof(Size), Name = "size")]
 [VueProp(nameof(Placeholder), Name = "placeholder")]
@@ -911,6 +919,7 @@ public sealed class ElCarouselItem : ElementPlusContentComponentBase
 [VueLibraryEmit(nameof(OnClear), Name = "clear")]
 [VueLibraryEmit(nameof(OnVisibleChange), Name = "visible-change")]
 [VueLibraryEmit(nameof(OnRemoveTag), Name = "remove-tag")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
 public sealed class ElCascader : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -1057,6 +1066,9 @@ public sealed class ElCascader : ElementPlusContentComponentBase
     [Parameter]
     public EventCallback OnRemoveTag { get; set; }
 
+    [Parameter]
+    public EventCallback<VueValue?> ModelValueChanged { get; set; }
+
 }
 
 /// <summary>
@@ -1149,7 +1161,7 @@ public sealed class ElCheckTag : ElementPlusContentComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Value), Name = "value")]
 [VueProp(nameof(Label), Name = "label")]
 [VueProp(nameof(TrueValue), Name = "trueValue")]
@@ -1170,6 +1182,7 @@ public sealed class ElCheckTag : ElementPlusContentComponentBase
 [VueProp(nameof(Controls), Name = "controls")]
 [VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueBooleanStringNumberValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElCheckbox : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -1232,6 +1245,9 @@ public sealed class ElCheckbox : ElementPlusContentComponentBase
     [Parameter]
     public EventCallback OnChange { get; set; }
 
+    [Parameter]
+    public EventCallback<VueBooleanStringNumberValue?> ModelValueChanged { get; set; }
+
 }
 
 /// <summary>
@@ -1291,7 +1307,7 @@ public sealed class ElCheckboxButton : ElementPlusContentComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Size), Name = "size")]
 [VueProp(nameof(Disabled), Name = "disabled")]
 [VueProp(nameof(Min), Name = "min")]
@@ -1307,6 +1323,7 @@ public sealed class ElCheckboxButton : ElementPlusContentComponentBase
 [VueProp(nameof(Type), Name = "type")]
 [VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
 public sealed class ElCheckboxGroup : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -1353,6 +1370,9 @@ public sealed class ElCheckboxGroup : ElementPlusContentComponentBase
 
     [Parameter]
     public EventCallback OnChange { get; set; }
+
+    [Parameter]
+    public EventCallback<VueValue?> ModelValueChanged { get; set; }
 
 }
 
@@ -1417,12 +1437,13 @@ public sealed class ElCol : ElementPlusContentComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Accordion), Name = "accordion")]
 [VueProp(nameof(ExpandIconPosition), Name = "expandIconPosition")]
 [VueProp(nameof(BeforeCollapse), Name = "beforeCollapse")]
 [VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
 public sealed class ElCollapse : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -1439,6 +1460,9 @@ public sealed class ElCollapse : ElementPlusContentComponentBase
 
     [Parameter]
     public EventCallback OnChange { get; set; }
+
+    [Parameter]
+    public EventCallback<VueValue?> ModelValueChanged { get; set; }
 
 }
 
@@ -1478,7 +1502,7 @@ public sealed class ElCollapseItem : ElementPlusComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Disabled), Name = "disabled")]
 [VueProp(nameof(Clearable), Name = "clearable")]
 [VueProp(nameof(Size), Name = "size")]
@@ -1502,6 +1526,7 @@ public sealed class ElCollapseItem : ElementPlusComponentBase
 [VueLibraryEmit(nameof(OnFocus), Name = "focus")]
 [VueLibraryEmit(nameof(OnBlur), Name = "blur")]
 [VueLibraryEmit(nameof(OnClear), Name = "clear")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.String")]
 public sealed class ElColorPicker : ElementPlusComponentBase
 {
     [Parameter]
@@ -1576,6 +1601,9 @@ public sealed class ElColorPicker : ElementPlusComponentBase
     [Parameter]
     public EventCallback OnClear { get; set; }
 
+    [Parameter]
+    public EventCallback<string?> ModelValueChanged { get; set; }
+
 }
 
 /// <summary>
@@ -1586,7 +1614,7 @@ public sealed class ElColorPicker : ElementPlusComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Border), Name = "border")]
 [VueProp(nameof(Disabled), Name = "disabled")]
 [VueProp(nameof(ShowAlpha), Name = "showAlpha")]
@@ -1596,6 +1624,7 @@ public sealed class ElColorPicker : ElementPlusComponentBase
 [VueProp(nameof(HueSliderClass), Name = "hueSliderClass")]
 [VueProp(nameof(HueSliderStyle), Name = "hueSliderStyle")]
 [VueSlot(nameof(Footer), Name = "footer")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.String")]
 public sealed class ElColorPickerPanel : ElementPlusComponentBase
 {
     [Parameter]
@@ -1627,6 +1656,9 @@ public sealed class ElColorPickerPanel : ElementPlusComponentBase
 
     [Parameter]
     public RenderFragment? Footer { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> ModelValueChanged { get; set; }
 
 }
 
@@ -1748,7 +1780,7 @@ public sealed class ElCountdown : ElementPlusComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Readonly), Name = "readonly")]
 [VueProp(nameof(Disabled), Name = "disabled")]
 [VueProp(nameof(Size), Name = "size")]
@@ -1798,6 +1830,7 @@ public sealed class ElCountdown : ElementPlusComponentBase
 [VueLibraryEmit(nameof(OnCalendarChange), Name = "calendar-change")]
 [VueLibraryEmit(nameof(OnPanelChange), Name = "panel-change")]
 [VueLibraryEmit(nameof(OnVisibleChange), Name = "visible-change")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
 public sealed class ElDatePicker : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -1947,6 +1980,9 @@ public sealed class ElDatePicker : ElementPlusContentComponentBase
     [Parameter]
     public EventCallback OnVisibleChange { get; set; }
 
+    [Parameter]
+    public EventCallback<VueValue?> ModelValueChanged { get; set; }
+
 }
 
 /// <summary>
@@ -1957,7 +1993,7 @@ public sealed class ElDatePicker : ElementPlusContentComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Border), Name = "border")]
 [VueProp(nameof(Disabled), Name = "disabled")]
 [VueProp(nameof(Clearable), Name = "clearable")]
@@ -1984,6 +2020,7 @@ public sealed class ElDatePicker : ElementPlusContentComponentBase
 [VueLibraryEmit(nameof(OnCalendarChange), Name = "calendar-change")]
 [VueLibraryEmit(nameof(OnPanelChange), Name = "panel-change")]
 [VueLibraryEmit(nameof(OnClear), Name = "clear")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
 public sealed class ElDatePickerPanel : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -2063,6 +2100,9 @@ public sealed class ElDatePickerPanel : ElementPlusContentComponentBase
 
     [Parameter]
     public EventCallback OnClear { get; set; }
+
+    [Parameter]
+    public EventCallback<VueValue?> ModelValueChanged { get; set; }
 
 }
 
@@ -2180,7 +2220,7 @@ public sealed class ElDescriptionsItem : ElementPlusContentComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Title), Name = "title")]
 [VueProp(nameof(Width), Name = "width")]
 [VueProp(nameof(Fullscreen), Name = "fullscreen")]
@@ -2220,6 +2260,7 @@ public sealed class ElDescriptionsItem : ElementPlusContentComponentBase
 [VueLibraryEmit(nameof(OnClosed), Name = "closed")]
 [VueLibraryEmit(nameof(OnOpenAutoFocus), Name = "open-auto-focus")]
 [VueLibraryEmit(nameof(OnCloseAutoFocus), Name = "close-auto-focus")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]")]
 public sealed class ElDialog : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -2339,6 +2380,9 @@ public sealed class ElDialog : ElementPlusContentComponentBase
     [Parameter]
     public EventCallback OnCloseAutoFocus { get; set; }
 
+    [Parameter]
+    public EventCallback<bool?> ModelValueChanged { get; set; }
+
 }
 
 /// <summary>
@@ -2374,7 +2418,7 @@ public sealed class ElDivider : ElementPlusContentComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(AppendToBody), Name = "appendToBody")]
 [VueProp(nameof(AppendTo), Name = "appendTo")]
 [VueProp(nameof(LockScroll), Name = "lockScroll")]
@@ -2412,6 +2456,7 @@ public sealed class ElDivider : ElementPlusContentComponentBase
 [VueLibraryEmit(nameof(OnResizeStart), Name = "resize-start")]
 [VueLibraryEmit(nameof(OnResize), Name = "resize")]
 [VueLibraryEmit(nameof(OnResizeEnd), Name = "resize-end")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]")]
 public sealed class ElDrawer : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -2524,6 +2569,9 @@ public sealed class ElDrawer : ElementPlusContentComponentBase
 
     [Parameter]
     public EventCallback OnResizeEnd { get; set; }
+
+    [Parameter]
+    public EventCallback<bool?> ModelValueChanged { get; set; }
 
 }
 
@@ -3161,7 +3209,7 @@ public sealed class ElImageViewer : ElementPlusComponentBase
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
 [VueProp(nameof(Type), Name = "type")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(ModelModifiers), Name = "modelModifiers")]
 [VueProp(nameof(Maxlength), Name = "maxlength")]
 [VueProp(nameof(Minlength), Name = "minlength")]
@@ -3211,6 +3259,7 @@ public sealed class ElImageViewer : ElementPlusComponentBase
 [VueLibraryEmit(nameof(OnCompositionstart), Name = "compositionstart")]
 [VueLibraryEmit(nameof(OnCompositionupdate), Name = "compositionupdate")]
 [VueLibraryEmit(nameof(OnCompositionend), Name = "compositionend")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueStringNumberValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElInput : ElementPlusComponentBase
 {
     [Parameter]
@@ -3366,6 +3415,9 @@ public sealed class ElInput : ElementPlusComponentBase
     [Parameter]
     public EventCallback OnCompositionend { get; set; }
 
+    [Parameter]
+    public EventCallback<VueStringNumberValue?> ModelValueChanged { get; set; }
+
 }
 
 /// <summary>
@@ -3376,7 +3428,7 @@ public sealed class ElInput : ElementPlusComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Min), Name = "min")]
 [VueProp(nameof(Max), Name = "max")]
 [VueProp(nameof(Step), Name = "step")]
@@ -3407,6 +3459,7 @@ public sealed class ElInput : ElementPlusComponentBase
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(OnBlur), Name = "blur")]
 [VueLibraryEmit(nameof(OnFocus), Name = "focus")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
 public sealed class ElInputNumber : ElementPlusComponentBase
 {
     [Parameter]
@@ -3501,6 +3554,9 @@ public sealed class ElInputNumber : ElementPlusComponentBase
 
     [Parameter]
     public EventCallback OnFocus { get; set; }
+
+    [Parameter]
+    public EventCallback<VueValue?> ModelValueChanged { get; set; }
 
 }
 
@@ -3600,7 +3656,7 @@ public sealed class ElInputOtp : ElementPlusComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Max), Name = "max")]
 [VueProp(nameof(TagType), Name = "tagType")]
 [VueProp(nameof(TagEffect), Name = "tagEffect")]
@@ -3637,6 +3693,7 @@ public sealed class ElInputOtp : ElementPlusComponentBase
 [VueLibraryEmit(nameof(OnFocus), Name = "focus")]
 [VueLibraryEmit(nameof(OnBlur), Name = "blur")]
 [VueLibraryEmit(nameof(OnClear), Name = "clear")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.String[]")]
 public sealed class ElInputTag : ElementPlusComponentBase
 {
     [Parameter]
@@ -3750,6 +3807,9 @@ public sealed class ElInputTag : ElementPlusComponentBase
     [Parameter]
     public EventCallback OnClear { get; set; }
 
+    [Parameter]
+    public EventCallback<string[]?> ModelValueChanged { get; set; }
+
 }
 
 /// <summary>
@@ -3825,7 +3885,7 @@ public sealed class ElMain : ElementPlusContentComponentBase
 [VueProp(nameof(Whole), Name = "whole")]
 [VueProp(nameof(CheckIsWhole), Name = "checkIsWhole")]
 [VueProp(nameof(Loading), Name = "loading")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(PopperClass), Name = "popperClass")]
 [VueProp(nameof(PopperStyle), Name = "popperStyle")]
 [VueProp(nameof(PopperOptions), Name = "popperOptions")]
@@ -3838,6 +3898,7 @@ public sealed class ElMain : ElementPlusContentComponentBase
 [VueLibraryEmit(nameof(OnSelect), Name = "select")]
 [VueLibraryEmit(nameof(OnWholeRemove), Name = "whole-remove")]
 [VueLibraryEmit(nameof(OnInputEvents), Name = "[input events]")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.String")]
 public sealed class ElMention : ElementPlusComponentBase
 {
     [Parameter]
@@ -3911,6 +3972,9 @@ public sealed class ElMention : ElementPlusComponentBase
 
     [Parameter]
     public EventCallback OnInputEvents { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> ModelValueChanged { get; set; }
 
 }
 
@@ -4587,7 +4651,7 @@ public sealed class ElProgress : ElementPlusContentComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Value), Name = "value")]
 [VueProp(nameof(Label), Name = "label")]
 [VueProp(nameof(Disabled), Name = "disabled")]
@@ -4596,6 +4660,7 @@ public sealed class ElProgress : ElementPlusContentComponentBase
 [VueProp(nameof(Name), Name = "name")]
 [VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueBooleanStringNumberValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElRadio : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -4621,6 +4686,9 @@ public sealed class ElRadio : ElementPlusContentComponentBase
 
     [Parameter]
     public EventCallback OnChange { get; set; }
+
+    [Parameter]
+    public EventCallback<VueBooleanStringNumberValue?> ModelValueChanged { get; set; }
 
 }
 
@@ -4661,7 +4729,7 @@ public sealed class ElRadioButton : ElementPlusContentComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Size), Name = "size")]
 [VueProp(nameof(Disabled), Name = "disabled")]
 [VueProp(nameof(ValidateEvent), Name = "validateEvent")]
@@ -4676,6 +4744,7 @@ public sealed class ElRadioButton : ElementPlusContentComponentBase
 [VueProp(nameof(Type), Name = "type")]
 [VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueBooleanStringNumberValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElRadioGroup : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -4720,6 +4789,9 @@ public sealed class ElRadioGroup : ElementPlusContentComponentBase
     [Parameter]
     public EventCallback OnChange { get; set; }
 
+    [Parameter]
+    public EventCallback<VueBooleanStringNumberValue?> ModelValueChanged { get; set; }
+
 }
 
 /// <summary>
@@ -4730,7 +4802,7 @@ public sealed class ElRadioGroup : ElementPlusContentComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Max), Name = "max")]
 [VueProp(nameof(Size), Name = "size")]
 [VueProp(nameof(Disabled), Name = "disabled")]
@@ -4753,6 +4825,7 @@ public sealed class ElRadioGroup : ElementPlusContentComponentBase
 [VueProp(nameof(AriaLabel), Name = "ariaLabel")]
 [VueProp(nameof(Label), Name = "label")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Number, ECMAScript, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElRate : ElementPlusComponentBase
 {
     [Parameter]
@@ -4823,6 +4896,9 @@ public sealed class ElRate : ElementPlusComponentBase
 
     [Parameter]
     public EventCallback OnChange { get; set; }
+
+    [Parameter]
+    public EventCallback<Number?> ModelValueChanged { get; set; }
 
 }
 
@@ -4992,7 +5068,7 @@ public sealed class ElScrollbar : ElementPlusContentComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Options), Name = "options")]
 [VueProp(nameof(Size), Name = "size")]
 [VueProp(nameof(Block), Name = "block")]
@@ -5004,6 +5080,7 @@ public sealed class ElScrollbar : ElementPlusContentComponentBase
 [VueProp(nameof(Direction), Name = "direction")]
 [VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueBooleanStringNumberValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElSegmented : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -5039,6 +5116,9 @@ public sealed class ElSegmented : ElementPlusContentComponentBase
     [Parameter]
     public EventCallback OnChange { get; set; }
 
+    [Parameter]
+    public EventCallback<VueBooleanStringNumberValue?> ModelValueChanged { get; set; }
+
 }
 
 /// <summary>
@@ -5049,7 +5129,7 @@ public sealed class ElSegmented : ElementPlusContentComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Multiple), Name = "multiple")]
 [VueProp(nameof(Options), Name = "options")]
 [VueProp(nameof(Disabled), Name = "disabled")]
@@ -5116,6 +5196,7 @@ public sealed class ElSegmented : ElementPlusContentComponentBase
 [VueLibraryEmit(nameof(OnFocus), Name = "focus")]
 [VueLibraryEmit(nameof(OnPopupScroll), Name = "popup-scroll")]
 [VueLibraryEmit(nameof(OnEndReached), Name = "end-reached")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
 public sealed class ElSelect : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -5316,6 +5397,9 @@ public sealed class ElSelect : ElementPlusContentComponentBase
     [Parameter]
     public EventCallback OnEndReached { get; set; }
 
+    [Parameter]
+    public EventCallback<VueValue?> ModelValueChanged { get; set; }
+
 }
 
 /// <summary>
@@ -5379,7 +5463,7 @@ public sealed class ElSkeletonItem : ElementPlusComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Min), Name = "min")]
 [VueProp(nameof(Max), Name = "max")]
 [VueProp(nameof(Disabled), Name = "disabled")]
@@ -5406,6 +5490,7 @@ public sealed class ElSkeletonItem : ElementPlusComponentBase
 [VueProp(nameof(Label), Name = "label")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(OnInput), Name = "input")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
 public sealed class ElSlider : ElementPlusComponentBase
 {
     [Parameter]
@@ -5488,6 +5573,9 @@ public sealed class ElSlider : ElementPlusComponentBase
 
     [Parameter]
     public EventCallback OnInput { get; set; }
+
+    [Parameter]
+    public EventCallback<VueValue?> ModelValueChanged { get; set; }
 
 }
 
@@ -5798,7 +5886,7 @@ public sealed class ElSubMenu : ElementPlusContentComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Disabled), Name = "disabled")]
 [VueProp(nameof(Loading), Name = "loading")]
 [VueProp(nameof(Size), Name = "size")]
@@ -5827,6 +5915,7 @@ public sealed class ElSubMenu : ElementPlusContentComponentBase
 [VueSlot(nameof(Active), Name = "active")]
 [VueSlot(nameof(Inactive), Name = "inactive")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueBooleanStringNumberValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElSwitch : ElementPlusComponentBase
 {
     [Parameter]
@@ -5915,6 +6004,9 @@ public sealed class ElSwitch : ElementPlusComponentBase
 
     [Parameter]
     public EventCallback OnChange { get; set; }
+
+    [Parameter]
+    public EventCallback<VueBooleanStringNumberValue?> ModelValueChanged { get; set; }
 
 }
 
@@ -6565,7 +6657,7 @@ public sealed class ElTableV2 : ElementPlusComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(DefaultValue), Name = "defaultValue")]
 [VueProp(nameof(Type), Name = "type")]
 [VueProp(nameof(Closable), Name = "closable")]
@@ -6582,6 +6674,7 @@ public sealed class ElTableV2 : ElementPlusComponentBase
 [VueLibraryEmit(nameof(OnTabRemove), Name = "tab-remove")]
 [VueLibraryEmit(nameof(OnTabAdd), Name = "tab-add")]
 [VueLibraryEmit(nameof(OnEdit), Name = "edit")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueStringNumberValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElTabs : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -6631,6 +6724,9 @@ public sealed class ElTabs : ElementPlusContentComponentBase
 
     [Parameter]
     public EventCallback OnEdit { get; set; }
+
+    [Parameter]
+    public EventCallback<VueStringNumberValue?> ModelValueChanged { get; set; }
 
 }
 
@@ -6728,7 +6824,7 @@ public sealed class ElText : ElementPlusContentComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Readonly), Name = "readonly")]
 [VueProp(nameof(Disabled), Name = "disabled")]
 [VueProp(nameof(Editable), Name = "editable")]
@@ -6767,6 +6863,7 @@ public sealed class ElText : ElementPlusContentComponentBase
 [VueLibraryEmit(nameof(OnFocus), Name = "focus")]
 [VueLibraryEmit(nameof(OnClear), Name = "clear")]
 [VueLibraryEmit(nameof(OnVisibleChange), Name = "visible-change")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
 public sealed class ElTimePicker : ElementPlusComponentBase
 {
     [Parameter]
@@ -6886,6 +6983,9 @@ public sealed class ElTimePicker : ElementPlusComponentBase
     [Parameter]
     public EventCallback OnVisibleChange { get; set; }
 
+    [Parameter]
+    public EventCallback<VueValue?> ModelValueChanged { get; set; }
+
 }
 
 /// <summary>
@@ -6896,7 +6996,7 @@ public sealed class ElTimePicker : ElementPlusComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Disabled), Name = "disabled")]
 [VueProp(nameof(Editable), Name = "editable")]
 [VueProp(nameof(Clearable), Name = "clearable")]
@@ -6921,6 +7021,7 @@ public sealed class ElTimePicker : ElementPlusComponentBase
 [VueLibraryEmit(nameof(OnBlur), Name = "blur")]
 [VueLibraryEmit(nameof(OnFocus), Name = "focus")]
 [VueLibraryEmit(nameof(OnClear), Name = "clear")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.String")]
 public sealed class ElTimeSelect : ElementPlusComponentBase
 {
     [Parameter]
@@ -6997,6 +7098,9 @@ public sealed class ElTimeSelect : ElementPlusComponentBase
 
     [Parameter]
     public EventCallback OnClear { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> ModelValueChanged { get; set; }
 
 }
 
@@ -7247,7 +7351,7 @@ public sealed class ElTourStep : ElementPlusComponentBase
 [VueLibraryPluginRequirement("element-plus")]
 [VueProp(nameof(CssClass), Name = "class")]
 [VueProp(nameof(CssStyle), Name = "style")]
-[VueProp(nameof(ModelValue), Name = "modelValue")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Data), Name = "data")]
 [VueProp(nameof(Filterable), Name = "filterable")]
 [VueProp(nameof(FilterPlaceholder), Name = "filterPlaceholder")]
@@ -7268,6 +7372,7 @@ public sealed class ElTourStep : ElementPlusComponentBase
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(OnLeftCheckChange), Name = "left-check-change")]
 [VueLibraryEmit(nameof(OnRightCheckChange), Name = "right-check-change")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue[]")]
 public sealed class ElTransfer : ElementPlusContentComponentBase
 {
     [Parameter]
@@ -7329,6 +7434,9 @@ public sealed class ElTransfer : ElementPlusContentComponentBase
 
     [Parameter]
     public EventCallback OnRightCheckChange { get; set; }
+
+    [Parameter]
+    public EventCallback<VueValue[]?> ModelValueChanged { get; set; }
 
 }
 
@@ -7748,6 +7856,299 @@ public sealed class ElUpload : ElementPlusContentComponentBase
 
     [Parameter]
     public RenderFragment? File { get; set; }
+
+}
+
+/// <summary>
+/// :::tip
+/// </summary>
+[VueLibraryComponent("element-plus", "ElSelectV2")]
+[VueLibraryStyle("element-plus/dist/index.css")]
+[VueLibraryPluginRequirement("element-plus")]
+[VueProp(nameof(CssClass), Name = "class")]
+[VueProp(nameof(CssStyle), Name = "style")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
+[VueProp(nameof(Options), Name = "options")]
+[VueProp(nameof(Multiple), Name = "multiple")]
+[VueProp(nameof(Disabled), Name = "disabled")]
+[VueProp(nameof(ValueKey), Name = "valueKey")]
+[VueProp(nameof(Size), Name = "size")]
+[VueProp(nameof(Clearable), Name = "clearable")]
+[VueProp(nameof(ClearIcon), Name = "clearIcon")]
+[VueProp(nameof(CollapseTags), Name = "collapseTags")]
+[VueProp(nameof(MultipleLimit), Name = "multipleLimit")]
+[VueProp(nameof(Id), Name = "id")]
+[VueProp(nameof(Name), Name = "name")]
+[VueProp(nameof(Effect), Name = "effect")]
+[VueProp(nameof(Autocomplete), Name = "autocomplete")]
+[VueProp(nameof(Placeholder), Name = "placeholder")]
+[VueProp(nameof(Filterable), Name = "filterable")]
+[VueProp(nameof(AllowCreate), Name = "allowCreate")]
+[VueProp(nameof(FilterMethod), Name = "filterMethod")]
+[VueProp(nameof(Loading), Name = "loading")]
+[VueProp(nameof(LoadingText), Name = "loadingText")]
+[VueProp(nameof(ReserveKeyword), Name = "reserveKeyword")]
+[VueProp(nameof(DefaultFirstOption), Name = "defaultFirstOption")]
+[VueProp(nameof(NoMatchText), Name = "noMatchText")]
+[VueProp(nameof(NoDataText), Name = "noDataText")]
+[VueProp(nameof(PopperClass), Name = "popperClass")]
+[VueProp(nameof(PopperStyle), Name = "popperStyle")]
+[VueProp(nameof(Teleported), Name = "teleported")]
+[VueProp(nameof(AppendTo), Name = "appendTo")]
+[VueProp(nameof(Persistent), Name = "persistent")]
+[VueProp(nameof(PopperOptions), Name = "popperOptions")]
+[VueProp(nameof(AutomaticDropdown), Name = "automaticDropdown")]
+[VueProp(nameof(FitInputWidth), Name = "fitInputWidth")]
+[VueProp(nameof(SuffixIcon), Name = "suffixIcon")]
+[VueProp(nameof(Height), Name = "height")]
+[VueProp(nameof(ItemHeight), Name = "itemHeight")]
+[VueProp(nameof(EstimatedOptionHeight), Name = "estimatedOptionHeight")]
+[VueProp(nameof(ScrollbarAlwaysOn), Name = "scrollbarAlwaysOn")]
+[VueProp(nameof(Remote), Name = "remote")]
+[VueProp(nameof(Debounce), Name = "debounce")]
+[VueProp(nameof(RemoteMethod), Name = "remoteMethod")]
+[VueProp(nameof(RemoteShowSuffix), Name = "remoteShowSuffix")]
+[VueProp(nameof(ValidateEvent), Name = "validateEvent")]
+[VueProp(nameof(Offset), Name = "offset")]
+[VueProp(nameof(ShowArrow), Name = "showArrow")]
+[VueProp(nameof(Placement), Name = "placement")]
+[VueProp(nameof(FallbackPlacements), Name = "fallbackPlacements")]
+[VueProp(nameof(CollapseTagsTooltip), Name = "collapseTagsTooltip")]
+[VueProp(nameof(MaxCollapseTags), Name = "maxCollapseTags")]
+[VueProp(nameof(TagType), Name = "tagType")]
+[VueProp(nameof(TagEffect), Name = "tagEffect")]
+[VueProp(nameof(AriaLabel), Name = "ariaLabel")]
+[VueProp(nameof(EmptyValues), Name = "emptyValues")]
+[VueProp(nameof(ValueOnClear), Name = "valueOnClear")]
+[VueProp(nameof(PopperAppendToBody), Name = "popperAppendToBody")]
+[VueProp(nameof(Tabindex), Name = "tabindex")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(Header), Name = "header")]
+[VueSlot(nameof(Footer), Name = "footer")]
+[VueSlot(nameof(Empty), Name = "empty")]
+[VueSlot(nameof(Prefix), Name = "prefix")]
+[VueSlot(nameof(Tag), Name = "tag")]
+[VueSlot(nameof(LoadingSlot), Name = "loading")]
+[VueSlot(nameof(Label), Name = "label")]
+[VueLibraryEmit(nameof(OnChange), Name = "change")]
+[VueLibraryEmit(nameof(OnVisibleChange), Name = "visible-change")]
+[VueLibraryEmit(nameof(OnRemoveTag), Name = "remove-tag")]
+[VueLibraryEmit(nameof(OnClear), Name = "clear")]
+[VueLibraryEmit(nameof(OnBlur), Name = "blur")]
+[VueLibraryEmit(nameof(OnFocus), Name = "focus")]
+[VueLibraryEmit(nameof(OnEndReached), Name = "end-reached")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
+public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
+{
+    [Parameter]
+    public VueValue? ModelValue { get; set; }
+
+    [Parameter]
+    public VueValue? Options { get; set; }
+
+    [Parameter]
+    public bool? Multiple { get; set; }
+
+    [Parameter]
+    public bool? Disabled { get; set; }
+
+    [Parameter]
+    public string? ValueKey { get; set; }
+
+    [Parameter]
+    public string? Size { get; set; }
+
+    [Parameter]
+    public bool? Clearable { get; set; }
+
+    [Parameter]
+    public VueStringComponentValue? ClearIcon { get; set; }
+
+    [Parameter]
+    public bool? CollapseTags { get; set; }
+
+    [Parameter]
+    public Number? MultipleLimit { get; set; }
+
+    [Parameter]
+    public string? Id { get; set; }
+
+    [Parameter]
+    public string? Name { get; set; }
+
+    [Parameter]
+    public string? Effect { get; set; }
+
+    [Parameter]
+    public string? Autocomplete { get; set; }
+
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    [Parameter]
+    public bool? Filterable { get; set; }
+
+    [Parameter]
+    public bool? AllowCreate { get; set; }
+
+    [Parameter]
+    public Delegate? FilterMethod { get; set; }
+
+    [Parameter]
+    public bool? Loading { get; set; }
+
+    [Parameter]
+    public string? LoadingText { get; set; }
+
+    [Parameter]
+    public bool? ReserveKeyword { get; set; }
+
+    [Parameter]
+    public bool? DefaultFirstOption { get; set; }
+
+    [Parameter]
+    public string? NoMatchText { get; set; }
+
+    [Parameter]
+    public string? NoDataText { get; set; }
+
+    [Parameter]
+    public VueClassValue? PopperClass { get; set; }
+
+    [Parameter]
+    public VueStyleValue? PopperStyle { get; set; }
+
+    [Parameter]
+    public bool? Teleported { get; set; }
+
+    [Parameter]
+    public VueTeleportTarget? AppendTo { get; set; }
+
+    [Parameter]
+    public bool? Persistent { get; set; }
+
+    [Parameter]
+    public VueDictionary? PopperOptions { get; set; }
+
+    [Parameter]
+    public bool? AutomaticDropdown { get; set; }
+
+    [Parameter]
+    public VueValue? FitInputWidth { get; set; }
+
+    [Parameter]
+    public VueStringComponentValue? SuffixIcon { get; set; }
+
+    [Parameter]
+    public Number? Height { get; set; }
+
+    [Parameter]
+    public Number? ItemHeight { get; set; }
+
+    [Parameter]
+    public Number? EstimatedOptionHeight { get; set; }
+
+    [Parameter]
+    public bool? ScrollbarAlwaysOn { get; set; }
+
+    [Parameter]
+    public bool? Remote { get; set; }
+
+    [Parameter]
+    public Number? Debounce { get; set; }
+
+    [Parameter]
+    public Delegate? RemoteMethod { get; set; }
+
+    [Parameter]
+    public bool? RemoteShowSuffix { get; set; }
+
+    [Parameter]
+    public bool? ValidateEvent { get; set; }
+
+    [Parameter]
+    public Number? Offset { get; set; }
+
+    [Parameter]
+    public bool? ShowArrow { get; set; }
+
+    [Parameter]
+    public string? Placement { get; set; }
+
+    [Parameter]
+    public VueValue[]? FallbackPlacements { get; set; }
+
+    [Parameter]
+    public bool? CollapseTagsTooltip { get; set; }
+
+    [Parameter]
+    public Number? MaxCollapseTags { get; set; }
+
+    [Parameter]
+    public string? TagType { get; set; }
+
+    [Parameter]
+    public string? TagEffect { get; set; }
+
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    [Parameter]
+    public VueValue? EmptyValues { get; set; }
+
+    [Parameter]
+    public VueValue? ValueOnClear { get; set; }
+
+    [Parameter]
+    public bool? PopperAppendToBody { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? Tabindex { get; set; }
+
+    [Parameter]
+    public RenderFragment? Header { get; set; }
+
+    [Parameter]
+    public RenderFragment? Footer { get; set; }
+
+    [Parameter]
+    public RenderFragment? Empty { get; set; }
+
+    [Parameter]
+    public RenderFragment? Prefix { get; set; }
+
+    [Parameter]
+    public RenderFragment? Tag { get; set; }
+
+    [Parameter]
+    public RenderFragment? LoadingSlot { get; set; }
+
+    [Parameter]
+    public RenderFragment? Label { get; set; }
+
+    [Parameter]
+    public EventCallback OnChange { get; set; }
+
+    [Parameter]
+    public EventCallback OnVisibleChange { get; set; }
+
+    [Parameter]
+    public EventCallback OnRemoveTag { get; set; }
+
+    [Parameter]
+    public EventCallback OnClear { get; set; }
+
+    [Parameter]
+    public EventCallback OnBlur { get; set; }
+
+    [Parameter]
+    public EventCallback OnFocus { get; set; }
+
+    [Parameter]
+    public EventCallback OnEndReached { get; set; }
+
+    [Parameter]
+    public EventCallback<VueValue?> ModelValueChanged { get; set; }
 
 }
 

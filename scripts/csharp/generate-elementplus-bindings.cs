@@ -27,6 +27,11 @@ internal static class Program
         ChildContentPropertyName
     ];
 
+    private static readonly Dictionary<string, string> RuntimeComponentExportOverrides = new(StringComparer.Ordinal)
+    {
+        ["ElVirtualizedSelect"] = "ElSelectV2"
+    };
+
     private static readonly Dictionary<string, Type> RuntimeTypeMap = new(StringComparer.Ordinal)
     {
         ["bool"] = typeof(bool),
@@ -84,6 +89,7 @@ internal static class Program
 
         var attributeCatalog = ReadAttributeCatalog(attributesPath);
         var validComponentExports = ReadValidComponentExports(componentsIndexPath);
+        ValidateRuntimeComponentExportOverrides(validComponentExports);
         var updateModelEventName = ReadUpdateModelEventName(eventConstantsPath);
 
         using var webTypes = JsonDocument.Parse(File.ReadAllText(webTypesPath));
@@ -92,7 +98,7 @@ internal static class Program
         var components = html.GetProperty("vue-components")
             .EnumerateArray()
             .Select(static element => RawComponentMetadata.FromJson(element))
-            .Where(component => validComponentExports.Contains(component.ExportName))
+            .Where(component => validComponentExports.Contains(GetRuntimeComponentExportName(component.ExportName)))
             .GroupBy(static component => component.ExportName, StringComparer.Ordinal)
             .Select(group => ElementPlusComponentMetadata.Merge(
                 group.ToArray(),
@@ -148,8 +154,8 @@ internal static class Program
 
         foreach (var component in components)
         {
-            builder.AppendLine($"    [ECMAScriptName(\"{component.ExportName}\")]");
-            builder.AppendLine($"    public extern static IElementPlusComponent {component.ClassName} {{ get; }}");
+            builder.AppendLine($"    [ECMAScriptName(\"{component.RuntimeExportName}\")]");
+            builder.AppendLine($"    public extern static IElementPlusComponent {component.AuthoringName} {{ get; }}");
             builder.AppendLine();
         }
 
@@ -174,7 +180,7 @@ internal static class Program
 
         foreach (var component in components)
         {
-            builder.AppendLine($"    [Description(\"@#{component.ExportName}\")]");
+            builder.AppendLine($"    [Description(\"@#{component.AuthoringName}\")]");
             builder.AppendLine($"    public IElementPlusComponent? {component.ClassName} {{ get; init; }}");
             builder.AppendLine();
         }
@@ -208,7 +214,7 @@ internal static class Program
             builder.AppendLine("/// <summary>");
             builder.AppendLine($"/// {EscapeXml(component.Description)}");
             builder.AppendLine("/// </summary>");
-            builder.AppendLine($"[VueLibraryComponent(\"element-plus\", \"{component.ExportName}\")]");
+            builder.AppendLine($"[VueLibraryComponent(\"element-plus\", \"{component.RuntimeExportName}\")]");
             builder.AppendLine("[VueLibraryStyle(\"element-plus/dist/index.css\")]");
             builder.AppendLine("[VueLibraryPluginRequirement(\"element-plus\")]");
             builder.AppendLine("[VueProp(nameof(CssClass), Name = \"class\")]");
@@ -411,6 +417,18 @@ internal static class Program
             .ToHashSet(StringComparer.Ordinal);
     }
 
+    private static void ValidateRuntimeComponentExportOverrides(HashSet<string> validComponentExports)
+    {
+        foreach (var overrideEntry in RuntimeComponentExportOverrides)
+        {
+            if (!validComponentExports.Contains(overrideEntry.Value))
+            {
+                throw new InvalidOperationException(
+                    $"Element Plus runtime export override '{overrideEntry.Key}' -> '{overrideEntry.Value}' does not exist in the package export baseline.");
+            }
+        }
+    }
+
     private static string ReadUpdateModelEventName(string path)
     {
         var content = File.ReadAllText(path);
@@ -544,6 +562,14 @@ internal static class Program
         => string.Equals(propRuntimeName, "modelValue", StringComparison.Ordinal)
             ? updateModelEventName
             : "update:" + propRuntimeName;
+
+    private static bool IsCanonicalModelRuntimeName(string runtimeName)
+        => string.Equals(runtimeName, "modelValue", StringComparison.Ordinal);
+
+    private static string GetRuntimeComponentExportName(string authoringExportName)
+        => RuntimeComponentExportOverrides.TryGetValue(authoringExportName, out var runtimeExportName)
+            ? runtimeExportName
+            : authoringExportName;
 
     private static string GetUniquePropPropertyName(string basePropertyName, HashSet<string> occupiedNames)
     {
@@ -1340,7 +1366,8 @@ internal static class Program
     private sealed record ElementPlusComponentMetadata(
         string TagName,
         string ClassName,
-        string ExportName,
+        string AuthoringName,
+        string RuntimeExportName,
         string Description,
         ElementPlusPropMetadata[] Props,
         ElementPlusSlotMetadata[] Slots,
@@ -1387,7 +1414,9 @@ internal static class Program
 
                 var type = ResolvePropType(rawProp);
                 var updateEventRuntimeName = GetUpdateEventRuntimeName(rawProp.RuntimeName, updateModelEventName);
-                var acceptsBinding = !isSkipped && updateEvents.Contains(updateEventRuntimeName);
+                var acceptsBinding = !isSkipped &&
+                                     (updateEvents.Contains(updateEventRuntimeName) ||
+                                      IsCanonicalModelRuntimeName(rawProp.RuntimeName));
                 var prop = new ElementPlusPropMetadata(
                     rawProp.RuntimeName,
                     propertyName,
@@ -1403,20 +1432,28 @@ internal static class Program
 
             var emitOccupiedNames = new HashSet<string>(propOccupiedNames, StringComparer.Ordinal);
             var emits = new List<ElementPlusEmitMetadata>(rawEvents.Count);
+            var emittedModelUpdateRuntimeNames = new HashSet<string>(StringComparer.Ordinal);
+
+            ElementPlusEmitMetadata CreateModelUpdateEmit(ElementPlusPropMetadata bindableProp)
+            {
+                var propertyName = bindableProp.PropertyName + "Changed";
+                var uniquePropertyName = GetUniqueEmitPropertyName(propertyName, emitOccupiedNames);
+                emitOccupiedNames.Add(uniquePropertyName);
+
+                return new ElementPlusEmitMetadata(
+                    GetUpdateEventRuntimeName(bindableProp.RuntimeName, updateModelEventName),
+                    uniquePropertyName,
+                    IsModelUpdate: true,
+                    bindableProp.Type.SourceText,
+                    ResolveRuntimeTypeName(bindableProp.Type.SourceText));
+            }
+
             foreach (var rawEvent in rawEvents)
             {
                 if (bindablePropsByUpdateEvent.TryGetValue(rawEvent.RuntimeName, out var bindableProp))
                 {
-                    var propertyName = bindableProp.PropertyName + "Changed";
-                    var uniquePropertyName = GetUniqueEmitPropertyName(propertyName, emitOccupiedNames);
-                    emitOccupiedNames.Add(uniquePropertyName);
-
-                    emits.Add(new ElementPlusEmitMetadata(
-                        rawEvent.RuntimeName,
-                        uniquePropertyName,
-                        IsModelUpdate: true,
-                        bindableProp.Type.SourceText,
-                        ResolveRuntimeTypeName(bindableProp.Type.SourceText)));
+                    emits.Add(CreateModelUpdateEmit(bindableProp));
+                    emittedModelUpdateRuntimeNames.Add(rawEvent.RuntimeName);
                     continue;
                 }
 
@@ -1433,12 +1470,23 @@ internal static class Program
                     PayloadTypeRuntimeName: null));
             }
 
+            foreach (var bindableProp in props.Where(static prop => prop.AcceptsBinding))
+            {
+                var updateEventRuntimeName = GetUpdateEventRuntimeName(bindableProp.RuntimeName, updateModelEventName);
+                if (emittedModelUpdateRuntimeNames.Contains(updateEventRuntimeName))
+                    continue;
+
+                emits.Add(CreateModelUpdateEmit(bindableProp));
+                emittedModelUpdateRuntimeNames.Add(updateEventRuntimeName);
+            }
+
             var slots = ResolveSlotPropertyNames(rawSlots, propOccupiedNames, emitOccupiedNames);
 
             return new ElementPlusComponentMetadata(
                 first.TagName,
                 first.ClassName,
                 first.ExportName,
+                GetRuntimeComponentExportName(first.ExportName),
                 description,
                 props.ToArray(),
                 slots,

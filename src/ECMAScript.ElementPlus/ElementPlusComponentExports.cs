@@ -323,6 +323,9 @@ public static class ElementPlusComponents
     [ECMAScriptName("ElUpload")]
     public extern static IElementPlusComponent ElUpload { get; }
 
+    [ECMAScriptName("ElSelectV2")]
+    public extern static IElementPlusComponent ElVirtualizedSelect { get; }
+
     [ECMAScriptName("ElWatermark")]
     public extern static IElementPlusComponent ElWatermark { get; }
 

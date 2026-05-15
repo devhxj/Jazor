@@ -148,6 +148,26 @@ public sealed class ElementPlusAuthoringSurfaceTests
     }
 
     [TestMethod]
+    public void ElementPlus_AuthoringAliases_CanDifferFromRuntimePackageExports()
+    {
+        var componentType = typeof(ElVirtualizedSelect);
+        var libraryComponent = componentType.GetCustomAttribute<VueLibraryComponentAttribute>(inherit: false);
+        Assert.IsNotNull(libraryComponent, componentType.FullName);
+        Assert.AreEqual("ElSelectV2", libraryComponent!.ExportName, componentType.FullName);
+
+        var exportProperty = typeof(ElementPlusComponents).GetProperty(
+            nameof(ElementPlusComponents.ElVirtualizedSelect),
+            BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly);
+        Assert.IsNotNull(exportProperty);
+
+        var ecmaScriptName = exportProperty!
+            .GetCustomAttributesData()
+            .SingleOrDefault(static attribute => attribute.AttributeType == typeof(ECMAScriptNameAttribute));
+        Assert.IsNotNull(ecmaScriptName);
+        Assert.AreEqual("ElSelectV2", ecmaScriptName!.ConstructorArguments[0].Value as string);
+    }
+
+    [TestMethod]
     public void ElementPlus_SlotContracts_RenameCollisionsPredictably()
     {
         AssertSlotContract(typeof(ElAlert), nameof(ElAlert.TitleSlot), "title");

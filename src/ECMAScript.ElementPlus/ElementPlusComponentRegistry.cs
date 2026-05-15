@@ -324,6 +324,9 @@ public sealed record ElementPlusComponentRegistry : VueComponentRegistry
     [Description("@#ElUpload")]
     public IElementPlusComponent? ElUpload { get; init; }
 
+    [Description("@#ElVirtualizedSelect")]
+    public IElementPlusComponent? ElVirtualizedSelect { get; init; }
+
     [Description("@#ElWatermark")]
     public IElementPlusComponent? ElWatermark { get; init; }
 
