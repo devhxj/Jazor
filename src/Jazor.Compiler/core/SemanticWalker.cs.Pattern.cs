@@ -150,17 +150,18 @@ public partial class SemanticWalker
 	/// C# 示例：
 	/// obj is null             // 检查是否为 null
 	/// value == null           // 直接 null 比较
-	/// 转换结果：obj === null
+	/// 转换结果：obj == null
 	/// </summary>
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitIsNull(IIsNullOperation operation, SenseArgument argument)
 	{
-		// null检查转换为 === null 比较
+		// 在 JS host 语义里，null-pattern 需要把 undefined 也视为缺失值，
+		// 否则可空 prop / erased union 缺失分支会在 not-null guard 后继续解引用。
 		var operand = Translate<Expression>(operation.Operand, argument);
 
-		return new NonLogicalBinaryExpression(Operator.StrictEquality, operand, Null);
+		return new NonLogicalBinaryExpression(Operator.Equality, operand, Null);
 	}
 
 	/// <summary>
@@ -414,7 +415,10 @@ public partial class SemanticWalker
 		// 如果有 PatternInput，生成比较表达式
 		if (argument.PatternInput is not null)
 		{
-			return new NonLogicalBinaryExpression(Operator.StrictEquality, argument.PatternInput, expr);
+			var @operator = expr is Literal literal && literal.Kind == TokenKind.NullLiteral
+				? Operator.Equality
+				: Operator.StrictEquality;
+			return new NonLogicalBinaryExpression(@operator, argument.PatternInput, expr);
 		}
 
 		// 如果没有 PatternInput，直接返回值表达式（可能在某些特殊场景下）
@@ -1511,7 +1515,7 @@ public partial class SemanticWalker
 						{
 							InterfaceTypeCheckFold.AlwaysTrue => new BooleanLiteral(true, "true"),
 							InterfaceTypeCheckFold.AlwaysFalse => new BooleanLiteral(false, "false"),
-							InterfaceTypeCheckFold.NonNullOnly => new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
+							InterfaceTypeCheckFold.NonNullOnly => new NonLogicalBinaryExpression(Operator.Inequality, value, Null),
 							_ => null
 						};
 					}
@@ -1527,7 +1531,7 @@ public partial class SemanticWalker
 						TypeMapper.BigInt => TypeOfExpr(value, new StringLiteral("bigint", "\"bigint\"")),
 						TypeMapper.Object => new LogicalExpression(
 							Operator.LogicalAnd,
-							new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
+							new NonLogicalBinaryExpression(Operator.Inequality, value, Null),
 							TypeOfExpr(value, new StringLiteral("object", "\"object\""))),
 						TypeMapper.Boolean => TypeOfExpr(value, new StringLiteral("boolean", "\"boolean\"")),
 						TypeMapper.Date => InstanceOfExpr(value, new Identifier("Date")),
@@ -1544,7 +1548,7 @@ public partial class SemanticWalker
 		// 判断可空
 		if (nullable ?? IsNullableType(typeSymbol))
 		{
-			var expr = new NonLogicalBinaryExpression(Operator.StrictEquality, value, Null);
+			var expr = new NonLogicalBinaryExpression(Operator.Equality, value, Null);
 			result = result is null ? expr : new LogicalExpression(Operator.LogicalOr, result, expr);
 		}
 

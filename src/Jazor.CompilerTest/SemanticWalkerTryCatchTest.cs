@@ -2762,7 +2762,7 @@ catch (ex) {
         var script = node?.ToKnRECMAScript();
 
 AssertScriptEqual(@"{
-  if (value === null) {
+  if (value == null) {
     throw new TypeError(""value"");
   }
 }", script);

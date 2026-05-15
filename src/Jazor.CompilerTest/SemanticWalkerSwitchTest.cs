@@ -583,7 +583,7 @@ public sealed class SemanticWalkerSwitchTest
   (() => {
     let s, i;
     const v$0 = obj;
-    if (v$0 === null) {
+    if (v$0 == null) {
       return;
     }
     if (typeof v$0 === ""string"" && (s = v$0, true)) {

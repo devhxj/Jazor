@@ -482,7 +482,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = null;
-  let result = obj === null;
+  let result = obj == null;
 }", script);
   }
 
@@ -511,7 +511,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(isPatternOperation!, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual("obj === null", script);
+    Assert.AreEqual("obj == null", script);
   }
 
   /// <summary>
@@ -537,7 +537,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = null;
-  let result = !(obj === null);
+  let result = !(obj == null);
 }", script);
   }
 
@@ -566,7 +566,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(isPatternOperation!, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual("!(obj === null)", script);
+    Assert.AreEqual("!(obj == null)", script);
   }
 
   /// <summary>
@@ -667,7 +667,7 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(
 @"{
   let obj = 42;
-  let result = !(obj === null);
+  let result = !(obj == null);
 }", script);
 
   }
@@ -699,7 +699,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitNegatedPattern(negatedPatternOperation, ctx);
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual("!(obj === null)", script);
+    Assert.AreEqual("!(obj == null)", script);
   }
 
   /// <summary>
@@ -5274,7 +5274,7 @@ line2"";
     AssertScriptEqual(
 @"{
   let obj = { Value: null };
-  let result = obj != null && (""Value"" in obj && !(obj.Value === null));
+  let result = obj != null && (""Value"" in obj && !(obj.Value == null));
 }", script);
 
   }
@@ -5409,7 +5409,7 @@ line2"";
 
     Assert.AreEqual(@"{
   let obj = null;
-  let result = obj === null ? ""is null"" : ""not null"";
+  let result = obj == null ? ""is null"" : ""not null"";
 }", script);
   }
 
@@ -6997,7 +6997,7 @@ line2"";
     Assert.AreEqual(
 @"{
   let obj = null;
-  if (!(obj === null)) {
+  if (!(obj == null)) {
     console.log(obj);
   }
 }", script);
