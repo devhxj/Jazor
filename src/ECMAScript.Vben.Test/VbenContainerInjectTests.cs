@@ -184,6 +184,138 @@ public sealed partial class VbenContainerInjectTests
     }
 
     [TestMethod]
+    public void Vben_PageContainer_ContainerInject_UsesConfiguredUserComponentImplementationWhileKeepingVbenContract()
+    {
+        var descriptor = ResolveComponentDescriptor(
+            """
+            using System.Collections.Generic;
+            using ECMAScript;
+            using ECMAScript.Vben;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            [assembly: VueInject(
+                typeof(ECMAScript.Vben.VbenPageContainer),
+                typeof(Demo.Implementations.ElementPageContainerShell))]
+
+            namespace Demo.Implementations
+            {
+                [ECMAScriptModule("./components/element-page-container-shell")]
+                public sealed class ElementPageContainerShell : ComponentBase, IVueComponent, IVueContainerImplementation<VbenPageContainer>
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public string? Subtitle { get; set; }
+
+                    [Parameter]
+                    public VbenBreadcrumbItem[]? BreadcrumbItems { get; set; }
+
+                    [Parameter]
+                    public VbenPageAction[]? Actions { get; set; }
+
+                    [Parameter]
+                    public VueClassValue? CssClass { get; set; }
+
+                    [Parameter]
+                    public VueStyleValue? CssStyle { get; set; }
+
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? Extra { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? ChildContent { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddAttribute(1, "class", "element-page-container-shell");
+
+                        if (!string.IsNullOrWhiteSpace(Title))
+                        {
+                            builder.OpenElement(2, "header");
+                            builder.AddContent(3, Title);
+                            builder.CloseElement();
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(Subtitle))
+                        {
+                            builder.OpenElement(4, "p");
+                            builder.AddAttribute(5, "class", "element-page-container-shell__subtitle");
+                            builder.AddContent(6, Subtitle);
+                            builder.CloseElement();
+                        }
+
+                        if (Extra is not null)
+                        {
+                            builder.OpenElement(7, "div");
+                            builder.AddAttribute(8, "class", "element-page-container-shell__extra");
+                            builder.AddContent(9, Extra);
+                            builder.CloseElement();
+                        }
+
+                        if (ChildContent is not null)
+                        {
+                            builder.OpenElement(10, "div");
+                            builder.AddAttribute(11, "class", "element-page-container-shell__body");
+                            builder.AddContent(12, ChildContent);
+                            builder.CloseElement();
+                        }
+
+                        builder.CloseElement();
+                    }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./pages/dashboard-page")]
+                public sealed class DashboardPage : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent(0, typeof(VbenPageContainer));
+                        builder.AddComponentParameter(1, nameof(VbenPageContainer.Title), "Overview");
+                        builder.AddComponentParameter(2, nameof(VbenPageContainer.Subtitle), "Shell");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        Assert.AreEqual("ECMAScript.Vben.VbenPageContainer", descriptor.FullName);
+        Assert.AreEqual(nameof(VbenPageContainer), descriptor.Name);
+        Assert.AreEqual("ECMAScript.Vben", descriptor.ResolutionNamespace);
+        Assert.AreEqual(VueComponentSourceKind.UserComponent, descriptor.SourceKind);
+        Assert.AreEqual("./components/element-page-container-shell.mjs", descriptor.ImportSpecifier);
+        Assert.AreEqual("default", descriptor.ExportName);
+        Assert.AreEqual("ECMAScript.Vben.VbenPageContainer", descriptor.ContainerContractFullName);
+
+        var titleProp = descriptor.Props.Single(static item => item.PublicName == nameof(VbenPageContainer.Title));
+        Assert.AreEqual("title", titleProp.Name);
+        Assert.AreEqual("string?", titleProp.TypeName);
+
+        var subtitleProp = descriptor.Props.Single(static item => item.PublicName == nameof(VbenPageContainer.Subtitle));
+        Assert.AreEqual("subtitle", subtitleProp.Name);
+
+        var additionalAttributesProp = descriptor.Props.Single(static item => item.PublicName == nameof(VbenComponentBase.AdditionalAttributes));
+        Assert.AreEqual("additionalAttributes", additionalAttributesProp.Name);
+        Assert.IsTrue(additionalAttributesProp.CaptureUnmatchedValues);
+
+        var extraSlot = descriptor.Slots.Single(static item => item.PublicName == nameof(VbenPageContainer.Extra));
+        Assert.AreEqual("extra", extraSlot.Name);
+        Assert.IsFalse(extraSlot.IsDefault);
+
+        var childContentSlot = descriptor.Slots.Single(static item => item.PublicName == nameof(VbenContentComponentBase.ChildContent));
+        Assert.AreEqual("default", childContentSlot.Name);
+        Assert.IsTrue(childContentSlot.IsDefault);
+    }
+
+    [TestMethod]
     public void Vben_AdminLayout_ContainerInject_UsesConfiguredLibraryImplementationWithModelPropsEmitsAndSlots()
     {
         var descriptor = ResolveComponentDescriptor(

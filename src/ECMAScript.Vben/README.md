@@ -24,5 +24,6 @@ Verified baseline:
 - Injected runtime shape lowering is regression-covered at both Vue SFC and pipeline artifact levels for all four public Vben shell components
 - Multi-shell composition is regression-covered at both Vue SFC and pipeline artifact levels, including cross-container import aggregation, style/plugin dependency aggregation, and nested slot/prop/model mapping stability
 - Container compatibility failures are regression-covered for missing props, prop type mismatch, emit payload mismatch, default-slot mismatch, `CaptureUnmatchedValues` mismatch, duplicate registrations, and mismatched `IVueContainerImplementation<TContainer>` contracts
+- A real sample now exists under `samples/ECMAScript.Vben.ElementPlusInject/`, proving Razor-authored Vben shell composition, sample-local `Element Plus` container injection, official `razorvue-consumer-entry` bridge generation, and Deno-only SSR/browser/bundle smoke verification
 
 This package is the semantic and implementation core. Third-party UI-library cooperation belongs in samples or app-level composition, not in `ECMAScript.Vben.*` adapter packages.

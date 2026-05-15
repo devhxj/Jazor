@@ -212,6 +212,101 @@ public sealed partial class VbenContainerInjectTests
     }
 
     [TestMethod]
+    public void Vben_PageContainer_ContainerInject_WithUserComponentImplementation_LowersIntoVueSfcArtifact()
+    {
+        var context = CreateContext(
+            """
+            using System.Collections.Generic;
+            using ECMAScript;
+            using ECMAScript.Vben;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            [assembly: VueInject(
+                typeof(ECMAScript.Vben.VbenPageContainer),
+                typeof(Demo.Implementations.ElementPageContainerShell))]
+
+            namespace Demo.Implementations
+            {
+                [ECMAScriptModule("./components/element-page-container-shell")]
+                public sealed class ElementPageContainerShell : ComponentBase, IVueComponent, IVueContainerImplementation<VbenPageContainer>
+                {
+                    [Parameter] public string? Title { get; set; }
+                    [Parameter] public string? Subtitle { get; set; }
+                    [Parameter] public VbenBreadcrumbItem[]? BreadcrumbItems { get; set; }
+                    [Parameter] public VbenPageAction[]? Actions { get; set; }
+                    [Parameter] public VueClassValue? CssClass { get; set; }
+                    [Parameter] public VueStyleValue? CssStyle { get; set; }
+                    [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+                    [Parameter] public RenderFragment? Extra { get; set; }
+                    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddAttribute(1, "class", "element-page-container-shell");
+
+                        if (!string.IsNullOrWhiteSpace(Title))
+                        {
+                            builder.OpenElement(2, "header");
+                            builder.AddContent(3, Title);
+                            builder.CloseElement();
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(Subtitle))
+                        {
+                            builder.OpenElement(4, "p");
+                            builder.AddContent(5, Subtitle);
+                            builder.CloseElement();
+                        }
+
+                        if (Extra is not null)
+                        {
+                            builder.OpenElement(6, "div");
+                            builder.AddContent(7, Extra);
+                            builder.CloseElement();
+                        }
+
+                        if (ChildContent is not null)
+                        {
+                            builder.OpenElement(8, "div");
+                            builder.AddContent(9, ChildContent);
+                            builder.CloseElement();
+                        }
+
+                        builder.CloseElement();
+                    }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./pages/dashboard-page")]
+                public sealed class DashboardPage : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent(0, typeof(VbenPageContainer));
+                        builder.AddComponentParameter(1, nameof(VbenPageContainer.Title), "Overview");
+                        builder.AddComponentParameter(2, nameof(VbenPageContainer.Subtitle), "Shell");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots()
+            .Single(static item => item.ComponentSymbol.Name == "DashboardPage");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ScriptSetupText, "import VbenPageContainerComponent from \"../components/element-page-container-shell.vue\";");
+        StringAssert.Contains(artifact.TemplateText, "<VbenPageContainerComponent title=\"Overview\" subtitle=\"Shell\" />");
+        CollectionAssert.Contains(artifact.Imports.ToArray(), "../components/element-page-container-shell.vue");
+        Assert.AreEqual(0, artifact.Styles.Count(), artifact.SfcText);
+        Assert.AreEqual(0, artifact.PluginRequirements.Count(), artifact.SfcText);
+    }
+
+    [TestMethod]
     public void Vben_HeaderBar_ContainerInject_LowersInjectedRuntimeShape_IntoVueSfcArtifact()
     {
         var context = CreateContext(
@@ -447,6 +542,75 @@ public sealed partial class VbenContainerInjectTests
         CollectionAssert.Contains(artifact.Imports.ToArray(), "element-plus");
         CollectionAssert.AreEqual(new[] { "element-plus/theme-chalk/el-card.css" }, artifact.Styles.ToArray());
         CollectionAssert.AreEqual(new[] { "element-plus" }, artifact.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
+    public void Vben_PageContainer_ContainerInject_WithUserComponentImplementation_LowersIntoPipelineArtifact()
+    {
+        var context = CreateContext(
+            """
+            using System.Collections.Generic;
+            using ECMAScript;
+            using ECMAScript.Vben;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            [assembly: VueInject(
+                typeof(ECMAScript.Vben.VbenPageContainer),
+                typeof(Demo.Implementations.ElementPageContainerShell))]
+
+            namespace Demo.Implementations
+            {
+                [ECMAScriptModule("./components/element-page-container-shell")]
+                public sealed class ElementPageContainerShell : ComponentBase, IVueComponent, IVueContainerImplementation<VbenPageContainer>
+                {
+                    [Parameter] public string? Title { get; set; }
+                    [Parameter] public string? Subtitle { get; set; }
+                    [Parameter] public VbenBreadcrumbItem[]? BreadcrumbItems { get; set; }
+                    [Parameter] public VbenPageAction[]? Actions { get; set; }
+                    [Parameter] public VueClassValue? CssClass { get; set; }
+                    [Parameter] public VueStyleValue? CssStyle { get; set; }
+                    [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+                    [Parameter] public RenderFragment? Extra { get; set; }
+                    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddAttribute(1, "class", "element-page-container-shell");
+                        builder.AddContent(2, Title);
+                        builder.AddContent(3, Subtitle);
+                        builder.AddContent(4, Extra);
+                        builder.AddContent(5, ChildContent);
+                        builder.CloseElement();
+                    }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./pages/dashboard-page")]
+                public sealed class DashboardPage : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent(0, typeof(VbenPageContainer));
+                        builder.AddComponentParameter(1, nameof(VbenPageContainer.Title), "Overview");
+                        builder.AddComponentParameter(2, nameof(VbenPageContainer.Subtitle), "Shell");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts
+            .Single(static item => item.ComponentName == "DashboardPage");
+
+        StringAssert.Contains(artifact.ModuleCode, "import VbenPageContainerComponent from \"./components/element-page-container-shell.mjs\";");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(VbenPageContainerComponent, { \"title\": \"Overview\", \"subtitle\": \"Shell\" });");
+        CollectionAssert.Contains(artifact.Imports.ToArray(), "./components/element-page-container-shell.mjs");
+        Assert.AreEqual(0, artifact.Styles.Count(), artifact.ModuleCode);
+        Assert.AreEqual(0, artifact.PluginRequirements.Count(), artifact.ModuleCode);
     }
 
     [TestMethod]
@@ -744,6 +908,98 @@ public sealed partial class VbenContainerInjectTests
         CollectionAssert.Contains(artifact.Imports.ToArray(), "element-plus");
         CollectionAssert.AreEqual(new[] { "element-plus/theme-chalk/el-menu.css" }, artifact.Styles.ToArray());
         CollectionAssert.AreEqual(new[] { "element-plus" }, artifact.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
+    public void Vben_AdminLayout_UserComponentImplementation_PassthroughTypedCallbacks_ToInjectedUserComponentArtifact()
+    {
+        var context = CreateContext(
+            """
+            using System.Collections.Generic;
+            using ECMAScript;
+            using ECMAScript.Vben;
+            using ECMAScript.VueContract;
+            using ECMAScript.VueContract.Descriptor;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            [assembly: VueInject(
+                typeof(ECMAScript.Vben.VbenAdminLayout),
+                typeof(Demo.Implementations.ElementAdminLayout))]
+            [assembly: VueInject(
+                typeof(ECMAScript.Vben.VbenSidebarMenu),
+                typeof(Demo.Implementations.ElementSidebarMenu))]
+
+            namespace Demo.Implementations
+            {
+                [ECMAScriptModule("./components/element-admin-layout")]
+                public sealed class ElementAdminLayout : ComponentBase, IVueComponent, IVueContainerImplementation<VbenAdminLayout>
+                {
+                    [Parameter] public VbenLayoutMode Mode { get; set; }
+                    [Parameter] public bool Collapsed { get; set; }
+                    [Parameter] public EventCallback<bool> CollapsedChanged { get; set; }
+                    [Parameter] public string? SelectedKey { get; set; }
+                    [Parameter] public EventCallback<string> SelectedKeyChanged { get; set; }
+                    [Parameter] public string[]? ExpandedKeys { get; set; }
+                    [Parameter] public EventCallback<string[]> ExpandedKeysChanged { get; set; }
+                    [Parameter] public VbenNavItems? NavItems { get; set; }
+                    [Parameter] public VueClassValue? CssClass { get; set; }
+                    [Parameter] public VueStyleValue? CssStyle { get; set; }
+                    [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+                    [Parameter] public RenderFragment? Logo { get; set; }
+                    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.OpenComponent<VbenSidebarMenu>(1);
+                        builder.AddComponentParameter(2, nameof(VbenSidebarMenu.Collapsed), Collapsed);
+                        builder.AddComponentParameter(3, nameof(VbenSidebarMenu.SelectedKey), SelectedKey);
+                        builder.AddComponentParameter(4, nameof(VbenSidebarMenu.SelectedKeyChanged), SelectedKeyChanged);
+                        builder.AddComponentParameter(5, nameof(VbenSidebarMenu.ExpandedKeys), ExpandedKeys);
+                        builder.AddComponentParameter(6, nameof(VbenSidebarMenu.ExpandedKeysChanged), ExpandedKeysChanged);
+                        builder.AddComponentParameter(7, nameof(VbenSidebarMenu.Logo), Logo);
+                        builder.CloseComponent();
+                        builder.AddContent(8, ChildContent);
+                        builder.CloseElement();
+                    }
+                }
+
+                [ECMAScriptModule("./components/element-sidebar-menu")]
+                public sealed class ElementSidebarMenu : ComponentBase, IVueComponent, IVueContainerImplementation<VbenSidebarMenu>
+                {
+                    [Parameter] public bool Collapsed { get; set; }
+                    [Parameter] public string? SelectedKey { get; set; }
+                    [Parameter] public EventCallback<string> SelectedKeyChanged { get; set; }
+                    [Parameter] public string[]? ExpandedKeys { get; set; }
+                    [Parameter] public EventCallback<string[]> ExpandedKeysChanged { get; set; }
+                    [Parameter] public VbenNavItems? Items { get; set; }
+                    [Parameter] public VueClassValue? CssClass { get; set; }
+                    [Parameter] public VueStyleValue? CssStyle { get; set; }
+                    [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+                    [Parameter] public RenderFragment? Logo { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "nav");
+                        builder.AddContent(1, Logo);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts
+            .Single(static item => item.ComponentName == "ElementAdminLayout");
+
+        StringAssert.Contains(artifact.ModuleCode, "import VbenSidebarMenuComponent from \"./components/element-sidebar-menu.mjs\";");
+        StringAssert.Contains(artifact.ModuleCode, "\"selectedKey\": props.selectedKey");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:selectedKey\": (__value) => emit(\"update:selectedKey\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"expandedKeys\": props.expandedKeys");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:expandedKeys\": (__value) => emit(\"update:expandedKeys\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "logo: () => slots.logo ? slots.logo() : null");
+        StringAssert.Contains(artifact.ModuleCode, "slots.default ? slots.default() : null");
+        CollectionAssert.Contains(artifact.Imports.ToArray(), "./components/element-sidebar-menu.mjs");
     }
 
     [TestMethod]

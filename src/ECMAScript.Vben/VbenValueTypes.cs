@@ -151,6 +151,8 @@ public sealed record VbenNavItem : VueProps
     public VbenNavItems? Children { get; init; }
 }
 
+[ECMAScript]
+[Description("@#")]
 [CollectionBuilder(typeof(VbenNavItemsCollectionBuilder), nameof(VbenNavItemsCollectionBuilder.Create))]
 public readonly union VbenNavItems(VbenNavItem[]) : IEnumerable<VbenNavItem>
 {
