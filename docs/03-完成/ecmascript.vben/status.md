@@ -17,6 +17,7 @@
 - 通用 prop/slot 元数据已经收口到 `VueProp` / `VueSlot`，不再把 `VueLibraryProp` / `VueLibrarySlot` 兼容别名当作现行契约；
 - 早期设想的 `IVbenUiAdapter` 空接口已被移除，Vben 不再维护与 `VueContract` 平行的第二套 adapter 协议；
 - `src/ECMAScript.Vben.Test/` 已建立独立聚焦测试，不再把 Vben 演进绑死在其他外部库线的在制状态上。
+- `samples/ECMAScript.Vben.ElementPlusInject/` 已建立真实 sample，验证 `ECMAScript.Vben` 容器 contract 在应用层通过 `[VueInject]` 切换到 sample-local Element Plus 实现，同时维持 Deno consumer 主链。
 
 当前更准确的判断是：**产品边界已经纠偏，原生壳层主线已经可构建、可测试、可被 RazorVue 发现与消费。**
 
@@ -103,6 +104,23 @@
 
 这意味着“可替换实现”已经进入正式主线，但仍然没有把 `ECMAScript.Vben` 重新做成第三方库 adapter 包。
 
+### 6. 真实消费路径已经补到 sample 层
+
+截至 2026-05-15，`Vben` 线不再只有 focused tests，也已经有了真实 sample 级消费路径：
+
+- sample 名称：`samples/ECMAScript.Vben.ElementPlusInject/`
+- authoring 面：根组件继续只写 `VbenAdminLayout` / `VbenHeaderBar` / `VbenSidebarMenu` / `VbenPageContainer`
+- 具体实现面：四个容器都由 sample-local 用户组件实现 `IVueContainerImplementation<TContainer>`
+- 第三方库协同面：具体实现内部组合 `ECMAScript.ElementPlus` library component，而不是把 `Element Plus` 直接泄漏进 `ECMAScript.Vben` 公共 contract
+- consumer 面：使用 `deno.json` + `scripts/run-deno.cs` + 官方 `razorvue-consumer-entry`
+- smoke 面：SSR / `Deno.bundle()` / browser build / browser smoke 全部在 Deno 链路完成
+
+这条路径的意义是：
+
+- 它证明 Vben 当前的抽象不是“只能在测试里成立”；
+- 它证明 sample-local user component 实现足以承接第三方库协同，不需要正式 `ECMAScript.Vben.ElementPlus` 产品包；
+- 它把 sample 的前端消费路径固定在 `deno.json` + `scripts/run-deno.cs` + `razorvue-consumer-entry`，和当前仓库对前端运行时主线的判断保持一致。
+
 ## 当前验证基线
 
 当前已形成的聚焦验证包括：
@@ -134,6 +152,7 @@
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenContainerInjectTests|FullyQualifiedName~VbenAuthoringSurfaceTests|FullyQualifiedName~VueAuthoringMetadataTests' -v minimal`：已通过；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~Vben_MultiShell_ContainerInject' -v minimal`：已通过（2/2）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj -v minimal`：已通过（30/30）；
+- `samples/ECMAScript.Vben.ElementPlusInject/verify-smoke.cs`：已纳入当前阶段的真实 sample 验证入口，目标覆盖本地 package pack、host rebuild、host requirements 断言、Deno SSR smoke、Deno bundle smoke、browser build、browser smoke；
 - `RazorVue` 聚焦回归已覆盖 Vben 相关 descriptor / authoring contract 收口，不再依赖旧兼容别名。
 
 ## 当前仍未完成的部分
@@ -163,7 +182,7 @@
 优先补足：
 
 - sample 级第三方容器实现映射，验证真实应用组合方式；
-- 在 sample 中复刻当前已被测试覆盖的多壳层同时注入场景，补真实目录结构和消费方式；
+- 继续扩展 sample 中的多壳层同时注入场景与交互细节，补真实目录结构和消费方式；
 
 ### 3. 补状态文档与实现对应关系
 

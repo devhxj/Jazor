@@ -229,6 +229,7 @@
 - 四个公开壳层的 injected runtime shape artifact 回归（Vue SFC + pipeline）
 - 多壳层组合页的 injected runtime shape artifact 回归（Vue SFC + pipeline），覆盖 import 聚合、style/plugin 聚合与嵌套壳层 slot/prop/model 映射
 - 容器兼容性失败诊断回归（prop / emit / slot / capture-unmatched-values / duplicate inject / wrong contract）
+- `samples/ECMAScript.Vben.ElementPlusInject/` 已落地真实 sample：根组件只 authoring `Vben` contract，sample-local `IVueContainerImplementation<TContainer>` 负责 Element Plus 具体实现，consumer 走 Deno-only `razorvue-consumer-entry` 主链
 
 ### C2. 建议增加最小 sample
 
@@ -244,6 +245,12 @@
 
 - 由于组合级 artifact 回归已经补齐，下一步 sample 的价值不再是“证明 lowering 能不能做”，而是“证明真实工程消费路径、目录组织和装配方式是否顺手且稳定”；
 - 因此 sample 应直接对齐多壳层同时注入场景，而不是再做一个只覆盖单组件替换的演示。
+
+当前落地补充：
+
+- `samples/ECMAScript.Vben.ElementPlusInject/` 已按这个方向建立；
+- sample 明确采用 `DenoHost` / `deno.json` / `scripts/run-deno.cs` / `razorvue-consumer-entry`；
+- 该 sample 当前唯一支持的 consumer 路径是 `deno.json` + `scripts/run-deno.cs` + `razorvue-consumer-entry`。
 
 ## 6. 第一阶段切片顺序
 

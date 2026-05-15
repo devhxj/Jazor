@@ -434,7 +434,7 @@ internal sealed record PublishNuGetOptions(
         Console.WriteLine("  --api-key <value>");
         Console.WriteLine("  --base-output-path <path>");
         Console.WriteLine("  --base-intermediate-output-path <path>");
-        Console.WriteLine("  --package <jazor|pinia|pinia-testing|vueroute|vuetify|tdesign|PackageId>");
+        Console.WriteLine("  --package <jazor|pinia|pinia-testing|vueroute|vuetify|tdesign|vben|elementplus|PackageId>");
         Console.WriteLine("    Default package set: Jazor, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.Vuetify, ECMAScript.TDesign");
         Console.WriteLine("  --skip-push");
         Console.WriteLine("  --no-build");
@@ -477,6 +477,10 @@ internal static class PackageCatalog
         ["ECMAScript.VueRoute"] = "ECMAScript.VueRoute",
         ["vuetify"] = "ECMAScript.Vuetify",
         ["ECMAScript.Vuetify"] = "ECMAScript.Vuetify",
+        ["vben"] = "ECMAScript.Vben",
+        ["ECMAScript.Vben"] = "ECMAScript.Vben",
+        ["elementplus"] = "ECMAScript.ElementPlus",
+        ["ECMAScript.ElementPlus"] = "ECMAScript.ElementPlus",
         ["tdesign"] = "ECMAScript.TDesign",
         ["ECMAScript.TDesign"] = "ECMAScript.TDesign"
     };
@@ -519,7 +523,7 @@ internal static class PackageCatalog
 
         throw new InvalidOperationException(
             "Unsupported package selector: " + selector + ". Supported selectors: " +
-            "jazor, pinia, pinia-testing, vueroute, vuetify, tdesign.");
+            "jazor, pinia, pinia-testing, vueroute, vuetify, vben, elementplus, tdesign.");
     }
 
     private static Dictionary<string, PackageDefinition> CreateCatalog(string repoRoot)
@@ -549,6 +553,16 @@ internal static class PackageCatalog
             ["ECMAScript.Vuetify"] = new(
                 "ECMAScript.Vuetify",
                 Path.Combine(repoRoot, "src", "ECMAScript.Vuetify", "ECMAScript.Vuetify.csproj"),
+                RequiresJazorEmitPublishOutput: false,
+                DisableJazorPreparePackageArtifactsOnNoBuild: false),
+            ["ECMAScript.Vben"] = new(
+                "ECMAScript.Vben",
+                Path.Combine(repoRoot, "src", "ECMAScript.Vben", "ECMAScript.Vben.csproj"),
+                RequiresJazorEmitPublishOutput: false,
+                DisableJazorPreparePackageArtifactsOnNoBuild: false),
+            ["ECMAScript.ElementPlus"] = new(
+                "ECMAScript.ElementPlus",
+                Path.Combine(repoRoot, "src", "ECMAScript.ElementPlus", "ECMAScript.ElementPlus.csproj"),
                 RequiresJazorEmitPublishOutput: false,
                 DisableJazorPreparePackageArtifactsOnNoBuild: false),
             ["ECMAScript.TDesign"] = new(

@@ -38,7 +38,7 @@ Jolt 的 VS Code Language Client 集成：
 
 | 项目 | 原定用途 |
 |------|---------|
-| `Jazor.Vite` | Vite 前端集成（已由 Jolt 内置 Deno 管线替代） |
+| `Jazor.Vite` | 前端集成历史项（已由 Jolt 内置 Deno 管线替代） |
 | `Jazor.Vue` | Vue 核心抽象（已合并到 RazorVue/Jolt） |
 | `Jazor.Vue.Analysis` | Vue 模板分析（已合并到 RazorVue.Analysis） |
 | `Jazor.Vue.Analysis.Host` | 分析驱动进程（已合并到 Jolt） |

@@ -131,6 +131,42 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
     }
 
     [TestMethod]
+    public void VueRoute_SampleSmokeScript_UsesDenoConsumerPath_AndGuardsNoLegacyConsumerResidue()
+    {
+        var repoRoot = ResolveRepositoryRoot();
+        var consumerRoot = Path.Combine(repoRoot, "samples", "ECMAScript.VueRoute.MemorySmoke", "vueroute-consumer");
+        var denoConfigPath = Path.Combine(consumerRoot, "deno.json");
+        var scriptPath = Path.Combine(repoRoot, "samples", "ECMAScript.VueRoute.MemorySmoke", "verify-smoke.cs");
+        var legacyPackageJsonPath = Path.Combine(consumerRoot, "package.json");
+        var legacyConfigPath = Path.Combine(consumerRoot, "vite.config.js");
+        var denoConfig = File.ReadAllText(denoConfigPath);
+        var source = File.ReadAllText(scriptPath);
+
+        StringAssert.Contains(denoConfig, "\"build\": \"deno run -A scripts/build.ts\"");
+        StringAssert.Contains(denoConfig, "\"test\": \"deno run -A scripts/test.ts\"");
+        StringAssert.Contains(source, "ResolveDenoExecutable(repoRoot, options)");
+        StringAssert.Contains(source, "RunProcessAsync(denoExePath, [\"task\", \"build\"]");
+        StringAssert.Contains(source, "src/vueroute.generated.test.js");
+        StringAssert.Contains(source, "src/vueroute.runtime.test.js");
+        StringAssert.Contains(source, "src/vueroute.generated.dom.test.js");
+        StringAssert.Contains(source, "ECMAScript.VueRoute sample smoke verification passed.");
+        Assert.IsFalse(source.Contains("vite", StringComparison.OrdinalIgnoreCase), "VueRoute smoke verification script should not depend on legacy frontend bundler residue anymore.");
+        Assert.IsFalse(source.Contains("vitest", StringComparison.OrdinalIgnoreCase), "VueRoute smoke verification script should not depend on legacy test runner residue anymore.");
+        Assert.IsFalse(File.Exists(legacyPackageJsonPath), $"Legacy package manifest should not remain in the Deno consumer: {legacyPackageJsonPath}");
+        Assert.IsFalse(File.Exists(legacyConfigPath), $"Legacy config should not remain in the Deno consumer: {legacyConfigPath}");
+    }
+
+    [TestMethod]
+    public void VueRoute_SampleDirectoryBuildProps_ImportsRepoRootBuildProps()
+    {
+        var repoRoot = ResolveRepositoryRoot();
+        var propsPath = System.IO.Path.Combine(repoRoot, "samples", "ECMAScript.VueRoute.MemorySmoke", "Directory.Build.props");
+        var source = System.IO.File.ReadAllText(propsPath);
+
+        StringAssert.Contains(source, "<Import Project=\"..\\..\\Directory.Build.props\" />");
+    }
+
+    [TestMethod]
     public void VueRoute_SafeErasedValueUnions_UseNativeUnionKeyword()
     {
         var repoRoot = ResolveRepositoryRoot();

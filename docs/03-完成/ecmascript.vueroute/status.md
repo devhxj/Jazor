@@ -8,7 +8,7 @@
 
 当前可以对外做出的生产声明是：
 
-- Vue Router 4 高频 authoring surface 已具备独立项目、独立测试、emit/package 验证、真实 Vite consumer smoke。
+- Vue Router 4 高频 authoring surface 已具备独立项目、独立测试、emit/package 验证、真实 Deno consumer smoke。
 - 默认 `RouterView` 消费路径、`RouterLink`、内存路由、导航守卫、redirect、route props、`useRoute()`、`useRouter()`、`useLink()`、注入键和 `loadRouteLocation()` 已有代码级与运行级证据。
 - 当前仍不应宣称“完整覆盖 Vue Router 全量类型系统和所有长尾运行时 authoring 形态”。
 
@@ -29,9 +29,9 @@
 - 真实 consumer smoke 已补齐：
   - `samples/ECMAScript.VueRoute.MemorySmoke/`
   - 已验证本地 `Jazor` package pack + sample host rebuild
-  - 已验证本地 host 生成模块可被 Vite + Vue + Vue Router 真实消费
-  - 已验证 Vite production build
-  - 已验证 Vitest runtime/DOM
+  - 已验证本地 host 生成模块可被 Deno + Vue + Vue Router 真实消费
+  - 已验证 Deno bundle build
+  - 已验证 Deno runtime/DOM
   - 已验证隔离 generated output consumer path，不依赖已跟踪 sample 产物
 
 ## 当前生产声明边界
@@ -93,7 +93,7 @@ sample smoke 覆盖的运行时断言包括：
 
 - 本地 pack `Jazor` 后，sample host 能从新鲜 `.nupkg` rebuild 并产出隔离 generated modules
 - generated router module 存在并包含 `vue-router` runtime import
-- generated host app 可被 Vite build
+- generated host app 可被 Deno build
 - runtime navigation scenario 可完成：
   - push
   - replace
