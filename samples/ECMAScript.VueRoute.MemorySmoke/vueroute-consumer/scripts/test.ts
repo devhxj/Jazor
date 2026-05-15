@@ -1,0 +1,31 @@
+import { join } from "node:path";
+import { runBuild } from "./build.ts";
+import { prepareWorkspace, runDeno } from "./lib/pipeline.ts";
+
+export async function runTests(): Promise<void> {
+  const workspace = await prepareWorkspace();
+  await runBuild();
+
+  const testFiles = [
+    join("src", "vueroute.generated.test.js"),
+    join("src", "vueroute.runtime.test.js"),
+    join("src", "vueroute.generated.dom.test.js")
+  ];
+
+  for (const testFile of testFiles) {
+    await runDeno(workspace, [
+      "test",
+      "-A",
+      "--frozen",
+      "--import-map",
+      workspace.importMapPath,
+      testFile
+    ]);
+  }
+
+  console.log("ECMAScript.VueRoute Deno consumer build and test pipeline passed.");
+}
+
+if (import.meta.main) {
+  await runTests();
+}

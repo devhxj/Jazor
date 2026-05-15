@@ -70,12 +70,12 @@ function createDetailSetup(props, context) {
       h("p", "source: " + props.source),
       h("p", "route path: " + route.path),
       h("p", "query via: " + (route.query["via"] ?? "")),
-      h("p", "matched path: " + (matchedRoute.value === null ? "" : matchedRoute.value.path)),
+      h("p", "matched path: " + (matchedRoute.value == null ? "" : matchedRoute.value.path)),
       h("p", "view depth: " + viewDepth),
       h("p", "injected route path: " + routedLocation.value.path),
       h("p", "useLink href: " + composedLink.href.value),
       h("div", { class: "route-actions" }, [createButton("Blocked target", "action-button", pushBlocked), createButton("Follow composed link", "action-button action-button--accent", followComposedLink)]),
-      h("div", { class: "route-slot-probe" }, [h("strong", "slot keys visible: "), h("span", context.slots.default === null ? "none" : "default")])
+      h("div", { class: "route-slot-probe" }, [h("strong", "slot keys visible: "), h("span", context.slots.default == null ? "none" : "default")])
     ]);
   };
 }

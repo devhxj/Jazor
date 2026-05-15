@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/style.css"],
+  "sourcesContent": ["body {\n  margin: 0;\n  font-family: \"Segoe UI\", sans-serif;\n  background: linear-gradient(180deg, #f5f7fb 0%, #eef3ff 100%);\n  color: #122033;\n}\n\n#app {\n  min-height: 100vh;\n}\n"],
+  "mappings": ";AAAA;AACE,UAAQ;AACR,eAAa,UAAU,EAAE;AACzB;AAAA,IAAY;AAAA,MAAgB,MAAhB;AAAA,MAAwB,QAAQ,EAAhC;AAAA,MAAoC,QAAQ;AACxD,SAAO;AACT;AAEA,CAAC;AACC,cAAY;AACd;",
+  "names": []
+}

@@ -1,0 +1,15 @@
+/* src/style.css */
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background:
+    linear-gradient(
+      180deg,
+      #f5f7fb 0%,
+      #eef3ff 100%);
+  color: #122033;
+}
+#app {
+  min-height: 100vh;
+}
+/*# sourceMappingURL=client-entry.css.map */

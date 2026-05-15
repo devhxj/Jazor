@@ -453,4 +453,8 @@ jazor/
 !samples/RazorVue.TodoList/Todo.Host/jazor/**
 !samples/RazorVue.TodoList/Todo.Host/wwwroot/jazor/
 !samples/RazorVue.TodoList/Todo.Host/wwwroot/jazor/**
+!samples/ECMAScript.Vben.ElementPlusInject/Vben.ElementPlusInject.Host/jazor/
+!samples/ECMAScript.Vben.ElementPlusInject/Vben.ElementPlusInject.Host/jazor/**
+!samples/ECMAScript.Vben.ElementPlusInject/Vben.ElementPlusInject.Host/wwwroot/jazor/
+!samples/ECMAScript.Vben.ElementPlusInject/Vben.ElementPlusInject.Host/wwwroot/jazor/**
 src/vben/

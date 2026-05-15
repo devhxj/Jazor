@@ -43,17 +43,53 @@ if (!options.FrontendOnly || options.BuildLocal)
 ScriptHelpers.AssertPathExists(ScriptHelpers.ResolveHostAssemblyPath(hostRoot, options), "sample host assembly for requested configuration");
 ScriptHelpers.AssertGeneratedHostArtifacts(generatedOutputRoot);
 
-var npmEnvironment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+var denoEnvironment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
 {
     ["JAZOR_GENERATED_ROOT"] = generatedOutputRoot
 };
 
-await ScriptHelpers.RunProcessAsync("npm", ["ci"], consumerRoot, npmEnvironment);
-await ScriptHelpers.RunProcessAsync("npm", ["run", "build"], consumerRoot, npmEnvironment);
-await ScriptHelpers.RunProcessAsync("npm", ["run", "test", "--", "--run"], consumerRoot, npmEnvironment);
+var denoExePath = ScriptHelpers.ResolveDenoExecutable(repoRoot, options);
+
+await ScriptHelpers.RunProcessAsync(denoExePath, ["task", "build"], consumerRoot, denoEnvironment);
+await ScriptHelpers.RunProcessAsync(
+    denoExePath,
+    [
+        "test",
+        "-A",
+        "--frozen",
+        "--import-map",
+        Path.Combine(consumerRoot, ".deno-build", "import-map.generated.json"),
+        "src/vueroute.generated.test.js"
+    ],
+    consumerRoot,
+    denoEnvironment);
+await ScriptHelpers.RunProcessAsync(
+    denoExePath,
+    [
+        "test",
+        "-A",
+        "--frozen",
+        "--import-map",
+        Path.Combine(consumerRoot, ".deno-build", "import-map.generated.json"),
+        "src/vueroute.runtime.test.js"
+    ],
+    consumerRoot,
+    denoEnvironment);
+await ScriptHelpers.RunProcessAsync(
+    denoExePath,
+    [
+        "test",
+        "-A",
+        "--frozen",
+        "--import-map",
+        Path.Combine(consumerRoot, ".deno-build", "import-map.generated.json"),
+        "src/vueroute.generated.dom.test.js"
+    ],
+    consumerRoot,
+    denoEnvironment);
 
 Console.WriteLine("ECMAScript.VueRoute sample smoke verification passed.");
-Console.WriteLine("Verified: local Jazor package pack, isolated generated Vue Router modules, Vite build, and Vitest runtime/DOM coverage.");
+Console.WriteLine("Verified: local Jazor package pack, isolated generated Vue Router modules, Deno bundle build, and Deno runtime/DOM coverage.");
 
 internal sealed record SmokeOptions(
     string Configuration,
@@ -187,6 +223,54 @@ internal static class ScriptHelpers
             : fullPath + Path.DirectorySeparatorChar;
     }
 
+    public static string ResolveDenoExecutable(string repoRoot, SmokeOptions options)
+    {
+        var explicitDenoExePath = Environment.GetEnvironmentVariable("JAZOR_DENO_EXE");
+        if (!string.IsNullOrWhiteSpace(explicitDenoExePath))
+        {
+            var fullPath = Path.GetFullPath(explicitDenoExePath);
+            if (!File.Exists(fullPath))
+            {
+                throw new FileNotFoundException($"Explicit JAZOR_DENO_EXE path does not exist: {fullPath}");
+            }
+
+            return fullPath;
+        }
+
+        var candidatePaths = new List<string>();
+        if (!string.IsNullOrWhiteSpace(options.BaseOutputPath))
+        {
+            var isolatedOutputRoot = ResolveBuildRoot(options.BaseOutputPath);
+            AddDenoRuntimeCandidates(candidatePaths, Path.Combine(isolatedOutputRoot, "Jazor.Emit", "bin", options.Configuration, "net11.0"));
+        }
+
+        AddDenoRuntimeCandidates(candidatePaths, Path.Combine(repoRoot, "src", "Jolt", "bin", "Debug", "net11.0"));
+        AddDenoRuntimeCandidates(candidatePaths, Path.Combine(repoRoot, "src", "Jolt", "bin", "Release", "net11.0"));
+        AddDenoRuntimeCandidates(candidatePaths, Path.Combine(repoRoot, "src", "Jazor.Emit", "bin", "Debug", "net11.0"));
+        AddDenoRuntimeCandidates(candidatePaths, Path.Combine(repoRoot, "src", "Jazor.Emit", "bin", "Release", "net11.0"));
+
+        var denoHostPackageRoot = Path.Combine(repoRoot, ".dotnet", ".nuget", "packages", "denohost.runtime.win-x64");
+        if (Directory.Exists(denoHostPackageRoot))
+        {
+            var cachedDenoRuntime = Directory
+                .EnumerateFiles(denoHostPackageRoot, "deno.exe", SearchOption.AllDirectories)
+                .OrderByDescending(static path => path, StringComparer.OrdinalIgnoreCase)
+                .FirstOrDefault();
+            if (cachedDenoRuntime is not null)
+            {
+                candidatePaths.Add(cachedDenoRuntime);
+            }
+        }
+
+        var denoExePath = candidatePaths.FirstOrDefault(File.Exists);
+        if (denoExePath is null)
+        {
+            throw new FileNotFoundException("Bundled Deno runtime was not found. Build Jolt or Jazor.Emit first so DenoHost runtime assets exist.");
+        }
+
+        return denoExePath;
+    }
+
     public static void AssertGeneratedHostArtifacts(string generatedOutputRoot)
     {
         var routerModulePath = Path.Combine(generatedOutputRoot, "router", "memory-router.mjs");
@@ -247,6 +331,12 @@ internal static class ScriptHelpers
         {
             throw new InvalidOperationException($"Missing {description}: expected to find '{snippet}'.");
         }
+    }
+
+    static void AddDenoRuntimeCandidates(ICollection<string> candidates, string baseDirectory)
+    {
+        candidates.Add(Path.Combine(baseDirectory, "runtimes", "win-x64", "native", "deno.exe"));
+        candidates.Add(Path.Combine(baseDirectory, "publish", "runtimes", "win-x64", "native", "deno.exe"));
     }
 
     public static async Task RunDotNetAsync(IReadOnlyList<string> arguments, string workdir, CancellationToken cancellationToken = default)

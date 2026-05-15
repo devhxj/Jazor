@@ -67,7 +67,7 @@ export function createRouterRuntime() {
     return Promise.resolve(true);
   });
   router.afterEach((to, from, failure) => {
-    afterEachLog.value = "afterEach:" + from.path + "->" + to.path + ":" + (failure === null ? "ok" : "failure");
+    afterEachLog.value = "afterEach:" + from.path + "->" + to.path + ":" + (failure == null ? "ok" : "failure");
     return;
   });
   router.onError((error, to, from) => {

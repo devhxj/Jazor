@@ -7,7 +7,11 @@ var options = SampleBuildOptions.Parse(args);
 var repoRoot = ScriptHelpers.FindRepositoryRoot(Directory.GetCurrentDirectory());
 var sampleRoot = Path.Combine(repoRoot, "samples", "ECMAScript.VueRoute.MemorySmoke");
 var hostProject = Path.Combine(sampleRoot, "VueRoute.MemorySmoke.Host", "VueRoute.MemorySmoke.Host.csproj");
-var packageProject = Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj");
+var packageProjects = new[]
+{
+    Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj"),
+    Path.Combine(repoRoot, "src", "ECMAScript.VueRoute", "ECMAScript.VueRoute.csproj")
+};
 var packageOutput = Path.Combine(repoRoot, ".tmp", "nupkg-sample");
 var dotnetCliHome = Path.Combine(repoRoot, ".dotnet");
 
@@ -21,21 +25,24 @@ if (!string.IsNullOrWhiteSpace(options.JazorOutDir))
 
 var isolationArguments = ScriptHelpers.GetIsolationArguments(options, repoRoot);
 
-var packArguments = new List<string>
+foreach (var packageProject in packageProjects)
 {
-    "pack",
-    packageProject,
-    "-c",
-    options.Configuration,
-    "-o",
-    packageOutput,
-    "-v",
-    "minimal",
-    "/nr:false",
-    "-p:UseSharedCompilation=false"
-};
-packArguments.AddRange(isolationArguments);
-await ScriptHelpers.RunDotNetAsync(packArguments, repoRoot, dotnetCliHome);
+    var packArguments = new List<string>
+    {
+        "pack",
+        packageProject,
+        "-c",
+        options.Configuration,
+        "-o",
+        packageOutput,
+        "-v",
+        "minimal",
+        "/nr:false",
+        "-p:UseSharedCompilation=false"
+    };
+    packArguments.AddRange(isolationArguments);
+    await ScriptHelpers.RunDotNetAsync(packArguments, repoRoot, dotnetCliHome);
+}
 
 var packageInfo = ScriptHelpers.ResolveLatestPackage(packageOutput);
 var restorePackagesPath = Path.Combine(repoRoot, ".tmp", "nuget-sample-packages", $"{packageInfo.Version}-{packageInfo.Stamp}");
