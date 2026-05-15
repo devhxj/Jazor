@@ -2789,6 +2789,42 @@ public sealed class RazorVueDescriptorExtractionTests
     }
 
     [TestMethod]
+    public void RazorVue_Snapshot_IgnoresNullForgivingParameterInitializer_AsDefaultSource()
+    {
+        var snapshot = CreateSingleSnapshot(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/required-card")]
+                public class RequiredCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string Title { get; set; } = default!;
+                }
+            }
+            """);
+
+        var titleProp = snapshot.Descriptor.Props.Single(static prop => prop.PublicName == "Title");
+
+        Assert.AreEqual((string?)null, titleProp.DefaultExpression);
+        Assert.AreEqual(VuePropDefaultSource.None, titleProp.DefaultSource);
+    }
+
+    [TestMethod]
     public void RazorVue_Candidate_ExtractsLifecycleAndLogicMethods()
     {
         var context = CreateContext(

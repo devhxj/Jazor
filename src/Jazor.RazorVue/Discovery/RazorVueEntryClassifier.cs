@@ -122,7 +122,7 @@ internal static class RazorVueEntryClassifier
         {
             foreach (var method in current.GetMembers().OfType<IMethodSymbol>())
             {
-                if (method.MethodKind != MethodKind.Ordinary || method.IsStatic)
+                if (method.MethodKind != MethodKind.Ordinary)
                     continue;
 
                 if (!method.Locations.Any(static location => location.IsInSource))
@@ -151,8 +151,12 @@ internal static class RazorVueEntryClassifier
         {
             foreach (var field in current.GetMembers().OfType<IFieldSymbol>())
             {
-                // Keep setup-side field discovery conservative until lowering exists.
-                if (field.IsStatic || !field.Locations.Any(static location => location.IsInSource))
+                // Keep setup-side field discovery conservative until lowering
+                // has explicit hoist support for field declarations.
+                if (field.IsStatic)
+                    continue;
+
+                if (!field.Locations.Any(static location => location.IsInSource))
                     continue;
 
                 if (field.AssociatedSymbol is not null || field.IsImplicitlyDeclared)

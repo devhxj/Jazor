@@ -711,6 +711,12 @@ internal sealed partial class RazorVueExpressionEmitter
             : slotAccess + " ? " + slotAccess + "(" + argumentExpression + ") : null";
     }
 
+    private static string EmitCurrentComponentSlotReference(VueSlotDescriptor slotDescriptor)
+    {
+        var slotAccess = GetSlotAccessExpression(slotDescriptor.Name);
+        return slotAccess + " ?? null";
+    }
+
     private static string GetSlotAccessExpression(string slotName)
         => IsSimpleJavaScriptIdentifier(slotName)
             ? "slots." + slotName

@@ -7,5 +7,13 @@ internal sealed record VuePropDescriptor(
     bool Required,
     bool AcceptsBinding,
     string? DefaultExpression,
+    VuePropDefaultSource DefaultSource,
     VuePropKind Kind,
     bool CaptureUnmatchedValues);
+
+internal enum VuePropDefaultSource
+{
+    None,
+    AuthoringOverride,
+    PropertyInitializer
+}

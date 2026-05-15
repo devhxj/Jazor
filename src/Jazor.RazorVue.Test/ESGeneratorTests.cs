@@ -1338,6 +1338,87 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithGeneratedRazorComponentAndHandwrittenBuildRenderTree_AndEnabledRazorSgIntegrationWithoutTailRegistration_EmitsOnlyHandwrittenArtifactsFromNormalGenerator()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string razorDocumentText = """<section><h1>@Title</h1><p>Hello</p></section>""";
+        var normalizedDocumentPath = documentPath.Replace('\\', '/');
+
+        var compilation = CreateAlignedRazorComponentCompilation(
+            assemblyName: "RazorVue.Generator.IntegrationEnabled.MixedFormalAndHandwritten.NoTail.Tests",
+            documentPath: normalizedDocumentPath,
+            documentText: razorDocumentText,
+            componentSource:
+            """
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/counter-card")]
+                public class CounterCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Title);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            rootNamespace: "Demo.Pages");
+
+        var generator = CreateRazorSgIntegrationTestGenerator(
+            bootstrapTrace: CreateBootstrapTrace(
+                hasAttempted: true,
+                isInstalled: false,
+                tailOutputRegistered: false),
+            compatibilityProbeFactory: CreateSupportedRazorSgCompatibilityProbe);
+
+        var (_, runResult) = RunAllGeneratorsWithResult(
+            compilation,
+            razorVueOutputMode: "sfc",
+            razorVueGenerator: generator,
+            enableRazorSgIntegration: true);
+        var integrationDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id is "JAZORVGA018" or "JAZORVGA019")
+            .ToArray();
+        var genericDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+        var artifactHints = hints
+            .Where(static hint => hint.StartsWith("Jazor.Generated.RazorVue.Artifact_", StringComparison.Ordinal))
+            .ToArray();
+
+        Assert.AreEqual(0, integrationDiagnostics.Length, string.Join("\n", integrationDiagnostics.Select(static x => x.ToString())));
+        Assert.AreEqual(0, genericDiagnostics.Length, string.Join("\n", genericDiagnostics.Select(static x => x.ToString())));
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        Assert.AreEqual(1, artifactHints.Length, string.Join("\n", artifactHints));
+        var artifactSource = GetGeneratedSource(runResult, artifactHints[0]);
+        StringAssert.Contains(artifactSource, "components/counter-card.vue");
+        Assert.IsFalse(artifactSource.Contains("components/todo-app.vue", StringComparison.Ordinal), artifactSource);
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithRazorVuePartialOnly_AndEnabledRazorSgIntegrationWithoutTailRegistration_DoesNotReportBootstrapDiagnostic()
     {
         var compilation = CreateCompilation(
@@ -1431,6 +1512,155 @@ public sealed class ESGeneratorTests
             .ToArray();
 
         Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static x => x.ToString())));
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithHandwrittenBuildRenderTreeOnly_AndEnabledRazorSgIntegration_EmitsFromNormalGenerator()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.Generator.IntegrationEnabled.HandwrittenOnly.Tests",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/counter-card")]
+                public class CounterCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Title);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var generator = CreateRazorSgIntegrationTestGenerator(
+            bootstrapTrace: CreateBootstrapTrace(
+                hasAttempted: true,
+                isInstalled: true,
+                tailOutputRegistered: true),
+            compatibilityProbeFactory: static () => RazorSourceGeneratorCompatibilityProbeResult.Fail("Should not be queried for handwritten BuildRenderTree authoring."));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(
+            compilation,
+            razorVueOutputMode: "sfc",
+            razorVueGenerator: generator,
+            enableRazorSgIntegration: true);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+        var artifactHints = hints
+            .Where(static hint => hint.StartsWith("Jazor.Generated.RazorVue.Artifact_", StringComparison.Ordinal))
+            .ToArray();
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static x => x.ToString())));
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        Assert.AreEqual(1, artifactHints.Length, string.Join("\n", artifactHints));
+        var artifactSource = GetGeneratedSource(runResult, artifactHints[0]);
+        StringAssert.Contains(artifactSource, "components/counter-card.vue");
+        StringAssert.Contains(artifactSource, "<section>");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithMixedFormalRazorAndHandwrittenBuildRenderTree_AndEnabledRazorSgIntegration_EmitsOnlyHandwrittenArtifactsFromNormalGenerator()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string razorDocumentText = """<section><h1>@Title</h1><p>Hello</p></section>""";
+        var normalizedDocumentPath = documentPath.Replace('\\', '/');
+
+        var compilation = CreateAlignedRazorComponentCompilation(
+            assemblyName: "RazorVue.Generator.IntegrationEnabled.MixedFormalAndHandwritten.Tests",
+            documentPath: normalizedDocumentPath,
+            documentText: razorDocumentText,
+            componentSource:
+            """
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/counter-card")]
+                public class CounterCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Title);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            rootNamespace: "Demo.Pages");
+
+        var generator = CreateRazorSgIntegrationTestGenerator(
+            bootstrapTrace: CreateBootstrapTrace(
+                hasAttempted: true,
+                isInstalled: true,
+                tailOutputRegistered: true),
+            compatibilityProbeFactory: static () => RazorSourceGeneratorCompatibilityProbeResult.Fail("Should not be queried after tail output registration."));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(
+            compilation,
+            razorVueOutputMode: "sfc",
+            razorVueGenerator: generator,
+            enableRazorSgIntegration: true);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+        var artifactHints = hints
+            .Where(static hint => hint.StartsWith("Jazor.Generated.RazorVue.Artifact_", StringComparison.Ordinal))
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length, string.Join("\n", diagnostics.Select(static x => x.ToString())));
+        Assert.AreEqual("JAZORVGA020", diagnostics[0].Id);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        Assert.AreEqual(1, artifactHints.Length, string.Join("\n", artifactHints));
+        var artifactSource = GetGeneratedSource(runResult, artifactHints[0]);
+        StringAssert.Contains(artifactSource, "components/counter-card.vue");
+        Assert.IsFalse(artifactSource.Contains("components/todo-app.vue", StringComparison.Ordinal), artifactSource);
     }
 
     [TestMethod]

@@ -30,6 +30,7 @@ internal sealed record RazorVueSfcTemplateBlockModel(
 internal sealed record RazorVueSfcScriptSetupBlockModel(
     RazorVueCanonicalSetupModel Setup,
     ImmutableArray<RazorVueSfcSetupBinding> LiftedBindings,
+    bool RequiresSlotsRuntime,
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins);
 
 internal sealed record RazorVueSfcStyleBlockModel(

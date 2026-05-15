@@ -118,7 +118,8 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "defineComponent");
         StringAssert.Contains(artifact.ModuleCode, "import { defineComponent, h } from \"vue\";");
         StringAssert.Contains(artifact.ModuleCode, "name: \"CounterCard\"");
-        StringAssert.Contains(artifact.ModuleCode, "setup(props, { emit, slots, expose, attrs })");
+        StringAssert.Contains(artifact.ModuleCode, "setup(__jazorRawProps, { emit, slots, expose, attrs })");
+        StringAssert.Contains(artifact.ModuleCode, "const props = __jazorRawProps;");
         StringAssert.Contains(artifact.ModuleCode, "return () => null;");
         StringAssert.Contains(artifact.ModuleCode, "\"value\"");
         StringAssert.Contains(artifact.ModuleCode, "\"update:value\"");
@@ -162,6 +163,141 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", null, \"Injected by template frontend\");");
         Assert.AreEqual("InjectedCard", artifact.ComponentName);
         Assert.IsFalse(string.IsNullOrWhiteSpace(artifact.Identity.TemplateHash));
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersParameterInitializerDefaults_WithoutPropsRedeclaration()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/defaults-card")]
+                public class DefaultsCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; } = CreateDefaultTitle();
+
+                    [Parameter]
+                    public string[]? Items { get; set; } = CreateDefaultItems();
+
+                    private static string CreateDefaultTitle() => "Overview";
+
+                    private static string[] CreateDefaultItems() => ["alpha", "beta"];
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "setup(__jazorRawProps, { emit, slots, expose, attrs })");
+        StringAssert.Contains(artifact.ModuleCode, "const props = new Proxy(__jazorRawProps, {");
+        Assert.IsFalse(
+            artifact.ModuleCode.Contains("let props = __jazorRawProps;", StringComparison.Ordinal),
+            artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersParameterInitializerDefaults_WithHelperReturningStructuredHostArray()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using ECMAScript.Vben;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/default-links-card")]
+                public class DefaultLinksCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public VbenBreadcrumbItem[]? Items { get; set; } = CreateDefaultItems();
+
+                    private static VbenBreadcrumbItem[] CreateDefaultItems() =>
+                        new VbenBreadcrumbItem[]
+                        {
+                            new()
+                            {
+                                Key = "home",
+                                Title = "Overview"
+                            },
+                            new()
+                            {
+                                Key = "release",
+                                Title = "Release"
+                            }
+                        };
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "function createDefaultItems()");
+        StringAssert.Contains(artifact.ModuleCode, "const props = new Proxy(__jazorRawProps, {");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_IgnoresNullForgivingParameterInitializer_AsRuntimeDefaultSource()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/required-card")]
+                public class RequiredCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string Title { get; set; } = default!;
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const props = __jazorRawProps;");
+        Assert.IsFalse(artifact.ModuleCode.Contains("new Proxy(__jazorRawProps", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("default!;", StringComparison.Ordinal), artifact.ModuleCode);
     }
 
     [TestMethod]
@@ -8995,6 +9131,68 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersCurrentComponentMethodGroupEventCallbackFactory_ToInvokeAsyncBridge()
+    {
+        var compilation = CSharpCompilation.Create(
+            assemblyName: "RazorVue.Pipeline.CurrentComponentMethodGroupEventCallback.Tests",
+            syntaxTrees: RazorVueMetadataReferences.CreateSyntaxTrees(
+                """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.ElementPlus;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/menu-node")]
+                public class MenuNode : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string Key { get; set; } = string.Empty;
+
+                    [Parameter]
+                    public EventCallback<string> SelectedKeyChanged { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<ElMenuItem>(0);
+                        builder.AddAttribute(1, nameof(ElMenuItem.Index), Key);
+                        builder.AddAttribute(2, nameof(ElMenuItem.OnClick), EventCallback.Factory.Create(this, OnItemClick));
+                        builder.CloseComponent();
+                    }
+
+                    private Task OnItemClick()
+                        => SelectedKeyChanged.InvokeAsync(Key);
+                }
+            }
+            """),
+            references: RazorVueMetadataReferences.Create(
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.ElementPlus.ElMenuItem).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location)),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var context = CreateContext(compilation);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "\"onClick\": () => emit(\"selectedKeyChanged\", props.key)");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersNestedComponentWithPropsAndDefaultSlot()
     {
         var context = CreateContext(
@@ -9677,6 +9875,64 @@ public sealed class RazorVuePipelineTests
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
 
         StringAssert.Contains(artifact.ModuleCode, "header: () => h(\"h1\", null, props.title)");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_CurrentComponentNamedSlotNullCheck_UsesSlotsPresenceInsteadOfProps()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/card-shell")]
+                public class CardShell : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment? Header { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+
+                        if (Header is not null)
+                        {
+                            builder.OpenElement(1, "header");
+                            builder.AddContent(2, Header);
+                            builder.CloseElement();
+                        }
+                        else
+                        {
+                            builder.OpenElement(3, "div");
+                            builder.AddContent(4, "fallback");
+                            builder.CloseElement();
+                        }
+
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "CardShell");
+
+        StringAssert.Contains(artifact.ModuleCode, "slots.header ?? null");
+        StringAssert.Contains(artifact.ModuleCode, "slots.header ? slots.header() : null");
+        Assert.IsFalse(artifact.ModuleCode.Contains("props.header", StringComparison.Ordinal), artifact.ModuleCode);
     }
 
     [TestMethod]

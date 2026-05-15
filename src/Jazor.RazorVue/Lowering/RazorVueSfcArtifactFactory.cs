@@ -8,6 +8,8 @@ using Jazor.RazorVue.Descriptor;
 using Jazor.RazorVue.Extensibility;
 using Jazor.RazorVue.RenderTree;
 using Jazor.RazorVue.Sfc;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Jazor.RazorVue.Lowering;
 
@@ -708,18 +710,21 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         if (builder.Length > 0)
             builder.AppendLine();
 
-        builder.Append("const props = defineProps<");
+        var expressionEmitter = new RazorVueExpressionEmitter(snapshot);
+        builder.Append("const __jazorRawProps = defineProps<");
         builder.Append(GetPropsTypeLiteral(semantic.Descriptor));
         builder.AppendLine(">();");
+        AppendNormalizedPropsBinding(builder, snapshot, expressionEmitter, semantic.Descriptor);
         builder.Append("const emit = defineEmits<");
         builder.Append(GetEmitTypeLiteral(semantic.Descriptor));
         builder.AppendLine(">();");
+        if (semantic.ScriptSetupBlock.RequiresSlotsRuntime)
+            builder.AppendLine("const slots = useSlots();");
         if (RazorVueForLoopLoweringSupport.ContainsForLoop(semantic.TemplateBlock.Template))
             RazorVueForLoopLoweringSupport.AppendForRangeHelper(builder, string.Empty);
         if (requiresAttributeMergeHelper)
             RazorVueAttributeMergeHelper.AppendHelper(builder, string.Empty);
 
-        var expressionEmitter = new RazorVueExpressionEmitter(snapshot);
         RazorVueSetupAndLifecycleLoweringSupport.AppendLifecycleLowering(builder, snapshot, string.Empty);
         RazorVueSetupAndLifecycleLoweringSupport.AppendSetupLogicLowering(
             builder,
@@ -746,10 +751,106 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
             .ToBuilder();
         if (semantic.ScriptSetupBlock.LiftedBindings.Any(static binding => binding.BindingKind == RazorVueSfcSetupBindingKind.Computed))
             builder.Add("computed");
+        if (semantic.ScriptSetupBlock.RequiresSlotsRuntime)
+            builder.Add("useSlots");
         return builder
             .Distinct(StringComparer.Ordinal)
             .ToImmutableArray();
     }
+
+    private static void AppendNormalizedPropsBinding(
+        StringBuilder builder,
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter expressionEmitter,
+        VueComponentDescriptor descriptor)
+    {
+        if (descriptor.Props.IsDefaultOrEmpty)
+        {
+            builder.AppendLine("const props = __jazorRawProps;");
+            return;
+        }
+
+        var defaultEntries = descriptor.Props
+            .Where(static prop => prop.DefaultSource != VuePropDefaultSource.None)
+            .Select(prop => new DefaultPropEntry(
+                prop.Name,
+                LowerDefaultExpression(snapshot, expressionEmitter, prop)))
+            .ToImmutableArray();
+
+        if (defaultEntries.IsDefaultOrEmpty)
+        {
+            builder.AppendLine("const props = __jazorRawProps;");
+            return;
+        }
+
+        builder.AppendLine("const __jazorPropDefaultCache = Object.create(null);");
+        builder.AppendLine("const props = new Proxy(__jazorRawProps, {");
+        builder.AppendLine("  get(target, key, receiver) {");
+        builder.AppendLine("    if (typeof key === \"string\") {");
+        foreach (var entry in defaultEntries)
+        {
+            builder.Append("      if (key === ")
+                .Append(ToJavaScriptString(entry.PropName))
+                .AppendLine(") {");
+            builder.AppendLine("        const value = Reflect.get(target, key, receiver);");
+            builder.AppendLine("        if (value !== undefined) return value;");
+            builder.AppendLine("        if (Object.prototype.hasOwnProperty.call(__jazorPropDefaultCache, key)) return __jazorPropDefaultCache[key];");
+            builder.Append("        const defaultValue = ")
+                .Append(entry.ExpressionText)
+                .AppendLine(";");
+            builder.AppendLine("        __jazorPropDefaultCache[key] = defaultValue;");
+            builder.AppendLine("        return defaultValue;");
+            builder.AppendLine("      }");
+        }
+        builder.AppendLine("    }");
+        builder.AppendLine("    return Reflect.get(target, key, receiver);");
+        builder.AppendLine("  }");
+        builder.AppendLine("});");
+    }
+
+    private static string LowerDefaultExpression(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter expressionEmitter,
+        VuePropDescriptor prop)
+    {
+        if (prop.DefaultSource == VuePropDefaultSource.None || string.IsNullOrWhiteSpace(prop.DefaultExpression))
+            throw new InvalidOperationException($"Prop '{prop.PublicName}' does not declare a default expression.");
+
+        var propertySymbol = snapshot.ComponentSymbol
+            .GetMembers(prop.PublicName)
+            .OfType<IPropertySymbol>()
+            .FirstOrDefault(static candidate => !candidate.IsStatic);
+        if (propertySymbol is null ||
+            propertySymbol.DeclaringSyntaxReferences.Length == 0 ||
+            prop.DefaultSource != VuePropDefaultSource.PropertyInitializer)
+        {
+            return prop.DefaultExpression!;
+        }
+
+        foreach (var reference in propertySymbol.DeclaringSyntaxReferences)
+        {
+            if (reference.GetSyntax() is not PropertyDeclarationSyntax declaration ||
+                declaration.Initializer?.Value is null)
+            {
+                continue;
+            }
+
+            var semanticModel = snapshot.Compilation.GetSemanticModel(declaration.SyntaxTree);
+            if (!RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
+                    semanticModel,
+                    declaration.Initializer.Value,
+                    out var operation))
+            {
+                continue;
+            }
+
+            return expressionEmitter.EmitSetupExpression(operation!);
+        }
+
+        return prop.DefaultExpression!;
+    }
+
+    private sealed record DefaultPropEntry(string PropName, string ExpressionText);
 
     private static void AppendLiftedBinding(StringBuilder builder, RazorVueSfcSetupBinding binding)
     {

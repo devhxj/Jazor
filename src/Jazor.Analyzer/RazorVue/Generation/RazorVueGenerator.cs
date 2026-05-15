@@ -304,6 +304,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             return;
 
         var candidate = candidates.FirstOrDefault(static candidate => candidate is not null);
+        ImmutableArray<RazorVueSemanticSnapshot> integrationHandwrittenSnapshots = ImmutableArray<RazorVueSemanticSnapshot>.Empty;
 
         try
         {
@@ -320,7 +321,15 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             }
 
             if (generatorOptions.EnableRazorSgIntegration)
-                return;
+            {
+                integrationHandwrittenSnapshots = GetIntegrationEligibleHandwrittenBuildRenderTreeSnapshots(razorVueContext);
+            }
+
+            if (generatorOptions.EnableRazorSgIntegration)
+            {
+                if (integrationHandwrittenSnapshots.IsDefaultOrEmpty)
+                    return;
+            }
 
             // Keep generator diagnostics aligned with the analyzer by validating
             // descriptor-only library stubs before any consuming component resolves them.
@@ -338,7 +347,9 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
                 }
                 case RazorVueGeneratorOutputMode.Sfc:
                 {
-                    var catalog = sfcPipelineFactory().Execute(razorVueContext);
+                    var catalog = generatorOptions.EnableRazorSgIntegration
+                        ? sfcPipelineFactory().Execute(razorVueContext, integrationHandwrittenSnapshots)
+                        : sfcPipelineFactory().Execute(razorVueContext);
                     if (catalog.Artifacts.IsDefaultOrEmpty)
                         return;
 
@@ -442,6 +453,29 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         }
 
         return false;
+    }
+
+    private static ImmutableArray<RazorVueSemanticSnapshot> GetIntegrationEligibleHandwrittenBuildRenderTreeSnapshots(
+        RazorVueCompilationContext context)
+    {
+        var snapshots = RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(context);
+        if (snapshots.IsDefaultOrEmpty)
+            return ImmutableArray<RazorVueSemanticSnapshot>.Empty;
+
+        var builder = ImmutableArray.CreateBuilder<RazorVueSemanticSnapshot>();
+        foreach (var snapshot in snapshots)
+        {
+            if (snapshot.RazorSourceGeneratorDocument is not null || snapshot.RazorIrCarrier is not null)
+                continue;
+
+            if (snapshot.BuildRenderTreeMethod is not null &&
+                RazorVueBuildRenderTreeAuthoringClassifier.IsHandwrittenBuildRenderTree(snapshot))
+            {
+                builder.Add(snapshot);
+            }
+        }
+
+        return builder.ToImmutable();
     }
 
     private static Diagnostic CreateCompilationIssueDiagnostic(

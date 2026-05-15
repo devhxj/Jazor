@@ -6,6 +6,7 @@ using Jazor.Compiler;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Jazor.RazorVue.Lowering;
@@ -142,12 +143,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 return "props." + prop.Name;
 
             if (_slotsByPublicName.TryGetValue(property.Property.Name, out var slot))
-            {
-                if (slot.IsDefault)
-                    return "slots.default ? slots.default() : null";
-
-                return "props." + ToLowerCamelCase(property.Property.Name);
-            }
+                return EmitCurrentComponentSlotReference(slot);
 
             if (_emitsByRazorAlias.ContainsKey(property.Property.Name))
                 return EmitCurrentComponentCallbackReference(property.Property);
@@ -156,7 +152,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 $"RazorVue render currently only supports parameter properties in template expressions. Unsupported member: '{property.Property.Name}'.");
         }
 
-        return EmitMemberTarget(property.Instance) + "." + property.Property.Name;
+        return EmitMemberTarget(property.Instance) + "." + ResolveMemberName(property.Property);
     }
 
     internal bool TryRewritePropertyReference(IPropertyReferenceOperation property, SenseArgument argument, out string expression)
@@ -174,9 +170,7 @@ internal sealed partial class RazorVueExpressionEmitter
 
             if (_slotsByPublicName.TryGetValue(property.Property.Name, out var slot))
             {
-                expression = slot.IsDefault
-                    ? "slots.default ? slots.default() : null"
-                    : "props." + ToLowerCamelCase(property.Property.Name);
+                expression = EmitCurrentComponentSlotReference(slot);
                 return true;
             }
 
@@ -213,7 +207,7 @@ internal sealed partial class RazorVueExpressionEmitter
         if (!IsTemplateDataProjectionCarrier(instance.Type))
             return false;
 
-        expression = EmitExpression(instance, argument) + "." + property.Property.Name;
+        expression = EmitExpression(instance, argument) + "." + ResolveMemberName(property.Property);
         return true;
     }
 
@@ -223,6 +217,9 @@ internal sealed partial class RazorVueExpressionEmitter
             return false;
 
         var original = type.OriginalDefinition;
+        if (original is INamedTypeSymbol namedOriginal && Util.IsHostErasedUnionType(namedOriginal))
+            return false;
+
         if (original.TypeKind is TypeKind.Array or TypeKind.Delegate or TypeKind.TypeParameter ||
             type.IsTupleType ||
             original.IsAnonymousType ||
@@ -244,6 +241,9 @@ internal sealed partial class RazorVueExpressionEmitter
             if (_propsByPublicName.TryGetValue(property.Property.Name, out var prop))
                 return "props." + prop.Name;
 
+            if (_slotsByPublicName.TryGetValue(property.Property.Name, out var slot))
+                return EmitCurrentComponentSlotReference(slot);
+
             if (_emitsByRazorAlias.ContainsKey(property.Property.Name))
                 return EmitCurrentComponentCallbackReference(property.Property);
 
@@ -252,7 +252,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 $"RazorVue setup-side logic only supports component [Parameter] properties. Unsupported member: '{property.Property.Name}'.");
         }
 
-        return EmitMemberTarget(property.Instance) + "." + property.Property.Name;
+        return EmitMemberTarget(property.Instance) + "." + ResolveMemberName(property.Property);
     }
 
     private bool TryEmitKnownAliasedProperty(
@@ -306,7 +306,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 $"RazorVue render currently does not support component field '{field.Field.Name}' in component '{_snapshot.Descriptor.FullName}'.");
         }
 
-        return EmitMemberTarget(field.Instance) + "." + field.Field.Name;
+        return EmitMemberTarget(field.Instance) + "." + ResolveMemberName(field.Field);
     }
 
     internal bool TryRewriteFieldReference(IFieldReferenceOperation field, SenseArgument argument, out string expression)
@@ -343,7 +343,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 $"RazorVue setup-side logic does not support component field '{field.Field.Name}'.");
         }
 
-        return EmitMemberTarget(field.Instance) + "." + field.Field.Name;
+        return EmitMemberTarget(field.Instance) + "." + ResolveMemberName(field.Field);
     }
 
     private static bool IsNullDefaultValue(IDefaultValueOperation defaultValue)
@@ -389,6 +389,9 @@ internal sealed partial class RazorVueExpressionEmitter
                 "Microsoft.AspNetCore.Components.ParameterAttribute",
                 StringComparison.Ordinal));
 
+    private static string ResolveMemberName(ISymbol symbol)
+        => Util.GetConfigOrSymbolName(symbol);
+
     private static string ToLifecyclePropName(string value)
     {
         if (string.IsNullOrEmpty(value))
@@ -411,6 +414,9 @@ internal sealed partial class RazorVueExpressionEmitter
 
         if (TryNormalizeRazorInferredEventCallback(invocation, out var normalizedInferredCallback))
             return normalizedInferredCallback;
+
+        if (TryNormalizeCurrentComponentCallbackInvokeAsync(invocation, useSetupEmitter: false, compilerArgument: null, out var normalizedCallbackInvoke))
+            return normalizedCallbackInvoke;
 
         if (invocation.Instance is not null && invocation.TargetMethod.Name == "Invoke")
         {
@@ -457,6 +463,12 @@ internal sealed partial class RazorVueExpressionEmitter
             return true;
         }
 
+        if (TryNormalizeCurrentComponentCallbackInvokeAsync(invocation, useSetupEmitter: false, argument, out var normalizedCallbackInvoke))
+        {
+            expression = normalizedCallbackInvoke;
+            return true;
+        }
+
         if (invocation.Instance is not null && invocation.TargetMethod.Name == "Invoke")
         {
             expression = EmitExpression(invocation.Instance, argument) + "(" +
@@ -491,6 +503,9 @@ internal sealed partial class RazorVueExpressionEmitter
         if (TryNormalizeRazorInferredEventCallback(invocation, out var normalizedInferredCallback))
             return normalizedInferredCallback;
 
+        if (TryNormalizeCurrentComponentCallbackInvokeAsync(invocation, useSetupEmitter: true, compilerArgument: null, out var normalizedCallbackInvoke))
+            return normalizedCallbackInvoke;
+
         if (invocation.Instance is not null && invocation.TargetMethod.Name == "Invoke")
         {
             return EmitSetupExpression(invocation.Instance) + "(" +
@@ -524,6 +539,18 @@ internal sealed partial class RazorVueExpressionEmitter
         {
             _requiredSetupMethods.Add(operation.Method);
             expression = ToLowerCamelCase(operation.Method.Name);
+            return true;
+        }
+
+        expression = string.Empty;
+        return false;
+    }
+
+    internal bool TryRewriteParameterReference(IParameterReferenceOperation operation, SenseArgument argument, out string expression)
+    {
+        if (_scopedParameterAliases is not null &&
+            _scopedParameterAliases.TryGetValue(operation.Parameter, out expression))
+        {
             return true;
         }
 
@@ -666,7 +693,7 @@ internal sealed partial class RazorVueExpressionEmitter
         if (receiver is not IInstanceReferenceOperation)
             return string.Empty;
 
-        var callbackTarget = Unwrap(invocation.Arguments[1].Value);
+        var callbackTarget = UnwrapDelegateCarrier(invocation.Arguments[1].Value) ?? Unwrap(invocation.Arguments[1].Value);
         if (callbackTarget is null)
             return string.Empty;
 
@@ -679,8 +706,29 @@ internal sealed partial class RazorVueExpressionEmitter
                 EmitCurrentComponentCallbackReference(property.Property),
             IFieldReferenceOperation field when IsCurrentComponentMember(field.Field, field.Instance) =>
                 EmitCurrentComponentCallbackReference(field.Field),
+            IMethodReferenceOperation method when IsCurrentComponentMember(method.Method, method.Instance) =>
+                TryNormalizeCurrentComponentCallbackMethod(method),
             _ => string.Empty
         };
+    }
+
+    private string TryNormalizeCurrentComponentCallbackMethod(IMethodReferenceOperation methodReference)
+    {
+        if (!TryGetSimpleMethodBodyOperation(methodReference.Method, out var bodyOperation))
+            return string.Empty;
+
+        var parameterNames = methodReference.Method.Parameters
+            .Select(static parameter => parameter.Name)
+            .ToArray();
+
+        var bodyExpression = WithScopedParameterAliases(
+            methodReference.Method.Parameters,
+            parameterNames,
+            () => EmitSetupExpression(bodyOperation));
+
+        return parameterNames.Length == 0
+            ? "() => " + NormalizeArrowFunctionExpressionBody(bodyExpression)
+            : "(" + string.Join(", ", parameterNames) + ") => " + NormalizeArrowFunctionExpressionBody(bodyExpression);
     }
 
     private bool TryNormalizeRazorInferredEventCallback(IOperation callbackTarget, out string expression)
@@ -719,6 +767,138 @@ internal sealed partial class RazorVueExpressionEmitter
             default:
                 return false;
         }
+    }
+
+    private bool TryNormalizeCurrentComponentCallbackInvokeAsync(
+        IInvocationOperation invocation,
+        bool useSetupEmitter,
+        SenseArgument? compilerArgument,
+        out string expression)
+    {
+        expression = string.Empty;
+        if (!string.Equals(invocation.TargetMethod.Name, "InvokeAsync", StringComparison.Ordinal))
+            return false;
+
+        var callbackInstance = Unwrap(invocation.Instance);
+        if (callbackInstance is null)
+            return false;
+
+        string emitArgument(IOperation operation)
+            => useSetupEmitter
+                ? EmitSetupExpression(operation, compilerArgument)
+                : EmitExpression(operation, compilerArgument);
+
+        switch (callbackInstance)
+        {
+            case IPropertyReferenceOperation property when IsCurrentComponentMember(property.Property, property.Instance):
+                expression = EmitCurrentComponentCallbackInvocation(property.Property.Name, invocation.Arguments, emitArgument);
+                return true;
+            case IFieldReferenceOperation field when IsCurrentComponentMember(field.Field, field.Instance):
+                _requiredSetupFields.Add(field.Field);
+                expression = EmitCallbackInvocationExpression(ToLowerCamelCase(field.Field.Name), invocation.Arguments, emitArgument, optional: false);
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private string EmitCurrentComponentCallbackInvocation(
+        string razorAlias,
+        ImmutableArray<IArgumentOperation> arguments,
+        Func<IOperation, string> emitArgument)
+    {
+        if (_emitsByRazorAlias.TryGetValue(razorAlias, out var emitDescriptor))
+        {
+            if (arguments.Length == 0)
+                return "emit(" + ToJavaScriptString(emitDescriptor.Name) + ")";
+
+            if (arguments.Length == 1)
+                return "emit(" + ToJavaScriptString(emitDescriptor.Name) + ", " + emitArgument(arguments[0].Value) + ")";
+
+            throw new NotSupportedException(
+                $"RazorVue render currently does not support EventCallback.InvokeAsync with {arguments.Length} arguments for '{razorAlias}' in component '{_snapshot.Descriptor.FullName}'.");
+        }
+
+        if (_propsByPublicName.TryGetValue(razorAlias, out var propDescriptor))
+            return EmitCallbackInvocationExpression("props." + propDescriptor.Name, arguments, emitArgument, optional: true);
+
+        throw new NotSupportedException(
+            $"RazorVue render currently does not support callback member '{razorAlias}' in component '{_snapshot.Descriptor.FullName}'.");
+    }
+
+    private static string EmitCallbackInvocationExpression(
+        string callbackExpression,
+        ImmutableArray<IArgumentOperation> arguments,
+        Func<IOperation, string> emitArgument,
+        bool optional)
+    {
+        var argumentList = string.Join(", ", arguments.Select(argument => emitArgument(argument.Value)));
+        return optional
+            ? callbackExpression + "?.(" + argumentList + ")"
+            : callbackExpression + "(" + argumentList + ")";
+    }
+
+    private bool TryGetSimpleMethodBodyOperation(IMethodSymbol method, out IOperation operation)
+    {
+        operation = default!;
+        if (method.DeclaringSyntaxReferences.Length == 0)
+            return false;
+
+        if (method.DeclaringSyntaxReferences[0].GetSyntax() is not MethodDeclarationSyntax methodSyntax)
+            return false;
+
+        SyntaxNode? bodyExpressionSyntax = methodSyntax.ExpressionBody?.Expression;
+        if (bodyExpressionSyntax is null && methodSyntax.Body is not null)
+        {
+            bodyExpressionSyntax = methodSyntax.Body.Statements.Count switch
+            {
+                1 when methodSyntax.Body.Statements[0] is ReturnStatementSyntax { Expression: not null } returnStatement => returnStatement.Expression,
+                1 when methodSyntax.Body.Statements[0] is ExpressionStatementSyntax expressionStatement => expressionStatement.Expression,
+                _ => null
+            };
+        }
+
+        if (bodyExpressionSyntax is null)
+            return false;
+
+        var semanticModel = _snapshot.Compilation.GetSemanticModel(bodyExpressionSyntax.SyntaxTree);
+        operation = Unwrap(semanticModel.GetOperation(bodyExpressionSyntax))!;
+        return operation is not null;
+    }
+
+    private T WithScopedParameterAliases<T>(
+        ImmutableArray<IParameterSymbol> parameters,
+        IReadOnlyList<string> aliases,
+        Func<T> action)
+    {
+        var previous = _scopedParameterAliases;
+        var current = previous is null
+            ? new Dictionary<IParameterSymbol, string>(SymbolEqualityComparer.Default)
+            : new Dictionary<IParameterSymbol, string>(previous, SymbolEqualityComparer.Default);
+
+        for (var index = 0; index < parameters.Length && index < aliases.Count; index++)
+            current[parameters[index]] = aliases[index];
+
+        _scopedParameterAliases = current;
+        try
+        {
+            return action();
+        }
+        finally
+        {
+            _scopedParameterAliases = previous;
+        }
+    }
+
+    private static string NormalizeArrowFunctionExpressionBody(string expression)
+    {
+        if (string.IsNullOrWhiteSpace(expression))
+            return "undefined";
+
+        if (expression[0] == '{')
+            return "(" + expression + ")";
+
+        return expression;
     }
 
     private bool TryGetAssignedLambdaTarget(IOperation operation, out IOperation target)
@@ -801,9 +981,20 @@ internal sealed partial class RazorVueExpressionEmitter
     private static IOperation? UnwrapDelegateCarrier(IOperation? operation)
     {
         var current = Unwrap(operation);
-        while (current is IConversionOperation conversion)
-            current = Unwrap(conversion.Operand);
-        return current;
+        while (true)
+        {
+            switch (current)
+            {
+                case IConversionOperation conversion:
+                    current = Unwrap(conversion.Operand);
+                    continue;
+                case IDelegateCreationOperation delegateCreation:
+                    current = Unwrap(delegateCreation.Target);
+                    continue;
+                default:
+                    return current;
+            }
+        }
     }
 
     private static bool IsInferredEventCallback(IInvocationOperation invocation)

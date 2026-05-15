@@ -224,7 +224,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             var expression = expressionEmitter.EmitSetupExpression(operation);
             var fieldBuilder = new StringBuilder();
             fieldBuilder.Append(indent)
-                .Append(field.IsReadOnly ? "const " : "let ")
+                .Append(field.FieldSymbol.IsStatic || field.IsReadOnly ? "const " : "let ")
                 .Append(ToLowerCamelCase(field.Name))
                 .Append(" = ")
                 .Append(expression)

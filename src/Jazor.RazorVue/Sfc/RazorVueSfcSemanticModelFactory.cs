@@ -18,6 +18,7 @@ internal sealed class RazorVueSfcSemanticModelFactory
         var ownerRelativeSfcPath = ChangeExtensionToVue(canonicalModel.RelativeComponentPath);
         var componentImports = CollectComponentImports(canonicalModel, ownerRelativeSfcPath);
         var bindings = CollectLiftedBindings(canonicalModel.ComponentFullName, canonicalModel.Template);
+        var requiresSlotsRuntime = bindings.Bindings.Any(static binding => RequiresSlotsRuntime(binding.ExpressionText));
         return new RazorVueSfcSemanticModel(
             ComponentName: canonicalModel.ComponentName,
             ComponentFullName: canonicalModel.ComponentFullName,
@@ -34,7 +35,7 @@ internal sealed class RazorVueSfcSemanticModelFactory
                 canonicalModel.Template,
                 bindings.Sites.ToImmutable(),
                 canonicalModel.Template.Children.SelectMany(static child => child.SourceOrigins).ToImmutableArray()),
-            ScriptSetupBlock: new RazorVueSfcScriptSetupBlockModel(canonicalModel.Setup, bindings.Bindings.ToImmutable(), canonicalModel.SourceOrigins),
+            ScriptSetupBlock: new RazorVueSfcScriptSetupBlockModel(canonicalModel.Setup, bindings.Bindings.ToImmutable(), requiresSlotsRuntime, canonicalModel.SourceOrigins),
             StyleBlocks: ImmutableArray<RazorVueSfcStyleBlockModel>.Empty,
             CustomBlocks: ImmutableArray<RazorVueSfcCustomBlockModel>.Empty);
     }
@@ -127,6 +128,10 @@ internal sealed class RazorVueSfcSemanticModelFactory
         CollectLiftedBindings(ownerComponentFullName, fragment, bindings, 0, "root");
         return bindings;
     }
+
+    private static bool RequiresSlotsRuntime(string expressionText)
+        => expressionText.Contains("slots.", StringComparison.Ordinal) ||
+           expressionText.Contains("slots[", StringComparison.Ordinal);
 
     private static void CollectLiftedBindings(
         string ownerComponentFullName,

@@ -22,8 +22,10 @@ internal sealed partial class RazorVueArtifactFactory
         var descriptor = snapshot.Descriptor;
         var renderExpression = expressionEmitter.EmitFragment(renderTree);
         var requiresAttributeMergeHelper = RazorVueAttributeMergeHelper.ContainsInvocation(renderExpression);
+        var propDefaultBindings = CollectPropDefaultBindings(snapshot, descriptor, expressionEmitter);
         var setupBodyBuilder = new StringBuilder();
-        setupBodyBuilder.AppendLine("  setup(props, { emit, slots, expose, attrs }) {");
+        setupBodyBuilder.AppendLine("  setup(__jazorRawProps, { emit, slots, expose, attrs }) {");
+        AppendPropsBinding(setupBodyBuilder, propDefaultBindings);
         if (RazorVueForLoopLoweringSupport.ContainsForLoop(renderTree))
             RazorVueForLoopLoweringSupport.AppendForRangeHelper(setupBodyBuilder, "    ");
         if (requiresAttributeMergeHelper)
@@ -79,6 +81,115 @@ internal sealed partial class RazorVueArtifactFactory
             ImmutableArray<VueLogicFieldDescriptor>.Empty,
             ImmutableArray<VueLogicMethodDescriptor>.Empty,
             "    ");
+
+    private static ImmutableArray<PropDefaultBinding> CollectPropDefaultBindings(
+        RazorVueSemanticSnapshot snapshot,
+        VueComponentDescriptor descriptor,
+        RazorVueExpressionEmitter expressionEmitter)
+    {
+        if (descriptor.Props.IsDefaultOrEmpty)
+            return ImmutableArray<PropDefaultBinding>.Empty;
+
+        var builder = ImmutableArray.CreateBuilder<PropDefaultBinding>();
+        foreach (var prop in descriptor.Props)
+        {
+            if (prop.DefaultSource != VuePropDefaultSource.PropertyInitializer ||
+                string.IsNullOrWhiteSpace(prop.DefaultExpression))
+                continue;
+
+            var expression = LowerDefaultExpression(snapshot, expressionEmitter, prop);
+            builder.Add(new PropDefaultBinding(prop.Name, expression));
+        }
+
+        return builder.ToImmutable();
+    }
+
+    private static void AppendPropsBinding(
+        StringBuilder builder,
+        ImmutableArray<PropDefaultBinding> propDefaultBindings)
+    {
+        if (propDefaultBindings.IsDefaultOrEmpty)
+        {
+            builder.AppendLine("    const props = __jazorRawProps;");
+            return;
+        }
+
+        AppendPropDefaultProxy(builder, propDefaultBindings);
+    }
+
+    private static void AppendPropDefaultProxy(
+        StringBuilder builder,
+        ImmutableArray<PropDefaultBinding> propDefaultBindings)
+    {
+        builder.AppendLine("    const __jazorPropDefaultCache = Object.create(null);");
+        builder.AppendLine("    const props = new Proxy(__jazorRawProps, {");
+        builder.AppendLine("      get(target, key, receiver) {");
+        builder.AppendLine("        if (typeof key === \"string\") {");
+        foreach (var binding in propDefaultBindings)
+        {
+            builder.Append("          if (key === ")
+                .Append(ToJavaScriptString(binding.PropName))
+                .AppendLine(") {");
+            builder.AppendLine("            const value = Reflect.get(target, key, receiver);");
+            builder.AppendLine("            if (value !== undefined) return value;");
+            builder.AppendLine("            if (Object.prototype.hasOwnProperty.call(__jazorPropDefaultCache, key)) return __jazorPropDefaultCache[key];");
+            builder.Append("            const defaultValue = ")
+                .Append(binding.ExpressionText)
+                .AppendLine(";");
+            builder.AppendLine("            __jazorPropDefaultCache[key] = defaultValue;");
+            builder.AppendLine("            return defaultValue;");
+            builder.AppendLine("          }");
+        }
+
+        builder.AppendLine("        }");
+        builder.AppendLine("        return Reflect.get(target, key, receiver);");
+        builder.AppendLine("      }");
+        builder.AppendLine("    });");
+    }
+
+    private static string LowerDefaultExpression(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter expressionEmitter,
+        VuePropDescriptor prop)
+    {
+        if (prop.DefaultSource != VuePropDefaultSource.PropertyInitializer ||
+            string.IsNullOrWhiteSpace(prop.DefaultExpression))
+            throw new InvalidOperationException($"Prop '{prop.PublicName}' does not declare a default expression.");
+
+        var propertySymbol = snapshot.ComponentSymbol
+            .GetMembers(prop.PublicName)
+            .OfType<IPropertySymbol>()
+            .FirstOrDefault(static candidate => !candidate.IsStatic);
+        if (propertySymbol is null ||
+            propertySymbol.DeclaringSyntaxReferences.Length == 0)
+        {
+            return prop.DefaultExpression!;
+        }
+
+        foreach (var reference in propertySymbol.DeclaringSyntaxReferences)
+        {
+            if (reference.GetSyntax() is not PropertyDeclarationSyntax declaration ||
+                declaration.Initializer?.Value is null)
+            {
+                continue;
+            }
+
+            var semanticModel = snapshot.Compilation.GetSemanticModel(declaration.SyntaxTree);
+            if (!RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
+                    semanticModel,
+                    declaration.Initializer.Value,
+                    out var operation))
+            {
+                continue;
+            }
+
+            return expressionEmitter.EmitSetupExpression(operation!);
+        }
+
+        return prop.DefaultExpression!;
+    }
+
+    private sealed record PropDefaultBinding(string PropName, string ExpressionText);
 
     private static string DescribeSetupFieldShape(IFieldSymbol field)
     {

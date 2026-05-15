@@ -177,7 +177,11 @@ internal sealed class VueInjectRegistry
             var implementationProp = implementationProps[contractProp.PublicName];
             builder.Add(contractProp with
             {
-                Name = implementationProp.Name
+                Name = implementationProp.Name,
+                DefaultExpression = contractProp.DefaultExpression ?? implementationProp.DefaultExpression,
+                DefaultSource = contractProp.DefaultExpression is not null
+                    ? contractProp.DefaultSource
+                    : implementationProp.DefaultSource
             });
         }
 

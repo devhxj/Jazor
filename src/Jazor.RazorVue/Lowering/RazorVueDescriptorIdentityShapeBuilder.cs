@@ -46,6 +46,7 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
                 prop.Required + "|" +
                 prop.AcceptsBinding + "|" +
                 (prop.DefaultExpression ?? string.Empty) + "|" +
+                prop.DefaultSource + "|" +
                 prop.Kind + "|" +
                 prop.CaptureUnmatchedValues);
         }
@@ -94,6 +95,7 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
                     usedProp.Required + "|" +
                     usedProp.AcceptsBinding + "|" +
                     (usedProp.DefaultExpression ?? string.Empty) + "|" +
+                    usedProp.DefaultSource + "|" +
                     usedProp.Kind + "|" +
                     usedProp.CaptureUnmatchedValues);
             }

@@ -40,6 +40,7 @@ internal sealed partial class RazorVueExpressionEmitter
     private readonly ImmutableDictionary<string, ImmutableArray<VueLogicMethodDescriptor>> _logicMethodsByName;
     private readonly HashSet<IFieldSymbol> _requiredSetupFields;
     private readonly HashSet<IMethodSymbol> _requiredSetupMethods;
+    private Dictionary<IParameterSymbol, string>? _scopedParameterAliases;
     private readonly SenseArgument _compilerArgument;
     private readonly SemanticWalker _semanticWalker;
     private readonly List<RazorVueCompilerImportBinding> _compilerImports;
@@ -392,6 +393,11 @@ internal sealed partial class RazorVueExpressionEmitter
             SenseArgument argument,
             Expression? instance)
             => _emitter.TryRewriteMethodReference(operation, argument, out var expression)
+                ? ParseJavaScriptExpression(expression)
+                : null;
+
+        public override Expression? RewriteParameterReference(IParameterReferenceOperation operation, SenseArgument argument)
+            => _emitter.TryRewriteParameterReference(operation, argument, out var expression)
                 ? ParseJavaScriptExpression(expression)
                 : null;
 

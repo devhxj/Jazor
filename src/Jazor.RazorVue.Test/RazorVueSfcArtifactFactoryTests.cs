@@ -68,7 +68,8 @@ public sealed class RazorVueSfcArtifactFactoryTests
         StringAssert.Contains(artifact.SfcText, "<section :data-count=\"props.value\">");
         StringAssert.Contains(artifact.SfcText, "{{ props.title }}");
         StringAssert.Contains(artifact.SfcText, "<script setup lang=\"ts\">");
-        StringAssert.Contains(artifact.SfcText, "const props = defineProps<");
+        StringAssert.Contains(artifact.SfcText, "const __jazorRawProps = defineProps<");
+        StringAssert.Contains(artifact.SfcText, "const props = __jazorRawProps;");
         StringAssert.Contains(artifact.SfcText, "const emit = defineEmits<");
         Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
         Assert.IsFalse(string.IsNullOrWhiteSpace(artifact.Identity.DescriptorHash));
@@ -77,6 +78,108 @@ public sealed class RazorVueSfcArtifactFactoryTests
         Assert.IsFalse(string.IsNullOrWhiteSpace(artifact.Identity.StyleHash));
         Assert.AreEqual("ts", artifact.ScriptSetupBlock.Language);
         Assert.IsTrue(artifact.StyleBlocks.IsDefaultOrEmpty);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersParameterInitializerDefaults_ThroughRuntimeProxy()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/defaults-card")]
+                public class DefaultsCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; } = CreateDefaultTitle();
+
+                    [Parameter]
+                    public string[]? Items { get; set; } = CreateDefaultItems();
+
+                    private static string CreateDefaultTitle() => "Overview";
+
+                    private static string[] CreateDefaultItems() => ["alpha", "beta"];
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Title);
+                        builder.AddContent(2, Items?.Length ?? 0);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = new RazorVueSfcArtifactFactory(new FixedTemplateFrontend(CreateInjectedSectionTree("Defaults")))
+            .Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorRawProps = defineProps<{ items?: any; title?: any }>();");
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("const props = __jazorRawProps;\nconst props = new Proxy(", StringComparison.Ordinal), artifact.ScriptSetupText);
+        StringAssert.Contains(artifact.ScriptSetupText, "const props = new Proxy(__jazorRawProps, {");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_IgnoresNullForgivingParameterInitializer_AsRuntimeDefaultSource()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/required-card")]
+                public class RequiredCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string Title { get; set; } = default!;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Title);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = new RazorVueSfcArtifactFactory(new FixedTemplateFrontend(CreateInjectedSectionTree("Required")))
+            .Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ScriptSetupText, "const props = __jazorRawProps;");
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("new Proxy(__jazorRawProps", StringComparison.Ordinal), artifact.ScriptSetupText);
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("default!;", StringComparison.Ordinal), artifact.ScriptSetupText);
     }
 
     [TestMethod]
@@ -1526,6 +1629,65 @@ public sealed class RazorVueSfcArtifactFactoryTests
         StringAssert.Contains(artifact.ScriptSetupText, "const props = defineProps<{ modelValue?: any }>();");
         StringAssert.Contains(artifact.ScriptSetupText, "const emit = defineEmits<{ (event: \"update:modelValue\", payload?: any): void }>();");
         StringAssert.Contains(artifact.ScriptSetupText, "const __jazor$0 = computed(() => (__value) => emit(\"update:modelValue\", __value));");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithLiftedNamedSlotPresenceCheck_InjectsUseSlotsRuntime()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/card-shell")]
+                public class CardShell : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment? Header { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+
+                        if (Header is not null)
+                        {
+                            builder.OpenElement(1, "header");
+                            builder.AddContent(2, Header);
+                            builder.CloseElement();
+                        }
+                        else
+                        {
+                            builder.OpenElement(3, "div");
+                            builder.AddContent(4, "fallback");
+                            builder.CloseElement();
+                        }
+
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ScriptSetupText, "import { computed, useSlots } from \"vue\";");
+        StringAssert.Contains(artifact.ScriptSetupText, "const slots = useSlots();");
+        StringAssert.Contains(artifact.ScriptSetupText, "const __jazor$0 = computed(() => !((slots.header ?? null) == null));");
     }
 
     [TestMethod]

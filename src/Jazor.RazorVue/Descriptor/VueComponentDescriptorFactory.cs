@@ -4,6 +4,7 @@ using System.Linq;
 using System;
 using Jazor.RazorVue.Artifacts;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Jazor.RazorVue.Descriptor;
 
@@ -137,6 +138,7 @@ internal static class VueComponentDescriptorFactory
             var inferredAcceptsBinding = bindPairs.Contains(publicName);
             var acceptsBinding = propOverride?.AcceptsBinding ?? inferredAcceptsBinding;
             var captureUnmatchedValues = HasCaptureUnmatchedValues(property, symbols);
+            var initializerExpression = TryGetPropertyInitializerExpression(property);
             var kind = propOverride is not null && propOverride.HasKindOverride
                 ? propOverride.Kind
                 : acceptsBinding
@@ -148,7 +150,12 @@ internal static class VueComponentDescriptorFactory
                 TypeName: FormatTypeName(property.Type),
                 Required: propOverride?.Required ?? false,
                 AcceptsBinding: acceptsBinding,
-                DefaultExpression: propOverride?.DefaultExpression,
+                DefaultExpression: propOverride?.DefaultExpression ?? initializerExpression,
+                DefaultSource: propOverride?.DefaultExpression is not null
+                    ? VuePropDefaultSource.AuthoringOverride
+                    : initializerExpression is not null
+                        ? VuePropDefaultSource.PropertyInitializer
+                        : VuePropDefaultSource.None,
                 Kind: kind,
                 CaptureUnmatchedValues: captureUnmatchedValues));
 
@@ -308,6 +315,28 @@ internal static class VueComponentDescriptorFactory
         }
 
         return builder;
+    }
+
+    private static string? TryGetPropertyInitializerExpression(IPropertySymbol property)
+    {
+        if (property is null)
+            throw new ArgumentNullException(nameof(property));
+
+        foreach (var reference in property.DeclaringSyntaxReferences)
+        {
+            if (reference.GetSyntax() is not PropertyDeclarationSyntax declaration ||
+                declaration.Initializer?.Value is null)
+            {
+                continue;
+            }
+
+            if (RazorVuePropertyInitializerHelper.IsNullForgivingPlaceholder(declaration.Initializer.Value))
+                return null;
+
+            return declaration.Initializer.Value.ToString();
+        }
+
+        return null;
     }
 
     private static VueEmitDescriptor CreateEmitDescriptor(
