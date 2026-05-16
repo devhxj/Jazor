@@ -16,6 +16,7 @@ var generatedOutputRoot = string.IsNullOrWhiteSpace(options.GeneratedOutputRoot)
     : ResolvePath(options.GeneratedOutputRoot, repoRoot);
 
 SetCommonEnvironment(repoRoot);
+var isolationArguments = GetIsolationArguments(options);
 
 if (!options.FrontendOnly || options.BuildLocal)
 {
@@ -35,7 +36,7 @@ if (!options.FrontendOnly || options.BuildLocal)
         "--package", "pinia",
         "--package", "pinia-testing"
     };
-    packArguments.AddRange(GetPublishIsolationArguments(options));
+    packArguments.AddRange(isolationArguments.PublishArguments);
     RunDotNet(repoRoot, packArguments);
 
     resolvedPackageInfo = ResolveLatestPackage(packageOutput);
@@ -54,7 +55,7 @@ if (!options.FrontendOnly || options.BuildLocal)
         $"-p:JazorPackageVersion={resolvedPackageInfo.Value.Version}",
         $"-p:JazorOutDir={generatedOutputRoot}"
     };
-    buildArguments.AddRange(GetBuildIsolationArguments(options));
+    buildArguments.AddRange(isolationArguments.BuildArguments);
     buildArguments.AddRange(new[]
     {
         "/nr:false",
@@ -105,40 +106,32 @@ static void SetCommonEnvironment(string repoRoot)
 {
     Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
     Environment.SetEnvironmentVariable("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "1");
+    Environment.SetEnvironmentVariable("MSBUILDDISABLENODEREUSE", "1");
+    Environment.SetEnvironmentVariable("UseSharedCompilation", "false");
 }
 
-static string[] GetPublishIsolationArguments(SmokeOptions options)
+static IsolationArguments GetIsolationArguments(SmokeOptions options)
 {
-    var arguments = new List<string>();
+    var publishArguments = new List<string>();
+    var buildArguments = new List<string>();
+
     if (!string.IsNullOrWhiteSpace(options.BaseOutputPath))
     {
-        arguments.Add("--base-output-path");
-        arguments.Add(GetIsolatedBuildRoot(options.BaseOutputPath!, repoRoot: null));
+        var isolatedOutputRoot = GetIsolatedBuildRoot(options.BaseOutputPath!, repoRoot: null);
+        publishArguments.Add("--base-output-path");
+        publishArguments.Add(isolatedOutputRoot);
+        buildArguments.Add($"-p:JazorIsolatedBaseOutputRoot={isolatedOutputRoot}");
     }
 
     if (!string.IsNullOrWhiteSpace(options.BaseIntermediateOutputPath))
     {
-        arguments.Add("--base-intermediate-output-path");
-        arguments.Add(GetIsolatedBuildRoot(options.BaseIntermediateOutputPath!, repoRoot: null));
+        var isolatedIntermediateOutputRoot = GetIsolatedBuildRoot(options.BaseIntermediateOutputPath!, repoRoot: null);
+        publishArguments.Add("--base-intermediate-output-path");
+        publishArguments.Add(isolatedIntermediateOutputRoot);
+        buildArguments.Add($"-p:JazorIsolatedBaseIntermediateOutputRoot={isolatedIntermediateOutputRoot}");
     }
 
-    return arguments.ToArray();
-}
-
-static string[] GetBuildIsolationArguments(SmokeOptions options)
-{
-    var arguments = new List<string>();
-    if (!string.IsNullOrWhiteSpace(options.BaseOutputPath))
-    {
-        arguments.Add($"-p:JazorIsolatedBaseOutputRoot={GetIsolatedBuildRoot(options.BaseOutputPath!, repoRoot: null)}");
-    }
-
-    if (!string.IsNullOrWhiteSpace(options.BaseIntermediateOutputPath))
-    {
-        arguments.Add($"-p:JazorIsolatedBaseIntermediateOutputRoot={GetIsolatedBuildRoot(options.BaseIntermediateOutputPath!, repoRoot: null)}");
-    }
-
-    return arguments.ToArray();
+    return new IsolationArguments(publishArguments, buildArguments);
 }
 
 static void CleanDirectory(string path, string repoRoot)
@@ -498,3 +491,4 @@ sealed record SmokeOptions(
 }
 
 readonly record struct PackageInfo(string Version, string Stamp);
+readonly record struct IsolationArguments(IReadOnlyList<string> PublishArguments, IReadOnlyList<string> BuildArguments);
