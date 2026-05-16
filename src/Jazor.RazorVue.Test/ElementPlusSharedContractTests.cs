@@ -74,6 +74,95 @@ public sealed class ElementPlusSharedContractTests
     }
 
     [TestMethod]
+    public void ElementPlus_BreadcrumbAndTimePickerContracts_ReuseOfficialTypedSurfaces()
+    {
+        Assert.AreEqual(typeof(RouteLocationRaw?), typeof(ElBreadcrumbItem).GetProperty(nameof(ElBreadcrumbItem.To))?.PropertyType);
+        Assert.AreEqual(typeof(RouteLocationRaw?), typeof(ElMenuItem).GetProperty(nameof(ElMenuItem.Route))?.PropertyType);
+
+        Assert.AreEqual(typeof(string), typeof(ElTimePicker).GetProperty(nameof(ElTimePicker.Format))?.PropertyType);
+        Assert.AreEqual(typeof(string), typeof(ElTimePicker).GetProperty(nameof(ElTimePicker.ValueFormat))?.PropertyType);
+        Assert.AreEqual(typeof(string), typeof(ElTimePicker).GetProperty(nameof(ElTimePicker.DateFormat))?.PropertyType);
+        Assert.AreEqual(typeof(string), typeof(ElTimePicker).GetProperty(nameof(ElTimePicker.TimeFormat))?.PropertyType);
+        Assert.AreEqual(typeof(VueDictionary), typeof(ElTimePicker).GetProperty(nameof(ElTimePicker.PopperOptions))?.PropertyType);
+        Assert.AreEqual(typeof(string[]), typeof(ElTimePicker).GetProperty(nameof(ElTimePicker.FallbackPlacements))?.PropertyType);
+        Assert.AreEqual(typeof(string), typeof(ElTimePicker).GetProperty(nameof(ElTimePicker.Placement))?.PropertyType);
+        Assert.AreEqual(typeof(VueDateSingleOrRangeValue?), typeof(ElTimePicker).GetProperty(nameof(ElTimePicker.DefaultValue))?.PropertyType);
+        Assert.AreEqual(typeof(VueDateSingleOrRangeValue?), typeof(ElTimePicker).GetProperty(nameof(ElTimePicker.DefaultTime))?.PropertyType);
+        Assert.AreEqual(typeof(VueStringSingleOrRangeValue?), typeof(ElTimePicker).GetProperty(nameof(ElTimePicker.Id))?.PropertyType);
+        Assert.AreEqual(typeof(VueStringSingleOrRangeValue?), typeof(ElTimePicker).GetProperty(nameof(ElTimePicker.Name))?.PropertyType);
+    }
+
+    [TestMethod]
+    public void ElementPlus_DatePickerContracts_ReuseOfficialTypedSurfaces()
+    {
+        Assert.AreEqual(typeof(string), typeof(ElDatePicker).GetProperty(nameof(ElDatePicker.Format))?.PropertyType);
+        Assert.AreEqual(typeof(string), typeof(ElDatePicker).GetProperty(nameof(ElDatePicker.ValueFormat))?.PropertyType);
+        Assert.AreEqual(typeof(string), typeof(ElDatePicker).GetProperty(nameof(ElDatePicker.DateFormat))?.PropertyType);
+        Assert.AreEqual(typeof(string), typeof(ElDatePicker).GetProperty(nameof(ElDatePicker.TimeFormat))?.PropertyType);
+        Assert.AreEqual(typeof(VueDictionary), typeof(ElDatePicker).GetProperty(nameof(ElDatePicker.PopperOptions))?.PropertyType);
+        Assert.AreEqual(typeof(string[]), typeof(ElDatePicker).GetProperty(nameof(ElDatePicker.FallbackPlacements))?.PropertyType);
+        Assert.AreEqual(typeof(string), typeof(ElDatePicker).GetProperty(nameof(ElDatePicker.Placement))?.PropertyType);
+        Assert.AreEqual(typeof(VueDateSingleOrRangeValue?), typeof(ElDatePicker).GetProperty(nameof(ElDatePicker.DefaultValue))?.PropertyType);
+        Assert.AreEqual(typeof(VueDateSingleOrRangeValue?), typeof(ElDatePicker).GetProperty(nameof(ElDatePicker.DefaultTime))?.PropertyType);
+        Assert.AreEqual(typeof(string), typeof(ElDatePickerPanel).GetProperty(nameof(ElDatePickerPanel.ValueFormat))?.PropertyType);
+        Assert.AreEqual(typeof(string), typeof(ElDatePickerPanel).GetProperty(nameof(ElDatePickerPanel.DateFormat))?.PropertyType);
+        Assert.AreEqual(typeof(string), typeof(ElDatePickerPanel).GetProperty(nameof(ElDatePickerPanel.TimeFormat))?.PropertyType);
+        Assert.AreEqual(typeof(VueDateSingleOrRangeValue?), typeof(ElDatePickerPanel).GetProperty(nameof(ElDatePickerPanel.DefaultValue))?.PropertyType);
+        Assert.AreEqual(typeof(VueDateSingleOrRangeValue?), typeof(ElDatePickerPanel).GetProperty(nameof(ElDatePickerPanel.DefaultTime))?.PropertyType);
+        Assert.AreEqual(typeof(VueStringSingleOrRangeValue?), typeof(ElDatePicker).GetProperty(nameof(ElDatePicker.Id))?.PropertyType);
+        Assert.AreEqual(typeof(VueStringSingleOrRangeValue?), typeof(ElDatePicker).GetProperty(nameof(ElDatePicker.Name))?.PropertyType);
+    }
+
+    [TestMethod]
+    public void ElementPlus_CalendarLayoutAndTableContracts_UseOfficialStructuredTypes()
+    {
+        Assert.AreEqual(typeof(Date), typeof(ElCalendar).GetProperty(nameof(ElCalendar.ModelValue))?.PropertyType);
+        Assert.AreEqual(typeof(VueDatePair?), typeof(ElCalendar).GetProperty(nameof(ElCalendar.Range))?.PropertyType);
+        Assert.AreEqual(typeof(EventCallback<Date>), typeof(ElCalendar).GetProperty(nameof(ElCalendar.ModelValueChanged))?.PropertyType);
+
+        Assert.AreEqual(typeof(ElementPlusColSizeValue?), typeof(ElCol).GetProperty(nameof(ElCol.Xs))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusColSizeValue?), typeof(ElCol).GetProperty(nameof(ElCol.Sm))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusColSizeValue?), typeof(ElCol).GetProperty(nameof(ElCol.Md))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusColSizeValue?), typeof(ElCol).GetProperty(nameof(ElCol.Lg))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusColSizeValue?), typeof(ElCol).GetProperty(nameof(ElCol.Xl))?.PropertyType);
+
+        Assert.AreEqual(typeof(ElementPlusTableSort), typeof(ElTable).GetProperty(nameof(ElTable.DefaultSort))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusTableTreeProps), typeof(ElTable).GetProperty(nameof(ElTable.TreeProps))?.PropertyType);
+        Assert.AreEqual(typeof(Number?), typeof(ElPagination).GetProperty(nameof(ElPagination.PagerCount))?.PropertyType);
+    }
+
+    [TestMethod]
+    public void ElementPlus_AdditionalOfficialScalarContracts_AreNotLeftAsVueValueFallbacks()
+    {
+        Assert.AreEqual(typeof(ElementPlusCardShadow?), typeof(ElCard).GetProperty(nameof(ElCard.Shadow))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusCardShadow?), typeof(ElementPlusCardConfig).GetProperty(nameof(ElementPlusCardConfig.Shadow))?.PropertyType);
+        Assert.AreEqual(typeof(Number?), typeof(ElProgress).GetProperty(nameof(ElProgress.Percentage))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusComponentSize?), typeof(ElSegmented).GetProperty(nameof(ElSegmented.Size))?.PropertyType);
+        Assert.AreEqual(typeof(VueClassValue?), typeof(ElColorPickerPanel).GetProperty(nameof(ElColorPickerPanel.HueSliderClass))?.PropertyType);
+        Assert.AreEqual(typeof(VueStyleValue?), typeof(ElColorPickerPanel).GetProperty(nameof(ElColorPickerPanel.HueSliderStyle))?.PropertyType);
+    }
+
+    [TestMethod]
+    public void ElementPlus_MentionContracts_UseOfficialStructuredTypes()
+    {
+        Assert.AreEqual(typeof(ElementPlusMentionOption[]), typeof(ElMention).GetProperty(nameof(ElMention.Options))?.PropertyType);
+        Assert.AreEqual(typeof(VueStringOrStringsValue?), typeof(ElMention).GetProperty(nameof(ElMention.Prefix))?.PropertyType);
+        Assert.AreEqual(typeof(VueDictionary), typeof(ElMention).GetProperty(nameof(ElMention.PopperOptions))?.PropertyType);
+
+        Assert.AreEqual(typeof(string), typeof(ElementPlusMentionOption).GetProperty(nameof(ElementPlusMentionOption.Value))?.PropertyType);
+        Assert.AreEqual(typeof(string), typeof(ElementPlusMentionOption).GetProperty(nameof(ElementPlusMentionOption.Label))?.PropertyType);
+        Assert.AreEqual(typeof(bool?), typeof(ElementPlusMentionOption).GetProperty(nameof(ElementPlusMentionOption.Disabled))?.PropertyType);
+    }
+
+    [TestMethod]
+    public void ElementPlus_SpaceContracts_UseOfficialStructuredTypes()
+    {
+        Assert.AreEqual(typeof(string), typeof(ElSpace).GetProperty(nameof(ElSpace.Alignment))?.PropertyType);
+        Assert.AreEqual(typeof(VueStringNumberVNodeValue?), typeof(ElSpace).GetProperty(nameof(ElSpace.Spacer))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusSpaceSizeValue?), typeof(ElSpace).GetProperty(nameof(ElSpace.Size))?.PropertyType);
+    }
+
+    [TestMethod]
     public void ElementPlus_BracketedOfficialProps_UseNamedContracts()
     {
         Assert.AreEqual(typeof(ElementPlusTransferDataItem[]), typeof(ElTransfer).GetProperty(nameof(ElTransfer.Data))?.PropertyType);

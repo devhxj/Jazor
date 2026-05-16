@@ -67,10 +67,18 @@ internal static class Program
         ["VueTeleportTarget"] = typeof(VueTeleportTarget),
         ["VueBooleanNumberValue"] = typeof(VueBooleanNumberValue),
         ["VueStringNumberValue"] = typeof(VueStringNumberValue),
+        ["VueStringOrStringsValue"] = typeof(VueStringOrStringsValue),
+        ["VueNumberPair"] = typeof(VueNumberPair),
+        ["VueStringNumberVNodeValue"] = typeof(VueStringNumberVNodeValue),
         ["VueBooleanStringValue"] = typeof(VueBooleanStringValue),
         ["VueBooleanStringNumberValue"] = typeof(VueBooleanStringNumberValue),
         ["VueStringComponentValue"] = typeof(VueStringComponentValue),
-        ["VueTransitionValue"] = typeof(VueTransitionValue)
+        ["VueDatePair"] = typeof(VueDatePair),
+        ["VueDateSingleOrRangeValue"] = typeof(VueDateSingleOrRangeValue),
+        ["VueStringPair"] = typeof(VueStringPair),
+        ["VueStringSingleOrRangeValue"] = typeof(VueStringSingleOrRangeValue),
+        ["VueTransitionValue"] = typeof(VueTransitionValue),
+        ["Date"] = typeof(ECMAScript.Date)
     };
 
     private static readonly Dictionary<(string TagName, string RuntimeName), ExplicitGeneratedType> ExplicitPropTypeOverrides = new()
@@ -85,12 +93,27 @@ internal static class Program
         [("el-config-provider", "emptyValues")] = ExplicitGeneratedType.Reference("VueValue[]"),
         [("el-config-provider", "valueOnClear")] = ExplicitGeneratedType.Value("ElementPlusValueOnClearValue"),
         [("el-config-provider", "table")] = ExplicitGeneratedType.Reference("ElementPlusTableConfig"),
+        [("el-breadcrumb-item", "to")] = ExplicitGeneratedType.Value("RouteLocationRaw"),
+        [("el-calendar", "modelValue")] = ExplicitGeneratedType.Reference("Date"),
+        [("el-calendar", "range")] = ExplicitGeneratedType.Value("VueDatePair"),
+        [("el-card", "shadow")] = ExplicitGeneratedType.Value("ElementPlusCardShadow"),
+        [("el-col", "xs")] = ExplicitGeneratedType.Value("ElementPlusColSizeValue"),
+        [("el-col", "sm")] = ExplicitGeneratedType.Value("ElementPlusColSizeValue"),
+        [("el-col", "md")] = ExplicitGeneratedType.Value("ElementPlusColSizeValue"),
+        [("el-col", "lg")] = ExplicitGeneratedType.Value("ElementPlusColSizeValue"),
+        [("el-col", "xl")] = ExplicitGeneratedType.Value("ElementPlusColSizeValue"),
+        [("el-color-picker-panel", "hueSliderClass")] = ExplicitGeneratedType.Value("VueClassValue"),
+        [("el-color-picker-panel", "hueSliderStyle")] = ExplicitGeneratedType.Value("VueStyleValue"),
         [("el-dialog", "transition")] = ExplicitGeneratedType.Value("VueTransitionValue"),
         [("el-dropdown", "trigger")] = ExplicitGeneratedType.Value("ElementPlusDropdownTriggerValue"),
         [("el-dropdown", "buttonProps")] = ExplicitGeneratedType.Reference("ElementPlusButtonProps"),
+        [("el-pagination", "pagerCount")] = ExplicitGeneratedType.Value("Number"),
+        [("el-progress", "percentage")] = ExplicitGeneratedType.Value("Number"),
         [("el-table", "tooltipEffect")] = ExplicitGeneratedType.Reference("string"),
         [("el-table", "showOverflowTooltip")] = ExplicitGeneratedType.Value("ElementPlusTableOverflowTooltipValue"),
         [("el-table", "tooltipOptions")] = ExplicitGeneratedType.Reference("ElementPlusTableOverflowTooltipOptions"),
+        [("el-table", "defaultSort")] = ExplicitGeneratedType.Reference("ElementPlusTableSort"),
+        [("el-table", "treeProps")] = ExplicitGeneratedType.Reference("ElementPlusTableTreeProps"),
         [("el-table-column", "showOverflowTooltip")] = ExplicitGeneratedType.Value("ElementPlusTableOverflowTooltipValue"),
         [("el-form", "scrollIntoViewOptions")] = ExplicitGeneratedType.Value("ScrollIntoViewArg"),
         [("el-cascader", "emptyValues")] = ExplicitGeneratedType.Reference("VueValue[]"),
@@ -100,18 +123,46 @@ internal static class Program
         [("el-color-picker", "valueOnClear")] = ExplicitGeneratedType.Value("ElementPlusValueOnClearValue"),
         [("el-date-picker", "emptyValues")] = ExplicitGeneratedType.Reference("VueValue[]"),
         [("el-date-picker", "valueOnClear")] = ExplicitGeneratedType.Value("ElementPlusValueOnClearValue"),
+        [("el-date-picker", "format")] = ExplicitGeneratedType.Reference("string"),
+        [("el-date-picker", "valueFormat")] = ExplicitGeneratedType.Reference("string"),
+        [("el-date-picker", "dateFormat")] = ExplicitGeneratedType.Reference("string"),
+        [("el-date-picker", "timeFormat")] = ExplicitGeneratedType.Reference("string"),
+        [("el-date-picker", "popperOptions")] = ExplicitGeneratedType.Reference("VueDictionary"),
+        [("el-date-picker", "fallbackPlacements")] = ExplicitGeneratedType.Reference("string[]"),
+        [("el-date-picker", "placement")] = ExplicitGeneratedType.Reference("string"),
+        [("el-date-picker", "defaultValue")] = ExplicitGeneratedType.Value("VueDateSingleOrRangeValue"),
+        [("el-date-picker", "defaultTime")] = ExplicitGeneratedType.Value("VueDateSingleOrRangeValue"),
+        [("el-date-picker", "id")] = ExplicitGeneratedType.Value("VueStringSingleOrRangeValue"),
+        [("el-date-picker", "name")] = ExplicitGeneratedType.Value("VueStringSingleOrRangeValue"),
+        [("el-date-picker-panel", "defaultValue")] = ExplicitGeneratedType.Value("VueDateSingleOrRangeValue"),
+        [("el-date-picker-panel", "defaultTime")] = ExplicitGeneratedType.Value("VueDateSingleOrRangeValue"),
+        [("el-date-picker-panel", "valueFormat")] = ExplicitGeneratedType.Reference("string"),
+        [("el-date-picker-panel", "dateFormat")] = ExplicitGeneratedType.Reference("string"),
+        [("el-date-picker-panel", "timeFormat")] = ExplicitGeneratedType.Reference("string"),
         [("el-input", "autosize")] = ExplicitGeneratedType.Value("ElementPlusInputAutoSize"),
         [("el-input", "max")] = ExplicitGeneratedType.Value("VueStringNumberValue"),
         [("el-input", "min")] = ExplicitGeneratedType.Value("VueStringNumberValue"),
         [("el-input", "step")] = ExplicitGeneratedType.Value("VueStringNumberValue"),
         [("el-input", "inputStyle")] = ExplicitGeneratedType.Value("VueStyleValue"),
         [("el-input-number", "valueOnClear")] = ExplicitGeneratedType.Value("ElementPlusValueOnClearValue"),
+        [("el-menu-item", "route")] = ExplicitGeneratedType.Value("RouteLocationRaw"),
         [("el-popover", "trigger")] = ExplicitGeneratedType.Value("ElementPlusTooltipTriggerValue"),
         [("el-popover", "triggerKeys")] = ExplicitGeneratedType.Reference("string[]"),
         [("el-select", "emptyValues")] = ExplicitGeneratedType.Reference("VueValue[]"),
         [("el-select", "valueOnClear")] = ExplicitGeneratedType.Value("ElementPlusValueOnClearValue"),
         [("el-time-picker", "emptyValues")] = ExplicitGeneratedType.Reference("VueValue[]"),
         [("el-time-picker", "valueOnClear")] = ExplicitGeneratedType.Value("ElementPlusValueOnClearValue"),
+        [("el-time-picker", "format")] = ExplicitGeneratedType.Reference("string"),
+        [("el-time-picker", "valueFormat")] = ExplicitGeneratedType.Reference("string"),
+        [("el-time-picker", "dateFormat")] = ExplicitGeneratedType.Reference("string"),
+        [("el-time-picker", "timeFormat")] = ExplicitGeneratedType.Reference("string"),
+        [("el-time-picker", "popperOptions")] = ExplicitGeneratedType.Reference("VueDictionary"),
+        [("el-time-picker", "fallbackPlacements")] = ExplicitGeneratedType.Reference("string[]"),
+        [("el-time-picker", "placement")] = ExplicitGeneratedType.Reference("string"),
+        [("el-time-picker", "defaultValue")] = ExplicitGeneratedType.Value("VueDateSingleOrRangeValue"),
+        [("el-time-picker", "defaultTime")] = ExplicitGeneratedType.Value("VueDateSingleOrRangeValue"),
+        [("el-time-picker", "id")] = ExplicitGeneratedType.Value("VueStringSingleOrRangeValue"),
+        [("el-time-picker", "name")] = ExplicitGeneratedType.Value("VueStringSingleOrRangeValue"),
         [("el-time-select", "emptyValues")] = ExplicitGeneratedType.Reference("VueValue[]"),
         [("el-time-select", "valueOnClear")] = ExplicitGeneratedType.Value("ElementPlusValueOnClearValue"),
         [("el-select-v2", "emptyValues")] = ExplicitGeneratedType.Reference("VueValue[]"),
@@ -119,11 +170,18 @@ internal static class Program
         [("el-select-v2", "fitInputWidth")] = ExplicitGeneratedType.Value("VueBooleanNumberValue"),
         [("el-select-v2", "tagTooltip")] = ExplicitGeneratedType.Reference("ElementPlusTagTooltipProps"),
         [("el-select-v2", "props")] = ExplicitGeneratedType.Reference("ElementPlusSelectPropsAlias"),
+        [("el-segmented", "size")] = ExplicitGeneratedType.Value("ElementPlusComponentSize"),
         [("el-select", "props")] = ExplicitGeneratedType.Reference("ElementPlusSelectPropsAlias"),
         [("el-checkbox-group", "props")] = ExplicitGeneratedType.Reference("ElementPlusCheckboxOptionPropsAlias"),
         [("el-mention", "props")] = ExplicitGeneratedType.Reference("ElementPlusMentionOptionPropsAlias"),
+        [("el-mention", "options")] = ExplicitGeneratedType.Reference("ElementPlusMentionOption[]"),
+        [("el-mention", "prefix")] = ExplicitGeneratedType.Value("VueStringOrStringsValue"),
+        [("el-mention", "popperOptions")] = ExplicitGeneratedType.Reference("VueDictionary"),
         [("el-radio-group", "props")] = ExplicitGeneratedType.Reference("ElementPlusRadioOptionPropsAlias"),
         [("el-segmented", "props")] = ExplicitGeneratedType.Reference("ElementPlusSegmentedPropsAlias"),
+        [("el-space", "alignment")] = ExplicitGeneratedType.Reference("string"),
+        [("el-space", "spacer")] = ExplicitGeneratedType.Value("VueStringNumberVNodeValue"),
+        [("el-space", "size")] = ExplicitGeneratedType.Value("ElementPlusSpaceSizeValue"),
         [("el-tooltip", "trigger")] = ExplicitGeneratedType.Value("ElementPlusTooltipTriggerValue"),
         [("el-tooltip", "triggerKeys")] = ExplicitGeneratedType.Reference("string[]"),
         [("el-transfer", "modelValue")] = ExplicitGeneratedType.Reference("VueStringNumberValue[]"),
@@ -151,6 +209,17 @@ internal static class Program
             new RawPropMetadata("a11y", null, "boolean", false),
             new RawPropMetadata("card", null, "object", false),
             new RawPropMetadata("keyboard-navigation", null, "boolean", false)
+        ],
+        ["el-date-picker"] =
+        [
+            new RawPropMetadata("dateFormat", null, "string", false),
+            new RawPropMetadata("timeFormat", null, "string", false)
+        ],
+        ["el-time-picker"] =
+        [
+            new RawPropMetadata("defaultTime", null, "Date | [Date, Date]", false),
+            new RawPropMetadata("dateFormat", null, "string", false),
+            new RawPropMetadata("timeFormat", null, "string", false)
         ],
         ["el-virtualized-select"] =
         [
@@ -1138,6 +1207,9 @@ internal static class Program
         if (IsStringNumber(tokens))
             return GeneratedType.Value("VueStringNumberValue").AsOptional(prop.Required);
 
+        if (TryResolveSingleOrRangeValue(tokens, out var singleOrRangeType))
+            return singleOrRangeType.AsOptional(prop.Required);
+
         if (tokens.All(IsStringLikeToken))
         {
             if (HasExactStringLiteralSet(tokens, "large", "default", "small"))
@@ -1198,11 +1270,12 @@ internal static class Program
             "StyleValue" => GeneratedType.Value("VueStyleValue").AsOptional(required),
             "InputAutoSize" => GeneratedType.Value("ElementPlusInputAutoSize").AsOptional(required),
             "TagTooltipProps" => GeneratedType.Reference("ElementPlusTagTooltipProps").AsOptional(required),
+            "Date" => GeneratedType.Reference("Date?").AsOptional(required),
             "CSSSelector" => GeneratedType.Reference("string?").AsOptional(required),
             "HTMLElement" => GeneratedType.Reference("HTMLElement?").AsOptional(required),
             "Element" => GeneratedType.Reference("Element?").AsOptional(required),
             "Component" => GeneratedType.Reference("IVueComponent?").AsOptional(required),
-            "RouteLocationRaw" => GeneratedType.Reference("VueValue?").AsOptional(required),
+            "RouteLocationRaw" => GeneratedType.Value("RouteLocationRaw").AsOptional(required),
             "Headers" => GeneratedType.Reference("Headers?").AsOptional(required),
             "XMLHttpRequest" => GeneratedType.Reference("XMLHttpRequest?").AsOptional(required),
             "File" => GeneratedType.Reference("File?").AsOptional(required),
@@ -1263,8 +1336,11 @@ internal static class Program
 
     private static GeneratedType MapTupleToken(string token, bool required)
     {
+        if (string.Equals(token, "[Date, Date]", StringComparison.Ordinal))
+            return GeneratedType.Value("VueDatePair").AsOptional(required);
+
         if (string.Equals(token, "[number, number]", StringComparison.Ordinal))
-            return GeneratedType.Reference("Number[]?").AsOptional(required);
+            return GeneratedType.Value("VueNumberPair").AsOptional(required);
 
         if (string.Equals(token, "[Font]", StringComparison.Ordinal))
             return GeneratedType.Reference("VueProps?").AsOptional(required);
@@ -1323,6 +1399,9 @@ internal static class Program
         if (string.Equals(normalized, "CSSSelector", StringComparison.Ordinal))
             return "CSSSelector";
 
+        if (string.Equals(normalized, "Date", StringComparison.Ordinal))
+            return "Date";
+
         if (string.Equals(normalized, "RouteLocationRaw", StringComparison.Ordinal))
             return "RouteLocationRaw";
 
@@ -1340,6 +1419,15 @@ internal static class Program
 
         if (string.Equals(normalized, "Error", StringComparison.Ordinal))
             return "Error";
+
+        if (normalized.StartsWith("string see", StringComparison.OrdinalIgnoreCase))
+            return "string";
+
+        if (normalized.StartsWith("number see", StringComparison.OrdinalIgnoreCase))
+            return "number";
+
+        if (normalized.StartsWith("boolean see", StringComparison.OrdinalIgnoreCase))
+            return "boolean";
 
         if (normalized.StartsWith("Record<", StringComparison.Ordinal) ||
             normalized.Contains("Record<", StringComparison.Ordinal) ||
@@ -1511,6 +1599,30 @@ internal static class Program
         => tokens.Any(IsNumberLikeToken) &&
            tokens.Any(IsStringLikeToken) &&
            tokens.All(static token => IsNumberLikeToken(token) || IsStringLikeToken(token));
+
+    private static bool TryResolveSingleOrRangeValue(string[] tokens, out GeneratedType type)
+    {
+        if (HasExactTokenSet(tokens, "Date", "[Date, Date]"))
+        {
+            type = GeneratedType.Value("VueDateSingleOrRangeValue");
+            return true;
+        }
+
+        if (HasExactTokenSet(tokens, "string", "[string, string]"))
+        {
+            type = GeneratedType.Value("VueStringSingleOrRangeValue");
+            return true;
+        }
+
+        type = default!;
+        return false;
+    }
+
+    private static bool HasExactTokenSet(string[] tokens, params string[] expected)
+        => tokens.OrderBy(static token => token, StringComparer.Ordinal)
+            .SequenceEqual(
+                expected.OrderBy(static token => token, StringComparer.Ordinal),
+                StringComparer.Ordinal);
 
     private static bool HasExactStringLiteralSet(string[] tokens, params string[] expected)
     {

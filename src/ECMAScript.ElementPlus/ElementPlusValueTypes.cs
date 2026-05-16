@@ -27,6 +27,19 @@ public enum ElementPlusPopperEffect
     Light
 }
 
+[String]
+public enum ElementPlusCardShadow
+{
+    [Description("@#always")]
+    Always,
+
+    [Description("@#hover")]
+    Hover,
+
+    [Description("@#never")]
+    Never
+}
+
 [ECMAScript]
 [Description("@#Styles")]
 public sealed record ElementPlusStyles : VueDictionary<VueStringNumberValue>
@@ -107,7 +120,21 @@ public sealed record ElementPlusButtonConfig : VueProps
 public sealed record ElementPlusCardConfig : VueProps
 {
     [Description("@#shadow")]
-    public string? Shadow { get; init; }
+    public ElementPlusCardShadow? Shadow { get; init; }
+}
+
+[ECMAScript]
+[Description("@#MentionOption")]
+public sealed record ElementPlusMentionOption : VueDictionary
+{
+    [Description("@#value")]
+    public string? Value { get; init; }
+
+    [Description("@#label")]
+    public string? Label { get; init; }
+
+    [Description("@#disabled")]
+    public bool? Disabled { get; init; }
 }
 
 [ECMAScript]
@@ -281,6 +308,88 @@ public readonly union ElementPlusInputAutoSize(bool, ElementPlusInputAutoSizeOpt
     public bool? AsBool => Value is bool value ? value : default(bool?);
 
     public ElementPlusInputAutoSizeOptions? AsOptions => Value as ElementPlusInputAutoSizeOptions;
+}
+
+[ECMAScript]
+[Description("@#ColSizeObject")]
+public sealed record ElementPlusColSizeProps : VueProps
+{
+    [Description("@#span")]
+    public Number? Span { get; init; }
+
+    [Description("@#offset")]
+    public Number? Offset { get; init; }
+
+    [Description("@#pull")]
+    public Number? Pull { get; init; }
+
+    [Description("@#push")]
+    public Number? Push { get; init; }
+}
+
+[ECMAScript]
+[Description("@#")]
+public readonly union ElementPlusColSizeValue(double, ElementPlusColSizeProps)
+{
+    public double? AsNumber => Value is double value ? value : default(double?);
+
+    public ElementPlusColSizeProps? AsProps => Value as ElementPlusColSizeProps;
+}
+
+[ECMAScript]
+[Description("@#")]
+public readonly union ElementPlusSpaceSizeValue(ElementPlusComponentSize, Number, VueNumberPair)
+{
+    public ElementPlusComponentSize? AsComponentSize
+        => Value is ElementPlusComponentSize value ? value : default(ElementPlusComponentSize?);
+
+    public Number? AsNumber => Value is Number value ? value : default(Number?);
+
+    public VueNumberPair? AsPair => Value is VueNumberPair value ? value : default(VueNumberPair?);
+
+    public static implicit operator ElementPlusSpaceSizeValue(double value)
+        => new((Number)value);
+}
+
+[String]
+public enum ElementPlusTableSortOrder
+{
+    [Description("@#ascending")]
+    Ascending,
+
+    [Description("@#descending")]
+    Descending
+}
+
+[ECMAScript]
+[Description("@#Sort")]
+public sealed record ElementPlusTableSort : VueProps
+{
+    [Description("@#prop")]
+    public string? Prop { get; init; }
+
+    [Description("@#order")]
+    public ElementPlusTableSortOrder? Order { get; init; }
+
+    [Description("@#init")]
+    public VueValue? Init { get; init; }
+
+    [Description("@#silent")]
+    public VueValue? Silent { get; init; }
+}
+
+[ECMAScript]
+[Description("@#TreeProps")]
+public sealed record ElementPlusTableTreeProps : VueProps
+{
+    [Description("@#hasChildren")]
+    public string? HasChildren { get; init; }
+
+    [Description("@#children")]
+    public string? Children { get; init; }
+
+    [Description("@#checkStrictly")]
+    public bool? CheckStrictly { get; init; }
 }
 
 [String]

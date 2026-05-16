@@ -531,7 +531,7 @@ public sealed class ElBadge : ElementPlusContentComponentBase
     public string? Color { get; set; }
 
     [Parameter]
-    public Number[]? Offset { get; set; }
+    public VueNumberPair? Offset { get; set; }
 
     [Parameter]
     public VueStyleValue? BadgeStyle { get; set; }
@@ -579,7 +579,7 @@ public sealed class ElBreadcrumb : ElementPlusContentComponentBase
 public sealed class ElBreadcrumbItem : ElementPlusContentComponentBase
 {
     [Parameter]
-    public VueValue? To { get; set; }
+    public RouteLocationRaw? To { get; set; }
 
     [Parameter]
     public bool? Replace { get; set; }
@@ -722,14 +722,14 @@ public sealed class ElButtonGroup : ElementPlusContentComponentBase
 [VueProp(nameof(Formatter), Name = "formatter")]
 [VueSlot(nameof(DateCell), Name = "date-cell")]
 [VueSlot(nameof(Header), Name = "header")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Date")]
 public sealed class ElCalendar : ElementPlusComponentBase
 {
     [Parameter]
-    public VueValue? ModelValue { get; set; }
+    public Date? ModelValue { get; set; }
 
     [Parameter]
-    public VueValue? Range { get; set; }
+    public VueDatePair? Range { get; set; }
 
     [Parameter]
     public string? ControllerType { get; set; }
@@ -744,7 +744,7 @@ public sealed class ElCalendar : ElementPlusComponentBase
     public RenderFragment? Header { get; set; }
 
     [Parameter]
-    public EventCallback<VueValue?> ModelValueChanged { get; set; }
+    public EventCallback<Date?> ModelValueChanged { get; set; }
 
 }
 
@@ -787,7 +787,7 @@ public sealed class ElCard : ElementPlusContentComponentBase
     public string? FooterClass { get; set; }
 
     [Parameter]
-    public VueValue? Shadow { get; set; }
+    public ElementPlusCardShadow? Shadow { get; set; }
 
     [Parameter]
     public RenderFragment? HeaderSlot { get; set; }
@@ -1443,19 +1443,19 @@ public sealed class ElCol : ElementPlusContentComponentBase
     public Number? Pull { get; set; }
 
     [Parameter]
-    public VueValue? Xs { get; set; }
+    public ElementPlusColSizeValue? Xs { get; set; }
 
     [Parameter]
-    public VueValue? Sm { get; set; }
+    public ElementPlusColSizeValue? Sm { get; set; }
 
     [Parameter]
-    public VueValue? Md { get; set; }
+    public ElementPlusColSizeValue? Md { get; set; }
 
     [Parameter]
-    public VueValue? Lg { get; set; }
+    public ElementPlusColSizeValue? Lg { get; set; }
 
     [Parameter]
-    public VueValue? Xl { get; set; }
+    public ElementPlusColSizeValue? Xl { get; set; }
 
     [Parameter]
     public string? Tag { get; set; }
@@ -1695,10 +1695,10 @@ public sealed class ElColorPickerPanel : ElementPlusComponentBase
     public bool? ValidateEvent { get; set; }
 
     [Parameter]
-    public VueValue? HueSliderClass { get; set; }
+    public VueClassValue? HueSliderClass { get; set; }
 
     [Parameter]
-    public VueValue? HueSliderStyle { get; set; }
+    public VueStyleValue? HueSliderStyle { get; set; }
 
     [Parameter]
     public RenderFragment? Footer { get; set; }
@@ -1875,6 +1875,8 @@ public sealed class ElCountdown : ElementPlusComponentBase
 [VueProp(nameof(ShowConfirm), Name = "showConfirm")]
 [VueProp(nameof(ShowWeekNumber), Name = "showWeekNumber")]
 [VueProp(nameof(AutomaticDropdown), Name = "automaticDropdown")]
+[VueProp(nameof(DateFormat), Name = "dateFormat")]
+[VueProp(nameof(TimeFormat), Name = "timeFormat")]
 [VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueSlot(nameof(RangeSeparatorSlot), Name = "range-separator")]
 [VueSlot(nameof(PrevMonth), Name = "prev-month")]
@@ -1922,7 +1924,7 @@ public sealed class ElDatePicker : ElementPlusContentComponentBase
     public string? Type { get; set; }
 
     [Parameter]
-    public VueValue? Format { get; set; }
+    public string? Format { get; set; }
 
     [Parameter]
     public string? PopperClass { get; set; }
@@ -1931,25 +1933,25 @@ public sealed class ElDatePicker : ElementPlusContentComponentBase
     public VueStyleValue? PopperStyle { get; set; }
 
     [Parameter]
-    public VueValue? PopperOptions { get; set; }
+    public VueDictionary? PopperOptions { get; set; }
 
     [Parameter]
     public string? RangeSeparator { get; set; }
 
     [Parameter]
-    public VueValue? DefaultValue { get; set; }
+    public VueDateSingleOrRangeValue? DefaultValue { get; set; }
 
     [Parameter]
-    public VueValue? DefaultTime { get; set; }
+    public VueDateSingleOrRangeValue? DefaultTime { get; set; }
 
     [Parameter]
-    public VueValue? ValueFormat { get; set; }
+    public string? ValueFormat { get; set; }
 
     [Parameter]
-    public VueValue? Id { get; set; }
+    public VueStringSingleOrRangeValue? Id { get; set; }
 
     [Parameter]
-    public VueValue? Name { get; set; }
+    public VueStringSingleOrRangeValue? Name { get; set; }
 
     [Parameter]
     public bool? UnlinkPanels { get; set; }
@@ -1985,10 +1987,10 @@ public sealed class ElDatePicker : ElementPlusContentComponentBase
     public ElementPlusValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
-    public VueValue[]? FallbackPlacements { get; set; }
+    public string[]? FallbackPlacements { get; set; }
 
     [Parameter]
-    public VueValue? Placement { get; set; }
+    public string? Placement { get; set; }
 
     [Parameter]
     public bool? ShowFooter { get; set; }
@@ -2001,6 +2003,12 @@ public sealed class ElDatePicker : ElementPlusContentComponentBase
 
     [Parameter]
     public bool? AutomaticDropdown { get; set; }
+
+    [Parameter]
+    public string? DateFormat { get; set; }
+
+    [Parameter]
+    public string? TimeFormat { get; set; }
 
     [Parameter]
     public RenderFragment? RangeSeparatorSlot { get; set; }
@@ -2100,19 +2108,19 @@ public sealed class ElDatePickerPanel : ElementPlusContentComponentBase
     public string? Type { get; set; }
 
     [Parameter]
-    public VueValue? DefaultValue { get; set; }
+    public VueDateSingleOrRangeValue? DefaultValue { get; set; }
 
     [Parameter]
-    public VueValue? DefaultTime { get; set; }
+    public VueDateSingleOrRangeValue? DefaultTime { get; set; }
 
     [Parameter]
     public string? ValueFormat { get; set; }
 
     [Parameter]
-    public VueValue? DateFormat { get; set; }
+    public string? DateFormat { get; set; }
 
     [Parameter]
-    public VueValue? TimeFormat { get; set; }
+    public string? TimeFormat { get; set; }
 
     [Parameter]
     public bool? UnlinkPanels { get; set; }
@@ -3954,13 +3962,13 @@ public sealed class ElMain : ElementPlusContentComponentBase
 public sealed class ElMention : ElementPlusComponentBase
 {
     [Parameter]
-    public VueValue[]? Options { get; set; }
+    public ElementPlusMentionOption[]? Options { get; set; }
 
     [Parameter]
     public ElementPlusMentionOptionPropsAlias? Props { get; set; }
 
     [Parameter]
-    public VueValue? Prefix { get; set; }
+    public VueStringOrStringsValue? Prefix { get; set; }
 
     [Parameter]
     public string? Split { get; set; }
@@ -3996,7 +4004,7 @@ public sealed class ElMention : ElementPlusComponentBase
     public VueStyleValue? PopperStyle { get; set; }
 
     [Parameter]
-    public VueValue? PopperOptions { get; set; }
+    public VueDictionary? PopperOptions { get; set; }
 
     [Parameter]
     public RenderFragment? Label { get; set; }
@@ -4153,7 +4161,7 @@ public sealed class ElMenuItem : ElementPlusContentComponentBase
     public string? Index { get; set; }
 
     [Parameter]
-    public VueValue? Route { get; set; }
+    public RouteLocationRaw? Route { get; set; }
 
     [Parameter]
     public bool? Disabled { get; set; }
@@ -4339,7 +4347,7 @@ public sealed class ElPagination : ElementPlusContentComponentBase
     public Number? PageCount { get; set; }
 
     [Parameter]
-    public VueValue? PagerCount { get; set; }
+    public Number? PagerCount { get; set; }
 
     [Parameter]
     public Number? CurrentPage { get; set; }
@@ -4663,7 +4671,7 @@ public sealed class ElPopper : ElementPlusContentComponentBase
 public sealed class ElProgress : ElementPlusContentComponentBase
 {
     [Parameter]
-    public VueValue? Percentage { get; set; }
+    public Number? Percentage { get; set; }
 
     [Parameter]
     public string? Type { get; set; }
@@ -5157,7 +5165,7 @@ public sealed class ElSegmented : ElementPlusContentComponentBase
     public ElementPlusSegmentedPropsAlias? Props { get; set; }
 
     [Parameter]
-    public string? Size { get; set; }
+    public ElementPlusComponentSize? Size { get; set; }
 
     [Parameter]
     public bool? Block { get; set; }
@@ -5673,7 +5681,7 @@ public sealed class ElSlider : ElementPlusComponentBase
 public sealed class ElSpace : ElementPlusComponentBase
 {
     [Parameter]
-    public VueValue? Alignment { get; set; }
+    public string? Alignment { get; set; }
 
     [Parameter]
     public string? Direction { get; set; }
@@ -5682,10 +5690,10 @@ public sealed class ElSpace : ElementPlusComponentBase
     public string? PrefixCls { get; set; }
 
     [Parameter]
-    public VueValue? Spacer { get; set; }
+    public VueStringNumberVNodeValue? Spacer { get; set; }
 
     [Parameter]
-    public VueValue? Size { get; set; }
+    public ElementPlusSpaceSizeValue? Size { get; set; }
 
     [Parameter]
     public bool? Wrap { get; set; }
@@ -6266,7 +6274,7 @@ public sealed class ElTable : ElementPlusContentComponentBase
     public string[]? ExpandRowKeys { get; set; }
 
     [Parameter]
-    public VueValue? DefaultSort { get; set; }
+    public ElementPlusTableSort? DefaultSort { get; set; }
 
     [Parameter]
     public string? TooltipEffect { get; set; }
@@ -6302,7 +6310,7 @@ public sealed class ElTable : ElementPlusContentComponentBase
     public Delegate? Load { get; set; }
 
     [Parameter]
-    public VueValue? TreeProps { get; set; }
+    public ElementPlusTableTreeProps? TreeProps { get; set; }
 
     [Parameter]
     public string? TableLayout { get; set; }
@@ -6933,6 +6941,9 @@ public sealed class ElText : ElementPlusContentComponentBase
 [VueProp(nameof(ValueOnClear), Name = "valueOnClear")]
 [VueProp(nameof(SaveOnBlur), Name = "saveOnBlur")]
 [VueProp(nameof(Label), Name = "label")]
+[VueProp(nameof(DefaultTime), Name = "defaultTime")]
+[VueProp(nameof(DateFormat), Name = "dateFormat")]
+[VueProp(nameof(TimeFormat), Name = "timeFormat")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(OnBlur), Name = "blur")]
 [VueLibraryEmit(nameof(OnFocus), Name = "focus")]
@@ -6981,31 +6992,31 @@ public sealed class ElTimePicker : ElementPlusComponentBase
     public VueStyleValue? PopperStyle { get; set; }
 
     [Parameter]
-    public VueValue? PopperOptions { get; set; }
+    public VueDictionary? PopperOptions { get; set; }
 
     [Parameter]
-    public VueValue[]? FallbackPlacements { get; set; }
+    public string[]? FallbackPlacements { get; set; }
 
     [Parameter]
-    public VueValue? Placement { get; set; }
+    public string? Placement { get; set; }
 
     [Parameter]
     public string? RangeSeparator { get; set; }
 
     [Parameter]
-    public VueValue? Format { get; set; }
+    public string? Format { get; set; }
 
     [Parameter]
-    public VueValue? DefaultValue { get; set; }
+    public VueDateSingleOrRangeValue? DefaultValue { get; set; }
 
     [Parameter]
-    public VueValue? ValueFormat { get; set; }
+    public string? ValueFormat { get; set; }
 
     [Parameter]
-    public VueValue? Id { get; set; }
+    public VueStringSingleOrRangeValue? Id { get; set; }
 
     [Parameter]
-    public string? Name { get; set; }
+    public VueStringSingleOrRangeValue? Name { get; set; }
 
     [Parameter]
     public string? AriaLabel { get; set; }
@@ -7042,6 +7053,15 @@ public sealed class ElTimePicker : ElementPlusComponentBase
 
     [Parameter]
     public string? Label { get; set; }
+
+    [Parameter]
+    public VueDateSingleOrRangeValue? DefaultTime { get; set; }
+
+    [Parameter]
+    public string? DateFormat { get; set; }
+
+    [Parameter]
+    public string? TimeFormat { get; set; }
 
     [Parameter]
     public EventCallback OnChange { get; set; }
@@ -7148,7 +7168,7 @@ public sealed class ElTimeSelect : ElementPlusComponentBase
     public string? MaxTime { get; set; }
 
     [Parameter]
-    public VueValue? Format { get; set; }
+    public string? Format { get; set; }
 
     [Parameter]
     public VueValue[]? EmptyValues { get; set; }
@@ -8734,10 +8754,10 @@ public sealed class ElWatermark : ElementPlusContentComponentBase
     public VueProps? Font { get; set; }
 
     [Parameter]
-    public Number[]? Gap { get; set; }
+    public VueNumberPair? Gap { get; set; }
 
     [Parameter]
-    public Number[]? Offset { get; set; }
+    public VueNumberPair? Offset { get; set; }
 
 }
 

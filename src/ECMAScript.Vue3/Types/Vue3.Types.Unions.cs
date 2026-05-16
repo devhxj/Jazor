@@ -391,6 +391,307 @@ public static partial class Vue3
 	}
 
 	/// <summary>
+	/// Vue 生态中常见的“单个字符串或字符串数组”联合类型。适用于既接受单个字符串，
+	/// 也接受多字符串 authoring 的高频公开合同。
+	/// Common Vue union that accepts either a single string or a string array. Use this
+	/// for public authoring contracts that officially allow one string or many strings.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public readonly union VueStringOrStringsValue(string, string[])
+	{
+		/// <summary>
+		/// 当值为单个字符串时返回该字符串；否则返回 null。
+		/// Returns the string when the value was created from a single string; otherwise null.
+		/// </summary>
+		public string? AsString => Value as string;
+
+		/// <summary>
+		/// 当值为字符串数组时返回该数组；否则返回 null。
+		/// Returns the string array when the value was created from multiple strings; otherwise null.
+		/// </summary>
+		public string[]? AsStrings => Value as string[];
+	}
+
+	/// <summary>
+	/// 精确由两个数值构成的公共 Vue 二元组。用于镜像官方 `[number, number]`
+	/// 这类“恰好两个数”的 authoring contract，并保留集合表达式 authoring。
+	/// Exact two-number Vue pair. This mirrors official `[number, number]` contracts
+	/// while preserving collection-expression authoring.
+	/// </summary>
+	[ECMAScript]
+	[Union]
+	[Description("@#")]
+	[CollectionBuilder(typeof(VueNumberPairCollectionBuilder), nameof(VueNumberPairCollectionBuilder.Create))]
+	public readonly struct VueNumberPair : IUnion, IEnumerable<Number>
+	{
+		private readonly Number[]? _values;
+
+		private VueNumberPair(Number[] values)
+		{
+			ArgumentNullException.ThrowIfNull(values);
+			if (values.Length != 2)
+				throw new ArgumentException("Vue number pair values require exactly two items.", nameof(values));
+
+			_values = values;
+		}
+
+		/// <summary>
+		/// 获取这组数值。始终要求恰好两个值。
+		/// Gets the numeric pair. The contract always requires exactly two items.
+		/// </summary>
+		public Number[]? AsValues => _values;
+
+		/// <summary>
+		/// 获取第一个数值；如果未设置则返回 null。
+		/// Gets the first numeric value, or null when unset.
+		/// </summary>
+		public Number? First => _values is { Length: > 0 } values ? values[0] : default(Number?);
+
+		/// <summary>
+		/// 获取第二个数值；如果未设置则返回 null。
+		/// Gets the second numeric value, or null when unset.
+		/// </summary>
+		public Number? Second => _values is { Length: > 1 } values ? values[1] : default(Number?);
+
+		public object? Value => _values;
+
+		[ECMAScriptInline("__arg1")]
+		public extern static VueNumberPair From(Number[] values);
+
+		public static implicit operator VueNumberPair(Number[] values)
+			=> new(values);
+
+		public static implicit operator VueNumberPair(double[] values)
+			=> new(Array.ConvertAll(values, static value => (Number)value));
+
+		IEnumerator<Number> IEnumerable<Number>.GetEnumerator()
+			=> ((IEnumerable<Number>)(_values ?? Array.Empty<Number>())).GetEnumerator();
+
+		IEnumerator IEnumerable.GetEnumerator()
+			=> ((IEnumerable<Number>)this).GetEnumerator();
+	}
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public static class VueNumberPairCollectionBuilder
+	{
+		public static VueNumberPair Create(ReadOnlySpan<Number> values)
+			=> values.ToArray();
+	}
+
+	/// <summary>
+	/// 同时接受字符串、数字或单个 VNode 的公共 Vue authoring 联合类型。
+	/// 适用于官方公开合同显式允许这三种运行时分支的场景。
+	/// Common Vue authoring union that accepts a string, a number, or a single VNode.
+	/// Use this when the official public contract explicitly allows these three runtime branches.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public readonly union VueStringNumberVNodeValue(string, Number, IVNode)
+	{
+		/// <summary>
+		/// 当值为字符串时返回该字符串；否则返回 null。
+		/// Returns the string when the value was created from a string; otherwise null.
+		/// </summary>
+		public string? AsString => Value as string;
+
+		/// <summary>
+		/// 当值为数字时返回该数字；否则返回 null。
+		/// Returns the number when the value was created from a number; otherwise null.
+		/// </summary>
+		public Number? AsNumber => Value is Number value ? value : default(Number?);
+
+		/// <summary>
+		/// 当值为 VNode 时返回该节点；否则返回 null。
+		/// Returns the VNode when the value was created from a VNode; otherwise null.
+		/// </summary>
+		public IVNode? AsVNode => Value as IVNode;
+
+		public static implicit operator VueStringNumberVNodeValue(double value)
+			=> new((Number)value);
+	}
+
+	/// <summary>
+	/// 精确由两个字符串构成的公共 Vue 区间值。用于镜像 Vue 生态中 <c>SingleOrRange&lt;string&gt;</c>
+	/// 这类“单值或双值区间”契约的区间分支，并保留集合表达式 authoring。
+	/// Exact two-string Vue range value. This mirrors the range branch of
+	/// <c>SingleOrRange&lt;string&gt;</c>-style contracts while preserving collection-expression
+	/// authoring.
+	/// </summary>
+	[ECMAScript]
+	[Union]
+	[Description("@#")]
+	[CollectionBuilder(typeof(VueStringPairCollectionBuilder), nameof(VueStringPairCollectionBuilder.Create))]
+	public readonly struct VueStringPair : IUnion, IEnumerable<string>
+	{
+		private readonly string[]? _values;
+
+		private VueStringPair(string[] values)
+		{
+			ArgumentNullException.ThrowIfNull(values);
+			if (values.Length != 2)
+				throw new ArgumentException("Vue string pair values require exactly two items.", nameof(values));
+
+			_values = values;
+		}
+
+		/// <summary>
+		/// 获取这组区间字符串。始终要求恰好两个值。
+		/// Gets the range strings. The contract always requires exactly two items.
+		/// </summary>
+		public string[]? AsValues => _values;
+
+		/// <summary>
+		/// 获取第一个区间值；如果未设置则返回 null。
+		/// Gets the first range value, or null when unset.
+		/// </summary>
+		public string? First => _values is { Length: > 0 } values ? values[0] : null;
+
+		/// <summary>
+		/// 获取第二个区间值；如果未设置则返回 null。
+		/// Gets the second range value, or null when unset.
+		/// </summary>
+		public string? Second => _values is { Length: > 1 } values ? values[1] : null;
+
+		public object? Value => _values;
+
+		[ECMAScriptInline("__arg1")]
+		public extern static VueStringPair From(string[] values);
+
+		public static implicit operator VueStringPair(string[] values)
+			=> new(values);
+
+		IEnumerator<string> IEnumerable<string>.GetEnumerator()
+			=> ((IEnumerable<string>)(_values ?? Array.Empty<string>())).GetEnumerator();
+
+		IEnumerator IEnumerable.GetEnumerator()
+			=> ((IEnumerable<string>)this).GetEnumerator();
+	}
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public static class VueStringPairCollectionBuilder
+	{
+		public static VueStringPair Create(ReadOnlySpan<string> values)
+			=> values.ToArray();
+	}
+
+	/// <summary>
+	/// Vue 生态中常见的“单个字符串或双值字符串区间”联合类型。用于对齐官方
+	/// <c>SingleOrRange&lt;string&gt;</c> 这类 authoring contract。
+	/// Common Vue union that accepts either a single string or an exact two-value string
+	/// range. Use this to mirror official <c>SingleOrRange&lt;string&gt;</c>-style contracts.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public readonly union VueStringSingleOrRangeValue(string, VueStringPair)
+	{
+		/// <summary>
+		/// 当值为单个字符串时返回该字符串；否则返回 null。
+		/// Returns the string when the value was created from a single string; otherwise null.
+		/// </summary>
+		public string? AsString => Value as string;
+
+		/// <summary>
+		/// 当值为双值区间时返回该区间；否则返回 null。
+		/// Returns the two-value range when the value was created from a range; otherwise null.
+		/// </summary>
+		public VueStringPair? AsRange => Value is VueStringPair value ? value : default(VueStringPair?);
+
+		public static implicit operator VueStringSingleOrRangeValue(string[] values)
+			=> new((VueStringPair)values);
+	}
+
+	/// <summary>
+	/// 精确由两个日期构成的公共 Vue 区间值。用于镜像 Vue 生态中 <c>SingleOrRange&lt;Date&gt;</c>
+	/// 这类“单值或双值区间”契约的区间分支，并保留集合表达式 authoring。
+	/// Exact two-date Vue range value. This mirrors the range branch of
+	/// <c>SingleOrRange&lt;Date&gt;</c>-style contracts while preserving collection-expression
+	/// authoring.
+	/// </summary>
+	[ECMAScript]
+	[Union]
+	[Description("@#")]
+	[CollectionBuilder(typeof(VueDatePairCollectionBuilder), nameof(VueDatePairCollectionBuilder.Create))]
+	public readonly struct VueDatePair : IUnion, IEnumerable<Date>
+	{
+		private readonly Date[]? _values;
+
+		private VueDatePair(Date[] values)
+		{
+			ArgumentNullException.ThrowIfNull(values);
+			if (values.Length != 2)
+				throw new ArgumentException("Vue date pair values require exactly two items.", nameof(values));
+
+			_values = values;
+		}
+
+		/// <summary>
+		/// 获取这组区间日期。始终要求恰好两个值。
+		/// Gets the range dates. The contract always requires exactly two items.
+		/// </summary>
+		public Date[]? AsValues => _values;
+
+		/// <summary>
+		/// 获取第一个区间日期；如果未设置则返回 null。
+		/// Gets the first range date, or null when unset.
+		/// </summary>
+		public Date? First => _values is { Length: > 0 } values ? values[0] : null;
+
+		/// <summary>
+		/// 获取第二个区间日期；如果未设置则返回 null。
+		/// Gets the second range date, or null when unset.
+		/// </summary>
+		public Date? Second => _values is { Length: > 1 } values ? values[1] : null;
+
+		public object? Value => _values;
+
+		[ECMAScriptInline("__arg1")]
+		public extern static VueDatePair From(Date[] values);
+
+		public static implicit operator VueDatePair(Date[] values)
+			=> new(values);
+
+		IEnumerator<Date> IEnumerable<Date>.GetEnumerator()
+			=> ((IEnumerable<Date>)(_values ?? Array.Empty<Date>())).GetEnumerator();
+
+		IEnumerator IEnumerable.GetEnumerator()
+			=> ((IEnumerable<Date>)this).GetEnumerator();
+	}
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public static class VueDatePairCollectionBuilder
+	{
+		public static VueDatePair Create(ReadOnlySpan<Date> values)
+			=> values.ToArray();
+	}
+
+	/// <summary>
+	/// Vue 生态中常见的“单个日期或双值日期区间”联合类型。用于对齐官方
+	/// <c>SingleOrRange&lt;Date&gt;</c> 这类 authoring contract。
+	/// Common Vue union that accepts either a single date or an exact two-value date
+	/// range. Use this to mirror official <c>SingleOrRange&lt;Date&gt;</c>-style contracts.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public readonly union VueDateSingleOrRangeValue(Date, VueDatePair)
+	{
+		/// <summary>
+		/// 当值为单个日期时返回该日期；否则返回 null。
+		/// Returns the date when the value was created from a single date; otherwise null.
+		/// </summary>
+		public Date? AsDate => Value is Date value ? value : default(Date?);
+
+		/// <summary>
+		/// 当值为双值区间时返回该区间；否则返回 null。
+		/// Returns the two-value range when the value was created from a range; otherwise null.
+		/// </summary>
+		public VueDatePair? AsRange => Value is VueDatePair value ? value : default(VueDatePair?);
+
+		public static implicit operator VueDateSingleOrRangeValue(Date[] values)
+			=> new((VueDatePair)values);
+	}
+
+	/// <summary>
 	/// <c>watch()</c> 的 <c>deep</c> 选项联合类型。可以是布尔值（启用/禁用深层遍历）或整数（限制遍历深度）。
 	/// Union type for the <c>deep</c> option of <c>watch()</c>. Can be a boolean (enable/disable deep traversal) or an integer (depth limit).
 	/// </summary>

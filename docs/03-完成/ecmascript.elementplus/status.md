@@ -257,7 +257,79 @@
 
 - 移除过宽的通用 `TooltipTrigger` 字面量推断；
 - 仅保留基于 tag + runtime prop 名的显式官方覆盖：
-  - `el-tooltip.trigger -> ElementPlusTooltipTriggerValue`
+- `el-tooltip.trigger -> ElementPlusTooltipTriggerValue`
+
+## 2026-05-16 第三批补充完成
+
+这一批继续收口了 `DatePicker` / `DatePickerPanel` / `TimePicker` 家族里仍然残留的弱类型回退，重点是把官方 `SingleOrRange<T>` 语义稳定落到共享 Vue authoring contract 上，而不是继续保留 `VueValue?`。
+
+### 1. 共享 Vue 日期区间契约已正式补齐
+
+本轮在 `ECMAScript.Vue3` 新增并公开：
+
+- `VueDatePair`
+- `VueDateSingleOrRangeValue`
+
+这组类型与上一批的字符串区间契约保持同一设计原则：
+
+- `VueDatePair` 精确要求两个 `Date` 项，不接受任意长度数组；
+- `VueDateSingleOrRangeValue` 表达 `Date | [Date, Date]`；
+- 保留集合表达式 / 数组到区间值的 authoring 入口。
+
+### 2. 生成器已支持官方 `SingleOrRange<T>` 常见元数据形状
+
+此前 `web-types.json` / `attributes.json` 里如果把类型写成：
+
+- `Date | [Date, Date]`
+- `string | [string, string]`
+
+生成器会把这类 prop 退回成 `VueValue?`。
+
+当前已补上受控解析规则：
+
+- `Date | [Date, Date] -> VueDateSingleOrRangeValue`
+- `string | [string, string] -> VueStringSingleOrRangeValue`
+
+这不是只为 Element Plus 打点状补丁，而是把这类 Vue 生态高频 `SingleOrRange<T>` 形状收口成稳定的共享解析能力。
+
+### 3. `string see` 这类官方文档噪音已做归一化
+
+`web-types.json` 中存在少量文档噪音写法，例如：
+
+- `string see`
+
+此前这类类型会被解析器当成未知类型，再次退回 `VueValue?`。
+
+当前已做受控归一化：
+
+- `string see -> string`
+- `number see -> number`
+- `boolean see -> boolean`
+
+这样 `DatePickerPanel` 这类组件上的 `dateFormat` / `timeFormat` / `valueFormat` 可以回到正确的标量 authoring contract。
+
+### 4. `DatePickerPanel` 与 `TimePicker` 的官方缺口已收口
+
+本轮已确认并收口：
+
+- `ElDatePickerPanel.DefaultValue -> VueDateSingleOrRangeValue?`
+- `ElDatePickerPanel.DefaultTime -> VueDateSingleOrRangeValue?`
+- `ElDatePickerPanel.ValueFormat -> string`
+- `ElDatePickerPanel.DateFormat -> string`
+- `ElDatePickerPanel.TimeFormat -> string`
+- `ElTimePicker.DefaultTime -> VueDateSingleOrRangeValue?`
+
+其中 `ElTimePicker.DefaultTime` 不是现有 `web-types` 稳定暴露出来的 prop，当前已通过本地官方 `.d.ts` 补充元数据接回生成链。
+
+## 本轮验证
+
+本轮已通过：
+
+- `dotnet run --file scripts/csharp/generate-elementplus-bindings.cs`
+- `dotnet build src/ECMAScript.ElementPlus/ECMAScript.ElementPlus.csproj -v minimal`
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter "FullyQualifiedName~ElementPlusAuthoringSurfaceTests|FullyQualifiedName~ElementPlusSharedContractTests" -v minimal`
+
+当前聚焦 `ElementPlusAuthoringSurfaceTests` + `ElementPlusSharedContractTests` 共 `23/23` 通过。
   - `el-popover.trigger -> ElementPlusTooltipTriggerValue`
   - `el-tooltip.triggerKeys -> string[]`
   - `el-popover.triggerKeys -> string[]`
@@ -469,6 +541,267 @@
 - `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter "FullyQualifiedName~ElementPlusAuthoringSurfaceTests|FullyQualifiedName~ElementPlusSharedContractTests" -v minimal`
 
 当前聚焦 `ElementPlusAuthoringSurfaceTests` + `ElementPlusSharedContractTests` 共 `21/21` 通过。
+
+## 2026-05-16 第四批继续收口
+
+这一批继续处理两类此前仍停留在弱回退面的官方契约：
+
+- Vue Router 已有正式宿主类型，但 Element Plus 组件面仍回退成 `VueValue?`
+- 官方 `.d.ts` 已使用 `SingleOrRange<string>` / `Partial<Options>` / `Placement[]` / `StringConstructor`，但生成结果仍是 `VueValue?` / `VueValue[]?`
+
+### 1. `RouteLocationRaw` 已进入 Element Plus 正式公开契约
+
+本地官方路由相关 `.d.ts` 明确给出：
+
+- `breadcrumb-item.d.ts`
+  - `to?: RouteLocationRaw`
+- `menu-item.d.ts`
+  - `route?: RouteLocationRaw`
+
+当前已经完成：
+
+- 生成器将 `RouteLocationRaw` 视为正式可解析宿主类型，而不是继续回退为 `VueValue?`
+- `ECMAScript.ElementPlus` 项目已显式引用 `ECMAScript.VueRoute`
+- 组件公开面已收敛为：
+  - `ElBreadcrumbItem.To -> RouteLocationRaw?`
+  - `ElMenuItem.Route -> RouteLocationRaw?`
+
+这一步意味着 `ElementPlus` 对 Vue Router 的 authoring surface 依赖已经从“弱值兼容”升级为“显式类型依赖”，后续不应再退回到 `VueValue?`。
+
+### 2. `SingleOrRange<string>` 已提升为共享 Vue authoring contract
+
+本地官方 `time-picker` / `date-picker` `.d.ts` 都把 `id` / `name` 定义为：
+
+- `SingleOrRange<string>`
+
+此前若直接收窄成 `string`，会丢掉区间 authoring 语义；
+若退回成 `string[]`，又会放宽为任意长度数组。
+
+当前已在 `ECMAScript.Vue3` 新增共享契约：
+
+- `VueStringPair`
+- `VueStringSingleOrRangeValue`
+
+其中：
+
+- `VueStringPair` 保持“精确两个字符串”的区间分支；
+- `VueStringSingleOrRangeValue` 表示“单个字符串或双值字符串区间”；
+- 该契约放在 `Vue3` 而不是 `ElementPlus`，避免后续其他前端库再次裂出同构专用类型。
+
+### 3. `DatePicker` / `TimePicker` 同族公开面已同步收敛
+
+按本地官方 `.d.ts`，当前已收敛以下 props：
+
+- `ElTimePicker`
+  - `Format -> string`
+  - `ValueFormat -> string`
+  - `DateFormat -> string`
+  - `TimeFormat -> string`
+  - `PopperOptions -> VueDictionary`
+  - `FallbackPlacements -> string[]`
+  - `Placement -> string`
+  - `Id -> VueStringSingleOrRangeValue?`
+  - `Name -> VueStringSingleOrRangeValue?`
+- `ElDatePicker`
+  - `Format -> string`
+  - `ValueFormat -> string`
+  - `DateFormat -> string`
+  - `TimeFormat -> string`
+  - `PopperOptions -> VueDictionary`
+  - `FallbackPlacements -> string[]`
+  - `Placement -> string`
+  - `Id -> VueStringSingleOrRangeValue?`
+  - `Name -> VueStringSingleOrRangeValue?`
+
+此外，本轮还处理了一个官方元数据组合缺口：
+
+- `dateFormat`
+- `timeFormat`
+
+虽然在本地官方 `.d.ts` 中存在，但原始 `web-types` / `attributes` 组合未稳定暴露。
+当前已通过受控 supplemental prop 补入生成链，避免组件面继续漏出这两个官方 prop。
+
+### 4. 最新聚焦验证
+
+本轮已通过：
+
+- `dotnet run --file scripts/csharp/generate-elementplus-bindings.cs`
+- `dotnet build src/ECMAScript.ElementPlus/ECMAScript.ElementPlus.csproj -v minimal`
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~ElementPlusAuthoringSurfaceTests|FullyQualifiedName~ElementPlusSharedContractTests' -v minimal`
+
+当前聚焦 `ElementPlusAuthoringSurfaceTests` + `ElementPlusSharedContractTests` 共 `23/23` 通过。
+
+## 2026-05-16 第五批继续收口
+
+这一批继续处理几类“本地官方 `.d.ts` 已给出明确结构，但生成结果仍退回 `VueValue?`”的剩余高价值公开契约。
+
+### 1. `ElCalendar` 已切回官方日期契约
+
+本地官方 `calendar.d.ts` 明确给出：
+
+- `modelValue?: Date`
+- `range?: [Date, Date]`
+- `update:modelValue` payload 为 `Date`
+
+当前已完成：
+
+- 生成器正式识别 `Date`
+- 元组 `[Date, Date]` 正式收敛到共享 `VueDatePair`
+- 组件公开面已收敛为：
+  - `ElCalendar.ModelValue -> Date`
+  - `ElCalendar.Range -> VueDatePair?`
+  - `ElCalendar.ModelValueChanged -> EventCallback<Date>`
+
+这一步把 `Calendar` 家族从弱 `VueValue?` / `EventCallback<VueValue?>` 收回到正式日期 authoring contract。
+
+### 2. `ElCol` 的响应式尺寸已落成命名结构
+
+本地官方 `col.d.ts` 明确给出：
+
+- `ColSizeObject`
+  - `span?: number`
+  - `offset?: number`
+  - `pull?: number`
+  - `push?: number`
+- `ColSize = number | ColSizeObject`
+
+当前已在 `ECMAScript.ElementPlus` 新增并接入：
+
+- `ElementPlusColSizeProps`
+- `ElementPlusColSizeValue`
+
+并已收敛到：
+
+- `ElCol.Xs -> ElementPlusColSizeValue?`
+- `ElCol.Sm -> ElementPlusColSizeValue?`
+- `ElCol.Md -> ElementPlusColSizeValue?`
+- `ElCol.Lg -> ElementPlusColSizeValue?`
+- `ElCol.Xl -> ElementPlusColSizeValue?`
+
+这避免了把“数字或四字段结构对象”继续模糊压成 `VueValue?`。
+
+### 3. `ElTable` 的默认排序与树配置已接入命名值对象
+
+本地官方 `table/defaults.d.ts` 明确给出：
+
+- `Sort`
+  - `prop: string`
+  - `order: 'ascending' | 'descending'`
+  - `init?: any`
+  - `silent?: any`
+- `TreeProps`
+  - `hasChildren?: string`
+  - `children?: string`
+  - `checkStrictly?: boolean`
+
+当前已新增并接入：
+
+- `ElementPlusTableSortOrder`
+- `ElementPlusTableSort`
+- `ElementPlusTableTreeProps`
+
+并已收敛到：
+
+- `ElTable.DefaultSort -> ElementPlusTableSort`
+- `ElTable.TreeProps -> ElementPlusTableTreeProps`
+
+其中 `init` / `silent` 仍保留 `VueValue?`，这是因为本地官方定义本身就是 `any`，当前不额外伪造并不存在的强类型。
+
+### 4. `ElPagination.PagerCount` 已从弱值退回数值契约
+
+本地官方 `pagination.ts` / `pagination.d.ts` 明确给出：
+
+- `pagerCount` 的公开 prop 类型是 `number`
+- 运行时 validator 约束为奇数，且范围在 `(4, 22)` 内
+
+当前已先把公开 authoring contract 收回到：
+
+- `ElPagination.PagerCount -> Number?`
+
+这一轮没有再人为引入 awkward 的奇数枚举/离散常量类型；后续如果确实需要 authoring 期精确 odd-domain 约束，再基于官方 validator 做更严格闭合集合建模。
+
+## 本轮验证
+
+本轮已通过：
+
+- `dotnet run --file scripts/csharp/generate-elementplus-bindings.cs`
+- `dotnet build src/ECMAScript.ElementPlus/ECMAScript.ElementPlus.csproj -v minimal`
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~ElementPlusAuthoringSurfaceTests|FullyQualifiedName~ElementPlusSharedContractTests' -v minimal`
+
+当前聚焦 `ElementPlusAuthoringSurfaceTests` + `ElementPlusSharedContractTests` 共 `24/24` 通过。
+
+## 2026-05-16 第六批继续收口
+
+这一批继续处理“本地官方 `.d.ts` 已经给出稳定联合/对象结构，但生成公开面仍退回弱 `VueValue?` / `VueValue[]?`”的剩余高价值合同，重点收口 `ElMention` 与 `ElSpace`。
+
+### 1. `ElMention` 已切回官方 options / prefix / popperOptions 合同
+
+本地官方 `mention.d.ts` / `types.d.ts` 明确给出：
+
+- `options?: MentionOption[]`
+- `prefix?: string | string[]`
+- `popperOptions?: Partial<Options>`
+- `MentionOption`
+  - `value?: string`
+  - `label?: string`
+  - `disabled?: boolean`
+  - `[key: string]: any`
+
+当前已完成：
+
+- 在 `ECMAScript.ElementPlus` 新增命名值对象：
+  - `ElementPlusMentionOption : VueDictionary`
+- 组件公开面已收敛为：
+  - `ElMention.Options -> ElementPlusMentionOption[]`
+  - `ElMention.Prefix -> VueStringOrStringsValue?`
+  - `ElMention.PopperOptions -> VueDictionary`
+
+这一步把 `Mention` 家族从“选项数组 / 前缀联合 / Popper 对象都走弱值兜底”收回到正式 authoring contract。
+
+### 2. `ElSpace` 已切回官方 alignment / spacer / size 合同
+
+本地官方 `space.d.ts` 明确给出：
+
+- `alignment?: string`（更精确地来自 CSS `align-items` 字符串域）
+- `spacer?: string | number | VNode`
+- `size?: ComponentSize | number | [number, number]`
+
+当前已完成：
+
+- 在 `ECMAScript.Vue3` 新增共享基础合同：
+  - `VueStringOrStringsValue`
+  - `VueNumberPair`
+  - `VueStringNumberVNodeValue`
+- 在 `ECMAScript.ElementPlus` 新增命名值类型：
+  - `ElementPlusSpaceSizeValue`
+- 组件公开面已收敛为：
+  - `ElSpace.Alignment -> string`
+  - `ElSpace.Spacer -> VueStringNumberVNodeValue?`
+  - `ElSpace.Size -> ElementPlusSpaceSizeValue?`
+
+这里没有把 `[number, number]` 退化成任意长度数组，也没有把 `VNode` 分支继续抹平成 `VueValue?`，从而保持了官方 authoring 边界。
+
+### 3. 共享 `[number, number]` 合同已沉到 `Vue3`
+
+本轮新增的 `VueNumberPair` 不只用于 `ElSpace.Size`。生成器现在会把明确的 `[number, number]` 官方元组收敛为共享精确 pair，而不再退回 `Number[]?`。
+
+这已经顺带提升了本轮生成结果中的其他公开面，例如：
+
+- `ElScrollbar.Offset -> VueNumberPair?`
+- `ElTour.Gap -> VueNumberPair?`
+- `ElTour.Offset -> VueNumberPair?`
+
+这属于“共享 authoring contract 下沉到 `Vue3`”而不是继续在 `ElementPlus` 内部分裂一次性数组语义。
+
+## 本轮验证
+
+本轮已通过：
+
+- `dotnet run --file scripts/csharp/generate-elementplus-bindings.cs`
+- `dotnet build src/ECMAScript.ElementPlus/ECMAScript.ElementPlus.csproj -v minimal`
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~ElementPlusAuthoringSurfaceTests|FullyQualifiedName~ElementPlusSharedContractTests' -v minimal`
+
+当前聚焦 `ElementPlusAuthoringSurfaceTests` + `ElementPlusSharedContractTests` 共 `27/27` 通过。
 
 ## 参考
 
