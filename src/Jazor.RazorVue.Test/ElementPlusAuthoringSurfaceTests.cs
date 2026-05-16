@@ -141,13 +141,21 @@ public sealed class ElementPlusAuthoringSurfaceTests
     [TestMethod]
     public void ElementPlus_ModelBindingContracts_UseExplicitCanonicalNames()
     {
+        AssertModelBindingContract(typeof(ElCascader), nameof(ElCascader.ModelValue), typeof(VueBooleanStringNumberObjectArrayableValue?));
+        AssertModelBindingContract(typeof(ElCascaderPanel), nameof(ElCascaderPanel.ModelValue), typeof(VueBooleanStringNumberObjectArrayableValue?));
+        AssertModelBindingContract(typeof(ElDatePicker), nameof(ElDatePicker.ModelValue), typeof(VueStringNumberDateArrayableValue?));
+        AssertModelBindingContract(typeof(ElDatePickerPanel), nameof(ElDatePickerPanel.ModelValue), typeof(VueStringNumberDateArrayableValue?));
         AssertModelBindingContract(typeof(ElDialog), nameof(ElDialog.ModelValue), typeof(bool?));
         AssertModelBindingContract(typeof(ElCheckboxGroup), nameof(ElCheckboxGroup.ModelValue), typeof(VueStringNumberValue[]));
+        AssertModelBindingContract(typeof(ElCollapse), nameof(ElCollapse.ModelValue), typeof(VueStringNumberArrayableValue?));
         AssertModelBindingContract(typeof(ElInput), nameof(ElInput.ModelValue), typeof(VueStringNumberValue?));
         AssertModelBindingContract(typeof(ElInputNumber), nameof(ElInputNumber.ModelValue), typeof(Number?));
         AssertModelBindingContract(typeof(ElInputOtp), nameof(ElInputOtp.ModelValue), typeof(VueStringNumberValue?));
+        AssertModelBindingContract(typeof(ElSelect), nameof(ElSelect.ModelValue), typeof(VueBooleanStringNumberObjectArrayableValue?));
         AssertModelBindingContract(typeof(ElSlider), nameof(ElSlider.ModelValue), typeof(VueNumberOrNumbersValue?));
         AssertModelBindingContract(typeof(ElSwitch), nameof(ElSwitch.ModelValue), typeof(VueBooleanStringNumberValue?));
+        AssertModelBindingContract(typeof(ElTimePicker), nameof(ElTimePicker.ModelValue), typeof(VueStringNumberDateArrayableValue?));
+        AssertModelBindingContract(typeof(ElTreeSelect), nameof(ElTreeSelect.ModelValue), typeof(VueBooleanStringNumberObjectArrayableValue?));
     }
 
     [TestMethod]

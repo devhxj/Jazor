@@ -1247,6 +1247,310 @@
 
 当前聚焦 `ElementPlusAuthoringSurfaceTests` + `ElementPlusSharedContractTests` 共 `32/32` 通过。
 
+## 2026-05-16 第十三批收口
+
+这一批继续处理“本地官方 `.d.ts` 已明确给出字面量值域，但当前公开 authoring surface 仍保留 `string?`”的高置信属性。范围刻意控制在一组纯字面量合同上，不把 `Dropdown.Trigger` 这种还带数组化和更大兼容面的 prop 混入同一批。
+
+### 1. `ElImage` / `ElUpload` 的 `crossorigin` 已切回官方命名值域
+
+本地官方来源：
+
+- `image.d.ts`：
+  - `type ImageCrossorigin = 'anonymous' | 'use-credentials' | ''`
+- `upload.d.ts`：
+  - `type Crossorigin = 'anonymous' | 'use-credentials' | ''`
+
+当前已完成：
+
+- 在 `ECMAScript.ElementPlus` 新增并公开：
+  - `ElementPlusCrossorigin`
+- `ElImage.Crossorigin -> ElementPlusCrossorigin?`
+- `ElUpload.Crossorigin -> ElementPlusCrossorigin?`
+
+这里不再继续用宽泛 `string?`，因为本地官方合同已经明确只允许空值、匿名和携带凭据三种 authoring 值域。
+
+### 2. `ElImage.Fit` / `ElImage.Loading` 已切回官方字面量域
+
+本地官方来源：
+
+- `image.d.ts`：
+  - `type ImageFitType = '' | 'contain' | 'cover' | 'fill' | 'none' | 'scale-down'`
+  - `loading?: 'eager' | 'lazy'`
+
+当前已完成：
+
+- 在 `ECMAScript.ElementPlus` 新增并公开：
+  - `ElementPlusImageFitType`
+  - `ElementPlusImageLoadingType`
+- `ElImage.Fit -> ElementPlusImageFitType?`
+- `ElImage.Loading -> ElementPlusImageLoadingType?`
+
+这样 `fit` 与 `loading` 不会再被 authoring surface 错误放大成任意字符串。
+
+### 3. `ElUpload.ListType` 已切回官方命名值域
+
+本地官方来源：
+
+- `upload.d.ts`：
+  - `type ListType = 'text' | 'picture' | 'picture-card'`
+
+当前已完成：
+
+- 在 `ECMAScript.ElementPlus` 新增并公开：
+  - `ElementPlusUploadListType`
+- `ElUpload.ListType -> ElementPlusUploadListType?`
+
+这里保持 Element Plus 局部命名值域，而不是回退成 `string?`，因为这不是通用 Vue 生态合同，而是 upload 列表展示方式的组件级枚举面。
+
+### 4. `ElCarousel.Trigger` / `ElMenu.MenuTrigger` 已切回 hover-click 联合域
+
+本地官方来源：
+
+- `carousel.d.ts`：
+  - `trigger?: 'hover' | 'click'`
+- `menu.d.ts`：
+  - `menuTrigger: EpPropFinalized<StringConstructor, "click" | "hover", ...>`
+
+当前已完成：
+
+- 在 `ECMAScript.ElementPlus` 新增并公开：
+  - `ElementPlusHoverClickTrigger`
+- `ElCarousel.Trigger -> ElementPlusHoverClickTrigger?`
+- `ElMenu.MenuTrigger -> ElementPlusHoverClickTrigger?`
+
+这一批没有把 `ElDropdown.Trigger` 一起收进来，原因也明确：
+
+- `Dropdown.Trigger` 本地官方合同是 `Arrayable<'click' | 'hover' | 'contextmenu'>`
+- 它不仅包含额外 `contextmenu`，还包含单值/数组双 authoring 面
+- 把它混在这一批会让范围从“纯标量字面量域”扩大成“值域 + 容器形状”双问题，不利于单批稳态验证
+
+### 5. 本轮仍然通过“显式覆盖 + 聚焦测试”落地
+
+本轮生成器新增显式覆盖：
+
+- `el-image.fit`
+- `el-image.loading`
+- `el-image.crossorigin`
+- `el-upload.crossorigin`
+- `el-upload.listType`
+- `el-carousel.trigger`
+- `el-menu.menuTrigger`
+
+这样重生成后，这一组 prop 不会再被默认推断回 `string?`。
+
+## 本轮验证
+
+本轮已通过：
+
+- `dotnet run --file scripts/csharp/generate-elementplus-bindings.cs`
+- `dotnet build src/ECMAScript.ElementPlus/ECMAScript.ElementPlus.csproj -v minimal`
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~ElementPlusAuthoringSurfaceTests|FullyQualifiedName~ElementPlusSharedContractTests' -v minimal`
+
+当前聚焦 `ElementPlusAuthoringSurfaceTests` + `ElementPlusSharedContractTests` 共 `32/32` 通过。
+
+## 2026-05-16 第十四批收口
+
+这一批单独处理上一批刻意延后的 `ElDropdown.Trigger`。原因很明确：它不是单纯的标量字面量域，而是本地官方 `.d.ts` 已明确给出的 `Arrayable<'click' | 'hover' | 'contextmenu'>`，同时包含值域和单值/数组双 authoring 形状。
+
+### 1. `ElDropdown.Trigger` 保留公开 union 名称，但内部已切回官方命名值域
+
+本地官方来源：
+
+- `es/components/dropdown/src/dropdown.d.ts`
+- `es/components/dropdown/src/dropdown.vue.d.ts`
+
+官方合同明确为：
+
+- `trigger: Arrayable<'click' | 'hover' | 'contextmenu'>`
+
+当前已完成：
+
+- 新增并公开：
+  - `ElementPlusDropdownTriggerType`
+- 保留现有公开 union 名称：
+  - `ElementPlusDropdownTriggerValue`
+- 但其内部合同已从弱分支：
+  - `string | string[]`
+- 收紧为官方命名分支：
+  - `ElementPlusDropdownTriggerType | ElementPlusDropdownTriggerType[]`
+
+这样 `ElDropdown.Trigger` 仍保持稳定的公开 prop 类型名：
+
+- `ElDropdown.Trigger -> ElementPlusDropdownTriggerValue?`
+
+但 authoring surface 已不再默许任意字符串或任意字符串数组，而是严格落回官方 `click / hover / contextmenu` 值域。
+
+### 2. 这一步没有扩大生成器范围，只做了值域收紧
+
+这一批没有再引入新的广义推断规则，也没有改动 `ElDropdown.Trigger` 的生成覆盖入口：
+
+- `el-dropdown.trigger -> ElementPlusDropdownTriggerValue`
+
+生成器层保持稳定，变化集中在公开 union 内部的命名分支收紧。这可以避免把 `Dropdown.Trigger` 再次误并入 tooltip/menu/carousel 那类不同语义面的 trigger 合同。
+
+### 3. 契约测试已补足分支级守卫
+
+本轮不仅继续守护：
+
+- `ElDropdown.Trigger -> ElementPlusDropdownTriggerValue?`
+
+还补充了 union 内部分支断言：
+
+- `AsSingle -> ElementPlusDropdownTriggerType?`
+- `AsMultiple -> ElementPlusDropdownTriggerType[]`
+
+这保证后续不会出现“prop 类型名还在，但 union 内部分支又悄悄回退成 `string` / `string[]`”的漂移。
+
+## 本轮验证
+
+本轮已通过：
+
+- `dotnet run --file scripts/csharp/generate-elementplus-bindings.cs`
+- `dotnet build src/ECMAScript.ElementPlus/ECMAScript.ElementPlus.csproj -v minimal`
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~ElementPlusAuthoringSurfaceTests|FullyQualifiedName~ElementPlusSharedContractTests' -v minimal`
+
+当前聚焦 `ElementPlusAuthoringSurfaceTests` + `ElementPlusSharedContractTests` 共 `32/32` 通过。
+
+## 2026-05-16 第十五批收口
+
+这一批继续处理官方本地 `.d.ts` 已经给出高置信 `Arrayable` 合同、但当前生成结果仍保留 `VueValue?` 的 `modelValue` 面。范围刻意收在一组“单值或同域数组”的公共 authoring contract 上，不把 `DatePicker` / `TimePicker` 那类更宽值域一并混进来。
+
+### 1. 共享 Vue `Arrayable` 合同已继续沉淀到 `ECMAScript.Vue3`
+
+本轮新增并公开：
+
+- `VueStringNumberArrayableValue`
+- `VueBooleanStringNumberObjectArrayableValue`
+
+设计原则保持一致：
+
+- 如果官方合同是“标量或同域数组”，优先沉淀到 `ECMAScript.Vue3`；
+- `ElementPlus` 只消费共享 contract，不重复制造仅库内可见的近似 wrapper；
+- 数组分支保持同域数组，不退回弱化的混合 `VueValue[]`。
+
+### 2. `Collapse` / `Cascader` / `Select` / `TreeSelect` 的 `modelValue` 已切回共享强类型
+
+本地官方来源：
+
+- `es/components/collapse/src/collapse.d.ts`
+  - `CollapseModelValue = Arrayable<CollapseActiveName>`
+- `es/components/cascader/src/cascader.d.ts`
+- `es/components/cascader-panel/src/config.d.ts`
+  - `CascaderValue = string | number | Record<string, any> | ...同域数组`
+- `es/components/select/src/select.d.ts`
+- `es/components/tree-select/src/tree-select.vue.d.ts`
+  - 标量或数组 over `boolean | string | number | object`
+
+当前已完成：
+
+- `ElCollapse.ModelValue -> VueStringNumberArrayableValue?`
+- `ElCascader.ModelValue -> VueBooleanStringNumberObjectArrayableValue?`
+- `ElCascaderPanel.ModelValue -> VueBooleanStringNumberObjectArrayableValue?`
+- `ElSelect.ModelValue -> VueBooleanStringNumberObjectArrayableValue?`
+- `ElTreeSelect.ModelValue -> VueBooleanStringNumberObjectArrayableValue?`
+
+对应的：
+
+- `ModelValueChanged`
+- `VueLibraryEmit(... PayloadTypeName = ...)`
+
+也已同步切到同一 canonical contract，不再残留 `VueValue?`。
+
+### 3. 这一步继续通过显式覆盖落地，不扩大弱推断面
+
+本轮生成器显式覆盖新增：
+
+- `el-collapse.modelValue`
+- `el-cascader.modelValue`
+- `el-cascader-panel.modelValue`
+- `el-select.modelValue`
+- `el-tree-select.modelValue`
+
+策略仍然是：
+
+- 先补测试守卫；
+- 再加高置信显式覆盖；
+- 不引入更宽泛、容易误判的通用推断规则。
+
+## 本轮验证
+
+本轮已通过：
+
+- `dotnet run --file scripts/csharp/generate-elementplus-bindings.cs`
+- `dotnet build src/ECMAScript.ElementPlus/ECMAScript.ElementPlus.csproj -v minimal`
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~ElementPlusAuthoringSurfaceTests|FullyQualifiedName~ElementPlusSharedContractTests' -v minimal`
+
+当前聚焦 `ElementPlusAuthoringSurfaceTests` + `ElementPlusSharedContractTests` 共 `32/32` 通过。
+
+## 2026-05-16 第十六批收口
+
+这一批继续处理 `DatePicker` / `DatePickerPanel` / `TimePicker` 仍保留 `VueValue?` 的 `modelValue`。本地官方 `.d.ts` 已经把这一组合同稳定写成：
+
+- `string | number | Date | string[] | number[] | Date[]`
+
+这不是“任意值”，而是一个非常明确的“标量三元域 + 同域数组”合同，因此应当落到共享 Vue authoring contract，而不是继续用 `VueValue?`。
+
+### 1. 共享日期/时间 `modelValue` 合同已沉淀到 `ECMAScript.Vue3`
+
+本轮新增并公开：
+
+- `VueStringNumberDateValue`
+- `VueStringNumberDateArrayableValue`
+
+这组类型专门表达官方 `DateModelType` / `ModelValueType` 语义：
+
+- 标量域：`string | number | Date`
+- 数组域：`string[] | number[] | Date[]`
+
+这里有意不把数组放宽成“混合元素数组”，因为本地官方合同本身就是同域数组而不是任意混合数组。
+
+### 2. `DatePicker` / `DatePickerPanel` / `TimePicker` 已切回共享强类型 `modelValue`
+
+本地官方来源：
+
+- `es/components/time-picker/src/common/props.d.ts`
+  - `type DateModelType = number | string | Date`
+  - `type ModelValueType = DateModelType | number[] | string[] | Date[]`
+- `es/components/date-picker/src/date-picker.d.ts`
+- `es/components/date-picker-panel/src/date-picker-panel.d.ts`
+- `es/components/time-picker/src/time-picker.d.ts`
+
+当前已完成：
+
+- `ElDatePicker.ModelValue -> VueStringNumberDateArrayableValue?`
+- `ElDatePickerPanel.ModelValue -> VueStringNumberDateArrayableValue?`
+- `ElTimePicker.ModelValue -> VueStringNumberDateArrayableValue?`
+
+对应的：
+
+- `ModelValueChanged`
+- `VueLibraryEmit(... PayloadTypeName = ...)`
+
+也已同步切回同一 canonical contract。
+
+### 3. 生成链的 nullability 告警已一起清理
+
+在补这批共享 union 后，`dotnet run --file scripts/csharp/generate-elementplus-bindings.cs` 一度重新暴露了
+`VueBooleanStringNumberObjectArrayableValue` 上两条 `CS8619`。
+
+当前已一起修正为更稳定的显式局部强类型转换写法，使：
+
+- `dotnet run --file scripts/csharp/generate-elementplus-bindings.cs`
+- `dotnet build src/ECMAScript.Vue3/ECMAScript.Vue3.csproj -v minimal`
+
+都回到无这两条警告的状态。
+
+## 本轮验证
+
+本轮已通过：
+
+- `dotnet run --file scripts/csharp/generate-elementplus-bindings.cs`
+- `dotnet build src/ECMAScript.Vue3/ECMAScript.Vue3.csproj -v minimal`
+- `dotnet build src/ECMAScript.ElementPlus/ECMAScript.ElementPlus.csproj -v minimal`
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~ElementPlusAuthoringSurfaceTests|FullyQualifiedName~ElementPlusSharedContractTests' -v minimal`
+
+当前聚焦 `ElementPlusAuthoringSurfaceTests` + `ElementPlusSharedContractTests` 共 `32/32` 通过。
+
 ## 参考
 
 - [src/ECMAScript.ElementPlus](../../../src/ECMAScript.ElementPlus)

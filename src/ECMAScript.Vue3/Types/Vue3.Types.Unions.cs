@@ -391,6 +391,144 @@ public static partial class Vue3
 	}
 
 	/// <summary>
+	/// Vue 日期/时间输入面常见的“字符串、数字或日期”标量联合类型。用于对齐官方
+	/// <c>DateModelType = string | number | Date</c> 一类公开合同。
+	/// Common Vue scalar union for date/time authoring surfaces that accept a string,
+	/// a number, or a date. Use this for official <c>DateModelType = string | number | Date</c>-style contracts.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public readonly union VueStringNumberDateValue(double, string, Date)
+	{
+		/// <summary>
+		/// 当值为数字时返回该数字；否则返回 null。
+		/// Returns the number when the value was created from a number; otherwise null.
+		/// </summary>
+		public double? AsNumber => Value is double value ? value : default(double?);
+
+		/// <summary>
+		/// 当值为字符串时返回该字符串；否则返回 null。
+		/// Returns the string when the value was created from a string; otherwise null.
+		/// </summary>
+		public string? AsString => Value as string;
+
+		/// <summary>
+		/// 当值为日期时返回该日期；否则返回 null。
+		/// Returns the date when the value was created from a date; otherwise null.
+		/// </summary>
+		public Date? AsDate => Value is Date value ? value : default(Date?);
+	}
+
+	/// <summary>
+	/// Vue authoring 中常见的“字符串/数字标量或其数组”联合类型。适用于官方公开合同既接受
+	/// 单个字符串/数字值，也接受同域数组值的高频属性，例如 collapse active names 一类输入面。
+	/// Common Vue union that accepts either a scalar string/number value or an array of the same domain.
+	/// Use this for public contracts such as collapse active names that officially allow one value or many values.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public readonly union VueStringNumberArrayableValue(VueStringNumberValue, VueStringNumberValue[]) : IEnumerable<VueStringNumberValue>
+	{
+		/// <summary>
+		/// 当值为单个字符串/数字时返回该值；否则返回 null。
+		/// Returns the scalar string/number value when the union was created from one value; otherwise null.
+		/// </summary>
+		public VueStringNumberValue? AsSingle
+			=> Value is VueStringNumberValue value ? value : default(VueStringNumberValue?);
+
+		/// <summary>
+		/// 当值为字符串/数字数组时返回该数组；否则返回 null。
+		/// Returns the string/number array when the union was created from multiple values; otherwise null.
+		/// </summary>
+		public VueStringNumberValue[]? AsMultiple => Value as VueStringNumberValue[];
+
+		public static implicit operator VueStringNumberArrayableValue(double value)
+			=> new((VueStringNumberValue)value);
+
+		public static implicit operator VueStringNumberArrayableValue(string value)
+			=> new((VueStringNumberValue)value);
+
+		public static implicit operator VueStringNumberArrayableValue(VueStringNumberValue[] values)
+			=> new(values);
+
+		public static implicit operator VueStringNumberArrayableValue(double[] values)
+			=> new(Array.ConvertAll(values, static value => (VueStringNumberValue)value));
+
+		public static implicit operator VueStringNumberArrayableValue(string[] values)
+			=> new(Array.ConvertAll(values, static value => (VueStringNumberValue)value));
+
+		IEnumerator<VueStringNumberValue> IEnumerable<VueStringNumberValue>.GetEnumerator()
+			=> ((IEnumerable<VueStringNumberValue>)(AsMultiple ?? Array.Empty<VueStringNumberValue>())).GetEnumerator();
+
+		IEnumerator IEnumerable.GetEnumerator()
+			=> ((IEnumerable<VueStringNumberValue>)this).GetEnumerator();
+	}
+
+	/// <summary>
+	/// Vue 日期/时间输入面常见的“字符串/数字/日期标量或其同域数组”联合类型。用于对齐官方
+	/// <c>ModelValueType = string | number | Date | string[] | number[] | Date[]</c> 这类公开合同，
+	/// 并保持数组分支仍然是同域数组而不是被放宽成混合元素数组。
+	/// Common Vue union for date/time authoring surfaces that accept a string/number/date scalar
+	/// or a homogeneous array of the same domain. This matches official
+	/// <c>ModelValueType = string | number | Date | string[] | number[] | Date[]</c>-style contracts
+	/// without widening arrays into mixed-element unions.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public readonly union VueStringNumberDateArrayableValue(
+		VueStringNumberDateValue,
+		Number[],
+		string[],
+		Date[])
+	{
+		/// <summary>
+		/// 当值为单个字符串/数字/日期时返回该值；否则返回 null。
+		/// Returns the scalar string/number/date value when the union was created from one value; otherwise null.
+		/// </summary>
+		public VueStringNumberDateValue? AsSingle
+			=> Value is VueStringNumberDateValue value ? value : default(VueStringNumberDateValue?);
+
+		/// <summary>
+		/// 当值为数字数组时返回该数组；否则返回 null。
+		/// Returns the numeric array when the union was created from multiple numbers; otherwise null.
+		/// </summary>
+		public Number[]? AsNumbers => Value is Number[] value ? value : default(Number[]?);
+
+		/// <summary>
+		/// 当值为字符串数组时返回该数组；否则返回 null。
+		/// Returns the string array when the union was created from multiple strings; otherwise null.
+		/// </summary>
+		public string[]? AsStrings => Value as string[];
+
+		/// <summary>
+		/// 当值为日期数组时返回该数组；否则返回 null。
+		/// Returns the date array when the union was created from multiple dates; otherwise null.
+		/// </summary>
+		public Date[]? AsDates => Value as Date[];
+
+		public static implicit operator VueStringNumberDateArrayableValue(double value)
+			=> new((VueStringNumberDateValue)value);
+
+		public static implicit operator VueStringNumberDateArrayableValue(string value)
+			=> new((VueStringNumberDateValue)value);
+
+		public static implicit operator VueStringNumberDateArrayableValue(Date value)
+			=> new((VueStringNumberDateValue)value);
+
+		public static implicit operator VueStringNumberDateArrayableValue(Number[] values)
+			=> new(values);
+
+		public static implicit operator VueStringNumberDateArrayableValue(double[] values)
+			=> new(Array.ConvertAll(values, static value => (Number)value));
+
+		public static implicit operator VueStringNumberDateArrayableValue(string[] values)
+			=> new(values);
+
+		public static implicit operator VueStringNumberDateArrayableValue(Date[] values)
+			=> new(values);
+	}
+
+	/// <summary>
 	/// Vue authoring 中常见的“单个数字或数字数组”联合类型。适用于官方公开合同既接受标量数值，
 	/// 也接受数值序列的高频属性，例如 slider/range modelValue 一类输入面。
 	/// Common Vue union that accepts either a single numeric value or a numeric array. Use this
@@ -493,6 +631,86 @@ public static partial class Vue3
 
 		public static implicit operator VueBooleanStringNumberObjectValue(VueDictionary value)
 			=> (VueProps)value;
+	}
+
+	/// <summary>
+	/// Vue authoring 中常见的“布尔/字符串/数字/对象标量或其数组”联合类型。适用于官方公开合同既接受
+	/// 单个选择值，也接受同域多值数组的输入面，例如 select/tree-select modelValue。
+	/// Common Vue union that accepts either a scalar boolean/string/number/object value or an array of the same domain.
+	/// Use this for public contracts such as select/tree-select model values that officially allow one value or many values.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public readonly union VueBooleanStringNumberObjectArrayableValue(
+		VueBooleanStringNumberObjectValue,
+		VueBooleanStringNumberObjectValue[]) : IEnumerable<VueBooleanStringNumberObjectValue>
+	{
+		/// <summary>
+		/// 当值为单个布尔/字符串/数字/对象值时返回该值；否则返回 null。
+		/// Returns the scalar boolean/string/number/object value when the union was created from one value; otherwise null.
+		/// </summary>
+		public VueBooleanStringNumberObjectValue? AsSingle
+			=> Value is VueBooleanStringNumberObjectValue value ? value : default(VueBooleanStringNumberObjectValue?);
+
+		/// <summary>
+		/// 当值为布尔/字符串/数字/对象数组时返回该数组包装；否则返回 null。
+		/// Returns the array when the union was created from multiple values; otherwise null.
+		/// </summary>
+		public VueBooleanStringNumberObjectValue[]? AsMultiple => Value as VueBooleanStringNumberObjectValue[];
+
+		public static implicit operator VueBooleanStringNumberObjectArrayableValue(bool value)
+			=> new((VueBooleanStringNumberObjectValue)value);
+
+		public static implicit operator VueBooleanStringNumberObjectArrayableValue(double value)
+			=> new((VueBooleanStringNumberObjectValue)value);
+
+		public static implicit operator VueBooleanStringNumberObjectArrayableValue(string value)
+			=> new((VueBooleanStringNumberObjectValue)value);
+
+		public static implicit operator VueBooleanStringNumberObjectArrayableValue(VueProps value)
+		{
+			VueBooleanStringNumberObjectValue scalar = value;
+			return new(scalar);
+		}
+
+		public static implicit operator VueBooleanStringNumberObjectArrayableValue(VueDictionary value)
+		{
+			VueBooleanStringNumberObjectValue scalar = value;
+			return new(scalar);
+		}
+
+		public static implicit operator VueBooleanStringNumberObjectArrayableValue(
+			VueBooleanStringNumberObjectValue[] values)
+			=> new(values);
+
+		public static implicit operator VueBooleanStringNumberObjectArrayableValue(bool[] values)
+			=> new(Array.ConvertAll(values, static value => (VueBooleanStringNumberObjectValue)value));
+
+		public static implicit operator VueBooleanStringNumberObjectArrayableValue(double[] values)
+			=> new(Array.ConvertAll(values, static value => (VueBooleanStringNumberObjectValue)value));
+
+		public static implicit operator VueBooleanStringNumberObjectArrayableValue(string[] values)
+			=> new(Array.ConvertAll(values, static value => (VueBooleanStringNumberObjectValue)value));
+
+		public static implicit operator VueBooleanStringNumberObjectArrayableValue(VueProps[] values)
+			=> new(Array.ConvertAll(values, static value =>
+			{
+				VueBooleanStringNumberObjectValue scalar = value;
+				return scalar;
+			}));
+
+		public static implicit operator VueBooleanStringNumberObjectArrayableValue(VueDictionary[] values)
+			=> new(Array.ConvertAll(values, static value =>
+			{
+				VueBooleanStringNumberObjectValue scalar = value;
+				return scalar;
+			}));
+
+		IEnumerator<VueBooleanStringNumberObjectValue> IEnumerable<VueBooleanStringNumberObjectValue>.GetEnumerator()
+			=> ((IEnumerable<VueBooleanStringNumberObjectValue>)(AsMultiple ?? Array.Empty<VueBooleanStringNumberObjectValue>())).GetEnumerator();
+
+		IEnumerator IEnumerable.GetEnumerator()
+			=> ((IEnumerable<VueBooleanStringNumberObjectValue>)this).GetEnumerator();
 	}
 
 	/// <summary>

@@ -35,6 +35,9 @@ public sealed class ElementPlusSharedContractTests
     [TestMethod]
     public void ElementPlus_ComponentContracts_ReuseSharedVueUnions()
     {
+        Assert.AreEqual(typeof(VueStringNumberArrayableValue?), typeof(ElCollapse).GetProperty(nameof(ElCollapse.ModelValue))?.PropertyType);
+        Assert.AreEqual(typeof(VueBooleanStringNumberObjectArrayableValue?), typeof(ElCascader).GetProperty(nameof(ElCascader.ModelValue))?.PropertyType);
+        Assert.AreEqual(typeof(VueBooleanStringNumberObjectArrayableValue?), typeof(ElCascaderPanel).GetProperty(nameof(ElCascaderPanel.ModelValue))?.PropertyType);
         Assert.AreEqual(typeof(VueStringNumberValue?), typeof(ElDialog).GetProperty(nameof(ElDialog.Width))?.PropertyType);
         Assert.AreEqual(typeof(VueBooleanStringNumberValue?), typeof(ElSwitch).GetProperty(nameof(ElSwitch.ModelValue))?.PropertyType);
         Assert.AreEqual(typeof(VueBooleanStringNumberValue?), typeof(ElSwitch).GetProperty(nameof(ElSwitch.ActiveValue))?.PropertyType);
@@ -50,8 +53,8 @@ public sealed class ElementPlusSharedContractTests
         Assert.AreEqual(typeof(string[]), typeof(ElPopover).GetProperty(nameof(ElPopover.TriggerKeys))?.PropertyType);
         Assert.AreEqual(typeof(ElementPlusTooltipTriggerValue?), typeof(ElTooltip).GetProperty(nameof(ElTooltip.Trigger))?.PropertyType);
         Assert.AreEqual(typeof(ElementPlusTooltipTriggerValue?), typeof(ElPopover).GetProperty(nameof(ElPopover.Trigger))?.PropertyType);
-        Assert.AreEqual(typeof(string), typeof(ElCarousel).GetProperty(nameof(ElCarousel.Trigger))?.PropertyType);
-        Assert.AreEqual(typeof(string), typeof(ElMenu).GetProperty(nameof(ElMenu.MenuTrigger))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusHoverClickTrigger?), typeof(ElCarousel).GetProperty(nameof(ElCarousel.Trigger))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusHoverClickTrigger?), typeof(ElMenu).GetProperty(nameof(ElMenu.MenuTrigger))?.PropertyType);
         Assert.AreEqual(typeof(VueStringNumberValue?), typeof(ElInput).GetProperty(nameof(ElInput.Max))?.PropertyType);
         Assert.AreEqual(typeof(VueStringNumberValue?), typeof(ElInput).GetProperty(nameof(ElInput.Min))?.PropertyType);
         Assert.AreEqual(typeof(VueStringNumberValue?), typeof(ElInput).GetProperty(nameof(ElInput.Step))?.PropertyType);
@@ -60,6 +63,8 @@ public sealed class ElementPlusSharedContractTests
         Assert.AreEqual(typeof(ElementPlusTagTooltipProps), typeof(ElVirtualizedSelect).GetProperty("TagTooltip")?.PropertyType);
         Assert.AreEqual(typeof(ElementPlusTagTooltipProps), typeof(ElTreeSelect).GetProperty("TagTooltip")?.PropertyType);
         Assert.AreEqual(typeof(ElementPlusTagTooltipProps), typeof(ElSelect).GetProperty("TagTooltip")?.PropertyType);
+        Assert.AreEqual(typeof(VueBooleanStringNumberObjectArrayableValue?), typeof(ElSelect).GetProperty(nameof(ElSelect.ModelValue))?.PropertyType);
+        Assert.AreEqual(typeof(VueBooleanStringNumberObjectArrayableValue?), typeof(ElTreeSelect).GetProperty(nameof(ElTreeSelect.ModelValue))?.PropertyType);
         Assert.AreEqual(typeof(VueStringNumberValue[]), typeof(ElTransfer).GetProperty(nameof(ElTransfer.ModelValue))?.PropertyType);
         Assert.AreEqual(typeof(VueStringNumberValue[]), typeof(ElTransfer).GetProperty(nameof(ElTransfer.LeftDefaultChecked))?.PropertyType);
         Assert.AreEqual(typeof(VueStringNumberValue[]), typeof(ElTransfer).GetProperty(nameof(ElTransfer.RightDefaultChecked))?.PropertyType);
@@ -75,6 +80,8 @@ public sealed class ElementPlusSharedContractTests
     public void ElementPlus_DropdownAndFormContracts_UseOfficialNamedTypes()
     {
         Assert.AreEqual(typeof(ElementPlusDropdownTriggerValue?), typeof(ElDropdown).GetProperty(nameof(ElDropdown.Trigger))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusDropdownTriggerType?), typeof(ElementPlusDropdownTriggerValue).GetProperty(nameof(ElementPlusDropdownTriggerValue.AsSingle))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusDropdownTriggerType[]), typeof(ElementPlusDropdownTriggerValue).GetProperty(nameof(ElementPlusDropdownTriggerValue.AsMultiple))?.PropertyType);
         Assert.AreEqual(typeof(ElementPlusButtonProps), typeof(ElDropdown).GetProperty(nameof(ElDropdown.ButtonProps))?.PropertyType);
         Assert.AreEqual(typeof(ScrollIntoViewArg?), typeof(ElForm).GetProperty(nameof(ElForm.ScrollIntoViewOptions))?.PropertyType);
     }
@@ -85,6 +92,7 @@ public sealed class ElementPlusSharedContractTests
         Assert.AreEqual(typeof(RouteLocationRaw?), typeof(ElBreadcrumbItem).GetProperty(nameof(ElBreadcrumbItem.To))?.PropertyType);
         Assert.AreEqual(typeof(RouteLocationRaw?), typeof(ElMenuItem).GetProperty(nameof(ElMenuItem.Route))?.PropertyType);
 
+        Assert.AreEqual(typeof(VueStringNumberDateArrayableValue?), typeof(ElTimePicker).GetProperty(nameof(ElTimePicker.ModelValue))?.PropertyType);
         Assert.AreEqual(typeof(string), typeof(ElTimePicker).GetProperty(nameof(ElTimePicker.Format))?.PropertyType);
         Assert.AreEqual(typeof(string), typeof(ElTimePicker).GetProperty(nameof(ElTimePicker.ValueFormat))?.PropertyType);
         Assert.AreEqual(typeof(string), typeof(ElTimePicker).GetProperty(nameof(ElTimePicker.DateFormat))?.PropertyType);
@@ -101,6 +109,7 @@ public sealed class ElementPlusSharedContractTests
     [TestMethod]
     public void ElementPlus_DatePickerContracts_ReuseOfficialTypedSurfaces()
     {
+        Assert.AreEqual(typeof(VueStringNumberDateArrayableValue?), typeof(ElDatePicker).GetProperty(nameof(ElDatePicker.ModelValue))?.PropertyType);
         Assert.AreEqual(typeof(string), typeof(ElDatePicker).GetProperty(nameof(ElDatePicker.Format))?.PropertyType);
         Assert.AreEqual(typeof(string), typeof(ElDatePicker).GetProperty(nameof(ElDatePicker.ValueFormat))?.PropertyType);
         Assert.AreEqual(typeof(string), typeof(ElDatePicker).GetProperty(nameof(ElDatePicker.DateFormat))?.PropertyType);
@@ -113,6 +122,7 @@ public sealed class ElementPlusSharedContractTests
         Assert.AreEqual(typeof(string), typeof(ElDatePickerPanel).GetProperty(nameof(ElDatePickerPanel.ValueFormat))?.PropertyType);
         Assert.AreEqual(typeof(string), typeof(ElDatePickerPanel).GetProperty(nameof(ElDatePickerPanel.DateFormat))?.PropertyType);
         Assert.AreEqual(typeof(string), typeof(ElDatePickerPanel).GetProperty(nameof(ElDatePickerPanel.TimeFormat))?.PropertyType);
+        Assert.AreEqual(typeof(VueStringNumberDateArrayableValue?), typeof(ElDatePickerPanel).GetProperty(nameof(ElDatePickerPanel.ModelValue))?.PropertyType);
         Assert.AreEqual(typeof(VueDateSingleOrRangeValue?), typeof(ElDatePickerPanel).GetProperty(nameof(ElDatePickerPanel.DefaultValue))?.PropertyType);
         Assert.AreEqual(typeof(VueDateSingleOrRangeValue?), typeof(ElDatePickerPanel).GetProperty(nameof(ElDatePickerPanel.DefaultTime))?.PropertyType);
         Assert.AreEqual(typeof(VueStringSingleOrRangeValue?), typeof(ElDatePicker).GetProperty(nameof(ElDatePicker.Id))?.PropertyType);
@@ -195,9 +205,14 @@ public sealed class ElementPlusSharedContractTests
     public void ElementPlus_AdditionalOfficialHostContracts_UsePreciseSharedAndNamedTypes()
     {
         Assert.AreEqual(typeof(bool?), typeof(ElPopover).GetProperty(nameof(ElPopover.Visible))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusImageFitType?), typeof(ElImage).GetProperty(nameof(ElImage.Fit))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusImageLoadingType?), typeof(ElImage).GetProperty(nameof(ElImage.Loading))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusCrossorigin?), typeof(ElImage).GetProperty(nameof(ElImage.Crossorigin))?.PropertyType);
         Assert.AreEqual(typeof(VueStringHtmlElementValue?), typeof(ElImage).GetProperty(nameof(ElImage.ScrollContainer))?.PropertyType);
         Assert.AreEqual(typeof(ElementPlusThrottleValue?), typeof(ElSkeleton).GetProperty(nameof(ElSkeleton.Throttle))?.PropertyType);
         Assert.AreEqual(typeof(VueHeadersValue?), typeof(ElUpload).GetProperty(nameof(ElUpload.Headers))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusCrossorigin?), typeof(ElUpload).GetProperty(nameof(ElUpload.Crossorigin))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusUploadListType?), typeof(ElUpload).GetProperty(nameof(ElUpload.ListType))?.PropertyType);
         Assert.AreEqual(typeof(ElementPlusUploadUserFile[]), typeof(ElUpload).GetProperty(nameof(ElUpload.FileList))?.PropertyType);
         Assert.AreEqual(typeof(VueNumberOrNumbersValue?), typeof(ElSlider).GetProperty(nameof(ElSlider.ModelValue))?.PropertyType);
         Assert.AreEqual(typeof(EventCallback<VueNumberOrNumbersValue?>), typeof(ElSlider).GetProperty(nameof(ElSlider.ModelValueChanged))?.PropertyType);

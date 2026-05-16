@@ -829,7 +829,7 @@ public sealed class ElCarousel : ElementPlusContentComponentBase
     public Number? InitialIndex { get; set; }
 
     [Parameter]
-    public string? Trigger { get; set; }
+    public ElementPlusHoverClickTrigger? Trigger { get; set; }
 
     [Parameter]
     public bool? Autoplay { get; set; }
@@ -945,11 +945,11 @@ public sealed class ElCarouselItem : ElementPlusContentComponentBase
 [VueLibraryEmit(nameof(OnClear), Name = "clear")]
 [VueLibraryEmit(nameof(OnVisibleChange), Name = "visible-change")]
 [VueLibraryEmit(nameof(OnRemoveTag), Name = "remove-tag")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueBooleanStringNumberObjectArrayableValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElCascader : ElementPlusContentComponentBase
 {
     [Parameter]
-    public VueValue? ModelValue { get; set; }
+    public VueBooleanStringNumberObjectArrayableValue? ModelValue { get; set; }
 
     [Parameter]
     public VueValue[]? Options { get; set; }
@@ -1096,7 +1096,7 @@ public sealed class ElCascader : ElementPlusContentComponentBase
     public EventCallback OnRemoveTag { get; set; }
 
     [Parameter]
-    public EventCallback<VueValue?> ModelValueChanged { get; set; }
+    public EventCallback<VueBooleanStringNumberObjectArrayableValue?> ModelValueChanged { get; set; }
 
 }
 
@@ -1117,13 +1117,13 @@ public sealed class ElCascader : ElementPlusContentComponentBase
 [VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueSlot(nameof(Empty), Name = "empty")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueBooleanStringNumberObjectArrayableValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 [VueLibraryEmit(nameof(OnExpandChange), Name = "expand-change")]
 [VueLibraryEmit(nameof(OnClose), Name = "close")]
 public sealed class ElCascaderPanel : ElementPlusContentComponentBase
 {
     [Parameter]
-    public VueValue? ModelValue { get; set; }
+    public VueBooleanStringNumberObjectArrayableValue? ModelValue { get; set; }
 
     [Parameter]
     public VueValue[]? Options { get; set; }
@@ -1147,7 +1147,7 @@ public sealed class ElCascaderPanel : ElementPlusContentComponentBase
     public EventCallback OnChange { get; set; }
 
     [Parameter]
-    public EventCallback<VueValue?> ModelValueChanged { get; set; }
+    public EventCallback<VueBooleanStringNumberObjectArrayableValue?> ModelValueChanged { get; set; }
 
     [Parameter]
     public EventCallback OnExpandChange { get; set; }
@@ -1476,11 +1476,11 @@ public sealed class ElCol : ElementPlusContentComponentBase
 [VueProp(nameof(BeforeCollapse), Name = "beforeCollapse")]
 [VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueStringNumberArrayableValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElCollapse : ElementPlusContentComponentBase
 {
     [Parameter]
-    public VueValue? ModelValue { get; set; }
+    public VueStringNumberArrayableValue? ModelValue { get; set; }
 
     [Parameter]
     public bool? Accordion { get; set; }
@@ -1495,7 +1495,7 @@ public sealed class ElCollapse : ElementPlusContentComponentBase
     public EventCallback OnChange { get; set; }
 
     [Parameter]
-    public EventCallback<VueValue?> ModelValueChanged { get; set; }
+    public EventCallback<VueStringNumberArrayableValue?> ModelValueChanged { get; set; }
 
 }
 
@@ -1890,11 +1890,11 @@ public sealed class ElCountdown : ElementPlusComponentBase
 [VueLibraryEmit(nameof(OnCalendarChange), Name = "calendar-change")]
 [VueLibraryEmit(nameof(OnPanelChange), Name = "panel-change")]
 [VueLibraryEmit(nameof(OnVisibleChange), Name = "visible-change")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueStringNumberDateArrayableValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElDatePicker : ElementPlusContentComponentBase
 {
     [Parameter]
-    public VueValue? ModelValue { get; set; }
+    public VueStringNumberDateArrayableValue? ModelValue { get; set; }
 
     [Parameter]
     public bool? Readonly { get; set; }
@@ -2047,7 +2047,7 @@ public sealed class ElDatePicker : ElementPlusContentComponentBase
     public EventCallback OnVisibleChange { get; set; }
 
     [Parameter]
-    public EventCallback<VueValue?> ModelValueChanged { get; set; }
+    public EventCallback<VueStringNumberDateArrayableValue?> ModelValueChanged { get; set; }
 
 }
 
@@ -2086,11 +2086,11 @@ public sealed class ElDatePicker : ElementPlusContentComponentBase
 [VueLibraryEmit(nameof(OnCalendarChange), Name = "calendar-change")]
 [VueLibraryEmit(nameof(OnPanelChange), Name = "panel-change")]
 [VueLibraryEmit(nameof(OnClear), Name = "clear")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueStringNumberDateArrayableValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElDatePickerPanel : ElementPlusContentComponentBase
 {
     [Parameter]
-    public VueValue? ModelValue { get; set; }
+    public VueStringNumberDateArrayableValue? ModelValue { get; set; }
 
     [Parameter]
     public bool? Border { get; set; }
@@ -2168,7 +2168,7 @@ public sealed class ElDatePickerPanel : ElementPlusContentComponentBase
     public EventCallback OnClear { get; set; }
 
     [Parameter]
-    public EventCallback<VueValue?> ModelValueChanged { get; set; }
+    public EventCallback<VueStringNumberDateArrayableValue?> ModelValueChanged { get; set; }
 
 }
 
@@ -3091,13 +3091,13 @@ public sealed class ElImage : ElementPlusComponentBase
     public string? Src { get; set; }
 
     [Parameter]
-    public string? Fit { get; set; }
+    public ElementPlusImageFitType? Fit { get; set; }
 
     [Parameter]
     public bool? HideOnClickModal { get; set; }
 
     [Parameter]
-    public string? Loading { get; set; }
+    public ElementPlusImageLoadingType? Loading { get; set; }
 
     [Parameter]
     public bool? Lazy { get; set; }
@@ -3112,7 +3112,7 @@ public sealed class ElImage : ElementPlusComponentBase
     public string? Referrerpolicy { get; set; }
 
     [Parameter]
-    public string? Crossorigin { get; set; }
+    public ElementPlusCrossorigin? Crossorigin { get; set; }
 
     [Parameter]
     public string[]? PreviewSrcList { get; set; }
@@ -4092,7 +4092,7 @@ public sealed class ElMenu : ElementPlusContentComponentBase
     public bool? UniqueOpened { get; set; }
 
     [Parameter]
-    public string? MenuTrigger { get; set; }
+    public ElementPlusHoverClickTrigger? MenuTrigger { get; set; }
 
     [Parameter]
     public bool? Router { get; set; }
@@ -5273,11 +5273,11 @@ public sealed class ElSegmented : ElementPlusContentComponentBase
 [VueLibraryEmit(nameof(OnFocus), Name = "focus")]
 [VueLibraryEmit(nameof(OnPopupScroll), Name = "popup-scroll")]
 [VueLibraryEmit(nameof(OnEndReached), Name = "end-reached")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueBooleanStringNumberObjectArrayableValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElSelect : ElementPlusContentComponentBase
 {
     [Parameter]
-    public VueValue? ModelValue { get; set; }
+    public VueBooleanStringNumberObjectArrayableValue? ModelValue { get; set; }
 
     [Parameter]
     public bool? Multiple { get; set; }
@@ -5481,7 +5481,7 @@ public sealed class ElSelect : ElementPlusContentComponentBase
     public EventCallback OnEndReached { get; set; }
 
     [Parameter]
-    public EventCallback<VueValue?> ModelValueChanged { get; set; }
+    public EventCallback<VueBooleanStringNumberObjectArrayableValue?> ModelValueChanged { get; set; }
 
 }
 
@@ -6949,11 +6949,11 @@ public sealed class ElText : ElementPlusContentComponentBase
 [VueLibraryEmit(nameof(OnFocus), Name = "focus")]
 [VueLibraryEmit(nameof(OnClear), Name = "clear")]
 [VueLibraryEmit(nameof(OnVisibleChange), Name = "visible-change")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueStringNumberDateArrayableValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElTimePicker : ElementPlusComponentBase
 {
     [Parameter]
-    public VueValue? ModelValue { get; set; }
+    public VueStringNumberDateArrayableValue? ModelValue { get; set; }
 
     [Parameter]
     public bool? Readonly { get; set; }
@@ -7079,7 +7079,7 @@ public sealed class ElTimePicker : ElementPlusComponentBase
     public EventCallback OnVisibleChange { get; set; }
 
     [Parameter]
-    public EventCallback<VueValue?> ModelValueChanged { get; set; }
+    public EventCallback<VueStringNumberDateArrayableValue?> ModelValueChanged { get; set; }
 
 }
 
@@ -7815,7 +7815,7 @@ public sealed class ElTree : ElementPlusContentComponentBase
 [VueLibraryEmit(nameof(OnFocus), Name = "focus")]
 [VueLibraryEmit(nameof(OnPopupScroll), Name = "popup-scroll")]
 [VueLibraryEmit(nameof(OnEndReached), Name = "end-reached")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueBooleanStringNumberObjectArrayableValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 [VueLibraryEmit(nameof(OnNodeClick), Name = "node-click")]
 [VueLibraryEmit(nameof(OnNodeContextmenu), Name = "node-contextmenu")]
 [VueLibraryEmit(nameof(OnCheckChange), Name = "check-change")]
@@ -7838,7 +7838,7 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
     public ElementPlusTagTooltipProps? TagTooltip { get; set; }
 
     [Parameter]
-    public VueValue? ModelValue { get; set; }
+    public VueBooleanStringNumberObjectArrayableValue? ModelValue { get; set; }
 
     [Parameter]
     public bool? Multiple { get; set; }
@@ -8114,7 +8114,7 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
     public EventCallback OnEndReached { get; set; }
 
     [Parameter]
-    public EventCallback<VueValue?> ModelValueChanged { get; set; }
+    public EventCallback<VueBooleanStringNumberObjectArrayableValue?> ModelValueChanged { get; set; }
 
     [Parameter]
     public EventCallback OnNodeClick { get; set; }
@@ -8350,7 +8350,7 @@ public sealed class ElUpload : ElementPlusContentComponentBase
     public string? Accept { get; set; }
 
     [Parameter]
-    public string? Crossorigin { get; set; }
+    public ElementPlusCrossorigin? Crossorigin { get; set; }
 
     [Parameter]
     public Delegate? OnPreview { get; set; }
@@ -8383,7 +8383,7 @@ public sealed class ElUpload : ElementPlusContentComponentBase
     public ElementPlusUploadUserFile[]? FileList { get; set; }
 
     [Parameter]
-    public string? ListType { get; set; }
+    public ElementPlusUploadListType? ListType { get; set; }
 
     [Parameter]
     public bool? AutoUpload { get; set; }

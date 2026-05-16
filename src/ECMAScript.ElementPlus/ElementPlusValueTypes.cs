@@ -56,6 +56,74 @@ public enum ElementPlusUploadStatus
     Fail
 }
 
+[String]
+public enum ElementPlusHoverClickTrigger
+{
+    [Description("@#hover")]
+    Hover,
+
+    [Description("@#click")]
+    Click
+}
+
+[String]
+public enum ElementPlusCrossorigin
+{
+    [Description("@#")]
+    Empty,
+
+    [Description("@#anonymous")]
+    Anonymous,
+
+    [Description("@#use-credentials")]
+    UseCredentials
+}
+
+[String]
+public enum ElementPlusUploadListType
+{
+    [Description("@#text")]
+    Text,
+
+    [Description("@#picture")]
+    Picture,
+
+    [Description("@#picture-card")]
+    PictureCard
+}
+
+[String]
+public enum ElementPlusImageFitType
+{
+    [Description("@#")]
+    Empty,
+
+    [Description("@#contain")]
+    Contain,
+
+    [Description("@#cover")]
+    Cover,
+
+    [Description("@#fill")]
+    Fill,
+
+    [Description("@#none")]
+    None,
+
+    [Description("@#scale-down")]
+    ScaleDown
+}
+
+[String]
+public enum ElementPlusImageLoadingType
+{
+    [Description("@#eager")]
+    Eager,
+
+    [Description("@#lazy")]
+    Lazy
+}
+
 [ECMAScript]
 [Description("@#Styles")]
 public sealed record ElementPlusStyles : VueDictionary<VueStringNumberValue>
@@ -501,13 +569,27 @@ public enum ElementPlusTooltipTriggerType
     Contextmenu
 }
 
+[String]
+public enum ElementPlusDropdownTriggerType
+{
+    [Description("@#click")]
+    Click,
+
+    [Description("@#hover")]
+    Hover,
+
+    [Description("@#contextmenu")]
+    Contextmenu
+}
+
 [ECMAScript]
 [Description("@#")]
-public readonly union ElementPlusDropdownTriggerValue(string, string[])
+public readonly union ElementPlusDropdownTriggerValue(ElementPlusDropdownTriggerType, ElementPlusDropdownTriggerType[])
 {
-    public string? AsSingle => Value as string;
+    public ElementPlusDropdownTriggerType? AsSingle
+        => Value is ElementPlusDropdownTriggerType value ? value : default(ElementPlusDropdownTriggerType?);
 
-    public string[]? AsMultiple => Value as string[];
+    public ElementPlusDropdownTriggerType[]? AsMultiple => Value as ElementPlusDropdownTriggerType[];
 }
 
 [ECMAScript]
