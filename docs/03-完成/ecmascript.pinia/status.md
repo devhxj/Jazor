@@ -1,4 +1,4 @@
-# ECMAScript.Pinia 状态（2026-05-07）
+# ECMAScript.Pinia 状态（2026-05-16）
 
 > Status: 当前状态快照  
 > Positioning: `src/ECMAScript.Pinia/` 外部库线的仓库级状态快照  
@@ -178,6 +178,20 @@ Pinia 测试不再继续混在 `Jazor.CompilerTest`：
 
 - `dotnet test src/ECMAScript.Pinia.Test/ECMAScript.Pinia.Test.csproj -v minimal -p:UseSharedCompilation=false`：62/62 通过
 - 本轮样例 smoke 目标已从“验证功能可跑”进一步收口到“验证后不写脏跟踪产物”，作为 production-oriented sample 的工程约束
+
+2026-05-16 发布门禁修复复核：
+
+- `v0.1.24` 的 `Publish NuGet` 并非卡在 NuGet Trusted Publishing，而是卡在复用工作流 `pinia-verify.yml` 的 `verify-pinia / dotnet` 门禁；
+- 真实失败点是 `src/ECMAScript.Pinia.Test/EcmaScriptPiniaLayoutGuardTests.cs` 中的 `Pinia_TestScript_AndSupportingScripts_ExposeIsolatedBuildOutputParameters()`；
+- 根因不是运行时构建失败，而是 `samples/ECMAScript.Pinia.Counter/verify-smoke.cs` 的隔离构建参数抽象发生漂移：脚本拆成了 `GetPublishIsolationArguments(...)` / `GetBuildIsolationArguments(...)` 两套局部 helper，但 layout guard 约束的稳定契约是单一入口 `GetIsolationArguments(options)`；
+- 修复方式是把 sample verify script 的隔离参数恢复为统一入口，再由 `IsolationArguments` 显式承载 publish/build 两类参数，既保持 `publish-nuget.cs` 所需的 `--base-output-path` / `--base-intermediate-output-path`，也保持 host rebuild 所需的 `-p:JazorIsolatedBaseOutputRoot=` / `-p:JazorIsolatedBaseIntermediateOutputRoot=`；
+- 同一修复中，`verify-smoke.cs` 也补齐了 `MSBUILDDISABLENODEREUSE=1` 与 `UseSharedCompilation=false` 的公共环境约束，使它和 `build-local.cs`、`publish-nuget.cs`、`test-dotnet.cs` 保持一致；
+- 这一轮确认的工程规则是：Pinia sample smoke script 不只是“能跑”，还必须和仓库级隔离构建脚本保持同一参数抽象层，否则 release gate 会因为脚本/守卫漂移而被错误阻断；
+- 本地与 CI 等价复核已通过：
+  - `dotnet test src/ECMAScript.Pinia.Test/ECMAScript.Pinia.Test.csproj --filter FullyQualifiedName~Pinia_TestScript_AndSupportingScripts_ExposeIsolatedBuildOutputParameters`
+  - `dotnet run --file scripts/csharp/test-dotnet.cs -- --project pinia --configuration Release --base-output-path artifacts/out/pinia/ --base-intermediate-output-path artifacts/obj/pinia/`
+  - `dotnet run --file samples/ECMAScript.Pinia.Counter/verify-smoke.cs -- -Configuration Release -BaseOutputPath artifacts/out/pinia-sample/ -BaseIntermediateOutputPath artifacts/obj/pinia-sample/`
+- `v0.1.25` 已基于该修复重新触发发布；其中 `verify-pinia` 的 `dotnet` / `sample-smoke` / `package-dry-run` 三条前置门禁已全部恢复通过，说明这次阻断已被收口在正确层面。
 
 ## 下一步行动
 
