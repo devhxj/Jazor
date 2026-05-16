@@ -188,7 +188,7 @@ public sealed class ElAutoResizer : ElementPlusContentComponentBase
     public bool? DisableHeight { get; set; }
 
     [Parameter]
-    public Delegate? OnResize { get; set; }
+    public ElementPlusAutoResizerResizeCallback? OnResize { get; set; }
 
 }
 
@@ -262,7 +262,7 @@ public sealed class ElAutocomplete : ElementPlusContentComponentBase
     public string? Placement { get; set; }
 
     [Parameter]
-    public Delegate? FetchSuggestions { get; set; }
+    public ElementPlusAutocompleteFetchSuggestionsValue? FetchSuggestions { get; set; }
 
     [Parameter]
     public bool? TriggerOnFocus { get; set; }
@@ -735,7 +735,7 @@ public sealed class ElCalendar : ElementPlusComponentBase
     public string? ControllerType { get; set; }
 
     [Parameter]
-    public Delegate? Formatter { get; set; }
+    public ElementPlusCalendarFormatterCallback? Formatter { get; set; }
 
     [Parameter]
     public RenderFragment? DateCell { get; set; }
@@ -991,13 +991,13 @@ public sealed class ElCascader : ElementPlusContentComponentBase
     public bool? Filterable { get; set; }
 
     [Parameter]
-    public Delegate? FilterMethod { get; set; }
+    public ElementPlusCascaderFilterMethod? FilterMethod { get; set; }
 
     [Parameter]
     public Number? Debounce { get; set; }
 
     [Parameter]
-    public Delegate? BeforeFilter { get; set; }
+    public ElementPlusCascaderBeforeFilterCallback? BeforeFilter { get; set; }
 
     [Parameter]
     public string? PopperClass { get; set; }
@@ -1489,7 +1489,7 @@ public sealed class ElCollapse : ElementPlusContentComponentBase
     public string? ExpandIconPosition { get; set; }
 
     [Parameter]
-    public Delegate? BeforeCollapse { get; set; }
+    public ElementPlusCollapseBeforeCollapseCallback? BeforeCollapse { get; set; }
 
     [Parameter]
     public EventCallback OnChange { get; set; }
@@ -1969,13 +1969,13 @@ public sealed class ElDatePicker : ElementPlusContentComponentBase
     public bool? ValidateEvent { get; set; }
 
     [Parameter]
-    public Delegate? DisabledDate { get; set; }
+    public ElementPlusDateLikeDisabledDate? DisabledDate { get; set; }
 
     [Parameter]
     public VueValue[]? Shortcuts { get; set; }
 
     [Parameter]
-    public Delegate? CellClassName { get; set; }
+    public ElementPlusDateLikeCellClassName? CellClassName { get; set; }
 
     [Parameter]
     public bool? Teleported { get; set; }
@@ -2129,13 +2129,13 @@ public sealed class ElDatePickerPanel : ElementPlusContentComponentBase
     public bool? SinglePanel { get; set; }
 
     [Parameter]
-    public Delegate? DisabledDate { get; set; }
+    public ElementPlusDateLikeDisabledDate? DisabledDate { get; set; }
 
     [Parameter]
     public VueValue[]? Shortcuts { get; set; }
 
     [Parameter]
-    public Delegate? CellClassName { get; set; }
+    public ElementPlusDateLikeCellClassName? CellClassName { get; set; }
 
     [Parameter]
     public bool? ShowFooter { get; set; }
@@ -2387,7 +2387,7 @@ public sealed class ElDialog : ElementPlusContentComponentBase
     public bool? ShowClose { get; set; }
 
     [Parameter]
-    public Delegate? BeforeClose { get; set; }
+    public ElementPlusDialogBeforeCloseCallback? BeforeClose { get; set; }
 
     [Parameter]
     public bool? Draggable { get; set; }
@@ -2538,7 +2538,7 @@ public sealed class ElDrawer : ElementPlusContentComponentBase
     public bool? LockScroll { get; set; }
 
     [Parameter]
-    public Delegate? BeforeClose { get; set; }
+    public ElementPlusDialogBeforeCloseCallback? BeforeClose { get; set; }
 
     [Parameter]
     public bool? CloseOnClickModal { get; set; }
@@ -3355,10 +3355,10 @@ public sealed class ElInput : ElementPlusComponentBase
     public VueStringComponentValue? ClearIcon { get; set; }
 
     [Parameter]
-    public Delegate? Formatter { get; set; }
+    public ElementPlusInputFormatter? Formatter { get; set; }
 
     [Parameter]
-    public Delegate? Parser { get; set; }
+    public ElementPlusInputParser? Parser { get; set; }
 
     [Parameter]
     public bool? ShowPassword { get; set; }
@@ -3427,7 +3427,7 @@ public sealed class ElInput : ElementPlusComponentBase
     public string? Inputmode { get; set; }
 
     [Parameter]
-    public Delegate? CountGraphemes { get; set; }
+    public ElementPlusInputCountGraphemes? CountGraphemes { get; set; }
 
     [Parameter]
     public RenderFragment? Prefix { get; set; }
@@ -3591,10 +3591,10 @@ public sealed class ElInputNumber : ElementPlusComponentBase
     public VueStringNumberValue? Tabindex { get; set; }
 
     [Parameter]
-    public Delegate? Formatter { get; set; }
+    public ElementPlusInputFormatter? Formatter { get; set; }
 
     [Parameter]
-    public Delegate? Parser { get; set; }
+    public ElementPlusInputParser? Parser { get; set; }
 
     [Parameter]
     public RenderFragment? DecreaseIcon { get; set; }
@@ -3658,7 +3658,7 @@ public sealed class ElInputOtp : ElementPlusComponentBase
     public Number? Length { get; set; }
 
     [Parameter]
-    public Delegate? Validator { get; set; }
+    public ElementPlusInputOtpValidator? Validator { get; set; }
 
     [Parameter]
     public string? Inputmode { get; set; }
@@ -3676,7 +3676,7 @@ public sealed class ElInputOtp : ElementPlusComponentBase
     public bool? Disabled { get; set; }
 
     [Parameter]
-    public Delegate? Separator { get; set; }
+    public ElementPlusInputOtpSeparatorValue? Separator { get; set; }
 
     [Parameter]
     public bool? ValidateEvent { get; set; }
@@ -3974,7 +3974,7 @@ public sealed class ElMention : ElementPlusComponentBase
     public string? Split { get; set; }
 
     [Parameter]
-    public Delegate? FilterOption { get; set; }
+    public ElementPlusMentionFilterOptionValue? FilterOption { get; set; }
 
     [Parameter]
     public string? Placement { get; set; }
@@ -3989,7 +3989,7 @@ public sealed class ElMention : ElementPlusComponentBase
     public bool? Whole { get; set; }
 
     [Parameter]
-    public Delegate? CheckIsWhole { get; set; }
+    public ElementPlusMentionCheckIsWhole? CheckIsWhole { get; set; }
 
     [Parameter]
     public bool? Loading { get; set; }
@@ -4692,7 +4692,7 @@ public sealed class ElProgress : ElementPlusContentComponentBase
     public Number? Duration { get; set; }
 
     [Parameter]
-    public Delegate? Color { get; set; }
+    public ElementPlusProgressColorValue? Color { get; set; }
 
     [Parameter]
     public Number? Width { get; set; }
@@ -4704,7 +4704,7 @@ public sealed class ElProgress : ElementPlusContentComponentBase
     public string? StrokeLinecap { get; set; }
 
     [Parameter]
-    public Delegate? Format { get; set; }
+    public ElementPlusProgressFormatCallback? Format { get; set; }
 
     [Parameter]
     public bool? Striped { get; set; }
@@ -5334,7 +5334,7 @@ public sealed class ElSelect : ElementPlusContentComponentBase
     public bool? AllowCreate { get; set; }
 
     [Parameter]
-    public Delegate? FilterMethod { get; set; }
+    public ElementPlusSelectQueryCallback? FilterMethod { get; set; }
 
     [Parameter]
     public bool? Remote { get; set; }
@@ -5343,7 +5343,7 @@ public sealed class ElSelect : ElementPlusContentComponentBase
     public Number? Debounce { get; set; }
 
     [Parameter]
-    public Delegate? RemoteMethod { get; set; }
+    public ElementPlusSelectQueryCallback? RemoteMethod { get; set; }
 
     [Parameter]
     public bool? RemoteShowSuffix { get; set; }
@@ -5610,7 +5610,7 @@ public sealed class ElSlider : ElementPlusComponentBase
     public bool? ShowTooltip { get; set; }
 
     [Parameter]
-    public Delegate? FormatTooltip { get; set; }
+    public ElementPlusSliderFormatTooltipCallback? FormatTooltip { get; set; }
 
     [Parameter]
     public bool? Range { get; set; }
@@ -5631,7 +5631,7 @@ public sealed class ElSlider : ElementPlusComponentBase
     public string? RangeEndLabel { get; set; }
 
     [Parameter]
-    public Delegate? FormatValueText { get; set; }
+    public ElementPlusSliderFormatValueTextCallback? FormatValueText { get; set; }
 
     [Parameter]
     public string? TooltipClass { get; set; }
@@ -6050,7 +6050,7 @@ public sealed class ElSwitch : ElementPlusComponentBase
     public bool? ValidateEvent { get; set; }
 
     [Parameter]
-    public Delegate? BeforeChange { get; set; }
+    public ElementPlusSwitchBeforeChangeCallback? BeforeChange { get; set; }
 
     [Parameter]
     public string? Id { get; set; }
@@ -6238,31 +6238,31 @@ public sealed class ElTable : ElementPlusContentComponentBase
     public VueStringNumberValue? CurrentRowKey { get; set; }
 
     [Parameter]
-    public Delegate? RowClassName { get; set; }
+    public ElementPlusTableRowClassNameValue? RowClassName { get; set; }
 
     [Parameter]
-    public Delegate? RowStyle { get; set; }
+    public ElementPlusTableRowStyleValue? RowStyle { get; set; }
 
     [Parameter]
-    public Delegate? CellClassName { get; set; }
+    public ElementPlusTableCellClassNameValue? CellClassName { get; set; }
 
     [Parameter]
-    public Delegate? CellStyle { get; set; }
+    public ElementPlusTableCellStyleValue? CellStyle { get; set; }
 
     [Parameter]
-    public Delegate? HeaderRowClassName { get; set; }
+    public ElementPlusTableRowClassNameValue? HeaderRowClassName { get; set; }
 
     [Parameter]
-    public Delegate? HeaderRowStyle { get; set; }
+    public ElementPlusTableRowStyleValue? HeaderRowStyle { get; set; }
 
     [Parameter]
-    public Delegate? HeaderCellClassName { get; set; }
+    public ElementPlusTableCellClassNameValue? HeaderCellClassName { get; set; }
 
     [Parameter]
-    public Delegate? HeaderCellStyle { get; set; }
+    public ElementPlusTableCellStyleValue? HeaderCellStyle { get; set; }
 
     [Parameter]
-    public Delegate? RowKey { get; set; }
+    public ElementPlusTableRowKeyValue? RowKey { get; set; }
 
     [Parameter]
     public string? EmptyText { get; set; }
@@ -6292,10 +6292,10 @@ public sealed class ElTable : ElementPlusContentComponentBase
     public string? SumText { get; set; }
 
     [Parameter]
-    public Delegate? SummaryMethod { get; set; }
+    public ElementPlusTableSummaryMethodCallback? SummaryMethod { get; set; }
 
     [Parameter]
-    public Delegate? SpanMethod { get; set; }
+    public ElementPlusTableSpanMethodCallback? SpanMethod { get; set; }
 
     [Parameter]
     public bool? SelectOnIndeterminate { get; set; }
@@ -6307,7 +6307,7 @@ public sealed class ElTable : ElementPlusContentComponentBase
     public bool? Lazy { get; set; }
 
     [Parameter]
-    public Delegate? Load { get; set; }
+    public ElementPlusTableLoadCallback? Load { get; set; }
 
     [Parameter]
     public ElementPlusTableTreeProps? TreeProps { get; set; }
@@ -6331,7 +6331,7 @@ public sealed class ElTable : ElementPlusContentComponentBase
     public bool? AllowDragLastColumn { get; set; }
 
     [Parameter]
-    public Delegate? TooltipFormatter { get; set; }
+    public ElementPlusTableTooltipFormatter? TooltipFormatter { get; set; }
 
     [Parameter]
     public bool? PreserveExpandedContent { get; set; }
@@ -6340,7 +6340,7 @@ public sealed class ElTable : ElementPlusContentComponentBase
     public bool? NativeScrollbar { get; set; }
 
     [Parameter]
-    public Delegate? RowExpandable { get; set; }
+    public ElementPlusTableRowExpandableCallback? RowExpandable { get; set; }
 
     [Parameter]
     public RenderFragment? Append { get; set; }
@@ -6454,7 +6454,7 @@ public sealed class ElTableColumn : ElementPlusContentComponentBase
     public string? Type { get; set; }
 
     [Parameter]
-    public Delegate? Index { get; set; }
+    public ElementPlusTableColumnIndexValue? Index { get; set; }
 
     [Parameter]
     public string? Label { get; set; }
@@ -6475,16 +6475,16 @@ public sealed class ElTableColumn : ElementPlusContentComponentBase
     public VueBooleanStringValue? Fixed { get; set; }
 
     [Parameter]
-    public Delegate? RenderHeader { get; set; }
+    public ElementPlusTableColumnRenderHeaderCallback? RenderHeader { get; set; }
 
     [Parameter]
     public VueBooleanStringValue? Sortable { get; set; }
 
     [Parameter]
-    public Delegate? SortMethod { get; set; }
+    public ElementPlusTableColumnSortMethodCallback? SortMethod { get; set; }
 
     [Parameter]
-    public Delegate? SortBy { get; set; }
+    public ElementPlusTableColumnSortByValue? SortBy { get; set; }
 
     [Parameter]
     public ElementPlusTableSortOrder?[]? SortOrders { get; set; }
@@ -6493,7 +6493,7 @@ public sealed class ElTableColumn : ElementPlusContentComponentBase
     public bool? Resizable { get; set; }
 
     [Parameter]
-    public Delegate? Formatter { get; set; }
+    public ElementPlusTableColumnFormatterCallback? Formatter { get; set; }
 
     [Parameter]
     public ElementPlusTableOverflowTooltipValue? ShowOverflowTooltip { get; set; }
@@ -6511,7 +6511,7 @@ public sealed class ElTableColumn : ElementPlusContentComponentBase
     public string? LabelClassName { get; set; }
 
     [Parameter]
-    public Delegate? Selectable { get; set; }
+    public ElementPlusTableColumnSelectableCallback? Selectable { get; set; }
 
     [Parameter]
     public bool? ReserveSelection { get; set; }
@@ -6529,13 +6529,13 @@ public sealed class ElTableColumn : ElementPlusContentComponentBase
     public bool? FilterMultiple { get; set; }
 
     [Parameter]
-    public Delegate? FilterMethod { get; set; }
+    public ElementPlusTableColumnFilterMethodCallback? FilterMethod { get; set; }
 
     [Parameter]
     public string[]? FilteredValue { get; set; }
 
     [Parameter]
-    public Delegate? TooltipFormatter { get; set; }
+    public ElementPlusTableTooltipFormatter? TooltipFormatter { get; set; }
 
     [Parameter]
     public RenderFragment? Header { get; set; }
@@ -6785,7 +6785,7 @@ public sealed class ElTabs : ElementPlusContentComponentBase
     public bool? Stretch { get; set; }
 
     [Parameter]
-    public Delegate? BeforeLeave { get; set; }
+    public ElementPlusTabsBeforeLeaveCallback? BeforeLeave { get; set; }
 
     [Parameter]
     public VueStringNumberValue? Tabindex { get; set; }
@@ -7028,13 +7028,13 @@ public sealed class ElTimePicker : ElementPlusComponentBase
     public VueStringComponentValue? ClearIcon { get; set; }
 
     [Parameter]
-    public Delegate? DisabledHours { get; set; }
+    public ElementPlusTimePickerDisabledHoursCallback? DisabledHours { get; set; }
 
     [Parameter]
-    public Delegate? DisabledMinutes { get; set; }
+    public ElementPlusTimePickerDisabledMinutesCallback? DisabledMinutes { get; set; }
 
     [Parameter]
-    public Delegate? DisabledSeconds { get; set; }
+    public ElementPlusTimePickerDisabledSecondsCallback? DisabledSeconds { get; set; }
 
     [Parameter]
     public bool? Teleported { get; set; }
@@ -7484,7 +7484,7 @@ public sealed class ElTransfer : ElementPlusContentComponentBase
     public string? FilterPlaceholder { get; set; }
 
     [Parameter]
-    public Delegate? FilterMethod { get; set; }
+    public ElementPlusTransferFilterMethod? FilterMethod { get; set; }
 
     [Parameter]
     public ElementPlusTransferTargetOrder? TargetOrder { get; set; }
@@ -7606,10 +7606,10 @@ public sealed class ElTree : ElementPlusContentComponentBase
     public bool? RenderAfterExpand { get; set; }
 
     [Parameter]
-    public Delegate? Load { get; set; }
+    public ElementPlusTreeLoadCallback? Load { get; set; }
 
     [Parameter]
-    public Delegate? RenderContent { get; set; }
+    public ElementPlusTreeRenderContentCallback? RenderContent { get; set; }
 
     [Parameter]
     public bool? HighlightCurrent { get; set; }
@@ -7645,7 +7645,7 @@ public sealed class ElTree : ElementPlusContentComponentBase
     public VueStringNumberValue? CurrentNodeKey { get; set; }
 
     [Parameter]
-    public Delegate? FilterNodeMethod { get; set; }
+    public ElementPlusTreeFilterNodeMethod? FilterNodeMethod { get; set; }
 
     [Parameter]
     public bool? Accordion { get; set; }
@@ -7663,10 +7663,10 @@ public sealed class ElTree : ElementPlusContentComponentBase
     public bool? Draggable { get; set; }
 
     [Parameter]
-    public Delegate? AllowDrag { get; set; }
+    public ElementPlusTreeAllowDragCallback? AllowDrag { get; set; }
 
     [Parameter]
-    public Delegate? AllowDrop { get; set; }
+    public ElementPlusTreeAllowDropCallback? AllowDrop { get; set; }
 
     [Parameter]
     public RenderFragment? Empty { get; set; }
@@ -7892,7 +7892,7 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
     public bool? AllowCreate { get; set; }
 
     [Parameter]
-    public Delegate? FilterMethod { get; set; }
+    public ElementPlusSelectQueryCallback? FilterMethod { get; set; }
 
     [Parameter]
     public bool? Remote { get; set; }
@@ -7901,7 +7901,7 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
     public Number? Debounce { get; set; }
 
     [Parameter]
-    public Delegate? RemoteMethod { get; set; }
+    public ElementPlusSelectQueryCallback? RemoteMethod { get; set; }
 
     [Parameter]
     public bool? RemoteShowSuffix { get; set; }
@@ -8006,10 +8006,10 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
     public bool? RenderAfterExpand { get; set; }
 
     [Parameter]
-    public Delegate? Load { get; set; }
+    public ElementPlusTreeLoadCallback? Load { get; set; }
 
     [Parameter]
-    public Delegate? RenderContent { get; set; }
+    public ElementPlusTreeRenderContentCallback? RenderContent { get; set; }
 
     [Parameter]
     public bool? HighlightCurrent { get; set; }
@@ -8045,7 +8045,7 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
     public VueStringNumberValue? CurrentNodeKey { get; set; }
 
     [Parameter]
-    public Delegate? FilterNodeMethod { get; set; }
+    public ElementPlusTreeFilterNodeMethod? FilterNodeMethod { get; set; }
 
     [Parameter]
     public bool? Accordion { get; set; }
@@ -8063,10 +8063,10 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
     public bool? Draggable { get; set; }
 
     [Parameter]
-    public Delegate? AllowDrag { get; set; }
+    public ElementPlusTreeAllowDragCallback? AllowDrag { get; set; }
 
     [Parameter]
-    public Delegate? AllowDrop { get; set; }
+    public ElementPlusTreeAllowDropCallback? AllowDrop { get; set; }
 
     [Parameter]
     public RenderFragment? Header { get; set; }
@@ -8232,7 +8232,7 @@ public sealed class ElTreeV2 : ElementPlusContentComponentBase
     public VueStringNumberValue? CurrentNodeKey { get; set; }
 
     [Parameter]
-    public Delegate? FilterMethod { get; set; }
+    public ElementPlusTreeV2FilterMethod? FilterMethod { get; set; }
 
     [Parameter]
     public Number? Indent { get; set; }
@@ -8332,7 +8332,7 @@ public sealed class ElUpload : ElementPlusContentComponentBase
     public bool? Multiple { get; set; }
 
     [Parameter]
-    public Delegate? Data { get; set; }
+    public ElementPlusUploadDataValue? Data { get; set; }
 
     [Parameter]
     public string? Name { get; set; }
@@ -8353,31 +8353,31 @@ public sealed class ElUpload : ElementPlusContentComponentBase
     public ElementPlusCrossorigin? Crossorigin { get; set; }
 
     [Parameter]
-    public Delegate? OnPreview { get; set; }
+    public ElementPlusUploadPreviewCallback? OnPreview { get; set; }
 
     [Parameter]
-    public Delegate? OnRemove { get; set; }
+    public ElementPlusUploadFileListCallback? OnRemove { get; set; }
 
     [Parameter]
-    public Delegate? OnSuccess { get; set; }
+    public ElementPlusUploadSuccessCallback? OnSuccess { get; set; }
 
     [Parameter]
-    public Delegate? OnError { get; set; }
+    public ElementPlusUploadErrorCallback? OnError { get; set; }
 
     [Parameter]
-    public Delegate? OnProgress { get; set; }
+    public ElementPlusUploadProgressCallback? OnProgress { get; set; }
 
     [Parameter]
-    public Delegate? OnChange { get; set; }
+    public ElementPlusUploadFileListCallback? OnChange { get; set; }
 
     [Parameter]
-    public Delegate? OnExceed { get; set; }
+    public ElementPlusUploadExceedCallback? OnExceed { get; set; }
 
     [Parameter]
-    public Delegate? BeforeUpload { get; set; }
+    public ElementPlusUploadBeforeUploadCallback? BeforeUpload { get; set; }
 
     [Parameter]
-    public Delegate? BeforeRemove { get; set; }
+    public ElementPlusUploadBeforeRemoveCallback? BeforeRemove { get; set; }
 
     [Parameter]
     public ElementPlusUploadUserFile[]? FileList { get; set; }
@@ -8389,7 +8389,7 @@ public sealed class ElUpload : ElementPlusContentComponentBase
     public bool? AutoUpload { get; set; }
 
     [Parameter]
-    public Delegate? HttpRequest { get; set; }
+    public ElementPlusUploadRequestCallback? HttpRequest { get; set; }
 
     [Parameter]
     public bool? Disabled { get; set; }
@@ -8549,7 +8549,7 @@ public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
     public bool? AllowCreate { get; set; }
 
     [Parameter]
-    public Delegate? FilterMethod { get; set; }
+    public ElementPlusSelectQueryCallback? FilterMethod { get; set; }
 
     [Parameter]
     public bool? Loading { get; set; }
@@ -8615,7 +8615,7 @@ public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
     public Number? Debounce { get; set; }
 
     [Parameter]
-    public Delegate? RemoteMethod { get; set; }
+    public ElementPlusSelectQueryCallback? RemoteMethod { get; set; }
 
     [Parameter]
     public bool? RemoteShowSuffix { get; set; }

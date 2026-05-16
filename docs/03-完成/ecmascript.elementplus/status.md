@@ -1651,9 +1651,107 @@
 
 当前聚焦 `ElementPlusAuthoringSurfaceTests` + `ElementPlusSharedContractTests` 共 `33/33` 通过。
 
+## 2026-05-16 第十八批收口
+
+这一批继续处理上一轮之后仍然残留的 **函数型 prop `Delegate` fallback**。目标不是局部替换生成结果，而是从公开契约、生成器 override、supplemental metadata、以及 fallback 策略四层一起收口，确保后续重新生成时不会静默回退。
+
+### 1. 生成组件 authoring surface 已清零 `System.Delegate` fallback
+
+本轮已把此前仍然落成 `Delegate?` 的函数型 prop 全部切回命名 callback / union / 共享 Vue contract，包括但不限于：
+
+- `ElAutoResizer.OnResize`
+- `ElAutocomplete.FetchSuggestions`
+- `ElCalendar.Formatter`
+- `ElCascader.FilterMethod` / `BeforeFilter`
+- `ElCollapse.BeforeCollapse`
+- `ElDatePicker* DisabledDate` / `CellClassName`
+- `ElDialog.BeforeClose` / `ElDrawer.BeforeClose`
+- `ElInput*` / `ElInputNumber*` / `ElInputOtp*`
+- `ElMention.*`
+- `ElProgress.Color` / `Format`
+- `ElSelect*` / `ElVirtualizedSelect*`
+- `ElSlider.*`
+- `ElSwitch.BeforeChange`
+- `ElTable.*`
+- `ElTableColumn.*`
+- `ElTabs.BeforeLeave`
+- `ElTimePicker.*`
+- `ElTransfer.FilterMethod`
+- `ElTree*` / `ElTreeSelect*` / `ElTreeV2.*`
+- `ElUpload.*`
+
+结果上，生成后的 `ElementPlus.Components.generated.cs` 已不再出现组件参数级 `Delegate` / `Delegate?`。
+
+### 2. 关键公开 callback 契约已进一步补强
+
+本轮新增或完善的代表性 contract 包括：
+
+- `ElementPlusCascaderBeforeFilterCallback`
+- `ElementPlusTabsBeforeLeaveCallback`
+- `ElementPlusTransferFilterMethod`
+- `ElementPlusUploadFile`
+- `ElementPlusUploadBeforeRemoveCallback`
+- `ElementPlusUploadBeforeUploadCallback`
+
+同时做了几项重要的精化：
+
+- `Autocomplete.fetchSuggestions` 的 async 返回从宽泛 `IPromise<VueValue?>` 收紧到 `IPromise<ElementPlusAutocompleteSuggestionItem[]?>`
+- `Tabs.beforeLeave` 明确收敛到 `bool | IPromise<bool?>`，并通过包装 delegate 表达官方 `Awaitable<void | boolean>` 的可取消语义
+- `Upload` hooks 正式区分：
+  - `UploadFile`：官方运行时文件钩子面
+  - `UploadUserFile`：用户输入 `fileList` / `onExceed` 面
+- `Upload.data` async factory 返回收紧到 `IPromise<ElementPlusUploadData>`
+- `Upload.beforeUpload` 公开 callback 返回允许 nullable wrapper，以覆盖官方 `void | undefined | null | boolean | File | Blob`
+
+### 3. 生成器已从“静默回退 Delegate”切到“未覆盖即失败”
+
+本轮不仅补了显式 `ExplicitPropTypeOverrides`，还同时移除了生成器里对函数型 prop 的 `Delegate` fallback：
+
+- 删除 `RuntimeTypeMap["Delegate"]`
+- `ElAutoResizer` supplemental metadata 不再手写 `Delegate?`
+- 对 `ContainsTopLevelArrow(...)` / `Function` token：
+  - 不再返回 `Delegate?`
+  - 改为抛出 `InvalidOperationException`
+
+这意味着后续如果官方新增新的函数型 prop，而本地生成链还没有为其建立命名 contract，生成器会直接失败并指出：
+
+- tag name
+- runtime prop name
+- 原始 type expression
+
+从而阻止新的弱面无声进入公开 authoring surface。
+
+### 4. 新增 focused callback contract 测试
+
+本轮新增：
+
+- `src/Jazor.RazorVue.Test/ElementPlusCallbackContractTests.cs`
+
+守护点包括：
+
+- 组件参数面不再出现 `System.Delegate`
+- 代表性函数 prop 已落到预期命名 contract
+- `Tabs` / `Cascader` / `Upload` / `Autocomplete` 等复杂 callback 的参数与返回形状保持稳定
+
+## 本轮验证
+
+本轮已通过：
+
+- `dotnet run --file scripts/csharp/generate-elementplus-bindings.cs`
+- `dotnet build src/ECMAScript.ElementPlus/ECMAScript.ElementPlus.csproj -v minimal -p:UseSharedCompilation=false`
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~ElementPlusSharedContractTests|FullyQualifiedName~ElementPlusCallbackContractTests' -v minimal -p:UseSharedCompilation=false`
+
+当前聚焦：
+
+- `ElementPlusSharedContractTests`
+- `ElementPlusCallbackContractTests`
+
+共 `25/25` 通过。
+
 ## 参考
 
 - [src/ECMAScript.ElementPlus](../../../src/ECMAScript.ElementPlus)
 - [scripts/csharp/generate-elementplus-bindings.cs](../../../scripts/csharp/generate-elementplus-bindings.cs)
 - [src/Jazor.RazorVue.Test/ElementPlusAuthoringSurfaceTests.cs](../../../src/Jazor.RazorVue.Test/ElementPlusAuthoringSurfaceTests.cs)
 - [src/Jazor.RazorVue.Test/ElementPlusSharedContractTests.cs](../../../src/Jazor.RazorVue.Test/ElementPlusSharedContractTests.cs)
+- [src/Jazor.RazorVue.Test/ElementPlusCallbackContractTests.cs](../../../src/Jazor.RazorVue.Test/ElementPlusCallbackContractTests.cs)

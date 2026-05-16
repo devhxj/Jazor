@@ -50,6 +50,7 @@ public sealed class ElementPlusAuthoringSurfaceTests
                     continue;
 
                 AssertNoWeakObjectContract(property.PropertyType, $"{component.FullName}.{property.Name}");
+                AssertNoRawDelegateContract(property.PropertyType, $"{component.FullName}.{property.Name}");
                 AssertNoRuntimeDispatchContract(property, $"{component.FullName}.{property.Name}");
             }
         }
@@ -94,11 +95,13 @@ public sealed class ElementPlusAuthoringSurfaceTests
         foreach (var type in publicTypes)
         {
             AssertNoBannedChoiceContract(type, type.FullName ?? type.Name);
+            AssertNoRawDelegateContract(type, type.FullName ?? type.Name);
             AssertNoRuntimeDispatchContract(type, type.FullName ?? type.Name);
 
             foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
             {
                 AssertNoBannedChoiceContract(property.PropertyType, $"{type.FullName}.{property.Name}");
+                AssertNoRawDelegateContract(property.PropertyType, $"{type.FullName}.{property.Name}");
                 AssertNoRuntimeDispatchContract(property, $"{type.FullName}.{property.Name}");
             }
 
@@ -108,11 +111,13 @@ public sealed class ElementPlusAuthoringSurfaceTests
                     continue;
 
                 AssertNoBannedChoiceContract(method.ReturnType, $"{type.FullName}.{method.Name} return");
+                AssertNoRawDelegateContract(method.ReturnType, $"{type.FullName}.{method.Name} return");
                 AssertNoRuntimeDispatchContract(method.ReturnParameter, $"{type.FullName}.{method.Name} return");
 
                 foreach (var parameter in method.GetParameters())
                 {
                     AssertNoBannedChoiceContract(parameter.ParameterType, $"{type.FullName}.{method.Name} parameter {parameter.Name}");
+                    AssertNoRawDelegateContract(parameter.ParameterType, $"{type.FullName}.{method.Name} parameter {parameter.Name}");
                     AssertNoRuntimeDispatchContract(parameter, $"{type.FullName}.{method.Name} parameter {parameter.Name}");
                 }
             }
@@ -325,6 +330,12 @@ public sealed class ElementPlusAuthoringSurfaceTests
             Assert.Fail($"{memberName} exposes '{type}' outside AdditionalAttributes.");
     }
 
+    private static void AssertNoRawDelegateContract(Type type, string memberName)
+    {
+        if (UsesRawDelegate(type))
+            Assert.Fail($"{memberName} exposes raw '{typeof(Delegate)}' instead of a named contract.");
+    }
+
     private static void AssertNoBannedChoiceContract(Type type, string memberName)
     {
         if (UsesBannedChoiceWrapper(type))
@@ -368,6 +379,20 @@ public sealed class ElementPlusAuthoringSurfaceTests
             return type.GetGenericArguments().Any(UsesBannedChoiceWrapper);
 
         return type.HasElementType && UsesBannedChoiceWrapper(type.GetElementType()!);
+    }
+
+    private static bool UsesRawDelegate(Type type)
+    {
+        if (type == typeof(Delegate))
+            return true;
+
+        if (type.IsArray)
+            return UsesRawDelegate(type.GetElementType()!);
+
+        if (type.IsGenericType)
+            return type.GetGenericArguments().Any(UsesRawDelegate);
+
+        return type.HasElementType && UsesRawDelegate(type.GetElementType()!);
     }
 
     private static string ToLowerCamelCase(string value)

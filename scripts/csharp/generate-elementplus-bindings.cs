@@ -50,7 +50,6 @@ internal static class Program
         ["decimal"] = typeof(decimal),
         ["string"] = typeof(string),
         ["object"] = typeof(object),
-        ["Delegate"] = typeof(Delegate),
         ["Number"] = typeof(ECMAScript.Number),
         ["BigInt"] = typeof(ECMAScript.BigInt),
         ["Element"] = typeof(ECMAScript.Element),
@@ -286,6 +285,87 @@ internal static class Program
         [("el-virtualized-select", "valueOnClear")] = ExplicitGeneratedType.Value("ElementPlusValueOnClearValue"),
         [("el-virtualized-select", "props")] = ExplicitGeneratedType.Reference("ElementPlusSelectPropsAlias"),
         [("el-virtualized-select", "fallbackPlacements")] = ExplicitGeneratedType.Reference("string[]"),
+        [("el-autocomplete", "fetchSuggestions")] = ExplicitGeneratedType.Value("ElementPlusAutocompleteFetchSuggestionsValue"),
+        [("el-auto-resizer", "onResize")] = ExplicitGeneratedType.Reference("ElementPlusAutoResizerResizeCallback"),
+        [("el-calendar", "formatter")] = ExplicitGeneratedType.Reference("ElementPlusCalendarFormatterCallback"),
+        [("el-cascader", "filterMethod")] = ExplicitGeneratedType.Reference("ElementPlusCascaderFilterMethod"),
+        [("el-cascader", "beforeFilter")] = ExplicitGeneratedType.Reference("ElementPlusCascaderBeforeFilterCallback"),
+        [("el-collapse", "beforeCollapse")] = ExplicitGeneratedType.Reference("ElementPlusCollapseBeforeCollapseCallback"),
+        [("el-date-picker", "disabledDate")] = ExplicitGeneratedType.Reference("ElementPlusDateLikeDisabledDate"),
+        [("el-date-picker", "cellClassName")] = ExplicitGeneratedType.Reference("ElementPlusDateLikeCellClassName"),
+        [("el-date-picker-panel", "disabledDate")] = ExplicitGeneratedType.Reference("ElementPlusDateLikeDisabledDate"),
+        [("el-date-picker-panel", "cellClassName")] = ExplicitGeneratedType.Reference("ElementPlusDateLikeCellClassName"),
+        [("el-dialog", "beforeClose")] = ExplicitGeneratedType.Reference("ElementPlusDialogBeforeCloseCallback"),
+        [("el-drawer", "beforeClose")] = ExplicitGeneratedType.Reference("ElementPlusDialogBeforeCloseCallback"),
+        [("el-input", "formatter")] = ExplicitGeneratedType.Reference("ElementPlusInputFormatter"),
+        [("el-input", "parser")] = ExplicitGeneratedType.Reference("ElementPlusInputParser"),
+        [("el-input", "countGraphemes")] = ExplicitGeneratedType.Reference("ElementPlusInputCountGraphemes"),
+        [("el-input-number", "formatter")] = ExplicitGeneratedType.Reference("ElementPlusInputFormatter"),
+        [("el-input-number", "parser")] = ExplicitGeneratedType.Reference("ElementPlusInputParser"),
+        [("el-input-otp", "validator")] = ExplicitGeneratedType.Reference("ElementPlusInputOtpValidator"),
+        [("el-input-otp", "separator")] = ExplicitGeneratedType.Value("ElementPlusInputOtpSeparatorValue"),
+        [("el-mention", "filterOption")] = ExplicitGeneratedType.Value("ElementPlusMentionFilterOptionValue"),
+        [("el-mention", "checkIsWhole")] = ExplicitGeneratedType.Reference("ElementPlusMentionCheckIsWhole"),
+        [("el-progress", "color")] = ExplicitGeneratedType.Value("ElementPlusProgressColorValue"),
+        [("el-progress", "format")] = ExplicitGeneratedType.Reference("ElementPlusProgressFormatCallback"),
+        [("el-select", "filterMethod")] = ExplicitGeneratedType.Reference("ElementPlusSelectQueryCallback"),
+        [("el-select", "remoteMethod")] = ExplicitGeneratedType.Reference("ElementPlusSelectQueryCallback"),
+        [("el-slider", "formatTooltip")] = ExplicitGeneratedType.Reference("ElementPlusSliderFormatTooltipCallback"),
+        [("el-slider", "formatValueText")] = ExplicitGeneratedType.Reference("ElementPlusSliderFormatValueTextCallback"),
+        [("el-switch", "beforeChange")] = ExplicitGeneratedType.Reference("ElementPlusSwitchBeforeChangeCallback"),
+        [("el-table", "rowClassName")] = ExplicitGeneratedType.Value("ElementPlusTableRowClassNameValue"),
+        [("el-table", "rowStyle")] = ExplicitGeneratedType.Value("ElementPlusTableRowStyleValue"),
+        [("el-table", "cellClassName")] = ExplicitGeneratedType.Value("ElementPlusTableCellClassNameValue"),
+        [("el-table", "cellStyle")] = ExplicitGeneratedType.Value("ElementPlusTableCellStyleValue"),
+        [("el-table", "headerRowClassName")] = ExplicitGeneratedType.Value("ElementPlusTableRowClassNameValue"),
+        [("el-table", "headerRowStyle")] = ExplicitGeneratedType.Value("ElementPlusTableRowStyleValue"),
+        [("el-table", "headerCellClassName")] = ExplicitGeneratedType.Value("ElementPlusTableCellClassNameValue"),
+        [("el-table", "headerCellStyle")] = ExplicitGeneratedType.Value("ElementPlusTableCellStyleValue"),
+        [("el-table", "rowKey")] = ExplicitGeneratedType.Value("ElementPlusTableRowKeyValue"),
+        [("el-table", "summaryMethod")] = ExplicitGeneratedType.Reference("ElementPlusTableSummaryMethodCallback"),
+        [("el-table", "spanMethod")] = ExplicitGeneratedType.Reference("ElementPlusTableSpanMethodCallback"),
+        [("el-table", "load")] = ExplicitGeneratedType.Reference("ElementPlusTableLoadCallback"),
+        [("el-table", "tooltipFormatter")] = ExplicitGeneratedType.Reference("ElementPlusTableTooltipFormatter"),
+        [("el-table", "rowExpandable")] = ExplicitGeneratedType.Reference("ElementPlusTableRowExpandableCallback"),
+        [("el-table-column", "index")] = ExplicitGeneratedType.Value("ElementPlusTableColumnIndexValue"),
+        [("el-table-column", "renderHeader")] = ExplicitGeneratedType.Reference("ElementPlusTableColumnRenderHeaderCallback"),
+        [("el-table-column", "sortMethod")] = ExplicitGeneratedType.Reference("ElementPlusTableColumnSortMethodCallback"),
+        [("el-table-column", "sortBy")] = ExplicitGeneratedType.Value("ElementPlusTableColumnSortByValue"),
+        [("el-table-column", "formatter")] = ExplicitGeneratedType.Reference("ElementPlusTableColumnFormatterCallback"),
+        [("el-table-column", "selectable")] = ExplicitGeneratedType.Reference("ElementPlusTableColumnSelectableCallback"),
+        [("el-table-column", "filterMethod")] = ExplicitGeneratedType.Reference("ElementPlusTableColumnFilterMethodCallback"),
+        [("el-table-column", "tooltipFormatter")] = ExplicitGeneratedType.Reference("ElementPlusTableTooltipFormatter"),
+        [("el-tabs", "beforeLeave")] = ExplicitGeneratedType.Reference("ElementPlusTabsBeforeLeaveCallback"),
+        [("el-time-picker", "disabledHours")] = ExplicitGeneratedType.Reference("ElementPlusTimePickerDisabledHoursCallback"),
+        [("el-time-picker", "disabledMinutes")] = ExplicitGeneratedType.Reference("ElementPlusTimePickerDisabledMinutesCallback"),
+        [("el-time-picker", "disabledSeconds")] = ExplicitGeneratedType.Reference("ElementPlusTimePickerDisabledSecondsCallback"),
+        [("el-transfer", "filterMethod")] = ExplicitGeneratedType.Reference("ElementPlusTransferFilterMethod"),
+        [("el-tree", "renderContent")] = ExplicitGeneratedType.Reference("ElementPlusTreeRenderContentCallback"),
+        [("el-tree", "load")] = ExplicitGeneratedType.Reference("ElementPlusTreeLoadCallback"),
+        [("el-tree", "filterNodeMethod")] = ExplicitGeneratedType.Reference("ElementPlusTreeFilterNodeMethod"),
+        [("el-tree", "allowDrag")] = ExplicitGeneratedType.Reference("ElementPlusTreeAllowDragCallback"),
+        [("el-tree", "allowDrop")] = ExplicitGeneratedType.Reference("ElementPlusTreeAllowDropCallback"),
+        [("el-tree-select", "filterMethod")] = ExplicitGeneratedType.Reference("ElementPlusSelectQueryCallback"),
+        [("el-tree-select", "remoteMethod")] = ExplicitGeneratedType.Reference("ElementPlusSelectQueryCallback"),
+        [("el-tree-select", "renderContent")] = ExplicitGeneratedType.Reference("ElementPlusTreeRenderContentCallback"),
+        [("el-tree-select", "load")] = ExplicitGeneratedType.Reference("ElementPlusTreeLoadCallback"),
+        [("el-tree-select", "filterNodeMethod")] = ExplicitGeneratedType.Reference("ElementPlusTreeFilterNodeMethod"),
+        [("el-tree-select", "allowDrag")] = ExplicitGeneratedType.Reference("ElementPlusTreeAllowDragCallback"),
+        [("el-tree-select", "allowDrop")] = ExplicitGeneratedType.Reference("ElementPlusTreeAllowDropCallback"),
+        [("el-tree-v2", "filterMethod")] = ExplicitGeneratedType.Reference("ElementPlusTreeV2FilterMethod"),
+        [("el-upload", "data")] = ExplicitGeneratedType.Value("ElementPlusUploadDataValue"),
+        [("el-upload", "onPreview")] = ExplicitGeneratedType.Reference("ElementPlusUploadPreviewCallback"),
+        [("el-upload", "onRemove")] = ExplicitGeneratedType.Reference("ElementPlusUploadFileListCallback"),
+        [("el-upload", "onSuccess")] = ExplicitGeneratedType.Reference("ElementPlusUploadSuccessCallback"),
+        [("el-upload", "onError")] = ExplicitGeneratedType.Reference("ElementPlusUploadErrorCallback"),
+        [("el-upload", "onProgress")] = ExplicitGeneratedType.Reference("ElementPlusUploadProgressCallback"),
+        [("el-upload", "onChange")] = ExplicitGeneratedType.Reference("ElementPlusUploadFileListCallback"),
+        [("el-upload", "onExceed")] = ExplicitGeneratedType.Reference("ElementPlusUploadExceedCallback"),
+        [("el-upload", "beforeUpload")] = ExplicitGeneratedType.Reference("ElementPlusUploadBeforeUploadCallback"),
+        [("el-upload", "beforeRemove")] = ExplicitGeneratedType.Reference("ElementPlusUploadBeforeRemoveCallback"),
+        [("el-upload", "httpRequest")] = ExplicitGeneratedType.Reference("ElementPlusUploadRequestCallback"),
+        [("el-virtualized-select", "filterMethod")] = ExplicitGeneratedType.Reference("ElementPlusSelectQueryCallback"),
+        [("el-virtualized-select", "remoteMethod")] = ExplicitGeneratedType.Reference("ElementPlusSelectQueryCallback"),
         [("el-watermark", "content")] = ExplicitGeneratedType.Value("VueStringOrStringsValue")
     };
 
@@ -930,7 +1010,7 @@ internal static class Program
             [
                 CreateSupplementalProp("disableWidth", "DisableWidth", GeneratedType.Value("bool").AsOptional(required: false)),
                 CreateSupplementalProp("disableHeight", "DisableHeight", GeneratedType.Value("bool").AsOptional(required: false)),
-                CreateSupplementalProp("onResize", "OnResize", GeneratedType.Reference("Delegate?"))
+                CreateSupplementalProp("onResize", "OnResize", GeneratedType.Reference("ElementPlusAutoResizerResizeCallback").AsOptional(required: false))
             ],
             slots:
             [
@@ -1265,7 +1345,7 @@ internal static class Program
             return GeneratedType.Reference("VueValue?");
 
         if (ContainsTopLevelArrow(expression))
-            return GeneratedType.Reference("Delegate?");
+            throw CreateUnsupportedFunctionPropTypeException(tagName, prop);
 
         var tokens = SplitTopLevel(expression, '|')
             .Select(NormalizeTypeToken)
@@ -1342,7 +1422,8 @@ internal static class Program
     private static GeneratedType MapSingleToken(string token, bool required)
     {
         if (ContainsTopLevelArrow(token) || string.Equals(token, "Function", StringComparison.Ordinal))
-            return GeneratedType.Reference("Delegate?").AsOptional(required);
+            throw new InvalidOperationException(
+                $"Element Plus function prop type token '{token}' requires an explicit override or named contract.");
 
         return token switch
         {
@@ -1534,6 +1615,10 @@ internal static class Program
 
         return normalized;
     }
+
+    private static InvalidOperationException CreateUnsupportedFunctionPropTypeException(string tagName, RawPropMetadata prop)
+        => new(
+            $"Element Plus function prop '{tagName}.{prop.RuntimeName}' with type expression '{prop.TypeExpression ?? "<null>"}' requires an explicit override or named contract.");
 
     private static bool ContainsTopLevelArrow(string expression)
     {

@@ -530,6 +530,88 @@ public delegate TResult VueThisFunc<TThis, T1, T2, T3, TResult>(TThis self, T1 a
 public delegate void VueThisWatchCleanupCallback<TThis, TValue>(TThis self, TValue value, TValue oldValue, VueWatchCleanupRegistration onCleanup)
 	where TThis : class;
 
+/// <summary>
+/// Shared Day.js host contract used by Vue ecosystem libraries that surface Day.js instances
+/// in public callback signatures. This remains intentionally small until concrete host members
+/// are required by authoring or lowering.
+/// </summary>
+[ECMAScript("npm:dayjs")]
+[Description("@#")]
+public sealed class Dayjs
+{
+	private Dayjs()
+	{
+	}
+}
+
+/// <summary>
+/// Strongly typed render host passed to Vue ecosystem callbacks that expose Vue's runtime
+/// <c>h</c> function as a callback parameter. The instance methods inline back to direct
+/// <c>h(...)</c> calls so callbacks stay strongly typed without leaking raw delegates.
+/// </summary>
+[ECMAScript]
+[Description("@#")]
+public sealed class VueRenderHost
+{
+	private VueRenderHost()
+	{
+	}
+
+	[ECMAScriptInline("__arg1(__arg2)")]
+	public extern Vue3.IVNode Invoke(string type);
+
+	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
+	public extern Vue3.IVNode Invoke(string type, Vue3.IVNode child);
+
+	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
+	public extern Vue3.IVNode Invoke(string type, Vue3.IVNode[] children);
+
+	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
+	public extern Vue3.IVNode Invoke(string type, Vue3.VueChild child);
+
+	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
+	public extern Vue3.IVNode Invoke(string type, Vue3.VueProps props);
+
+	[ECMAScriptInline("__arg1(__arg2, __arg3, __arg4)")]
+	public extern Vue3.IVNode Invoke(string type, Vue3.VueProps props, Vue3.IVNode child);
+
+	[ECMAScriptInline("__arg1(__arg2, __arg3, __arg4)")]
+	public extern Vue3.IVNode Invoke(string type, Vue3.VueProps props, Vue3.IVNode[] children);
+
+	[ECMAScriptInline("__arg1(__arg2, __arg3, __arg4)")]
+	public extern Vue3.IVNode Invoke(string type, Vue3.VueProps props, Vue3.VueChild child);
+
+	[ECMAScriptInline("__arg1(__arg2)")]
+	public extern Vue3.IVNode Invoke(Vue3.IVueComponent component);
+
+	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
+	public extern Vue3.IVNode Invoke(Vue3.IVueComponent component, Vue3.IVNode child);
+
+	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
+	public extern Vue3.IVNode Invoke(Vue3.IVueComponent component, Vue3.IVNode[] children);
+
+	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
+	public extern Vue3.IVNode Invoke(Vue3.IVueComponent component, Vue3.VueChild child);
+
+	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
+	public extern Vue3.IVNode Invoke(Vue3.IVueComponent component, Vue3.VueSlots slots);
+
+	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
+	public extern Vue3.IVNode Invoke(Vue3.IVueComponent component, Vue3.VueProps props);
+
+	[ECMAScriptInline("__arg1(__arg2, __arg3, __arg4)")]
+	public extern Vue3.IVNode Invoke(Vue3.IVueComponent component, Vue3.VueProps props, Vue3.IVNode child);
+
+	[ECMAScriptInline("__arg1(__arg2, __arg3, __arg4)")]
+	public extern Vue3.IVNode Invoke(Vue3.IVueComponent component, Vue3.VueProps props, Vue3.IVNode[] children);
+
+	[ECMAScriptInline("__arg1(__arg2, __arg3, __arg4)")]
+	public extern Vue3.IVNode Invoke(Vue3.IVueComponent component, Vue3.VueProps props, Vue3.VueChild child);
+
+	[ECMAScriptInline("__arg1(__arg2, __arg3, __arg4)")]
+	public extern Vue3.IVNode Invoke(Vue3.IVueComponent component, Vue3.VueProps props, Vue3.VueSlots slots);
+}
+
 [ECMAScript("npm:vue@3")]
 [Description("@#")]
 public static partial class Vue3
