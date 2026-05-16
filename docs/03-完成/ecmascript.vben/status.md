@@ -77,6 +77,19 @@
 - action `Kind` 已稳定映射为原生语义类（`default/primary/secondary/link/danger`），方便后续样式与容器实现保持语义一致；
 - 禁用 action 即使携带 `Target`，也不会保留可跳转 `href`，并会显式带上禁用语义状态。
 
+当前对 `VbenAdminLayout` 的原生模式语义也已收口：
+
+- `Mode.Top` 不再错误输出侧栏区域，也不会再默认挂出 `VbenSidebarMenu`；
+- `Mode.Sidebar` 与 `Mode.Mixed` 继续保留侧栏区域，保持后台壳层与混合布局的结构能力；
+- 原生 `AdminLayout` 的模式分支现在与现有参考实现保持一致，不再出现同一 public contract 在 native / reference implementation 之间的结构漂移。
+
+当前对 `VbenHeaderBar` 的原生 DOM 语义也已收口：
+
+- 当 `Title` / `Subtitle` 都为空时，不再输出空的 titles 容器；
+- 当 `Actions` / `UserRegion` 都为空时，不再输出空的右侧 actions 容器；
+- `Actions` 与 `UserRegion` 现在有独立的原生语义 wrapper，后续样式、对齐与壳层组合可以稳定落在明确 DOM 边界上；
+- 原生 `HeaderBar` 不再把所有右侧内容直接平铺到同一个裸容器里，减少了样式耦合和空结构噪音。
+
 ### 3. 公共语义模型已经建立
 
 当前已进入 `src/ECMAScript.Vben/` 的核心语义包括：
@@ -173,6 +186,19 @@
   - action `href` / route-hash 目标会输出可导航锚点；
   - action `Kind` 会落为稳定原生语义类；
   - 禁用 action 即使携带 `Target` 也不会再输出可跳转链接；
+- `VbenNativeAdminLayoutTests` 校验：
+  - `Mode.Top` 不会再渲染侧栏区域或默认 `VbenSidebarMenu`；
+  - `Mode.Sidebar` 在存在 `NavItems` 时会继续渲染默认 `VbenSidebarMenu`；
+  - `Mode.Mixed` 会继续保留侧栏区域并承接自定义 `Sidebar` 内容；
+- `VbenNativeHeaderBarTests` 校验：
+  - 无标题时不会再输出空的 titles 容器；
+  - 无 actions / user-region 时不会再输出空的右侧容器；
+  - `Actions` 与 `UserRegion` 会落到独立语义 wrapper 中；
+- `VbenNativeArtifactTests` 校验：
+  - 默认 native 多壳层组合在无 `[VueInject]` 情况下可稳定 lower 为 Vue SFC artifact；
+  - 默认 native 多壳层组合在无 `[VueInject]` 情况下可稳定 lower 为 pipeline artifact；
+  - `VbenAdminLayout` / `VbenHeaderBar` / `VbenSidebarMenu` / `VbenPageContainer` 的默认 native import 路径、slot 映射与 typed callback 透传已进入回归；
+  - 默认 native 主链不会意外引入第三方 style/plugin requirement；
 - `VueAuthoringMetadataTests` 校验：
   - 通用 `VueProp` / `VueSlot` 元数据可被 RazorVue descriptor extraction 正常识别；
   - `ECMAScript.VueContract` 当前只保留 canonical 的 `VuePropAttribute` / `VueSlotAttribute`。
@@ -184,8 +210,11 @@
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~Vben_MultiShell_ContainerInject' -v minimal`：已通过（2/2）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeSidebarMenuTests' -v minimal`：已通过（4/4）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativePageContainerTests' -v minimal`：已通过（6/6）；
+- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeAdminLayoutTests' -v minimal`：已通过（3/3）；
+- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeHeaderBarTests' -v minimal`：已通过（3/3）；
+- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~Vben_MultiShell_DefaultNativeComponents' -v minimal`：已通过（2/2）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeSidebarMenuTests|FullyQualifiedName~VbenAuthoringSurfaceTests|FullyQualifiedName~VbenContainerInjectTests' -v minimal`：已通过（35/35）；
-- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj -v minimal`：已通过（48/48）；
+- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj -v minimal`：已通过（56/56）；
 - `samples/ECMAScript.Vben.ElementPlusInject/verify-smoke.cs`：已纳入当前阶段的真实 sample 验证入口，目标覆盖本地 package pack、host rebuild、host requirements 断言、Deno SSR smoke、Deno bundle smoke、browser build、browser smoke；
 - `RazorVue` 聚焦回归已覆盖 Vben 相关 descriptor / authoring contract 收口，不再依赖旧兼容别名。
 

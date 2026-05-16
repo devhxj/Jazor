@@ -48,6 +48,8 @@ public partial class VbenAdminLayout : VbenContentComponentBase, IVueContainerCo
     [Parameter]
     public RenderFragment? UserRegion { get; set; }
 
+    private bool IsSidebarLayout => Mode != VbenLayoutMode.Top;
+
     private VueClassValue RootCssClass => Mode switch
     {
         VbenLayoutMode.Top => BuildCssClass("vben-shell", "vben-shell--top"),
