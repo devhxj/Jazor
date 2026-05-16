@@ -142,8 +142,11 @@ public sealed class ElementPlusAuthoringSurfaceTests
     public void ElementPlus_ModelBindingContracts_UseExplicitCanonicalNames()
     {
         AssertModelBindingContract(typeof(ElDialog), nameof(ElDialog.ModelValue), typeof(bool?));
+        AssertModelBindingContract(typeof(ElCheckboxGroup), nameof(ElCheckboxGroup.ModelValue), typeof(VueStringNumberValue[]));
         AssertModelBindingContract(typeof(ElInput), nameof(ElInput.ModelValue), typeof(VueStringNumberValue?));
+        AssertModelBindingContract(typeof(ElInputNumber), nameof(ElInputNumber.ModelValue), typeof(Number?));
         AssertModelBindingContract(typeof(ElInputOtp), nameof(ElInputOtp.ModelValue), typeof(VueStringNumberValue?));
+        AssertModelBindingContract(typeof(ElSlider), nameof(ElSlider.ModelValue), typeof(VueNumberOrNumbersValue?));
         AssertModelBindingContract(typeof(ElSwitch), nameof(ElSwitch.ModelValue), typeof(VueBooleanStringNumberValue?));
     }
 

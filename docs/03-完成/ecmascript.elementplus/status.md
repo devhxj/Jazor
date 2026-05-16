@@ -803,6 +803,450 @@
 
 当前聚焦 `ElementPlusAuthoringSurfaceTests` + `ElementPlusSharedContractTests` 共 `27/27` 通过。
 
+## 2026-05-16 第七批继续收口
+
+这一批继续处理几个“官方 `.d.ts` 已经明确定义为标量或小联合，但生成公开面仍保留弱 `VueValue?`”的剩余高置信度合同。
+
+### 1. `ElDivider.BorderStyle` 已退回正式字符串合同
+
+本地官方 `divider.d.ts` 明确给出：
+
+- `borderStyle?: BorderStyle`
+- 其公开 prop 最终是字符串域
+
+当前已完成：
+
+- `ElDivider.BorderStyle -> string`
+
+这里没有继续保留 `VueValue?`，因为本地官方 authoring 面并不存在更宽的对象或数组分支。
+
+### 2. `ElInputTag.Delimiter` 已切回字符串/正则联合
+
+本地官方 `input-tag.d.ts` 明确给出：
+
+- `delimiter?: string | RegExp`
+
+当前已完成：
+
+- 在 `ECMAScript.Vue3` 新增共享联合：
+  - `VueStringRegExpValue`
+- `ElInputTag.Delimiter -> VueStringRegExpValue?`
+
+这一步避免了把“字符串或正则”继续模糊压回 `VueValue?`，并且把该 authoring contract 下沉为可复用的 Vue 共享类型，而不是只在 `ElementPlus` 内部裂一份。
+
+### 3. `ElWatermark.Content` 已切回字符串/字符串数组联合
+
+本地官方 `watermark.d.ts` 明确给出：
+
+- `content?: string | string[]`
+
+当前已完成：
+
+- `ElWatermark.Content -> VueStringOrStringsValue?`
+
+这里直接复用了前一批已经下沉到 `Vue3` 的共享字符串联合，没有再在 `ElementPlus` 里分裂重复合同。
+
+### 4. `RegExp` token 解析已补到生成器基础层
+
+这一步不仅服务 `InputTag.Delimiter`。生成器当前已经正式识别：
+
+- `RegExp`
+
+后续如果官方 `.d.ts` 再出现同类“字符串或正则”公开 authoring 合同，就不需要再次靠局部临时修补。
+
+## 本轮验证
+
+本轮已通过：
+
+- `dotnet run --file scripts/csharp/generate-elementplus-bindings.cs`
+- `dotnet build src/ECMAScript.ElementPlus/ECMAScript.ElementPlus.csproj -v minimal`
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~ElementPlusAuthoringSurfaceTests|FullyQualifiedName~ElementPlusSharedContractTests' -v minimal`
+
+当前聚焦 `ElementPlusAuthoringSurfaceTests` + `ElementPlusSharedContractTests` 共 `28/28` 通过。
+
+## 2026-05-16 第八批收口
+
+这一批继续处理“本地官方 `.d.ts` 已明确给出标准字符串数组或标准 Vue `StyleValue`，但生成公开面仍保留弱 `VueValue[]?` / `VueValue?`”的剩余高置信度合同。
+
+### 1. 剩余 `fallbackPlacements` 已统一回官方 `Placement[]` 对应的 `string[]`
+
+本地官方声明已明确给出以下公开面：
+
+- `cascader.d.ts`：`fallbackPlacements?: Placement[]`
+- `select.d.ts`：`fallbackPlacements: Placement[]`
+- `tooltip`/`tree-select`/`select-v2` 相关 `.d.ts`：同样是 `Placement[]`
+
+当前已完成：
+
+- `ElCascader.FallbackPlacements -> string[]`
+- `ElSelect.FallbackPlacements -> string[]`
+- `ElTooltip.FallbackPlacements -> string[]`
+- `ElTreeSelect.FallbackPlacements -> string[]`
+- `ElVirtualizedSelect.FallbackPlacements -> string[]`
+
+这里没有继续保留 `VueValue[]?`，因为这些公开 authoring 合同并不接受任意数组项，而是稳定的 Popper placement 字符串数组。
+
+### 2. `ElScrollbar.WrapStyle/ViewStyle` 已切回共享 `VueStyleValue`
+
+本地官方 `scrollbar.d.ts` 明确给出：
+
+- `wrapStyle?: StyleValue`
+- `viewStyle?: StyleValue`
+
+当前已完成：
+
+- `ElScrollbar.WrapStyle -> VueStyleValue?`
+- `ElScrollbar.ViewStyle -> VueStyleValue?`
+
+这里直接复用了已有共享 `VueStyleValue`，不再把标准 Vue `StyleValue` authoring contract 压回 `VueValue?`。
+
+### 3. 这一步属于“统一收口”，不是局部手工修补
+
+本轮不是直接手改生成结果，而是补齐了生成器中的显式公开面覆盖，让同类官方 placement/style 合同回到稳定生成路径：
+
+- `el-cascader.fallbackPlacements`
+- `el-select.fallbackPlacements`
+- `el-tooltip.fallbackPlacements`
+- `el-tree-select.fallbackPlacements`
+- `el-virtualized-select.fallbackPlacements`
+- `el-scrollbar.wrapStyle`
+- `el-scrollbar.viewStyle`
+
+这保证后续重新生成时不会回退。
+
+## 本轮验证
+
+本轮已通过：
+
+- `dotnet run --file scripts/csharp/generate-elementplus-bindings.cs`
+- `dotnet build src/ECMAScript.ElementPlus/ECMAScript.ElementPlus.csproj -v minimal`
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~ElementPlusAuthoringSurfaceTests|FullyQualifiedName~ElementPlusSharedContractTests' -v minimal`
+
+当前聚焦 `ElementPlusAuthoringSurfaceTests` + `ElementPlusSharedContractTests` 共 `29/29` 通过。
+
+## 2026-05-16 第九批收口
+
+这一批继续处理“官方宿主合同已经明确，但生成公开面仍保留 `VueValue?` 弱兜底”的几个高置信度属性，重点是布尔可见性、宿主 DOM 入口、节流配置与上传请求头。
+
+### 1. `ElPopover.Visible` 已切回正式布尔可见性合同
+
+本地官方来源：
+
+- `popover.d.ts`：`visible?: ElTooltipContentProps['visible']`
+- `tooltip/src/content.d.ts`：`visible?: boolean | null`
+- 对外组件 prop 最终公开面是受控布尔可见性
+
+当前已完成：
+
+- `ElPopover.Visible -> bool?`
+
+这里不再保留 `VueValue?`，因为官方 authoring contract 并不是“任意值”，而是明确的布尔可见性分支。
+
+### 2. `ElImage.ScrollContainer` 已切回字符串/HTML 元素联合
+
+本地官方 `image.d.ts` 明确给出：
+
+- `scrollContainer?: string | HTMLElement`
+
+当前已完成：
+
+- 在 `ECMAScript.Vue3` 新增共享宿主联合：
+  - `VueStringHtmlElementValue`
+- `ElImage.ScrollContainer -> VueStringHtmlElementValue?`
+
+这一步把“CSS 选择器字符串或现有 DOM 元素”收回正式 authoring contract，没有继续抹平成 `VueValue?`。
+
+### 3. `ElSkeleton.Throttle` 已切回数字/配置对象联合
+
+本地官方 `skeleton.d.ts` 与 `use-throttle-render/index.d.ts` 明确给出：
+
+- `throttle?: ThrottleType`
+- `ThrottleType = number | { leading?: number; trailing?: number; initVal?: boolean }`
+
+当前已完成：
+
+- 在 `ECMAScript.ElementPlus` 新增命名配置类型：
+  - `ElementPlusThrottleRenderOptions`
+  - `ElementPlusThrottleValue`
+- `ElSkeleton.Throttle -> ElementPlusThrottleValue?`
+
+这里没有用 `VueValue?` 混过去，也没有退化成 `Number?`，而是保留了官方对象分支。
+
+### 4. `ElUpload.Headers` 已切回 `Headers | Record<string, any>`
+
+本地官方 `upload.d.ts` 明确给出：
+
+- `headers?: Headers | Record<string, any>`
+
+当前已完成：
+
+- 在 `ECMAScript.Vue3` 新增共享宿主联合：
+  - `VueHeadersValue`
+- `ElUpload.Headers -> VueHeadersValue?`
+
+这里直接复用了仓库已有的 `Headers` 与 `VueDictionary` 宿主面，没有再用 `VueValue?` 掩盖 Fetch Headers 与对象字典的正式边界。
+
+## 本轮验证
+
+本轮已通过：
+
+- `dotnet run --file scripts/csharp/generate-elementplus-bindings.cs`
+- `dotnet build src/ECMAScript.ElementPlus/ECMAScript.ElementPlus.csproj -v minimal`
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~ElementPlusAuthoringSurfaceTests|FullyQualifiedName~ElementPlusSharedContractTests' -v minimal`
+
+当前聚焦 `ElementPlusAuthoringSurfaceTests` + `ElementPlusSharedContractTests` 共 `30/30` 通过。
+
+## 2026-05-16 第十批收口
+
+这一批继续处理“本地官方 d.ts 已经给出精确公开合同，但当前生成 authoring surface 仍保留弱兜底”的三处高置信度缺口，重点放在表格排序/过滤公开面与 slider 的 `modelValue`。
+
+### 1. `ElTableColumn.SortOrders` 已切回正式排序顺序数组
+
+本地官方来源：
+
+- `es/components/table/src/table/defaults.d.ts`：`type TableSortOrder = 'ascending' | 'descending'`
+- `es/components/table/src/table-column/defaults.d.ts`：`sortOrders: (TableSortOrder | null)[]`
+
+当前已完成：
+
+- `ElTableColumn.SortOrders -> ElementPlusTableSortOrder?[]?`
+
+这里不再继续保留 `VueValue[]?`，因为官方 authoring contract 不是“任意数组”，而是稳定的排序顺序枚举数组，并且显式允许 `null` 参与循环切换。
+
+### 2. `ElTableColumn.Filters` 已切回命名过滤项数组
+
+本地官方 `table-column/defaults.d.ts` 明确给出：
+
+- `type Filters = { text: string; value: string; }[]`
+
+当前已完成：
+
+- 在 `ECMAScript.ElementPlus` 新增命名类型：
+  - `ElementPlusTableFilterItem`
+- `ElTableColumn.Filters -> ElementPlusTableFilterItem[]`
+
+这里没有退回 `VueValue[]?` 或 `VueDictionary[]?`，而是保留官方公开面的字段语义，避免 authoring 时丢失 `text/value` 结构边界。
+
+### 3. `ElSlider.ModelValue` 已提升为共享 Vue 数值/数值数组联合
+
+本地官方来源：
+
+- `es/components/slider/src/slider.d.ts`：`modelValue: Arrayable<number>`
+- `es/utils/typescript.d.ts`：`Arrayable<T> = T | T[]`
+
+当前已完成：
+
+- 在 `ECMAScript.Vue3` 新增共享联合：
+  - `VueNumberOrNumbersValue`
+- `ElSlider.ModelValue -> VueNumberOrNumbersValue?`
+- `ElSlider.ModelValueChanged -> EventCallback<VueNumberOrNumbersValue?>`
+
+这里没有把 `number | number[]` 留在 Element Plus 私有层，因为它属于跨 Vue 生态可复用的 authoring contract。这样后续其他 slider/range/value surface 也能复用同一共享类型。
+
+### 4. 本轮仍然坚持“生成器收口”，不是手改生成产物
+
+本轮通过显式公开面覆盖与共享类型补齐，稳定修正了以下生成路径：
+
+- `el-table-column.sortOrders`
+- `el-table-column.filters`
+- `el-slider.modelValue`
+
+因此重新生成后，属性类型与 `update:modelValue` emit payload 会同步收口，不会出现“属性精确了但 emit 元数据仍旧弱化”的半成品。
+
+## 本轮验证
+
+本轮已通过：
+
+- `dotnet run --file scripts/csharp/generate-elementplus-bindings.cs`
+- `dotnet build src/ECMAScript.ElementPlus/ECMAScript.ElementPlus.csproj -v minimal`
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~ElementPlusAuthoringSurfaceTests|FullyQualifiedName~ElementPlusSharedContractTests' -v minimal`
+
+当前聚焦 `ElementPlusAuthoringSurfaceTests` + `ElementPlusSharedContractTests` 共 `30/30` 通过。
+
+## 2026-05-16 第十一批收口
+
+这一批继续处理 checkbox / dropdown / input-number 这一组“官方公开合同已经明确，但生成 surface 仍保留 `VueValue?` 弱面”的高置信属性，优先收口标量或轻量对象联合，不把复杂泛型数据结构混入同一批。
+
+### 1. `ElCheckbox` / `ElCheckboxButton` 的 `value` / `label` 已切回布尔/字符串/数字/对象联合
+
+本地官方来源：
+
+- `checkbox.d.ts`：
+  - `label?: string | boolean | number | object`
+  - `value?: string | boolean | number | object`
+- `checkbox-button.vue.d.ts` 公开面同样继承这一合同
+
+当前已完成：
+
+- 在 `ECMAScript.Vue3` 新增共享联合：
+  - `VueBooleanStringNumberObjectValue`
+- `ElCheckbox.Value -> VueBooleanStringNumberObjectValue?`
+- `ElCheckbox.Label -> VueBooleanStringNumberObjectValue?`
+- `ElCheckboxButton.Value -> VueBooleanStringNumberObjectValue?`
+- `ElCheckboxButton.Label -> VueBooleanStringNumberObjectValue?`
+
+这里没有继续保留 `VueValue?`，也没有把 object 分支拆成 Element Plus 私有类型。公开 authoring contract 的重点是“允许对象值”，因此这部分被提升为共享 Vue authoring union。
+
+### 2. `ElDropdownItem.Command` 已切回字符串/数字/对象联合
+
+本地官方来源：
+
+- `dropdown.d.ts`：
+  - `command: ObjectConstructor | StringConstructor | NumberConstructor`
+
+当前已完成：
+
+- 在 `ECMAScript.Vue3` 新增共享联合：
+  - `VueStringNumberObjectValue`
+- `ElDropdownItem.Command -> VueStringNumberObjectValue?`
+
+这里不再继续用 `VueValue?` 掩盖 command 的实际合同边界。
+
+### 3. `ElCheckboxGroup.ModelValue` 已切回字符串/数字数组
+
+本地官方来源：
+
+- `checkbox-group.d.ts`：
+  - `type CheckboxGroupValueType = Exclude<CheckboxValueType, boolean>[]`
+  - `CheckboxValueType = string | number | boolean`
+
+因此对外 authoring 合同就是：
+
+- `modelValue?: (string | number)[]`
+
+当前已完成：
+
+- `ElCheckboxGroup.ModelValue -> VueStringNumberValue[]`
+- `ElCheckboxGroup.ModelValueChanged -> EventCallback<VueStringNumberValue[]?>`
+
+这里保持了“数组项只能是字符串或数字”的边界，不再退回 `VueValue?`。
+
+### 4. `ElInputNumber.ModelValue` 已切回正式数值 model
+
+本地官方来源：
+
+- `input-number.d.ts`：
+  - `modelValue?: number | null`
+  - `update:modelValue: (val: number | undefined) => boolean`
+
+当前已完成：
+
+- `ElInputNumber.ModelValue -> Number?`
+- `ElInputNumber.ModelValueChanged -> EventCallback<Number?>`
+
+这里没有继续保留 `VueValue?`，因为官方公开合同并不是任意值，而是严格数值 model。
+
+### 5. 本轮仍然是“共享类型 + 生成器覆盖”收口
+
+本轮通过共享 Vue union 与显式覆盖，让以下公开面回到稳定生成路径：
+
+- `el-checkbox.value`
+- `el-checkbox.label`
+- `el-checkbox-button.value`
+- `el-checkbox-button.label`
+- `el-checkbox-group.modelValue`
+- `el-dropdown-item.command`
+- `el-input-number.modelValue`
+
+这样重新生成时，属性与 `update:modelValue` emit payload 会保持同步，不会出现属性与 emit 合同分裂。
+
+## 本轮验证
+
+本轮已通过：
+
+- `dotnet run --file scripts/csharp/generate-elementplus-bindings.cs`
+- `dotnet build src/ECMAScript.ElementPlus/ECMAScript.ElementPlus.csproj -v minimal`
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~ElementPlusAuthoringSurfaceTests|FullyQualifiedName~ElementPlusSharedContractTests' -v minimal`
+
+当前聚焦 `ElementPlusAuthoringSurfaceTests` + `ElementPlusSharedContractTests` 共 `30/30` 通过。
+
+## 2026-05-16 第十二批收口
+
+这一批继续处理“官方 `.d.ts` 已给出稳定结构，但当前公开 authoring surface 仍回退成 `VueValue[]?`”的高置信数组面，优先选择本地元数据证据完整、不会引入宽泛 `any[]` 猜测的合同。
+
+### 1. `TreeKey[]` 已在 `ElTree` / `ElTreeV2` / `ElTreeSelect` 上统一收口
+
+本地官方来源：
+
+- `tree.type.d.ts`：
+  - `type TreeKey = string | number`
+  - `defaultCheckedKeys?: TreeKey[]`
+  - `defaultExpandedKeys?: TreeKey[]`
+- `tree-v2/src/types.d.ts`：
+  - `type TreeKey = string | number`
+  - `defaultCheckedKeys?: TreeKey[]`
+  - `defaultExpandedKeys?: TreeKey[]`
+- `tree-select.vue.d.ts`：
+  - `defaultCheckedKeys: PropType<TreeKey[]>`
+  - `defaultExpandedKeys: PropType<TreeKey[]>`
+
+当前已完成：
+
+- `ElTree.DefaultExpandedKeys -> VueStringNumberValue[]`
+- `ElTree.DefaultCheckedKeys -> VueStringNumberValue[]`
+- `ElTreeV2.DefaultExpandedKeys -> VueStringNumberValue[]`
+- `ElTreeV2.DefaultCheckedKeys -> VueStringNumberValue[]`
+- `ElTreeSelect.DefaultExpandedKeys -> VueStringNumberValue[]`
+- `ElTreeSelect.DefaultCheckedKeys -> VueStringNumberValue[]`
+
+这里直接复用现有共享 Vue authoring contract，而不是继续保留 `VueValue[]?`。原因很明确：本地官方合同不是“任意数组”，而是稳定的 `string | number` key 集合。
+
+### 2. `ElUpload.FileList` 已切回官方命名对象数组
+
+本地官方来源：
+
+- `upload.d.ts`：
+  - `fileList?: UploadUserFile[]`
+  - `type UploadUserFile = Omit<UploadFile, 'status' | 'uid'> & Partial<Pick<UploadFile, 'status' | 'uid'>>`
+  - `interface UploadFile { name; percentage?; status; size?; response?; uid; url?; raw? }`
+  - `interface UploadRawFile extends File { uid: number; isDirectory?: boolean }`
+  - `type UploadStatus = 'ready' | 'uploading' | 'success' | 'fail'`
+
+当前已完成：
+
+- 在 `ECMAScript.ElementPlus` 新增并公开：
+  - `ElementPlusUploadStatus`
+  - `ElementPlusUploadRawFile`
+  - `ElementPlusUploadUserFile`
+- `ElUpload.FileList -> ElementPlusUploadUserFile[]`
+
+其中当前命名合同边界为：
+
+- `Name -> string`
+- `Percentage -> Number?`
+- `Status -> ElementPlusUploadStatus?`
+- `Size -> Number?`
+- `Response -> VueValue?`
+- `Uid -> Number?`
+- `Url -> string`
+- `Raw -> ElementPlusUploadRawFile`
+
+`raw` 这里没有退回 `VueValue?`，而是保留成独立 Element Plus 命名值对象，以便后续如果继续收口 upload hooks / request contract，可以在同一命名面上扩展而不重做公开 API。
+
+### 3. 本轮仍然通过“显式覆盖 + 聚焦测试”落地
+
+本轮生成器新增显式覆盖：
+
+- `el-tree.defaultExpandedKeys`
+- `el-tree.defaultCheckedKeys`
+- `el-tree-v2.defaultExpandedKeys`
+- `el-tree-v2.defaultCheckedKeys`
+- `el-tree-select.defaultExpandedKeys`
+- `el-tree-select.defaultCheckedKeys`
+- `el-upload.fileList`
+
+这样重新生成后，树组件的 key 数组面和 upload 文件列表面都不会再被通用数组推断错误压回 `VueValue[]?`。
+
+## 本轮验证
+
+本轮已通过：
+
+- `dotnet run --file scripts/csharp/generate-elementplus-bindings.cs`
+- `dotnet build src/ECMAScript.ElementPlus/ECMAScript.ElementPlus.csproj -v minimal`
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~ElementPlusAuthoringSurfaceTests|FullyQualifiedName~ElementPlusSharedContractTests' -v minimal`
+
+当前聚焦 `ElementPlusAuthoringSurfaceTests` + `ElementPlusSharedContractTests` 共 `32/32` 通过。
+
 ## 参考
 
 - [src/ECMAScript.ElementPlus](../../../src/ECMAScript.ElementPlus)

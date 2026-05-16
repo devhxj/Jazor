@@ -391,6 +391,111 @@ public static partial class Vue3
 	}
 
 	/// <summary>
+	/// Vue authoring 中常见的“单个数字或数字数组”联合类型。适用于官方公开合同既接受标量数值，
+	/// 也接受数值序列的高频属性，例如 slider/range modelValue 一类输入面。
+	/// Common Vue union that accepts either a single numeric value or a numeric array. Use this
+	/// for public contracts that officially allow one number or many numbers, such as slider/range model values.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public readonly union VueNumberOrNumbersValue(double, Number[]) : IEnumerable<Number>
+	{
+		/// <summary>
+		/// 当值为单个数字时返回该数字；否则返回 null。
+		/// Returns the number when the value was created from a scalar number; otherwise null.
+		/// </summary>
+		public double? AsNumber => Value is double value ? value : default(double?);
+
+		/// <summary>
+		/// 当值为数值数组时返回该数组；否则返回 null。
+		/// Returns the numeric array when the value was created from multiple numbers; otherwise null.
+		/// </summary>
+		public Number[]? AsNumbers => Value is Number[] value ? value : default(Number[]?);
+
+		public static implicit operator VueNumberOrNumbersValue(Number[] values)
+			=> new(values);
+
+		public static implicit operator VueNumberOrNumbersValue(double[] values)
+			=> new(Array.ConvertAll(values, static value => (Number)value));
+
+		IEnumerator<Number> IEnumerable<Number>.GetEnumerator()
+			=> ((IEnumerable<Number>)(AsNumbers ?? Array.Empty<Number>())).GetEnumerator();
+
+		IEnumerator IEnumerable.GetEnumerator()
+			=> ((IEnumerable<Number>)this).GetEnumerator();
+	}
+
+	/// <summary>
+	/// Vue authoring 中常见的“字符串、数字或对象”联合类型。适用于官方公开合同允许标量选择值
+	/// 或对象载荷的常见属性，例如命令值、选项值等。
+	/// Common Vue union that accepts a string, a number, or an object payload. Use this
+	/// for public contracts that officially allow scalar selection values or object values.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public readonly union VueStringNumberObjectValue(double, string, VueProps)
+	{
+		/// <summary>
+		/// 当值为数字时返回该数字；否则返回 null。
+		/// Returns the number when the value was created from a number; otherwise null.
+		/// </summary>
+		public double? AsNumber => Value is double value ? value : default(double?);
+
+		/// <summary>
+		/// 当值为字符串时返回该字符串；否则返回 null。
+		/// Returns the string when the value was created from a string; otherwise null.
+		/// </summary>
+		public string? AsString => Value as string;
+
+		/// <summary>
+		/// 当值为对象时返回该对象；否则返回 null。
+		/// Returns the object payload when the value was created from an object; otherwise null.
+		/// </summary>
+		public VueProps? AsProps => Value as VueProps;
+
+		public static implicit operator VueStringNumberObjectValue(VueDictionary value)
+			=> (VueProps)value;
+	}
+
+	/// <summary>
+	/// Vue authoring 中常见的“布尔、字符串、数字或对象”联合类型。适用于像 checkbox value/label
+	/// 这类既允许标量值也允许对象值的公开合同。
+	/// Common Vue union that accepts a boolean, a string, a number, or an object payload.
+	/// This fits public contracts such as checkbox value/label that allow scalar or object values.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public readonly union VueBooleanStringNumberObjectValue(bool, double, string, VueProps)
+	{
+		/// <summary>
+		/// 当值为布尔值时返回该值；否则返回 null。
+		/// Returns the boolean when the value was created from a bool; otherwise null.
+		/// </summary>
+		public bool? AsBool => Value is bool value ? value : default(bool?);
+
+		/// <summary>
+		/// 当值为数字时返回该数字；否则返回 null。
+		/// Returns the number when the value was created from a number; otherwise null.
+		/// </summary>
+		public double? AsNumber => Value is double value ? value : default(double?);
+
+		/// <summary>
+		/// 当值为字符串时返回该字符串；否则返回 null。
+		/// Returns the string when the value was created from a string; otherwise null.
+		/// </summary>
+		public string? AsString => Value as string;
+
+		/// <summary>
+		/// 当值为对象时返回该对象；否则返回 null。
+		/// Returns the object payload when the value was created from an object; otherwise null.
+		/// </summary>
+		public VueProps? AsProps => Value as VueProps;
+
+		public static implicit operator VueBooleanStringNumberObjectValue(VueDictionary value)
+			=> (VueProps)value;
+	}
+
+	/// <summary>
 	/// Vue 生态中常见的“单个字符串或字符串数组”联合类型。适用于既接受单个字符串，
 	/// 也接受多字符串 authoring 的高频公开合同。
 	/// Common Vue union that accepts either a single string or a string array. Use this
@@ -509,6 +614,73 @@ public static partial class Vue3
 
 		public static implicit operator VueStringNumberVNodeValue(double value)
 			=> new((Number)value);
+	}
+
+	/// <summary>
+	/// Vue 生态中常见的“字符串或正则”联合类型。适用于分隔符、过滤规则等官方公开合同。
+	/// Common Vue union that accepts either a string or a regular expression. Use this
+	/// for official public contracts such as delimiters and simple pattern inputs.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public readonly union VueStringRegExpValue(string, RegExp)
+	{
+		/// <summary>
+		/// 当值为字符串时返回该字符串；否则返回 null。
+		/// Returns the string when the value was created from a string; otherwise null.
+		/// </summary>
+		public string? AsString => Value as string;
+
+		/// <summary>
+		/// 当值为正则时返回该对象；否则返回 null。
+		/// Returns the regular expression when the value was created from a RegExp; otherwise null.
+		/// </summary>
+		public RegExp? AsRegExp => Value as RegExp;
+	}
+
+	/// <summary>
+	/// Vue authoring 中常见的字符串或 HTML 元素联合值。适用于宿主合同接受 CSS 选择器字符串或现有 DOM 元素的场景。
+	/// Common Vue union that accepts either a string or an HTML element. Use this for host
+	/// contracts that allow either a CSS selector string or an existing DOM element instance.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public readonly union VueStringHtmlElementValue(string, HTMLElement)
+	{
+		/// <summary>
+		/// 当值为字符串时返回该字符串；否则返回 null。
+		/// Returns the string when the value was created from a string; otherwise null.
+		/// </summary>
+		public string? AsString => Value as string;
+
+		/// <summary>
+		/// 当值为 HTML 元素时返回该元素；否则返回 null。
+		/// Returns the HTML element when the value was created from an HTMLElement; otherwise null.
+		/// </summary>
+		public HTMLElement? AsElement => Value as HTMLElement;
+	}
+
+	/// <summary>
+	/// Vue authoring 中常见的 Headers 或字典联合值。适用于宿主合同接受 Fetch `Headers`
+	/// 或普通对象字典作为请求头集合的场景。
+	/// Common Vue union that accepts either Fetch `Headers` or a plain object dictionary.
+	/// Use this for host contracts that allow either runtime `Headers` or object-form request headers.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public readonly union VueHeadersValue(Headers, VueDictionary)
+	{
+		/// <summary>
+		/// 当值为 Headers 时返回该实例；否则返回 null。
+		/// Returns the Headers instance when the value was created from Headers; otherwise null.
+		/// </summary>
+		public Headers? AsHeaders => Value as Headers;
+
+		/// <summary>
+		/// 当值为字典对象时返回该对象；否则返回 null。
+		/// Returns the dictionary when the value was created from object form; otherwise null.
+		/// </summary>
+		public VueDictionary? AsDictionary => Value as VueDictionary;
 	}
 
 	/// <summary>

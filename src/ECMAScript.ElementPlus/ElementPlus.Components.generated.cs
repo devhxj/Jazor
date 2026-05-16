@@ -1033,7 +1033,7 @@ public sealed class ElCascader : ElementPlusContentComponentBase
     public bool? Persistent { get; set; }
 
     [Parameter]
-    public VueValue[]? FallbackPlacements { get; set; }
+    public string[]? FallbackPlacements { get; set; }
 
     [Parameter]
     public string? Placement { get; set; }
@@ -1222,10 +1222,10 @@ public sealed class ElCheckbox : ElementPlusContentComponentBase
     public VueBooleanStringNumberValue? ModelValue { get; set; }
 
     [Parameter]
-    public VueValue? Value { get; set; }
+    public VueBooleanStringNumberObjectValue? Value { get; set; }
 
     [Parameter]
-    public VueValue? Label { get; set; }
+    public VueBooleanStringNumberObjectValue? Label { get; set; }
 
     [Parameter]
     public VueStringNumberValue? TrueValue { get; set; }
@@ -1304,10 +1304,10 @@ public sealed class ElCheckbox : ElementPlusContentComponentBase
 public sealed class ElCheckboxButton : ElementPlusContentComponentBase
 {
     [Parameter]
-    public VueValue? Value { get; set; }
+    public VueBooleanStringNumberObjectValue? Value { get; set; }
 
     [Parameter]
-    public VueValue? Label { get; set; }
+    public VueBooleanStringNumberObjectValue? Label { get; set; }
 
     [Parameter]
     public VueStringNumberValue? TrueValue { get; set; }
@@ -1356,11 +1356,11 @@ public sealed class ElCheckboxButton : ElementPlusContentComponentBase
 [VueProp(nameof(Type), Name = "type")]
 [VueSlot(nameof(ChildContent), IsDefault = true)]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueStringNumberValue[]")]
 public sealed class ElCheckboxGroup : ElementPlusContentComponentBase
 {
     [Parameter]
-    public VueValue? ModelValue { get; set; }
+    public VueStringNumberValue[]? ModelValue { get; set; }
 
     [Parameter]
     public ElementPlusComponentSize? Size { get; set; }
@@ -1405,7 +1405,7 @@ public sealed class ElCheckboxGroup : ElementPlusContentComponentBase
     public EventCallback OnChange { get; set; }
 
     [Parameter]
-    public EventCallback<VueValue?> ModelValueChanged { get; set; }
+    public EventCallback<VueStringNumberValue[]?> ModelValueChanged { get; set; }
 
 }
 
@@ -2469,7 +2469,7 @@ public sealed class ElDivider : ElementPlusContentComponentBase
     public string? Direction { get; set; }
 
     [Parameter]
-    public VueValue? BorderStyle { get; set; }
+    public string? BorderStyle { get; set; }
 
     [Parameter]
     public string? ContentPosition { get; set; }
@@ -2783,7 +2783,7 @@ public sealed class ElDropdown : ElementPlusContentComponentBase
 public sealed class ElDropdownItem : ElementPlusContentComponentBase
 {
     [Parameter]
-    public VueValue? Command { get; set; }
+    public VueStringNumberObjectValue? Command { get; set; }
 
     [Parameter]
     public bool? Disabled { get; set; }
@@ -3103,7 +3103,7 @@ public sealed class ElImage : ElementPlusComponentBase
     public bool? Lazy { get; set; }
 
     [Parameter]
-    public VueValue? ScrollContainer { get; set; }
+    public VueStringHtmlElementValue? ScrollContainer { get; set; }
 
     [Parameter]
     public string? Alt { get; set; }
@@ -3521,11 +3521,11 @@ public sealed class ElInput : ElementPlusComponentBase
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(OnBlur), Name = "blur")]
 [VueLibraryEmit(nameof(OnFocus), Name = "focus")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Number, ECMAScript, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElInputNumber : ElementPlusComponentBase
 {
     [Parameter]
-    public VueValue? ModelValue { get; set; }
+    public Number? ModelValue { get; set; }
 
     [Parameter]
     public Number? Min { get; set; }
@@ -3618,7 +3618,7 @@ public sealed class ElInputNumber : ElementPlusComponentBase
     public EventCallback OnFocus { get; set; }
 
     [Parameter]
-    public EventCallback<VueValue?> ModelValueChanged { get; set; }
+    public EventCallback<Number?> ModelValueChanged { get; set; }
 
 }
 
@@ -3780,7 +3780,7 @@ public sealed class ElInputTag : ElementPlusComponentBase
     public bool? Draggable { get; set; }
 
     [Parameter]
-    public VueValue? Delimiter { get; set; }
+    public VueStringRegExpValue? Delimiter { get; set; }
 
     [Parameter]
     public ElementPlusComponentSize? Size { get; set; }
@@ -4558,7 +4558,7 @@ public sealed class ElPopover : ElementPlusContentComponentBase
     public bool? Disabled { get; set; }
 
     [Parameter]
-    public VueValue? Visible { get; set; }
+    public bool? Visible { get; set; }
 
     [Parameter]
     public Number? Offset { get; set; }
@@ -5082,13 +5082,13 @@ public sealed class ElScrollbar : ElementPlusContentComponentBase
     public bool? Native { get; set; }
 
     [Parameter]
-    public VueValue? WrapStyle { get; set; }
+    public VueStyleValue? WrapStyle { get; set; }
 
     [Parameter]
     public string? WrapClass { get; set; }
 
     [Parameter]
-    public VueValue? ViewStyle { get; set; }
+    public VueStyleValue? ViewStyle { get; set; }
 
     [Parameter]
     public string? ViewClass { get; set; }
@@ -5412,7 +5412,7 @@ public sealed class ElSelect : ElementPlusContentComponentBase
     public string? Placement { get; set; }
 
     [Parameter]
-    public VueValue[]? FallbackPlacements { get; set; }
+    public string[]? FallbackPlacements { get; set; }
 
     [Parameter]
     public Number? MaxCollapseTags { get; set; }
@@ -5515,7 +5515,7 @@ public sealed class ElSkeleton : ElementPlusContentComponentBase
     public Number? Rows { get; set; }
 
     [Parameter]
-    public VueValue? Throttle { get; set; }
+    public ElementPlusThrottleValue? Throttle { get; set; }
 
     [Parameter]
     public RenderFragment? Template { get; set; }
@@ -5573,11 +5573,11 @@ public sealed class ElSkeletonItem : ElementPlusComponentBase
 [VueProp(nameof(Label), Name = "label")]
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(OnInput), Name = "input")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.Vue3+VueNumberOrNumbersValue, ECMAScript.Vue3, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElSlider : ElementPlusComponentBase
 {
     [Parameter]
-    public VueValue? ModelValue { get; set; }
+    public VueNumberOrNumbersValue? ModelValue { get; set; }
 
     [Parameter]
     public Number? Min { get; set; }
@@ -5658,7 +5658,7 @@ public sealed class ElSlider : ElementPlusComponentBase
     public EventCallback OnInput { get; set; }
 
     [Parameter]
-    public EventCallback<VueValue?> ModelValueChanged { get; set; }
+    public EventCallback<VueNumberOrNumbersValue?> ModelValueChanged { get; set; }
 
 }
 
@@ -6487,7 +6487,7 @@ public sealed class ElTableColumn : ElementPlusContentComponentBase
     public Delegate? SortBy { get; set; }
 
     [Parameter]
-    public VueValue[]? SortOrders { get; set; }
+    public ElementPlusTableSortOrder?[]? SortOrders { get; set; }
 
     [Parameter]
     public bool? Resizable { get; set; }
@@ -6517,7 +6517,7 @@ public sealed class ElTableColumn : ElementPlusContentComponentBase
     public bool? ReserveSelection { get; set; }
 
     [Parameter]
-    public VueValue[]? Filters { get; set; }
+    public ElementPlusTableFilterItem[]? Filters { get; set; }
 
     [Parameter]
     public string? FilterPlacement { get; set; }
@@ -7332,7 +7332,7 @@ public sealed class ElTooltip : ElementPlusContentComponentBase
     public string? Placement { get; set; }
 
     [Parameter]
-    public VueValue[]? FallbackPlacements { get; set; }
+    public string[]? FallbackPlacements { get; set; }
 
     [Parameter]
     public bool? Visible { get; set; }
@@ -7630,7 +7630,7 @@ public sealed class ElTree : ElementPlusContentComponentBase
     public bool? AutoExpandParent { get; set; }
 
     [Parameter]
-    public VueValue[]? DefaultExpandedKeys { get; set; }
+    public VueStringNumberValue[]? DefaultExpandedKeys { get; set; }
 
     [Parameter]
     public bool? ShowCheckbox { get; set; }
@@ -7639,7 +7639,7 @@ public sealed class ElTree : ElementPlusContentComponentBase
     public bool? CheckStrictly { get; set; }
 
     [Parameter]
-    public VueValue[]? DefaultCheckedKeys { get; set; }
+    public VueStringNumberValue[]? DefaultCheckedKeys { get; set; }
 
     [Parameter]
     public VueStringNumberValue? CurrentNodeKey { get; set; }
@@ -7970,7 +7970,7 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
     public string? Placement { get; set; }
 
     [Parameter]
-    public VueValue[]? FallbackPlacements { get; set; }
+    public string[]? FallbackPlacements { get; set; }
 
     [Parameter]
     public Number? MaxCollapseTags { get; set; }
@@ -8030,7 +8030,7 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
     public bool? AutoExpandParent { get; set; }
 
     [Parameter]
-    public VueValue[]? DefaultExpandedKeys { get; set; }
+    public VueStringNumberValue[]? DefaultExpandedKeys { get; set; }
 
     [Parameter]
     public bool? ShowCheckbox { get; set; }
@@ -8039,7 +8039,7 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
     public bool? CheckStrictly { get; set; }
 
     [Parameter]
-    public VueValue[]? DefaultCheckedKeys { get; set; }
+    public VueStringNumberValue[]? DefaultCheckedKeys { get; set; }
 
     [Parameter]
     public VueStringNumberValue? CurrentNodeKey { get; set; }
@@ -8217,7 +8217,7 @@ public sealed class ElTreeV2 : ElementPlusContentComponentBase
     public bool? CheckOnClickLeaf { get; set; }
 
     [Parameter]
-    public VueValue[]? DefaultExpandedKeys { get; set; }
+    public VueStringNumberValue[]? DefaultExpandedKeys { get; set; }
 
     [Parameter]
     public bool? ShowCheckbox { get; set; }
@@ -8226,7 +8226,7 @@ public sealed class ElTreeV2 : ElementPlusContentComponentBase
     public bool? CheckStrictly { get; set; }
 
     [Parameter]
-    public VueValue[]? DefaultCheckedKeys { get; set; }
+    public VueStringNumberValue[]? DefaultCheckedKeys { get; set; }
 
     [Parameter]
     public VueStringNumberValue? CurrentNodeKey { get; set; }
@@ -8323,7 +8323,7 @@ public sealed class ElUpload : ElementPlusContentComponentBase
     public string? Action { get; set; }
 
     [Parameter]
-    public VueValue? Headers { get; set; }
+    public VueHeadersValue? Headers { get; set; }
 
     [Parameter]
     public string? Method { get; set; }
@@ -8380,7 +8380,7 @@ public sealed class ElUpload : ElementPlusContentComponentBase
     public Delegate? BeforeRemove { get; set; }
 
     [Parameter]
-    public VueValue[]? FileList { get; set; }
+    public ElementPlusUploadUserFile[]? FileList { get; set; }
 
     [Parameter]
     public string? ListType { get; set; }
@@ -8633,7 +8633,7 @@ public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
     public string? Placement { get; set; }
 
     [Parameter]
-    public VueValue[]? FallbackPlacements { get; set; }
+    public string[]? FallbackPlacements { get; set; }
 
     [Parameter]
     public bool? CollapseTagsTooltip { get; set; }
@@ -8748,7 +8748,7 @@ public sealed class ElWatermark : ElementPlusContentComponentBase
     public string? Image { get; set; }
 
     [Parameter]
-    public VueValue? Content { get; set; }
+    public VueStringOrStringsValue? Content { get; set; }
 
     [Parameter]
     public VueProps? Font { get; set; }

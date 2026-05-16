@@ -40,6 +40,22 @@ public enum ElementPlusCardShadow
     Never
 }
 
+[String]
+public enum ElementPlusUploadStatus
+{
+    [Description("@#ready")]
+    Ready,
+
+    [Description("@#uploading")]
+    Uploading,
+
+    [Description("@#success")]
+    Success,
+
+    [Description("@#fail")]
+    Fail
+}
+
 [ECMAScript]
 [Description("@#Styles")]
 public sealed record ElementPlusStyles : VueDictionary<VueStringNumberValue>
@@ -351,6 +367,32 @@ public readonly union ElementPlusSpaceSizeValue(ElementPlusComponentSize, Number
         => new((Number)value);
 }
 
+[ECMAScript]
+[Description("@#ThrottleRender")]
+public sealed record ElementPlusThrottleRenderOptions : VueProps
+{
+    [Description("@#leading")]
+    public Number? Leading { get; init; }
+
+    [Description("@#trailing")]
+    public Number? Trailing { get; init; }
+
+    [Description("@#initVal")]
+    public bool? InitVal { get; init; }
+}
+
+[ECMAScript]
+[Description("@#")]
+public readonly union ElementPlusThrottleValue(Number, ElementPlusThrottleRenderOptions)
+{
+    public Number? AsNumber => Value is Number value ? value : default(Number?);
+
+    public ElementPlusThrottleRenderOptions? AsOptions => Value as ElementPlusThrottleRenderOptions;
+
+    public static implicit operator ElementPlusThrottleValue(double value)
+        => new((Number)value);
+}
+
 [String]
 public enum ElementPlusTableSortOrder
 {
@@ -390,6 +432,57 @@ public sealed record ElementPlusTableTreeProps : VueProps
 
     [Description("@#checkStrictly")]
     public bool? CheckStrictly { get; init; }
+}
+
+[ECMAScript]
+[Description("@#Filter")]
+public sealed record ElementPlusTableFilterItem : VueProps
+{
+    [Description("@#text")]
+    public string? Text { get; init; }
+
+    [Description("@#value")]
+    public string? Value { get; init; }
+}
+
+[ECMAScript]
+[Description("@#UploadRawFile")]
+public sealed record ElementPlusUploadRawFile : VueProps
+{
+    [Description("@#uid")]
+    public Number Uid { get; init; } = default!;
+
+    [Description("@#isDirectory")]
+    public bool? IsDirectory { get; init; }
+}
+
+[ECMAScript]
+[Description("@#UploadUserFile")]
+public sealed record ElementPlusUploadUserFile : VueProps
+{
+    [Description("@#name")]
+    public string Name { get; init; } = string.Empty;
+
+    [Description("@#percentage")]
+    public Number? Percentage { get; init; }
+
+    [Description("@#status")]
+    public ElementPlusUploadStatus? Status { get; init; }
+
+    [Description("@#size")]
+    public Number? Size { get; init; }
+
+    [Description("@#response")]
+    public VueValue? Response { get; init; }
+
+    [Description("@#uid")]
+    public Number? Uid { get; init; }
+
+    [Description("@#url")]
+    public string? Url { get; init; }
+
+    [Description("@#raw")]
+    public ElementPlusUploadRawFile? Raw { get; init; }
 }
 
 [String]

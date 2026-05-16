@@ -63,6 +63,12 @@ public sealed class ElementPlusSharedContractTests
         Assert.AreEqual(typeof(VueStringNumberValue[]), typeof(ElTransfer).GetProperty(nameof(ElTransfer.ModelValue))?.PropertyType);
         Assert.AreEqual(typeof(VueStringNumberValue[]), typeof(ElTransfer).GetProperty(nameof(ElTransfer.LeftDefaultChecked))?.PropertyType);
         Assert.AreEqual(typeof(VueStringNumberValue[]), typeof(ElTransfer).GetProperty(nameof(ElTransfer.RightDefaultChecked))?.PropertyType);
+        Assert.AreEqual(typeof(VueBooleanStringNumberObjectValue?), typeof(ElCheckbox).GetProperty(nameof(ElCheckbox.Value))?.PropertyType);
+        Assert.AreEqual(typeof(VueBooleanStringNumberObjectValue?), typeof(ElCheckbox).GetProperty(nameof(ElCheckbox.Label))?.PropertyType);
+        Assert.AreEqual(typeof(VueBooleanStringNumberObjectValue?), typeof(ElCheckboxButton).GetProperty(nameof(ElCheckboxButton.Value))?.PropertyType);
+        Assert.AreEqual(typeof(VueBooleanStringNumberObjectValue?), typeof(ElCheckboxButton).GetProperty(nameof(ElCheckboxButton.Label))?.PropertyType);
+        Assert.AreEqual(typeof(VueStringNumberObjectValue?), typeof(ElDropdownItem).GetProperty(nameof(ElDropdownItem.Command))?.PropertyType);
+        Assert.AreEqual(typeof(VueStringNumberValue[]), typeof(ElCheckboxGroup).GetProperty(nameof(ElCheckboxGroup.ModelValue))?.PropertyType);
     }
 
     [TestMethod]
@@ -128,6 +134,8 @@ public sealed class ElementPlusSharedContractTests
 
         Assert.AreEqual(typeof(ElementPlusTableSort), typeof(ElTable).GetProperty(nameof(ElTable.DefaultSort))?.PropertyType);
         Assert.AreEqual(typeof(ElementPlusTableTreeProps), typeof(ElTable).GetProperty(nameof(ElTable.TreeProps))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusTableSortOrder?[]), typeof(ElTableColumn).GetProperty(nameof(ElTableColumn.SortOrders))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusTableFilterItem[]), typeof(ElTableColumn).GetProperty(nameof(ElTableColumn.Filters))?.PropertyType);
         Assert.AreEqual(typeof(Number?), typeof(ElPagination).GetProperty(nameof(ElPagination.PagerCount))?.PropertyType);
     }
 
@@ -163,6 +171,41 @@ public sealed class ElementPlusSharedContractTests
     }
 
     [TestMethod]
+    public void ElementPlus_AdditionalOfficialUnionContracts_ReuseSharedVueTypes()
+    {
+        Assert.AreEqual(typeof(string), typeof(ElDivider).GetProperty(nameof(ElDivider.BorderStyle))?.PropertyType);
+        Assert.AreEqual(typeof(VueStringRegExpValue?), typeof(ElInputTag).GetProperty(nameof(ElInputTag.Delimiter))?.PropertyType);
+        Assert.AreEqual(typeof(VueStringOrStringsValue?), typeof(ElWatermark).GetProperty(nameof(ElWatermark.Content))?.PropertyType);
+    }
+
+    [TestMethod]
+    public void ElementPlus_PopperPlacementAndScrollbarContracts_ReuseOfficialSharedVueTypes()
+    {
+        Assert.AreEqual(typeof(string[]), typeof(ElCascader).GetProperty(nameof(ElCascader.FallbackPlacements))?.PropertyType);
+        Assert.AreEqual(typeof(string[]), typeof(ElSelect).GetProperty(nameof(ElSelect.FallbackPlacements))?.PropertyType);
+        Assert.AreEqual(typeof(string[]), typeof(ElTooltip).GetProperty(nameof(ElTooltip.FallbackPlacements))?.PropertyType);
+        Assert.AreEqual(typeof(string[]), typeof(ElTreeSelect).GetProperty(nameof(ElTreeSelect.FallbackPlacements))?.PropertyType);
+        Assert.AreEqual(typeof(string[]), typeof(ElVirtualizedSelect).GetProperty(nameof(ElVirtualizedSelect.FallbackPlacements))?.PropertyType);
+
+        Assert.AreEqual(typeof(VueStyleValue?), typeof(ElScrollbar).GetProperty(nameof(ElScrollbar.WrapStyle))?.PropertyType);
+        Assert.AreEqual(typeof(VueStyleValue?), typeof(ElScrollbar).GetProperty(nameof(ElScrollbar.ViewStyle))?.PropertyType);
+    }
+
+    [TestMethod]
+    public void ElementPlus_AdditionalOfficialHostContracts_UsePreciseSharedAndNamedTypes()
+    {
+        Assert.AreEqual(typeof(bool?), typeof(ElPopover).GetProperty(nameof(ElPopover.Visible))?.PropertyType);
+        Assert.AreEqual(typeof(VueStringHtmlElementValue?), typeof(ElImage).GetProperty(nameof(ElImage.ScrollContainer))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusThrottleValue?), typeof(ElSkeleton).GetProperty(nameof(ElSkeleton.Throttle))?.PropertyType);
+        Assert.AreEqual(typeof(VueHeadersValue?), typeof(ElUpload).GetProperty(nameof(ElUpload.Headers))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusUploadUserFile[]), typeof(ElUpload).GetProperty(nameof(ElUpload.FileList))?.PropertyType);
+        Assert.AreEqual(typeof(VueNumberOrNumbersValue?), typeof(ElSlider).GetProperty(nameof(ElSlider.ModelValue))?.PropertyType);
+        Assert.AreEqual(typeof(EventCallback<VueNumberOrNumbersValue?>), typeof(ElSlider).GetProperty(nameof(ElSlider.ModelValueChanged))?.PropertyType);
+        Assert.AreEqual(typeof(Number?), typeof(ElInputNumber).GetProperty(nameof(ElInputNumber.ModelValue))?.PropertyType);
+        Assert.AreEqual(typeof(EventCallback<Number?>), typeof(ElInputNumber).GetProperty(nameof(ElInputNumber.ModelValueChanged))?.PropertyType);
+    }
+
+    [TestMethod]
     public void ElementPlus_BracketedOfficialProps_UseNamedContracts()
     {
         Assert.AreEqual(typeof(ElementPlusTransferDataItem[]), typeof(ElTransfer).GetProperty(nameof(ElTransfer.Data))?.PropertyType);
@@ -182,6 +225,33 @@ public sealed class ElementPlusSharedContractTests
         Assert.AreEqual(typeof(ElementPlusTreeOptionProps), typeof(ElTreeV2).GetProperty("Props")?.PropertyType);
         Assert.AreEqual(typeof(ElementPlusCascaderProps), typeof(ElCascader).GetProperty("Props")?.PropertyType);
         Assert.AreEqual(typeof(ElementPlusCascaderProps), typeof(ElCascaderPanel).GetProperty("Props")?.PropertyType);
+    }
+
+    [TestMethod]
+    public void ElementPlus_TreeKeyArrayContracts_ReuseSharedStringNumberCollections()
+    {
+        Assert.AreEqual(typeof(VueStringNumberValue[]), typeof(ElTree).GetProperty(nameof(ElTree.DefaultExpandedKeys))?.PropertyType);
+        Assert.AreEqual(typeof(VueStringNumberValue[]), typeof(ElTree).GetProperty(nameof(ElTree.DefaultCheckedKeys))?.PropertyType);
+        Assert.AreEqual(typeof(VueStringNumberValue[]), typeof(ElTreeV2).GetProperty(nameof(ElTreeV2.DefaultExpandedKeys))?.PropertyType);
+        Assert.AreEqual(typeof(VueStringNumberValue[]), typeof(ElTreeV2).GetProperty(nameof(ElTreeV2.DefaultCheckedKeys))?.PropertyType);
+        Assert.AreEqual(typeof(VueStringNumberValue[]), typeof(ElTreeSelect).GetProperty(nameof(ElTreeSelect.DefaultExpandedKeys))?.PropertyType);
+        Assert.AreEqual(typeof(VueStringNumberValue[]), typeof(ElTreeSelect).GetProperty(nameof(ElTreeSelect.DefaultCheckedKeys))?.PropertyType);
+    }
+
+    [TestMethod]
+    public void ElementPlus_UploadContracts_UseOfficialStructuredTypes()
+    {
+        Assert.AreEqual(typeof(string), typeof(ElementPlusUploadUserFile).GetProperty(nameof(ElementPlusUploadUserFile.Name))?.PropertyType);
+        Assert.AreEqual(typeof(Number?), typeof(ElementPlusUploadUserFile).GetProperty(nameof(ElementPlusUploadUserFile.Percentage))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusUploadStatus?), typeof(ElementPlusUploadUserFile).GetProperty(nameof(ElementPlusUploadUserFile.Status))?.PropertyType);
+        Assert.AreEqual(typeof(Number?), typeof(ElementPlusUploadUserFile).GetProperty(nameof(ElementPlusUploadUserFile.Size))?.PropertyType);
+        Assert.AreEqual(typeof(VueValue), typeof(ElementPlusUploadUserFile).GetProperty(nameof(ElementPlusUploadUserFile.Response))?.PropertyType);
+        Assert.AreEqual(typeof(Number?), typeof(ElementPlusUploadUserFile).GetProperty(nameof(ElementPlusUploadUserFile.Uid))?.PropertyType);
+        Assert.AreEqual(typeof(string), typeof(ElementPlusUploadUserFile).GetProperty(nameof(ElementPlusUploadUserFile.Url))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusUploadRawFile), typeof(ElementPlusUploadUserFile).GetProperty(nameof(ElementPlusUploadUserFile.Raw))?.PropertyType);
+
+        Assert.AreEqual(typeof(Number), typeof(ElementPlusUploadRawFile).GetProperty(nameof(ElementPlusUploadRawFile.Uid))?.PropertyType);
+        Assert.AreEqual(typeof(bool?), typeof(ElementPlusUploadRawFile).GetProperty(nameof(ElementPlusUploadRawFile.IsDirectory))?.PropertyType);
     }
 
     [TestMethod]
