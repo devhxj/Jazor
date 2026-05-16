@@ -1,4 +1,4 @@
-# ECMAScript.Vben 状态（2026-05-15）
+# ECMAScript.Vben 状态（2026-05-16）
 
 > Status: 当前状态快照  
 > Positioning: `src/ECMAScript.Vben/` 后台壳层抽象与原生 RazorVue 实现的仓库级状态快照  
@@ -58,6 +58,24 @@
 
 - 默认情况下直接解析到 `ECMAScript.Vben` 原生实现
 - 如应用层声明 `[VueInject]`，则 RazorVue 会保留 `Vben` authoring contract，同时切换到具体 implementation 的 runtime import / prop / slot 名称
+
+当前对 `VbenSidebarMenu` 的原生行为补充已经进入主线：
+
+- `ExpandedKeys` 现在有明确优先级：显式传入优先于基于 `SelectedKey` 的祖先展开回退；
+- 当 `ExpandedKeys = []` 时，显式空数组会正确覆盖“按选中项自动展开祖先”的默认回退；
+- 原生菜单项已区分 `selected`、`ancestor-selected`、`expanded`、`disabled` 等状态，不再只有叶子节点 `is-active`；
+- 禁用分支不会再被误判为可导航或可展开子树；
+- 带 `Target` 的禁用叶子节点不再保留真实 `href`，避免“逻辑上 disabled、浏览器上仍可跳转”的错误语义；
+- `VbenRouteLocation` 在原生菜单中已收口到统一导航目标解析，不再只支持纯字符串 `href`。
+
+当前对 `VbenPageContainer` 的原生行为补充也已进入主线：
+
+- breadcrumb 不再退化为纯文本；当 `Target` 可解析为 `href` 时会输出真实可导航锚点；
+- breadcrumb 的 `VbenRouteLocation.Path/Hash` 现在会收口到和 sidebar 相同的导航目标解析规则；
+- 禁用 breadcrumb 即使携带 `Target`，也不会再输出真实 `href`，而是输出带 `aria-disabled` 的非导航节点；
+- action 不再一律退化为朴素按钮；当 `Target` 可导航且未禁用时会输出真实锚点；
+- action `Kind` 已稳定映射为原生语义类（`default/primary/secondary/link/danger`），方便后续样式与容器实现保持语义一致；
+- 禁用 action 即使携带 `Target`，也不会保留可跳转 `href`，并会显式带上禁用语义状态。
 
 ### 3. 公共语义模型已经建立
 
@@ -142,16 +160,32 @@
   - `VbenSidebarMenu` 的 injected runtime shape 已进入 Vue SFC artifact 与 pipeline artifact 回归；
   - 多壳层组合页已进入 Vue SFC artifact 与 pipeline artifact 回归，覆盖 `VbenAdminLayout` / `VbenHeaderBar` / `VbenSidebarMenu` / `VbenPageContainer` 同时注入时的 import 聚合、style/plugin 去重聚合、嵌套 slot 转译与 model prop / emit 映射稳定性；
   - `missing prop` / `prop type mismatch` / `emit payload mismatch` / `default slot mismatch` / `CaptureUnmatchedValues mismatch` / `duplicate [VueInject]` / `mismatched IVueContainerImplementation<TContainer>` 都已有 focused failure-path 回归；
+- `VbenNativeSidebarMenuTests` 校验：
+  - `ExpandedKeys` 显式状态与 `SelectedKey` 祖先展开回退的优先级；
+  - 显式空 `ExpandedKeys` 覆盖默认回退；
+  - 选中节点与祖先选中链状态；
+  - 禁用分支不会被计为可导航或可展开子树；
+  - 禁用 `href` 叶子节点最终输出为禁用按钮而不是可导航链接；
+- `VbenNativePageContainerTests` 校验：
+  - breadcrumb `href` 目标会输出可导航锚点；
+  - breadcrumb `route path/hash` 目标会解析为稳定 `href`；
+  - 禁用 breadcrumb 不会再输出可导航锚点；
+  - action `href` / route-hash 目标会输出可导航锚点；
+  - action `Kind` 会落为稳定原生语义类；
+  - 禁用 action 即使携带 `Target` 也不会再输出可跳转链接；
 - `VueAuthoringMetadataTests` 校验：
   - 通用 `VueProp` / `VueSlot` 元数据可被 RazorVue descriptor extraction 正常识别；
   - `ECMAScript.VueContract` 当前只保留 canonical 的 `VuePropAttribute` / `VueSlotAttribute`。
 
-2026-05-15 当前基线复核：
+2026-05-16 当前基线复核：
 
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenContainerInjectTests' -v minimal`：已通过（23/23）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenContainerInjectTests|FullyQualifiedName~VbenAuthoringSurfaceTests|FullyQualifiedName~VueAuthoringMetadataTests' -v minimal`：已通过；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~Vben_MultiShell_ContainerInject' -v minimal`：已通过（2/2）；
-- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj -v minimal`：已通过（30/30）；
+- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeSidebarMenuTests' -v minimal`：已通过（4/4）；
+- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativePageContainerTests' -v minimal`：已通过（6/6）；
+- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeSidebarMenuTests|FullyQualifiedName~VbenAuthoringSurfaceTests|FullyQualifiedName~VbenContainerInjectTests' -v minimal`：已通过（35/35）；
+- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj -v minimal`：已通过（48/48）；
 - `samples/ECMAScript.Vben.ElementPlusInject/verify-smoke.cs`：已纳入当前阶段的真实 sample 验证入口，目标覆盖本地 package pack、host rebuild、host requirements 断言、Deno SSR smoke、Deno bundle smoke、browser build、browser smoke；
 - `RazorVue` 聚焦回归已覆盖 Vben 相关 descriptor / authoring contract 收口，不再依赖旧兼容别名。
 

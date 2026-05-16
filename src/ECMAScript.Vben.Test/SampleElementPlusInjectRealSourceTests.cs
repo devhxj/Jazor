@@ -74,12 +74,12 @@ public sealed class SampleElementPlusInjectRealSourceTests
 
         Assert.IsFalse(pipelineArtifact.ModuleCode.Contains(".AsArray", StringComparison.Ordinal), pipelineArtifact.ModuleCode);
         Assert.IsFalse(sfcArtifact.SfcText.Contains(".AsArray", StringComparison.Ordinal), sfcArtifact.SfcText);
-        StringAssert.Contains(sfcArtifact.SfcText, "props.item.Children == null");
-        StringAssert.Contains(sfcArtifact.SfcText, "props.item.Children.length > 0");
+        StringAssert.Contains(sfcArtifact.SfcText, "props.item.children == null");
+        StringAssert.Contains(sfcArtifact.SfcText, "props.item.children.length > 0");
         StringAssert.Contains(sfcArtifact.SfcText, "props.item.key");
         StringAssert.Contains(sfcArtifact.SfcText, "props.item.children");
         Assert.IsFalse(
-            sfcArtifact.SfcText.Contains("props.item.Children === null", StringComparison.Ordinal),
+            sfcArtifact.SfcText.Contains("props.item.Children", StringComparison.Ordinal),
             sfcArtifact.SfcText);
     }
 

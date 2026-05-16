@@ -20,4 +20,113 @@ public partial class VbenPageContainer : VbenContentComponentBase, IVueContainer
 
     private VueClassValue RootCssClass
         => BuildCssClass("vben-page");
+
+    private RenderFragment RenderBreadcrumbItem(VbenBreadcrumbItem item) => builder =>
+    {
+        var isDisabled = item.Disabled ?? false;
+        var href = VbenNavigationTargetResolver.TryResolveHref(item.Target);
+        var cssClass = BuildBreadcrumbItemCssClass(item, isDisabled, href is not null);
+
+        if (!isDisabled && href is not null)
+        {
+            builder.OpenElement(0, "a");
+            builder.AddAttribute(1, "class", cssClass);
+            builder.AddAttribute(2, "href", href);
+            builder.AddContent(3, item.Title);
+            builder.CloseElement();
+            return;
+        }
+
+        builder.OpenElement(10, "span");
+        builder.AddAttribute(11, "class", cssClass);
+        if (isDisabled)
+        {
+            builder.AddAttribute(12, "aria-disabled", true);
+        }
+
+        builder.AddContent(13, item.Title);
+        builder.CloseElement();
+    };
+
+    private RenderFragment RenderAction(VbenPageAction action) => builder =>
+    {
+        var isDisabled = action.Disabled ?? false;
+        var href = VbenNavigationTargetResolver.TryResolveHref(action.Target);
+        var cssClass = BuildActionCssClass(action);
+
+        if (!isDisabled && href is not null)
+        {
+            builder.OpenElement(0, "a");
+            builder.AddAttribute(1, "class", cssClass);
+            builder.AddAttribute(2, "href", href);
+            builder.AddContent(3, action.Text);
+            builder.CloseElement();
+            return;
+        }
+
+        builder.OpenElement(10, "button");
+        builder.AddAttribute(11, "type", "button");
+        builder.AddAttribute(12, "class", cssClass);
+        builder.AddAttribute(13, "disabled", isDisabled);
+        if (isDisabled && href is not null)
+        {
+            builder.AddAttribute(14, "aria-disabled", true);
+        }
+
+        builder.AddContent(15, action.Text);
+        builder.CloseElement();
+    };
+
+    private static string BuildBreadcrumbItemCssClass(
+        VbenBreadcrumbItem item,
+        bool isDisabled,
+        bool hasHref)
+    {
+        var classes = new List<string>(4)
+        {
+            "vben-page__breadcrumb-item"
+        };
+
+        if (hasHref)
+        {
+            classes.Add("is-link");
+        }
+
+        if (isDisabled)
+        {
+            classes.Add("is-disabled");
+        }
+
+        if (string.IsNullOrWhiteSpace(item.Title))
+        {
+            classes.Add("is-empty");
+        }
+
+        return string.Join(" ", classes);
+    }
+
+    private static string BuildActionCssClass(VbenPageAction action)
+    {
+        var classes = new List<string>(4)
+        {
+            "vben-page__action",
+            $"vben-page__action--{MapActionKindSuffix(action.Kind)}"
+        };
+
+        if (action.Disabled ?? false)
+        {
+            classes.Add("is-disabled");
+        }
+
+        return string.Join(" ", classes);
+    }
+
+    private static string MapActionKindSuffix(VbenPageActionKind? kind) => kind switch
+    {
+        VbenPageActionKind.Primary => "primary",
+        VbenPageActionKind.Secondary => "secondary",
+        VbenPageActionKind.Link => "link",
+        VbenPageActionKind.Danger => "danger",
+        _ => "default"
+    };
 }
