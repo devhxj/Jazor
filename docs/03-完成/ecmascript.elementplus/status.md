@@ -1748,6 +1748,194 @@
 
 共 `25/25` 通过。
 
+## 2026-05-16 第十九批收口
+
+这一批转向处理 **高频稳定字面量域仍然裸露为 `string?` 的 authoring surface**。目标不是把每个组件各自改成一组零散 enum，而是把 Element Plus 已经稳定复用的公开字符串域收敛为共享 contract，并把组件专属但稳定的字面量域收敛为命名 contract。
+
+### 1. 共享字面量域已开始统一，不再让高频 prop 到处落成 `string?`
+
+本轮新增并接入了一组共享 literal-domain contract，包括：
+
+- `ElementPlusPopperPlacement`
+- `ElementPlusPopperPlacementSide`
+- `ElementPlusButtonType`
+- `ElementPlusButtonNativeType`
+- `ElementPlusDirection`
+- `ElementPlusTagType`
+- `ElementPlusTagEffect`
+
+已切换到这些共享 contract 的代表性公开面包括：
+
+- `ElButton.Type` / `NativeType`
+- `ElButtonGroup.Type` / `Direction`
+- `ElDropdown.Type` / `Placement` / `Effect`
+- `ElPopover.Placement` / `Effect`
+- `ElSelect.Placement` / `Effect` / `TagType` / `TagEffect`
+- `ElTabs.Type` / `TabPosition`
+- `ElTag.Type` / `Effect`
+- `ElTooltip.Placement`
+- `ElVirtualizedSelect.Effect` / `Placement` / `TagType` / `TagEffect`
+- `ElTreeSelect.Effect` / `Placement` / `TagType` / `TagEffect`
+
+同步地，相关共享 value/config contract 也已一起收紧：
+
+- `ElementPlusButtonConfig.Type`
+- `ElementPlusLinkConfig.Type`
+- `ElementPlusTagTooltipProps.Placement` / `FallbackPlacements`
+- `ElementPlusButtonProps.Type` / `NativeType`
+
+### 2. 组件专属但稳定的字面量域已切回命名 contract
+
+本轮还补了几组组件专属 literal-domain contract：
+
+- `ElementPlusAvatarShape`
+- `ElementPlusCalendarControllerType`
+- `ElementPlusCollapseIconPosition`
+- `ElementPlusContentPosition`
+- `ElementPlusFormItemValidateStatus`
+- `ElementPlusProgressType`
+- `ElementPlusProgressStatus`
+- `ElementPlusStepStatus`
+
+已切换到这些 contract 的公开面包括：
+
+- `ElAvatar.Shape`
+- `ElAvatarGroup.Shape`
+- `ElCalendar.ControllerType`
+- `ElCollapse.ExpandIconPosition`
+- `ElDivider.ContentPosition`
+- `ElFormItem.ValidateStatus`
+- `ElProgress.Type` / `Status`
+- `ElStep.Status`
+- `ElSteps.Direction` / `FinishStatus` / `ProcessStatus`
+
+### 3. 修复过程中补了一条重要生成架构结论
+
+这一批顺手暴露出一个容易误判的点：
+
+- `ElTreeSelect` 不是从自己的一份独立 prop metadata 直接生成；
+- 它是 supplemental component，由 `ElSelect + ElTree` 合并得到；
+- 因此像 `Effect` / `Placement` / `TagType` / `TagEffect` 这类共享面，正确修复入口是先收紧 `ElSelect` 的公开 contract，再由 `ElTreeSelect` 继承；
+- 仅给 `el-tree-select` 自己补 override 并不能覆盖来自源组件继承的 prop。
+
+这个规则已经通过本轮修复路径得到验证，后续处理 supplemental component 时必须先判断 prop 的真正来源，不要只盯最终 tag。
+
+### 4. 新增 focused literal-domain contract 测试
+
+本轮新增：
+
+- `src/Jazor.RazorVue.Test/ElementPlusLiteralDomainContractTests.cs`
+
+守护点包括：
+
+- 组件参数面的高频 `type/effect/placement/status/direction/...` 不再回退为裸 `string?`
+- 共享 value/config contract 与组件参数面保持一致
+- `ElTreeSelect` 这类 supplemental component 的共享字面量域确实通过源组件继承链被正确收紧
+
+## 本轮验证
+
+本轮已通过：
+
+- `dotnet run --file scripts/csharp/generate-elementplus-bindings.cs`
+- `dotnet build src/ECMAScript.ElementPlus/ECMAScript.ElementPlus.csproj -v minimal -p:UseSharedCompilation=false`
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~ElementPlusSharedContractTests|FullyQualifiedName~ElementPlusCallbackContractTests|FullyQualifiedName~ElementPlusLiteralDomainContractTests' -v minimal -p:UseSharedCompilation=false`
+
+当前聚焦：
+
+- `ElementPlusSharedContractTests`
+- `ElementPlusCallbackContractTests`
+- `ElementPlusLiteralDomainContractTests`
+
+共 `27/27` 通过。
+
+## 2026-05-16 第二十批收口
+
+这一批继续处理 **官方已经给出稳定 union、但 authoring surface 仍残留 `string?` 的布局/位置类字面量域**。本轮重点不是继续堆零散组件私有枚举，而是把能够稳定复用的域收成共享 contract，把确实组件专属的稳定域收成命名 contract。
+
+### 1. `horizontal/vertical` 已继续统一到共享方向 contract
+
+本轮确认并收紧到 `ElementPlusDirection` 的公开面包括：
+
+- `ElCarousel.Direction`
+- `ElContainer.Direction`
+- `ElDescriptions.Direction`
+- `ElSegmented.Direction`
+- `ElSpace.Direction`
+
+这意味着 Element Plus 内部多处复用的方向域不再各自裸露为 `string?`，后续 authoring 和反射守护都可以按一个共享 contract 收敛。
+
+### 2. `top/bottom` 位置域已抽成共享 contract
+
+本轮新增共享 contract：
+
+- `ElementPlusTopBottomPlacement`
+
+已切换到该 contract 的公开面包括：
+
+- `ElAffix.Position`
+- `ElTimelineItem.Placement`
+
+这里没有错误复用到完整 popper placement，因为官方域只有 `top | bottom`，不是完整的 twelve-way placement。收紧时保持了原始语义边界。
+
+### 3. 组件专属稳定域收成命名 contract，而不是继续裸 `string?`
+
+本轮新增并接入：
+
+- `ElementPlusCarouselType`
+- `ElementPlusTimelineMode`
+- `ElementPlusSemanticType`
+
+已切换的公开面包括：
+
+- `ElCarousel.Type`
+- `ElTimeline.Mode`
+- `ElText.Type`
+- `ElTimelineItem.Type`
+
+其中：
+
+- `ElementPlusCarouselType` 对应 `'' | 'card'`
+- `ElementPlusTimelineMode` 对应 `start | end | alternate | alternate-reverse`
+- `ElementPlusSemanticType` 对应 `'' | primary | success | warning | info | danger`
+
+这批没有把 `Alert/Badge/Text/TimelineItem` 所有 `type` 粗暴合并到一个过宽 contract；而是只在 **官方值域真正一致** 的面上复用 `ElementPlusSemanticType`，避免为了减少类型数而扩大可选域。
+
+### 4. focused literal-domain 守护继续扩展
+
+本轮继续扩展：
+
+- `src/Jazor.RazorVue.Test/ElementPlusLiteralDomainContractTests.cs`
+
+新增守护点覆盖：
+
+- `ElAffix`
+- `ElCarousel`
+- `ElContainer`
+- `ElDescriptions`
+- `ElSegmented`
+- `ElSpace`
+- `ElText`
+- `ElTimeline`
+- `ElTimelineItem`
+
+这样后续如果生成器回退到裸 `string?`，或者共享 contract 被意外拆散，focused 反射测试会直接报出具体组件与 prop。
+
+## 本轮验证
+
+本轮已通过：
+
+- `dotnet run --file scripts/csharp/generate-elementplus-bindings.cs`
+- `dotnet build src/ECMAScript.ElementPlus/ECMAScript.ElementPlus.csproj -v minimal -p:UseSharedCompilation=false`
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~ElementPlusSharedContractTests|FullyQualifiedName~ElementPlusCallbackContractTests|FullyQualifiedName~ElementPlusLiteralDomainContractTests' -v minimal -p:UseSharedCompilation=false`
+
+当前聚焦：
+
+- `ElementPlusSharedContractTests`
+- `ElementPlusCallbackContractTests`
+- `ElementPlusLiteralDomainContractTests`
+
+共 `27/27` 通过。
+
 ## 参考
 
 - [src/ECMAScript.ElementPlus](../../../src/ECMAScript.ElementPlus)
@@ -1755,3 +1943,4 @@
 - [src/Jazor.RazorVue.Test/ElementPlusAuthoringSurfaceTests.cs](../../../src/Jazor.RazorVue.Test/ElementPlusAuthoringSurfaceTests.cs)
 - [src/Jazor.RazorVue.Test/ElementPlusSharedContractTests.cs](../../../src/Jazor.RazorVue.Test/ElementPlusSharedContractTests.cs)
 - [src/Jazor.RazorVue.Test/ElementPlusCallbackContractTests.cs](../../../src/Jazor.RazorVue.Test/ElementPlusCallbackContractTests.cs)
+- [src/Jazor.RazorVue.Test/ElementPlusLiteralDomainContractTests.cs](../../../src/Jazor.RazorVue.Test/ElementPlusLiteralDomainContractTests.cs)

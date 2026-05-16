@@ -33,7 +33,7 @@ public sealed class ElAffix : ElementPlusContentComponentBase
     public Number? Offset { get; set; }
 
     [Parameter]
-    public string? Position { get; set; }
+    public ElementPlusTopBottomPlacement? Position { get; set; }
 
     [Parameter]
     public string? Target { get; set; }
@@ -379,7 +379,7 @@ public sealed class ElAvatar : ElementPlusContentComponentBase
     public VueStringNumberValue? Size { get; set; }
 
     [Parameter]
-    public string? Shape { get; set; }
+    public ElementPlusAvatarShape? Shape { get; set; }
 
     [Parameter]
     public string? Src { get; set; }
@@ -423,7 +423,7 @@ public sealed class ElAvatarGroup : ElementPlusComponentBase
     public VueStringNumberValue? Size { get; set; }
 
     [Parameter]
-    public string? Shape { get; set; }
+    public ElementPlusAvatarShape? Shape { get; set; }
 
     [Parameter]
     public bool? CollapseAvatars { get; set; }
@@ -435,10 +435,10 @@ public sealed class ElAvatarGroup : ElementPlusComponentBase
     public Number? MaxCollapseAvatars { get; set; }
 
     [Parameter]
-    public string? Effect { get; set; }
+    public ElementPlusPopperEffect? Effect { get; set; }
 
     [Parameter]
-    public string? Placement { get; set; }
+    public ElementPlusPopperPlacement? Placement { get; set; }
 
     [Parameter]
     public string? PopperClass { get; set; }
@@ -622,7 +622,7 @@ public sealed class ElButton : ElementPlusContentComponentBase
     public ElementPlusComponentSize? Size { get; set; }
 
     [Parameter]
-    public string? Type { get; set; }
+    public ElementPlusButtonType? Type { get; set; }
 
     [Parameter]
     public bool? Plain { get; set; }
@@ -661,7 +661,7 @@ public sealed class ElButton : ElementPlusContentComponentBase
     public bool? Autofocus { get; set; }
 
     [Parameter]
-    public string? NativeType { get; set; }
+    public ElementPlusButtonNativeType? NativeType { get; set; }
 
     [Parameter]
     public bool? AutoInsertSpace { get; set; }
@@ -701,10 +701,10 @@ public sealed class ElButtonGroup : ElementPlusContentComponentBase
     public ElementPlusComponentSize? Size { get; set; }
 
     [Parameter]
-    public string? Type { get; set; }
+    public ElementPlusButtonType? Type { get; set; }
 
     [Parameter]
-    public string? Direction { get; set; }
+    public ElementPlusDirection? Direction { get; set; }
 
 }
 
@@ -732,7 +732,7 @@ public sealed class ElCalendar : ElementPlusComponentBase
     public VueDatePair? Range { get; set; }
 
     [Parameter]
-    public string? ControllerType { get; set; }
+    public ElementPlusCalendarControllerType? ControllerType { get; set; }
 
     [Parameter]
     public ElementPlusCalendarFormatterCallback? Formatter { get; set; }
@@ -844,7 +844,7 @@ public sealed class ElCarousel : ElementPlusContentComponentBase
     public string? Arrow { get; set; }
 
     [Parameter]
-    public string? Type { get; set; }
+    public ElementPlusCarouselType? Type { get; set; }
 
     [Parameter]
     public Number? CardScale { get; set; }
@@ -853,7 +853,7 @@ public sealed class ElCarousel : ElementPlusContentComponentBase
     public bool? Loop { get; set; }
 
     [Parameter]
-    public string? Direction { get; set; }
+    public ElementPlusDirection? Direction { get; set; }
 
     [Parameter]
     public bool? PauseOnHover { get; set; }
@@ -1486,7 +1486,7 @@ public sealed class ElCollapse : ElementPlusContentComponentBase
     public bool? Accordion { get; set; }
 
     [Parameter]
-    public string? ExpandIconPosition { get; set; }
+    public ElementPlusCollapseIconPosition? ExpandIconPosition { get; set; }
 
     [Parameter]
     public ElementPlusCollapseBeforeCollapseCallback? BeforeCollapse { get; set; }
@@ -1794,7 +1794,7 @@ public sealed class ElConfigProvider : ElementPlusContentComponentBase
 public sealed class ElContainer : ElementPlusContentComponentBase
 {
     [Parameter]
-    public string? Direction { get; set; }
+    public ElementPlusDirection? Direction { get; set; }
 
 }
 
@@ -2199,7 +2199,7 @@ public sealed class ElDescriptions : ElementPlusContentComponentBase
     public Number? Column { get; set; }
 
     [Parameter]
-    public string? Direction { get; set; }
+    public ElementPlusDirection? Direction { get; set; }
 
     [Parameter]
     public string? Size { get; set; }
@@ -2466,13 +2466,13 @@ public sealed class ElDialog : ElementPlusContentComponentBase
 public sealed class ElDivider : ElementPlusContentComponentBase
 {
     [Parameter]
-    public string? Direction { get; set; }
+    public ElementPlusDirection? Direction { get; set; }
 
     [Parameter]
     public string? BorderStyle { get; set; }
 
     [Parameter]
-    public string? ContentPosition { get; set; }
+    public ElementPlusContentPosition? ContentPosition { get; set; }
 
 }
 
@@ -2681,7 +2681,7 @@ public sealed class ElDrawer : ElementPlusContentComponentBase
 public sealed class ElDropdown : ElementPlusContentComponentBase
 {
     [Parameter]
-    public string? Type { get; set; }
+    public ElementPlusButtonType? Type { get; set; }
 
     [Parameter]
     public string? Size { get; set; }
@@ -2699,10 +2699,10 @@ public sealed class ElDropdown : ElementPlusContentComponentBase
     public bool? Disabled { get; set; }
 
     [Parameter]
-    public string? Placement { get; set; }
+    public ElementPlusPopperPlacement? Placement { get; set; }
 
     [Parameter]
-    public string? Effect { get; set; }
+    public ElementPlusPopperEffect? Effect { get; set; }
 
     [Parameter]
     public ElementPlusDropdownTriggerValue? Trigger { get; set; }
@@ -3002,7 +3002,7 @@ public sealed class ElFormItem : ElementPlusContentComponentBase
     public string? For { get; set; }
 
     [Parameter]
-    public string? ValidateStatus { get; set; }
+    public ElementPlusFormItemValidateStatus? ValidateStatus { get; set; }
 
     [Parameter]
     public RenderFragment? LabelSlot { get; set; }
@@ -4543,7 +4543,7 @@ public sealed class ElPopover : ElementPlusContentComponentBase
     public string? Title { get; set; }
 
     [Parameter]
-    public string? Effect { get; set; }
+    public ElementPlusPopperEffect? Effect { get; set; }
 
     [Parameter]
     public string? Content { get; set; }
@@ -4552,7 +4552,7 @@ public sealed class ElPopover : ElementPlusContentComponentBase
     public VueStringNumberValue? Width { get; set; }
 
     [Parameter]
-    public string? Placement { get; set; }
+    public ElementPlusPopperPlacement? Placement { get; set; }
 
     [Parameter]
     public bool? Disabled { get; set; }
@@ -4674,7 +4674,7 @@ public sealed class ElProgress : ElementPlusContentComponentBase
     public Number? Percentage { get; set; }
 
     [Parameter]
-    public string? Type { get; set; }
+    public ElementPlusProgressType? Type { get; set; }
 
     [Parameter]
     public Number? StrokeWidth { get; set; }
@@ -4683,7 +4683,7 @@ public sealed class ElProgress : ElementPlusContentComponentBase
     public bool? TextInside { get; set; }
 
     [Parameter]
-    public string? Status { get; set; }
+    public ElementPlusProgressStatus? Status { get; set; }
 
     [Parameter]
     public bool? Indeterminate { get; set; }
@@ -5186,7 +5186,7 @@ public sealed class ElSegmented : ElementPlusContentComponentBase
     public string? AriaLabel { get; set; }
 
     [Parameter]
-    public string? Direction { get; set; }
+    public ElementPlusDirection? Direction { get; set; }
 
     [Parameter]
     public EventCallback OnChange { get; set; }
@@ -5319,7 +5319,7 @@ public sealed class ElSelect : ElementPlusContentComponentBase
     public string? Name { get; set; }
 
     [Parameter]
-    public string? Effect { get; set; }
+    public ElementPlusPopperEffect? Effect { get; set; }
 
     [Parameter]
     public string? Autocomplete { get; set; }
@@ -5394,10 +5394,10 @@ public sealed class ElSelect : ElementPlusContentComponentBase
     public VueStringComponentValue? SuffixIcon { get; set; }
 
     [Parameter]
-    public string? TagType { get; set; }
+    public ElementPlusTagType? TagType { get; set; }
 
     [Parameter]
-    public string? TagEffect { get; set; }
+    public ElementPlusTagEffect? TagEffect { get; set; }
 
     [Parameter]
     public bool? ValidateEvent { get; set; }
@@ -5409,7 +5409,7 @@ public sealed class ElSelect : ElementPlusContentComponentBase
     public bool? ShowArrow { get; set; }
 
     [Parameter]
-    public string? Placement { get; set; }
+    public ElementPlusPopperPlacement? Placement { get; set; }
 
     [Parameter]
     public string[]? FallbackPlacements { get; set; }
@@ -5684,7 +5684,7 @@ public sealed class ElSpace : ElementPlusComponentBase
     public string? Alignment { get; set; }
 
     [Parameter]
-    public string? Direction { get; set; }
+    public ElementPlusDirection? Direction { get; set; }
 
     [Parameter]
     public string? PrefixCls { get; set; }
@@ -5838,7 +5838,7 @@ public sealed class ElStep : ElementPlusComponentBase
     public VueStringComponentValue? Icon { get; set; }
 
     [Parameter]
-    public string? Status { get; set; }
+    public ElementPlusStepStatus? Status { get; set; }
 
     [Parameter]
     public RenderFragment? IconSlot { get; set; }
@@ -5874,16 +5874,16 @@ public sealed class ElSteps : ElementPlusContentComponentBase
     public VueStringNumberValue? Space { get; set; }
 
     [Parameter]
-    public string? Direction { get; set; }
+    public ElementPlusDirection? Direction { get; set; }
 
     [Parameter]
     public Number? Active { get; set; }
 
     [Parameter]
-    public string? ProcessStatus { get; set; }
+    public ElementPlusStepStatus? ProcessStatus { get; set; }
 
     [Parameter]
-    public string? FinishStatus { get; set; }
+    public ElementPlusStepStatus? FinishStatus { get; set; }
 
     [Parameter]
     public bool? AlignCenter { get; set; }
@@ -6767,7 +6767,7 @@ public sealed class ElTabs : ElementPlusContentComponentBase
     public VueStringNumberValue? DefaultValue { get; set; }
 
     [Parameter]
-    public string? Type { get; set; }
+    public ElementPlusTabsType? Type { get; set; }
 
     [Parameter]
     public bool? Closable { get; set; }
@@ -6779,7 +6779,7 @@ public sealed class ElTabs : ElementPlusContentComponentBase
     public bool? Editable { get; set; }
 
     [Parameter]
-    public string? TabPosition { get; set; }
+    public ElementPlusPopperPlacementSide? TabPosition { get; set; }
 
     [Parameter]
     public bool? Stretch { get; set; }
@@ -6835,7 +6835,7 @@ public sealed class ElTabs : ElementPlusContentComponentBase
 public sealed class ElTag : ElementPlusContentComponentBase
 {
     [Parameter]
-    public string? Type { get; set; }
+    public ElementPlusTagType? Type { get; set; }
 
     [Parameter]
     public bool? Closable { get; set; }
@@ -6853,7 +6853,7 @@ public sealed class ElTag : ElementPlusContentComponentBase
     public ElementPlusComponentSize? Size { get; set; }
 
     [Parameter]
-    public string? Effect { get; set; }
+    public ElementPlusTagEffect? Effect { get; set; }
 
     [Parameter]
     public bool? Round { get; set; }
@@ -6883,7 +6883,7 @@ public sealed class ElTag : ElementPlusContentComponentBase
 public sealed class ElText : ElementPlusContentComponentBase
 {
     [Parameter]
-    public string? Type { get; set; }
+    public ElementPlusSemanticType? Type { get; set; }
 
     [Parameter]
     public ElementPlusComponentSize? Size { get; set; }
@@ -7216,7 +7216,7 @@ public sealed class ElTimeline : ElementPlusContentComponentBase
     public bool? Reverse { get; set; }
 
     [Parameter]
-    public string? Mode { get; set; }
+    public ElementPlusTimelineMode? Mode { get; set; }
 
 }
 
@@ -7251,10 +7251,10 @@ public sealed class ElTimelineItem : ElementPlusContentComponentBase
     public bool? Center { get; set; }
 
     [Parameter]
-    public string? Placement { get; set; }
+    public ElementPlusTopBottomPlacement? Placement { get; set; }
 
     [Parameter]
-    public string? Type { get; set; }
+    public ElementPlusSemanticType? Type { get; set; }
 
     [Parameter]
     public string? Color { get; set; }
@@ -7329,7 +7329,7 @@ public sealed class ElTooltip : ElementPlusContentComponentBase
     public bool? RawContent { get; set; }
 
     [Parameter]
-    public string? Placement { get; set; }
+    public ElementPlusPopperPlacement? Placement { get; set; }
 
     [Parameter]
     public string[]? FallbackPlacements { get; set; }
@@ -7877,7 +7877,7 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
     public string? Name { get; set; }
 
     [Parameter]
-    public string? Effect { get; set; }
+    public ElementPlusPopperEffect? Effect { get; set; }
 
     [Parameter]
     public string? Autocomplete { get; set; }
@@ -7952,10 +7952,10 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
     public VueStringComponentValue? SuffixIcon { get; set; }
 
     [Parameter]
-    public string? TagType { get; set; }
+    public ElementPlusTagType? TagType { get; set; }
 
     [Parameter]
-    public string? TagEffect { get; set; }
+    public ElementPlusTagEffect? TagEffect { get; set; }
 
     [Parameter]
     public bool? ValidateEvent { get; set; }
@@ -7967,7 +7967,7 @@ public sealed class ElTreeSelect : ElementPlusContentComponentBase
     public bool? ShowArrow { get; set; }
 
     [Parameter]
-    public string? Placement { get; set; }
+    public ElementPlusPopperPlacement? Placement { get; set; }
 
     [Parameter]
     public string[]? FallbackPlacements { get; set; }
@@ -8534,7 +8534,7 @@ public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
     public string? Name { get; set; }
 
     [Parameter]
-    public string? Effect { get; set; }
+    public ElementPlusPopperEffect? Effect { get; set; }
 
     [Parameter]
     public string? Autocomplete { get; set; }
@@ -8630,7 +8630,7 @@ public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
     public bool? ShowArrow { get; set; }
 
     [Parameter]
-    public string? Placement { get; set; }
+    public ElementPlusPopperPlacement? Placement { get; set; }
 
     [Parameter]
     public string[]? FallbackPlacements { get; set; }
@@ -8645,10 +8645,10 @@ public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
     public Number? MaxCollapseTags { get; set; }
 
     [Parameter]
-    public string? TagType { get; set; }
+    public ElementPlusTagType? TagType { get; set; }
 
     [Parameter]
-    public string? TagEffect { get; set; }
+    public ElementPlusTagEffect? TagEffect { get; set; }
 
     [Parameter]
     public string? AriaLabel { get; set; }

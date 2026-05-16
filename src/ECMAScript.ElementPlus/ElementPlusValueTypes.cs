@@ -29,6 +29,71 @@ public enum ElementPlusPopperEffect
 }
 
 [String]
+public enum ElementPlusPopperPlacement
+{
+    [Description("@#top")]
+    Top,
+
+    [Description("@#top-start")]
+    TopStart,
+
+    [Description("@#top-end")]
+    TopEnd,
+
+    [Description("@#bottom")]
+    Bottom,
+
+    [Description("@#bottom-start")]
+    BottomStart,
+
+    [Description("@#bottom-end")]
+    BottomEnd,
+
+    [Description("@#left")]
+    Left,
+
+    [Description("@#left-start")]
+    LeftStart,
+
+    [Description("@#left-end")]
+    LeftEnd,
+
+    [Description("@#right")]
+    Right,
+
+    [Description("@#right-start")]
+    RightStart,
+
+    [Description("@#right-end")]
+    RightEnd,
+
+    [Description("@#auto")]
+    Auto,
+
+    [Description("@#auto-start")]
+    AutoStart,
+
+    [Description("@#auto-end")]
+    AutoEnd
+}
+
+[String]
+public enum ElementPlusPopperPlacementSide
+{
+    [Description("@#top")]
+    Top,
+
+    [Description("@#bottom")]
+    Bottom,
+
+    [Description("@#left")]
+    Left,
+
+    [Description("@#right")]
+    Right
+}
+
+[String]
 public enum ElementPlusCardShadow
 {
     [Description("@#always")]
@@ -125,6 +190,292 @@ public enum ElementPlusImageLoadingType
     Lazy
 }
 
+[String]
+public enum ElementPlusAvatarShape
+{
+    [Description("@#circle")]
+    Circle,
+
+    [Description("@#square")]
+    Square
+}
+
+[String]
+public enum ElementPlusButtonType
+{
+    [Description("@#")]
+    Empty,
+
+    [Description("@#default")]
+    Default,
+
+    [Description("@#primary")]
+    Primary,
+
+    [Description("@#success")]
+    Success,
+
+    [Description("@#warning")]
+    Warning,
+
+    [Description("@#info")]
+    Info,
+
+    [Description("@#danger")]
+    Danger,
+
+    [Description("@#text")]
+    Text
+}
+
+[String]
+public enum ElementPlusButtonNativeType
+{
+    [Description("@#button")]
+    Button,
+
+    [Description("@#submit")]
+    Submit,
+
+    [Description("@#reset")]
+    Reset
+}
+
+[String]
+public enum ElementPlusDirection
+{
+    [Description("@#horizontal")]
+    Horizontal,
+
+    [Description("@#vertical")]
+    Vertical
+}
+
+[String]
+public enum ElementPlusTopBottomPlacement
+{
+    [Description("@#top")]
+    Top,
+
+    [Description("@#bottom")]
+    Bottom
+}
+
+[String]
+public enum ElementPlusCarouselType
+{
+    [Description("@#")]
+    Empty,
+
+    [Description("@#card")]
+    Card
+}
+
+[String]
+public enum ElementPlusSemanticType
+{
+    [Description("@#")]
+    Empty,
+
+    [Description("@#primary")]
+    Primary,
+
+    [Description("@#success")]
+    Success,
+
+    [Description("@#warning")]
+    Warning,
+
+    [Description("@#info")]
+    Info,
+
+    [Description("@#danger")]
+    Danger
+}
+
+[String]
+public enum ElementPlusTimelineMode
+{
+    [Description("@#start")]
+    Start,
+
+    [Description("@#end")]
+    End,
+
+    [Description("@#alternate")]
+    Alternate,
+
+    [Description("@#alternate-reverse")]
+    AlternateReverse
+}
+
+[String]
+public enum ElementPlusCalendarControllerType
+{
+    [Description("@#button")]
+    Button,
+
+    [Description("@#select")]
+    Select
+}
+
+[String]
+public enum ElementPlusCollapseIconPosition
+{
+    [Description("@#left")]
+    Left,
+
+    [Description("@#right")]
+    Right
+}
+
+[String]
+public enum ElementPlusContentPosition
+{
+    [Description("@#left")]
+    Left,
+
+    [Description("@#center")]
+    Center,
+
+    [Description("@#right")]
+    Right
+}
+
+[String]
+public enum ElementPlusFormItemValidateStatus
+{
+    [Description("@#")]
+    Empty,
+
+    [Description("@#error")]
+    Error,
+
+    [Description("@#validating")]
+    Validating,
+
+    [Description("@#success")]
+    Success
+}
+
+[String]
+public enum ElementPlusProgressType
+{
+    [Description("@#line")]
+    Line,
+
+    [Description("@#circle")]
+    Circle,
+
+    [Description("@#dashboard")]
+    Dashboard
+}
+
+[String]
+public enum ElementPlusProgressStatus
+{
+    [Description("@#")]
+    Empty,
+
+    [Description("@#success")]
+    Success,
+
+    [Description("@#exception")]
+    Exception,
+
+    [Description("@#warning")]
+    Warning
+}
+
+[String]
+public enum ElementPlusStepStatus
+{
+    [Description("@#")]
+    Empty,
+
+    [Description("@#wait")]
+    Wait,
+
+    [Description("@#process")]
+    Process,
+
+    [Description("@#finish")]
+    Finish,
+
+    [Description("@#error")]
+    Error,
+
+    [Description("@#success")]
+    Success
+}
+
+[String]
+public enum ElementPlusTabsType
+{
+    [Description("@#")]
+    Empty,
+
+    [Description("@#card")]
+    Card,
+
+    [Description("@#border-card")]
+    BorderCard
+}
+
+[String]
+public enum ElementPlusTagType
+{
+    [Description("@#primary")]
+    Primary,
+
+    [Description("@#success")]
+    Success,
+
+    [Description("@#info")]
+    Info,
+
+    [Description("@#warning")]
+    Warning,
+
+    [Description("@#danger")]
+    Danger
+}
+
+[String]
+public enum ElementPlusTagEffect
+{
+    [Description("@#dark")]
+    Dark,
+
+    [Description("@#light")]
+    Light,
+
+    [Description("@#plain")]
+    Plain
+}
+
+[String]
+public enum ElementPlusLinkType
+{
+    [Description("@#default")]
+    Default,
+
+    [Description("@#primary")]
+    Primary,
+
+    [Description("@#success")]
+    Success,
+
+    [Description("@#warning")]
+    Warning,
+
+    [Description("@#info")]
+    Info,
+
+    [Description("@#danger")]
+    Danger
+}
+
 [ECMAScript]
 [Description("@#Styles")]
 public sealed record ElementPlusStyles : VueDictionary<VueStringNumberValue>
@@ -185,7 +536,7 @@ public sealed record ElementPlusButtonConfig : VueProps
     public bool? AutoInsertSpace { get; init; }
 
     [Description("@#type")]
-    public string? Type { get; init; }
+    public ElementPlusButtonType? Type { get; init; }
 
     [Description("@#plain")]
     public bool? Plain { get; init; }
@@ -247,7 +598,7 @@ public sealed record ElementPlusLinkConfig : VueProps
     public VueBooleanStringValue? Underline { get; init; }
 
     [Description("@#type")]
-    public string? Type { get; init; }
+    public ElementPlusLinkType? Type { get; init; }
 }
 
 [ECMAScript]
@@ -889,10 +1240,10 @@ public sealed record ElementPlusTagTooltipProps : VueProps
     public VueTeleportTarget? AppendTo { get; init; }
 
     [Description("@#placement")]
-    public string? Placement { get; init; }
+    public ElementPlusPopperPlacement? Placement { get; init; }
 
     [Description("@#fallbackPlacements")]
-    public string[]? FallbackPlacements { get; init; }
+    public ElementPlusPopperPlacement[]? FallbackPlacements { get; init; }
 
     [Description("@#effect")]
     public ElementPlusPopperEffect? Effect { get; init; }
@@ -936,13 +1287,13 @@ public sealed record ElementPlusButtonProps : VueProps
     public bool? Disabled { get; init; }
 
     [Description("@#type")]
-    public string? Type { get; init; }
+    public ElementPlusButtonType? Type { get; init; }
 
     [Description("@#icon")]
     public VueStringComponentValue? Icon { get; init; }
 
     [Description("@#nativeType")]
-    public string? NativeType { get; init; }
+    public ElementPlusButtonNativeType? NativeType { get; init; }
 
     [Description("@#loading")]
     public bool? Loading { get; init; }
