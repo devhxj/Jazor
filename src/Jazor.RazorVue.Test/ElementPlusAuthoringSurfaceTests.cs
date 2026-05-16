@@ -156,6 +156,7 @@ public sealed class ElementPlusAuthoringSurfaceTests
         AssertModelBindingContract(typeof(ElSwitch), nameof(ElSwitch.ModelValue), typeof(VueBooleanStringNumberValue?));
         AssertModelBindingContract(typeof(ElTimePicker), nameof(ElTimePicker.ModelValue), typeof(VueStringNumberDateArrayableValue?));
         AssertModelBindingContract(typeof(ElTreeSelect), nameof(ElTreeSelect.ModelValue), typeof(VueBooleanStringNumberObjectArrayableValue?));
+        AssertModelBindingContract(typeof(ElVirtualizedSelect), nameof(ElVirtualizedSelect.ModelValue), typeof(ElementPlusSelectV2ModelValue?));
     }
 
     [TestMethod]

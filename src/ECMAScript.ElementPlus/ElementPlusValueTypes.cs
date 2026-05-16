@@ -920,3 +920,508 @@ public sealed record ElementPlusCascaderProps : VueProps
     [Description("@#showPrefix")]
     public bool? ShowPrefix { get; init; }
 }
+
+[ECMAScript]
+[Description("@#FormItemRule")]
+public sealed record ElementPlusFormItemRule : VueDictionary
+{
+    [Description("@#trigger")]
+    public VueStringOrStringsValue? Trigger { get; init; }
+}
+
+[ECMAScript]
+[Description("@#")]
+public readonly union ElementPlusFormItemRules(
+    ElementPlusFormItemRule,
+    ElementPlusFormItemRule[]) : IEnumerable<ElementPlusFormItemRule>
+{
+    public ElementPlusFormItemRule? AsSingle
+        => Value as ElementPlusFormItemRule;
+
+    public ElementPlusFormItemRule[]? AsMultiple => Value as ElementPlusFormItemRule[];
+
+    IEnumerator<ElementPlusFormItemRule> IEnumerable<ElementPlusFormItemRule>.GetEnumerator()
+        => ((IEnumerable<ElementPlusFormItemRule>)(AsMultiple ?? Array.Empty<ElementPlusFormItemRule>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<ElementPlusFormItemRule>)this).GetEnumerator();
+}
+
+[ECMAScript]
+[Description("@#")]
+public readonly union ElementPlusFormRuleValue(ElementPlusFormItemRules, ElementPlusFormRules)
+{
+    public ElementPlusFormItemRules? AsItemRules
+        => Value is ElementPlusFormItemRules value ? value : default(ElementPlusFormItemRules?);
+
+    public ElementPlusFormRules? AsNestedRules => Value as ElementPlusFormRules;
+}
+
+[ECMAScript]
+[Description("@#FormRules")]
+public sealed record ElementPlusFormRules : VueDictionary<ElementPlusFormRuleValue>
+{
+}
+
+[ECMAScript]
+[Description("@#RateColorMap")]
+public sealed record ElementPlusRateColorMap : VueDictionary<string>
+{
+}
+
+[ECMAScript]
+[Description("@#")]
+public readonly union ElementPlusRateColorsValue(
+    string[],
+    ElementPlusRateColorMap) : IEnumerable<string>
+{
+    public string[]? AsArray => Value as string[];
+
+    public ElementPlusRateColorMap? AsMap => Value as ElementPlusRateColorMap;
+
+    IEnumerator<string> IEnumerable<string>.GetEnumerator()
+        => ((IEnumerable<string>)(AsArray ?? Array.Empty<string>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<string>)this).GetEnumerator();
+}
+
+[ECMAScript]
+[Description("@#RateIconMap")]
+public sealed record ElementPlusRateIconMap : VueDictionary<VueStringComponentValue>
+{
+}
+
+[ECMAScript]
+[Description("@#")]
+public readonly union ElementPlusRateIconsValue(
+    VueStringComponentValue[],
+    ElementPlusRateIconMap) : IEnumerable<VueStringComponentValue>
+{
+    public VueStringComponentValue[]? AsArray => Value as VueStringComponentValue[];
+
+    public ElementPlusRateIconMap? AsMap => Value as ElementPlusRateIconMap;
+
+    public static implicit operator ElementPlusRateIconsValue(string[] values)
+        => new(Array.ConvertAll(values, static value => (VueStringComponentValue)value));
+
+    public static implicit operator ElementPlusRateIconsValue(IVueComponent[] values)
+        => new(Array.ConvertAll(values, static value => (VueStringComponentValue)value));
+
+    IEnumerator<VueStringComponentValue> IEnumerable<VueStringComponentValue>.GetEnumerator()
+        => ((IEnumerable<VueStringComponentValue>)(AsArray ?? Array.Empty<VueStringComponentValue>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<VueStringComponentValue>)this).GetEnumerator();
+}
+
+[ECMAScript]
+[Description("@#SliderMarker")]
+public sealed record ElementPlusSliderMarker : VueProps
+{
+    [Description("@#style")]
+    public VueStyleValue? Style { get; init; }
+
+    [Description("@#label")]
+    public VueValue? Label { get; init; }
+}
+
+[ECMAScript]
+[Description("@#")]
+public readonly union ElementPlusSliderMarkValue(string, ElementPlusSliderMarker)
+{
+    public string? AsString => Value as string;
+
+    public ElementPlusSliderMarker? AsMarker => Value as ElementPlusSliderMarker;
+}
+
+[ECMAScript]
+[Description("@#SliderMarks")]
+public sealed record ElementPlusSliderMarks : VueDictionary<ElementPlusSliderMarkValue>
+{
+}
+
+[String]
+public enum ElementPlusTableV2SortOrder
+{
+    [Description("@#asc")]
+    Asc,
+
+    [Description("@#desc")]
+    Desc
+}
+
+[String]
+public enum ElementPlusTableV2Alignment
+{
+    [Description("@#left")]
+    Left,
+
+    [Description("@#center")]
+    Center,
+
+    [Description("@#right")]
+    Right
+}
+
+[String]
+public enum ElementPlusTableV2FixedDirection
+{
+    [Description("@#left")]
+    Left,
+
+    [Description("@#right")]
+    Right
+}
+
+[ECMAScript]
+[Description("@#TableV2ClassContext")]
+public sealed record ElementPlusTableV2ClassContext : VueProps
+{
+    [Description("@#columns")]
+    public ElementPlusTableV2Column[]? Columns { get; init; }
+
+    [Description("@#column")]
+    public ElementPlusTableV2Column? Column { get; init; }
+
+    [Description("@#columnIndex")]
+    public Number? ColumnIndex { get; init; }
+
+    [Description("@#headerIndex")]
+    public Number? HeaderIndex { get; init; }
+
+    [Description("@#cellData")]
+    public VueValue? CellData { get; init; }
+
+    [Description("@#rowData")]
+    public VueValue? RowData { get; init; }
+
+    [Description("@#rowIndex")]
+    public Number? RowIndex { get; init; }
+}
+
+[ECMAScript]
+[Description("@#ClassGetter")]
+public delegate string ElementPlusTableV2ClassGetter(ElementPlusTableV2ClassContext context);
+
+[ECMAScript]
+[Description("@#")]
+public readonly union ElementPlusTableV2ClassValue(string, ElementPlusTableV2ClassGetter)
+{
+    public string? AsString => Value as string;
+
+    public ElementPlusTableV2ClassGetter? AsGetter => Value as ElementPlusTableV2ClassGetter;
+}
+
+[ECMAScript]
+[Description("@#TableV2DynamicPropsContext")]
+public sealed record ElementPlusTableV2DynamicPropsContext : VueProps
+{
+    [Description("@#columns")]
+    public ElementPlusTableV2Column[]? Columns { get; init; }
+
+    [Description("@#column")]
+    public ElementPlusTableV2Column? Column { get; init; }
+
+    [Description("@#columnIndex")]
+    public Number? ColumnIndex { get; init; }
+
+    [Description("@#headerIndex")]
+    public Number? HeaderIndex { get; init; }
+
+    [Description("@#cellData")]
+    public VueValue? CellData { get; init; }
+
+    [Description("@#rowData")]
+    public VueValue? RowData { get; init; }
+
+    [Description("@#rowIndex")]
+    public Number? RowIndex { get; init; }
+}
+
+[ECMAScript]
+[Description("@#DynamicPropsGetter")]
+public delegate VueDictionary ElementPlusTableV2DynamicPropsGetter(ElementPlusTableV2DynamicPropsContext context);
+
+[ECMAScript]
+[Description("@#")]
+public readonly union ElementPlusTableV2DynamicPropsValue(VueDictionary, ElementPlusTableV2DynamicPropsGetter)
+{
+    public VueDictionary? AsObject => Value as VueDictionary;
+
+    public ElementPlusTableV2DynamicPropsGetter? AsGetter => Value as ElementPlusTableV2DynamicPropsGetter;
+}
+
+[ECMAScript]
+[Description("@#")]
+public readonly union ElementPlusTableV2KeyValue(VueKey)
+{
+    public VueKey? AsKey => Value as VueKey;
+
+    public static implicit operator ElementPlusTableV2KeyValue(string value)
+        => new((VueKey)value);
+
+    public static implicit operator ElementPlusTableV2KeyValue(Symbol value)
+        => new((VueKey)value);
+
+    public static implicit operator ElementPlusTableV2KeyValue(Number value)
+        => new((VueKey)value);
+
+    public static implicit operator ElementPlusTableV2KeyValue(byte value)
+        => new((VueKey)value);
+
+    public static implicit operator ElementPlusTableV2KeyValue(sbyte value)
+        => new((VueKey)value);
+
+    public static implicit operator ElementPlusTableV2KeyValue(short value)
+        => new((VueKey)value);
+
+    public static implicit operator ElementPlusTableV2KeyValue(ushort value)
+        => new((VueKey)value);
+
+    public static implicit operator ElementPlusTableV2KeyValue(int value)
+        => new((VueKey)value);
+
+    public static implicit operator ElementPlusTableV2KeyValue(uint value)
+        => new((VueKey)value);
+
+    public static implicit operator ElementPlusTableV2KeyValue(long value)
+        => new((VueKey)value);
+
+    public static implicit operator ElementPlusTableV2KeyValue(ulong value)
+        => new((VueKey)value);
+
+    public static implicit operator ElementPlusTableV2KeyValue(float value)
+        => new((VueKey)value);
+
+    public static implicit operator ElementPlusTableV2KeyValue(double value)
+        => new((VueKey)value);
+
+    public static implicit operator ElementPlusTableV2KeyValue(decimal value)
+        => new((VueKey)value);
+}
+
+[ECMAScript]
+[Description("@#SortBy")]
+public sealed record ElementPlusTableV2SortBy : VueProps
+{
+    [Description("@#key")]
+    public ElementPlusTableV2KeyValue? Key { get; init; }
+
+    [Description("@#order")]
+    public ElementPlusTableV2SortOrder? Order { get; init; }
+}
+
+[ECMAScript]
+[Description("@#SortState")]
+public sealed record ElementPlusTableV2SortState : VueDictionary<ElementPlusTableV2SortOrder>
+{
+}
+
+[ECMAScript]
+[Description("@#Column")]
+public sealed record ElementPlusTableV2Column : VueDictionary
+{
+    [Description("@#align")]
+    public ElementPlusTableV2Alignment? Align { get; init; }
+
+    [Description("@#class")]
+    public ElementPlusTableV2ClassValue? CssClass { get; init; }
+
+    [Description("@#key")]
+    public ElementPlusTableV2KeyValue? Key { get; init; }
+
+    [Description("@#dataKey")]
+    public ElementPlusTableV2KeyValue? DataKey { get; init; }
+
+    [Description("@#fixed")]
+    public ElementPlusTableV2FixedValue? Fixed { get; init; }
+
+    [Description("@#title")]
+    public string? Title { get; init; }
+
+    [Description("@#hidden")]
+    public bool? Hidden { get; init; }
+
+    [Description("@#headerClass")]
+    public ElementPlusTableV2ClassValue? HeaderClass { get; init; }
+
+    [Description("@#maxWidth")]
+    public Number? MaxWidth { get; init; }
+
+    [Description("@#minWidth")]
+    public Number? MinWidth { get; init; }
+
+    [Description("@#style")]
+    public VueStyleValue? Style { get; init; }
+
+    [Description("@#sortable")]
+    public bool? Sortable { get; init; }
+
+    [Description("@#width")]
+    public Number? Width { get; init; }
+
+    [Description("@#flexGrow")]
+    public Number? FlexGrow { get; init; }
+
+    [Description("@#flexShrink")]
+    public Number? FlexShrink { get; init; }
+
+    [Description("@#cellRenderer")]
+    public Delegate? CellRenderer { get; init; }
+
+    [Description("@#headerCellRenderer")]
+    public Delegate? HeaderCellRenderer { get; init; }
+}
+
+[ECMAScript]
+[Description("@#")]
+public readonly union ElementPlusTableV2FixedValue(bool, ElementPlusTableV2FixedDirection)
+{
+    public bool? AsBool => Value is bool value ? value : default(bool?);
+
+    public ElementPlusTableV2FixedDirection? AsDirection
+        => Value is ElementPlusTableV2FixedDirection value ? value : default(ElementPlusTableV2FixedDirection?);
+}
+
+[ECMAScript]
+[Description("@#TableData")]
+public sealed record ElementPlusTableV2DataItem : VueDictionary
+{
+}
+
+[ECMAScript]
+[Description("@#")]
+public readonly union ElementPlusTableV2HeaderHeightValue(double, Number[]) : IEnumerable<Number>
+{
+    public double? AsNumber => Value is double value ? value : default(double?);
+
+    public Number[]? AsNumbers => Value is Number[] values ? values : default(Number[]?);
+
+    public static implicit operator ElementPlusTableV2HeaderHeightValue(double[] values)
+        => new(Array.ConvertAll(values, static value => (Number)value));
+
+    IEnumerator<Number> IEnumerable<Number>.GetEnumerator()
+        => ((IEnumerable<Number>)(AsNumbers ?? Array.Empty<Number>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<Number>)this).GetEnumerator();
+}
+
+[ECMAScript]
+[Description("@#TableV2DataGetterContext")]
+public sealed record ElementPlusTableV2DataGetterContext : VueProps
+{
+    [Description("@#columns")]
+    public ElementPlusTableV2Column[]? Columns { get; init; }
+
+    [Description("@#column")]
+    public ElementPlusTableV2Column? Column { get; init; }
+
+    [Description("@#columnIndex")]
+    public Number? ColumnIndex { get; init; }
+
+    [Description("@#rowData")]
+    public VueValue? RowData { get; init; }
+
+    [Description("@#rowIndex")]
+    public Number? RowIndex { get; init; }
+}
+
+[ECMAScript]
+[Description("@#DataGetter")]
+public delegate VueValue ElementPlusTableV2DataGetter(ElementPlusTableV2DataGetterContext context);
+
+[ECMAScript]
+[Description("@#TableV2RowEventHandlerContext")]
+public sealed record ElementPlusTableV2RowEventHandlerContext : VueProps
+{
+    [Description("@#rowKey")]
+    public ElementPlusTableV2KeyValue? RowKey { get; init; }
+
+    [Description("@#event")]
+    public Event? Event { get; init; }
+
+    [Description("@#rowData")]
+    public VueValue? RowData { get; init; }
+
+    [Description("@#rowIndex")]
+    public Number? RowIndex { get; init; }
+}
+
+[ECMAScript]
+[Description("@#RowEventHandler")]
+public delegate void ElementPlusTableV2RowEventHandler(ElementPlusTableV2RowEventHandlerContext context);
+
+[ECMAScript]
+[Description("@#RowEventHandlers")]
+public sealed record ElementPlusTableV2RowEventHandlers : VueProps
+{
+    [Description("@#onClick")]
+    public ElementPlusTableV2RowEventHandler? OnClick { get; init; }
+
+    [Description("@#onContextmenu")]
+    public ElementPlusTableV2RowEventHandler? OnContextmenu { get; init; }
+
+    [Description("@#onDblclick")]
+    public ElementPlusTableV2RowEventHandler? OnDblclick { get; init; }
+
+    [Description("@#onMouseenter")]
+    public ElementPlusTableV2RowEventHandler? OnMouseenter { get; init; }
+
+    [Description("@#onMouseleave")]
+    public ElementPlusTableV2RowEventHandler? OnMouseleave { get; init; }
+}
+
+[ECMAScript]
+[Description("@#")]
+public readonly union ElementPlusTransferRenderContentResult(IVNode, IVNode[])
+{
+    public IVNode? AsSingle => Value as IVNode;
+
+    public IVNode[]? AsMultiple => Value as IVNode[];
+}
+
+[ECMAScript]
+[Description("@#renderContent")]
+public delegate ElementPlusTransferRenderContentResult ElementPlusTransferRenderContent(Delegate h, ElementPlusTransferDataItem option);
+
+[ECMAScript]
+[Description("@#SelectV2Option")]
+public sealed record ElementPlusSelectV2Option : VueDictionary
+{
+    [Description("@#created")]
+    public bool? Created { get; init; }
+}
+
+[ECMAScript]
+[Description("@#OptionGroup")]
+public sealed record ElementPlusSelectV2OptionGroup : VueDictionary
+{
+}
+
+[ECMAScript]
+[Description("@#")]
+public readonly union ElementPlusSelectV2OptionValue(
+    ElementPlusSelectV2Option,
+    ElementPlusSelectV2OptionGroup)
+{
+    public ElementPlusSelectV2Option? AsOption => Value as ElementPlusSelectV2Option;
+
+    public ElementPlusSelectV2OptionGroup? AsGroup => Value as ElementPlusSelectV2OptionGroup;
+}
+
+[ECMAScript]
+[Description("@#")]
+public readonly union ElementPlusSelectV2ModelValue(VueValue, VueValue[]) : IEnumerable<VueValue>
+{
+    public VueValue? AsSingle => Value as VueValue;
+
+    public VueValue[]? AsMultiple => Value as VueValue[];
+
+    IEnumerator<VueValue> IEnumerable<VueValue>.GetEnumerator()
+        => ((IEnumerable<VueValue>)(AsMultiple ?? Array.Empty<VueValue>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<VueValue>)this).GetEnumerator();
+}

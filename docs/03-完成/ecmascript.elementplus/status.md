@@ -1,4 +1,4 @@
-# ECMAScript.ElementPlus 状态（2026-05-15）
+# ECMAScript.ElementPlus 状态（2026-05-16）
 
 > Status: 当前状态快照
 > Positioning: `src/ECMAScript.ElementPlus/` 外部库绑定线的仓库级状态快照
@@ -6,20 +6,21 @@
 
 ## 总结
 
-`ECMAScript.ElementPlus` 当前已经完成第一轮“从手工散点到元数据驱动”的收口：
+`ECMAScript.ElementPlus` 当前已经完成从“元数据驱动生成已落地”到“首批高风险弱面已系统收口”的阶段推进：
 
 - 生成入口已统一为 `scripts/csharp/generate-elementplus-bindings.cs`；
 - 生成数据源已固定为本地官方元数据：
   - `.tmp/elementplus-inspect/package/web-types.json`
   - `.tmp/elementplus-inspect/package/attributes.json`
-  - `.tmp/elementplus-inspect/package/es/components/index.d.ts`
+  - `.tmp/elementplus-inspect/package/es/component.mjs`
+  - 相关组件 `.d.ts`
 - `ElementPlusComponentExports` / `ElementPlusComponentRegistry` / `ElementPlus.Components.generated.cs` 已由同一生成链产出；
-- `ElOwn` 已从公开 authoring surface 过滤，不再污染官方组件导出比对；
 - authoring export 与 runtime export 已支持分离映射，当前已覆盖 `ElVirtualizedSelect -> ElSelectV2`；
 - canonical `modelValue` 即使在元数据遗漏 `update:modelValue` 时，也会显式生成 `VuePropKind.Model`、`AcceptsBinding = true` 和 `*Changed` 回调；
-- 公共 CSS / style / 常见联合值已优先复用 `ECMAScript.Vue3`，不再在 `ECMAScript.ElementPlus` 内重复制造一批近似类型。
+- 公共 CSS / style / 常见联合值已优先复用 `ECMAScript.Vue3`，不再在 `ECMAScript.ElementPlus` 内重复制造一批近似类型；
+- 截至本轮，之前列出的 **29 个 `VueValue?` / `EventCallback<VueValue?>` 弱面已全部从生成组件 authoring surface 清零**。
 
-当前更准确的状态是：**生成链和第一批公开契约守卫已成形，但仍有一批官方命名类型在生成结果里被回退成 `VueValue?`，需要继续收敛。**
+当前更准确的状态是：**ElementPlus 已达到“生成结果不再残留这批高风险 `VueValue?` 弱面”的标准，但整体还没有到“完全无需显式 override、所有动态函数面都已最终建模完成”的终态。**
 
 ## 当前已完成
 
@@ -52,33 +53,25 @@
 
 ## 当前主要缺口
 
-本轮复核后，公开 API 仍有一批不应存在的弱类型回退：
+本轮结束后，之前文档里那组 “仍回退到 `VueValue?` 的剩余 29 项” 已经不再成立。当前主要缺口应更新为：
 
-1. `ElConfigProvider` 与 `ElementPlusInstallOptions` 契约分叉
+1. 仍有不少官方函数面保留 `Delegate?`
 
-- `ElementPlusInstallOptions` 已有部分命名配置类型
-- `ElConfigProvider` 同一组配置面仍大量回退到 `VueValue?`
-- 这会造成同一官方 `ConfigProviderContext` 在组件用法和插件安装用法上出现两套 authoring contract
+- 这不再是本轮要处理的 `VueValue?` 弱面问题；
+- 但仍代表一批 authoring contract 还没完全细化到显式命名 delegate；
+- 当前已优先把最容易形成高风险弱面的 table-v2 getter/handler 面收紧到命名 delegate，其他面后续继续按官方 `.d.ts` 分批推进。
 
-2. 官方命名结构类型未被消费
+2. 生成器仍依赖显式 override 驱动一批关键高价值 contract
 
-本地官方 `.d.ts` 已明确给出：
+- 目前这条路线是有意选择的“高置信、可审计、避免误推断”的实现；
+- 但这意味着离“绝大多数官方类型形状都能自动解析”还有距离；
+- 因此当前状态可以称为“达到生产可用的第一阶段标准”，还不是“生成器自动化完成态”。
 
-- `Language`
-- `TranslatePair`
-- `DialogConfigContext`
-- `DialogTransition`
-- `TableConfigContext`
-- `TableOverflowTooltipOptions`
+3. 少量动态内部字段仍保留 `VueValue` 作为命名动态边界
 
-但当前生成输出里仍存在：
-
-- `ElConfigProvider.Locale -> VueValue?`
-- `ElDialog.Transition -> VueValue?`
-- `ElTable.ShowOverflowTooltip -> bool?`
-- `ElTable.TooltipOptions -> VueValue?`
-
-这说明生成器还没有把官方命名结构类型稳定映射到公开 C# contract。
+- 例如某些官方本身就是 `any` / `Record<string, any>` 的深层载荷；
+- 当前策略是不再把它们直接暴露成组件 prop 的裸 `VueValue?`，而是收进命名 record / union / dictionary 合同；
+- 后续只有在本地官方元数据能提供更高置信细节时，才继续细化。
 
 ## 当前收敛原则
 
@@ -1550,6 +1543,113 @@
 - `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~ElementPlusAuthoringSurfaceTests|FullyQualifiedName~ElementPlusSharedContractTests' -v minimal`
 
 当前聚焦 `ElementPlusAuthoringSurfaceTests` + `ElementPlusSharedContractTests` 共 `32/32` 通过。
+
+## 2026-05-16 第十七批收口
+
+这一批专门清理此前已经确认的 **29 个剩余 `VueValue?` / `EventCallback<VueValue?>` 弱面**。目标不是单纯把类型名换掉，而是让每一处都落到“共享 Vue 合同”或“Element Plus 命名动态合同”。
+
+### 1. 表单规则、输入修饰符、选项值已切回明确 contract
+
+本轮已完成：
+
+- `ElForm.Rules -> ElementPlusFormRules`
+- `ElFormItem.Prop -> VueStringOrStringsValue?`
+- `ElFormItem.Rules -> ElementPlusFormItemRules?`
+- `ElInput.ModelModifiers -> VueModelModifierBag?`
+- `ElOption.Value -> VueBooleanStringNumberObjectValue?`
+
+其中：
+
+- `VueModelModifierBag` 是本轮补到 `ECMAScript.Vue3` 的共享写入侧 authoring contract；
+- 它与现有 `VueModelModifiers` 的读侧抽象包分离，避免把不可构造的读侧类型误复用到组件 prop。
+
+### 2. `Rate` / `Slider` 已从弱回退改为命名动态合同
+
+本地官方来源：
+
+- `es/components/rate/src/rate.d.ts`
+- `es/components/slider/src/slider.d.ts`
+- `es/components/slider/src/marker.d.ts`
+
+本轮已完成：
+
+- `ElRate.Colors -> ElementPlusRateColorsValue?`
+- `ElRate.Icons -> ElementPlusRateIconsValue?`
+- `ElSlider.Marks -> ElementPlusSliderMarks`
+
+这里没有伪造官方没有给出的“固定 3 项数组强约束”或 `label` 精细类型，而是把官方仍然动态的部分收进命名 map / marker contract，保持公开面稳定且不继续裸露 `VueValue?`。
+
+### 3. `TableV2` 全部剩余弱面已收口，并补上显式 getter/handler 合同
+
+本地官方来源：
+
+- `es/components/table-v2/src/table-v2.d.ts`
+- `es/components/table-v2/src/table.d.ts`
+- `es/components/table-v2/src/types.d.ts`
+- `es/components/table-v2/src/row.d.ts`
+
+本轮已完成：
+
+- `HeaderClass / RowClass -> ElementPlusTableV2ClassValue?`
+- `HeaderProps / HeaderCellProps / RowProps / CellProps -> ElementPlusTableV2DynamicPropsValue?`
+- `HeaderHeight -> ElementPlusTableV2HeaderHeightValue?`
+- `RowKey -> ElementPlusTableV2KeyValue?`
+- `Columns -> ElementPlusTableV2Column[]`
+- `Data / FixedData -> ElementPlusTableV2DataItem[]`
+- `DataGetter -> ElementPlusTableV2DataGetter`
+- `ExpandedRowKeys / DefaultExpandedRowKeys -> ElementPlusTableV2KeyValue[]`
+- `SortBy -> ElementPlusTableV2SortBy`
+- `SortState -> ElementPlusTableV2SortState`
+- `RowEventHandlers -> ElementPlusTableV2RowEventHandlers`
+
+这一批不仅把 prop 类型从 `VueValue?` 换成命名 union / record，还额外补了：
+
+- `ElementPlusTableV2ClassGetter`
+- `ElementPlusTableV2DynamicPropsGetter`
+- `ElementPlusTableV2DataGetterContext`
+- `ElementPlusTableV2RowEventHandlerContext`
+
+这样 table-v2 的“字符串或 getter”“对象或 getter”面不再只是名义上摆脱 `VueValue?`，而是真正具备稳定的 lambda 目标类型。
+
+### 4. `Transfer` / `VirtualizedSelect` 剩余弱面已切到命名 contract
+
+本地官方来源：
+
+- `es/components/transfer/src/transfer.d.ts`
+- `es/components/select-v2/src/defaults.d.ts`
+- `es/components/select-v2/src/select.types.d.ts`
+
+本轮已完成：
+
+- `ElTransfer.RenderContent -> ElementPlusTransferRenderContent`
+- `ElVirtualizedSelect.ModelValue -> ElementPlusSelectV2ModelValue?`
+- `ElVirtualizedSelect.Options -> ElementPlusSelectV2OptionValue[]`
+- `ElVirtualizedSelect.ModelValueChanged -> EventCallback<ElementPlusSelectV2ModelValue?>`
+
+其中：
+
+- `Transfer.renderContent` 官方是 `(h, option) => VNode | VNode[]`；
+- 当前已显式建模为 `ElementPlusTransferRenderContentResult(IVNode, IVNode[])` + `ElementPlusTransferRenderContent`；
+- `SelectV2.modelValue` 官方本地元数据仍是 `any`，因此本轮没有伪造成旧 `Select` 同款标量/数组合同，而是收进命名 escape-hatch：`ElementPlusSelectV2ModelValue`。
+
+### 5. 本轮结果
+
+本轮完成后：
+
+- `rg -n 'public VueValue\\?|EventCallback<VueValue\\?>' src/ECMAScript.ElementPlus/ElementPlus.Components.generated.cs`
+- 结果已为空；
+- 这意味着此前确认的 29 个生成组件弱面已全部清零。
+
+## 本轮验证
+
+本轮已通过：
+
+- `dotnet run --file scripts/csharp/generate-elementplus-bindings.cs`
+- `dotnet build src/ECMAScript.Vue3/ECMAScript.Vue3.csproj -v minimal -p:UseSharedCompilation=false`
+- `dotnet build src/ECMAScript.ElementPlus/ECMAScript.ElementPlus.csproj -v minimal -p:UseSharedCompilation=false`
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~ElementPlusAuthoringSurfaceTests|FullyQualifiedName~ElementPlusSharedContractTests' -v minimal -p:UseSharedCompilation=false`
+
+当前聚焦 `ElementPlusAuthoringSurfaceTests` + `ElementPlusSharedContractTests` 共 `33/33` 通过。
 
 ## 参考
 

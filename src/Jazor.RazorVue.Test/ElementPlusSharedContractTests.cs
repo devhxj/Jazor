@@ -30,6 +30,7 @@ public sealed class ElementPlusSharedContractTests
         Assert.AreEqual(typeof(VueTeleportTarget?), typeof(ElementPlusLoadingOptions).GetProperty(nameof(ElementPlusLoadingOptions.Target))?.PropertyType);
         Assert.AreEqual(typeof(VueBooleanStringValue?), typeof(ElementPlusLinkConfig).GetProperty(nameof(ElementPlusLinkConfig.Underline))?.PropertyType);
         Assert.AreEqual(typeof(VueTransitionValue?), typeof(ElementPlusDialogConfig).GetProperty(nameof(ElementPlusDialogConfig.Transition))?.PropertyType);
+        Assert.AreEqual(typeof(VueModelModifierBag), typeof(ElInput).GetProperty(nameof(ElInput.ModelModifiers))?.PropertyType);
     }
 
     [TestMethod]
@@ -84,6 +85,9 @@ public sealed class ElementPlusSharedContractTests
         Assert.AreEqual(typeof(ElementPlusDropdownTriggerType[]), typeof(ElementPlusDropdownTriggerValue).GetProperty(nameof(ElementPlusDropdownTriggerValue.AsMultiple))?.PropertyType);
         Assert.AreEqual(typeof(ElementPlusButtonProps), typeof(ElDropdown).GetProperty(nameof(ElDropdown.ButtonProps))?.PropertyType);
         Assert.AreEqual(typeof(ScrollIntoViewArg?), typeof(ElForm).GetProperty(nameof(ElForm.ScrollIntoViewOptions))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusFormRules), typeof(ElForm).GetProperty(nameof(ElForm.Rules))?.PropertyType);
+        Assert.AreEqual(typeof(VueStringOrStringsValue?), typeof(ElFormItem).GetProperty(nameof(ElFormItem.Prop))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusFormItemRules?), typeof(ElFormItem).GetProperty(nameof(ElFormItem.Rules))?.PropertyType);
     }
 
     [TestMethod]
@@ -227,6 +231,7 @@ public sealed class ElementPlusSharedContractTests
         Assert.AreEqual(typeof(ElementPlusTransferTargetOrder?), typeof(ElTransfer).GetProperty(nameof(ElTransfer.TargetOrder))?.PropertyType);
         Assert.AreEqual(typeof(ElementPlusTransferTextPair?), typeof(ElTransfer).GetProperty(nameof(ElTransfer.Titles))?.PropertyType);
         Assert.AreEqual(typeof(ElementPlusTransferTextPair?), typeof(ElTransfer).GetProperty(nameof(ElTransfer.ButtonTexts))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusTransferRenderContent), typeof(ElTransfer).GetProperty(nameof(ElTransfer.RenderContent))?.PropertyType);
         Assert.AreEqual(typeof(ElementPlusTransferFormat), typeof(ElTransfer).GetProperty(nameof(ElTransfer.Format))?.PropertyType);
         Assert.AreEqual(typeof(ElementPlusTransferPropsAlias), typeof(ElTransfer).GetProperty("Props")?.PropertyType);
 
@@ -240,6 +245,39 @@ public sealed class ElementPlusSharedContractTests
         Assert.AreEqual(typeof(ElementPlusTreeOptionProps), typeof(ElTreeV2).GetProperty("Props")?.PropertyType);
         Assert.AreEqual(typeof(ElementPlusCascaderProps), typeof(ElCascader).GetProperty("Props")?.PropertyType);
         Assert.AreEqual(typeof(ElementPlusCascaderProps), typeof(ElCascaderPanel).GetProperty("Props")?.PropertyType);
+    }
+
+    [TestMethod]
+    public void ElementPlus_RemainingWeakAuthoringSurfaces_UseNamedOrSharedContracts()
+    {
+        Assert.AreEqual(typeof(VueBooleanStringNumberObjectValue?), typeof(ElOption).GetProperty(nameof(ElOption.Value))?.PropertyType);
+
+        Assert.AreEqual(typeof(ElementPlusRateColorsValue?), typeof(ElRate).GetProperty(nameof(ElRate.Colors))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusRateIconsValue?), typeof(ElRate).GetProperty(nameof(ElRate.Icons))?.PropertyType);
+
+        Assert.AreEqual(typeof(ElementPlusSliderMarks), typeof(ElSlider).GetProperty(nameof(ElSlider.Marks))?.PropertyType);
+
+        Assert.AreEqual(typeof(ElementPlusTableV2ClassValue?), typeof(ElTableV2).GetProperty(nameof(ElTableV2.HeaderClass))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusTableV2DynamicPropsValue?), typeof(ElTableV2).GetProperty(nameof(ElTableV2.HeaderProps))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusTableV2DynamicPropsValue?), typeof(ElTableV2).GetProperty(nameof(ElTableV2.HeaderCellProps))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusTableV2HeaderHeightValue?), typeof(ElTableV2).GetProperty(nameof(ElTableV2.HeaderHeight))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusTableV2ClassValue?), typeof(ElTableV2).GetProperty(nameof(ElTableV2.RowClass))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusTableV2KeyValue?), typeof(ElTableV2).GetProperty(nameof(ElTableV2.RowKey))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusTableV2DynamicPropsValue?), typeof(ElTableV2).GetProperty(nameof(ElTableV2.RowProps))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusTableV2RowEventHandlers), typeof(ElTableV2).GetProperty(nameof(ElTableV2.RowEventHandlers))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusTableV2DynamicPropsValue?), typeof(ElTableV2).GetProperty(nameof(ElTableV2.CellProps))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusTableV2Column[]), typeof(ElTableV2).GetProperty(nameof(ElTableV2.Columns))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusTableV2DataItem[]), typeof(ElTableV2).GetProperty(nameof(ElTableV2.Data))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusTableV2DataGetter), typeof(ElTableV2).GetProperty(nameof(ElTableV2.DataGetter))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusTableV2DataItem[]), typeof(ElTableV2).GetProperty(nameof(ElTableV2.FixedData))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusTableV2KeyValue[]), typeof(ElTableV2).GetProperty(nameof(ElTableV2.ExpandedRowKeys))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusTableV2KeyValue[]), typeof(ElTableV2).GetProperty(nameof(ElTableV2.DefaultExpandedRowKeys))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusTableV2SortBy), typeof(ElTableV2).GetProperty(nameof(ElTableV2.SortBy))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusTableV2SortState), typeof(ElTableV2).GetProperty(nameof(ElTableV2.SortState))?.PropertyType);
+
+        Assert.AreEqual(typeof(ElementPlusSelectV2ModelValue?), typeof(ElVirtualizedSelect).GetProperty(nameof(ElVirtualizedSelect.ModelValue))?.PropertyType);
+        Assert.AreEqual(typeof(ElementPlusSelectV2OptionValue[]), typeof(ElVirtualizedSelect).GetProperty(nameof(ElVirtualizedSelect.Options))?.PropertyType);
+        Assert.AreEqual(typeof(EventCallback<ElementPlusSelectV2ModelValue?>), typeof(ElVirtualizedSelect).GetProperty(nameof(ElVirtualizedSelect.ModelValueChanged))?.PropertyType);
     }
 
     [TestMethod]

@@ -1,5 +1,6 @@
 #!/usr/bin/env dotnet run
 #:project ../../src/ECMAScript.Vue3/ECMAScript.Vue3.csproj
+#:project ../../src/ECMAScript.ElementPlus/ECMAScript.ElementPlus.csproj
 
 #nullable enable
 
@@ -10,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using ECMAScript.ElementPlus;
 using static ECMAScript.Vue3;
 
 internal static class Program
@@ -76,6 +78,7 @@ internal static class Program
         ["VueBooleanStringNumberObjectArrayableValue"] = typeof(VueBooleanStringNumberObjectArrayableValue),
         ["VueStringOrStringsValue"] = typeof(VueStringOrStringsValue),
         ["VueStringRegExpValue"] = typeof(VueStringRegExpValue),
+        ["VueModelModifierBag"] = typeof(VueModelModifierBag),
         ["VueNumberPair"] = typeof(VueNumberPair),
         ["VueStringNumberVNodeValue"] = typeof(VueStringNumberVNodeValue),
         ["VueBooleanStringValue"] = typeof(VueBooleanStringValue),
@@ -87,7 +90,8 @@ internal static class Program
         ["VueStringSingleOrRangeValue"] = typeof(VueStringSingleOrRangeValue),
         ["VueTransitionValue"] = typeof(VueTransitionValue),
         ["Date"] = typeof(ECMAScript.Date),
-        ["RegExp"] = typeof(ECMAScript.RegExp)
+        ["RegExp"] = typeof(ECMAScript.RegExp),
+        ["ElementPlusSelectV2ModelValue"] = typeof(ElementPlusSelectV2ModelValue)
     };
 
     private static readonly Dictionary<(string TagName, string RuntimeName), ExplicitGeneratedType> ExplicitPropTypeOverrides = new()
@@ -132,6 +136,9 @@ internal static class Program
         [("el-table-column", "sortOrders")] = ExplicitGeneratedType.Reference("ElementPlusTableSortOrder?[]"),
         [("el-table-column", "filters")] = ExplicitGeneratedType.Reference("ElementPlusTableFilterItem[]"),
         [("el-form", "scrollIntoViewOptions")] = ExplicitGeneratedType.Value("ScrollIntoViewArg"),
+        [("el-form", "rules")] = ExplicitGeneratedType.Reference("ElementPlusFormRules"),
+        [("el-form-item", "prop")] = ExplicitGeneratedType.Value("VueStringOrStringsValue"),
+        [("el-form-item", "rules")] = ExplicitGeneratedType.Value("ElementPlusFormItemRules"),
         [("el-cascader", "emptyValues")] = ExplicitGeneratedType.Reference("VueValue[]"),
         [("el-cascader", "valueOnClear")] = ExplicitGeneratedType.Value("ElementPlusValueOnClearValue"),
         [("el-cascader", "fitInputWidth")] = ExplicitGeneratedType.Value("VueBooleanNumberValue"),
@@ -163,6 +170,7 @@ internal static class Program
         [("el-divider", "borderStyle")] = ExplicitGeneratedType.Reference("string"),
         [("el-image", "scrollContainer")] = ExplicitGeneratedType.Value("VueStringHtmlElementValue"),
         [("el-input", "autosize")] = ExplicitGeneratedType.Value("ElementPlusInputAutoSize"),
+        [("el-input", "modelModifiers")] = ExplicitGeneratedType.Reference("VueModelModifierBag"),
         [("el-input", "max")] = ExplicitGeneratedType.Value("VueStringNumberValue"),
         [("el-input", "min")] = ExplicitGeneratedType.Value("VueStringNumberValue"),
         [("el-input", "step")] = ExplicitGeneratedType.Value("VueStringNumberValue"),
@@ -205,6 +213,7 @@ internal static class Program
         [("el-select", "props")] = ExplicitGeneratedType.Reference("ElementPlusSelectPropsAlias"),
         [("el-select", "fallbackPlacements")] = ExplicitGeneratedType.Reference("string[]"),
         [("el-select", "modelValue")] = ExplicitGeneratedType.Value("VueBooleanStringNumberObjectArrayableValue"),
+        [("el-option", "value")] = ExplicitGeneratedType.Value("VueBooleanStringNumberObjectValue"),
         [("el-checkbox-group", "props")] = ExplicitGeneratedType.Reference("ElementPlusCheckboxOptionPropsAlias"),
         [("el-checkbox-group", "modelValue")] = ExplicitGeneratedType.Reference("VueStringNumberValue[]"),
         [("el-checkbox", "value")] = ExplicitGeneratedType.Value("VueBooleanStringNumberObjectValue"),
@@ -217,10 +226,13 @@ internal static class Program
         [("el-mention", "popperOptions")] = ExplicitGeneratedType.Reference("VueDictionary"),
         [("el-radio-group", "props")] = ExplicitGeneratedType.Reference("ElementPlusRadioOptionPropsAlias"),
         [("el-input-number", "modelValue")] = ExplicitGeneratedType.Value("Number"),
+        [("el-rate", "colors")] = ExplicitGeneratedType.Value("ElementPlusRateColorsValue"),
+        [("el-rate", "icons")] = ExplicitGeneratedType.Value("ElementPlusRateIconsValue"),
         [("el-segmented", "props")] = ExplicitGeneratedType.Reference("ElementPlusSegmentedPropsAlias"),
         [("el-space", "alignment")] = ExplicitGeneratedType.Reference("string"),
         [("el-space", "spacer")] = ExplicitGeneratedType.Value("VueStringNumberVNodeValue"),
         [("el-space", "size")] = ExplicitGeneratedType.Value("ElementPlusSpaceSizeValue"),
+        [("el-slider", "marks")] = ExplicitGeneratedType.Reference("ElementPlusSliderMarks"),
         [("el-tooltip", "fallbackPlacements")] = ExplicitGeneratedType.Reference("string[]"),
         [("el-tooltip", "trigger")] = ExplicitGeneratedType.Value("ElementPlusTooltipTriggerValue"),
         [("el-tooltip", "triggerKeys")] = ExplicitGeneratedType.Reference("string[]"),
@@ -234,6 +246,7 @@ internal static class Program
         [("el-transfer", "props")] = ExplicitGeneratedType.Reference("ElementPlusTransferPropsAlias"),
         [("el-transfer", "leftDefaultChecked")] = ExplicitGeneratedType.Reference("VueStringNumberValue[]"),
         [("el-transfer", "rightDefaultChecked")] = ExplicitGeneratedType.Reference("VueStringNumberValue[]"),
+        [("el-transfer", "renderContent")] = ExplicitGeneratedType.Reference("ElementPlusTransferRenderContent"),
         [("el-tree", "props")] = ExplicitGeneratedType.Reference("ElementPlusTreeOptionProps"),
         [("el-tree", "defaultExpandedKeys")] = ExplicitGeneratedType.Reference("VueStringNumberValue[]"),
         [("el-tree", "defaultCheckedKeys")] = ExplicitGeneratedType.Reference("VueStringNumberValue[]"),
@@ -251,6 +264,25 @@ internal static class Program
         [("el-cascader", "props")] = ExplicitGeneratedType.Reference("ElementPlusCascaderProps"),
         [("el-cascader-panel", "props")] = ExplicitGeneratedType.Reference("ElementPlusCascaderProps"),
         [("el-virtualized-select", "emptyValues")] = ExplicitGeneratedType.Reference("VueValue[]"),
+        [("el-table-v2", "headerClass")] = ExplicitGeneratedType.Value("ElementPlusTableV2ClassValue"),
+        [("el-table-v2", "headerProps")] = ExplicitGeneratedType.Value("ElementPlusTableV2DynamicPropsValue"),
+        [("el-table-v2", "headerCellProps")] = ExplicitGeneratedType.Value("ElementPlusTableV2DynamicPropsValue"),
+        [("el-table-v2", "headerHeight")] = ExplicitGeneratedType.Value("ElementPlusTableV2HeaderHeightValue"),
+        [("el-table-v2", "rowClass")] = ExplicitGeneratedType.Value("ElementPlusTableV2ClassValue"),
+        [("el-table-v2", "rowKey")] = ExplicitGeneratedType.Value("ElementPlusTableV2KeyValue"),
+        [("el-table-v2", "rowProps")] = ExplicitGeneratedType.Value("ElementPlusTableV2DynamicPropsValue"),
+        [("el-table-v2", "rowEventHandlers")] = ExplicitGeneratedType.Reference("ElementPlusTableV2RowEventHandlers"),
+        [("el-table-v2", "cellProps")] = ExplicitGeneratedType.Value("ElementPlusTableV2DynamicPropsValue"),
+        [("el-table-v2", "columns")] = ExplicitGeneratedType.Reference("ElementPlusTableV2Column[]"),
+        [("el-table-v2", "data")] = ExplicitGeneratedType.Reference("ElementPlusTableV2DataItem[]"),
+        [("el-table-v2", "dataGetter")] = ExplicitGeneratedType.Reference("ElementPlusTableV2DataGetter"),
+        [("el-table-v2", "fixedData")] = ExplicitGeneratedType.Reference("ElementPlusTableV2DataItem[]"),
+        [("el-table-v2", "expandedRowKeys")] = ExplicitGeneratedType.Reference("ElementPlusTableV2KeyValue[]"),
+        [("el-table-v2", "defaultExpandedRowKeys")] = ExplicitGeneratedType.Reference("ElementPlusTableV2KeyValue[]"),
+        [("el-table-v2", "sortBy")] = ExplicitGeneratedType.Reference("ElementPlusTableV2SortBy"),
+        [("el-table-v2", "sortState")] = ExplicitGeneratedType.Reference("ElementPlusTableV2SortState"),
+        [("el-virtualized-select", "modelValue")] = ExplicitGeneratedType.Value("ElementPlusSelectV2ModelValue"),
+        [("el-virtualized-select", "options")] = ExplicitGeneratedType.Reference("ElementPlusSelectV2OptionValue[]"),
         [("el-virtualized-select", "valueOnClear")] = ExplicitGeneratedType.Value("ElementPlusValueOnClearValue"),
         [("el-virtualized-select", "props")] = ExplicitGeneratedType.Reference("ElementPlusSelectPropsAlias"),
         [("el-virtualized-select", "fallbackPlacements")] = ExplicitGeneratedType.Reference("string[]"),

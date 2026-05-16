@@ -15,6 +15,28 @@ public static partial class Vue3
 	public record VueDirectiveModifierBag : VueDictionary<bool>;
 
 	/// <summary>
+	/// 组件 props authoring 中使用的写入侧模型修饰符对象。
+	/// 与 <see cref="VueModelModifiers"/> 的读取侧抽象包不同，这个记录用于
+	/// 声明诸如 <c>modelModifiers</c> 一类组件输入契约。
+	/// Write-side model modifier object used on component prop authoring surfaces.
+	/// Unlike the read-side <see cref="VueModelModifiers"/> abstraction, this record is
+	/// meant for declaring component input contracts such as <c>modelModifiers</c>.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public record VueModelModifierBag : VueDictionary<bool>
+	{
+		[Description("@#trim")]
+		public bool? Trim { get; init; }
+
+		[Description("@#number")]
+		public bool? Number { get; init; }
+
+		[Description("@#lazy")]
+		public bool? Lazy { get; init; }
+	}
+
+	/// <summary>
 	/// Vue 的 <c>withDirectives()</c> 辅助函数接受的指令参数元组。映射到 JavaScript <c>Array</c>，使发射的运行时形状与 Vue 的 <c>[directive, value, argument, modifiers]</c> 元组契约兼容。
 	/// One directive argument tuple accepted by Vue's <c>withDirectives()</c> helper.
 	/// This maps to JavaScript <c>Array</c> so the emitted runtime shape is compatible

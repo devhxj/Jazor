@@ -2894,7 +2894,7 @@ public sealed class ElForm : ElementPlusContentComponentBase
     public VueDictionary? Model { get; set; }
 
     [Parameter]
-    public VueValue? Rules { get; set; }
+    public ElementPlusFormRules? Rules { get; set; }
 
     [Parameter]
     public bool? Inline { get; set; }
@@ -2969,7 +2969,7 @@ public sealed class ElForm : ElementPlusContentComponentBase
 public sealed class ElFormItem : ElementPlusContentComponentBase
 {
     [Parameter]
-    public VueValue? Prop { get; set; }
+    public VueStringOrStringsValue? Prop { get; set; }
 
     [Parameter]
     public string? Label { get; set; }
@@ -2984,7 +2984,7 @@ public sealed class ElFormItem : ElementPlusContentComponentBase
     public bool? Required { get; set; }
 
     [Parameter]
-    public VueValue? Rules { get; set; }
+    public ElementPlusFormItemRules? Rules { get; set; }
 
     [Parameter]
     public string? Error { get; set; }
@@ -3331,7 +3331,7 @@ public sealed class ElInput : ElementPlusComponentBase
     public VueStringNumberValue? ModelValue { get; set; }
 
     [Parameter]
-    public VueValue? ModelModifiers { get; set; }
+    public VueModelModifierBag? ModelModifiers { get; set; }
 
     [Parameter]
     public VueStringNumberValue? Maxlength { get; set; }
@@ -4210,7 +4210,7 @@ public sealed class ElMenuItemGroup : ElementPlusContentComponentBase
 public sealed class ElOption : ElementPlusContentComponentBase
 {
     [Parameter]
-    public VueValue? Value { get; set; }
+    public VueBooleanStringNumberObjectValue? Value { get; set; }
 
     [Parameter]
     public VueStringNumberValue? Label { get; set; }
@@ -4921,7 +4921,7 @@ public sealed class ElRate : ElementPlusComponentBase
     public Number? HighThreshold { get; set; }
 
     [Parameter]
-    public VueValue? Colors { get; set; }
+    public ElementPlusRateColorsValue? Colors { get; set; }
 
     [Parameter]
     public string? VoidColor { get; set; }
@@ -4930,7 +4930,7 @@ public sealed class ElRate : ElementPlusComponentBase
     public string? DisabledVoidColor { get; set; }
 
     [Parameter]
-    public VueValue? Icons { get; set; }
+    public ElementPlusRateIconsValue? Icons { get; set; }
 
     [Parameter]
     public VueStringComponentValue? VoidIcon { get; set; }
@@ -5640,7 +5640,7 @@ public sealed class ElSlider : ElementPlusComponentBase
     public string? Placement { get; set; }
 
     [Parameter]
-    public VueValue? Marks { get; set; }
+    public ElementPlusSliderMarks? Marks { get; set; }
 
     [Parameter]
     public bool? ValidateEvent { get; set; }
@@ -6608,58 +6608,58 @@ public sealed class ElTableV2 : ElementPlusComponentBase
     public Number? EstimatedRowHeight { get; set; }
 
     [Parameter]
-    public VueValue? HeaderClass { get; set; }
+    public ElementPlusTableV2ClassValue? HeaderClass { get; set; }
 
     [Parameter]
-    public VueValue? HeaderProps { get; set; }
+    public ElementPlusTableV2DynamicPropsValue? HeaderProps { get; set; }
 
     [Parameter]
-    public VueValue? HeaderCellProps { get; set; }
+    public ElementPlusTableV2DynamicPropsValue? HeaderCellProps { get; set; }
 
     [Parameter]
-    public VueValue? HeaderHeight { get; set; }
+    public ElementPlusTableV2HeaderHeightValue? HeaderHeight { get; set; }
 
     [Parameter]
     public Number? FooterHeight { get; set; }
 
     [Parameter]
-    public VueValue? RowClass { get; set; }
+    public ElementPlusTableV2ClassValue? RowClass { get; set; }
 
     [Parameter]
-    public VueValue? RowKey { get; set; }
+    public ElementPlusTableV2KeyValue? RowKey { get; set; }
 
     [Parameter]
-    public VueValue? RowProps { get; set; }
+    public ElementPlusTableV2DynamicPropsValue? RowProps { get; set; }
 
     [Parameter]
     public Number? RowHeight { get; set; }
 
     [Parameter]
-    public VueValue? RowEventHandlers { get; set; }
+    public ElementPlusTableV2RowEventHandlers? RowEventHandlers { get; set; }
 
     [Parameter]
-    public VueValue? CellProps { get; set; }
+    public ElementPlusTableV2DynamicPropsValue? CellProps { get; set; }
 
     [Parameter]
-    public VueValue? Columns { get; set; }
+    public ElementPlusTableV2Column[]? Columns { get; set; }
 
     [Parameter]
-    public VueValue? Data { get; set; }
+    public ElementPlusTableV2DataItem[]? Data { get; set; }
 
     [Parameter]
-    public VueValue? DataGetter { get; set; }
+    public ElementPlusTableV2DataGetter? DataGetter { get; set; }
 
     [Parameter]
-    public VueValue? FixedData { get; set; }
+    public ElementPlusTableV2DataItem[]? FixedData { get; set; }
 
     [Parameter]
     public string? ExpandColumnKey { get; set; }
 
     [Parameter]
-    public VueValue? ExpandedRowKeys { get; set; }
+    public ElementPlusTableV2KeyValue[]? ExpandedRowKeys { get; set; }
 
     [Parameter]
-    public VueValue? DefaultExpandedRowKeys { get; set; }
+    public ElementPlusTableV2KeyValue[]? DefaultExpandedRowKeys { get; set; }
 
     [Parameter]
     public bool? Fixed { get; set; }
@@ -6686,10 +6686,10 @@ public sealed class ElTableV2 : ElementPlusComponentBase
     public bool? ScrollbarAlwaysOn { get; set; }
 
     [Parameter]
-    public VueValue? SortBy { get; set; }
+    public ElementPlusTableV2SortBy? SortBy { get; set; }
 
     [Parameter]
-    public VueValue? SortState { get; set; }
+    public ElementPlusTableV2SortState? SortState { get; set; }
 
     [Parameter]
     public RenderFragment? Cell { get; set; }
@@ -7496,7 +7496,7 @@ public sealed class ElTransfer : ElementPlusContentComponentBase
     public ElementPlusTransferTextPair? ButtonTexts { get; set; }
 
     [Parameter]
-    public VueValue? RenderContent { get; set; }
+    public ElementPlusTransferRenderContent? RenderContent { get; set; }
 
     [Parameter]
     public ElementPlusTransferFormat? Format { get; set; }
@@ -8491,14 +8491,14 @@ public sealed class ElUpload : ElementPlusContentComponentBase
 [VueLibraryEmit(nameof(OnBlur), Name = "blur")]
 [VueLibraryEmit(nameof(OnFocus), Name = "focus")]
 [VueLibraryEmit(nameof(OnEndReached), Name = "end-reached")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.Nullable`1[[ECMAScript.ElementPlus.ElementPlusSelectV2ModelValue, ECMAScript.ElementPlus, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]")]
 public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
 {
     [Parameter]
-    public VueValue? ModelValue { get; set; }
+    public ElementPlusSelectV2ModelValue? ModelValue { get; set; }
 
     [Parameter]
-    public VueValue? Options { get; set; }
+    public ElementPlusSelectV2OptionValue[]? Options { get; set; }
 
     [Parameter]
     public ElementPlusSelectPropsAlias? Props { get; set; }
@@ -8708,7 +8708,7 @@ public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
     public EventCallback OnEndReached { get; set; }
 
     [Parameter]
-    public EventCallback<VueValue?> ModelValueChanged { get; set; }
+    public EventCallback<ElementPlusSelectV2ModelValue?> ModelValueChanged { get; set; }
 
 }
 
