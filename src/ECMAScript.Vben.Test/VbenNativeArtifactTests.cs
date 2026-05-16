@@ -3,6 +3,46 @@ namespace ECMAScript.Vben.Test;
 public sealed partial class VbenContainerInjectTests
 {
     [TestMethod]
+    public void Vben_PageContainer_DefaultNativeComponent_WithOnlyExtra_DoesNotLowerEmptyTitlesRegion()
+    {
+        var context = CreateContext(
+            """
+            using ECMAScript;
+            using ECMAScript.Vben;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./pages/page-with-extra-only")]
+                public sealed class PageWithExtraOnly : ComponentBase, IVueComponent
+                {
+                    [Parameter] public RenderFragment? ExtraContent { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent(0, typeof(VbenPageContainer));
+                        builder.AddComponentParameter(1, nameof(VbenPageContainer.Extra), ExtraContent);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+        var snapshot = context.CreateSemanticSnapshots()
+            .Single(static item => item.ComponentSymbol.Name == "PageWithExtraOnly");
+        var sfcArtifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+        var pipelineArtifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts
+            .Single(static item => item.ComponentName == "PageWithExtraOnly");
+
+        Assert.IsFalse(sfcArtifact.TemplateText.Contains("vben-page__titles", StringComparison.Ordinal), sfcArtifact.TemplateText);
+        StringAssert.Contains(sfcArtifact.TemplateText, "<slot name=\"extraContent\" />");
+
+        Assert.IsFalse(pipelineArtifact.ModuleCode.Contains("vben-page__titles", StringComparison.Ordinal), pipelineArtifact.ModuleCode);
+        StringAssert.Contains(
+            pipelineArtifact.ModuleCode,
+            "extra: () => slots.extraContent ? slots.extraContent() : null");
+    }
+
+    [TestMethod]
     public void Vben_MultiShell_DefaultNativeComponents_LowerIntoVueSfcArtifact()
     {
         var context = CreateNativeMultiShellContext();

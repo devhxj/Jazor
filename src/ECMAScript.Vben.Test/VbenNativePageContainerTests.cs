@@ -1,14 +1,45 @@
-using System.Reflection;
 using ECMAScript.Vben;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace ECMAScript.Vben.Test;
 
 [TestClass]
 public sealed class VbenNativePageContainerTests
 {
+    [TestMethod]
+    public void Vben_PageContainer_WithoutHeaderContent_DoesNotRenderEmptyHeaderOrTitlesContainers()
+    {
+        var frames = RenderPageContainer(new VbenPageContainer());
+
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-page__header"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-page__titles"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-page__actions"));
+        Assert.IsTrue(frames.ContainsElementWithClassToken("div", "vben-page__body"));
+    }
+
+    [TestMethod]
+    public void Vben_PageContainer_WithOnlyExtra_RendersActionsRegionWithoutEmptyTitlesContainer()
+    {
+        var component = new VbenPageContainer();
+        VbenNativeRenderTreeTestHelper.SetParameter(
+            component,
+            nameof(VbenPageContainer.Extra),
+            (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "button");
+                builder.AddAttribute(1, "class", "page-extra");
+                builder.AddContent(2, "Refresh");
+                builder.CloseElement();
+            }));
+
+        var frames = RenderPageContainer(component);
+
+        Assert.IsTrue(frames.ContainsElementWithClassToken("div", "vben-page__header"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-page__titles"));
+        Assert.IsTrue(frames.ContainsElementWithClassToken("div", "vben-page__actions"));
+        Assert.IsTrue(frames.ContainsElementWithClassToken("button", "page-extra"));
+    }
+
     [TestMethod]
     public void Vben_PageContainer_BreadcrumbHref_RendersNavigableAnchor()
     {
@@ -21,9 +52,9 @@ public sealed class VbenNativePageContainerTests
 
         var frames = RenderBreadcrumbItem(breadcrumb);
 
-        Assert.IsTrue(ContainsElement(frames, "a"));
-        Assert.IsTrue(ContainsAttribute(frames, "href", "/dashboard"));
-        Assert.IsFalse(ContainsAttribute(frames, "aria-disabled"));
+        Assert.IsTrue(frames.ContainsElement("a"));
+        Assert.IsTrue(frames.ContainsAttribute("href", "/dashboard"));
+        Assert.IsFalse(frames.ContainsAttribute("aria-disabled"));
     }
 
     [TestMethod]
@@ -42,8 +73,8 @@ public sealed class VbenNativePageContainerTests
 
         var frames = RenderBreadcrumbItem(breadcrumb);
 
-        Assert.IsTrue(ContainsElement(frames, "a"));
-        Assert.IsTrue(ContainsAttribute(frames, "href", "/ops#logs"));
+        Assert.IsTrue(frames.ContainsElement("a"));
+        Assert.IsTrue(frames.ContainsAttribute("href", "/ops#logs"));
     }
 
     [TestMethod]
@@ -59,10 +90,10 @@ public sealed class VbenNativePageContainerTests
 
         var frames = RenderBreadcrumbItem(breadcrumb);
 
-        Assert.IsFalse(ContainsElement(frames, "a"));
-        Assert.IsTrue(ContainsElement(frames, "span"));
-        Assert.IsTrue(ContainsAttribute(frames, "aria-disabled"));
-        Assert.IsFalse(ContainsAttribute(frames, "href", "/reports"));
+        Assert.IsFalse(frames.ContainsElement("a"));
+        Assert.IsTrue(frames.ContainsElement("span"));
+        Assert.IsTrue(frames.ContainsAttribute("aria-disabled"));
+        Assert.IsFalse(frames.ContainsAttribute("href", "/reports"));
     }
 
     [TestMethod]
@@ -78,10 +109,10 @@ public sealed class VbenNativePageContainerTests
 
         var frames = RenderAction(action);
 
-        Assert.IsTrue(ContainsElement(frames, "a"));
-        Assert.IsTrue(ContainsAttribute(frames, "href", "/create"));
-        Assert.IsTrue(ContainsClassToken(frames, "vben-page__action"));
-        Assert.IsTrue(ContainsClassToken(frames, "vben-page__action--primary"));
+        Assert.IsTrue(frames.ContainsElement("a"));
+        Assert.IsTrue(frames.ContainsAttribute("href", "/create"));
+        Assert.IsTrue(frames.ContainsClassToken("vben-page__action"));
+        Assert.IsTrue(frames.ContainsClassToken("vben-page__action--primary"));
     }
 
     [TestMethod]
@@ -100,10 +131,10 @@ public sealed class VbenNativePageContainerTests
 
         var frames = RenderAction(action);
 
-        Assert.IsTrue(ContainsElement(frames, "a"));
-        Assert.IsTrue(ContainsAttribute(frames, "href", "#preview"));
-        Assert.IsTrue(ContainsClassToken(frames, "vben-page__action"));
-        Assert.IsTrue(ContainsClassToken(frames, "vben-page__action--link"));
+        Assert.IsTrue(frames.ContainsElement("a"));
+        Assert.IsTrue(frames.ContainsAttribute("href", "#preview"));
+        Assert.IsTrue(frames.ContainsClassToken("vben-page__action"));
+        Assert.IsTrue(frames.ContainsClassToken("vben-page__action--link"));
     }
 
     [TestMethod]
@@ -120,114 +151,73 @@ public sealed class VbenNativePageContainerTests
 
         var frames = RenderAction(action);
 
-        Assert.IsFalse(ContainsElement(frames, "a"));
-        Assert.IsTrue(ContainsElement(frames, "button"));
-        Assert.IsTrue(ContainsAttribute(frames, "disabled"));
-        Assert.IsTrue(ContainsAttribute(frames, "aria-disabled"));
-        Assert.IsFalse(ContainsAttribute(frames, "href", "/danger"));
-        Assert.IsTrue(ContainsClassToken(frames, "vben-page__action"));
-        Assert.IsTrue(ContainsClassToken(frames, "vben-page__action--danger"));
-        Assert.IsTrue(ContainsClassToken(frames, "is-disabled"));
+        Assert.IsFalse(frames.ContainsElement("a"));
+        Assert.IsTrue(frames.ContainsElement("button"));
+        Assert.IsTrue(frames.ContainsAttribute("disabled"));
+        Assert.IsTrue(frames.ContainsAttribute("aria-disabled"));
+        Assert.IsFalse(frames.ContainsAttribute("href", "/danger"));
+        Assert.IsTrue(frames.ContainsClassToken("vben-page__action"));
+        Assert.IsTrue(frames.ContainsClassToken("vben-page__action--danger"));
+        Assert.IsTrue(frames.ContainsClassToken("is-disabled"));
     }
 
-    private static ArrayRange<RenderTreeFrame> RenderBreadcrumbItem(VbenBreadcrumbItem item)
+    [TestMethod]
+    public void Vben_PageContainer_NullBreadcrumbAndActionEntries_AreIgnoredDuringRender()
     {
         var component = new VbenPageContainer();
-        var fragment = (RenderFragment)typeof(VbenPageContainer)
-            .GetMethod("RenderBreadcrumbItem", BindingFlags.NonPublic | BindingFlags.Instance)!
-            .Invoke(component, new object[] { item })!;
-
-        return RenderFragment(fragment);
-    }
-
-    private static ArrayRange<RenderTreeFrame> RenderAction(VbenPageAction action)
-    {
-        var component = new VbenPageContainer();
-        var fragment = (RenderFragment)typeof(VbenPageContainer)
-            .GetMethod("RenderAction", BindingFlags.NonPublic | BindingFlags.Instance)!
-            .Invoke(component, new object[] { action })!;
-
-        return RenderFragment(fragment);
-    }
-
-    #pragma warning disable BL0006
-    private static ArrayRange<RenderTreeFrame> RenderFragment(RenderFragment fragment)
-    {
-        var builder = new RenderTreeBuilder();
-        fragment(builder);
-        return builder.GetFrames();
-    }
-
-    private static bool ContainsElement(ArrayRange<RenderTreeFrame> frames, string elementName)
-    {
-        for (var index = 0; index < frames.Count; index++)
-        {
-            var frame = frames.Array[index];
-            if (frame.FrameType == RenderTreeFrameType.Element
-                && string.Equals(frame.ElementName, elementName, StringComparison.Ordinal))
+        VbenNativeRenderTreeTestHelper.SetParameter(
+            component,
+            nameof(VbenPageContainer.BreadcrumbItems),
+            new VbenBreadcrumbItem[]
             {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static bool ContainsAttribute(
-        ArrayRange<RenderTreeFrame> frames,
-        string attributeName,
-        string? expectedValue = null)
-    {
-        for (var index = 0; index < frames.Count; index++)
-        {
-            var frame = frames.Array[index];
-            if (frame.FrameType != RenderTreeFrameType.Attribute
-                || !string.Equals(frame.AttributeName, attributeName, StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            if (expectedValue is null)
-            {
-                return true;
-            }
-
-            if (string.Equals(frame.AttributeValue?.ToString(), expectedValue, StringComparison.Ordinal))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static bool ContainsClassToken(ArrayRange<RenderTreeFrame> frames, string expectedToken)
-    {
-        for (var index = 0; index < frames.Count; index++)
-        {
-            var frame = frames.Array[index];
-            if (frame.FrameType != RenderTreeFrameType.Attribute
-                || !string.Equals(frame.AttributeName, "class", StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            var classNames = frame.AttributeValue?.ToString();
-            if (classNames is null)
-            {
-                continue;
-            }
-
-            foreach (var token in classNames.Split(' ', StringSplitOptions.RemoveEmptyEntries))
-            {
-                if (string.Equals(token, expectedToken, StringComparison.Ordinal))
+                null!,
+                new()
                 {
-                    return true;
+                    Key = "dashboard",
+                    Title = "Dashboard",
+                    Target = "/dashboard"
                 }
-            }
-        }
+            });
+        VbenNativeRenderTreeTestHelper.SetParameter(
+            component,
+            nameof(VbenPageContainer.Actions),
+            new VbenPageAction[]
+            {
+                null!,
+                new()
+                {
+                    Key = "create",
+                    Text = "Create",
+                    Kind = VbenPageActionKind.Primary,
+                    Target = "/create"
+                }
+            });
 
-        return false;
+        var frames = RenderPageContainer(component);
+
+        Assert.IsTrue(frames.ContainsElementWithClassToken("nav", "vben-page__breadcrumb"));
+        Assert.IsTrue(frames.ContainsAttribute("href", "/dashboard"));
+        Assert.IsTrue(frames.ContainsElementWithClassToken("div", "vben-page__actions"));
+        Assert.IsTrue(frames.ContainsAttribute("href", "/create"));
+        Assert.IsTrue(frames.ContainsClassToken("vben-page__action--primary"));
     }
-    #pragma warning restore BL0006
+
+    private static NativeRenderTreeSnapshot RenderPageContainer(VbenPageContainer component)
+        => VbenNativeRenderTreeTestHelper.RenderComponent(component);
+
+    private static NativeRenderTreeSnapshot RenderBreadcrumbItem(VbenBreadcrumbItem item)
+    {
+        return VbenNativeRenderTreeTestHelper.RenderFragmentFromInstanceMethod(
+            new VbenPageContainer(),
+            "RenderBreadcrumbItem",
+            item);
+    }
+
+    private static NativeRenderTreeSnapshot RenderAction(VbenPageAction action)
+    {
+        return VbenNativeRenderTreeTestHelper.RenderFragmentFromInstanceMethod(
+            new VbenPageContainer(),
+            "RenderAction",
+            action);
+    }
 }

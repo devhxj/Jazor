@@ -1,4 +1,4 @@
-# ECMAScript.Vben 状态（2026-05-16）
+# ECMAScript.Vben 状态（2026-05-17）
 
 > Status: 当前状态快照  
 > Positioning: `src/ECMAScript.Vben/` 后台壳层抽象与原生 RazorVue 实现的仓库级状态快照  
@@ -76,6 +76,9 @@
 - action 不再一律退化为朴素按钮；当 `Target` 可导航且未禁用时会输出真实锚点；
 - action `Kind` 已稳定映射为原生语义类（`default/primary/secondary/link/danger`），方便后续样式与容器实现保持语义一致；
 - 禁用 action 即使携带 `Target`，也不会保留可跳转 `href`，并会显式带上禁用语义状态。
+- 当页面没有任何 header 语义内容时，原生 `PageContainer` 不再输出空的 `vben-page__header` / `vben-page__titles` wrapper；
+- 当只有 `Extra` 区域时，原生 `PageContainer` 会保留 actions region，但不会附带空的 titles 容器；
+- `BreadcrumbItems` / `Actions` 现在会在渲染前过滤 `null` 项，默认 native 主链不再因脏数组输入而抛出 `NullReferenceException`。
 
 当前对 `VbenAdminLayout` 的原生模式语义也已收口：
 
@@ -89,6 +92,13 @@
 - 当 `Actions` / `UserRegion` 都为空时，不再输出空的右侧 actions 容器；
 - `Actions` 与 `UserRegion` 现在有独立的原生语义 wrapper，后续样式、对齐与壳层组合可以稳定落在明确 DOM 边界上；
 - 原生 `HeaderBar` 不再把所有右侧内容直接平铺到同一个裸容器里，减少了样式耦合和空结构噪音。
+
+当前对 `ECMAScript.Vben.Test` 的 native 回归测试基础设施也已进一步收口：
+
+- `VbenNativeRenderTreeTestHelper` 已集中承担 native 组件参数注入、反射渲染与 render-tree 断言扫描；
+- `VbenNativeAdminLayoutTests` / `VbenNativeHeaderBarTests` 不再通过对象初始化器直接写 `[Parameter]`，消除了 `BL0005` 噪音；
+- native render-tree 测试对 `Microsoft.AspNetCore.Components.RenderTree` 的使用已收口在共享 helper 中，不再让 `BL0006` 漏到套件输出；
+- 当前 `ECMAScript.Vben.Test` 全量通过时已不再伴随这两类已知测试警告。
 
 ### 3. 公共语义模型已经建立
 
@@ -166,6 +176,7 @@
 - `VbenContainerInjectTests` 校验：
   - 公开壳层组件确实声明为 `IVueContainerComponent`；
   - 默认解析路径仍使用 `ECMAScript.Vben` 原生实现；
+  - `VbenAdminLayout` / `VbenHeaderBar` / `VbenSidebarMenu` / `VbenPageContainer` 四个公开壳层组件都已有默认 native descriptor / registry resolution 回归；
   - `[VueInject]` 可以把 `VbenAdminLayout` / `VbenSidebarMenu` / `VbenHeaderBar` / `VbenPageContainer` 切换到第三方 library implementation，同时保留 `Vben` authoring contract；
   - `VbenPageContainer` 的 injected runtime shape 已进入 Vue SFC artifact 与 pipeline artifact 回归；
   - `VbenAdminLayout` 的 injected runtime shape 已进入 Vue SFC artifact 与 pipeline artifact 回归，覆盖 model prop / model emit / kebab-case slot 映射；
@@ -180,12 +191,15 @@
   - 禁用分支不会被计为可导航或可展开子树；
   - 禁用 `href` 叶子节点最终输出为禁用按钮而不是可导航链接；
 - `VbenNativePageContainerTests` 校验：
+  - 无 header 内容时不会再输出空的 `header` / `titles` 容器；
+  - 仅 `Extra` 内容时不会再附带空的 titles 容器；
   - breadcrumb `href` 目标会输出可导航锚点；
   - breadcrumb `route path/hash` 目标会解析为稳定 `href`；
   - 禁用 breadcrumb 不会再输出可导航锚点；
   - action `href` / route-hash 目标会输出可导航锚点；
   - action `Kind` 会落为稳定原生语义类；
   - 禁用 action 即使携带 `Target` 也不会再输出可跳转链接；
+  - `BreadcrumbItems` / `Actions` 中的 `null` 项会被忽略，不会导致默认 native 渲染抛异常；
 - `VbenNativeAdminLayoutTests` 校验：
   - `Mode.Top` 不会再渲染侧栏区域或默认 `VbenSidebarMenu`；
   - `Mode.Sidebar` 在存在 `NavItems` 时会继续渲染默认 `VbenSidebarMenu`；
@@ -198,13 +212,16 @@
   - 默认 native 多壳层组合在无 `[VueInject]` 情况下可稳定 lower 为 Vue SFC artifact；
   - 默认 native 多壳层组合在无 `[VueInject]` 情况下可稳定 lower 为 pipeline artifact；
   - `VbenAdminLayout` / `VbenHeaderBar` / `VbenSidebarMenu` / `VbenPageContainer` 的默认 native import 路径、slot 映射与 typed callback 透传已进入回归；
+  - `VbenPageContainer` 在“仅 `Extra`、无标题区”场景下不会 lower 出空的 titles wrapper；
   - 默认 native 主链不会意外引入第三方 style/plugin requirement；
 - `VueAuthoringMetadataTests` 校验：
   - 通用 `VueProp` / `VueSlot` 元数据可被 RazorVue descriptor extraction 正常识别；
   - `ECMAScript.VueContract` 当前只保留 canonical 的 `VuePropAttribute` / `VueSlotAttribute`。
 
-2026-05-16 当前基线复核：
+2026-05-17 当前基线复核：
 
+- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativePageContainerTests|FullyQualifiedName~Vben_PageContainer_DefaultNativeComponent_WithOnlyExtra_DoesNotLowerEmptyTitlesRegion' -v minimal`：已通过（10/10）；
+- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeAdminLayoutTests|FullyQualifiedName~VbenNativeHeaderBarTests|FullyQualifiedName~VbenNativePageContainerTests|FullyQualifiedName~VbenNativeSidebarMenuTests|FullyQualifiedName~DefaultComponentRegistryResolution' -v minimal`：已通过（20/20）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenContainerInjectTests' -v minimal`：已通过（23/23）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenContainerInjectTests|FullyQualifiedName~VbenAuthoringSurfaceTests|FullyQualifiedName~VueAuthoringMetadataTests' -v minimal`：已通过；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~Vben_MultiShell_ContainerInject' -v minimal`：已通过（2/2）；
@@ -214,7 +231,7 @@
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeHeaderBarTests' -v minimal`：已通过（3/3）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~Vben_MultiShell_DefaultNativeComponents' -v minimal`：已通过（2/2）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeSidebarMenuTests|FullyQualifiedName~VbenAuthoringSurfaceTests|FullyQualifiedName~VbenContainerInjectTests' -v minimal`：已通过（35/35）；
-- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj -v minimal`：已通过（56/56）；
+- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj -v minimal`：已通过（63/63），且当前输出未再出现 `BL0005` / `BL0006`；
 - `samples/ECMAScript.Vben.ElementPlusInject/verify-smoke.cs`：已纳入当前阶段的真实 sample 验证入口，目标覆盖本地 package pack、host rebuild、host requirements 断言、Deno SSR smoke、Deno bundle smoke、browser build、browser smoke；
 - `RazorVue` 聚焦回归已覆盖 Vben 相关 descriptor / authoring contract 收口，不再依赖旧兼容别名。
 

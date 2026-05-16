@@ -1,43 +1,49 @@
 @inherits VbenContentComponentBase
+@{
+    var header = BuildHeaderRenderState();
+}
 
 <section class="@RootCssClass" style="@CssStyle" @attributes="AdditionalAttributes">
-    <div class='@("vben-page__header")'>
-        <div class='@("vben-page__titles")'>
-            @if (BreadcrumbItems is { Length: > 0 } breadcrumbItems)
+    @if (header.HasHeader)
+    {
+        <div class='@("vben-page__header")'>
+            @if (header.HasTitleRegion)
             {
-                <nav class='@("vben-page__breadcrumb")'>
-                    @foreach (var item in breadcrumbItems)
+                <div class='@("vben-page__titles")'>
+                    @if (header.BreadcrumbItems.Length > 0)
                     {
-                        @RenderBreadcrumbItem(item)
+                        <nav class='@("vben-page__breadcrumb")'>
+                            @foreach (var item in header.BreadcrumbItems)
+                            {
+                                @RenderBreadcrumbItem(item)
+                            }
+                        </nav>
                     }
-                </nav>
+
+                    @if (!string.IsNullOrWhiteSpace(Title))
+                    {
+                        <h1 class='@("vben-page__title")'>@Title</h1>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(Subtitle))
+                    {
+                        <p class='@("vben-page__subtitle")'>@Subtitle</p>
+                    }
+                </div>
             }
 
-            @if (!string.IsNullOrWhiteSpace(Title))
+            @if (header.HasActionsRegion)
             {
-                <h1 class='@("vben-page__title")'>@Title</h1>
-            }
-
-            @if (!string.IsNullOrWhiteSpace(Subtitle))
-            {
-                <p class='@("vben-page__subtitle")'>@Subtitle</p>
-            }
-        </div>
-
-        @if ((Actions?.Length ?? 0) > 0 || Extra is not null)
-        {
             <div class='@("vben-page__actions")'>
-                @if (Actions is not null)
+                @foreach (var action in header.Actions)
                 {
-                    @foreach (var action in Actions)
-                    {
-                        @RenderAction(action)
-                    }
+                    @RenderAction(action)
                 }
                 @Extra
             </div>
-        }
-    </div>
+            }
+        </div>
+    }
 
     <div class='@("vben-page__body")'>
         @ChildContent

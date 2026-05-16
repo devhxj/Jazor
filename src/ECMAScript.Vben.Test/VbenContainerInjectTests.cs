@@ -27,7 +27,7 @@ public sealed partial class VbenContainerInjectTests
     [TestMethod]
     public void Vben_PageContainer_DefaultComponentRegistryResolution_UsesNativeImplementation()
     {
-        var context = CreateContext(
+        var descriptor = ResolveDefaultNativeComponentDescriptor(
             """
             using ECMAScript;
             using ECMAScript.Vben;
@@ -49,13 +49,9 @@ public sealed partial class VbenContainerInjectTests
             }
             """);
 
-        var snapshot = context.CreateSemanticSnapshots()
-            .Single(static item => item.ComponentSymbol.Name == "DashboardPage");
-        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
-        var resolvedComponents = RazorVueArtifactFactory.ResolveComponentsForCanonicalization(context, snapshot, renderTree);
-        var descriptor = resolvedComponents[nameof(VbenPageContainer)];
-
         Assert.AreEqual("ECMAScript.Vben.VbenPageContainer", descriptor.FullName);
+        Assert.AreEqual(nameof(VbenPageContainer), descriptor.Name);
+        Assert.AreEqual("ECMAScript.Vben", descriptor.ResolutionNamespace);
         Assert.AreEqual(VueComponentSourceKind.UserComponent, descriptor.SourceKind);
         Assert.AreEqual("./components/vben-page-container.mjs", descriptor.ImportSpecifier);
         Assert.AreEqual("default", descriptor.ExportName);
@@ -76,6 +72,221 @@ public sealed partial class VbenContainerInjectTests
         var childContentSlot = descriptor.Slots.Single(static item => item.PublicName == nameof(VbenContentComponentBase.ChildContent));
         Assert.AreEqual("default", childContentSlot.Name);
         Assert.IsTrue(childContentSlot.IsDefault);
+    }
+
+    [TestMethod]
+    public void Vben_AdminLayout_DefaultComponentRegistryResolution_UsesNativeImplementation()
+    {
+        var descriptor = ResolveDefaultNativeComponentDescriptor(
+            """
+            using ECMAScript;
+            using ECMAScript.Vben;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./pages/layout-page")]
+                public sealed class LayoutPage : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent(0, typeof(VbenAdminLayout));
+                        builder.AddComponentParameter(1, nameof(VbenAdminLayout.Mode), VbenLayoutMode.Mixed);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """,
+            pageComponentName: "LayoutPage",
+            componentName: nameof(VbenAdminLayout));
+
+        Assert.AreEqual("ECMAScript.Vben.VbenAdminLayout", descriptor.FullName);
+        Assert.AreEqual(nameof(VbenAdminLayout), descriptor.Name);
+        Assert.AreEqual("ECMAScript.Vben", descriptor.ResolutionNamespace);
+        Assert.AreEqual(VueComponentSourceKind.UserComponent, descriptor.SourceKind);
+        Assert.AreEqual("./components/vben-admin-layout.mjs", descriptor.ImportSpecifier);
+        Assert.AreEqual("default", descriptor.ExportName);
+        Assert.AreEqual("ECMAScript.Vben.VbenAdminLayout", descriptor.ContainerContractFullName);
+
+        var modeProp = descriptor.Props.Single(static item => item.PublicName == nameof(VbenAdminLayout.Mode));
+        Assert.AreEqual("mode", modeProp.Name);
+        Assert.AreEqual(VuePropKind.Normal, modeProp.Kind);
+        Assert.IsFalse(modeProp.AcceptsBinding);
+
+        var collapsedProp = descriptor.Props.Single(static item => item.PublicName == nameof(VbenAdminLayout.Collapsed));
+        Assert.AreEqual("collapsed", collapsedProp.Name);
+        Assert.AreEqual(VuePropKind.Model, collapsedProp.Kind);
+        Assert.IsTrue(collapsedProp.AcceptsBinding);
+
+        var selectedKeyProp = descriptor.Props.Single(static item => item.PublicName == nameof(VbenAdminLayout.SelectedKey));
+        Assert.AreEqual("selectedKey", selectedKeyProp.Name);
+        Assert.AreEqual(VuePropKind.Model, selectedKeyProp.Kind);
+        Assert.IsTrue(selectedKeyProp.AcceptsBinding);
+
+        var expandedKeysProp = descriptor.Props.Single(static item => item.PublicName == nameof(VbenAdminLayout.ExpandedKeys));
+        Assert.AreEqual("expandedKeys", expandedKeysProp.Name);
+        Assert.AreEqual(VuePropKind.Model, expandedKeysProp.Kind);
+        Assert.IsTrue(expandedKeysProp.AcceptsBinding);
+
+        var additionalAttributesProp = descriptor.Props.Single(static item => item.PublicName == nameof(VbenComponentBase.AdditionalAttributes));
+        Assert.AreEqual("additionalAttributes", additionalAttributesProp.Name);
+        Assert.IsTrue(additionalAttributesProp.CaptureUnmatchedValues);
+
+        var collapsedChangedEmit = descriptor.Emits.Single(static item => item.RazorAlias == nameof(VbenAdminLayout.CollapsedChanged));
+        Assert.AreEqual("update:collapsed", collapsedChangedEmit.Name);
+        Assert.AreEqual("bool", collapsedChangedEmit.PayloadTypeName);
+        Assert.AreEqual(VueEmitKind.ModelUpdate, collapsedChangedEmit.Kind);
+
+        var selectedKeyChangedEmit = descriptor.Emits.Single(static item => item.RazorAlias == nameof(VbenAdminLayout.SelectedKeyChanged));
+        Assert.AreEqual("update:selectedKey", selectedKeyChangedEmit.Name);
+        Assert.AreEqual("string", selectedKeyChangedEmit.PayloadTypeName);
+        Assert.AreEqual(VueEmitKind.ModelUpdate, selectedKeyChangedEmit.Kind);
+
+        var expandedKeysChangedEmit = descriptor.Emits.Single(static item => item.RazorAlias == nameof(VbenAdminLayout.ExpandedKeysChanged));
+        Assert.AreEqual("update:expandedKeys", expandedKeysChangedEmit.Name);
+        Assert.AreEqual("string[]", expandedKeysChangedEmit.PayloadTypeName);
+        Assert.AreEqual(VueEmitKind.ModelUpdate, expandedKeysChangedEmit.Kind);
+
+        var headerActionsSlot = descriptor.Slots.Single(static item => item.PublicName == nameof(VbenAdminLayout.HeaderActions));
+        Assert.AreEqual("headerActions", headerActionsSlot.Name);
+        Assert.IsFalse(headerActionsSlot.IsDefault);
+
+        var userRegionSlot = descriptor.Slots.Single(static item => item.PublicName == nameof(VbenAdminLayout.UserRegion));
+        Assert.AreEqual("userRegion", userRegionSlot.Name);
+        Assert.IsFalse(userRegionSlot.IsDefault);
+
+        var childContentSlot = descriptor.Slots.Single(static item => item.PublicName == nameof(VbenContentComponentBase.ChildContent));
+        Assert.AreEqual("default", childContentSlot.Name);
+        Assert.IsTrue(childContentSlot.IsDefault);
+    }
+
+    [TestMethod]
+    public void Vben_HeaderBar_DefaultComponentRegistryResolution_UsesNativeImplementation()
+    {
+        var descriptor = ResolveDefaultNativeComponentDescriptor(
+            """
+            using ECMAScript;
+            using ECMAScript.Vben;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./pages/header-page")]
+                public sealed class HeaderPage : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent(0, typeof(VbenHeaderBar));
+                        builder.AddComponentParameter(1, nameof(VbenHeaderBar.Title), "Workbench");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """,
+            pageComponentName: "HeaderPage",
+            componentName: nameof(VbenHeaderBar));
+
+        Assert.AreEqual("ECMAScript.Vben.VbenHeaderBar", descriptor.FullName);
+        Assert.AreEqual(nameof(VbenHeaderBar), descriptor.Name);
+        Assert.AreEqual("ECMAScript.Vben", descriptor.ResolutionNamespace);
+        Assert.AreEqual(VueComponentSourceKind.UserComponent, descriptor.SourceKind);
+        Assert.AreEqual("./components/vben-header-bar.mjs", descriptor.ImportSpecifier);
+        Assert.AreEqual("default", descriptor.ExportName);
+        Assert.AreEqual("ECMAScript.Vben.VbenHeaderBar", descriptor.ContainerContractFullName);
+
+        var titleProp = descriptor.Props.Single(static item => item.PublicName == nameof(VbenHeaderBar.Title));
+        Assert.AreEqual("title", titleProp.Name);
+        Assert.AreEqual(VuePropKind.Normal, titleProp.Kind);
+        Assert.IsFalse(titleProp.AcceptsBinding);
+
+        var subtitleProp = descriptor.Props.Single(static item => item.PublicName == nameof(VbenHeaderBar.Subtitle));
+        Assert.AreEqual("subtitle", subtitleProp.Name);
+        Assert.AreEqual(VuePropKind.Normal, subtitleProp.Kind);
+        Assert.IsFalse(subtitleProp.AcceptsBinding);
+
+        var additionalAttributesProp = descriptor.Props.Single(static item => item.PublicName == nameof(VbenComponentBase.AdditionalAttributes));
+        Assert.AreEqual("additionalAttributes", additionalAttributesProp.Name);
+        Assert.IsTrue(additionalAttributesProp.CaptureUnmatchedValues);
+
+        var logoSlot = descriptor.Slots.Single(static item => item.PublicName == nameof(VbenHeaderBar.Logo));
+        Assert.AreEqual("logo", logoSlot.Name);
+        Assert.IsFalse(logoSlot.IsDefault);
+
+        var actionsSlot = descriptor.Slots.Single(static item => item.PublicName == nameof(VbenHeaderBar.Actions));
+        Assert.AreEqual("actions", actionsSlot.Name);
+        Assert.IsFalse(actionsSlot.IsDefault);
+
+        var userRegionSlot = descriptor.Slots.Single(static item => item.PublicName == nameof(VbenHeaderBar.UserRegion));
+        Assert.AreEqual("userRegion", userRegionSlot.Name);
+        Assert.IsFalse(userRegionSlot.IsDefault);
+    }
+
+    [TestMethod]
+    public void Vben_SidebarMenu_DefaultComponentRegistryResolution_UsesNativeImplementation()
+    {
+        var descriptor = ResolveDefaultNativeComponentDescriptor(
+            """
+            using ECMAScript;
+            using ECMAScript.Vben;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./pages/sidebar-page")]
+                public sealed class SidebarPage : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent(0, typeof(VbenSidebarMenu));
+                        builder.AddComponentParameter(1, nameof(VbenSidebarMenu.Collapsed), true);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """,
+            pageComponentName: "SidebarPage",
+            componentName: nameof(VbenSidebarMenu));
+
+        Assert.AreEqual("ECMAScript.Vben.VbenSidebarMenu", descriptor.FullName);
+        Assert.AreEqual(nameof(VbenSidebarMenu), descriptor.Name);
+        Assert.AreEqual("ECMAScript.Vben", descriptor.ResolutionNamespace);
+        Assert.AreEqual(VueComponentSourceKind.UserComponent, descriptor.SourceKind);
+        Assert.AreEqual("./components/vben-sidebar-menu.mjs", descriptor.ImportSpecifier);
+        Assert.AreEqual("default", descriptor.ExportName);
+        Assert.AreEqual("ECMAScript.Vben.VbenSidebarMenu", descriptor.ContainerContractFullName);
+
+        var collapsedProp = descriptor.Props.Single(static item => item.PublicName == nameof(VbenSidebarMenu.Collapsed));
+        Assert.AreEqual("collapsed", collapsedProp.Name);
+        Assert.AreEqual(VuePropKind.Normal, collapsedProp.Kind);
+        Assert.IsFalse(collapsedProp.AcceptsBinding);
+
+        var selectedKeyProp = descriptor.Props.Single(static item => item.PublicName == nameof(VbenSidebarMenu.SelectedKey));
+        Assert.AreEqual("selectedKey", selectedKeyProp.Name);
+        Assert.AreEqual(VuePropKind.Model, selectedKeyProp.Kind);
+        Assert.IsTrue(selectedKeyProp.AcceptsBinding);
+
+        var expandedKeysProp = descriptor.Props.Single(static item => item.PublicName == nameof(VbenSidebarMenu.ExpandedKeys));
+        Assert.AreEqual("expandedKeys", expandedKeysProp.Name);
+        Assert.AreEqual(VuePropKind.Model, expandedKeysProp.Kind);
+        Assert.IsTrue(expandedKeysProp.AcceptsBinding);
+
+        var additionalAttributesProp = descriptor.Props.Single(static item => item.PublicName == nameof(VbenComponentBase.AdditionalAttributes));
+        Assert.AreEqual("additionalAttributes", additionalAttributesProp.Name);
+        Assert.IsTrue(additionalAttributesProp.CaptureUnmatchedValues);
+
+        var selectedKeyChangedEmit = descriptor.Emits.Single(static item => item.RazorAlias == nameof(VbenSidebarMenu.SelectedKeyChanged));
+        Assert.AreEqual("update:selectedKey", selectedKeyChangedEmit.Name);
+        Assert.AreEqual("string", selectedKeyChangedEmit.PayloadTypeName);
+        Assert.AreEqual(VueEmitKind.ModelUpdate, selectedKeyChangedEmit.Kind);
+
+        var expandedKeysChangedEmit = descriptor.Emits.Single(static item => item.RazorAlias == nameof(VbenSidebarMenu.ExpandedKeysChanged));
+        Assert.AreEqual("update:expandedKeys", expandedKeysChangedEmit.Name);
+        Assert.AreEqual("string[]", expandedKeysChangedEmit.PayloadTypeName);
+        Assert.AreEqual(VueEmitKind.ModelUpdate, expandedKeysChangedEmit.Kind);
+
+        var logoSlot = descriptor.Slots.Single(static item => item.PublicName == nameof(VbenSidebarMenu.Logo));
+        Assert.AreEqual("logo", logoSlot.Name);
+        Assert.IsFalse(logoSlot.IsDefault);
     }
 
     [TestMethod]
@@ -716,6 +927,12 @@ public sealed partial class VbenContainerInjectTests
         Assert.IsNotNull(descriptor, componentName);
         return descriptor!;
     }
+
+    private static VueComponentDescriptor ResolveDefaultNativeComponentDescriptor(
+        string source,
+        string pageComponentName = "DashboardPage",
+        string componentName = nameof(VbenPageContainer))
+        => ResolveComponentDescriptor(source, pageComponentName, componentName);
 
     private static RazorVueCompilationIssueException ResolveInvalidContainerInject(
         string source,

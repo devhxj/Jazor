@@ -1,8 +1,4 @@
-using System.Reflection;
 using ECMAScript.Vben;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace ECMAScript.Vben.Test;
 
@@ -137,9 +133,7 @@ public sealed class VbenNativeSidebarMenuTests
         SetParameter(component, nameof(VbenSidebarMenu.Items), new VbenNavItems([item]));
 
         allExpandedKeys = InvokeGetEffectiveExpandedKeySet(component).ToArray();
-        return (bool)typeof(VbenSidebarMenu)
-            .GetMethod("IsExpanded", BindingFlags.NonPublic | BindingFlags.Instance)!
-            .Invoke(component, new object[] { item })!;
+        return VbenNativeRenderTreeTestHelper.InvokeInstanceMethod<bool>(component, "IsExpanded", item);
     }
 
     private static bool InvokeIsSelected(string? selectedKey, VbenNavItem item)
@@ -147,9 +141,7 @@ public sealed class VbenNativeSidebarMenuTests
         var component = new VbenSidebarMenu();
         SetParameter(component, nameof(VbenSidebarMenu.SelectedKey), selectedKey);
 
-        return (bool)typeof(VbenSidebarMenu)
-            .GetMethod("IsSelected", BindingFlags.NonPublic | BindingFlags.Instance)!
-            .Invoke(component, new object[] { item })!;
+        return VbenNativeRenderTreeTestHelper.InvokeInstanceMethod<bool>(component, "IsSelected", item);
     }
 
     private static bool InvokeHasSelectedDescendant(string? selectedKey, VbenNavItem item)
@@ -157,94 +149,43 @@ public sealed class VbenNativeSidebarMenuTests
         var component = new VbenSidebarMenu();
         SetParameter(component, nameof(VbenSidebarMenu.SelectedKey), selectedKey);
 
-        return (bool)typeof(VbenSidebarMenu)
-            .GetMethod("HasSelectedDescendant", BindingFlags.NonPublic | BindingFlags.Instance)!
-            .Invoke(component, new object[] { item })!;
+        return VbenNativeRenderTreeTestHelper.InvokeInstanceMethod<bool>(component, "HasSelectedDescendant", item);
     }
 
     private static bool InvokeCanNavigate(VbenNavItem item)
     {
-        return (bool)typeof(VbenSidebarMenu)
-            .GetMethod("CanNavigate", BindingFlags.NonPublic | BindingFlags.Static)!
-            .Invoke(null, new object[] { item })!;
+        return VbenNativeRenderTreeTestHelper.InvokeStaticMethod<bool>(typeof(VbenSidebarMenu), "CanNavigate", item);
     }
 
     private static bool InvokeHasNavigableChildren(VbenNavItem item)
     {
-        return (bool)typeof(VbenSidebarMenu)
-            .GetMethod("HasNavigableChildren", BindingFlags.NonPublic | BindingFlags.Static)!
-            .Invoke(null, new object[] { item })!;
+        return VbenNativeRenderTreeTestHelper.InvokeStaticMethod<bool>(typeof(VbenSidebarMenu), "HasNavigableChildren", item);
     }
 
     private static HashSet<string> InvokeGetEffectiveExpandedKeySet(VbenSidebarMenu component)
     {
-        return (HashSet<string>)typeof(VbenSidebarMenu)
-            .GetMethod("GetEffectiveExpandedKeySet", BindingFlags.NonPublic | BindingFlags.Instance)!
-            .Invoke(component, Array.Empty<object>())!;
+        return VbenNativeRenderTreeTestHelper.InvokeInstanceMethod<HashSet<string>>(component, "GetEffectiveExpandedKeySet");
     }
 
     private static void SetParameter<TValue>(VbenSidebarMenu component, string parameterName, TValue value)
     {
-        typeof(VbenSidebarMenu)
-            .GetProperty(parameterName, BindingFlags.Public | BindingFlags.Instance)!
-            .SetValue(component, value);
+        VbenNativeRenderTreeTestHelper.SetParameter(component, parameterName, value);
     }
 
-    #pragma warning disable BL0006
-    private static ArrayRange<RenderTreeFrame> RenderSingleItem(VbenNavItem item)
+    private static NativeRenderTreeSnapshot RenderSingleItem(VbenNavItem item)
     {
-        var component = new VbenSidebarMenu();
-        var renderItem = (RenderFragment)typeof(VbenSidebarMenu)
-            .GetMethod("RenderItem", BindingFlags.NonPublic | BindingFlags.Instance)!
-            .Invoke(component, new object[] { item })!;
-
-        var builder = new RenderTreeBuilder();
-        renderItem(builder);
-
-        return builder.GetFrames();
+        return VbenNativeRenderTreeTestHelper.RenderFragmentFromInstanceMethod(
+            new VbenSidebarMenu(),
+            "RenderItem",
+            item);
     }
 
-    private static bool ContainsElement(ArrayRange<RenderTreeFrame> frames, string elementName)
-    {
-        for (var index = 0; index < frames.Count; index++)
-        {
-            var frame = frames.Array[index];
-            if (frame.FrameType == RenderTreeFrameType.Element
-                && string.Equals(frame.ElementName, elementName, StringComparison.Ordinal))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
+    private static bool ContainsElement(NativeRenderTreeSnapshot frames, string elementName)
+        => frames.ContainsElement(elementName);
 
     private static bool ContainsAttribute(
-        ArrayRange<RenderTreeFrame> frames,
+        NativeRenderTreeSnapshot frames,
         string attributeName,
         string? expectedValue = null)
-    {
-        for (var index = 0; index < frames.Count; index++)
-        {
-            var frame = frames.Array[index];
-            if (frame.FrameType != RenderTreeFrameType.Attribute
-                || !string.Equals(frame.AttributeName, attributeName, StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            if (expectedValue is null)
-            {
-                return true;
-            }
-
-            if (string.Equals(frame.AttributeValue?.ToString(), expectedValue, StringComparison.Ordinal))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-    #pragma warning restore BL0006
+        => frames.ContainsAttribute(attributeName, expectedValue);
 }

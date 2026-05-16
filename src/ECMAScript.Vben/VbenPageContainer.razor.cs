@@ -21,6 +21,23 @@ public partial class VbenPageContainer : VbenContentComponentBase, IVueContainer
     private VueClassValue RootCssClass
         => BuildCssClass("vben-page");
 
+    private PageHeaderRenderState BuildHeaderRenderState()
+    {
+        var breadcrumbItems = FilterRenderableItems(BreadcrumbItems);
+        var actions = FilterRenderableItems(Actions);
+        var hasTitles =
+            breadcrumbItems.Length > 0
+            || !string.IsNullOrWhiteSpace(Title)
+            || !string.IsNullOrWhiteSpace(Subtitle);
+        var hasActions = actions.Length > 0 || Extra is not null;
+
+        return new(
+            breadcrumbItems,
+            actions,
+            hasTitles,
+            hasActions);
+    }
+
     private RenderFragment RenderBreadcrumbItem(VbenBreadcrumbItem item) => builder =>
     {
         var isDisabled = item.Disabled ?? false;
@@ -129,4 +146,39 @@ public partial class VbenPageContainer : VbenContentComponentBase, IVueContainer
         VbenPageActionKind.Danger => "danger",
         _ => "default"
     };
+
+    private static TItem[] FilterRenderableItems<TItem>(TItem[]? items)
+        where TItem : class
+    {
+        if (items is not { Length: > 0 })
+        {
+            return Array.Empty<TItem>();
+        }
+
+        List<TItem>? filtered = null;
+        foreach (var item in items)
+        {
+            if (item is null)
+            {
+                continue;
+            }
+
+            filtered ??= new List<TItem>(items.Length);
+            filtered.Add(item);
+        }
+
+        return filtered is null
+            ? Array.Empty<TItem>()
+            : filtered.ToArray();
+    }
+
+    private readonly record struct PageHeaderRenderState(
+        VbenBreadcrumbItem[] BreadcrumbItems,
+        VbenPageAction[] Actions,
+        bool HasTitleRegion,
+        bool HasActionsRegion)
+    {
+        public bool HasHeader
+            => HasTitleRegion || HasActionsRegion;
+    }
 }
