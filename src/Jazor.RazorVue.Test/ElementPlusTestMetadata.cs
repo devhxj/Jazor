@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.Json;
 using ECMAScript.ElementPlus;
+using ECMAScriptNameAttribute = ECMAScript.ECMAScriptNameAttribute;
 
 namespace Jazor.RazorVue.Test;
 
@@ -10,13 +11,14 @@ internal static class ElementPlusTestMetadata
         GetRuntimeComponentExportNames(typeof(ElementPlusComponents));
 
     public static string[] OfficialComponentExportNames { get; } =
-        ReadOfficialComponentExportNames();
+        ReadOfficialInstallableComponentExportNames();
 
     public static string[] OfficialDirectiveExportNames { get; } =
         ReadOfficialDirectiveExportNames();
 
     public static string[] StrongAuthoringComponentNames { get; } =
         OfficialComponentExportNames
+            .Select(NormalizeAuthoringComponentName)
             .OrderBy(static name => name, StringComparer.Ordinal)
             .ToArray();
 
@@ -24,18 +26,30 @@ internal static class ElementPlusTestMetadata
         => exportHost
             .GetProperties(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
             .Where(static property => property.PropertyType == typeof(IElementPlusComponent))
-            .Select(static property => property.Name)
+            .Select(GetComponentExportName)
             .OrderBy(static name => name, StringComparer.Ordinal)
             .ToArray();
 
-    private static string[] ReadOfficialComponentExportNames()
-        => ReadWebTypesArray("vue-components")
-            .Select(static element => ReadExportSymbol(element))
-            .Where(static name => !string.IsNullOrWhiteSpace(name))
-            .Where(static name => !string.Equals(name, "ElOwn", StringComparison.Ordinal))
+    private static string[] ReadOfficialInstallableComponentExportNames()
+    {
+        var filePath = FindRepositoryFile(Path.Combine(".tmp", "elementplus-inspect", "package", "es", "component.mjs"));
+        var content = File.ReadAllText(filePath);
+        var match = System.Text.RegularExpressions.Regex.Match(
+            content,
+            @"var\s+component_default\s*=\s*\[(?<items>[\s\S]*?)\];",
+            System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+        if (!match.Success)
+            throw new InvalidOperationException("Could not locate the Element Plus installable component baseline.");
+
+        return System.Text.RegularExpressions.Regex.Matches(
+                match.Groups["items"].Value,
+                @"\bEl[A-Z][A-Za-z0-9]*\b",
+                System.Text.RegularExpressions.RegexOptions.CultureInvariant)
+            .Select(static item => item.Value)
             .Distinct(StringComparer.Ordinal)
             .OrderBy(static name => name, StringComparer.Ordinal)
             .ToArray()!;
+    }
 
     private static string[] ReadOfficialDirectiveExportNames()
         => ReadWebTypesArray("attributes")
@@ -55,6 +69,32 @@ internal static class ElementPlusTestMetadata
             _ => symbol
         };
 
+    private static string NormalizeAuthoringComponentName(string runtimeExportName)
+        => runtimeExportName switch
+        {
+            "ElSelectV2" => "ElVirtualizedSelect",
+            _ => runtimeExportName
+        };
+
+    private static string GetComponentExportName(PropertyInfo property)
+    {
+        foreach (var attribute in property.CustomAttributes)
+        {
+            if (attribute.AttributeType != typeof(ECMAScriptNameAttribute))
+                continue;
+
+            if (attribute.ConstructorArguments.Count == 1 &&
+                attribute.ConstructorArguments[0].ArgumentType == typeof(string) &&
+                attribute.ConstructorArguments[0].Value is string explicitName &&
+                !string.IsNullOrWhiteSpace(explicitName))
+            {
+                return explicitName;
+            }
+        }
+
+        return property.Name;
+    }
+
     private static IEnumerable<JsonElement> ReadWebTypesArray(string propertyName)
     {
         var filePath = FindRepositoryFile(Path.Combine(".tmp", "elementplus-inspect", "package", "web-types.json"));
@@ -66,31 +106,6 @@ internal static class ElementPlusTestMetadata
             .EnumerateArray()
             .Select(static element => element.Clone())
             .ToArray();
-    }
-
-    private static string? ReadExportSymbol(JsonElement component)
-    {
-        if (component.TryGetProperty("source", out var source) &&
-            source.TryGetProperty("symbol", out var symbol) &&
-            symbol.ValueKind == JsonValueKind.String)
-        {
-            return symbol.GetString();
-        }
-
-        if (component.TryGetProperty("name", out var nameProperty) &&
-            nameProperty.ValueKind == JsonValueKind.String)
-        {
-            var tagName = nameProperty.GetString();
-            if (!string.IsNullOrWhiteSpace(tagName))
-            {
-                return string.Concat(
-                    tagName!
-                        .Split('-', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                        .Select(static segment => char.ToUpperInvariant(segment[0]) + segment[1..]));
-            }
-        }
-
-        return null;
     }
 
     private static string FindRepositoryFile(string relativePath)

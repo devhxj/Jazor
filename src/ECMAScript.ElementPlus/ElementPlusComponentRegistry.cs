@@ -24,6 +24,9 @@ public sealed record ElementPlusComponentRegistry : VueComponentRegistry
     [Description("@#ElAside")]
     public IElementPlusComponent? ElAside { get; init; }
 
+    [Description("@#ElAutoResizer")]
+    public IElementPlusComponent? ElAutoResizer { get; init; }
+
     [Description("@#ElAutocomplete")]
     public IElementPlusComponent? ElAutocomplete { get; init; }
 
@@ -89,6 +92,9 @@ public sealed record ElementPlusComponentRegistry : VueComponentRegistry
 
     [Description("@#ElCollapseItem")]
     public IElementPlusComponent? ElCollapseItem { get; init; }
+
+    [Description("@#ElCollapseTransition")]
+    public IElementPlusComponent? ElCollapseTransition { get; init; }
 
     [Description("@#ElColorPicker")]
     public IElementPlusComponent? ElColorPicker { get; init; }
@@ -207,6 +213,9 @@ public sealed record ElementPlusComponentRegistry : VueComponentRegistry
     [Description("@#ElPopover")]
     public IElementPlusComponent? ElPopover { get; init; }
 
+    [Description("@#ElPopper")]
+    public IElementPlusComponent? ElPopper { get; init; }
+
     [Description("@#ElProgress")]
     public IElementPlusComponent? ElProgress { get; init; }
 
@@ -317,6 +326,9 @@ public sealed record ElementPlusComponentRegistry : VueComponentRegistry
 
     [Description("@#ElTree")]
     public IElementPlusComponent? ElTree { get; init; }
+
+    [Description("@#ElTreeSelect")]
+    public IElementPlusComponent? ElTreeSelect { get; init; }
 
     [Description("@#ElTreeV2")]
     public IElementPlusComponent? ElTreeV2 { get; init; }

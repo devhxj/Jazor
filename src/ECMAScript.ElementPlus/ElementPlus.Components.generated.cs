@@ -8,7 +8,7 @@ namespace ECMAScript.ElementPlus;
 // Generated from:
 // - .tmp/elementplus-inspect/package/web-types.json
 // - .tmp/elementplus-inspect/package/attributes.json
-// - .tmp/elementplus-inspect/package/es/components/index.d.ts
+// - .tmp/elementplus-inspect/package/es/component.mjs
 
 /// <summary>
 /// Fix the element to a specific visible area.
@@ -164,6 +164,31 @@ public sealed class ElAside : ElementPlusContentComponentBase
 {
     [Parameter]
     public string? Width { get; set; }
+
+}
+
+/// <summary>
+/// ElAutoResizer
+/// </summary>
+[VueLibraryComponent("element-plus", "ElAutoResizer")]
+[VueLibraryStyle("element-plus/dist/index.css")]
+[VueLibraryPluginRequirement("element-plus")]
+[VueProp(nameof(CssClass), Name = "class")]
+[VueProp(nameof(CssStyle), Name = "style")]
+[VueProp(nameof(DisableWidth), Name = "disableWidth")]
+[VueProp(nameof(DisableHeight), Name = "disableHeight")]
+[VueProp(nameof(OnResize), Name = "onResize")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+public sealed class ElAutoResizer : ElementPlusContentComponentBase
+{
+    [Parameter]
+    public bool? DisableWidth { get; set; }
+
+    [Parameter]
+    public bool? DisableHeight { get; set; }
+
+    [Parameter]
+    public Delegate? OnResize { get; set; }
 
 }
 
@@ -872,6 +897,7 @@ public sealed class ElCarouselItem : ElementPlusContentComponentBase
 [VueProp(nameof(CssStyle), Name = "style")]
 [VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Options), Name = "options")]
+[VueProp(nameof(Props), Name = "props")]
 [VueProp(nameof(Size), Name = "size")]
 [VueProp(nameof(Placeholder), Name = "placeholder")]
 [VueProp(nameof(Disabled), Name = "disabled")]
@@ -927,6 +953,9 @@ public sealed class ElCascader : ElementPlusContentComponentBase
 
     [Parameter]
     public VueValue[]? Options { get; set; }
+
+    [Parameter]
+    public ElementPlusCascaderProps? Props { get; set; }
 
     [Parameter]
     public ElementPlusComponentSize? Size { get; set; }
@@ -995,10 +1024,10 @@ public sealed class ElCascader : ElementPlusContentComponentBase
     public Number? MaxCollapseTags { get; set; }
 
     [Parameter]
-    public VueValue? EmptyValues { get; set; }
+    public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
-    public VueValue? ValueOnClear { get; set; }
+    public ElementPlusValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
     public bool? Persistent { get; set; }
@@ -1019,7 +1048,7 @@ public sealed class ElCascader : ElementPlusContentComponentBase
     public bool? VirtualScroll { get; set; }
 
     [Parameter]
-    public VueValue? FitInputWidth { get; set; }
+    public VueBooleanNumberValue? FitInputWidth { get; set; }
 
     [Parameter]
     public Number? ItemSize { get; set; }
@@ -1081,6 +1110,7 @@ public sealed class ElCascader : ElementPlusContentComponentBase
 [VueProp(nameof(CssStyle), Name = "style")]
 [VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Options), Name = "options")]
+[VueProp(nameof(Props), Name = "props")]
 [VueProp(nameof(VirtualScroll), Name = "virtualScroll")]
 [VueProp(nameof(ItemSize), Name = "itemSize")]
 [VueProp(nameof(Height), Name = "height")]
@@ -1097,6 +1127,9 @@ public sealed class ElCascaderPanel : ElementPlusContentComponentBase
 
     [Parameter]
     public VueValue[]? Options { get; set; }
+
+    [Parameter]
+    public ElementPlusCascaderProps? Props { get; set; }
 
     [Parameter]
     public bool? VirtualScroll { get; set; }
@@ -1363,7 +1396,7 @@ public sealed class ElCheckboxGroup : ElementPlusContentComponentBase
     public VueValue[]? Options { get; set; }
 
     [Parameter]
-    public VueValue? Props { get; set; }
+    public ElementPlusCheckboxOptionPropsAlias? Props { get; set; }
 
     [Parameter]
     public string? Type { get; set; }
@@ -1495,6 +1528,19 @@ public sealed class ElCollapseItem : ElementPlusComponentBase
 }
 
 /// <summary>
+/// ElCollapseTransition
+/// </summary>
+[VueLibraryComponent("element-plus", "ElCollapseTransition")]
+[VueLibraryStyle("element-plus/dist/index.css")]
+[VueLibraryPluginRequirement("element-plus")]
+[VueProp(nameof(CssClass), Name = "class")]
+[VueProp(nameof(CssStyle), Name = "style")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+public sealed class ElCollapseTransition : ElementPlusContentComponentBase
+{
+}
+
+/// <summary>
 /// ColorPicker is a color selector supporting multiple color formats.
 /// </summary>
 [VueLibraryComponent("element-plus", "ElColorPicker")]
@@ -1566,10 +1612,10 @@ public sealed class ElColorPicker : ElementPlusComponentBase
     public string? AriaLabel { get; set; }
 
     [Parameter]
-    public VueValue? EmptyValues { get; set; }
+    public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
-    public VueValue? ValueOnClear { get; set; }
+    public ElementPlusValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
     public string? Id { get; set; }
@@ -1682,11 +1728,14 @@ public sealed class ElColorPickerPanel : ElementPlusComponentBase
 [VueProp(nameof(EmptyValues), Name = "emptyValues")]
 [VueProp(nameof(ValueOnClear), Name = "valueOnClear")]
 [VueProp(nameof(Table), Name = "table")]
+[VueProp(nameof(A11y), Name = "a11y")]
+[VueProp(nameof(Card), Name = "card")]
+[VueProp(nameof(KeyboardNavigation), Name = "keyboardNavigation")]
 [VueSlot(nameof(ChildContent), IsDefault = true)]
 public sealed class ElConfigProvider : ElementPlusContentComponentBase
 {
     [Parameter]
-    public VueValue? Locale { get; set; }
+    public ElementPlusLanguage? Locale { get; set; }
 
     [Parameter]
     public ElementPlusComponentSize? Size { get; set; }
@@ -1698,28 +1747,37 @@ public sealed class ElConfigProvider : ElementPlusContentComponentBase
     public string? Namespace { get; set; }
 
     [Parameter]
-    public VueValue? Button { get; set; }
+    public ElementPlusButtonConfig? Button { get; set; }
 
     [Parameter]
-    public VueValue? Link { get; set; }
+    public ElementPlusLinkConfig? Link { get; set; }
 
     [Parameter]
-    public VueValue? Dialog { get; set; }
+    public ElementPlusDialogConfig? Dialog { get; set; }
 
     [Parameter]
-    public VueValue? Message { get; set; }
+    public ElementPlusMessageConfig? Message { get; set; }
 
     [Parameter]
-    public VueDictionary? ExperimentalFeatures { get; set; }
+    public VueProps? ExperimentalFeatures { get; set; }
 
     [Parameter]
-    public VueValue? EmptyValues { get; set; }
+    public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
-    public VueValue? ValueOnClear { get; set; }
+    public ElementPlusValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
-    public VueValue? Table { get; set; }
+    public ElementPlusTableConfig? Table { get; set; }
+
+    [Parameter]
+    public bool? A11y { get; set; }
+
+    [Parameter]
+    public ElementPlusCardConfig? Card { get; set; }
+
+    [Parameter]
+    public bool? KeyboardNavigation { get; set; }
 
 }
 
@@ -1921,10 +1979,10 @@ public sealed class ElDatePicker : ElementPlusContentComponentBase
     public bool? Teleported { get; set; }
 
     [Parameter]
-    public VueValue? EmptyValues { get; set; }
+    public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
-    public VueValue? ValueOnClear { get; set; }
+    public ElementPlusValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
     public VueValue[]? FallbackPlacements { get; set; }
@@ -2348,7 +2406,7 @@ public sealed class ElDialog : ElementPlusContentComponentBase
     public string? HeaderAriaLevel { get; set; }
 
     [Parameter]
-    public VueValue? Transition { get; set; }
+    public VueTransitionValue? Transition { get; set; }
 
     [Parameter]
     public string? CustomClass { get; set; }
@@ -2621,7 +2679,7 @@ public sealed class ElDropdown : ElementPlusContentComponentBase
     public string? Size { get; set; }
 
     [Parameter]
-    public VueDictionary? ButtonProps { get; set; }
+    public ElementPlusButtonProps? ButtonProps { get; set; }
 
     [Parameter]
     public VueStringNumberValue? MaxHeight { get; set; }
@@ -2639,7 +2697,7 @@ public sealed class ElDropdown : ElementPlusContentComponentBase
     public string? Effect { get; set; }
 
     [Parameter]
-    public VueValue? Trigger { get; set; }
+    public ElementPlusDropdownTriggerValue? Trigger { get; set; }
 
     [Parameter]
     public string[]? TriggerKeys { get; set; }
@@ -2870,7 +2928,7 @@ public sealed class ElForm : ElementPlusContentComponentBase
     public bool? ScrollToError { get; set; }
 
     [Parameter]
-    public VueValue? ScrollIntoViewOptions { get; set; }
+    public ScrollIntoViewArg? ScrollIntoViewOptions { get; set; }
 
     [Parameter]
     public EventCallback OnValidate { get; set; }
@@ -3014,7 +3072,6 @@ public sealed class ElIcon : ElementPlusContentComponentBase
 [VueProp(nameof(ShowProgress), Name = "showProgress")]
 [VueSlot(nameof(Placeholder), Name = "placeholder")]
 [VueSlot(nameof(Error), Name = "error")]
-[VueSlot(nameof(ImageViewerSlots), Name = "[image viewer slots]")]
 [VueLibraryEmit(nameof(OnLoad), Name = "load")]
 [VueLibraryEmit(nameof(OnError), Name = "error")]
 [VueLibraryEmit(nameof(OnSwitch), Name = "switch")]
@@ -3087,9 +3144,6 @@ public sealed class ElImage : ElementPlusComponentBase
 
     [Parameter]
     public RenderFragment? Error { get; set; }
-
-    [Parameter]
-    public RenderFragment? ImageViewerSlots { get; set; }
 
     [Parameter]
     public EventCallback OnLoad { get; set; }
@@ -3317,7 +3371,7 @@ public sealed class ElInput : ElementPlusComponentBase
     public Number? Rows { get; set; }
 
     [Parameter]
-    public VueValue? Autosize { get; set; }
+    public ElementPlusInputAutoSize? Autosize { get; set; }
 
     [Parameter]
     public string? Autocomplete { get; set; }
@@ -3329,13 +3383,13 @@ public sealed class ElInput : ElementPlusComponentBase
     public bool? Readonly { get; set; }
 
     [Parameter]
-    public VueValue? Max { get; set; }
+    public VueStringNumberValue? Max { get; set; }
 
     [Parameter]
-    public VueValue? Min { get; set; }
+    public VueStringNumberValue? Min { get; set; }
 
     [Parameter]
-    public VueValue? Step { get; set; }
+    public VueStringNumberValue? Step { get; set; }
 
     [Parameter]
     public string? Resize { get; set; }
@@ -3356,7 +3410,7 @@ public sealed class ElInput : ElementPlusComponentBase
     public bool? ValidateEvent { get; set; }
 
     [Parameter]
-    public VueValue? InputStyle { get; set; }
+    public VueStyleValue? InputStyle { get; set; }
 
     [Parameter]
     public string? Label { get; set; }
@@ -3508,7 +3562,7 @@ public sealed class ElInputNumber : ElementPlusComponentBase
     public string? Id { get; set; }
 
     [Parameter]
-    public VueValue? ValueOnClear { get; set; }
+    public ElementPlusValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
     public bool? ValidateEvent { get; set; }
@@ -3893,11 +3947,9 @@ public sealed class ElMain : ElementPlusContentComponentBase
 [VueSlot(nameof(LoadingSlot), Name = "loading")]
 [VueSlot(nameof(Header), Name = "header")]
 [VueSlot(nameof(Footer), Name = "footer")]
-[VueSlot(nameof(InputSlots), Name = "[input slots]")]
 [VueLibraryEmit(nameof(OnSearch), Name = "search")]
 [VueLibraryEmit(nameof(OnSelect), Name = "select")]
 [VueLibraryEmit(nameof(OnWholeRemove), Name = "whole-remove")]
-[VueLibraryEmit(nameof(OnInputEvents), Name = "[input events]")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "System.String")]
 public sealed class ElMention : ElementPlusComponentBase
 {
@@ -3905,7 +3957,7 @@ public sealed class ElMention : ElementPlusComponentBase
     public VueValue[]? Options { get; set; }
 
     [Parameter]
-    public VueValue? Props { get; set; }
+    public ElementPlusMentionOptionPropsAlias? Props { get; set; }
 
     [Parameter]
     public VueValue? Prefix { get; set; }
@@ -3959,9 +4011,6 @@ public sealed class ElMention : ElementPlusComponentBase
     public RenderFragment? Footer { get; set; }
 
     [Parameter]
-    public RenderFragment? InputSlots { get; set; }
-
-    [Parameter]
     public EventCallback OnSearch { get; set; }
 
     [Parameter]
@@ -3969,9 +4018,6 @@ public sealed class ElMention : ElementPlusComponentBase
 
     [Parameter]
     public EventCallback OnWholeRemove { get; set; }
-
-    [Parameter]
-    public EventCallback OnInputEvents { get; set; }
 
     [Parameter]
     public EventCallback<string?> ModelValueChanged { get; set; }
@@ -4480,10 +4526,10 @@ public sealed class ElPopconfirm : ElementPlusComponentBase
 public sealed class ElPopover : ElementPlusContentComponentBase
 {
     [Parameter]
-    public VueValue? Trigger { get; set; }
+    public ElementPlusTooltipTriggerValue? Trigger { get; set; }
 
     [Parameter]
-    public VueValue? TriggerKeys { get; set; }
+    public string[]? TriggerKeys { get; set; }
 
     [Parameter]
     public string? Title { get; set; }
@@ -4571,6 +4617,23 @@ public sealed class ElPopover : ElementPlusContentComponentBase
 
     [Parameter]
     public EventCallback OnAfterLeave { get; set; }
+
+}
+
+/// <summary>
+/// ElPopper
+/// </summary>
+[VueLibraryComponent("element-plus", "ElPopper")]
+[VueLibraryStyle("element-plus/dist/index.css")]
+[VueLibraryPluginRequirement("element-plus")]
+[VueProp(nameof(CssClass), Name = "class")]
+[VueProp(nameof(CssStyle), Name = "style")]
+[VueProp(nameof(Role), Name = "role")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+public sealed class ElPopper : ElementPlusContentComponentBase
+{
+    [Parameter]
+    public string? Role { get; set; }
 
 }
 
@@ -4781,7 +4844,7 @@ public sealed class ElRadioGroup : ElementPlusContentComponentBase
     public VueValue[]? Options { get; set; }
 
     [Parameter]
-    public VueValue? Props { get; set; }
+    public ElementPlusRadioOptionPropsAlias? Props { get; set; }
 
     [Parameter]
     public string? Type { get; set; }
@@ -5070,6 +5133,7 @@ public sealed class ElScrollbar : ElementPlusContentComponentBase
 [VueProp(nameof(CssStyle), Name = "style")]
 [VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Options), Name = "options")]
+[VueProp(nameof(Props), Name = "props")]
 [VueProp(nameof(Size), Name = "size")]
 [VueProp(nameof(Block), Name = "block")]
 [VueProp(nameof(Disabled), Name = "disabled")]
@@ -5088,6 +5152,9 @@ public sealed class ElSegmented : ElementPlusContentComponentBase
 
     [Parameter]
     public VueValue[]? Options { get; set; }
+
+    [Parameter]
+    public ElementPlusSegmentedPropsAlias? Props { get; set; }
 
     [Parameter]
     public string? Size { get; set; }
@@ -5132,12 +5199,14 @@ public sealed class ElSegmented : ElementPlusContentComponentBase
 [VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Multiple), Name = "multiple")]
 [VueProp(nameof(Options), Name = "options")]
+[VueProp(nameof(Props), Name = "props")]
 [VueProp(nameof(Disabled), Name = "disabled")]
 [VueProp(nameof(ValueKey), Name = "valueKey")]
 [VueProp(nameof(Size), Name = "size")]
 [VueProp(nameof(Clearable), Name = "clearable")]
 [VueProp(nameof(CollapseTags), Name = "collapseTags")]
 [VueProp(nameof(CollapseTagsTooltip), Name = "collapseTagsTooltip")]
+[VueProp(nameof(TagTooltip), Name = "tagTooltip")]
 [VueProp(nameof(MultipleLimit), Name = "multipleLimit")]
 [VueProp(nameof(Id), Name = "id")]
 [VueProp(nameof(Name), Name = "name")]
@@ -5209,6 +5278,9 @@ public sealed class ElSelect : ElementPlusContentComponentBase
     public VueValue[]? Options { get; set; }
 
     [Parameter]
+    public ElementPlusSelectPropsAlias? Props { get; set; }
+
+    [Parameter]
     public bool? Disabled { get; set; }
 
     [Parameter]
@@ -5225,6 +5297,9 @@ public sealed class ElSelect : ElementPlusContentComponentBase
 
     [Parameter]
     public bool? CollapseTagsTooltip { get; set; }
+
+    [Parameter]
+    public ElementPlusTagTooltipProps? TagTooltip { get; set; }
 
     [Parameter]
     public Number? MultipleLimit { get; set; }
@@ -5341,10 +5416,10 @@ public sealed class ElSelect : ElementPlusContentComponentBase
     public string? AriaLabel { get; set; }
 
     [Parameter]
-    public VueValue? EmptyValues { get; set; }
+    public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
-    public VueValue? ValueOnClear { get; set; }
+    public ElementPlusValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
     public bool? SuffixTransition { get; set; }
@@ -6194,10 +6269,10 @@ public sealed class ElTable : ElementPlusContentComponentBase
     public VueValue? DefaultSort { get; set; }
 
     [Parameter]
-    public ElementPlusPopperEffect? TooltipEffect { get; set; }
+    public string? TooltipEffect { get; set; }
 
     [Parameter]
-    public VueValue? TooltipOptions { get; set; }
+    public ElementPlusTableOverflowTooltipOptions? TooltipOptions { get; set; }
 
     [Parameter]
     public string? AppendFilterPanelTo { get; set; }
@@ -6236,7 +6311,7 @@ public sealed class ElTable : ElementPlusContentComponentBase
     public bool? ScrollbarAlwaysOn { get; set; }
 
     [Parameter]
-    public bool? ShowOverflowTooltip { get; set; }
+    public ElementPlusTableOverflowTooltipValue? ShowOverflowTooltip { get; set; }
 
     [Parameter]
     public bool? Flexible { get; set; }
@@ -6413,7 +6488,7 @@ public sealed class ElTableColumn : ElementPlusContentComponentBase
     public Delegate? Formatter { get; set; }
 
     [Parameter]
-    public bool? ShowOverflowTooltip { get; set; }
+    public ElementPlusTableOverflowTooltipValue? ShowOverflowTooltip { get; set; }
 
     [Parameter]
     public string? Align { get; set; }
@@ -6957,10 +7032,10 @@ public sealed class ElTimePicker : ElementPlusComponentBase
     public VueStringNumberValue? Tabindex { get; set; }
 
     [Parameter]
-    public VueValue? EmptyValues { get; set; }
+    public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
-    public VueValue? ValueOnClear { get; set; }
+    public ElementPlusValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
     public bool? SaveOnBlur { get; set; }
@@ -7076,10 +7151,10 @@ public sealed class ElTimeSelect : ElementPlusComponentBase
     public VueValue? Format { get; set; }
 
     [Parameter]
-    public VueValue? EmptyValues { get; set; }
+    public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
-    public VueValue? ValueOnClear { get; set; }
+    public ElementPlusValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
     public string? PopperClass { get; set; }
@@ -7282,7 +7357,7 @@ public sealed class ElTooltip : ElementPlusContentComponentBase
     public bool? Teleported { get; set; }
 
     [Parameter]
-    public VueValue? Trigger { get; set; }
+    public ElementPlusTooltipTriggerValue? Trigger { get; set; }
 
     [Parameter]
     public bool? VirtualTriggering { get; set; }
@@ -7291,7 +7366,7 @@ public sealed class ElTooltip : ElementPlusContentComponentBase
     public VueTeleportTarget? VirtualRef { get; set; }
 
     [Parameter]
-    public VueValue? TriggerKeys { get; set; }
+    public string[]? TriggerKeys { get; set; }
 
     [Parameter]
     public bool? Persistent { get; set; }
@@ -7361,6 +7436,7 @@ public sealed class ElTourStep : ElementPlusComponentBase
 [VueProp(nameof(ButtonTexts), Name = "buttonTexts")]
 [VueProp(nameof(RenderContent), Name = "renderContent")]
 [VueProp(nameof(Format), Name = "format")]
+[VueProp(nameof(Props), Name = "props")]
 [VueProp(nameof(LeftDefaultChecked), Name = "leftDefaultChecked")]
 [VueProp(nameof(RightDefaultChecked), Name = "rightDefaultChecked")]
 [VueProp(nameof(ValidateEvent), Name = "validateEvent")]
@@ -7372,14 +7448,14 @@ public sealed class ElTourStep : ElementPlusComponentBase
 [VueLibraryEmit(nameof(OnChange), Name = "change")]
 [VueLibraryEmit(nameof(OnLeftCheckChange), Name = "left-check-change")]
 [VueLibraryEmit(nameof(OnRightCheckChange), Name = "right-check-change")]
-[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue[]")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueStringNumberValue[]")]
 public sealed class ElTransfer : ElementPlusContentComponentBase
 {
     [Parameter]
-    public VueValue[]? ModelValue { get; set; }
+    public VueStringNumberValue[]? ModelValue { get; set; }
 
     [Parameter]
-    public VueDictionary? Data { get; set; }
+    public ElementPlusTransferDataItem[]? Data { get; set; }
 
     [Parameter]
     public bool? Filterable { get; set; }
@@ -7391,25 +7467,28 @@ public sealed class ElTransfer : ElementPlusContentComponentBase
     public Delegate? FilterMethod { get; set; }
 
     [Parameter]
-    public string? TargetOrder { get; set; }
+    public ElementPlusTransferTargetOrder? TargetOrder { get; set; }
 
     [Parameter]
-    public VueValue? Titles { get; set; }
+    public ElementPlusTransferTextPair? Titles { get; set; }
 
     [Parameter]
-    public VueValue? ButtonTexts { get; set; }
+    public ElementPlusTransferTextPair? ButtonTexts { get; set; }
 
     [Parameter]
     public VueValue? RenderContent { get; set; }
 
     [Parameter]
-    public VueValue? Format { get; set; }
+    public ElementPlusTransferFormat? Format { get; set; }
 
     [Parameter]
-    public VueValue[]? LeftDefaultChecked { get; set; }
+    public ElementPlusTransferPropsAlias? Props { get; set; }
 
     [Parameter]
-    public VueValue[]? RightDefaultChecked { get; set; }
+    public VueStringNumberValue[]? LeftDefaultChecked { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue[]? RightDefaultChecked { get; set; }
 
     [Parameter]
     public bool? ValidateEvent { get; set; }
@@ -7436,7 +7515,7 @@ public sealed class ElTransfer : ElementPlusContentComponentBase
     public EventCallback OnRightCheckChange { get; set; }
 
     [Parameter]
-    public EventCallback<VueValue[]?> ModelValueChanged { get; set; }
+    public EventCallback<VueStringNumberValue[]?> ModelValueChanged { get; set; }
 
 }
 
@@ -7451,6 +7530,7 @@ public sealed class ElTransfer : ElementPlusContentComponentBase
 [VueProp(nameof(Data), Name = "data")]
 [VueProp(nameof(EmptyText), Name = "emptyText")]
 [VueProp(nameof(NodeKey), Name = "nodeKey")]
+[VueProp(nameof(Props), Name = "props")]
 [VueProp(nameof(RenderAfterExpand), Name = "renderAfterExpand")]
 [VueProp(nameof(Load), Name = "load")]
 [VueProp(nameof(RenderContent), Name = "renderContent")]
@@ -7498,6 +7578,9 @@ public sealed class ElTree : ElementPlusContentComponentBase
 
     [Parameter]
     public string? NodeKey { get; set; }
+
+    [Parameter]
+    public ElementPlusTreeOptionProps? Props { get; set; }
 
     [Parameter]
     public bool? RenderAfterExpand { get; set; }
@@ -7610,6 +7693,451 @@ public sealed class ElTree : ElementPlusContentComponentBase
 }
 
 /// <summary>
+/// ElTreeSelect
+/// </summary>
+[VueLibraryComponent("element-plus", "ElTreeSelect")]
+[VueLibraryStyle("element-plus/dist/index.css")]
+[VueLibraryPluginRequirement("element-plus")]
+[VueProp(nameof(CssClass), Name = "class")]
+[VueProp(nameof(CssStyle), Name = "style")]
+[VueProp(nameof(CacheData), Name = "cacheData")]
+[VueProp(nameof(TagTooltip), Name = "tagTooltip")]
+[VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
+[VueProp(nameof(Multiple), Name = "multiple")]
+[VueProp(nameof(Options), Name = "options")]
+[VueProp(nameof(Props), Name = "props")]
+[VueProp(nameof(Disabled), Name = "disabled")]
+[VueProp(nameof(ValueKey), Name = "valueKey")]
+[VueProp(nameof(Size), Name = "size")]
+[VueProp(nameof(Clearable), Name = "clearable")]
+[VueProp(nameof(CollapseTags), Name = "collapseTags")]
+[VueProp(nameof(CollapseTagsTooltip), Name = "collapseTagsTooltip")]
+[VueProp(nameof(MultipleLimit), Name = "multipleLimit")]
+[VueProp(nameof(Id), Name = "id")]
+[VueProp(nameof(Name), Name = "name")]
+[VueProp(nameof(Effect), Name = "effect")]
+[VueProp(nameof(Autocomplete), Name = "autocomplete")]
+[VueProp(nameof(Placeholder), Name = "placeholder")]
+[VueProp(nameof(Filterable), Name = "filterable")]
+[VueProp(nameof(AllowCreate), Name = "allowCreate")]
+[VueProp(nameof(FilterMethod), Name = "filterMethod")]
+[VueProp(nameof(Remote), Name = "remote")]
+[VueProp(nameof(Debounce), Name = "debounce")]
+[VueProp(nameof(RemoteMethod), Name = "remoteMethod")]
+[VueProp(nameof(RemoteShowSuffix), Name = "remoteShowSuffix")]
+[VueProp(nameof(Loading), Name = "loading")]
+[VueProp(nameof(LoadingText), Name = "loadingText")]
+[VueProp(nameof(NoMatchText), Name = "noMatchText")]
+[VueProp(nameof(NoDataText), Name = "noDataText")]
+[VueProp(nameof(PopperClass), Name = "popperClass")]
+[VueProp(nameof(PopperStyle), Name = "popperStyle")]
+[VueProp(nameof(ReserveKeyword), Name = "reserveKeyword")]
+[VueProp(nameof(DefaultFirstOption), Name = "defaultFirstOption")]
+[VueProp(nameof(Teleported), Name = "teleported")]
+[VueProp(nameof(AppendTo), Name = "appendTo")]
+[VueProp(nameof(Persistent), Name = "persistent")]
+[VueProp(nameof(AutomaticDropdown), Name = "automaticDropdown")]
+[VueProp(nameof(ClearIcon), Name = "clearIcon")]
+[VueProp(nameof(FitInputWidth), Name = "fitInputWidth")]
+[VueProp(nameof(SuffixIcon), Name = "suffixIcon")]
+[VueProp(nameof(TagType), Name = "tagType")]
+[VueProp(nameof(TagEffect), Name = "tagEffect")]
+[VueProp(nameof(ValidateEvent), Name = "validateEvent")]
+[VueProp(nameof(Offset), Name = "offset")]
+[VueProp(nameof(ShowArrow), Name = "showArrow")]
+[VueProp(nameof(Placement), Name = "placement")]
+[VueProp(nameof(FallbackPlacements), Name = "fallbackPlacements")]
+[VueProp(nameof(MaxCollapseTags), Name = "maxCollapseTags")]
+[VueProp(nameof(PopperOptions), Name = "popperOptions")]
+[VueProp(nameof(AriaLabel), Name = "ariaLabel")]
+[VueProp(nameof(EmptyValues), Name = "emptyValues")]
+[VueProp(nameof(ValueOnClear), Name = "valueOnClear")]
+[VueProp(nameof(SuffixTransition), Name = "suffixTransition")]
+[VueProp(nameof(Tabindex), Name = "tabindex")]
+[VueProp(nameof(Data), Name = "data")]
+[VueProp(nameof(EmptyText), Name = "emptyText")]
+[VueProp(nameof(NodeKey), Name = "nodeKey")]
+[VueProp(nameof(RenderAfterExpand), Name = "renderAfterExpand")]
+[VueProp(nameof(Load), Name = "load")]
+[VueProp(nameof(RenderContent), Name = "renderContent")]
+[VueProp(nameof(HighlightCurrent), Name = "highlightCurrent")]
+[VueProp(nameof(DefaultExpandAll), Name = "defaultExpandAll")]
+[VueProp(nameof(ExpandOnClickNode), Name = "expandOnClickNode")]
+[VueProp(nameof(CheckOnClickNode), Name = "checkOnClickNode")]
+[VueProp(nameof(CheckOnClickLeaf), Name = "checkOnClickLeaf")]
+[VueProp(nameof(AutoExpandParent), Name = "autoExpandParent")]
+[VueProp(nameof(DefaultExpandedKeys), Name = "defaultExpandedKeys")]
+[VueProp(nameof(ShowCheckbox), Name = "showCheckbox")]
+[VueProp(nameof(CheckStrictly), Name = "checkStrictly")]
+[VueProp(nameof(DefaultCheckedKeys), Name = "defaultCheckedKeys")]
+[VueProp(nameof(CurrentNodeKey), Name = "currentNodeKey")]
+[VueProp(nameof(FilterNodeMethod), Name = "filterNodeMethod")]
+[VueProp(nameof(Accordion), Name = "accordion")]
+[VueProp(nameof(Indent), Name = "indent")]
+[VueProp(nameof(Icon), Name = "icon")]
+[VueProp(nameof(Lazy), Name = "lazy")]
+[VueProp(nameof(Draggable), Name = "draggable")]
+[VueProp(nameof(AllowDrag), Name = "allowDrag")]
+[VueProp(nameof(AllowDrop), Name = "allowDrop")]
+[VueSlot(nameof(ChildContent), IsDefault = true)]
+[VueSlot(nameof(Header), Name = "header")]
+[VueSlot(nameof(Footer), Name = "footer")]
+[VueSlot(nameof(Prefix), Name = "prefix")]
+[VueSlot(nameof(Empty), Name = "empty")]
+[VueSlot(nameof(Tag), Name = "tag")]
+[VueSlot(nameof(LoadingSlot), Name = "loading")]
+[VueSlot(nameof(Label), Name = "label")]
+[VueLibraryEmit(nameof(OnChange), Name = "change")]
+[VueLibraryEmit(nameof(OnVisibleChange), Name = "visible-change")]
+[VueLibraryEmit(nameof(OnRemoveTag), Name = "remove-tag")]
+[VueLibraryEmit(nameof(OnClear), Name = "clear")]
+[VueLibraryEmit(nameof(OnBlur), Name = "blur")]
+[VueLibraryEmit(nameof(OnFocus), Name = "focus")]
+[VueLibraryEmit(nameof(OnPopupScroll), Name = "popup-scroll")]
+[VueLibraryEmit(nameof(OnEndReached), Name = "end-reached")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue", PayloadTypeName = "ECMAScript.Vue3+VueValue")]
+[VueLibraryEmit(nameof(OnNodeClick), Name = "node-click")]
+[VueLibraryEmit(nameof(OnNodeContextmenu), Name = "node-contextmenu")]
+[VueLibraryEmit(nameof(OnCheckChange), Name = "check-change")]
+[VueLibraryEmit(nameof(OnCheck), Name = "check")]
+[VueLibraryEmit(nameof(OnCurrentChange), Name = "current-change")]
+[VueLibraryEmit(nameof(OnNodeExpand), Name = "node-expand")]
+[VueLibraryEmit(nameof(OnNodeCollapse), Name = "node-collapse")]
+[VueLibraryEmit(nameof(OnNodeDragStart), Name = "node-drag-start")]
+[VueLibraryEmit(nameof(OnNodeDragEnter), Name = "node-drag-enter")]
+[VueLibraryEmit(nameof(OnNodeDragLeave), Name = "node-drag-leave")]
+[VueLibraryEmit(nameof(OnNodeDragOver), Name = "node-drag-over")]
+[VueLibraryEmit(nameof(OnNodeDragEnd), Name = "node-drag-end")]
+[VueLibraryEmit(nameof(OnNodeDrop), Name = "node-drop")]
+public sealed class ElTreeSelect : ElementPlusContentComponentBase
+{
+    [Parameter]
+    public VueValue[]? CacheData { get; set; }
+
+    [Parameter]
+    public ElementPlusTagTooltipProps? TagTooltip { get; set; }
+
+    [Parameter]
+    public VueValue? ModelValue { get; set; }
+
+    [Parameter]
+    public bool? Multiple { get; set; }
+
+    [Parameter]
+    public VueValue[]? Options { get; set; }
+
+    [Parameter]
+    public ElementPlusSelectPropsAlias? Props { get; set; }
+
+    [Parameter]
+    public bool? Disabled { get; set; }
+
+    [Parameter]
+    public string? ValueKey { get; set; }
+
+    [Parameter]
+    public string? Size { get; set; }
+
+    [Parameter]
+    public bool? Clearable { get; set; }
+
+    [Parameter]
+    public bool? CollapseTags { get; set; }
+
+    [Parameter]
+    public bool? CollapseTagsTooltip { get; set; }
+
+    [Parameter]
+    public Number? MultipleLimit { get; set; }
+
+    [Parameter]
+    public string? Id { get; set; }
+
+    [Parameter]
+    public string? Name { get; set; }
+
+    [Parameter]
+    public string? Effect { get; set; }
+
+    [Parameter]
+    public string? Autocomplete { get; set; }
+
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    [Parameter]
+    public bool? Filterable { get; set; }
+
+    [Parameter]
+    public bool? AllowCreate { get; set; }
+
+    [Parameter]
+    public Delegate? FilterMethod { get; set; }
+
+    [Parameter]
+    public bool? Remote { get; set; }
+
+    [Parameter]
+    public Number? Debounce { get; set; }
+
+    [Parameter]
+    public Delegate? RemoteMethod { get; set; }
+
+    [Parameter]
+    public bool? RemoteShowSuffix { get; set; }
+
+    [Parameter]
+    public bool? Loading { get; set; }
+
+    [Parameter]
+    public string? LoadingText { get; set; }
+
+    [Parameter]
+    public string? NoMatchText { get; set; }
+
+    [Parameter]
+    public string? NoDataText { get; set; }
+
+    [Parameter]
+    public string? PopperClass { get; set; }
+
+    [Parameter]
+    public VueStyleValue? PopperStyle { get; set; }
+
+    [Parameter]
+    public bool? ReserveKeyword { get; set; }
+
+    [Parameter]
+    public bool? DefaultFirstOption { get; set; }
+
+    [Parameter]
+    public bool? Teleported { get; set; }
+
+    [Parameter]
+    public VueTeleportTarget? AppendTo { get; set; }
+
+    [Parameter]
+    public bool? Persistent { get; set; }
+
+    [Parameter]
+    public bool? AutomaticDropdown { get; set; }
+
+    [Parameter]
+    public VueStringComponentValue? ClearIcon { get; set; }
+
+    [Parameter]
+    public bool? FitInputWidth { get; set; }
+
+    [Parameter]
+    public VueStringComponentValue? SuffixIcon { get; set; }
+
+    [Parameter]
+    public string? TagType { get; set; }
+
+    [Parameter]
+    public string? TagEffect { get; set; }
+
+    [Parameter]
+    public bool? ValidateEvent { get; set; }
+
+    [Parameter]
+    public Number? Offset { get; set; }
+
+    [Parameter]
+    public bool? ShowArrow { get; set; }
+
+    [Parameter]
+    public string? Placement { get; set; }
+
+    [Parameter]
+    public VueValue[]? FallbackPlacements { get; set; }
+
+    [Parameter]
+    public Number? MaxCollapseTags { get; set; }
+
+    [Parameter]
+    public VueDictionary? PopperOptions { get; set; }
+
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    [Parameter]
+    public VueValue[]? EmptyValues { get; set; }
+
+    [Parameter]
+    public ElementPlusValueOnClearValue? ValueOnClear { get; set; }
+
+    [Parameter]
+    public bool? SuffixTransition { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? Tabindex { get; set; }
+
+    [Parameter]
+    public VueValue[]? Data { get; set; }
+
+    [Parameter]
+    public string? EmptyText { get; set; }
+
+    [Parameter]
+    public string? NodeKey { get; set; }
+
+    [Parameter]
+    public bool? RenderAfterExpand { get; set; }
+
+    [Parameter]
+    public Delegate? Load { get; set; }
+
+    [Parameter]
+    public Delegate? RenderContent { get; set; }
+
+    [Parameter]
+    public bool? HighlightCurrent { get; set; }
+
+    [Parameter]
+    public bool? DefaultExpandAll { get; set; }
+
+    [Parameter]
+    public bool? ExpandOnClickNode { get; set; }
+
+    [Parameter]
+    public bool? CheckOnClickNode { get; set; }
+
+    [Parameter]
+    public bool? CheckOnClickLeaf { get; set; }
+
+    [Parameter]
+    public bool? AutoExpandParent { get; set; }
+
+    [Parameter]
+    public VueValue[]? DefaultExpandedKeys { get; set; }
+
+    [Parameter]
+    public bool? ShowCheckbox { get; set; }
+
+    [Parameter]
+    public bool? CheckStrictly { get; set; }
+
+    [Parameter]
+    public VueValue[]? DefaultCheckedKeys { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? CurrentNodeKey { get; set; }
+
+    [Parameter]
+    public Delegate? FilterNodeMethod { get; set; }
+
+    [Parameter]
+    public bool? Accordion { get; set; }
+
+    [Parameter]
+    public Number? Indent { get; set; }
+
+    [Parameter]
+    public VueStringComponentValue? Icon { get; set; }
+
+    [Parameter]
+    public bool? Lazy { get; set; }
+
+    [Parameter]
+    public bool? Draggable { get; set; }
+
+    [Parameter]
+    public Delegate? AllowDrag { get; set; }
+
+    [Parameter]
+    public Delegate? AllowDrop { get; set; }
+
+    [Parameter]
+    public RenderFragment? Header { get; set; }
+
+    [Parameter]
+    public RenderFragment? Footer { get; set; }
+
+    [Parameter]
+    public RenderFragment? Prefix { get; set; }
+
+    [Parameter]
+    public RenderFragment? Empty { get; set; }
+
+    [Parameter]
+    public RenderFragment? Tag { get; set; }
+
+    [Parameter]
+    public RenderFragment? LoadingSlot { get; set; }
+
+    [Parameter]
+    public RenderFragment? Label { get; set; }
+
+    [Parameter]
+    public EventCallback OnChange { get; set; }
+
+    [Parameter]
+    public EventCallback OnVisibleChange { get; set; }
+
+    [Parameter]
+    public EventCallback OnRemoveTag { get; set; }
+
+    [Parameter]
+    public EventCallback OnClear { get; set; }
+
+    [Parameter]
+    public EventCallback OnBlur { get; set; }
+
+    [Parameter]
+    public EventCallback OnFocus { get; set; }
+
+    [Parameter]
+    public EventCallback OnPopupScroll { get; set; }
+
+    [Parameter]
+    public EventCallback OnEndReached { get; set; }
+
+    [Parameter]
+    public EventCallback<VueValue?> ModelValueChanged { get; set; }
+
+    [Parameter]
+    public EventCallback OnNodeClick { get; set; }
+
+    [Parameter]
+    public EventCallback OnNodeContextmenu { get; set; }
+
+    [Parameter]
+    public EventCallback OnCheckChange { get; set; }
+
+    [Parameter]
+    public EventCallback OnCheck { get; set; }
+
+    [Parameter]
+    public EventCallback OnCurrentChange { get; set; }
+
+    [Parameter]
+    public EventCallback OnNodeExpand { get; set; }
+
+    [Parameter]
+    public EventCallback OnNodeCollapse { get; set; }
+
+    [Parameter]
+    public EventCallback OnNodeDragStart { get; set; }
+
+    [Parameter]
+    public EventCallback OnNodeDragEnter { get; set; }
+
+    [Parameter]
+    public EventCallback OnNodeDragLeave { get; set; }
+
+    [Parameter]
+    public EventCallback OnNodeDragOver { get; set; }
+
+    [Parameter]
+    public EventCallback OnNodeDragEnd { get; set; }
+
+    [Parameter]
+    public EventCallback OnNodeDrop { get; set; }
+
+}
+
+/// <summary>
 /// el-tree-v2
 /// </summary>
 [VueLibraryComponent("element-plus", "ElTreeV2")]
@@ -7619,6 +8147,7 @@ public sealed class ElTree : ElementPlusContentComponentBase
 [VueProp(nameof(CssStyle), Name = "style")]
 [VueProp(nameof(Data), Name = "data")]
 [VueProp(nameof(EmptyText), Name = "emptyText")]
+[VueProp(nameof(Props), Name = "props")]
 [VueProp(nameof(HighlightCurrent), Name = "highlightCurrent")]
 [VueProp(nameof(ExpandOnClickNode), Name = "expandOnClickNode")]
 [VueProp(nameof(CheckOnClickNode), Name = "checkOnClickNode")]
@@ -7651,6 +8180,9 @@ public sealed class ElTreeV2 : ElementPlusContentComponentBase
 
     [Parameter]
     public string? EmptyText { get; set; }
+
+    [Parameter]
+    public ElementPlusTreeOptionProps? Props { get; set; }
 
     [Parameter]
     public bool? HighlightCurrent { get; set; }
@@ -7869,6 +8401,7 @@ public sealed class ElUpload : ElementPlusContentComponentBase
 [VueProp(nameof(CssStyle), Name = "style")]
 [VueProp(nameof(ModelValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueProp(nameof(Options), Name = "options")]
+[VueProp(nameof(Props), Name = "props")]
 [VueProp(nameof(Multiple), Name = "multiple")]
 [VueProp(nameof(Disabled), Name = "disabled")]
 [VueProp(nameof(ValueKey), Name = "valueKey")]
@@ -7914,6 +8447,7 @@ public sealed class ElUpload : ElementPlusContentComponentBase
 [VueProp(nameof(Placement), Name = "placement")]
 [VueProp(nameof(FallbackPlacements), Name = "fallbackPlacements")]
 [VueProp(nameof(CollapseTagsTooltip), Name = "collapseTagsTooltip")]
+[VueProp(nameof(TagTooltip), Name = "tagTooltip")]
 [VueProp(nameof(MaxCollapseTags), Name = "maxCollapseTags")]
 [VueProp(nameof(TagType), Name = "tagType")]
 [VueProp(nameof(TagEffect), Name = "tagEffect")]
@@ -7945,6 +8479,9 @@ public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
 
     [Parameter]
     public VueValue? Options { get; set; }
+
+    [Parameter]
+    public ElementPlusSelectPropsAlias? Props { get; set; }
 
     [Parameter]
     public bool? Multiple { get; set; }
@@ -8034,7 +8571,7 @@ public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
     public bool? AutomaticDropdown { get; set; }
 
     [Parameter]
-    public VueValue? FitInputWidth { get; set; }
+    public VueBooleanNumberValue? FitInputWidth { get; set; }
 
     [Parameter]
     public VueStringComponentValue? SuffixIcon { get; set; }
@@ -8082,6 +8619,9 @@ public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
     public bool? CollapseTagsTooltip { get; set; }
 
     [Parameter]
+    public ElementPlusTagTooltipProps? TagTooltip { get; set; }
+
+    [Parameter]
     public Number? MaxCollapseTags { get; set; }
 
     [Parameter]
@@ -8094,10 +8634,10 @@ public sealed class ElVirtualizedSelect : ElementPlusContentComponentBase
     public string? AriaLabel { get; set; }
 
     [Parameter]
-    public VueValue? EmptyValues { get; set; }
+    public VueValue[]? EmptyValues { get; set; }
 
     [Parameter]
-    public VueValue? ValueOnClear { get; set; }
+    public ElementPlusValueOnClearValue? ValueOnClear { get; set; }
 
     [Parameter]
     public bool? PopperAppendToBody { get; set; }

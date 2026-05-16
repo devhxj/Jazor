@@ -65,10 +65,101 @@ internal static class Program
         ["VueClassValue"] = typeof(VueClassValue),
         ["VueStyleValue"] = typeof(VueStyleValue),
         ["VueTeleportTarget"] = typeof(VueTeleportTarget),
+        ["VueBooleanNumberValue"] = typeof(VueBooleanNumberValue),
         ["VueStringNumberValue"] = typeof(VueStringNumberValue),
         ["VueBooleanStringValue"] = typeof(VueBooleanStringValue),
         ["VueBooleanStringNumberValue"] = typeof(VueBooleanStringNumberValue),
-        ["VueStringComponentValue"] = typeof(VueStringComponentValue)
+        ["VueStringComponentValue"] = typeof(VueStringComponentValue),
+        ["VueTransitionValue"] = typeof(VueTransitionValue)
+    };
+
+    private static readonly Dictionary<(string TagName, string RuntimeName), ExplicitGeneratedType> ExplicitPropTypeOverrides = new()
+    {
+        [("el-config-provider", "locale")] = ExplicitGeneratedType.Reference("ElementPlusLanguage"),
+        [("el-config-provider", "experimentalFeatures")] = ExplicitGeneratedType.Reference("VueProps"),
+        [("el-config-provider", "button")] = ExplicitGeneratedType.Reference("ElementPlusButtonConfig"),
+        [("el-config-provider", "card")] = ExplicitGeneratedType.Reference("ElementPlusCardConfig"),
+        [("el-config-provider", "dialog")] = ExplicitGeneratedType.Reference("ElementPlusDialogConfig"),
+        [("el-config-provider", "link")] = ExplicitGeneratedType.Reference("ElementPlusLinkConfig"),
+        [("el-config-provider", "message")] = ExplicitGeneratedType.Reference("ElementPlusMessageConfig"),
+        [("el-config-provider", "emptyValues")] = ExplicitGeneratedType.Reference("VueValue[]"),
+        [("el-config-provider", "valueOnClear")] = ExplicitGeneratedType.Value("ElementPlusValueOnClearValue"),
+        [("el-config-provider", "table")] = ExplicitGeneratedType.Reference("ElementPlusTableConfig"),
+        [("el-dialog", "transition")] = ExplicitGeneratedType.Value("VueTransitionValue"),
+        [("el-dropdown", "trigger")] = ExplicitGeneratedType.Value("ElementPlusDropdownTriggerValue"),
+        [("el-dropdown", "buttonProps")] = ExplicitGeneratedType.Reference("ElementPlusButtonProps"),
+        [("el-table", "tooltipEffect")] = ExplicitGeneratedType.Reference("string"),
+        [("el-table", "showOverflowTooltip")] = ExplicitGeneratedType.Value("ElementPlusTableOverflowTooltipValue"),
+        [("el-table", "tooltipOptions")] = ExplicitGeneratedType.Reference("ElementPlusTableOverflowTooltipOptions"),
+        [("el-table-column", "showOverflowTooltip")] = ExplicitGeneratedType.Value("ElementPlusTableOverflowTooltipValue"),
+        [("el-form", "scrollIntoViewOptions")] = ExplicitGeneratedType.Value("ScrollIntoViewArg"),
+        [("el-cascader", "emptyValues")] = ExplicitGeneratedType.Reference("VueValue[]"),
+        [("el-cascader", "valueOnClear")] = ExplicitGeneratedType.Value("ElementPlusValueOnClearValue"),
+        [("el-cascader", "fitInputWidth")] = ExplicitGeneratedType.Value("VueBooleanNumberValue"),
+        [("el-color-picker", "emptyValues")] = ExplicitGeneratedType.Reference("VueValue[]"),
+        [("el-color-picker", "valueOnClear")] = ExplicitGeneratedType.Value("ElementPlusValueOnClearValue"),
+        [("el-date-picker", "emptyValues")] = ExplicitGeneratedType.Reference("VueValue[]"),
+        [("el-date-picker", "valueOnClear")] = ExplicitGeneratedType.Value("ElementPlusValueOnClearValue"),
+        [("el-input", "autosize")] = ExplicitGeneratedType.Value("ElementPlusInputAutoSize"),
+        [("el-input", "max")] = ExplicitGeneratedType.Value("VueStringNumberValue"),
+        [("el-input", "min")] = ExplicitGeneratedType.Value("VueStringNumberValue"),
+        [("el-input", "step")] = ExplicitGeneratedType.Value("VueStringNumberValue"),
+        [("el-input", "inputStyle")] = ExplicitGeneratedType.Value("VueStyleValue"),
+        [("el-input-number", "valueOnClear")] = ExplicitGeneratedType.Value("ElementPlusValueOnClearValue"),
+        [("el-popover", "trigger")] = ExplicitGeneratedType.Value("ElementPlusTooltipTriggerValue"),
+        [("el-popover", "triggerKeys")] = ExplicitGeneratedType.Reference("string[]"),
+        [("el-select", "emptyValues")] = ExplicitGeneratedType.Reference("VueValue[]"),
+        [("el-select", "valueOnClear")] = ExplicitGeneratedType.Value("ElementPlusValueOnClearValue"),
+        [("el-time-picker", "emptyValues")] = ExplicitGeneratedType.Reference("VueValue[]"),
+        [("el-time-picker", "valueOnClear")] = ExplicitGeneratedType.Value("ElementPlusValueOnClearValue"),
+        [("el-time-select", "emptyValues")] = ExplicitGeneratedType.Reference("VueValue[]"),
+        [("el-time-select", "valueOnClear")] = ExplicitGeneratedType.Value("ElementPlusValueOnClearValue"),
+        [("el-select-v2", "emptyValues")] = ExplicitGeneratedType.Reference("VueValue[]"),
+        [("el-select-v2", "valueOnClear")] = ExplicitGeneratedType.Value("ElementPlusValueOnClearValue"),
+        [("el-select-v2", "fitInputWidth")] = ExplicitGeneratedType.Value("VueBooleanNumberValue"),
+        [("el-select-v2", "tagTooltip")] = ExplicitGeneratedType.Reference("ElementPlusTagTooltipProps"),
+        [("el-select-v2", "props")] = ExplicitGeneratedType.Reference("ElementPlusSelectPropsAlias"),
+        [("el-select", "props")] = ExplicitGeneratedType.Reference("ElementPlusSelectPropsAlias"),
+        [("el-checkbox-group", "props")] = ExplicitGeneratedType.Reference("ElementPlusCheckboxOptionPropsAlias"),
+        [("el-mention", "props")] = ExplicitGeneratedType.Reference("ElementPlusMentionOptionPropsAlias"),
+        [("el-radio-group", "props")] = ExplicitGeneratedType.Reference("ElementPlusRadioOptionPropsAlias"),
+        [("el-segmented", "props")] = ExplicitGeneratedType.Reference("ElementPlusSegmentedPropsAlias"),
+        [("el-tooltip", "trigger")] = ExplicitGeneratedType.Value("ElementPlusTooltipTriggerValue"),
+        [("el-tooltip", "triggerKeys")] = ExplicitGeneratedType.Reference("string[]"),
+        [("el-transfer", "modelValue")] = ExplicitGeneratedType.Reference("VueStringNumberValue[]"),
+        [("el-transfer", "data")] = ExplicitGeneratedType.Reference("ElementPlusTransferDataItem[]"),
+        [("el-transfer", "targetOrder")] = ExplicitGeneratedType.Value("ElementPlusTransferTargetOrder"),
+        [("el-transfer", "titles")] = ExplicitGeneratedType.Reference("ElementPlusTransferTextPair"),
+        [("el-transfer", "buttonTexts")] = ExplicitGeneratedType.Reference("ElementPlusTransferTextPair"),
+        [("el-transfer", "format")] = ExplicitGeneratedType.Reference("ElementPlusTransferFormat"),
+        [("el-transfer", "props")] = ExplicitGeneratedType.Reference("ElementPlusTransferPropsAlias"),
+        [("el-transfer", "leftDefaultChecked")] = ExplicitGeneratedType.Reference("VueStringNumberValue[]"),
+        [("el-transfer", "rightDefaultChecked")] = ExplicitGeneratedType.Reference("VueStringNumberValue[]"),
+        [("el-tree", "props")] = ExplicitGeneratedType.Reference("ElementPlusTreeOptionProps"),
+        [("el-tree-v2", "props")] = ExplicitGeneratedType.Reference("ElementPlusTreeOptionProps"),
+        [("el-cascader", "props")] = ExplicitGeneratedType.Reference("ElementPlusCascaderProps"),
+        [("el-cascader-panel", "props")] = ExplicitGeneratedType.Reference("ElementPlusCascaderProps"),
+        [("el-virtualized-select", "emptyValues")] = ExplicitGeneratedType.Reference("VueValue[]"),
+        [("el-virtualized-select", "valueOnClear")] = ExplicitGeneratedType.Value("ElementPlusValueOnClearValue"),
+        [("el-virtualized-select", "props")] = ExplicitGeneratedType.Reference("ElementPlusSelectPropsAlias")
+    };
+
+    private static readonly Dictionary<string, RawPropMetadata[]> SupplementalPropsByTag = new(StringComparer.Ordinal)
+    {
+        ["el-config-provider"] =
+        [
+            new RawPropMetadata("a11y", null, "boolean", false),
+            new RawPropMetadata("card", null, "object", false),
+            new RawPropMetadata("keyboard-navigation", null, "boolean", false)
+        ],
+        ["el-virtualized-select"] =
+        [
+            new RawPropMetadata("tagTooltip", null, "TagTooltipProps", false)
+        ],
+        ["el-tree-select"] =
+        [
+            new RawPropMetadata("tagTooltip", null, "TagTooltipProps", false)
+        ]
     };
 
     private static void Main()
@@ -79,31 +170,35 @@ internal static class Program
 
         var webTypesPath = Path.Combine(metadataRoot, "web-types.json");
         var attributesPath = Path.Combine(metadataRoot, "attributes.json");
-        var componentsIndexPath = Path.Combine(metadataRoot, "es", "components", "index.d.ts");
+        var componentBaselinePath = Path.Combine(metadataRoot, "es", "component.mjs");
         var eventConstantsPath = Path.Combine(metadataRoot, "es", "constants", "event.d.ts");
 
         EnsureFileExists(webTypesPath, "Element Plus web-types metadata");
         EnsureFileExists(attributesPath, "Element Plus attributes metadata");
-        EnsureFileExists(componentsIndexPath, "Element Plus component export metadata");
+        EnsureFileExists(componentBaselinePath, "Element Plus installable component baseline");
         EnsureFileExists(eventConstantsPath, "Element Plus event constants metadata");
 
         var attributeCatalog = ReadAttributeCatalog(attributesPath);
-        var validComponentExports = ReadValidComponentExports(componentsIndexPath);
-        ValidateRuntimeComponentExportOverrides(validComponentExports);
+        var installableComponentExports = ReadInstallableComponentExports(componentBaselinePath);
+        ValidateRuntimeComponentExportOverrides(installableComponentExports);
         var updateModelEventName = ReadUpdateModelEventName(eventConstantsPath);
 
         using var webTypes = JsonDocument.Parse(File.ReadAllText(webTypesPath));
         var html = webTypes.RootElement.GetProperty("contributions").GetProperty("html");
 
-        var components = html.GetProperty("vue-components")
+        var components = SupplementInstallableComponents(
+            html.GetProperty("vue-components")
             .EnumerateArray()
             .Select(static element => RawComponentMetadata.FromJson(element))
-            .Where(component => validComponentExports.Contains(GetRuntimeComponentExportName(component.ExportName)))
+            .Where(component => installableComponentExports.Contains(GetRuntimeComponentExportName(component.ExportName)))
             .GroupBy(static component => component.ExportName, StringComparer.Ordinal)
             .Select(group => ElementPlusComponentMetadata.Merge(
                 group.ToArray(),
                 attributeCatalog,
                 updateModelEventName))
+            .ToArray(),
+            installableComponentExports,
+            metadataRoot)
             .OrderBy(static component => component.ClassName, StringComparer.Ordinal)
             .ToArray();
 
@@ -125,7 +220,7 @@ internal static class Program
 
         WriteFile(
             Path.Combine(packageRoot, "ElementPlus.Components.generated.cs"),
-            RenderComponentDefinitions(components, webTypesPath, attributesPath, componentsIndexPath));
+            RenderComponentDefinitions(components, webTypesPath, attributesPath, componentBaselinePath));
 
         WriteFile(
             Path.Combine(packageRoot, "ElementPlusDirectiveExports.cs"),
@@ -407,12 +502,21 @@ internal static class Program
         return new ElementPlusAttributeCatalog(byTag);
     }
 
-    private static HashSet<string> ReadValidComponentExports(string path)
+    private static HashSet<string> ReadInstallableComponentExports(string path)
     {
         var content = File.ReadAllText(path);
-        return Regex.Matches(content, @"\bEl[A-Z][A-Za-z0-9]*\b", RegexOptions.CultureInvariant)
+        var match = Regex.Match(
+            content,
+            @"var\s+component_default\s*=\s*\[(?<items>[\s\S]*?)\];",
+            RegexOptions.CultureInvariant);
+        if (!match.Success)
+        {
+            throw new InvalidOperationException(
+                $"Could not locate the Element Plus installable component baseline in '{path}'.");
+        }
+
+        return Regex.Matches(match.Groups["items"].Value, @"\bEl[A-Z][A-Za-z0-9]*\b", RegexOptions.CultureInvariant)
             .Select(static match => match.Value)
-            .Where(static name => !string.Equals(name, "ElLoadingDirective", StringComparison.Ordinal))
             .Distinct(StringComparer.Ordinal)
             .ToHashSet(StringComparer.Ordinal);
     }
@@ -540,13 +644,21 @@ internal static class Program
 
     private static string NormalizePropRuntimeName(string rawName)
     {
+        var normalizedRawName = rawName.Trim();
+        if (normalizedRawName.Length >= 2 &&
+            normalizedRawName[0] == '[' &&
+            normalizedRawName[^1] == ']')
+        {
+            normalizedRawName = normalizedRawName[1..^1].Trim();
+        }
+
         if (string.Equals(rawName, "class", StringComparison.Ordinal) ||
             string.Equals(rawName, "style", StringComparison.Ordinal))
         {
-            return rawName;
+            return normalizedRawName;
         }
 
-        return ToLowerCamelCase(ToPascalCase(rawName));
+        return ToLowerCamelCase(ToPascalCase(normalizedRawName));
     }
 
     private static string NormalizeEventRuntimeName(string rawName)
@@ -556,6 +668,28 @@ internal static class Program
 
         var suffix = rawName["update:".Length..];
         return "update:" + NormalizePropRuntimeName(suffix);
+    }
+
+    private static bool IsBracketedPlaceholderName(string rawName)
+    {
+        var trimmed = rawName.Trim();
+        return trimmed.Length >= 2 &&
+               trimmed[0] == '[' &&
+               trimmed[^1] == ']';
+    }
+
+    private static bool IsBracketedDocumentSectionName(string rawName)
+    {
+        if (!IsBracketedPlaceholderName(rawName))
+            return false;
+
+        var content = rawName.Trim()[1..^1].Trim();
+        return content.Contains(' ', StringComparison.Ordinal) ||
+               string.Equals(content, "tooltip", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(content, "image viewer slots", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(content, "input props", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(content, "input events", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(content, "input slots", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string GetUpdateEventRuntimeName(string propRuntimeName, string updateModelEventName)
@@ -570,6 +704,317 @@ internal static class Program
         => RuntimeComponentExportOverrides.TryGetValue(authoringExportName, out var runtimeExportName)
             ? runtimeExportName
             : authoringExportName;
+
+    private static ElementPlusComponentMetadata[] SupplementInstallableComponents(
+        ElementPlusComponentMetadata[] components,
+        HashSet<string> installableComponentExports,
+        string metadataRoot)
+    {
+        var supplemented = components.ToList();
+        var byRuntimeExport = supplemented.ToDictionary(
+            static component => component.RuntimeExportName,
+            StringComparer.Ordinal);
+        var byAuthoringName = supplemented.ToDictionary(
+            static component => component.AuthoringName,
+            StringComparer.Ordinal);
+
+        foreach (var runtimeExportName in installableComponentExports.OrderBy(static name => name, StringComparer.Ordinal))
+        {
+            if (byRuntimeExport.ContainsKey(runtimeExportName))
+                continue;
+
+            var component = BuildSupplementalInstallableComponent(runtimeExportName, byAuthoringName, metadataRoot);
+            if (!byRuntimeExport.TryAdd(component.RuntimeExportName, component))
+            {
+                throw new InvalidOperationException(
+                    $"Duplicate runtime export '{component.RuntimeExportName}' while supplementing Element Plus installable components.");
+            }
+
+            if (!byAuthoringName.TryAdd(component.AuthoringName, component))
+            {
+                throw new InvalidOperationException(
+                    $"Duplicate authoring component '{component.AuthoringName}' while supplementing Element Plus installable components.");
+            }
+
+            supplemented.Add(component);
+        }
+
+        return supplemented.ToArray();
+    }
+
+    private static ElementPlusComponentMetadata BuildSupplementalInstallableComponent(
+        string runtimeExportName,
+        IReadOnlyDictionary<string, ElementPlusComponentMetadata> existingComponentsByAuthoringName,
+        string metadataRoot)
+        => runtimeExportName switch
+        {
+            "ElAutoResizer" => CreateAutoResizerComponentMetadata(metadataRoot),
+            "ElCollapseTransition" => CreateCollapseTransitionComponentMetadata(metadataRoot),
+            "ElPopper" => CreatePopperComponentMetadata(metadataRoot),
+            "ElTreeSelect" => CreateTreeSelectComponentMetadata(existingComponentsByAuthoringName, metadataRoot),
+            _ => throw new InvalidOperationException(
+                $"Element Plus installable component '{runtimeExportName}' is not covered by web-types metadata and no supplemental metadata builder exists.")
+        };
+
+    private static ElementPlusComponentMetadata CreateAutoResizerComponentMetadata(string metadataRoot)
+    {
+        EnsureFileExists(
+            Path.Combine(metadataRoot, "es", "components", "table-v2", "src", "auto-resizer.d.ts"),
+            "Element Plus ElAutoResizer prop metadata");
+        EnsureFileExists(
+            Path.Combine(metadataRoot, "es", "components", "table-v2", "src", "components", "auto-resizer.mjs.map"),
+            "Element Plus ElAutoResizer slot metadata");
+
+        return CreateSupplementalComponentMetadata(
+            tagName: "el-auto-resizer",
+            authoringName: "ElAutoResizer",
+            runtimeExportName: "ElAutoResizer",
+            description: "ElAutoResizer",
+            props:
+            [
+                CreateSupplementalProp("disableWidth", "DisableWidth", GeneratedType.Value("bool").AsOptional(required: false)),
+                CreateSupplementalProp("disableHeight", "DisableHeight", GeneratedType.Value("bool").AsOptional(required: false)),
+                CreateSupplementalProp("onResize", "OnResize", GeneratedType.Reference("Delegate?"))
+            ],
+            slots:
+            [
+                CreateSupplementalDefaultSlot()
+            ],
+            emits: []);
+    }
+
+    private static ElementPlusComponentMetadata CreateCollapseTransitionComponentMetadata(string metadataRoot)
+    {
+        EnsureFileExists(
+            Path.Combine(metadataRoot, "es", "components", "collapse-transition", "src", "collapse-transition.vue.d.ts"),
+            "Element Plus ElCollapseTransition slot metadata");
+
+        return CreateSupplementalComponentMetadata(
+            tagName: "el-collapse-transition",
+            authoringName: "ElCollapseTransition",
+            runtimeExportName: "ElCollapseTransition",
+            description: "ElCollapseTransition",
+            props: [],
+            slots:
+            [
+                CreateSupplementalDefaultSlot()
+            ],
+            emits: []);
+    }
+
+    private static ElementPlusComponentMetadata CreatePopperComponentMetadata(string metadataRoot)
+    {
+        EnsureFileExists(
+            Path.Combine(metadataRoot, "es", "components", "popper", "src", "popper.d.ts"),
+            "Element Plus ElPopper prop metadata");
+        EnsureFileExists(
+            Path.Combine(metadataRoot, "es", "components", "popper", "src", "popper.vue.d.ts"),
+            "Element Plus ElPopper slot metadata");
+
+        return CreateSupplementalComponentMetadata(
+            tagName: "el-popper",
+            authoringName: "ElPopper",
+            runtimeExportName: "ElPopper",
+            description: "ElPopper",
+            props:
+            [
+                CreateSupplementalProp("role", "Role", GeneratedType.Reference("string?"))
+            ],
+            slots:
+            [
+                CreateSupplementalDefaultSlot()
+            ],
+            emits: []);
+    }
+
+    private static ElementPlusComponentMetadata CreateTreeSelectComponentMetadata(
+        IReadOnlyDictionary<string, ElementPlusComponentMetadata> existingComponentsByAuthoringName,
+        string metadataRoot)
+    {
+        EnsureFileExists(
+            Path.Combine(metadataRoot, "es", "components", "tree-select", "src", "tree-select.vue.d.ts"),
+            "Element Plus ElTreeSelect prop metadata");
+        EnsureFileExists(
+            Path.Combine(metadataRoot, "es", "components", "tree-select", "src", "tree-select.vue_vue_type_script_lang.mjs.map"),
+            "Element Plus ElTreeSelect composition metadata");
+        EnsureFileExists(
+            Path.Combine(metadataRoot, "es", "components", "tree-select", "src", "tree.mjs.map"),
+            "Element Plus ElTreeSelect tree slot metadata");
+
+        var select = GetRequiredSupplementalSourceComponent(existingComponentsByAuthoringName, "ElSelect");
+        var tree = GetRequiredSupplementalSourceComponent(existingComponentsByAuthoringName, "ElTree");
+
+        return CreateSupplementalComponentMetadata(
+            tagName: "el-tree-select",
+            authoringName: "ElTreeSelect",
+            runtimeExportName: "ElTreeSelect",
+            description: "ElTreeSelect",
+            props: MergeSupplementalProps(
+                [
+                    CreateSupplementalProp("cacheData", "CacheData", GeneratedType.Reference("VueValue[]?")),
+                    CreateSupplementalProp("tagTooltip", "TagTooltip", GeneratedType.Reference("ElementPlusTagTooltipProps?"))
+                ],
+                select.Props,
+                tree.Props),
+            slots: MergeSupplementalSlots(
+                [
+                    CreateSupplementalDefaultSlot()
+                ],
+                select.Slots.Where(static slot => !slot.IsDefault)),
+            emits: MergeSupplementalEmits(select.Emits, tree.Emits));
+    }
+
+    private static ElementPlusComponentMetadata GetRequiredSupplementalSourceComponent(
+        IReadOnlyDictionary<string, ElementPlusComponentMetadata> componentsByAuthoringName,
+        string authoringName)
+    {
+        if (componentsByAuthoringName.TryGetValue(authoringName, out var component))
+            return component;
+
+        throw new InvalidOperationException(
+            $"Element Plus supplemental component generation requires source component '{authoringName}', but it was not found.");
+    }
+
+    private static ElementPlusComponentMetadata CreateSupplementalComponentMetadata(
+        string tagName,
+        string authoringName,
+        string runtimeExportName,
+        string description,
+        ElementPlusPropMetadata[] props,
+        ElementPlusSlotMetadata[] slots,
+        ElementPlusEmitMetadata[] emits)
+        => new(
+            tagName,
+            authoringName,
+            authoringName,
+            runtimeExportName,
+            description,
+            props,
+            slots,
+            emits);
+
+    private static ElementPlusPropMetadata CreateSupplementalProp(
+        string runtimeName,
+        string propertyName,
+        GeneratedType type,
+        bool required = false,
+        bool acceptsBinding = false)
+        => new(
+            runtimeName,
+            propertyName,
+            type,
+            required,
+            IsSkipped: false,
+            acceptsBinding);
+
+    private static ElementPlusSlotMetadata CreateSupplementalDefaultSlot()
+        => new("default", ChildContentPropertyName, IsDefault: true);
+
+    private static ElementPlusSlotMetadata[] MergeSupplementalSlots(params IEnumerable<ElementPlusSlotMetadata>[] groups)
+    {
+        var merged = new List<ElementPlusSlotMetadata>();
+        var indexes = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        foreach (var group in groups)
+        {
+            foreach (var slot in group)
+            {
+                if (!indexes.TryAdd(slot.RuntimeName, merged.Count))
+                {
+                    merged[indexes[slot.RuntimeName]] = slot;
+                    continue;
+                }
+
+                merged.Add(slot);
+            }
+        }
+
+        EnsureUniqueSupplementalPropertyNames(
+            merged.Select(static slot => slot.PropertyName).Where(static name => !string.IsNullOrWhiteSpace(name)),
+            "slot");
+        return merged.ToArray();
+    }
+
+    private static ElementPlusEmitMetadata[] MergeSupplementalEmits(params IEnumerable<ElementPlusEmitMetadata>[] groups)
+    {
+        var merged = new List<ElementPlusEmitMetadata>();
+        var indexes = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        foreach (var group in groups)
+        {
+            foreach (var emit in group)
+            {
+                if (!indexes.TryAdd(emit.RuntimeName, merged.Count))
+                {
+                    merged[indexes[emit.RuntimeName]] = emit;
+                    continue;
+                }
+
+                merged.Add(emit);
+            }
+        }
+
+        EnsureUniqueSupplementalPropertyNames(
+            merged.Select(static emit => emit.PropertyName).Where(static name => !string.IsNullOrWhiteSpace(name)),
+            "emit");
+        return merged.ToArray();
+    }
+
+    private static ElementPlusPropMetadata[] MergeSupplementalProps(params IEnumerable<ElementPlusPropMetadata>[] groups)
+    {
+        var merged = new List<ElementPlusPropMetadata>();
+        var indexes = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        foreach (var group in groups)
+        {
+            foreach (var prop in group)
+            {
+                if (!indexes.TryAdd(prop.RuntimeName, merged.Count))
+                {
+                    var current = merged[indexes[prop.RuntimeName]];
+                    var preferred = current.IsSkipped && !prop.IsSkipped
+                        ? prop
+                        : !current.IsSkipped && prop.IsSkipped
+                            ? current
+                            : current.Type.SourceText == "VueValue?" && prop.Type.SourceText != "VueValue?"
+                                ? prop
+                                : current;
+
+                    merged[indexes[prop.RuntimeName]] = preferred with
+                    {
+                        Required = current.Required || prop.Required,
+                        IsSkipped = current.IsSkipped && prop.IsSkipped,
+                        AcceptsBinding = current.AcceptsBinding || prop.AcceptsBinding
+                    };
+                    continue;
+                }
+
+                merged.Add(prop);
+            }
+        }
+
+        EnsureUniqueSupplementalPropertyNames(
+            merged.Where(static prop => !prop.IsSkipped)
+                .Select(static prop => prop.PropertyName)
+                .Where(static name => !string.IsNullOrWhiteSpace(name)),
+            "prop");
+        return merged.ToArray();
+    }
+
+    private static void EnsureUniqueSupplementalPropertyNames(
+        IEnumerable<string> propertyNames,
+        string memberKind)
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var propertyName in propertyNames)
+        {
+            if (seen.Add(propertyName))
+                continue;
+
+            throw new InvalidOperationException(
+                $"Duplicate Element Plus supplemental {memberKind} property name '{propertyName}'.");
+        }
+    }
 
     private static string GetUniquePropPropertyName(string basePropertyName, HashSet<string> occupiedNames)
     {
@@ -640,7 +1085,7 @@ internal static class Program
     private static string ToNormalEventPropertyName(string runtimeName)
         => "On" + ToPascalCase(runtimeName);
 
-    private static GeneratedType ResolvePropType(RawPropMetadata prop)
+    private static GeneratedType ResolvePropType(string tagName, RawPropMetadata prop)
     {
         if (string.Equals(prop.RawName, "class", StringComparison.Ordinal) ||
             string.Equals(prop.RawName, "style", StringComparison.Ordinal))
@@ -648,10 +1093,15 @@ internal static class Program
             return GeneratedType.Reference("VueValue?");
         }
 
-        if (prop.RawName.StartsWith("[", StringComparison.Ordinal) ||
+        if (IsBracketedDocumentSectionName(prop.RawName) ||
             prop.RawName.Contains('/', StringComparison.Ordinal))
         {
             return GeneratedType.Reference("VueValue?");
+        }
+
+        if (ExplicitPropTypeOverrides.TryGetValue((tagName, prop.RuntimeName), out var overrideType))
+        {
+            return overrideType.ToGeneratedType(prop.Required);
         }
 
         var expression = NormalizeTypeExpression(prop.TypeExpression);
@@ -681,6 +1131,9 @@ internal static class Program
 
         if (IsBooleanString(tokens))
             return GeneratedType.Value("VueBooleanStringValue").AsOptional(prop.Required);
+
+        if (IsBooleanNumber(tokens))
+            return GeneratedType.Value("VueBooleanNumberValue").AsOptional(prop.Required);
 
         if (IsStringNumber(tokens))
             return GeneratedType.Value("VueStringNumberValue").AsOptional(prop.Required);
@@ -742,6 +1195,9 @@ internal static class Program
             "VueProps" => GeneratedType.Reference("VueProps?").AsOptional(required),
             "VueDictionary" => GeneratedType.Reference("VueDictionary?").AsOptional(required),
             "CSSProperties" => GeneratedType.Value("VueStyleValue").AsOptional(required),
+            "StyleValue" => GeneratedType.Value("VueStyleValue").AsOptional(required),
+            "InputAutoSize" => GeneratedType.Value("ElementPlusInputAutoSize").AsOptional(required),
+            "TagTooltipProps" => GeneratedType.Reference("ElementPlusTagTooltipProps").AsOptional(required),
             "CSSSelector" => GeneratedType.Reference("string?").AsOptional(required),
             "HTMLElement" => GeneratedType.Reference("HTMLElement?").AsOptional(required),
             "Element" => GeneratedType.Reference("Element?").AsOptional(required),
@@ -851,6 +1307,9 @@ internal static class Program
 
         if (string.Equals(normalized, "CSSProperties", StringComparison.Ordinal))
             return "CSSProperties";
+
+        if (string.Equals(normalized, "StyleValue", StringComparison.Ordinal))
+            return "StyleValue";
 
         if (string.Equals(normalized, "Component", StringComparison.Ordinal))
             return "Component";
@@ -1037,6 +1496,11 @@ internal static class Program
            tokens.Any(IsNumberLikeToken) &&
            tokens.Any(IsStringLikeToken) &&
            tokens.All(static token => token == "boolean" || IsNumberLikeToken(token) || IsStringLikeToken(token));
+
+    private static bool IsBooleanNumber(string[] tokens)
+        => tokens.Any(static token => token == "boolean") &&
+           tokens.Any(IsNumberLikeToken) &&
+           tokens.All(static token => token == "boolean" || IsNumberLikeToken(token));
 
     private static bool IsBooleanString(string[] tokens)
         => tokens.Any(static token => token == "boolean") &&
@@ -1337,6 +1801,21 @@ internal static class Program
         }
     }
 
+    private sealed record ExplicitGeneratedType(
+        string SourceText,
+        bool IsValueType)
+    {
+        public static ExplicitGeneratedType Value(string sourceText)
+            => new(sourceText, true);
+
+        public static ExplicitGeneratedType Reference(string sourceText)
+            => new(sourceText, false);
+
+        public GeneratedType ToGeneratedType(bool required)
+            => (IsValueType ? GeneratedType.Value(SourceText) : GeneratedType.Reference(SourceText))
+                .AsOptional(required);
+    }
+
     private sealed record ElementPlusPropMetadata(
         string RuntimeName,
         string PropertyName,
@@ -1406,13 +1885,13 @@ internal static class Program
             {
                 var isSkipped = string.Equals(rawProp.RawName, "class", StringComparison.Ordinal) ||
                                 string.Equals(rawProp.RawName, "style", StringComparison.Ordinal) ||
-                                rawProp.RawName.StartsWith("[", StringComparison.Ordinal) ||
+                                IsBracketedDocumentSectionName(rawProp.RawName) ||
                                 rawProp.RawName.Contains('/', StringComparison.Ordinal);
                 var propertyName = GetUniquePropPropertyName(ToPascalCase(rawProp.RawName), propOccupiedNames);
                 if (!isSkipped)
                     propOccupiedNames.Add(propertyName);
 
-                var type = ResolvePropType(rawProp);
+                var type = ResolvePropType(first.TagName, rawProp);
                 var updateEventRuntimeName = GetUpdateEventRuntimeName(rawProp.RuntimeName, updateModelEventName);
                 var acceptsBinding = !isSkipped &&
                                      (updateEvents.Contains(updateEventRuntimeName) ||
@@ -1517,6 +1996,14 @@ internal static class Program
                 }
             }
 
+            if (SupplementalPropsByTag.TryGetValue(tagName, out var supplementalProps))
+            {
+                foreach (var prop in supplementalProps)
+                {
+                    AddOrMergeProp(merged, indexes, prop, preferIncomingType: true);
+                }
+            }
+
             return merged;
         }
 
@@ -1544,9 +2031,13 @@ internal static class Program
                 ? current.Description
                 : incoming.Description;
             var required = current.Required || incoming.Required;
+            var rawName = IsBracketedPlaceholderName(current.RawName) && !IsBracketedPlaceholderName(incoming.RawName)
+                ? incoming.RawName
+                : current.RawName;
 
             merged[index] = current with
             {
+                RawName = rawName,
                 Description = description,
                 TypeExpression = typeExpression,
                 Required = required
@@ -1565,6 +2056,9 @@ internal static class Program
             {
                 foreach (var emit in component.Events)
                 {
+                    if (IsBracketedDocumentSectionName(emit.RawName))
+                        continue;
+
                     if (seen.Add(emit.RuntimeName))
                         merged.Add(emit with { RawName = emit.RuntimeName });
                 }
@@ -1574,6 +2068,9 @@ internal static class Program
             {
                 foreach (var emit in attributeMetadata.Events)
                 {
+                    if (IsBracketedDocumentSectionName(emit.RawName))
+                        continue;
+
                     var runtimeName = emit.RuntimeName;
                     if (seen.Add(runtimeName))
                         merged.Add(emit with { RawName = runtimeName });
@@ -1592,6 +2089,9 @@ internal static class Program
             {
                 foreach (var slot in component.Slots)
                 {
+                    if (IsBracketedDocumentSectionName(slot.RawName))
+                        continue;
+
                     if (seen.Add(slot.RawName))
                         merged.Add(slot);
                 }

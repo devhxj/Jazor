@@ -235,6 +235,28 @@ public static partial class Vue3
 	}
 
 	/// <summary>
+	/// Vue authoring 中常见的布尔或数字联合值。适用于既接受开关也接受固定数值尺寸的高频属性。
+	/// Common boolean-or-number union value for Vue authoring. Use this when a runtime
+	/// contract accepts either a simple enable/disable flag or a scalar numeric override.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public readonly union VueBooleanNumberValue(bool, double)
+	{
+		/// <summary>
+		/// 当值为布尔值时返回该值；否则返回 null。
+		/// Returns the boolean when the value was created from a bool; otherwise null.
+		/// </summary>
+		public bool? AsBool => Value is bool value ? value : default(bool?);
+
+		/// <summary>
+		/// 当值为数字时返回该数字；否则返回 null。
+		/// Returns the number when the value was created from a number; otherwise null.
+		/// </summary>
+		public double? AsNumber => Value is double value ? value : default(double?);
+	}
+
+	/// <summary>
 	/// 接受字符串名或组件值的公共 Vue 联合类型。适用于图标、动态子组件入口或组件覆写槽位等高频 authoring 场景。
 	/// Shared Vue union type that accepts either a string token or a component value.
 	/// This fits common authoring scenarios such as icon/component overrides and
@@ -408,6 +430,28 @@ public static partial class Vue3
 		/// Returns the duration object when the value was created from a duration; otherwise null.
 		/// </summary>
 		public VueTransitionDuration? AsDuration => Value as VueTransitionDuration;
+	}
+
+	/// <summary>
+	/// Vue Transition 配置值的联合类型。可以是过渡名称字符串或完整的 Transition props 对象。
+	/// Union type for Vue Transition configuration values. Can be a transition name string
+	/// or a full Transition props object.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public readonly union VueTransitionValue(string, VueTransitionProps)
+	{
+		/// <summary>
+		/// 当值为过渡名称字符串时返回该字符串；否则返回 null。
+		/// Returns the transition name when the value was created from a string; otherwise null.
+		/// </summary>
+		public string? AsString => Value as string;
+
+		/// <summary>
+		/// 当值为 Transition props 对象时返回该对象；否则返回 null。
+		/// Returns the Transition props object when the value was created from props; otherwise null.
+		/// </summary>
+		public VueTransitionProps? AsProps => Value as VueTransitionProps;
 	}
 
 	/// <summary>

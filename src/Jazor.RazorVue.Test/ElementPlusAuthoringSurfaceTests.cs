@@ -21,7 +21,7 @@ public sealed class ElementPlusAuthoringSurfaceTests
         var components = GetElementPlusAuthoringComponents();
 
         CollectionAssert.AreEquivalent(
-            ElementPlusTestMetadata.OfficialComponentExportNames,
+            ElementPlusTestMetadata.StrongAuthoringComponentNames,
             components.Select(static type => type.Name).ToArray());
 
         CollectionAssert.AreEquivalent(
@@ -165,6 +165,32 @@ public sealed class ElementPlusAuthoringSurfaceTests
             .SingleOrDefault(static attribute => attribute.AttributeType == typeof(ECMAScriptNameAttribute));
         Assert.IsNotNull(ecmaScriptName);
         Assert.AreEqual("ElSelectV2", ecmaScriptName!.ConstructorArguments[0].Value as string);
+    }
+
+    [TestMethod]
+    public void ElementPlus_InstallableBaselineComponents_ArePresentOnAuthoringSurface()
+    {
+        foreach (var componentName in new[] { "ElAutoResizer", "ElCollapseTransition", "ElPopper", "ElTreeSelect" })
+        {
+            var componentType = typeof(ElementPlus).Assembly
+                .GetExportedTypes()
+                .SingleOrDefault(type => type.Name == componentName);
+            Assert.IsNotNull(componentType, componentName);
+            Assert.IsTrue(typeof(IVueLibraryComponent).IsAssignableFrom(componentType!), componentName);
+
+            var exportProperty = typeof(ElementPlusComponents).GetProperty(
+                componentName,
+                BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly);
+            Assert.IsNotNull(exportProperty, componentName);
+        }
+    }
+
+    [TestMethod]
+    public void ElementPlus_DocumentSectionBracketMetadata_DoesNotLeakIntoAuthoringSurface()
+    {
+        Assert.IsNull(typeof(ElMention).GetProperty("InputSlots"), typeof(ElMention).FullName);
+        Assert.IsNull(typeof(ElMention).GetProperty("OnInputEvents"), typeof(ElMention).FullName);
+        Assert.IsNull(typeof(ElImage).GetProperty("ImageViewerSlots"), typeof(ElImage).FullName);
     }
 
     [TestMethod]

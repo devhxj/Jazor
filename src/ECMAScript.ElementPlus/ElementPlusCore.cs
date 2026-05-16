@@ -58,13 +58,13 @@ public sealed record ElementPlusInstallOptions : VuePluginOptions
     public VueValue[]? EmptyValues { get; init; }
 
     [Description("@#valueOnClear")]
-    public VueValue? ValueOnClear { get; init; }
+    public ElementPlusValueOnClearValue? ValueOnClear { get; init; }
 
     [Description("@#a11y")]
     public bool? A11y { get; init; }
 
     [Description("@#locale")]
-    public VueProps? Locale { get; init; }
+    public ElementPlusLanguage? Locale { get; init; }
 
     [Description("@#size")]
     public ElementPlusComponentSize? Size { get; init; }

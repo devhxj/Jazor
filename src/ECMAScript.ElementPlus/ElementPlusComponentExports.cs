@@ -23,6 +23,9 @@ public static class ElementPlusComponents
     [ECMAScriptName("ElAside")]
     public extern static IElementPlusComponent ElAside { get; }
 
+    [ECMAScriptName("ElAutoResizer")]
+    public extern static IElementPlusComponent ElAutoResizer { get; }
+
     [ECMAScriptName("ElAutocomplete")]
     public extern static IElementPlusComponent ElAutocomplete { get; }
 
@@ -88,6 +91,9 @@ public static class ElementPlusComponents
 
     [ECMAScriptName("ElCollapseItem")]
     public extern static IElementPlusComponent ElCollapseItem { get; }
+
+    [ECMAScriptName("ElCollapseTransition")]
+    public extern static IElementPlusComponent ElCollapseTransition { get; }
 
     [ECMAScriptName("ElColorPicker")]
     public extern static IElementPlusComponent ElColorPicker { get; }
@@ -206,6 +212,9 @@ public static class ElementPlusComponents
     [ECMAScriptName("ElPopover")]
     public extern static IElementPlusComponent ElPopover { get; }
 
+    [ECMAScriptName("ElPopper")]
+    public extern static IElementPlusComponent ElPopper { get; }
+
     [ECMAScriptName("ElProgress")]
     public extern static IElementPlusComponent ElProgress { get; }
 
@@ -316,6 +325,9 @@ public static class ElementPlusComponents
 
     [ECMAScriptName("ElTree")]
     public extern static IElementPlusComponent ElTree { get; }
+
+    [ECMAScriptName("ElTreeSelect")]
+    public extern static IElementPlusComponent ElTreeSelect { get; }
 
     [ECMAScriptName("ElTreeV2")]
     public extern static IElementPlusComponent ElTreeV2 { get; }
