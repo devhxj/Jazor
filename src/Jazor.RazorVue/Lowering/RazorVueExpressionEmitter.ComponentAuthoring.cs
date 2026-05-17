@@ -32,6 +32,7 @@ internal sealed partial class RazorVueExpressionEmitter
             RazorVueExpressionNode expression => EmitScopedExpression(expression.Expression, allowedLocalSymbols, allowedParameterSymbols),
             RazorVueLocalDeclarationNode localDeclaration => throw new NotSupportedException(
                 $"Template local declaration '{localDeclaration.LocalSymbol.Name}' must be lowered through fragment scope, not as a standalone vnode."),
+            RazorVueTemplateScopeNode templateScope => EmitTemplateScopeNode(templateScope, allowedLocalSymbols, allowedParameterSymbols),
             RazorVueSlotOutletNode slot => EmitSlotOutlet(slot, allowedLocalSymbols, allowedParameterSymbols),
             RazorVueConditionalNode conditional => "(" + EmitScopedExpression(conditional.Condition, allowedLocalSymbols, allowedParameterSymbols) + " ? " +
                                                   EmitFragment(conditional.WhenTrue, allowedLocalSymbols, allowedParameterSymbols) + " : " +
@@ -779,6 +780,7 @@ internal sealed partial class RazorVueExpressionEmitter
     {
         var statements = new List<string>();
         var currentLocalScope = allowedLocalSymbols;
+        var currentParameterScope = allowedParameterSymbols;
         statements.Add("const __jazorNodes = [];");
 
         foreach (var child in fragment.Children)
@@ -787,12 +789,18 @@ internal sealed partial class RazorVueExpressionEmitter
             {
                 statements.Add(
                     "const " + localDeclaration.LocalSymbol.Name + " = " +
-                    EmitScopedExpression(localDeclaration.Initializer, currentLocalScope, allowedParameterSymbols) + ";");
+                    EmitScopedExpression(localDeclaration.Initializer, currentLocalScope, currentParameterScope) + ";");
                 currentLocalScope = RazorVueTemplateExpressionScopeValidator.AddIfPresent(currentLocalScope, localDeclaration.LocalSymbol);
                 continue;
             }
 
-            statements.Add("__jazorNodes.push(" + EmitNode(child, currentLocalScope, allowedParameterSymbols) + ");");
+            if (child is RazorVueTemplateScopeNode templateScope)
+            {
+                statements.Add("__jazorNodes.push(" + EmitTemplateScopeNode(templateScope, currentLocalScope, currentParameterScope) + ");");
+                continue;
+            }
+
+            statements.Add("__jazorNodes.push(" + EmitNode(child, currentLocalScope, currentParameterScope) + ");");
         }
 
         statements.Add("return __jazorNodes.length === 0 ? null : (__jazorNodes.length === 1 ? __jazorNodes[0] : __jazorNodes);");
@@ -802,6 +810,20 @@ internal sealed partial class RazorVueExpressionEmitter
     private static bool ContainsTemplateLocalDeclaration(RazorVueRenderFragment fragment)
         => !fragment.Children.IsDefaultOrEmpty &&
            fragment.Children.Any(static child => child is RazorVueLocalDeclarationNode);
+
+    private string EmitTemplateScopeNode(
+        RazorVueTemplateScopeNode templateScope,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+    {
+        var initializer = EmitScopedExpression(templateScope.Initializer, allowedLocalSymbols, allowedParameterSymbols);
+        return "((" + templateScope.ScopeName + ") => " +
+               EmitFragment(
+                   templateScope.Children,
+                   allowedLocalSymbols,
+                   RazorVueTemplateExpressionScopeValidator.AddIfPresent(allowedParameterSymbols, templateScope.ScopeParameterSymbol)) +
+                ")(" + initializer + ")";
+    }
 
     private bool IsCallableSlotValue(IOperation operation)
     {

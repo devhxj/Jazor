@@ -96,6 +96,7 @@ internal sealed class RazorVueCanonicalHModelFactory
             return RazorVueCanonicalTemplateFragment.Empty;
 
         var currentLocalScope = allowedLocalSymbols;
+        var currentParameterScope = allowedParameterSymbols;
         var builder = ImmutableArray.CreateBuilder<RazorVueCanonicalTemplateNode>(fragment.Children.Length);
         foreach (var node in fragment.Children)
         {
@@ -105,7 +106,7 @@ internal sealed class RazorVueCanonicalHModelFactory
                 resolvedComponents,
                 node,
                 currentLocalScope,
-                allowedParameterSymbols));
+                currentParameterScope));
 
             if (node is RazorVueLocalDeclarationNode localDeclaration)
                 currentLocalScope = RazorVueTemplateExpressionScopeValidator.AddIfPresent(currentLocalScope, localDeclaration.LocalSymbol);
@@ -164,6 +165,26 @@ internal sealed class RazorVueCanonicalHModelFactory
                 TemplateExpressionSafety: ClassifyTemplateExpressionSafety(snapshot, localDeclaration.Initializer),
                 SideEffectClassification: ClassifySideEffects(localDeclaration.Initializer),
                 SourceOrigins: localDeclaration.Origins),
+            RazorVueTemplateScopeNode templateScope => new RazorVueCanonicalTemplateScopeNode(
+                ScopeName: templateScope.ScopeName,
+                InitializerExpressionText: EmitTemplateExpression(
+                    snapshot,
+                    expressionEmitter,
+                    templateScope.Initializer,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols),
+                BindingKind: ClassifyBindingKind(snapshot, templateScope.Initializer),
+                Children: CreateTemplateFragment(
+                    snapshot,
+                    expressionEmitter,
+                    resolvedComponents,
+                    templateScope.Children,
+                    allowedLocalSymbols,
+                    RazorVueTemplateExpressionScopeValidator.AddIfPresent(allowedParameterSymbols, templateScope.ScopeParameterSymbol)),
+                TemplateEncodability: ClassifyTemplateEncodability(templateScope.Initializer),
+                TemplateExpressionSafety: ClassifyTemplateExpressionSafety(snapshot, templateScope.Initializer),
+                SideEffectClassification: ClassifySideEffects(templateScope.Initializer),
+                SourceOrigins: templateScope.Origins),
             RazorVueUnsupportedTemplateNode unsupported => throw CreateUnsupportedExpressionException(
                 snapshot,
                 unsupported.Origins,

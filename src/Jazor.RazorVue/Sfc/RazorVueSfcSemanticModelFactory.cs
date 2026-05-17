@@ -174,6 +174,21 @@ internal sealed class RazorVueSfcSemanticModelFactory
             case RazorVueCanonicalLocalDeclarationNode localDeclaration:
                 return;
 
+            case RazorVueCanonicalTemplateScopeNode templateScope:
+                if (ShouldCreateBindingSite(templateScope.TemplateEncodability, templateScope.SideEffectClassification, templateScopeDepth))
+                {
+                    bindings.Add(
+                        ownerComponentFullName,
+                        path + "/scopeInit",
+                        templateScope.InitializerExpressionText,
+                        templateScope.BindingKind,
+                        templateScope.TemplateExpressionSafety,
+                        templateScope.SideEffectClassification,
+                        templateScope.SourceOrigins);
+                }
+                CollectLiftedBindings(ownerComponentFullName, templateScope.Children, bindings, templateScopeDepth + 1, path + "/scope");
+                return;
+
             case RazorVueCanonicalInterpolationNode interpolation
                 when ShouldCreateBindingSite(interpolation.TemplateEncodability, interpolation.SideEffectClassification, templateScopeDepth):
                 bindings.Add(
@@ -451,6 +466,10 @@ internal sealed class RazorVueSfcSemanticModelFactory
                         yield return nested;
                     break;
                 case RazorVueCanonicalLocalDeclarationNode:
+                    break;
+                case RazorVueCanonicalTemplateScopeNode templateScope:
+                    foreach (var nested in EnumerateNodes(templateScope.Children))
+                        yield return nested;
                     break;
                 case RazorVueCanonicalConditionalNode conditional:
                     foreach (var nested in EnumerateNodes(conditional.WhenTrue))

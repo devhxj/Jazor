@@ -256,6 +256,34 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
                 continue;
             }
 
+            if (fragment.Children[index] is RazorVueCanonicalTemplateScopeNode templateScope)
+            {
+                var wrapperIndent = new string(' ', (depth + openWrapperCount) * 2);
+                builder.Append(wrapperIndent)
+                    .Append("<template v-for=\"(")
+                    .Append(templateScope.ScopeName)
+                    .Append(") in [")
+                    .Append(ResolveTemplateExpression(
+                        templateScope.InitializerExpressionText,
+                        templateScope.TemplateEncodability,
+                        bindingSiteMap,
+                        pathPrefix + "/child[" + index + "]/scopeInit",
+                        currentTemplateScopeDepth))
+                    .AppendLine("]\">");
+                openWrapperCount++;
+                AppendTemplateFragment(
+                    builder,
+                    templateScope.Children,
+                    depth + openWrapperCount,
+                    bindingSiteMap,
+                    pathPrefix + "/child[" + index + "]/scope",
+                    currentTemplateScopeDepth + 1);
+                var closeIndent = new string(' ', (depth + openWrapperCount - 1) * 2);
+                builder.Append(closeIndent).AppendLine("</template>");
+                openWrapperCount--;
+                continue;
+            }
+
             AppendTemplateNode(
                 builder,
                 fragment.Children[index],
@@ -339,6 +367,9 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
                 return;
 
             case RazorVueCanonicalLocalDeclarationNode:
+                return;
+
+            case RazorVueCanonicalTemplateScopeNode:
                 return;
 
             case RazorVueCanonicalSlotOutletNode slotOutlet:

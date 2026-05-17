@@ -362,6 +362,12 @@ internal sealed partial class RazorVueExpressionEmitter
                 foreach (var origin in localDeclaration.Origins)
                     yield return origin;
                 break;
+            case RazorVueTemplateScopeNode templateScope:
+                foreach (var origin in templateScope.Origins)
+                    yield return origin;
+                foreach (var childOrigin in CollectOrigins(templateScope.Children))
+                    yield return childOrigin;
+                break;
             case RazorVueConditionalNode conditional:
                 foreach (var childOrigin in CollectOrigins(conditional.WhenTrue))
                     yield return childOrigin;

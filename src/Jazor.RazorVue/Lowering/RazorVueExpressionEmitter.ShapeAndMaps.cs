@@ -73,6 +73,14 @@ internal sealed partial class RazorVueExpressionEmitter
                     .Append(localDeclaration.Initializer.Syntax.ToString())
                     .Append(')');
                 break;
+            case RazorVueTemplateScopeNode templateScope:
+                builder.Append("scope(")
+                    .Append(templateScope.ScopeName)
+                    .Append('=')
+                    .Append(templateScope.Initializer.Syntax.ToString())
+                    .Append(')');
+                AppendFragmentShape(builder, templateScope.Children);
+                break;
             case RazorVueUnsupportedTemplateNode unsupported:
                 builder.Append("unsupported(").Append(unsupported.Message).Append(')');
                 break;

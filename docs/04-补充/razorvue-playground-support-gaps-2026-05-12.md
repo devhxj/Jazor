@@ -459,6 +459,7 @@ builder.AddAttribute(1, nameof(ChildCard.ItemTemplate), (RenderFragment<int>)((i
 该缺口已在 RazorVue handwritten `BuildRenderTree` frontend 与后续 lowering 链路中收口：
 
 - render tree 增加 template-scoped local declaration 节点
+- render tree 增加局部 template scope 节点，用于“立即调用的 typed fragment”
 - canonical model 显式保留“声明后生效”的局部作用域顺序
 - H lowering 使用片段级局部作用域/IIFE 保证单次求值与节点顺序
 - SFC lowering 使用局部 template scope wrapper 保留同一顺序语义
@@ -468,19 +469,23 @@ builder.AddAttribute(1, nameof(ChildCard.ItemTemplate), (RenderFragment<int>)((i
 - 顶层片段局部值缓存/别名
 - `for` / `foreach` body 中基于迭代变量的局部缓存
 - typed slot template 中基于 slot 参数的局部缓存
+- `AddContent(sequence, RenderFragment<T>, value)` 这种“立即调用 typed fragment + 实参”的局部模板作用域
 
 ### 当前支持边界
 
-支持边界仍然刻意收窄为“带初始化器的不可变模板局部声明”：
+支持边界仍然刻意收窄为“带初始化器的不可变模板局部声明/局部模板作用域”：
 
 - 支持：`var decorated = item + "!";`
+- 支持：`builder.AddContent(0, (RenderFragment<int>)(item => itemBuilder => { ... }), 42);`
 - 不支持：先声明后赋值
 - 不支持：`++` / `--` / 其他写入型模板局部状态
 - 不支持：把模板局部声明当作匿名函数/委托状态载体继续扩散
+- 不支持：把任意 delegate 值、动态 callable、外部 fragment 变量都放宽成可立即模板执行的 `AddContent(RenderFragment<T>, value)` 形态；当前要求源码 inline 且可分析
 
 ### 当前保护
 
 - `src/Jazor.RazorVue.Test/BuildRenderTreeTemplateFrontendTests.cs`
+- `src/Jazor.RazorVue.Test/RazorVueCanonicalSfcSemanticTests.cs`
 - `src/Jazor.RazorVue.Test/RazorVueSfcArtifactFactoryTests.cs`
 - `src/Jazor.RazorVue.Test/RazorVuePipelineTests.cs`
 
@@ -489,4 +494,71 @@ builder.AddAttribute(1, nameof(ChildCard.ItemTemplate), (RenderFragment<int>)((i
 - 顶层局部声明成功
 - loop body 局部声明成功
 - typed slot template 局部声明成功
+- typed `AddContent(RenderFragment<T>, value)` 模板作用域成功
 - “无初始化器后续赋值”仍明确失败
+
+## 11. 已完成：handwritten `BuildRenderTree` render helper 额外值参数支持
+
+### 现象
+
+此前 handwritten `BuildRenderTree` 对当前组件/local render helper 只支持“单个 `RenderTreeBuilder` 参数”形态。下面这种真实 authoring 会失败：
+
+```csharp
+protected override void BuildRenderTree(RenderTreeBuilder builder)
+{
+    RenderBody(builder, Title);
+}
+
+private void RenderBody(RenderTreeBuilder builder, string? title)
+{
+    builder.OpenElement(0, "section");
+    builder.AddContent(1, title);
+    builder.CloseElement();
+}
+```
+
+如果简单把 helper 参数直接替换成调用点实参，会破坏单次求值、副作用顺序和参数作用域边界；如果继续沿用共享 open-frame 解析，又会把“依赖调用方已打开节点/component frame”的 helper 一并放开，边界不安全。
+
+### 当前落地方式
+
+该缺口已在 RazorVue handwritten `BuildRenderTree` frontend 与后续 lowering 链路中收口：
+
+- current-component/local render helper 现支持“恰好一个 `RenderTreeBuilder` 参数 + 额外普通按值参数”
+- helper body 在 extra-parameter 场景下按独立片段解析，避免把调用方 open-frame 状态隐式透传进 helper
+- render tree / canonical model 使用局部 template scope node 显式保留“helper 形参 <- 调用点实参”绑定
+- H lowering 将 helper 参数编码为一次性立即调用作用域，保证单次求值与参数不泄漏
+- SFC lowering 将 helper 参数编码为局部 `<template v-for="(...) in [...]">` scope wrapper，并修正了根级 template-scope close-tag 重复输出
+- template-scoped local declaration 现在也允许在 helper body 中基于 helper 参数建立局部缓存/别名
+
+因此以下场景现已稳定支持：
+
+- `RenderBody(builder, Title)` 这种当前组件 helper 参数绑定
+- helper body 中对参数的 element child / interpolation 使用
+- helper body 中基于参数的模板局部缓存/别名
+- canonical / H / SFC 三条 lowering 链路对 helper 参数作用域的一致保留
+
+### 当前支持边界
+
+支持边界仍然刻意收窄为“源码可分析、按值参数、helper 自身可独立 canonicalize”的 render helper：
+
+- 支持：`private void RenderBody(RenderTreeBuilder builder, string? title) { ... }`
+- 支持：named argument / builder 参数不在第一个位置，只要调用点参数与声明一一对应
+- 不支持：`ref` / `out` / `in` / `params`
+- 不支持：省略 optional parameter 后依赖默认值重建 helper 形参绑定
+- 不支持：helper body 依赖调用方已打开 element/component frame 的 `AddAttribute` / `SetKey` / `CloseElement` / `CloseComponent` 等协议
+- 不支持：递归 render helper
+
+### 当前保护
+
+- `src/Jazor.RazorVue.Test/BuildRenderTreeTemplateFrontendTests.cs`
+- `src/Jazor.RazorVue.Test/RazorVueCanonicalSfcSemanticTests.cs`
+- `src/Jazor.RazorVue.Test/RazorVueSfcArtifactFactoryTests.cs`
+- `src/Jazor.RazorVue.Test/RazorVuePipelineTests.cs`
+
+当前回归同时覆盖：
+
+- frontend 产出 helper 参数 template scope node
+- canonical model 保留 `title <- props.title` 绑定
+- H lowering 输出 helper 立即调用作用域
+- SFC lowering 输出局部 template scope wrapper，且不再重复闭合 `</template>`
+- “helper 依赖调用方 open frame 做 attribute mutation” 仍明确失败

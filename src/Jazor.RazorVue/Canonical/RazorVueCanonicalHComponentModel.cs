@@ -94,6 +94,17 @@ internal sealed record RazorVueCanonicalLocalDeclarationNode(
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins)
     : RazorVueCanonicalTemplateNode(RazorVueCanonicalNodeKind.LocalDeclaration, TemplateEncodability, TemplateExpressionSafety, SideEffectClassification, SourceOrigins);
 
+internal sealed record RazorVueCanonicalTemplateScopeNode(
+    string ScopeName,
+    string InitializerExpressionText,
+    RazorVueExpressionBindingKind BindingKind,
+    RazorVueCanonicalTemplateFragment Children,
+    RazorVueTemplateEncodability TemplateEncodability,
+    RazorVueTemplateExpressionSafety TemplateExpressionSafety,
+    RazorVueSideEffectClassification SideEffectClassification,
+    ImmutableArray<RazorVueSourceOrigin> SourceOrigins)
+    : RazorVueCanonicalTemplateNode(RazorVueCanonicalNodeKind.TemplateScope, TemplateEncodability, TemplateExpressionSafety, SideEffectClassification, SourceOrigins);
+
 internal sealed record RazorVueCanonicalConditionalNode(
     string ConditionExpressionText,
     RazorVueExpressionBindingKind BindingKind,
@@ -212,6 +223,7 @@ internal enum RazorVueCanonicalNodeKind
     Text,
     Interpolation,
     LocalDeclaration,
+    TemplateScope,
     Conditional,
     ForEach,
     For,

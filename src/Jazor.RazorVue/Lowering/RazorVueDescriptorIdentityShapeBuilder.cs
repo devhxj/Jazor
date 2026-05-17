@@ -57,6 +57,10 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
             case RazorVueLocalDeclarationNode localDeclaration:
                 builder.AppendLine("render:local:" + localDeclaration.LocalSymbol.Name + "=" + localDeclaration.Initializer.Syntax.ToString());
                 break;
+            case RazorVueTemplateScopeNode templateScope:
+                builder.AppendLine("render:scope:" + templateScope.ScopeName + "=" + templateScope.Initializer.Syntax.ToString());
+                AppendRenderTreeKeyShape(builder, templateScope.Children);
+                break;
             case RazorVueConditionalNode conditional:
                 AppendRenderTreeKeyShape(builder, conditional.WhenTrue);
                 AppendRenderTreeKeyShape(builder, conditional.WhenFalse);
@@ -97,6 +101,10 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
                 break;
             case RazorVueCanonicalLocalDeclarationNode localDeclaration:
                 builder.AppendLine("canonical:local:" + localDeclaration.LocalName + "=" + localDeclaration.InitializerExpressionText);
+                break;
+            case RazorVueCanonicalTemplateScopeNode templateScope:
+                builder.AppendLine("canonical:scope:" + templateScope.ScopeName + "=" + templateScope.InitializerExpressionText);
+                AppendCanonicalKeyShape(builder, templateScope.Children);
                 break;
             case RazorVueCanonicalConditionalNode conditional:
                 AppendCanonicalKeyShape(builder, conditional.WhenTrue);
@@ -249,6 +257,9 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
                 break;
             case RazorVueLocalDeclarationNode:
                 break;
+            case RazorVueTemplateScopeNode templateScope:
+                CollectFromRenderTree(templateScope.Children, resolvedComponents, usageByComponent);
+                break;
             case RazorVueConditionalNode conditional:
                 CollectFromRenderTree(conditional.WhenTrue, resolvedComponents, usageByComponent);
                 CollectFromRenderTree(conditional.WhenFalse, resolvedComponents, usageByComponent);
@@ -347,6 +358,9 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
                     CollectFromCanonicalTemplate(slot.Children, usageByComponent);
                 break;
             case RazorVueCanonicalLocalDeclarationNode:
+                break;
+            case RazorVueCanonicalTemplateScopeNode templateScope:
+                CollectFromCanonicalTemplate(templateScope.Children, usageByComponent);
                 break;
             case RazorVueCanonicalConditionalNode conditional:
                 CollectFromCanonicalTemplate(conditional.WhenTrue, usageByComponent);

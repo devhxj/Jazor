@@ -56,6 +56,13 @@ internal sealed record RazorVueLocalDeclarationNode(
     IOperation Initializer,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins);
 
+internal sealed record RazorVueTemplateScopeNode(
+    string ScopeName,
+    IParameterSymbol? ScopeParameterSymbol,
+    IOperation Initializer,
+    RazorVueRenderFragment Children,
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins);
+
 internal sealed record RazorVueUnsupportedTemplateNode(
     string Message,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins);
