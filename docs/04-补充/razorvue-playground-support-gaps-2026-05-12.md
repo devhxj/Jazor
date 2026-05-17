@@ -265,7 +265,7 @@ app.MapMethods("/{**path}", ["GET", "HEAD"], ...)
 - RazorVue / ASP.NET Core 集成层已提供官方 publish 合并 target：`JazorPublishMaterializeEnabled=true` 负责将开发输出根物化到发布 `wwwroot/jazor`，`JazorPublishConsumerBrowserAssets` 负责把 colocated consumer browser bundle 合并到同一路径并清理影子目录。
 - `UseJazorWebAssets(...)` 后续可以继续扩展为更完整的 RazorVue library-mode 宿主模板入口。
 
-## 8. 待执行：统一 manifest 与宿主 API 收敛
+## 8. 已完成：统一 manifest 与宿主 API 收敛
 
 ### 目标
 
@@ -401,6 +401,15 @@ jazor-manifest-razorvue.json
 - Playground smoke 访问 `/jazor/jazor-manifest.json` 成功，且不需要显式配置旧 manifest 路径。
 - Wiki 和 Playground 使用一致的 ASP.NET Core helper API。
 - 相关测试覆盖 manifest schema、merge/clean、consumer selection、SFC bridge filtering、ASP.NET Core default hosting。
+
+### 当前状态
+
+该项现已完成并由回归锁定：
+
+- 统一 manifest 公开契约已稳定为 `jazor-manifest.json`
+- `jazor-manifest-razorvue.json` 仅作为文档中的废弃历史名称保留，不再参与默认输出、默认探测或默认宿主运行
+- `UseJazorDevelopmentAssets()` 默认探针与 `UseJazorHost()` 默认宿主契约现都显式拒绝把旧文件名当成 development readiness probe
+- `Playground` / `Wiki` 已收敛到同一组 `Jazor.AspNetCore` helper，只在站点语义层保留差异化 option
 
 ## 9. 当前处理结论
 
@@ -548,10 +557,13 @@ protected override void BuildRenderTree(RenderTreeBuilder builder)
 
 - `RenderBody(builder, Title)` 这种当前组件 helper 参数绑定
 - `void RenderBody(RenderTreeBuilder localBuilder, string? title) { ... }` + `RenderBody(builder, Title)` 这种 local function helper 参数绑定
+- `RenderBody(builder, Title, Subtitle)` / `void RenderBody(RenderTreeBuilder localBuilder, string? title, string? subtitle) { ... }` 这类 multiple extra parameter 绑定
 - `RenderBody(title: Title, builder: builder)` / `RenderBody(title: Title, localBuilder: builder)` 这类 named argument 绑定
 - `RenderBody(builder)` + helper optional default value 绑定
 - helper body 中对参数的 element child / interpolation 使用
 - helper body 中基于参数的模板局部缓存/别名
+- helper body 中“额外参数 -> 模板局部缓存/别名 -> 后续节点引用”这类组合 authoring
+- `for` / `foreach` body 中“loop 变量 -> helper 额外参数 -> helper 内模板局部缓存/别名 -> 后续节点引用”这类组合 authoring
 - canonical / H / SFC 三条 lowering 链路对 helper 参数作用域的一致保留
 
 ### 当前支持边界
@@ -560,8 +572,11 @@ protected override void BuildRenderTree(RenderTreeBuilder builder)
 
 - 支持：`private void RenderBody(RenderTreeBuilder builder, string? title) { ... }`
 - 支持：`void RenderBody(RenderTreeBuilder localBuilder, string? title) { ... }`
+- 支持：`private void RenderBody(RenderTreeBuilder builder, string? title, string? subtitle) { ... }`
 - 支持：named argument / builder 参数不在第一个位置，只要调用点参数与声明一一对应
 - 支持：省略 optional parameter 且默认值可安全投影到当前 template/canonical 边界
+- 支持：多个额外值参数按调用点实参求值顺序形成嵌套 template scope / 嵌套 IIFE，同时保持 helper 形参与实参的正确绑定；named argument 打乱声明顺序时不会退化成错误重排
+- 支持：`for` / `foreach` body 中使用 loop 变量调用 helper 时，loop 变量可作为 helper 实参稳定进入后续 helper parameter scope；不会因为 loop/template scope 叠加而丢失绑定或错误提升
 - 不支持：`ref` / `out` / `in` / `params`
 - 不支持：helper body 依赖调用方已打开 element/component frame 的 `AddAttribute` / `SetKey` / `CloseElement` / `CloseComponent` 等协议
 - 不支持：递归 render helper
@@ -577,9 +592,74 @@ protected override void BuildRenderTree(RenderTreeBuilder builder)
 
 - frontend 产出 helper 参数 template scope node
 - frontend 产出 current-component / local function helper 参数 template scope node
+- frontend / canonical / H / SFC 对 multiple extra parameter 的嵌套作用域与调用点实参求值顺序保持一致
+- frontend / canonical / H / SFC 对“helper 参数作用域 + helper body 内模板局部声明”组合语义保持一致
+- frontend / canonical / H / SFC 对“loop scope + helper 参数作用域 + helper body 内模板局部声明”组合语义保持一致
 - canonical model 保留 `title <- props.title` 绑定
 - named argument 绑定稳定工作
 - omitted optional default value 绑定稳定工作
 - H lowering 输出 helper 立即调用作用域
 - SFC lowering 输出局部 template scope wrapper，且不再重复闭合 `</template>`
 - “helper 依赖调用方 open frame 做 attribute mutation” 仍明确失败
+
+## 13. handwritten `AddContent(RenderFragment<T>, value)` 的 typed fragment carrier 需要稳定边界
+
+### 现象
+
+此前 handwritten `BuildRenderTree` 对 typed fragment 只稳定支持“调用点直接内联匿名模板”：
+
+```csharp
+builder.AddContent(0, (RenderFragment<int>)(item => itemBuilder =>
+{
+    itemBuilder.AddContent(1, item);
+}), 42);
+```
+
+但真实 authoring 很自然会写成局部 carrier：
+
+```csharp
+RenderFragment<int> template = item => itemBuilder =>
+{
+    itemBuilder.AddContent(1, item);
+};
+
+builder.AddContent(0, template, 42);
+```
+
+旧实现会把 `template` 误判为普通 template-scoped local，然后因为“callable template state”保护在声明阶段直接失败。
+
+### 当前落地方式
+
+该缺口已在 handwritten `BuildRenderTree` extractor 中收口：
+
+- `RenderFragment` / `RenderFragment<T>` 局部变量会先按“局部 fragment carrier”单独识别，而不是落入普通 template-scoped local 规则
+- carrier 只接受源码可分析 initializer：
+  - inline anonymous fragment
+  - 或引用先前已解析的本地 fragment carrier
+- `AddContent(sequence, RenderFragment<T>, value)`、slot template 等后续解析会优先消费该 carrier 映射
+- 普通 template-scoped local 仍保持“不允许 callable template state”保护，不会因为这次支持而被整体放宽
+
+### 当前支持边界
+
+- 支持：inline typed fragment
+- 支持：同一可分析作用域内、初始化即为可分析匿名模板的局部 `RenderFragment<T>` carrier
+- 支持：该局部 carrier 既可用于 `AddContent(sequence, RenderFragment<T>, value)`，也可用于组件 typed slot/template 参数
+- 支持：frontend / canonical / H / SFC 对局部 carrier 与 inline 形态保持相同 lowering 结果
+- 不支持：任意 delegate 值流分析
+- 不支持：current-component property / field 承载的 `RenderFragment<T>`
+- 不支持：动态重赋值后的 carrier
+- 不支持：无法静态还原到匿名模板 body 的 callable 形态
+
+### 当前保护
+
+- `src/Jazor.RazorVue.Test/BuildRenderTreeTemplateFrontendTests.cs`
+- `src/Jazor.RazorVue.Test/RazorVueCanonicalSfcSemanticTests.cs`
+- `src/Jazor.RazorVue.Test/RazorVueSfcArtifactFactoryTests.cs`
+- `src/Jazor.RazorVue.Test/RazorVuePipelineTests.cs`
+
+当前回归同时锁定：
+
+- typed fragment local carrier frontend 产出 template scope node
+- canonical model 与 inline typed fragment 保持相同 `item <- 42` 作用域语义
+- H lowering 与 inline typed fragment 保持相同立即调用输出
+- SFC lowering 与 inline typed fragment 保持相同局部 template scope wrapper

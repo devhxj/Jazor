@@ -65,10 +65,13 @@
   - typed slot template 中基于 slot 参数的 `var decorated = item + 1;`
 - handwritten `BuildRenderTree` 现已支持“立即调用的 typed fragment 模板作用域”形态，例如：
   - `builder.AddContent(0, (RenderFragment<int>)(item => itemBuilder => { ... }), 42);`
+  - `RenderFragment<int> template = item => itemBuilder => { ... }; builder.AddContent(0, template, 42);`
 - handwritten `BuildRenderTree` 现已支持当前组件/本地 render helper 的“`RenderTreeBuilder` + 额外普通值参数”形态，例如：
   - `RenderBody(builder, Title);`
   - `private void RenderBody(RenderTreeBuilder builder, string? title) { ... }`
   - `void RenderBody(RenderTreeBuilder localBuilder, string? title) { ... }`
+  - `RenderBody(builder, Title, Subtitle);`
+  - `private void RenderBody(RenderTreeBuilder builder, string? title, string? subtitle) { ... }`
   - `RenderBody(title: Title, builder: builder);`
   - `RenderBody(title: Title, localBuilder: builder);`
   - `private void RenderBody(RenderTreeBuilder builder, string? title = "fallback-title") { ... }`
@@ -76,16 +79,21 @@
 - 该能力会在 render tree、canonical model、H lowering、SFC template lowering 中保留顺序作用域语义：局部变量只对声明之后的同一片段后续节点生效。
 - 对于立即调用的 typed fragment，模板参数只在该 fragment body 内可见，不会泄漏到后续兄弟节点。
 - 对于带额外值参数的 render helper，helper 参数只在 helper body 内可见；H lowering 会编码为一次性立即调用作用域，SFC lowering 会编码为局部 template scope wrapper，从而保留单次求值与参数不外泄语义。
+- 当 helper 存在多个额外值参数时，该作用域会按调用点实参求值顺序嵌套保留；当前 contract 会稳定编码为嵌套 template scope / 嵌套 IIFE，而不是把多个参数扁平替换进 helper body。
+- helper body 内也允许继续基于这些额外参数声明 template-scoped local cache/alias；该组合会保留为“外层 helper parameter scope + 内层 local declaration scope”而不是被错误内联或泄漏到 helper 外部。
+- 当带额外值参数的 helper 在 `for` / `foreach` body 中被调用时，循环变量同样可以作为 helper 实参参与嵌套作用域绑定；该组合会继续保留为“外层 loop scope + 中层 helper parameter scope + 内层 local declaration scope”。
 - 当前支持边界刻意收窄为“带初始化器的不可变模板局部声明”：
   - 必须在声明点提供 initializer
   - initializer 只能捕获当前可见的模板局部、slot/loop 参数或正常可编码表达式
   - 不支持声明后再赋值、递增/递减、嵌套匿名函数/委托承载的模板状态写入
-- 对于 `AddContent(sequence, RenderFragment<T>, value)`，当前只支持源码可分析的 inline anonymous-function fragment；不把任意 delegate 值或动态 callable 形态放宽为模板执行。
+- 对于 `AddContent(sequence, RenderFragment<T>, value)`，当前支持源码可分析的 typed fragment：可以是 inline anonymous-function fragment，也可以是同一可分析作用域内、初始化即为该匿名模板的局部 `RenderFragment<T>` carrier；仍不把任意 delegate 值、属性承载或动态 callable 形态放宽为模板执行。
+- 同一条“源码可分析的局部 `RenderFragment<T>` carrier”规则也适用于组件 typed slot/template 参数，例如 `builder.AddAttribute(1, "ItemTemplate", template);`。
 - 对于带额外值参数的 render helper，当前只支持：
   - 恰好一个 `RenderTreeBuilder` 参数
   - 其余参数均为普通按值参数
   - 同时适用于当前组件方法与 `BuildRenderTree` 内 local function helper
   - 调用点参数与 helper 声明一一对应；支持 named argument，也支持安全可投影的 omitted optional default value
+  - 多个额外参数会按调用点实参求值顺序形成嵌套局部作用域，同时保持每个 helper 形参绑定到其正确实参；即使 named argument 打乱声明顺序，也不会退化成按声明顺序重排求值
   - helper body 必须源码可分析且自身形成可独立 canonicalize 的片段；不支持依赖调用方已打开节点/component frame 的 attribute/key/close 协议
 - 对 SFC 输出，模板局部声明会编码为局部 template scope wrapper，而不是泄漏为顶层 `script setup` 公共绑定。
 

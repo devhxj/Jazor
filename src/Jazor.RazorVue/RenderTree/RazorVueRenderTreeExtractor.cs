@@ -53,6 +53,19 @@ internal sealed class RazorVueRenderTreeExtractor
         return RazorVueRenderFragment.Empty;
     }
 
+    private readonly record struct ParsedSlotTemplate(
+        string? ParameterName,
+        IParameterSymbol? ParameterSymbol,
+        RazorVueRenderFragment Children);
+
+    private readonly record struct RenderFragmentLocalCarrier(
+        ILocalSymbol LocalSymbol,
+        ParsedSlotTemplate Template);
+
+    private readonly record struct RenderHelperValueBinding(
+        IParameterSymbol ParameterSymbol,
+        IOperation Initializer);
+
     private sealed class Parser(
         RazorVueSemanticSnapshot snapshot,
         Compilation compilation,
@@ -60,6 +73,7 @@ internal sealed class RazorVueRenderTreeExtractor
         ImmutableHashSet<IParameterSymbol> builderParameters,
         IEnumerable<ILocalSymbol>? builderAliases = null,
         IEnumerable<IMethodSymbol>? activeRenderHelperMethods = null,
+        IEnumerable<RenderFragmentLocalCarrier>? localRenderFragmentCarriers = null,
         IEnumerable<ILocalSymbol>? accessibleTemplateLocals = null,
         IEnumerable<IParameterSymbol>? accessibleTemplateParameters = null,
         bool allowTemplateScopedLocals = false)
@@ -74,6 +88,9 @@ internal sealed class RazorVueRenderTreeExtractor
         private readonly HashSet<IMethodSymbol> _activeRenderHelperMethods = activeRenderHelperMethods is null
                 ? [with(SymbolEqualityComparer.Default)]
                 : new HashSet<IMethodSymbol>(activeRenderHelperMethods, SymbolEqualityComparer.Default);
+        private readonly Dictionary<ILocalSymbol, ParsedSlotTemplate> _localRenderFragmentCarriers = localRenderFragmentCarriers is null
+                ? new Dictionary<ILocalSymbol, ParsedSlotTemplate>(SymbolEqualityComparer.Default)
+                : CreateLocalRenderFragmentCarrierDictionary(localRenderFragmentCarriers);
         private readonly HashSet<ILocalSymbol> _accessibleTemplateLocals = accessibleTemplateLocals is null
                 ? [with(SymbolEqualityComparer.Default)]
                 : new HashSet<ILocalSymbol>(accessibleTemplateLocals, SymbolEqualityComparer.Default);
@@ -521,6 +538,7 @@ internal sealed class RazorVueRenderTreeExtractor
                     _builderParameters,
                     _builderAliases,
                     _activeRenderHelperMethods,
+                    GetLocalRenderFragmentCarrierSnapshot(),
                     _accessibleTemplateLocals,
                     _accessibleTemplateParameters,
                     _allowTemplateScopedLocals).Parse(block.Operations),
@@ -531,6 +549,7 @@ internal sealed class RazorVueRenderTreeExtractor
                     _builderParameters,
                     _builderAliases,
                     _activeRenderHelperMethods,
+                    GetLocalRenderFragmentCarrierSnapshot(),
                     _accessibleTemplateLocals,
                     _accessibleTemplateParameters,
                     _allowTemplateScopedLocals).Parse([current])
@@ -558,6 +577,7 @@ internal sealed class RazorVueRenderTreeExtractor
                     _builderParameters,
                     _builderAliases,
                     _activeRenderHelperMethods,
+                    GetLocalRenderFragmentCarrierSnapshot(),
                     mergedTemplateLocals,
                     _accessibleTemplateParameters,
                     _allowTemplateScopedLocals).Parse(block.Operations),
@@ -568,6 +588,7 @@ internal sealed class RazorVueRenderTreeExtractor
                     _builderParameters,
                     _builderAliases,
                     _activeRenderHelperMethods,
+                    GetLocalRenderFragmentCarrierSnapshot(),
                     mergedTemplateLocals,
                     _accessibleTemplateParameters,
                     _allowTemplateScopedLocals).Parse([current])
@@ -676,6 +697,9 @@ internal sealed class RazorVueRenderTreeExtractor
                     if (TryRegisterBuilderAliasDeclaration(declarator, out var failureMessage))
                         continue;
 
+                    if (TryRegisterRenderFragmentLocalCarrier(declarator, out failureMessage))
+                        continue;
+
                     if (TryRegisterTemplateScopedDeclaration(declarator, out failureMessage))
                         continue;
 
@@ -720,6 +744,34 @@ internal sealed class RazorVueRenderTreeExtractor
                 return false;
 
             _builderAliases.Add(localReference.Local);
+            return true;
+        }
+
+        private bool TryRegisterRenderFragmentLocalCarrier(
+            IVariableDeclaratorOperation declarator,
+            out string failureMessage)
+        {
+            failureMessage =
+                $"BuildRenderTree does not support local variable declaration '{GetOperationDisplay(declarator)}' in component '{_snapshot.Descriptor.FullName}'.";
+
+            if (!IsRenderFragmentType(declarator.Symbol.Type))
+                return false;
+
+            if (declarator.Initializer?.Value is not { } initializer)
+            {
+                failureMessage =
+                    $"RazorVue RenderFragment local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' requires an analyzable initializer.";
+                return false;
+            }
+
+            if (!TryParseSlotTemplate(initializer, out var slotTemplate))
+            {
+                failureMessage =
+                    $"RazorVue RenderFragment local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be initialized from an analyzable inline template or a previously declared RenderFragment local carrier.";
+                return false;
+            }
+
+            _localRenderFragmentCarriers[declarator.Symbol] = slotTemplate;
             return true;
         }
 
@@ -956,6 +1008,7 @@ internal sealed class RazorVueRenderTreeExtractor
                             _symbols,
                             ImmutableHashSet.Create<IParameterSymbol>(SymbolEqualityComparer.Default, builderParameter),
                             activeRenderHelperMethods: _activeRenderHelperMethods,
+                            localRenderFragmentCarriers: GetLocalRenderFragmentCarrierSnapshot(),
                             accessibleTemplateLocals: _accessibleTemplateLocals,
                             accessibleTemplateParameters: accessibleTemplateParameters,
                             allowTemplateScopedLocals: true).Parse(operations);
@@ -1338,6 +1391,9 @@ internal sealed class RazorVueRenderTreeExtractor
         private bool TryParseSlotTemplate(IOperation? operation, out ParsedSlotTemplate slotTemplate)
         {
             slotTemplate = default;
+            if (TryResolveStoredSlotTemplate(operation, out slotTemplate))
+                return true;
+
             if (!TryGetAnonymousFunction(operation, out var anonymousFunction))
                 return false;
 
@@ -1348,6 +1404,15 @@ internal sealed class RazorVueRenderTreeExtractor
                 return true;
 
             return false;
+        }
+
+        private bool TryResolveStoredSlotTemplate(IOperation? operation, out ParsedSlotTemplate slotTemplate)
+        {
+            slotTemplate = default;
+            if (Unwrap(operation) is not ILocalReferenceOperation localReference)
+                return false;
+
+            return _localRenderFragmentCarriers.TryGetValue(localReference.Local, out slotTemplate);
         }
 
         private bool TryParseUntypedSlotTemplate(
@@ -1424,6 +1489,7 @@ internal sealed class RazorVueRenderTreeExtractor
                     _symbols,
                     builderParameters,
                     activeRenderHelperMethods: _activeRenderHelperMethods,
+                    localRenderFragmentCarriers: GetLocalRenderFragmentCarrierSnapshot(),
                     accessibleTemplateLocals: _accessibleTemplateLocals,
                     accessibleTemplateParameters: _accessibleTemplateParameters,
                     allowTemplateScopedLocals: true).Parse(block.Operations);
@@ -1434,6 +1500,7 @@ internal sealed class RazorVueRenderTreeExtractor
                 _symbols,
                 builderParameters,
                 activeRenderHelperMethods: _activeRenderHelperMethods,
+                localRenderFragmentCarriers: GetLocalRenderFragmentCarrierSnapshot(),
                 accessibleTemplateLocals: _accessibleTemplateLocals,
                 accessibleTemplateParameters: _accessibleTemplateParameters,
                 allowTemplateScopedLocals: true).Parse([body]);
@@ -1532,6 +1599,19 @@ internal sealed class RazorVueRenderTreeExtractor
 
         private static bool IsAnonymousFunctionParameter(IParameterSymbol parameter)
             => parameter.ContainingSymbol is IMethodSymbol { MethodKind: MethodKind.LambdaMethod or MethodKind.AnonymousFunction };
+
+        private ImmutableArray<RenderFragmentLocalCarrier> GetLocalRenderFragmentCarrierSnapshot()
+            => [.. _localRenderFragmentCarriers.Select(static pair => new RenderFragmentLocalCarrier(pair.Key, pair.Value))];
+
+        private static Dictionary<ILocalSymbol, ParsedSlotTemplate> CreateLocalRenderFragmentCarrierDictionary(
+            IEnumerable<RenderFragmentLocalCarrier> carriers)
+        {
+            var dictionary = new Dictionary<ILocalSymbol, ParsedSlotTemplate>(SymbolEqualityComparer.Default);
+            foreach (var carrier in carriers)
+                dictionary[carrier.LocalSymbol] = carrier.Template;
+
+            return dictionary;
+        }
 
         private bool IsRenderFragmentAddContent(IInvocationOperation invocation)
             => invocation.Arguments.Length >= 2 &&
@@ -1651,15 +1731,6 @@ internal sealed class RazorVueRenderTreeExtractor
 
             return char.ToLowerInvariant(value[0]) + value.Substring(1);
         }
-
-        private readonly record struct ParsedSlotTemplate(
-            string? ParameterName,
-            IParameterSymbol? ParameterSymbol,
-            RazorVueRenderFragment Children);
-
-        private readonly record struct RenderHelperValueBinding(
-            IParameterSymbol ParameterSymbol,
-            IOperation Initializer);
 
     }
 

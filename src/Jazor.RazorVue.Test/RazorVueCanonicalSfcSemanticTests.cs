@@ -555,6 +555,60 @@ public sealed class RazorVueCanonicalSfcSemanticTests
     }
 
     [TestMethod]
+    public void RazorVue_CanonicalModelFactory_MapsTypedAddContentRenderFragmentLocalCarrier_ToTemplateScopeNode()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderFragment<int> template = item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                        builder.AddContent(0, template, 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+        var scope = AssertNode<RazorVueCanonicalTemplateScopeNode>(canonical.Template.Children.Single());
+        var sfc = new RazorVueSfcSemanticModelFactory().Create(canonical);
+
+        Assert.AreEqual("item", scope.ScopeName);
+        Assert.AreEqual("42", scope.InitializerExpressionText);
+        var span = AssertNode<RazorVueCanonicalElementNode>(scope.Children.Children.Single());
+        var interpolation = AssertNode<RazorVueCanonicalInterpolationNode>(span.Children.Children.Single());
+        Assert.AreEqual("item", interpolation.ExpressionText);
+        Assert.IsTrue(sfc.ScriptSetupBlock.LiftedBindings.IsDefaultOrEmpty);
+        Assert.IsTrue(sfc.TemplateBlock.BindingSites.IsDefaultOrEmpty);
+    }
+
+    [TestMethod]
     public void RazorVue_CanonicalModelFactory_MapsCurrentComponentRenderHelperMethodWithExtraParameters_ToTemplateScopeNode()
     {
         var context = CreateContext(
@@ -720,6 +774,516 @@ public sealed class RazorVueCanonicalSfcSemanticTests
         Assert.AreEqual("title", interpolation.ExpressionText);
         Assert.IsTrue(sfc.ScriptSetupBlock.LiftedBindings.IsDefaultOrEmpty);
         Assert.IsTrue(sfc.TemplateBlock.BindingSites.IsDefaultOrEmpty);
+    }
+
+    [TestMethod]
+    public void RazorVue_CanonicalModelFactory_MapsCurrentComponentRenderHelperMethodWithMultipleExtraParameters_ToNestedTemplateScopeNodes()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public string? Subtitle { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderBody(builder, Title, Subtitle);
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder, string? title, string? subtitle)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddAttribute(1, "data-title", title);
+                        builder.AddAttribute(2, "data-subtitle", subtitle);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+
+        var titleScope = AssertNode<RazorVueCanonicalTemplateScopeNode>(canonical.Template.Children.Single());
+        Assert.AreEqual("title", titleScope.ScopeName);
+        Assert.AreEqual("props.title", titleScope.InitializerExpressionText);
+
+        var subtitleScope = AssertNode<RazorVueCanonicalTemplateScopeNode>(titleScope.Children.Children.Single());
+        Assert.AreEqual("subtitle", subtitleScope.ScopeName);
+        Assert.AreEqual("props.subtitle", subtitleScope.InitializerExpressionText);
+
+        var section = AssertNode<RazorVueCanonicalElementNode>(subtitleScope.Children.Children.Single());
+        Assert.HasCount(2, section.Attributes);
+        var titleAttribute = AssertNode<RazorVueCanonicalAttributeBinding>(section.Attributes[0]);
+        var subtitleAttribute = AssertNode<RazorVueCanonicalAttributeBinding>(section.Attributes[1]);
+        Assert.AreEqual("data-title", titleAttribute.Name);
+        Assert.AreEqual("title", titleAttribute.ExpressionText);
+        Assert.AreEqual("data-subtitle", subtitleAttribute.Name);
+        Assert.AreEqual("subtitle", subtitleAttribute.ExpressionText);
+    }
+
+    [TestMethod]
+    public void RazorVue_CanonicalModelFactory_MapsBuildRenderTreeLocalFunctionHelperWithMultipleExtraParameters_ToNestedTemplateScopeNodes()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public string? Subtitle { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        void RenderBody(RenderTreeBuilder localBuilder, string? title, string? subtitle)
+                        {
+                            localBuilder.OpenElement(0, "section");
+                            localBuilder.AddAttribute(1, "data-title", title);
+                            localBuilder.AddAttribute(2, "data-subtitle", subtitle);
+                            localBuilder.CloseElement();
+                        }
+
+                        RenderBody(builder, Title, Subtitle);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+
+        var titleScope = AssertNode<RazorVueCanonicalTemplateScopeNode>(canonical.Template.Children.Single());
+        Assert.AreEqual("title", titleScope.ScopeName);
+        Assert.AreEqual("props.title", titleScope.InitializerExpressionText);
+
+        var subtitleScope = AssertNode<RazorVueCanonicalTemplateScopeNode>(titleScope.Children.Children.Single());
+        Assert.AreEqual("subtitle", subtitleScope.ScopeName);
+        Assert.AreEqual("props.subtitle", subtitleScope.InitializerExpressionText);
+
+        var section = AssertNode<RazorVueCanonicalElementNode>(subtitleScope.Children.Children.Single());
+        Assert.HasCount(2, section.Attributes);
+        var titleAttribute = AssertNode<RazorVueCanonicalAttributeBinding>(section.Attributes[0]);
+        var subtitleAttribute = AssertNode<RazorVueCanonicalAttributeBinding>(section.Attributes[1]);
+        Assert.AreEqual("data-title", titleAttribute.Name);
+        Assert.AreEqual("title", titleAttribute.ExpressionText);
+        Assert.AreEqual("data-subtitle", subtitleAttribute.Name);
+        Assert.AreEqual("subtitle", subtitleAttribute.ExpressionText);
+    }
+
+    [TestMethod]
+    public void RazorVue_CanonicalModelFactory_MapsCurrentComponentRenderHelperMethodWithNamedArgumentsOutOfDeclarationOrder_PreservingCallSiteEvaluationOrder()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public string? Subtitle { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderBody(subtitle: Subtitle, builder: builder, title: Title);
+                    }
+
+                    private void RenderBody(string? title, RenderTreeBuilder builder, string? subtitle)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddAttribute(1, "data-title", title);
+                        builder.AddAttribute(2, "data-subtitle", subtitle);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+
+        var subtitleScope = AssertNode<RazorVueCanonicalTemplateScopeNode>(canonical.Template.Children.Single());
+        Assert.AreEqual("subtitle", subtitleScope.ScopeName);
+        Assert.AreEqual("props.subtitle", subtitleScope.InitializerExpressionText);
+
+        var titleScope = AssertNode<RazorVueCanonicalTemplateScopeNode>(subtitleScope.Children.Children.Single());
+        Assert.AreEqual("title", titleScope.ScopeName);
+        Assert.AreEqual("props.title", titleScope.InitializerExpressionText);
+    }
+
+    [TestMethod]
+    public void RazorVue_CanonicalModelFactory_MapsBuildRenderTreeLocalFunctionHelperWithNamedArgumentsOutOfDeclarationOrder_PreservingCallSiteEvaluationOrder()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public string? Subtitle { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        void RenderBody(string? title, RenderTreeBuilder localBuilder, string? subtitle)
+                        {
+                            localBuilder.OpenElement(0, "section");
+                            localBuilder.AddAttribute(1, "data-title", title);
+                            localBuilder.AddAttribute(2, "data-subtitle", subtitle);
+                            localBuilder.CloseElement();
+                        }
+
+                        RenderBody(subtitle: Subtitle, localBuilder: builder, title: Title);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+
+        var subtitleScope = AssertNode<RazorVueCanonicalTemplateScopeNode>(canonical.Template.Children.Single());
+        Assert.AreEqual("subtitle", subtitleScope.ScopeName);
+        Assert.AreEqual("props.subtitle", subtitleScope.InitializerExpressionText);
+
+        var titleScope = AssertNode<RazorVueCanonicalTemplateScopeNode>(subtitleScope.Children.Children.Single());
+        Assert.AreEqual("title", titleScope.ScopeName);
+        Assert.AreEqual("props.title", titleScope.InitializerExpressionText);
+    }
+
+    [TestMethod]
+    public void RazorVue_CanonicalModelFactory_MapsCurrentComponentRenderHelperMethodWithExtraParameterBackedTemplateLocal_ToScopeThenLocalDeclaration()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderBody(builder, Title);
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder, string? title)
+                    {
+                        var localTitle = title;
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, localTitle);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+
+        var titleScope = AssertNode<RazorVueCanonicalTemplateScopeNode>(canonical.Template.Children.Single());
+        Assert.AreEqual("title", titleScope.ScopeName);
+        Assert.AreEqual("props.title", titleScope.InitializerExpressionText);
+
+        var localDeclaration = AssertNode<RazorVueCanonicalLocalDeclarationNode>(titleScope.Children.Children[0]);
+        Assert.AreEqual("localTitle", localDeclaration.LocalName);
+        Assert.AreEqual("title", localDeclaration.InitializerExpressionText);
+
+        var section = AssertNode<RazorVueCanonicalElementNode>(titleScope.Children.Children[1]);
+        var interpolation = AssertNode<RazorVueCanonicalInterpolationNode>(section.Children.Children.Single());
+        Assert.AreEqual("localTitle", interpolation.ExpressionText);
+    }
+
+    [TestMethod]
+    public void RazorVue_CanonicalModelFactory_MapsBuildRenderTreeLocalFunctionHelperWithExtraParameterBackedTemplateLocal_ToScopeThenLocalDeclaration()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        void RenderBody(RenderTreeBuilder localBuilder, string? title)
+                        {
+                            var localTitle = title;
+                            localBuilder.OpenElement(0, "section");
+                            localBuilder.AddContent(1, localTitle);
+                            localBuilder.CloseElement();
+                        }
+
+                        RenderBody(builder, Title);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+
+        var titleScope = AssertNode<RazorVueCanonicalTemplateScopeNode>(canonical.Template.Children.Single());
+        Assert.AreEqual("title", titleScope.ScopeName);
+        Assert.AreEqual("props.title", titleScope.InitializerExpressionText);
+
+        var localDeclaration = AssertNode<RazorVueCanonicalLocalDeclarationNode>(titleScope.Children.Children[0]);
+        Assert.AreEqual("localTitle", localDeclaration.LocalName);
+        Assert.AreEqual("title", localDeclaration.InitializerExpressionText);
+
+        var section = AssertNode<RazorVueCanonicalElementNode>(titleScope.Children.Children[1]);
+        var interpolation = AssertNode<RazorVueCanonicalInterpolationNode>(section.Children.Children.Single());
+        Assert.AreEqual("localTitle", interpolation.ExpressionText);
+    }
+
+    [TestMethod]
+    public void RazorVue_CanonicalModelFactory_MapsLoopInvokedCurrentComponentRenderHelperMethodWithExtraParameterBackedTemplateLocal_ToLoopThenScopeThenLocalDeclaration()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public IEnumerable<string>? Items { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        foreach (var item in Items!)
+                        {
+                            RenderBody(builder, item);
+                        }
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder, string? title)
+                    {
+                        var localTitle = title;
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, localTitle);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+
+        var loop = AssertNode<RazorVueCanonicalForEachNode>(canonical.Template.Children.Single());
+        Assert.AreEqual("item", loop.ItemName);
+        Assert.AreEqual("props.items", loop.SourceExpressionText);
+
+        var titleScope = AssertNode<RazorVueCanonicalTemplateScopeNode>(loop.Body.Children.Single());
+        Assert.AreEqual("title", titleScope.ScopeName);
+        Assert.AreEqual("item", titleScope.InitializerExpressionText);
+
+        var localDeclaration = AssertNode<RazorVueCanonicalLocalDeclarationNode>(titleScope.Children.Children[0]);
+        Assert.AreEqual("localTitle", localDeclaration.LocalName);
+        Assert.AreEqual("title", localDeclaration.InitializerExpressionText);
+
+        var section = AssertNode<RazorVueCanonicalElementNode>(titleScope.Children.Children[1]);
+        var interpolation = AssertNode<RazorVueCanonicalInterpolationNode>(section.Children.Children.Single());
+        Assert.AreEqual("localTitle", interpolation.ExpressionText);
+    }
+
+    [TestMethod]
+    public void RazorVue_CanonicalModelFactory_MapsLoopInvokedBuildRenderTreeLocalFunctionHelperWithExtraParameterBackedTemplateLocal_ToLoopThenScopeThenLocalDeclaration()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public IEnumerable<string>? Items { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        void RenderBody(RenderTreeBuilder localBuilder, string? title)
+                        {
+                            var localTitle = title;
+                            localBuilder.OpenElement(0, "section");
+                            localBuilder.AddContent(1, localTitle);
+                            localBuilder.CloseElement();
+                        }
+
+                        foreach (var item in Items!)
+                        {
+                            RenderBody(builder, item);
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+
+        var loop = AssertNode<RazorVueCanonicalForEachNode>(canonical.Template.Children.Single());
+        Assert.AreEqual("item", loop.ItemName);
+        Assert.AreEqual("props.items", loop.SourceExpressionText);
+
+        var titleScope = AssertNode<RazorVueCanonicalTemplateScopeNode>(loop.Body.Children.Single());
+        Assert.AreEqual("title", titleScope.ScopeName);
+        Assert.AreEqual("item", titleScope.InitializerExpressionText);
+
+        var localDeclaration = AssertNode<RazorVueCanonicalLocalDeclarationNode>(titleScope.Children.Children[0]);
+        Assert.AreEqual("localTitle", localDeclaration.LocalName);
+        Assert.AreEqual("title", localDeclaration.InitializerExpressionText);
+
+        var section = AssertNode<RazorVueCanonicalElementNode>(titleScope.Children.Children[1]);
+        var interpolation = AssertNode<RazorVueCanonicalInterpolationNode>(section.Children.Children.Single());
+        Assert.AreEqual("localTitle", interpolation.ExpressionText);
     }
 
     [TestMethod]
@@ -1004,6 +1568,67 @@ public sealed class RazorVueCanonicalSfcSemanticTests
                 import.ComponentKey.EndsWith(".BadgeChip", StringComparison.Ordinal) &&
                 string.Equals(import.ImportSpecifier, "./badge-chip.vue", StringComparison.Ordinal)),
             string.Join(Environment.NewLine, sfc.ComponentImports.Select(static import => $"{import.ComponentKey} => {import.ImportSpecifier}")));
+    }
+
+    [TestMethod]
+    public void RazorVue_CanonicalModelFactory_MapsLocalCarrierTypedSlotTemplate_ToStructuredSlot()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/parent-card")]
+                public class ParentCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderFragment<int> template = item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(2, "p");
+                            itemBuilder.AddContent(3, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                        builder.OpenComponent<ChildCard>(0);
+                        builder.AddAttribute(1, "ItemTemplate", template);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "ParentCard");
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+        var component = AssertNode<RazorVueCanonicalComponentNode>(canonical.Template.Children.Single());
+        var slot = component.Slots.Single(static candidate => candidate.SlotName == "itemTemplate");
+
+        Assert.AreEqual("item", slot.ParameterName);
+        var paragraph = AssertNode<RazorVueCanonicalElementNode>(slot.Children.Children.Single());
+        Assert.AreEqual("p", paragraph.TagName);
+        var interpolation = AssertNode<RazorVueCanonicalInterpolationNode>(paragraph.Children.Children.Single());
+        Assert.AreEqual("item", interpolation.ExpressionText);
     }
 
     [TestMethod]

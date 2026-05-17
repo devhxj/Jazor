@@ -10039,6 +10039,60 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersLocalCarrierTypedSlotTemplate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/parent-card")]
+                public class ParentCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderFragment<int> template = item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(2, "p");
+                            itemBuilder.AddContent(3, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                        builder.OpenComponent<ChildCard>(0);
+                        builder.AddAttribute(1, "ItemTemplate", template);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
+
+        StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (item) => h(\"p\", null, item)");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersRazorGeneratedTypedSlotTemplate_WithNestedComponentEventBridgeAndConditional()
     {
         var compilation = CSharpCompilation.Create(
@@ -12840,6 +12894,410 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "return () => ((title) => h(\"section\", null, title))(\"fallback-title\");");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersCurrentComponentRenderHelperMethodWithMultipleExtraParameters()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/render-helper-card")]
+                public class RenderHelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public string? Subtitle { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderBody(builder, Title, Subtitle);
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder, string? title, string? subtitle)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddAttribute(1, "data-title", title);
+                        builder.AddAttribute(2, "data-subtitle", subtitle);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => ((title) => ((subtitle) => h(\"section\", { \"data-title\": title, \"data-subtitle\": subtitle }))(props.subtitle))(props.title);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersBuildRenderTreeLocalFunctionHelperWithMultipleExtraParameters()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/render-helper-card")]
+                public class RenderHelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public string? Subtitle { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        void RenderBody(RenderTreeBuilder localBuilder, string? title, string? subtitle)
+                        {
+                            localBuilder.OpenElement(0, "section");
+                            localBuilder.AddAttribute(1, "data-title", title);
+                            localBuilder.AddAttribute(2, "data-subtitle", subtitle);
+                            localBuilder.CloseElement();
+                        }
+
+                        RenderBody(builder, Title, Subtitle);
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => ((title) => ((subtitle) => h(\"section\", { \"data-title\": title, \"data-subtitle\": subtitle }))(props.subtitle))(props.title);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersCurrentComponentRenderHelperMethodWithNamedArgumentsOutOfDeclarationOrder_PreservingCallSiteEvaluationOrder()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/render-helper-card")]
+                public class RenderHelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public string? Subtitle { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderBody(subtitle: Subtitle, builder: builder, title: Title);
+                    }
+
+                    private void RenderBody(string? title, RenderTreeBuilder builder, string? subtitle)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddAttribute(1, "data-title", title);
+                        builder.AddAttribute(2, "data-subtitle", subtitle);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => ((subtitle) => ((title) => h(\"section\", { \"data-title\": title, \"data-subtitle\": subtitle }))(props.title))(props.subtitle);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersBuildRenderTreeLocalFunctionHelperWithNamedArgumentsOutOfDeclarationOrder_PreservingCallSiteEvaluationOrder()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/render-helper-card")]
+                public class RenderHelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public string? Subtitle { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        void RenderBody(string? title, RenderTreeBuilder localBuilder, string? subtitle)
+                        {
+                            localBuilder.OpenElement(0, "section");
+                            localBuilder.AddAttribute(1, "data-title", title);
+                            localBuilder.AddAttribute(2, "data-subtitle", subtitle);
+                            localBuilder.CloseElement();
+                        }
+
+                        RenderBody(subtitle: Subtitle, localBuilder: builder, title: Title);
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => ((subtitle) => ((title) => h(\"section\", { \"data-title\": title, \"data-subtitle\": subtitle }))(props.title))(props.subtitle);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersCurrentComponentRenderHelperMethodWithExtraParameterBackedTemplateLocal()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/render-helper-card")]
+                public class RenderHelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderBody(builder, Title);
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder, string? title)
+                    {
+                        var localTitle = title;
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, localTitle);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => ((title) => (() => { const __jazorNodes = []; const localTitle = title; __jazorNodes.push(h(\"section\", null, localTitle)); return __jazorNodes.length === 0 ? null : (__jazorNodes.length === 1 ? __jazorNodes[0] : __jazorNodes); })())(props.title);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersBuildRenderTreeLocalFunctionHelperWithExtraParameterBackedTemplateLocal()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/render-helper-card")]
+                public class RenderHelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        void RenderBody(RenderTreeBuilder localBuilder, string? title)
+                        {
+                            var localTitle = title;
+                            localBuilder.OpenElement(0, "section");
+                            localBuilder.AddContent(1, localTitle);
+                            localBuilder.CloseElement();
+                        }
+
+                        RenderBody(builder, Title);
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => ((title) => (() => { const __jazorNodes = []; const localTitle = title; __jazorNodes.push(h(\"section\", null, localTitle)); return __jazorNodes.length === 0 ? null : (__jazorNodes.length === 1 ? __jazorNodes[0] : __jazorNodes); })())(props.title);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersLoopInvokedCurrentComponentRenderHelperMethodWithExtraParameterBackedTemplateLocal()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/render-helper-card")]
+                public class RenderHelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public IEnumerable<string>? Items { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        foreach (var item in Items!)
+                        {
+                            RenderBody(builder, item);
+                        }
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder, string? title)
+                    {
+                        var localTitle = title;
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, localTitle);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => props.items.map((item) => ((title) => (() => { const __jazorNodes = []; const localTitle = title; __jazorNodes.push(h(\"section\", null, localTitle)); return __jazorNodes.length === 0 ? null : (__jazorNodes.length === 1 ? __jazorNodes[0] : __jazorNodes); })())(item));");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersLoopInvokedBuildRenderTreeLocalFunctionHelperWithExtraParameterBackedTemplateLocal()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/render-helper-card")]
+                public class RenderHelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public IEnumerable<string>? Items { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        void RenderBody(RenderTreeBuilder localBuilder, string? title)
+                        {
+                            var localTitle = title;
+                            localBuilder.OpenElement(0, "section");
+                            localBuilder.AddContent(1, localTitle);
+                            localBuilder.CloseElement();
+                        }
+
+                        foreach (var item in Items!)
+                        {
+                            RenderBody(builder, item);
+                        }
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => props.items.map((item) => ((title) => (() => { const __jazorNodes = []; const localTitle = title; __jazorNodes.push(h(\"section\", null, localTitle)); return __jazorNodes.length === 0 ? null : (__jazorNodes.length === 1 ? __jazorNodes[0] : __jazorNodes); })())(item));");
     }
 
     [TestMethod]
@@ -20450,6 +20908,50 @@ public sealed class RazorVuePipelineTests
                             itemBuilder.AddContent(2, item);
                             itemBuilder.CloseElement();
                         }), 42);
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => ((item) => h(\"span\", null, item))(42);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersTypedAddContentRenderFragmentLocalCarrierIntoVueRenderFunction()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/typed-fragment-card")]
+                public class TypedFragmentCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderFragment<int> template = item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                        builder.AddContent(0, template, 42);
                     }
                 }
             }
