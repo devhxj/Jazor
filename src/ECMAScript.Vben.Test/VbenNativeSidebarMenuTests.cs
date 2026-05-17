@@ -53,6 +53,31 @@ public sealed class VbenNativeSidebarMenuTests
     }
 
     [TestMethod]
+    public void Vben_SidebarMenu_WhitespaceOnlyTitleItems_DoNotRenderEmptyRootOrList()
+    {
+        var component = new VbenSidebarMenu();
+        SetParameter(
+            component,
+            nameof(VbenSidebarMenu.Items),
+            new VbenNavItems(
+            [
+                new VbenNavItem
+                {
+                    Key = "empty",
+                    Title = "   ",
+                    Target = "/ignored"
+                }
+            ]));
+
+        var frames = RenderSidebarMenu(component);
+
+        Assert.IsFalse(frames.ContainsElement("nav"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("ul", "vben-sidebar__list"));
+        Assert.IsFalse(frames.ContainsAttribute("data-key", "empty"));
+        Assert.IsFalse(frames.ContainsAttribute("href", "/ignored"));
+    }
+
+    [TestMethod]
     public void Vben_SidebarMenu_NullRootAndChildEntries_AreIgnoredDuringRender()
     {
         VbenNavItems items =

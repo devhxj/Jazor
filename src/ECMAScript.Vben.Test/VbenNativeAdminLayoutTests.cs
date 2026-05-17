@@ -68,6 +68,33 @@ public sealed class VbenNativeAdminLayoutTests
     }
 
     [TestMethod]
+    public void Vben_AdminLayout_SidebarMode_WhitespaceOnlyTitleNavItems_DoNotRenderEmptySidebarRegion()
+    {
+        var component = new VbenAdminLayout();
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenAdminLayout.Mode), VbenLayoutMode.Sidebar);
+        VbenNativeRenderTreeTestHelper.SetParameter(
+            component,
+            nameof(VbenAdminLayout.NavItems),
+            new VbenNavItems(
+            [
+                new VbenNavItem
+                {
+                    Key = "empty",
+                    Title = "   ",
+                    Target = "/ignored"
+                }
+            ]));
+
+        var frames = VbenNativeRenderTreeTestHelper.RenderComponent(component);
+
+        Assert.IsFalse(frames.ContainsElementWithClassToken("aside", "vben-shell__sidebar"));
+        Assert.IsFalse(frames.ContainsComponent<VbenSidebarMenu>());
+        Assert.IsFalse(frames.ContainsAttribute("href", "/ignored"));
+        Assert.IsTrue(frames.ContainsElementWithClassToken("div", "vben-shell__main"));
+        Assert.IsTrue(frames.ContainsElementWithClassToken("main", "vben-shell__content"));
+    }
+
+    [TestMethod]
     public void Vben_AdminLayout_SidebarMode_WithLogoOnly_RendersSidebarRegionAndDefaultSidebarMenu()
     {
         var component = new VbenAdminLayout();

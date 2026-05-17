@@ -19,14 +19,17 @@ internal static class VbenNavItemRenderHelper
         for (var index = 0; index < items.Length; index++)
         {
             var item = items[index];
-            if (item is null)
+            if (!IsRenderable(item))
             {
                 if (filtered is null)
                 {
                     filtered = new List<VbenNavItem>(items.Length - 1);
                     for (var copyIndex = 0; copyIndex < index; copyIndex++)
                     {
-                        filtered.Add(items[copyIndex]!);
+                        if (IsRenderable(items[copyIndex]))
+                        {
+                            filtered.Add(items[copyIndex]!);
+                        }
                     }
                 }
 
@@ -55,7 +58,7 @@ internal static class VbenNavItemRenderHelper
 
         foreach (var item in items)
         {
-            if (item is not null)
+            if (IsRenderable(item))
             {
                 return true;
             }
@@ -63,4 +66,8 @@ internal static class VbenNavItemRenderHelper
 
         return false;
     }
+
+    private static bool IsRenderable(VbenNavItem? item)
+        => item is not null
+           && !string.IsNullOrWhiteSpace(item.Title);
 }
