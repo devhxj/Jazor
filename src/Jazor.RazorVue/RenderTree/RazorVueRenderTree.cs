@@ -51,6 +51,11 @@ internal sealed record RazorVueExpressionNode(
     IOperation Expression,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins);
 
+internal sealed record RazorVueLocalDeclarationNode(
+    ILocalSymbol LocalSymbol,
+    IOperation Initializer,
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins);
+
 internal sealed record RazorVueUnsupportedTemplateNode(
     string Message,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins);

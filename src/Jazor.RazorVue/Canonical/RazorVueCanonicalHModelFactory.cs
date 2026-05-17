@@ -95,16 +95,23 @@ internal sealed class RazorVueCanonicalHModelFactory
         if (fragment.Children.IsDefaultOrEmpty)
             return RazorVueCanonicalTemplateFragment.Empty;
 
-        return new RazorVueCanonicalTemplateFragment(
-            fragment.Children
-                .Select(node => CreateTemplateNode(
-                    snapshot,
-                    expressionEmitter,
-                    resolvedComponents,
-                    node,
-                    allowedLocalSymbols,
-                    allowedParameterSymbols))
-                .ToImmutableArray());
+        var currentLocalScope = allowedLocalSymbols;
+        var builder = ImmutableArray.CreateBuilder<RazorVueCanonicalTemplateNode>(fragment.Children.Length);
+        foreach (var node in fragment.Children)
+        {
+            builder.Add(CreateTemplateNode(
+                snapshot,
+                expressionEmitter,
+                resolvedComponents,
+                node,
+                currentLocalScope,
+                allowedParameterSymbols));
+
+            if (node is RazorVueLocalDeclarationNode localDeclaration)
+                currentLocalScope = RazorVueTemplateExpressionScopeValidator.AddIfPresent(currentLocalScope, localDeclaration.LocalSymbol);
+        }
+
+        return new RazorVueCanonicalTemplateFragment(builder.ToImmutable());
     }
 
     private static RazorVueCanonicalTemplateNode CreateTemplateNode(
@@ -144,6 +151,19 @@ internal sealed class RazorVueCanonicalHModelFactory
                 expression,
                 allowedLocalSymbols,
                 allowedParameterSymbols),
+            RazorVueLocalDeclarationNode localDeclaration => new RazorVueCanonicalLocalDeclarationNode(
+                LocalName: localDeclaration.LocalSymbol.Name,
+                InitializerExpressionText: EmitTemplateExpression(
+                    snapshot,
+                    expressionEmitter,
+                    localDeclaration.Initializer,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols),
+                BindingKind: ClassifyBindingKind(snapshot, localDeclaration.Initializer),
+                TemplateEncodability: ClassifyTemplateEncodability(localDeclaration.Initializer),
+                TemplateExpressionSafety: ClassifyTemplateExpressionSafety(snapshot, localDeclaration.Initializer),
+                SideEffectClassification: ClassifySideEffects(localDeclaration.Initializer),
+                SourceOrigins: localDeclaration.Origins),
             RazorVueUnsupportedTemplateNode unsupported => throw CreateUnsupportedExpressionException(
                 snapshot,
                 unsupported.Origins,

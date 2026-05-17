@@ -423,3 +423,70 @@ jazor-manifest-razorvue.json
 - ASP.NET Core SPA fallback/static-file 官方 helper
 - ASP.NET Core 源码/发布双形态 content root helper
 - `/jazor/*` 本地 webroot bundle + development emit 标准挂载 helper
+
+## 10. 已完成：handwritten `BuildRenderTree` 模板局部变量支持
+
+### 现象
+
+此前 handwritten `BuildRenderTree` 中只允许 `RenderTreeBuilder` 别名局部变量。真实 authoring 中常见的模板内局部缓存/别名声明会失败，例如：
+
+```csharp
+var localTitle = Title;
+```
+
+```csharp
+foreach (var item in Items!)
+{
+    var decorated = item + "!";
+    builder.OpenElement(0, "span");
+    builder.AddContent(1, decorated);
+    builder.CloseElement();
+}
+```
+
+```csharp
+builder.AddAttribute(1, nameof(ChildCard.ItemTemplate), (RenderFragment<int>)((item) => (slotBuilder) =>
+{
+    var decorated = item + 1;
+    slotBuilder.OpenElement(2, "span");
+    slotBuilder.AddContent(3, decorated);
+    slotBuilder.CloseElement();
+}));
+```
+
+### 当前落地方式
+
+该缺口已在 RazorVue handwritten `BuildRenderTree` frontend 与后续 lowering 链路中收口：
+
+- render tree 增加 template-scoped local declaration 节点
+- canonical model 显式保留“声明后生效”的局部作用域顺序
+- H lowering 使用片段级局部作用域/IIFE 保证单次求值与节点顺序
+- SFC lowering 使用局部 template scope wrapper 保留同一顺序语义
+
+因此以下场景现已稳定支持：
+
+- 顶层片段局部值缓存/别名
+- `for` / `foreach` body 中基于迭代变量的局部缓存
+- typed slot template 中基于 slot 参数的局部缓存
+
+### 当前支持边界
+
+支持边界仍然刻意收窄为“带初始化器的不可变模板局部声明”：
+
+- 支持：`var decorated = item + "!";`
+- 不支持：先声明后赋值
+- 不支持：`++` / `--` / 其他写入型模板局部状态
+- 不支持：把模板局部声明当作匿名函数/委托状态载体继续扩散
+
+### 当前保护
+
+- `src/Jazor.RazorVue.Test/BuildRenderTreeTemplateFrontendTests.cs`
+- `src/Jazor.RazorVue.Test/RazorVueSfcArtifactFactoryTests.cs`
+- `src/Jazor.RazorVue.Test/RazorVuePipelineTests.cs`
+
+当前回归同时覆盖：
+
+- 顶层局部声明成功
+- loop body 局部声明成功
+- typed slot template 局部声明成功
+- “无初始化器后续赋值”仍明确失败

@@ -558,6 +558,18 @@ internal sealed partial class RazorVueExpressionEmitter
         return false;
     }
 
+    internal bool TryRewriteLocalReference(ILocalReferenceOperation operation, SenseArgument argument, out string expression)
+    {
+        if (_scopedLocalAliases is not null &&
+            _scopedLocalAliases.TryGetValue(operation.Local, out expression))
+        {
+            return true;
+        }
+
+        expression = string.Empty;
+        return false;
+    }
+
     private string EmitMemberInvocationTarget(IOperation instance, string targetMethodName, bool useSetupEmitter)
     {
         var target = useSetupEmitter
@@ -887,6 +899,29 @@ internal sealed partial class RazorVueExpressionEmitter
         finally
         {
             _scopedParameterAliases = previous;
+        }
+    }
+
+    private T WithScopedLocalAliases<T>(
+        IReadOnlyDictionary<ILocalSymbol, string> aliases,
+        Func<T> action)
+    {
+        var previous = _scopedLocalAliases;
+        var current = previous is null
+            ? new Dictionary<ILocalSymbol, string>(SymbolEqualityComparer.Default)
+            : new Dictionary<ILocalSymbol, string>(previous, SymbolEqualityComparer.Default);
+
+        foreach (var pair in aliases)
+            current[pair.Key] = pair.Value;
+
+        _scopedLocalAliases = current;
+        try
+        {
+            return action();
+        }
+        finally
+        {
+            _scopedLocalAliases = previous;
         }
     }
 

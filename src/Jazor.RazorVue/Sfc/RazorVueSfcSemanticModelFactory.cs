@@ -140,8 +140,13 @@ internal sealed class RazorVueSfcSemanticModelFactory
         int templateScopeDepth,
         string pathPrefix)
     {
+        var currentTemplateScopeDepth = templateScopeDepth;
         for (var index = 0; index < fragment.Children.Length; index++)
-            CollectLiftedBindings(ownerComponentFullName, fragment.Children[index], bindings, templateScopeDepth, pathPrefix + "/child[" + index + "]");
+        {
+            CollectLiftedBindings(ownerComponentFullName, fragment.Children[index], bindings, currentTemplateScopeDepth, pathPrefix + "/child[" + index + "]");
+            if (fragment.Children[index] is RazorVueCanonicalLocalDeclarationNode)
+                currentTemplateScopeDepth++;
+        }
     }
 
     private static void CollectLiftedBindings(
@@ -164,6 +169,9 @@ internal sealed class RazorVueSfcSemanticModelFactory
                 CollectLiftedBindings(ownerComponentFullName, component.Attributes, bindings, templateScopeDepth, path + "/attrs");
                 CollectLiftedBindings(ownerComponentFullName, component.Slots, bindings, templateScopeDepth, path + "/slots");
                 CollectLiftedBindings(ownerComponentFullName, component.Children, bindings, templateScopeDepth, path);
+                return;
+
+            case RazorVueCanonicalLocalDeclarationNode localDeclaration:
                 return;
 
             case RazorVueCanonicalInterpolationNode interpolation
@@ -393,13 +401,32 @@ internal sealed class RazorVueSfcSemanticModelFactory
         ImmutableArray<RazorVueSourceOrigin> origins,
         string expressionText)
     {
-        if (bindingKind != RazorVueExpressionBindingKind.LocalReference)
+        if (bindingKind != RazorVueExpressionBindingKind.LocalReference ||
+            !IsIdentifierLikeExpression(expressionText))
             return;
 
         throw CreateUnsupportedTemplateEncodingException(
             ownerComponentFullName,
             origins,
             $"RazorVue SFC template lifting cannot hoist component-local expression '{expressionText}' into <script setup> safely.");
+    }
+
+    private static bool IsIdentifierLikeExpression(string expressionText)
+    {
+        if (string.IsNullOrWhiteSpace(expressionText))
+            return false;
+
+        if (!(char.IsLetter(expressionText[0]) || expressionText[0] is '_' or '$'))
+            return false;
+
+        for (var index = 1; index < expressionText.Length; index++)
+        {
+            var ch = expressionText[index];
+            if (!(char.IsLetterOrDigit(ch) || ch is '_' or '$'))
+                return false;
+        }
+
+        return true;
     }
 
     private static IEnumerable<RazorVueCanonicalTemplateNode> EnumerateNodes(RazorVueCanonicalTemplateFragment fragment)
@@ -422,6 +449,8 @@ internal sealed class RazorVueSfcSemanticModelFactory
                     }
                     foreach (var nested in EnumerateNodes(component.Children))
                         yield return nested;
+                    break;
+                case RazorVueCanonicalLocalDeclarationNode:
                     break;
                 case RazorVueCanonicalConditionalNode conditional:
                     foreach (var nested in EnumerateNodes(conditional.WhenTrue))
@@ -581,8 +610,23 @@ internal sealed class RazorVueSfcSemanticModelFactory
             RazorVueExpressionBindingKind bindingKind,
             RazorVueTemplateExpressionSafety templateExpressionSafety,
             RazorVueSideEffectClassification sideEffectClassification,
-            ImmutableArray<RazorVueSourceOrigin> sourceOrigins)
+            ImmutableArray<RazorVueSourceOrigin> sourceOrigins,
+            RazorVueSfcSetupBindingKind? bindingKindOverride = null,
+            string? bindingNameOverride = null)
         {
+            if (bindingKindOverride is RazorVueSfcSetupBindingKind.LocalAlias)
+            {
+                var localAliasName = bindingNameOverride ?? CreateLiftedBindingName(Bindings.Count);
+                Bindings.Add(new RazorVueSfcSetupBinding(
+                    Name: localAliasName,
+                    ExpressionText: expressionText,
+                    BindingKind: RazorVueSfcSetupBindingKind.LocalAlias,
+                    TemplateExpressionText: localAliasName,
+                    SourceOrigins: sourceOrigins));
+                Sites.Add(new RazorVueSfcTemplateBindingSite(sitePath, localAliasName));
+                return;
+            }
+
             if (CanUseDirectTemplateExpression(bindingKind, templateExpressionSafety, sideEffectClassification))
             {
                 Sites.Add(new RazorVueSfcTemplateBindingSite(sitePath, expressionText));

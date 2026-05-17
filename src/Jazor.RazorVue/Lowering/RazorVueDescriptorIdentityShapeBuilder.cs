@@ -54,6 +54,9 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
                 foreach (var slotTemplate in component.SlotTemplates)
                     AppendRenderTreeKeyShape(builder, slotTemplate.Children);
                 break;
+            case RazorVueLocalDeclarationNode localDeclaration:
+                builder.AppendLine("render:local:" + localDeclaration.LocalSymbol.Name + "=" + localDeclaration.Initializer.Syntax.ToString());
+                break;
             case RazorVueConditionalNode conditional:
                 AppendRenderTreeKeyShape(builder, conditional.WhenTrue);
                 AppendRenderTreeKeyShape(builder, conditional.WhenFalse);
@@ -91,6 +94,9 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
                 AppendCanonicalKeyShape(builder, component.Children);
                 foreach (var slot in component.Slots)
                     AppendCanonicalKeyShape(builder, slot.Children);
+                break;
+            case RazorVueCanonicalLocalDeclarationNode localDeclaration:
+                builder.AppendLine("canonical:local:" + localDeclaration.LocalName + "=" + localDeclaration.InitializerExpressionText);
                 break;
             case RazorVueCanonicalConditionalNode conditional:
                 AppendCanonicalKeyShape(builder, conditional.WhenTrue);
@@ -241,6 +247,8 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
                 foreach (var slotTemplate in component.SlotTemplates)
                     CollectFromRenderTree(slotTemplate.Children, resolvedComponents, usageByComponent);
                 break;
+            case RazorVueLocalDeclarationNode:
+                break;
             case RazorVueConditionalNode conditional:
                 CollectFromRenderTree(conditional.WhenTrue, resolvedComponents, usageByComponent);
                 CollectFromRenderTree(conditional.WhenFalse, resolvedComponents, usageByComponent);
@@ -337,6 +345,8 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
                 CollectFromCanonicalTemplate(component.Children, usageByComponent);
                 foreach (var slot in component.Slots)
                     CollectFromCanonicalTemplate(slot.Children, usageByComponent);
+                break;
+            case RazorVueCanonicalLocalDeclarationNode:
                 break;
             case RazorVueCanonicalConditionalNode conditional:
                 CollectFromCanonicalTemplate(conditional.WhenTrue, usageByComponent);

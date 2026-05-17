@@ -2304,7 +2304,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
-    public void RazorVue_SfcArtifactFactory_WithComponentLocalVariableDeclarationInBuildRenderTree_ThrowsCanonicalizationFailed()
+    public void RazorVue_SfcArtifactFactory_WithComponentLocalVariableDeclarationInBuildRenderTree_LowersTemplateScopedAlias()
     {
         var context = CreateContext(
             """
@@ -2343,16 +2343,14 @@ public sealed class RazorVueSfcArtifactFactoryTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
-            CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
-        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "local variable declaration");
-        StringAssert.Contains(exception.Issue.Message, "localTitle");
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(localTitle) in [props.title]\">");
+        StringAssert.Contains(artifact.TemplateText, "{{ localTitle }}");
     }
 
     [TestMethod]
-    public void RazorVue_SfcArtifactFactory_WithLoopBodyComponentLocalVariableDeclarationInBuildRenderTree_ThrowsCanonicalizationFailed()
+    public void RazorVue_SfcArtifactFactory_WithLoopBodyComponentLocalVariableDeclarationInBuildRenderTree_LowersTemplateScopedAlias()
     {
         var context = CreateContext(
             """
@@ -2395,12 +2393,11 @@ public sealed class RazorVueSfcArtifactFactoryTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
-            CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
-        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "local variable declaration");
-        StringAssert.Contains(exception.Issue.Message, "decorated");
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"item in props.items\">");
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(decorated) in [(item + &quot;!&quot;)]\">".Replace("&quot;", "\""));
+        StringAssert.Contains(artifact.TemplateText, "{{ decorated }}");
     }
 
     [TestMethod]
@@ -2449,7 +2446,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
-    public void RazorVue_SfcArtifactFactory_WithTypedSlotTemplateComponentLocalVariableInTemplate_ThrowsUnsupportedTemplateEncoding()
+    public void RazorVue_SfcArtifactFactory_WithTypedSlotTemplateComponentLocalVariableInTemplate_LowersTemplateScopedAlias()
     {
         var context = CreateContext(
             """
@@ -2497,12 +2494,11 @@ public sealed class RazorVueSfcArtifactFactoryTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "ParentCard");
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
-            CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedTemplateEncoding, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "component-local expression");
-        StringAssert.Contains(exception.Issue.Message, "decorated");
+        StringAssert.Contains(artifact.TemplateText, "<template #itemTemplate=\"item\">");
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(decorated) in [(item + 1)]\">");
+        StringAssert.Contains(artifact.TemplateText, "{{ decorated }}");
     }
 
     [TestMethod]

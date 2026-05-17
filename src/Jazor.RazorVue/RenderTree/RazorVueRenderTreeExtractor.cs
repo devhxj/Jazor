@@ -44,39 +44,43 @@ internal sealed class RazorVueRenderTreeExtractor
                     : null;
 
             if (operation is IBlockOperation block)
-                return new Parser(snapshot, context.Compilation, context.Symbols, builderParameters).Parse(block.Operations);
+                return new Parser(snapshot, context.Compilation, context.Symbols, builderParameters, allowTemplateScopedLocals: true).Parse(block.Operations);
 
             if (operation is not null)
-                return new Parser(snapshot, context.Compilation, context.Symbols, builderParameters).Parse([operation]);
+                return new Parser(snapshot, context.Compilation, context.Symbols, builderParameters, allowTemplateScopedLocals: true).Parse([operation]);
         }
 
         return RazorVueRenderFragment.Empty;
     }
 
     private sealed class Parser(
-		RazorVueSemanticSnapshot snapshot,
-		Compilation compilation,
-		RazorVueCompilationSymbols symbols,
-		ImmutableHashSet<IParameterSymbol> builderParameters,
-		IEnumerable<ILocalSymbol>? builderAliases = null,
-		IEnumerable<IMethodSymbol>? activeRenderHelperMethods = null,
-		bool deferUnsupportedTemplateLocals = false)
-	{
+        RazorVueSemanticSnapshot snapshot,
+        Compilation compilation,
+        RazorVueCompilationSymbols symbols,
+        ImmutableHashSet<IParameterSymbol> builderParameters,
+        IEnumerable<ILocalSymbol>? builderAliases = null,
+        IEnumerable<IMethodSymbol>? activeRenderHelperMethods = null,
+        IEnumerable<ILocalSymbol>? accessibleTemplateLocals = null,
+        bool allowTemplateScopedLocals = false)
+    {
         private readonly RazorVueSemanticSnapshot _snapshot = snapshot;
         private readonly Compilation _compilation = compilation;
         private readonly RazorVueCompilationSymbols _symbols = symbols;
         private ImmutableHashSet<IParameterSymbol> _builderParameters = builderParameters;
         private readonly HashSet<ILocalSymbol> _builderAliases = builderAliases is null
-				? [with(SymbolEqualityComparer.Default)]
-				: new HashSet<ILocalSymbol>(builderAliases, SymbolEqualityComparer.Default);
+                ? [with(SymbolEqualityComparer.Default)]
+                : new HashSet<ILocalSymbol>(builderAliases, SymbolEqualityComparer.Default);
         private readonly HashSet<IMethodSymbol> _activeRenderHelperMethods = activeRenderHelperMethods is null
-				? [with(SymbolEqualityComparer.Default)]
-				: new HashSet<IMethodSymbol>(activeRenderHelperMethods, SymbolEqualityComparer.Default);
+                ? [with(SymbolEqualityComparer.Default)]
+                : new HashSet<IMethodSymbol>(activeRenderHelperMethods, SymbolEqualityComparer.Default);
+        private readonly HashSet<ILocalSymbol> _accessibleTemplateLocals = accessibleTemplateLocals is null
+                ? [with(SymbolEqualityComparer.Default)]
+                : new HashSet<ILocalSymbol>(accessibleTemplateLocals, SymbolEqualityComparer.Default);
         private readonly List<RazorVueRenderNode> _rootChildren = [];
         private readonly Stack<OpenFrame> _openFrames = new();
-        private readonly bool _deferUnsupportedTemplateLocals = deferUnsupportedTemplateLocals;
+        private readonly bool _allowTemplateScopedLocals = allowTemplateScopedLocals;
 
-		public RazorVueRenderFragment Parse(IEnumerable<IOperation> operations)
+        public RazorVueRenderFragment Parse(IEnumerable<IOperation> operations)
         {
             foreach (var operation in operations)
                 ParseOperation(operation);
@@ -110,7 +114,7 @@ internal sealed class RazorVueRenderTreeExtractor
                         foreachLoop.Locals.Length > 0 ? foreachLoop.Locals[0].Name : "item",
                         foreachLoop.Locals.Length > 0 ? foreachLoop.Locals[0] : null,
                         foreachLoop.Collection,
-                        ParseNestedBranch(foreachLoop.Body),
+                        ParseNestedBranch(foreachLoop.Body, foreachLoop.Locals),
                         CreateOrigins(current, RazorVueOriginKind.Template)));
                     break;
                 case IForLoopOperation forLoop:
@@ -500,8 +504,59 @@ internal sealed class RazorVueRenderTreeExtractor
 
             return current switch
             {
-                IBlockOperation block => new Parser(_snapshot, _compilation, _symbols, _builderParameters, _builderAliases, _activeRenderHelperMethods).Parse(block.Operations),
-                _ => new Parser(_snapshot, _compilation, _symbols, _builderParameters, _builderAliases, _activeRenderHelperMethods).Parse([current])
+                IBlockOperation block => new Parser(
+                    _snapshot,
+                    _compilation,
+                    _symbols,
+                    _builderParameters,
+                    _builderAliases,
+                    _activeRenderHelperMethods,
+                    _accessibleTemplateLocals,
+                    _allowTemplateScopedLocals).Parse(block.Operations),
+                _ => new Parser(
+                    _snapshot,
+                    _compilation,
+                    _symbols,
+                    _builderParameters,
+                    _builderAliases,
+                    _activeRenderHelperMethods,
+                    _accessibleTemplateLocals,
+                    _allowTemplateScopedLocals).Parse([current])
+            };
+        }
+
+        private RazorVueRenderFragment ParseNestedBranch(
+            IOperation? operation,
+            IEnumerable<ILocalSymbol> additionalTemplateLocals)
+        {
+            var current = Unwrap(operation);
+            if (current is null)
+                return RazorVueRenderFragment.Empty;
+
+            var mergedTemplateLocals = new HashSet<ILocalSymbol>(_accessibleTemplateLocals, SymbolEqualityComparer.Default);
+            foreach (var local in additionalTemplateLocals)
+                mergedTemplateLocals.Add(local);
+
+            return current switch
+            {
+                IBlockOperation block => new Parser(
+                    _snapshot,
+                    _compilation,
+                    _symbols,
+                    _builderParameters,
+                    _builderAliases,
+                    _activeRenderHelperMethods,
+                    mergedTemplateLocals,
+                    _allowTemplateScopedLocals).Parse(block.Operations),
+                _ => new Parser(
+                    _snapshot,
+                    _compilation,
+                    _symbols,
+                    _builderParameters,
+                    _builderAliases,
+                    _activeRenderHelperMethods,
+                    mergedTemplateLocals,
+                    _allowTemplateScopedLocals).Parse([current])
             };
         }
 
@@ -520,7 +575,7 @@ internal sealed class RazorVueRenderTreeExtractor
                 analyzedLoop.LimitValue,
                 analyzedLoop.StepKind,
                 analyzedLoop.StepValue,
-                ParseNestedBranch(loop.Body),
+                ParseNestedBranch(loop.Body, loop.Locals),
                 CreateOrigins(loop, RazorVueOriginKind.Template));
         }
 
@@ -582,19 +637,14 @@ internal sealed class RazorVueRenderTreeExtractor
 
         private void ParseVariableDeclarationGroup(IVariableDeclarationGroupOperation declarationGroup)
         {
-            if (_deferUnsupportedTemplateLocals && IsTemplateScopedDeclarationGroup(declarationGroup, out var deferredIssue))
-            {
-                AddNode(new RazorVueUnsupportedTemplateNode(
-                    deferredIssue,
-                    CreateOrigins(declarationGroup, RazorVueOriginKind.Template)));
-                return;
-            }
-
             foreach (var declaration in declarationGroup.Declarations)
             {
                 foreach (var declarator in declaration.Declarators)
                 {
                     if (TryRegisterBuilderAliasDeclaration(declarator, out var failureMessage))
+                        continue;
+
+                    if (TryRegisterTemplateScopedDeclaration(declarator, out failureMessage))
                         continue;
 
                     throw CreateStructuralIssue(
@@ -639,6 +689,66 @@ internal sealed class RazorVueRenderTreeExtractor
 
             _builderAliases.Add(localReference.Local);
             return true;
+        }
+
+        private bool TryRegisterTemplateScopedDeclaration(
+            IVariableDeclaratorOperation declarator,
+            out string failureMessage)
+        {
+            failureMessage =
+                $"BuildRenderTree does not support local variable declaration '{GetOperationDisplay(declarator)}' in component '{_snapshot.Descriptor.FullName}'.";
+
+            if (!_allowTemplateScopedLocals)
+                return false;
+
+            if (declarator.Initializer?.Value is not { } initializer)
+            {
+                failureMessage =
+                    $"RazorVue template-scoped local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' requires an initializer.";
+                return false;
+            }
+
+            if (IsRenderTreeBuilderType(declarator.Symbol.Type))
+                return false;
+
+            ValidateTemplateScopedInitializer(declarator, initializer);
+            _accessibleTemplateLocals.Add(declarator.Symbol);
+            AddNode(new RazorVueLocalDeclarationNode(
+                declarator.Symbol,
+                initializer,
+                CreateOrigins(declarator, RazorVueOriginKind.Template)));
+            return true;
+        }
+
+        private void ValidateTemplateScopedInitializer(
+            IVariableDeclaratorOperation declarator,
+            IOperation initializer)
+        {
+            foreach (var operation in EnumerateSelfAndDescendants(initializer))
+            {
+                switch (Unwrap(operation))
+                {
+                    case null:
+                        continue;
+                    case ILocalReferenceOperation localReference when !_accessibleTemplateLocals.Contains(localReference.Local):
+                        throw CreateStructuralIssue(
+                            declarator,
+                            $"RazorVue template-scoped local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' cannot capture unsupported local '{localReference.Local.Name}'. Only previously declared template locals and active slot/loop parameters are allowed.");
+                    case IParameterReferenceOperation parameterReference when
+                        !_builderParameters.Contains(parameterReference.Parameter) &&
+                        !IsAnonymousFunctionParameter(parameterReference.Parameter):
+                        throw CreateStructuralIssue(
+                            declarator,
+                            $"RazorVue template-scoped local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' cannot capture unsupported parameter '{parameterReference.Parameter.Name}'.");
+                    case IAnonymousFunctionOperation:
+                    case IDelegateCreationOperation:
+                    case IAssignmentOperation:
+                    case IIncrementOrDecrementOperation:
+                        throw CreateStructuralIssue(
+                            declarator,
+                            $"RazorVue template-scoped local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be an immutable value/cache initializer without nested write or callable template state.");
+                }
+            }
         }
 
         private bool IsCurrentComponentRenderHelperCandidate(IMethodSymbol method, IOperation? instance)
@@ -773,6 +883,13 @@ internal sealed class RazorVueRenderTreeExtractor
                 foreach (var alias in previousBuilderAliases)
                     _builderAliases.Add(alias);
             }
+        }
+
+        private static IEnumerable<IOperation> EnumerateSelfAndDescendants(IOperation root)
+        {
+            yield return root;
+            foreach (var descendant in root.Descendants())
+                yield return descendant;
         }
 
         private bool TryResolveSlotOutlet(IOperation operation, out string slotName)
@@ -1077,7 +1194,8 @@ internal sealed class RazorVueRenderTreeExtractor
                     _symbols,
                     builderParameters,
                     activeRenderHelperMethods: _activeRenderHelperMethods,
-                    deferUnsupportedTemplateLocals: anonymousFunction.Symbol.Parameters.Length == 1).Parse(block.Operations);
+                    accessibleTemplateLocals: _accessibleTemplateLocals,
+                    allowTemplateScopedLocals: true).Parse(block.Operations);
 
             return new Parser(
                 _snapshot,
@@ -1085,30 +1203,8 @@ internal sealed class RazorVueRenderTreeExtractor
                 _symbols,
                 builderParameters,
                 activeRenderHelperMethods: _activeRenderHelperMethods,
-                deferUnsupportedTemplateLocals: anonymousFunction.Symbol.Parameters.Length == 1).Parse([body]);
-        }
-
-        private bool IsTemplateScopedDeclarationGroup(
-            IVariableDeclarationGroupOperation declarationGroup,
-            out string message)
-        {
-            message = string.Empty;
-            foreach (var declaration in declarationGroup.Declarations)
-            {
-                foreach (var declarator in declaration.Declarators)
-                {
-                    if (IsRenderTreeBuilderType(declarator.Symbol.Type))
-                        return false;
-
-                    var display = GetOperationDisplay(declarator);
-                    message =
-                        $"RazorVue template expression cannot hoist component-local expression '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}'. " +
-                        $"The typed slot template introduces local variable declaration '{display}' that cannot be encoded into template scope safely.";
-                    return true;
-                }
-            }
-
-            return false;
+                accessibleTemplateLocals: _accessibleTemplateLocals,
+                allowTemplateScopedLocals: true).Parse([body]);
         }
 
         private static bool TryGetAnonymousFunction(
@@ -1201,6 +1297,9 @@ internal sealed class RazorVueRenderTreeExtractor
             returnedValue = returnOperation.ReturnedValue;
             return returnedValue is not null;
         }
+
+        private static bool IsAnonymousFunctionParameter(IParameterSymbol parameter)
+            => parameter.ContainingSymbol is IMethodSymbol { MethodKind: MethodKind.LambdaMethod or MethodKind.AnonymousFunction };
 
         private bool IsRenderFragmentAddContent(IInvocationOperation invocation)
             => invocation.Arguments.Length >= 2 &&

@@ -606,7 +606,8 @@ public sealed class BuildRenderTreeTemplateFrontendTests
             () => BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
 
         Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "RenderTreeBuilder receiver");
+        StringAssert.Contains(exception.Issue.Message, "local variable declaration");
+        StringAssert.Contains(exception.Issue.Message, "alias");
     }
 
     [TestMethod]
@@ -1512,8 +1513,8 @@ public sealed class BuildRenderTreeTemplateFrontendTests
             () => BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
 
         Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "local variable declaration");
-        StringAssert.Contains(exception.Issue.Message, "index");
+        StringAssert.Contains(exception.Issue.Message, "loop statement");
+        StringAssert.Contains(exception.Issue.Message, "while");
     }
 
     [TestMethod]
@@ -1563,7 +1564,7 @@ public sealed class BuildRenderTreeTemplateFrontendTests
     }
 
     [TestMethod]
-    public void CreateRenderTree_WithComponentLocalVariableDeclaration_ThrowsCanonicalizationFailed()
+    public void CreateRenderTree_WithComponentLocalVariableDeclaration_ProducesTemplateScopedLocalNode()
     {
         var context = CreateContext(
             """
@@ -1602,16 +1603,21 @@ public sealed class BuildRenderTreeTemplateFrontendTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
-            () => BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
 
-        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "local variable declaration");
-        StringAssert.Contains(exception.Issue.Message, "localTitle");
+        Assert.AreEqual(2, renderTree.Children.Length);
+        var local = renderTree.Children[0] as RazorVueLocalDeclarationNode;
+        Assert.IsNotNull(local);
+        Assert.AreEqual("localTitle", local.LocalSymbol.Name);
+
+        var section = renderTree.Children[1] as RazorVueElementNode;
+        Assert.IsNotNull(section);
+        var expression = section.Children.Children.Single() as RazorVueExpressionNode;
+        Assert.IsNotNull(expression);
     }
 
     [TestMethod]
-    public void CreateRenderTree_WithLoopBodyComponentLocalVariableDeclaration_ThrowsCanonicalizationFailed()
+    public void CreateRenderTree_WithLoopBodyComponentLocalVariableDeclaration_ProducesTemplateScopedLocalNode()
     {
         var context = CreateContext(
             """
@@ -1654,12 +1660,66 @@ public sealed class BuildRenderTreeTemplateFrontendTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+
+        var loop = renderTree.Children.Single() as RazorVueForEachNode;
+        Assert.IsNotNull(loop);
+        Assert.AreEqual(2, loop.Body.Children.Length);
+        var local = loop.Body.Children[0] as RazorVueLocalDeclarationNode;
+        Assert.IsNotNull(local);
+        Assert.AreEqual("decorated", local.LocalSymbol.Name);
+
+        var span = loop.Body.Children[1] as RazorVueElementNode;
+        Assert.IsNotNull(span);
+        Assert.IsInstanceOfType<RazorVueExpressionNode>(span.Children.Children.Single());
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithTemplateScopedLocalWithoutInitializer_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        string? localTitle;
+                        localTitle = Title;
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, localTitle);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
         var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
             () => BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
 
         Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "local variable declaration");
-        StringAssert.Contains(exception.Issue.Message, "decorated");
+        StringAssert.Contains(exception.Issue.Message, "requires an initializer");
     }
 
     private static RazorVueCompilationContext CreateContext(string source)

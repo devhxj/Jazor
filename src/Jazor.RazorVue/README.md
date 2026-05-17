@@ -57,6 +57,19 @@
   - `const props = __jazorRawProps;`
 - 当组件参数存在默认值代理时，`props` 可能升级为 `new Proxy(__jazorRawProps, ...)`，但 `__jazorRawProps` 仍是稳定底层绑定名。
 
+## Template-Scoped Locals
+
+- handwritten `BuildRenderTree` 现已支持模板作用域内的局部值缓存/别名声明，例如：
+  - 顶层片段中的 `var localTitle = Title;`
+  - `foreach` / `for` body 中基于迭代变量的 `var decorated = item + "!";`
+  - typed slot template 中基于 slot 参数的 `var decorated = item + 1;`
+- 该能力会在 render tree、canonical model、H lowering、SFC template lowering 中保留顺序作用域语义：局部变量只对声明之后的同一片段后续节点生效。
+- 当前支持边界刻意收窄为“带初始化器的不可变模板局部声明”：
+  - 必须在声明点提供 initializer
+  - initializer 只能捕获当前可见的模板局部、slot/loop 参数或正常可编码表达式
+  - 不支持声明后再赋值、递增/递减、嵌套匿名函数/委托承载的模板状态写入
+- 对 SFC 输出，模板局部声明会编码为局部 template scope wrapper，而不是泄漏为顶层 `script setup` 公共绑定。
+
 ## Verification
 
 ```powershell

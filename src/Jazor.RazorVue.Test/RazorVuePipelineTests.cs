@@ -20099,7 +20099,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_RejectsLoopBodyComponentLocalVariableDeclarationInBuildRenderTree()
+    public void RazorVue_Pipeline_LowersLoopBodyComponentLocalVariableDeclarationInBuildRenderTree()
     {
         var context = CreateContext(
             """
@@ -20141,10 +20141,10 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "local variable declaration");
-        StringAssert.Contains(exception.Issue.Message, "decorated");
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "props.items.map((item) =>");
+        StringAssert.Contains(artifact.ModuleCode, "const decorated = (item + \"!\");");
+        StringAssert.Contains(artifact.ModuleCode, "h(\"span\", null, decorated)");
     }
 
     [TestMethod]

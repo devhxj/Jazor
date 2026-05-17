@@ -40,6 +40,7 @@ internal sealed partial class RazorVueExpressionEmitter
     private readonly ImmutableDictionary<string, ImmutableArray<VueLogicMethodDescriptor>> _logicMethodsByName;
     private readonly HashSet<IFieldSymbol> _requiredSetupFields;
     private readonly HashSet<IMethodSymbol> _requiredSetupMethods;
+    private Dictionary<ILocalSymbol, string>? _scopedLocalAliases;
     private Dictionary<IParameterSymbol, string>? _scopedParameterAliases;
     private readonly SenseArgument _compilerArgument;
     private readonly SemanticWalker _semanticWalker;
@@ -136,6 +137,13 @@ internal sealed partial class RazorVueExpressionEmitter
             return _snapshot.Descriptor.Slots.Any(static slot => slot.IsDefault)
                 ? new OptionalJsArgument("slots.default ? slots.default() : null", true)
                 : OptionalJsArgument.Missing;
+        }
+
+        if (ContainsTemplateLocalDeclaration(fragment))
+        {
+            return new OptionalJsArgument(
+                EmitFragmentWithTemplateLocals(fragment, allowedLocalSymbols, allowedParameterSymbols),
+                true);
         }
 
         if (fragment.Children.Length == 1)
@@ -350,6 +358,10 @@ internal sealed partial class RazorVueExpressionEmitter
                 foreach (var childOrigin in CollectOrigins(component.Children))
                     yield return childOrigin;
                 break;
+            case RazorVueLocalDeclarationNode localDeclaration:
+                foreach (var origin in localDeclaration.Origins)
+                    yield return origin;
+                break;
             case RazorVueConditionalNode conditional:
                 foreach (var childOrigin in CollectOrigins(conditional.WhenTrue))
                     yield return childOrigin;
@@ -408,6 +420,11 @@ internal sealed partial class RazorVueExpressionEmitter
 
         public override Expression? RewriteParameterReference(IParameterReferenceOperation operation, SenseArgument argument)
             => _emitter.TryRewriteParameterReference(operation, argument, out var expression)
+                ? ParseJavaScriptExpression(expression)
+                : null;
+
+        public override Expression? RewriteLocalReference(ILocalReferenceOperation operation, SenseArgument argument)
+            => _emitter.TryRewriteLocalReference(operation, argument, out var expression)
                 ? ParseJavaScriptExpression(expression)
                 : null;
 

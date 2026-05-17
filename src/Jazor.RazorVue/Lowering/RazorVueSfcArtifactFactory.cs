@@ -221,9 +221,55 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         IReadOnlyDictionary<string, string> bindingSiteMap)
     {
         var builder = new StringBuilder();
-        for (var index = 0; index < template.Children.Length; index++)
-            AppendTemplateNode(builder, template.Children[index], 0, bindingSiteMap, "root/child[" + index + "]");
+        AppendTemplateFragment(builder, template, 0, bindingSiteMap, "root");
         return NormalizeLineEndings(builder.ToString());
+    }
+
+    private static void AppendTemplateFragment(
+        StringBuilder builder,
+        RazorVueCanonicalTemplateFragment fragment,
+        int depth,
+        IReadOnlyDictionary<string, string> bindingSiteMap,
+        string pathPrefix,
+        int templateScopeDepth = 0)
+    {
+        var openWrapperCount = 0;
+        var currentTemplateScopeDepth = templateScopeDepth;
+        for (var index = 0; index < fragment.Children.Length; index++)
+        {
+            if (fragment.Children[index] is RazorVueCanonicalLocalDeclarationNode localDeclaration)
+            {
+                var wrapperIndent = new string(' ', (depth + openWrapperCount) * 2);
+                builder.Append(wrapperIndent)
+                    .Append("<template v-for=\"(")
+                    .Append(localDeclaration.LocalName)
+                    .Append(") in [")
+                    .Append(ResolveTemplateExpression(
+                        localDeclaration.InitializerExpressionText,
+                        localDeclaration.TemplateEncodability,
+                        bindingSiteMap,
+                        pathPrefix + "/child[" + index + "]/local",
+                        currentTemplateScopeDepth))
+                    .AppendLine("]\">");
+                openWrapperCount++;
+                currentTemplateScopeDepth++;
+                continue;
+            }
+
+            AppendTemplateNode(
+                builder,
+                fragment.Children[index],
+                depth + openWrapperCount,
+                bindingSiteMap,
+                pathPrefix + "/child[" + index + "]",
+                currentTemplateScopeDepth);
+        }
+
+        for (var index = openWrapperCount - 1; index >= 0; index--)
+        {
+            var wrapperIndent = new string(' ', (depth + index) * 2);
+            builder.Append(wrapperIndent).AppendLine("</template>");
+        }
     }
 
     private static void AppendTemplateNode(
@@ -248,8 +294,7 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
                 }
 
                 builder.AppendLine(">");
-                for (var index = 0; index < element.Children.Children.Length; index++)
-                    AppendTemplateNode(builder, element.Children.Children[index], depth + 1, bindingSiteMap, path + "/child[" + index + "]", templateScopeDepth);
+                AppendTemplateFragment(builder, element.Children, depth + 1, bindingSiteMap, path, templateScopeDepth);
                 builder.Append(indent).Append("</").Append(element.TagName).AppendLine(">");
                 return;
 
@@ -278,8 +323,7 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
                     slotOrdinal++;
                 }
 
-                for (var index = 0; index < component.Children.Children.Length; index++)
-                    AppendTemplateNode(builder, component.Children.Children[index], depth + 1, bindingSiteMap, path + "/child[" + index + "]", templateScopeDepth);
+                AppendTemplateFragment(builder, component.Children, depth + 1, bindingSiteMap, path, templateScopeDepth);
                 builder.Append(indent).Append("</").Append(componentTagName).AppendLine(">");
                 return;
 
@@ -292,6 +336,9 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
                     .Append("{{ ")
                     .Append(ResolveTemplateExpression(interpolation.ExpressionText, interpolation.TemplateEncodability, bindingSiteMap, path, templateScopeDepth))
                     .AppendLine(" }}");
+                return;
+
+            case RazorVueCanonicalLocalDeclarationNode:
                 return;
 
             case RazorVueCanonicalSlotOutletNode slotOutlet:
@@ -310,14 +357,12 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
                     .Append("<template v-if=\"")
                     .Append(EscapeAttributeValue(ResolveTemplateExpression(conditional.ConditionExpressionText, conditional.TemplateEncodability, bindingSiteMap, path + "/if", templateScopeDepth)))
                     .AppendLine("\">");
-                for (var index = 0; index < conditional.WhenTrue.Children.Length; index++)
-                    AppendTemplateNode(builder, conditional.WhenTrue.Children[index], depth + 1, bindingSiteMap, path + "/whenTrue/child[" + index + "]", templateScopeDepth);
+                AppendTemplateFragment(builder, conditional.WhenTrue, depth + 1, bindingSiteMap, path + "/whenTrue", templateScopeDepth);
                 builder.Append(indent).AppendLine("</template>");
                 if (!conditional.WhenFalse.Children.IsDefaultOrEmpty)
                 {
                     builder.Append(indent).AppendLine("<template v-else>");
-                    for (var index = 0; index < conditional.WhenFalse.Children.Length; index++)
-                        AppendTemplateNode(builder, conditional.WhenFalse.Children[index], depth + 1, bindingSiteMap, path + "/whenFalse/child[" + index + "]", templateScopeDepth);
+                    AppendTemplateFragment(builder, conditional.WhenFalse, depth + 1, bindingSiteMap, path + "/whenFalse", templateScopeDepth);
                     builder.Append(indent).AppendLine("</template>");
                 }
 
@@ -330,8 +375,7 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
                     .Append(" in ")
                     .Append(EscapeAttributeValue(ResolveTemplateExpression(loop.SourceExpressionText, loop.TemplateEncodability, bindingSiteMap, path + "/forEach", templateScopeDepth)))
                     .AppendLine("\">");
-                for (var index = 0; index < loop.Body.Children.Length; index++)
-                    AppendTemplateNode(builder, loop.Body.Children[index], depth + 1, bindingSiteMap, path + "/body/child[" + index + "]", templateScopeDepth + 1);
+                AppendTemplateFragment(builder, loop.Body, depth + 1, bindingSiteMap, path + "/body", templateScopeDepth + 1);
                 builder.Append(indent).AppendLine("</template>");
                 return;
 
@@ -342,8 +386,7 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
                     .Append(" in ")
                     .Append(EscapeAttributeValue(BuildForIterableExpression(loop, bindingSiteMap, path, templateScopeDepth)))
                     .AppendLine("\">");
-                for (var index = 0; index < loop.Body.Children.Length; index++)
-                    AppendTemplateNode(builder, loop.Body.Children[index], depth + 1, bindingSiteMap, path + "/body/child[" + index + "]", templateScopeDepth + 1);
+                AppendTemplateFragment(builder, loop.Body, depth + 1, bindingSiteMap, path + "/body", templateScopeDepth + 1);
                 builder.Append(indent).AppendLine("</template>");
                 return;
 
@@ -368,16 +411,13 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         builder.AppendLine(">");
         if (!slot.Children.Children.IsDefaultOrEmpty)
         {
-            for (var index = 0; index < slot.Children.Children.Length; index++)
-            {
-                AppendTemplateNode(
-                    builder,
-                    slot.Children.Children[index],
-                    depth + 1,
-                    bindingSiteMap,
-                    path + "/child[" + index + "]",
-                    string.IsNullOrWhiteSpace(slot.ParameterName) ? templateScopeDepth : templateScopeDepth + 1);
-            }
+            AppendTemplateFragment(
+                builder,
+                slot.Children,
+                depth + 1,
+                bindingSiteMap,
+                path,
+                string.IsNullOrWhiteSpace(slot.ParameterName) ? templateScopeDepth : templateScopeDepth + 1);
         }
         else if (slot.ValueKind == RazorVueCanonicalSlotValueKind.ForwardedSlot)
         {
@@ -467,16 +507,13 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
                     .AppendLine("\">");
             }
 
-            for (var index = 0; index < slot.Children.Children.Length; index++)
-            {
-                AppendTemplateNode(
-                    builder,
-                    slot.Children.Children[index],
-                    wrapParameterizedDefault ? depth + 1 : depth,
-                    bindingSiteMap,
-                    path + "/child[" + index + "]",
-                    wrapParameterizedDefault ? templateScopeDepth + 1 : templateScopeDepth);
-            }
+            AppendTemplateFragment(
+                builder,
+                slot.Children,
+                wrapParameterizedDefault ? depth + 1 : depth,
+                bindingSiteMap,
+                path,
+                wrapParameterizedDefault ? templateScopeDepth + 1 : templateScopeDepth);
 
             if (wrapParameterizedDefault)
                 builder.Append(indent).AppendLine("</template>");
@@ -886,6 +923,13 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
                     .Append(" = computed(() => ")
                     .Append(binding.ExpressionText)
                     .AppendLine(");");
+                return;
+            case RazorVueSfcSetupBindingKind.LocalAlias:
+                builder.Append("const ")
+                    .Append(binding.Name)
+                    .Append(" = ")
+                    .Append(binding.ExpressionText)
+                    .AppendLine(";");
                 return;
             default:
                 builder.Append("const ")
