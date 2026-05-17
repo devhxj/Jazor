@@ -18,17 +18,8 @@ public partial class VbenHeaderBar : VbenComponentBase, IVueContainerComponent
     [Parameter]
     public RenderFragment? UserRegion { get; set; }
 
-    private bool HasMainRegion
-        => Logo is not null || HasTitles;
-
     private bool HasTitles
         => !string.IsNullOrWhiteSpace(Title) || !string.IsNullOrWhiteSpace(Subtitle);
-
-    private bool HasRightRegion
-        => Actions is not null || UserRegion is not null;
-
-    private bool HasContent
-        => HasMainRegion || HasRightRegion;
 
     private VueClassValue RootCssClass
         => BuildCssClass("vben-header");

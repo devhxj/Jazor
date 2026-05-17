@@ -1,14 +1,22 @@
 @inherits VbenComponentBase
+@{
+    var logo = VbenRenderFragmentHelper.Normalize(Logo);
+    var actions = VbenRenderFragmentHelper.Normalize(Actions);
+    var userRegion = VbenRenderFragmentHelper.Normalize(UserRegion);
+    var hasMainRegion = logo is not null || HasTitles;
+    var hasRightRegion = actions is not null || userRegion is not null;
+    var hasContent = hasMainRegion || hasRightRegion;
+}
 
-@if (HasContent)
+@if (hasContent)
 {
     <div class="@RootCssClass" style="@CssStyle" @attributes="AdditionalAttributes">
-        @if (HasMainRegion)
+        @if (hasMainRegion)
         {
             <div class='@("vben-header__main")'>
-                @if (Logo is not null)
+                @if (logo is not null)
                 {
-                    <div class='@("vben-header__logo")'>@Logo</div>
+                    <div class='@("vben-header__logo")'>@logo</div>
                 }
 
                 @if (HasTitles)
@@ -27,17 +35,17 @@
             </div>
         }
 
-        @if (HasRightRegion)
+        @if (hasRightRegion)
         {
             <div class='@("vben-header__actions")'>
-                @if (Actions is not null)
+                @if (actions is not null)
                 {
-                    <div class='@("vben-header__toolbar")'>@Actions</div>
+                    <div class='@("vben-header__toolbar")'>@actions</div>
                 }
 
-                @if (UserRegion is not null)
+                @if (userRegion is not null)
                 {
-                    <div class='@("vben-header__user-region")'>@UserRegion</div>
+                    <div class='@("vben-header__user-region")'>@userRegion</div>
                 }
             </div>
         }

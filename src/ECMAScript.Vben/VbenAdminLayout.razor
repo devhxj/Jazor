@@ -1,12 +1,29 @@
 @inherits VbenContentComponentBase
+@{
+    var logo = VbenRenderFragmentHelper.Normalize(Logo);
+    var header = VbenRenderFragmentHelper.Normalize(Header);
+    var sidebar = VbenRenderFragmentHelper.Normalize(Sidebar);
+    var headerActions = VbenRenderFragmentHelper.Normalize(HeaderActions);
+    var userRegion = VbenRenderFragmentHelper.Normalize(UserRegion);
+    var hasDefaultSidebarContent = logo is not null || VbenNavItemRenderHelper.HasRenderableItems(NavItems);
+    var hasSidebarRegion = IsSidebarLayout && (sidebar is not null || hasDefaultSidebarContent);
+    var defaultHeaderLogo = IsSidebarLayout ? null : logo;
+    var hasDefaultHeaderContent =
+        !string.IsNullOrWhiteSpace(Title)
+        || !string.IsNullOrWhiteSpace(Subtitle)
+        || defaultHeaderLogo is not null
+        || headerActions is not null
+        || userRegion is not null;
+    var hasHeaderRegion = header is not null || hasDefaultHeaderContent;
+}
 
 <div class="@RootCssClass" style="@CssStyle" @attributes="AdditionalAttributes">
-    @if (HasSidebarRegion)
+    @if (hasSidebarRegion)
     {
         <aside class='@("vben-shell__sidebar")'>
-            @if (Sidebar is not null)
+            @if (sidebar is not null)
             {
-                @Sidebar
+                @sidebar
             }
             else
             {
@@ -22,20 +39,20 @@
     }
 
     <div class='@("vben-shell__main")'>
-        @if (HasHeaderRegion)
+        @if (hasHeaderRegion)
         {
             <header class='@("vben-shell__header")'>
-                @if (Header is not null)
+                @if (header is not null)
                 {
-                    @Header
+                    @header
                 }
                 else
                 {
                     <VbenHeaderBar Title="@Title"
                                    Subtitle="@Subtitle"
-                                   Logo="@DefaultHeaderLogo"
-                                   Actions="@HeaderActions"
-                                   UserRegion="@UserRegion" />
+                                   Logo="@defaultHeaderLogo"
+                                   Actions="@headerActions"
+                                   UserRegion="@userRegion" />
                 }
             </header>
         }

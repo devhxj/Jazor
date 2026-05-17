@@ -87,4 +87,43 @@ public sealed class VbenNativeHeaderBarTests
         Assert.IsTrue(frames.ContainsElementWithClassToken("div", "vben-header__titles"));
         Assert.IsTrue(frames.ContainsElementWithClassToken("span", "brand-logo"));
     }
+
+    [TestMethod]
+    public void Vben_HeaderBar_EmptyLogoActionsAndUserRegion_DoNotRenderEmptyWrappers()
+    {
+        var component = new VbenHeaderBar();
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenHeaderBar.Logo), EmptyFragment);
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenHeaderBar.Actions), EmptyFragment);
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenHeaderBar.UserRegion), EmptyFragment);
+
+        var frames = VbenNativeRenderTreeTestHelper.RenderComponent(component);
+
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-header"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-header__main"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-header__logo"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-header__actions"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-header__toolbar"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-header__user-region"));
+    }
+
+    [TestMethod]
+    public void Vben_HeaderBar_WhitespaceOnlyLogoActionsAndUserRegion_DoNotRenderEmptyWrappers()
+    {
+        var component = new VbenHeaderBar();
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenHeaderBar.Logo), WhitespaceFragment);
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenHeaderBar.Actions), WhitespaceFragment);
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenHeaderBar.UserRegion), WhitespaceFragment);
+
+        var frames = VbenNativeRenderTreeTestHelper.RenderComponent(component);
+
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-header"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-header__main"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-header__logo"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-header__actions"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-header__toolbar"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-header__user-region"));
+    }
+
+    private static readonly RenderFragment EmptyFragment = _ => { };
+    private static readonly RenderFragment WhitespaceFragment = builder => builder.AddContent(0, "   ");
 }

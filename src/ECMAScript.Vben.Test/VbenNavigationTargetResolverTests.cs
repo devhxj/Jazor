@@ -24,6 +24,24 @@ public sealed class VbenNavigationTargetResolverTests
     }
 
     [TestMethod]
+    public void Vben_NavigationTargetResolver_PathRoute_TrimsPathAndHash()
+    {
+        var resolved = Resolve(new VbenRouteLocation
+        {
+            Path = "  /ops  ",
+            Hash = "  logs  "
+        });
+
+        Assert.IsNull(GetHref(resolved));
+
+        var route = GetRoute(resolved);
+        Assert.IsNotNull(route);
+        Assert.AreEqual("/ops", route.Path);
+        Assert.IsNull(route.Name);
+        Assert.AreEqual("#logs", route.Hash);
+    }
+
+    [TestMethod]
     public void Vben_NavigationTargetResolver_PathAndNameRoute_PrefersPathVariant()
     {
         var resolved = Resolve(new VbenRouteLocation
@@ -31,6 +49,25 @@ public sealed class VbenNavigationTargetResolverTests
             Path = "/ops",
             Name = "ops.dashboard",
             Hash = "summary"
+        });
+
+        Assert.IsNull(GetHref(resolved));
+
+        var route = GetRoute(resolved);
+        Assert.IsNotNull(route);
+        Assert.AreEqual("/ops", route.Path);
+        Assert.IsNull(route.Name);
+        Assert.AreEqual("#summary", route.Hash);
+    }
+
+    [TestMethod]
+    public void Vben_NavigationTargetResolver_PathAndNameRoute_TrimsValuesAndStillPrefersPathVariant()
+    {
+        var resolved = Resolve(new VbenRouteLocation
+        {
+            Path = "  /ops  ",
+            Name = "  ops.dashboard  ",
+            Hash = "  summary  "
         });
 
         Assert.IsNull(GetHref(resolved));
@@ -61,11 +98,46 @@ public sealed class VbenNavigationTargetResolverTests
     }
 
     [TestMethod]
+    public void Vben_NavigationTargetResolver_NameRoute_TrimsNameAndHash()
+    {
+        var resolved = Resolve(new VbenRouteLocation
+        {
+            Name = "  reports.daily  ",
+            Hash = "  summary  "
+        });
+
+        Assert.IsNull(GetHref(resolved));
+
+        var route = GetRoute(resolved);
+        Assert.IsNotNull(route);
+        Assert.IsNull(route.Path);
+        Assert.AreEqual("reports.daily", route.Name);
+        Assert.AreEqual("#summary", route.Hash);
+    }
+
+    [TestMethod]
     public void Vben_NavigationTargetResolver_HashOnlyRoute_RemainsNavigableRelativeTarget()
     {
         var resolved = Resolve(new VbenRouteLocation
         {
             Hash = "details"
+        });
+
+        Assert.IsNull(GetHref(resolved));
+
+        var route = GetRoute(resolved);
+        Assert.IsNotNull(route);
+        Assert.IsNull(route.Path);
+        Assert.IsNull(route.Name);
+        Assert.AreEqual("#details", route.Hash);
+    }
+
+    [TestMethod]
+    public void Vben_NavigationTargetResolver_HashOnlyRoute_TrimsHash()
+    {
+        var resolved = Resolve(new VbenRouteLocation
+        {
+            Hash = "  details  "
         });
 
         Assert.IsNull(GetHref(resolved));
@@ -85,6 +157,16 @@ public sealed class VbenNavigationTargetResolverTests
         Assert.IsNull(GetHref(resolved));
         Assert.IsNull(GetRoute(resolved));
         Assert.IsFalse(GetIsNavigable(resolved));
+    }
+
+    [TestMethod]
+    public void Vben_NavigationTargetResolver_Href_IsTrimmed()
+    {
+        var resolved = Resolve((VbenNavTarget)"  /dashboard  ");
+
+        Assert.AreEqual("/dashboard", GetHref(resolved));
+        Assert.IsNull(GetRoute(resolved));
+        Assert.IsTrue(GetIsNavigable(resolved));
     }
 
     private static object Resolve(VbenRouteLocation route)

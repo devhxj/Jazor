@@ -18,11 +18,12 @@ Authoring notes:
 - Shared metadata such as prop/slot overrides belongs to the general Vue authoring layer via `VueProp` / `VueSlot`
 - The shared `Logo` slot follows layout semantics in the native shell: `Top` mode feeds the default header, while `Sidebar` / `Mixed` modes feed the default sidebar and do not duplicate the same branding fragment into the default header
 - `VbenNavTarget` is intentionally split by semantics: `string` targets stay on raw anchor `href`, while `VbenRouteLocation` targets lower to native `<router-link :to="...">` navigation
-- For `VbenRouteLocation`, the native path uses `Path` first, then `Name`, and always normalizes `Hash` to a leading `#`; whitespace-only targets are ignored rather than emitted as navigable links
+- For `VbenRouteLocation`, the native path uses `Path` first, then `Name`, and always normalizes `Hash` to a leading `#`; non-empty `href/path/name/hash` values are trimmed before emission, and whitespace-only targets are ignored rather than emitted as navigable links
 - Disabled sidebar branches stay non-expandable even when callers pass their keys through explicit `ExpandedKeys`; native shell state cannot force illegal expanded DOM back onto disabled navigation
 - Sidebar expanded-state callbacks are normalized against the current navigation tree, so disabled branches and stale unknown keys are not echoed back through `ExpandedKeysChanged`
 - The current native sidebar treats only non-blank `VbenNavItem.Title` values as renderable menu content, so whitespace-only nav items do not produce empty links, buttons, or sidebar regions
 - `VbenPageContainer` ignores breadcrumb items with blank `Title` and action items with blank `Text`, so dirty data does not create empty header regions, empty links, or empty action buttons
+- Native shell slots are normalized by effective content, not just non-null delegates: empty, whitespace-only, or comment-only `Logo` / `Header` / `Sidebar` / `Actions` / `UserRegion` / `Extra` fragments are treated as absent, so they do not create empty wrappers
 
 Verified baseline:
 
@@ -31,10 +32,12 @@ Verified baseline:
 - Injected runtime shape lowering is regression-covered at both Vue SFC and pipeline artifact levels for all four public Vben shell components
 - Multi-shell composition is regression-covered at both Vue SFC and pipeline artifact levels, including cross-container import aggregation, style/plugin dependency aggregation, and nested slot/prop/model mapping stability
 - Native route-target semantics are regression-covered at three layers: render-tree behavior for `VbenSidebarMenu` / `VbenPageContainer`, resolver normalization for `Path` / `Name` / `Hash`, and direct `router-link` lowering probes at Vue SFC and pipeline artifact levels
+- Resolver normalization also regression-covers leading/trailing whitespace on non-empty `href/path/name/hash` values, so native shell output does not leak padded DOM `href` values or padded route-object fields
 - Disabled sidebar branch behavior is regression-covered for both derived navigability and explicit-expanded-state suppression
 - Sidebar expanded-state writeback is regression-covered for invalid explicit keys and current-tree normalization
 - Sidebar/admin-layout empty-content semantics are regression-covered for null nav items and whitespace-only nav-item titles
 - Page-container header semantics are regression-covered for null entries, whitespace-only breadcrumb/action entries, and navigable/disabled target branches
+- Empty-shell slot normalization is regression-covered for zero-frame, whitespace-only, and comment-only `RenderFragment` inputs, and visible slot content is captured once then replayed so presence checks do not double-execute user fragments
 - Container compatibility failures are regression-covered for missing props, prop type mismatch, emit payload mismatch, default-slot mismatch, `CaptureUnmatchedValues` mismatch, duplicate registrations, and mismatched `IVueContainerImplementation<TContainer>` contracts
 - A real sample now exists under `samples/ECMAScript.Vben.ElementPlusInject/`, proving Razor-authored Vben shell composition, sample-local `Element Plus` container injection, official `razorvue-consumer-entry` bridge generation, and Deno-only SSR/browser/bundle smoke verification
 

@@ -40,6 +40,32 @@ public sealed class VbenNativeSidebarMenuTests
     }
 
     [TestMethod]
+    public void Vben_SidebarMenu_EmptyLogo_DoesNotRenderEmptyRootOrLogoWrapper()
+    {
+        var component = new VbenSidebarMenu();
+        SetParameter(component, nameof(VbenSidebarMenu.Logo), EmptyFragment);
+
+        var frames = RenderSidebarMenu(component);
+
+        Assert.IsFalse(frames.ContainsElement("nav"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-sidebar__logo"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("ul", "vben-sidebar__list"));
+    }
+
+    [TestMethod]
+    public void Vben_SidebarMenu_WhitespaceOnlyLogo_DoesNotRenderEmptyRootOrLogoWrapper()
+    {
+        var component = new VbenSidebarMenu();
+        SetParameter(component, nameof(VbenSidebarMenu.Logo), WhitespaceFragment);
+
+        var frames = RenderSidebarMenu(component);
+
+        Assert.IsFalse(frames.ContainsElement("nav"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-sidebar__logo"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("ul", "vben-sidebar__list"));
+    }
+
+    [TestMethod]
     public void Vben_SidebarMenu_NullOnlyItems_DoNotRenderEmptyRootOrList()
     {
         var component = new VbenSidebarMenu();
@@ -556,6 +582,9 @@ public sealed class VbenNativeSidebarMenuTests
         string attributeName,
         string? expectedValue = null)
         => frames.ContainsAttribute(attributeName, expectedValue);
+
+    private static readonly RenderFragment EmptyFragment = _ => { };
+    private static readonly RenderFragment WhitespaceFragment = builder => builder.AddContent(0, "   ");
 
     private sealed class EventRecorder<TValue>
     {

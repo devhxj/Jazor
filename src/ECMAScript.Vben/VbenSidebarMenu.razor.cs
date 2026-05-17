@@ -27,9 +27,6 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
     private bool HasItems
         => VbenNavItemRenderHelper.HasRenderableItems(Items);
 
-    private bool HasContent
-        => Logo is not null || HasItems;
-
     private VueClassValue RootCssClass
         => Collapsed
             ? BuildCssClass("vben-sidebar", "vben-sidebar--collapsed")

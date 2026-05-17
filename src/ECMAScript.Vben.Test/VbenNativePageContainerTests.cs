@@ -41,6 +41,34 @@ public sealed class VbenNativePageContainerTests
     }
 
     [TestMethod]
+    public void Vben_PageContainer_EmptyExtra_DoesNotRenderEmptyHeaderOrActionsRegion()
+    {
+        var component = new VbenPageContainer();
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenPageContainer.Extra), EmptyFragment);
+
+        var frames = RenderPageContainer(component);
+
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-page__header"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-page__titles"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-page__actions"));
+        Assert.IsTrue(frames.ContainsElementWithClassToken("div", "vben-page__body"));
+    }
+
+    [TestMethod]
+    public void Vben_PageContainer_WhitespaceOnlyExtra_DoesNotRenderEmptyHeaderOrActionsRegion()
+    {
+        var component = new VbenPageContainer();
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenPageContainer.Extra), WhitespaceFragment);
+
+        var frames = RenderPageContainer(component);
+
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-page__header"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-page__titles"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-page__actions"));
+        Assert.IsTrue(frames.ContainsElementWithClassToken("div", "vben-page__body"));
+    }
+
+    [TestMethod]
     public void Vben_PageContainer_BreadcrumbHref_RendersNavigableAnchor()
     {
         var breadcrumb = new VbenBreadcrumbItem
@@ -305,4 +333,7 @@ public sealed class VbenNativePageContainerTests
             "RenderAction",
             action);
     }
+
+    private static readonly RenderFragment EmptyFragment = _ => { };
+    private static readonly RenderFragment WhitespaceFragment = builder => builder.AddContent(0, "   ");
 }

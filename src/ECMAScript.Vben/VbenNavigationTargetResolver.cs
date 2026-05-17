@@ -18,7 +18,8 @@ internal static class VbenNavigationTargetResolver
 {
     public static VbenResolvedNavigationTarget Resolve(VbenNavTarget? target)
     {
-        if (target?.AsHref is { } href && !string.IsNullOrWhiteSpace(href))
+        var href = NormalizeOptional(target?.AsHref);
+        if (href is not null)
         {
             return new(href, null);
         }
@@ -77,10 +78,13 @@ internal static class VbenNavigationTargetResolver
     }
 
     private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value;
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string? NormalizeHash(string? hash)
-        => string.IsNullOrWhiteSpace(hash) ? null : EnsureHashPrefix(hash);
+    {
+        var normalizedHash = NormalizeOptional(hash);
+        return normalizedHash is null ? null : EnsureHashPrefix(normalizedHash);
+    }
 
     private static string EnsureHashPrefix(string hash)
         => hash.StartsWith("#", StringComparison.Ordinal) ? hash : $"#{hash}";

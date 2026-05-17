@@ -70,9 +70,10 @@
 - 带 `Target` 的禁用叶子节点不再保留真实 `href`，避免“逻辑上 disabled、浏览器上仍可跳转”的错误语义；
 - `VbenRouteLocation` 在原生菜单中已收口到统一导航目标解析，不再只支持纯字符串 `href`；
 - 原生菜单现在明确区分两类导航目标：字符串 `Target` 继续输出原始 `href`，`VbenRouteLocation` 则统一输出原生 `router-link` / `to`；
-- `VbenRouteLocation.Path/Name/Hash` 的原生解析规则已经稳定：`Path` 优先于 `Name`，`Hash` 会统一补 `#` 前缀，空白 `href`/route 字段不会再被当作可导航目标；
+- `VbenRouteLocation.Path/Name/Hash` 的原生解析规则已经稳定：`Path` 优先于 `Name`，`Hash` 会统一补 `#` 前缀，非空 `href/path/name/hash` 会先做首尾空白归一化，空白 `href`/route 字段不会再被当作可导航目标；
 - 当 `Logo` 与有效菜单项都不存在时，原生 `SidebarMenu` 不再输出空的根 `nav` / `ul` wrapper；
 - 当仅提供 `Logo` 时，原生 `SidebarMenu` 会保留 logo region，但不会附带空的菜单列表；
+- 当 `Logo` slot 实际只产出空内容、纯空白文本或仅 HTML 注释 markup 时，原生 `SidebarMenu` 也会把它视为无效 branding 内容，不再制造空的根 `nav` 或 logo wrapper；
 - `Items` 与 `Children` 现在会在渲染前统一过滤 `null` 项，默认 native 主链不再因脏菜单数组输入而抛出 `NullReferenceException`。
 - 当前 native 菜单只把标题非空白的 `VbenNavItem` 视为有效可渲染项；空白标题菜单项会在渲染前被忽略，不再制造空链接、空按钮或空侧栏结构。
 
@@ -87,6 +88,7 @@
 - 仅包含空白 `Title` 的 breadcrumb 项和仅包含空白 `Text` 的 action 项现在会在渲染前被忽略，不再把脏输入误判为有效 page header 语义，也不会再生成空链接、空按钮或空 header 区域；
 - 当页面没有任何 header 语义内容时，原生 `PageContainer` 不再输出空的 `vben-page__header` / `vben-page__titles` wrapper；
 - 当只有 `Extra` 区域时，原生 `PageContainer` 会保留 actions region，但不会附带空的 titles 容器；
+- 当 `Extra` slot 实际只产出空内容、纯空白文本或仅 HTML 注释 markup 时，原生 `PageContainer` 会把它视为无效 header 内容，不再额外挂出空的 actions/header wrapper；
 - `BreadcrumbItems` / `Actions` 现在会在渲染前过滤 `null` 项，默认 native 主链不再因脏数组输入而抛出 `NullReferenceException`。
 
 当前对 `VbenAdminLayout` 的原生模式语义也已收口：
@@ -99,6 +101,7 @@
 - 共享 `Logo` 的默认布局语义已经明确：`Top` 模式把它视为 header branding，`Sidebar/Mixed` 模式把它视为 sidebar branding，不再把同一个 fragment 同时重复渲染到默认 sidebar 与默认 header；
 - 当没有任何 header 内容时，原生 `AdminLayout` 不再输出空的 `vben-shell__header` 区域，也不会默认挂出空 `VbenHeaderBar`；
 - 当显式提供 `Header` 或默认 header props 真正存在时，`AdminLayout` 才会输出 header region；
+- 当 `Header` / `Sidebar` / `HeaderActions` / `UserRegion` slot 实际只产出空内容、纯空白文本或仅 HTML 注释 markup 时，原生 `AdminLayout` 不会再把它们误判为“有内容”，也不会挂出空的 shell header / sidebar 区域；
 - 原生 `AdminLayout` 的模式分支现在与现有参考实现保持一致，不再出现同一 public contract 在 native / reference implementation 之间的结构漂移。
 
 当前对 `VbenHeaderBar` 的原生 DOM 语义也已收口：
@@ -107,6 +110,7 @@
 - 当 `Actions` / `UserRegion` 都为空时，不再输出空的右侧 actions 容器；
 - 当 `Logo` / `Title` / `Subtitle` 都为空时，不再输出空的 `vben-header__main` 左侧主区域；
 - 当整个 `HeaderBar` 没有任何可见内容时，原生默认实现不再输出空的根 wrapper；
+- 当 `Logo` / `Actions` / `UserRegion` slot 实际只产出空内容、纯空白文本或仅 HTML 注释 markup 时，也会被视为“无有效内容”，不会再泄漏空的 logo / toolbar / user-region wrapper；
 - `Actions` 与 `UserRegion` 现在有独立的原生语义 wrapper，后续样式、对齐与壳层组合可以稳定落在明确 DOM 边界上；
 - 原生 `HeaderBar` 不再把所有右侧内容直接平铺到同一个裸容器里，减少了样式耦合和空结构噪音。
 
@@ -204,6 +208,8 @@
 - `VbenNativeSidebarMenuTests` 校验：
   - 无 `Logo` / `Items` 时不会再输出空的 sidebar 根与列表容器；
   - 仅 `Logo` 场景会保留 logo region，但不会附带空列表；
+  - `Logo` slot 仅输出空内容或纯空白文本时，也不会再制造空的 sidebar 根或 logo wrapper；
+  - `Logo` slot 仅输出 HTML 注释 markup 时，也不会再被误判为有效 branding 内容；
   - `Items` / `Children` 中的 `null` 项会被忽略，不会导致默认 native 渲染抛异常；
   - `ExpandedKeys` 显式状态与 `SelectedKey` 祖先展开回退的优先级；
   - 显式空 `ExpandedKeys` 覆盖默认回退；
@@ -217,6 +223,8 @@
 - `VbenNativePageContainerTests` 校验：
   - 无 header 内容时不会再输出空的 `header` / `titles` 容器；
   - 仅 `Extra` 内容时不会再附带空的 titles 容器；
+  - `Extra` slot 仅输出空内容或纯空白文本时，也不会再制造空的 `header` / `actions` 容器；
+  - `Extra` slot 仅输出 HTML 注释 markup 时，也不会再被误判为有效 header 内容；
   - breadcrumb `href` 目标会输出可导航锚点；
   - breadcrumb `route path/name/hash` 目标会输出原生 `router-link` / `to`；
   - 禁用 breadcrumb 不会再输出可导航锚点；
@@ -231,6 +239,7 @@
   - `Path + Name` 并存时原生解析稳定采用 `Path` 分支；
   - `Name` / `Hash` 相对目标会保留为可导航 `to` 对象；
   - 仅 `Hash` 的相对目标仍保持可导航；
+  - 非空 `href/path/name/hash` 会在原生解析阶段统一裁剪首尾空白，避免脏导航目标把空格直接落进 DOM / route object；
   - 空白字符串 `href` 不会再被误判为可导航目标；
 - `VbenNativeArtifactTests` 当前额外覆盖：
   - 原生 `router-link` 元素携带 route-object 参数时，Vue SFC artifact 会稳定保留 `:to="props.target"`；
@@ -245,11 +254,15 @@
   - `Mode.Sidebar` 在仅存在共享 `Logo` 时不会再重复渲染默认 header region；
   - `Mode.Mixed` 会继续保留侧栏区域并承接自定义 `Sidebar` 内容；
   - 显式 `Header` 与默认 header props 场景下仍会正确输出 header region；
+  - `Header` / `Sidebar` / `HeaderActions` / `UserRegion` 仅输出空内容或纯空白文本时，不会再制造空的 shell header / sidebar 区域；
+  - `Header` / `Sidebar` / `HeaderActions` / `UserRegion` 仅输出 HTML 注释 markup 时，也不会再制造空的 shell header / sidebar 区域；
 - `VbenNativeHeaderBarTests` 校验：
   - 整个组件无内容时不会再输出空根 wrapper；
   - 无 logo/titles 时不会再输出空的 `main` 区域；
   - 无标题时不会再输出空的 titles 容器；
   - 无 actions / user-region 时不会再输出空的右侧容器；
+  - `Logo` / `Actions` / `UserRegion` 仅输出空内容或纯空白文本时，也不会再制造空的 main/logo/actions/toolbar/user-region wrapper；
+  - `VbenRenderFragmentHelper` 会把 comment-only markup 归一化为无效内容，并保证可见 slot 内容只捕获一次、回放一次，不会为判空重复执行原始 fragment；
   - `Actions` 与 `UserRegion` 会落到独立语义 wrapper 中；
   - 仅右侧区域场景不会再附带空的 `main` wrapper；
 - `VbenNativeArtifactTests` 校验：
@@ -285,7 +298,7 @@
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeSidebarMenuTests|FullyQualifiedName~VbenNavigationTargetResolverTests|FullyQualifiedName~VbenNativeAdminLayoutTests' -v minimal`：已通过（29/29）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeSidebarMenuTests|FullyQualifiedName~VbenNativeAdminLayoutTests|FullyQualifiedName~VbenNativePageContainerTests|FullyQualifiedName~VbenNavigationTargetResolverTests' -v minimal`：已通过（43/43）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativePageContainerTests|FullyQualifiedName~VbenNavigationTargetResolverTests|FullyQualifiedName~VbenNativeArtifactTests' -v minimal`：已通过（17/17）；
-- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj -v minimal`：已通过（96/96），且当前输出未再出现 `BL0005` / `BL0006`；
+- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj -v minimal`：已通过（113/113）；测试层当前输出未再出现 `BL0005` / `BL0006`；
 - `samples/ECMAScript.Vben.ElementPlusInject/verify-smoke.cs`：已纳入当前阶段的真实 sample 验证入口，目标覆盖本地 package pack、host rebuild、host requirements 断言、Deno SSR smoke、Deno bundle smoke、browser build、browser smoke；
 - `RazorVue` 聚焦回归已覆盖 Vben 相关 descriptor / authoring contract 收口，不再依赖旧兼容别名。
 

@@ -194,4 +194,59 @@ public sealed class VbenNativeAdminLayoutTests
         Assert.IsFalse(frames.ContainsComponent<VbenHeaderBar>());
         Assert.IsTrue(frames.ContainsElementWithClassToken("section", "custom-header"));
     }
+
+    [TestMethod]
+    public void Vben_AdminLayout_EmptyHeaderAndSidebarFragments_DoNotRenderEmptyRegions()
+    {
+        var component = new VbenAdminLayout();
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenAdminLayout.Mode), VbenLayoutMode.Sidebar);
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenAdminLayout.Header), EmptyFragment);
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenAdminLayout.Sidebar), EmptyFragment);
+
+        var frames = VbenNativeRenderTreeTestHelper.RenderComponent(component);
+
+        Assert.IsFalse(frames.ContainsElementWithClassToken("aside", "vben-shell__sidebar"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("header", "vben-shell__header"));
+        Assert.IsFalse(frames.ContainsComponent<VbenSidebarMenu>());
+        Assert.IsFalse(frames.ContainsComponent<VbenHeaderBar>());
+        Assert.IsTrue(frames.ContainsElementWithClassToken("div", "vben-shell__main"));
+        Assert.IsTrue(frames.ContainsElementWithClassToken("main", "vben-shell__content"));
+    }
+
+    [TestMethod]
+    public void Vben_AdminLayout_WhitespaceOnlyHeaderAndSidebarFragments_DoNotRenderEmptyRegions()
+    {
+        var component = new VbenAdminLayout();
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenAdminLayout.Mode), VbenLayoutMode.Sidebar);
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenAdminLayout.Header), WhitespaceFragment);
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenAdminLayout.Sidebar), WhitespaceFragment);
+
+        var frames = VbenNativeRenderTreeTestHelper.RenderComponent(component);
+
+        Assert.IsFalse(frames.ContainsElementWithClassToken("aside", "vben-shell__sidebar"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("header", "vben-shell__header"));
+        Assert.IsFalse(frames.ContainsComponent<VbenSidebarMenu>());
+        Assert.IsFalse(frames.ContainsComponent<VbenHeaderBar>());
+        Assert.IsTrue(frames.ContainsElementWithClassToken("div", "vben-shell__main"));
+        Assert.IsTrue(frames.ContainsElementWithClassToken("main", "vben-shell__content"));
+    }
+
+    [TestMethod]
+    public void Vben_AdminLayout_TopMode_EmptyHeaderActionsAndUserRegion_DoNotRenderDefaultHeaderRegion()
+    {
+        var component = new VbenAdminLayout();
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenAdminLayout.Mode), VbenLayoutMode.Top);
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenAdminLayout.HeaderActions), EmptyFragment);
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenAdminLayout.UserRegion), EmptyFragment);
+
+        var frames = VbenNativeRenderTreeTestHelper.RenderComponent(component);
+
+        Assert.IsFalse(frames.ContainsElementWithClassToken("header", "vben-shell__header"));
+        Assert.IsFalse(frames.ContainsComponent<VbenHeaderBar>());
+        Assert.IsTrue(frames.ContainsElementWithClassToken("div", "vben-shell__main"));
+        Assert.IsTrue(frames.ContainsElementWithClassToken("main", "vben-shell__content"));
+    }
+
+    private static readonly RenderFragment EmptyFragment = _ => { };
+    private static readonly RenderFragment WhitespaceFragment = builder => builder.AddContent(0, "   ");
 }

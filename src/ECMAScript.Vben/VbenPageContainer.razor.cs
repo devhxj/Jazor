@@ -25,15 +25,17 @@ public partial class VbenPageContainer : VbenContentComponentBase, IVueContainer
     {
         var breadcrumbItems = FilterRenderableBreadcrumbItems(BreadcrumbItems);
         var actions = FilterRenderableActions(Actions);
+        var extra = VbenRenderFragmentHelper.Normalize(Extra);
         var hasTitles =
             breadcrumbItems.Length > 0
             || !string.IsNullOrWhiteSpace(Title)
             || !string.IsNullOrWhiteSpace(Subtitle);
-        var hasActions = actions.Length > 0 || Extra is not null;
+        var hasActions = actions.Length > 0 || extra is not null;
 
         return new(
             breadcrumbItems,
             actions,
+            extra,
             hasTitles,
             hasActions);
     }
@@ -249,6 +251,7 @@ public partial class VbenPageContainer : VbenContentComponentBase, IVueContainer
     private readonly record struct PageHeaderRenderState(
         VbenBreadcrumbItem[] BreadcrumbItems,
         VbenPageAction[] Actions,
+        RenderFragment? Extra,
         bool HasTitleRegion,
         bool HasActionsRegion)
     {

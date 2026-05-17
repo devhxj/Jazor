@@ -1,11 +1,15 @@
 @inherits VbenComponentBase
+@{
+    var logo = VbenRenderFragmentHelper.Normalize(Logo);
+    var hasContent = logo is not null || HasItems;
+}
 
-@if (HasContent)
+@if (hasContent)
 {
     <nav class="@RootCssClass" style="@CssStyle" @attributes="AdditionalAttributes">
-        @if (Logo is not null)
+        @if (logo is not null)
         {
-            <div class='@("vben-sidebar__logo")'>@Logo</div>
+            <div class='@("vben-sidebar__logo")'>@logo</div>
         }
 
         @if (HasItems)
