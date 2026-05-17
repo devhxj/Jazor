@@ -88,6 +88,19 @@
   - 不支持声明后再赋值、递增/递减、嵌套匿名函数/委托承载的模板状态写入
 - 对于 `AddContent(sequence, RenderFragment<T>, value)`，当前支持源码可分析的 typed fragment：可以是 inline anonymous-function fragment，也可以是同一可分析作用域内、初始化即为该匿名模板的局部 `RenderFragment<T>` carrier；仍不把任意 delegate 值、属性承载或动态 callable 形态放宽为模板执行。
 - 同一条“源码可分析的局部 `RenderFragment<T>` carrier”规则也适用于组件 typed slot/template 参数，例如 `builder.AddAttribute(1, "ItemTemplate", template);`。
+- 在 current-component member 层，当前还支持一个更窄的 carrier 子集：只读 expression-bodied property、单返回 getter property、或 `readonly` field，只要其 `RenderFragment` / `RenderFragment<T>` 初始化器本身仍是源码可分析匿名模板，就可被 `AddContent` 与组件 typed slot/template 参数消费。
+- 上述 current-component member carrier 也支持有限的“只读 member 转发链”，例如一个只读 property 返回另一个只读 property / `readonly` field carrier；只要最终仍能静态追到源码可分析匿名模板，就会被接受。
+- handwritten `BuildRenderTree` 当前还支持一个更窄的 fragment factory helper 子集：
+  - 当前组件方法或 local function 可以零参数返回 `RenderFragment` / `RenderFragment<T>`，只要其返回值本身仍能静态追到源码可分析匿名模板，就可被 `AddContent` 与组件 typed slot/template 参数消费。
+  - 当前组件方法或 local function 也可以带普通按值参数返回 `RenderFragment` / `RenderFragment<T>`，但这条支持面当前只开放给“直接作为 `AddContent(...)` 的立即调用 factory”，例如 `builder.AddContent(0, CreateTemplate(Title), 42);`
+  - 对于带参数 fragment factory，额外参数会按形参声明顺序绑定到对应实参，并通过嵌套 template scope / 嵌套 IIFE 保留单次求值与局部不泄漏语义；named argument 即使打乱调用书写顺序，也不会把 `title` / `subtitle` 绑定错位到错误实参
+- 当前组件自身的 slot outlet / slot forwarding 源只认 `[Parameter] RenderFragment...` 属性；普通 current-component property / field 即使类型也是 `RenderFragment` / `RenderFragment<T>`，当前也不会被静默当成 slot source。
+- settable property、动态重赋值 field、以及需要任意 getter/dataflow 分析的 member carrier 当前仍明确不支持。
+- current-component member carrier 一旦形成自引用或环引用，会显式失败；RazorVue 不支持递归 current-component `RenderFragment` member carrier。
+- fragment factory helper 目前只支持非 generic、源码可分析返回值。
+  - direct `AddContent(...)` 路径支持零参数和普通按值参数 factory
+  - 组件 typed slot/template 参数路径目前仍只支持零参数 factory；带参数 factory 会显式失败，而不是静默降级为普通 attribute
+  - `ref` / `out` / `in` / `params` / generic / recursive fragment factory 当前仍明确不支持
 - 对于带额外值参数的 render helper，当前只支持：
   - 恰好一个 `RenderTreeBuilder` 参数
   - 其余参数均为普通按值参数

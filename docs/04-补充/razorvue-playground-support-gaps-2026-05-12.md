@@ -146,6 +146,47 @@ class="playground-page playground-page--catalog"
 - Vuetify authoring surface 测试禁止组件参数重新暴露 `Class` / `Style`。
 - Playground 已使用自然 raw `class="playground-category-chip"` 作为真实集成验证点。
 
+## 3.1 handwritten `BuildRenderTree` 的 typed `RenderFragment` carrier 支持已扩到受控 member 子集
+
+### 现象
+
+真实 authoring 中不仅会出现 inline typed fragment，也会出现：
+
+- 局部 `RenderFragment<T>` 变量 carrier
+- 当前组件只读 property / `readonly` field carrier
+- 一个只读 member 再转发到另一个只读 member
+
+如果这条路径不支持，真实组件很容易因为模板抽取方式稍有整理就回退成“RenderFragment shape 不可 canonicalize”。
+
+### 当前落地方式
+
+handwritten `BuildRenderTree` 当前已支持以下 typed `RenderFragment` carrier 进入：
+
+- `builder.AddContent(sequence, RenderFragment<T>, value)`
+- 组件 typed slot/template 参数，例如 `builder.AddAttribute(..., "ItemTemplate", template)`
+
+受支持的 current-component member carrier 形态为：
+
+- expression-bodied 只读 property
+- getter body 只有单个 `return` 的 getter-only property
+- `readonly` field initializer
+- 上述只读 member 之间的有限转发链，只要最终仍能静态追到源码可分析匿名模板
+
+### 当前保护
+
+- slot outlet / slot forwarding source 仍只认 `[Parameter] RenderFragment...` property，不会把普通 current-component member 静默当成 slot source。
+- settable property、非 `readonly` field、动态重赋值、需要任意 getter/dataflow 推理的 member carrier 仍明确不支持。
+- current-component member carrier 一旦出现自引用或环引用，会显式失败；不会递归展开到栈溢出或产生不稳定结果。
+- `src/Jazor.RazorVue.Test/BuildRenderTreeTemplateFrontendTests.cs`
+- `src/Jazor.RazorVue.Test/RazorVueCanonicalSfcSemanticTests.cs`
+- `src/Jazor.RazorVue.Test/RazorVuePipelineTests.cs`
+- `src/Jazor.RazorVue.Test/RazorVueSfcArtifactFactoryTests.cs`
+  已同时覆盖：
+  - 局部 carrier
+  - 当前组件只读 property / `readonly` field carrier
+  - 只读 member 链式转发
+  - 自引用 / 环引用 fail-fast
+
 ## 4. 单项目 library-mode 实际上仍需要 consumer 构建层
 
 ### 现象
@@ -644,9 +685,17 @@ builder.AddContent(0, template, 42);
 - 支持：inline typed fragment
 - 支持：同一可分析作用域内、初始化即为可分析匿名模板的局部 `RenderFragment<T>` carrier
 - 支持：该局部 carrier 既可用于 `AddContent(sequence, RenderFragment<T>, value)`，也可用于组件 typed slot/template 参数
+- 支持：current-component 上的只读 expression-bodied property、单返回 getter property、以及 `readonly` field 形式的 `RenderFragment<T>` carrier，只要其初始化器仍可静态还原到匿名模板
+- 支持：current-component method / local function 的零参数 fragment factory，只要返回值本身仍可静态还原到匿名模板
+- 支持：current-component method / local function 的“普通按值参数 fragment factory”直接用于 `AddContent(...)` 立即调用，例如 `builder.AddContent(0, CreateTemplate(Title), 42);`
+- 支持：带参数 fragment factory 在 frontend / canonical / H / SFC 中保留额外参数局部作用域；参数绑定按形参声明顺序稳定映射到对应实参，即使调用点使用 named argument 打乱书写顺序，也不会把参数错绑
 - 支持：frontend / canonical / H / SFC 对局部 carrier 与 inline 形态保持相同 lowering 结果
+- 支持：当前组件 slot outlet / slot forwarding 仅从 `[Parameter] RenderFragment...` 属性识别
 - 不支持：任意 delegate 值流分析
-- 不支持：current-component property / field 承载的 `RenderFragment<T>`
+- 不支持：settable property / 非只读 field 承载的 `RenderFragment<T>`
+- 不支持：带参数 fragment factory 作为组件 typed slot/template 参数值；这类形态会显式失败，而不是静默降级为普通 attribute
+- 不支持：generic fragment factory
+- 不支持：递归 fragment factory
 - 不支持：动态重赋值后的 carrier
 - 不支持：无法静态还原到匿名模板 body 的 callable 形态
 
@@ -663,3 +712,7 @@ builder.AddContent(0, template, 42);
 - canonical model 与 inline typed fragment 保持相同 `item <- 42` 作用域语义
 - H lowering 与 inline typed fragment 保持相同立即调用输出
 - SFC lowering 与 inline typed fragment 保持相同局部 template scope wrapper
+- current-component / local zero-argument fragment factory 与 inline typed fragment 保持相同作用域与 lowering 结果
+- direct `AddContent(...)` 上的 parameterized fragment factory 已支持，并在 frontend / canonical / H / SFC 四层保持一致作用域语义
+- parameterized fragment factory 用作组件 typed slot/template 参数值仍显式失败
+- recursive fragment factory 仍显式失败
