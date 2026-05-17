@@ -68,6 +68,11 @@
 - handwritten `BuildRenderTree` 现已支持当前组件/本地 render helper 的“`RenderTreeBuilder` + 额外普通值参数”形态，例如：
   - `RenderBody(builder, Title);`
   - `private void RenderBody(RenderTreeBuilder builder, string? title) { ... }`
+  - `void RenderBody(RenderTreeBuilder localBuilder, string? title) { ... }`
+  - `RenderBody(title: Title, builder: builder);`
+  - `RenderBody(title: Title, localBuilder: builder);`
+  - `private void RenderBody(RenderTreeBuilder builder, string? title = "fallback-title") { ... }`
+  - `void RenderBody(RenderTreeBuilder localBuilder, string? title = "fallback-title") { ... }`
 - 该能力会在 render tree、canonical model、H lowering、SFC template lowering 中保留顺序作用域语义：局部变量只对声明之后的同一片段后续节点生效。
 - 对于立即调用的 typed fragment，模板参数只在该 fragment body 内可见，不会泄漏到后续兄弟节点。
 - 对于带额外值参数的 render helper，helper 参数只在 helper body 内可见；H lowering 会编码为一次性立即调用作用域，SFC lowering 会编码为局部 template scope wrapper，从而保留单次求值与参数不外泄语义。
@@ -79,7 +84,8 @@
 - 对于带额外值参数的 render helper，当前只支持：
   - 恰好一个 `RenderTreeBuilder` 参数
   - 其余参数均为普通按值参数
-  - 调用点参数与 helper 声明一一对应
+  - 同时适用于当前组件方法与 `BuildRenderTree` 内 local function helper
+  - 调用点参数与 helper 声明一一对应；支持 named argument，也支持安全可投影的 omitted optional default value
   - helper body 必须源码可分析且自身形成可独立 canonicalize 的片段；不支持依赖调用方已打开节点/component frame 的 attribute/key/close 协议
 - 对 SFC 输出，模板局部声明会编码为局部 template scope wrapper，而不是泄漏为顶层 `script setup` 公共绑定。
 

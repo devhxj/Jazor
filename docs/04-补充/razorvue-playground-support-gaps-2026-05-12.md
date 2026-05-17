@@ -501,7 +501,7 @@ builder.AddAttribute(1, nameof(ChildCard.ItemTemplate), (RenderFragment<int>)((i
 
 ### 现象
 
-此前 handwritten `BuildRenderTree` 对当前组件/local render helper 只支持“单个 `RenderTreeBuilder` 参数”形态。下面这种真实 authoring 会失败：
+此前 handwritten `BuildRenderTree` 对当前组件/local render helper 只支持“单个 `RenderTreeBuilder` 参数”形态。下面这些真实 authoring 都会失败：
 
 ```csharp
 protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -514,6 +514,20 @@ private void RenderBody(RenderTreeBuilder builder, string? title)
     builder.OpenElement(0, "section");
     builder.AddContent(1, title);
     builder.CloseElement();
+}
+```
+
+```csharp
+protected override void BuildRenderTree(RenderTreeBuilder builder)
+{
+    void RenderBody(RenderTreeBuilder localBuilder, string? title)
+    {
+        localBuilder.OpenElement(0, "section");
+        localBuilder.AddContent(1, title);
+        localBuilder.CloseElement();
+    }
+
+    RenderBody(builder, Title);
 }
 ```
 
@@ -533,6 +547,9 @@ private void RenderBody(RenderTreeBuilder builder, string? title)
 因此以下场景现已稳定支持：
 
 - `RenderBody(builder, Title)` 这种当前组件 helper 参数绑定
+- `void RenderBody(RenderTreeBuilder localBuilder, string? title) { ... }` + `RenderBody(builder, Title)` 这种 local function helper 参数绑定
+- `RenderBody(title: Title, builder: builder)` / `RenderBody(title: Title, localBuilder: builder)` 这类 named argument 绑定
+- `RenderBody(builder)` + helper optional default value 绑定
 - helper body 中对参数的 element child / interpolation 使用
 - helper body 中基于参数的模板局部缓存/别名
 - canonical / H / SFC 三条 lowering 链路对 helper 参数作用域的一致保留
@@ -542,9 +559,10 @@ private void RenderBody(RenderTreeBuilder builder, string? title)
 支持边界仍然刻意收窄为“源码可分析、按值参数、helper 自身可独立 canonicalize”的 render helper：
 
 - 支持：`private void RenderBody(RenderTreeBuilder builder, string? title) { ... }`
+- 支持：`void RenderBody(RenderTreeBuilder localBuilder, string? title) { ... }`
 - 支持：named argument / builder 参数不在第一个位置，只要调用点参数与声明一一对应
+- 支持：省略 optional parameter 且默认值可安全投影到当前 template/canonical 边界
 - 不支持：`ref` / `out` / `in` / `params`
-- 不支持：省略 optional parameter 后依赖默认值重建 helper 形参绑定
 - 不支持：helper body 依赖调用方已打开 element/component frame 的 `AddAttribute` / `SetKey` / `CloseElement` / `CloseComponent` 等协议
 - 不支持：递归 render helper
 
@@ -558,7 +576,10 @@ private void RenderBody(RenderTreeBuilder builder, string? title)
 当前回归同时覆盖：
 
 - frontend 产出 helper 参数 template scope node
+- frontend 产出 current-component / local function helper 参数 template scope node
 - canonical model 保留 `title <- props.title` 绑定
+- named argument 绑定稳定工作
+- omitted optional default value 绑定稳定工作
 - H lowering 输出 helper 立即调用作用域
 - SFC lowering 输出局部 template scope wrapper，且不再重复闭合 `</template>`
 - “helper 依赖调用方 open frame 做 attribute mutation” 仍明确失败
