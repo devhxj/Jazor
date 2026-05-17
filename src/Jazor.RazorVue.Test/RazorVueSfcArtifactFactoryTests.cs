@@ -4052,7 +4052,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
-    public void RazorVue_SfcArtifactFactory_LowersParameterizedCurrentComponentRenderFragmentFactoryMethodUsingNamedArgumentsOutOfDeclarationOrder_WithDeclarationBoundNesting()
+    public void RazorVue_SfcArtifactFactory_LowersParameterizedCurrentComponentRenderFragmentFactoryMethodUsingNamedArgumentsOutOfDeclarationOrder_PreservingCallSiteEvaluationOrder()
     {
         var context = CreateContext(
             """
@@ -4103,18 +4103,19 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var snapshot = context.CreateSemanticSnapshots().Single();
         var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
-        var titleIndex = artifact.TemplateText.IndexOf("<template v-for=\"(title) in [props.title]\">", StringComparison.Ordinal);
         var subtitleIndex = artifact.TemplateText.IndexOf("<template v-for=\"(subtitle) in [props.subtitle]\">", StringComparison.Ordinal);
+        var titleIndex = artifact.TemplateText.IndexOf("<template v-for=\"(title) in [props.title]\">", StringComparison.Ordinal);
         var itemIndex = artifact.TemplateText.IndexOf("<template v-for=\"(item) in [42]\">", StringComparison.Ordinal);
-        Assert.IsTrue(titleIndex >= 0, artifact.TemplateText);
         Assert.IsTrue(subtitleIndex >= 0, artifact.TemplateText);
+        Assert.IsTrue(titleIndex >= 0, artifact.TemplateText);
         Assert.IsTrue(itemIndex >= 0, artifact.TemplateText);
-        Assert.IsTrue(titleIndex < subtitleIndex, artifact.TemplateText);
+        Assert.IsTrue(subtitleIndex < titleIndex, artifact.TemplateText);
         Assert.IsTrue(subtitleIndex < itemIndex, artifact.TemplateText);
+        Assert.IsTrue(titleIndex < itemIndex, artifact.TemplateText);
     }
 
     [TestMethod]
-    public void RazorVue_SfcArtifactFactory_WithParameterizedCurrentComponentRenderFragmentFactoryMethodForTypedSlotTemplate_ThrowsCanonicalizationFailed()
+    public void RazorVue_SfcArtifactFactory_LowersParameterizedCurrentComponentRenderFragmentFactoryMethodForTypedSlotTemplate()
     {
         var context = CreateContext(
             """
@@ -4168,12 +4169,81 @@ public sealed class RazorVueSfcArtifactFactoryTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
-            CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
-        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "child content parameter 'ItemTemplate'");
-        StringAssert.Contains(exception.Issue.Message, "RenderFragment shape");
+        StringAssert.Contains(artifact.TemplateText, "<template #itemTemplate=\"item\">");
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(title) in [props.title]\">");
+        StringAssert.Contains(artifact.TemplateText, "{{ title }}");
+        StringAssert.Contains(artifact.TemplateText, "{{ item }}");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersParameterizedCurrentComponentRenderFragmentFactoryMethodForTypedSlotTemplateUsingNamedArgumentsOutOfDeclarationOrder_PreservingCallSiteEvaluationOrder()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public string? Subtitle { get; set; }
+
+                    private RenderFragment<int> CreateTemplate(string? title, string? subtitle)
+                        => item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, title);
+                            itemBuilder.AddContent(3, subtitle);
+                            itemBuilder.AddContent(4, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<ChildCard>(0);
+                        builder.AddAttribute(1, "ItemTemplate", CreateTemplate(subtitle: Subtitle, title: Title));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        var slotIndex = artifact.TemplateText.IndexOf("<template #itemTemplate=\"item\">", StringComparison.Ordinal);
+        var subtitleIndex = artifact.TemplateText.IndexOf("<template v-for=\"(subtitle) in [props.subtitle]\">", StringComparison.Ordinal);
+        var titleIndex = artifact.TemplateText.IndexOf("<template v-for=\"(title) in [props.title]\">", StringComparison.Ordinal);
+        Assert.IsTrue(slotIndex >= 0, artifact.TemplateText);
+        Assert.IsTrue(subtitleIndex > slotIndex, artifact.TemplateText);
+        Assert.IsTrue(titleIndex > subtitleIndex, artifact.TemplateText);
     }
 
     [TestMethod]

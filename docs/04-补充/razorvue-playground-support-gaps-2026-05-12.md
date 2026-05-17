@@ -687,13 +687,14 @@ builder.AddContent(0, template, 42);
 - 支持：该局部 carrier 既可用于 `AddContent(sequence, RenderFragment<T>, value)`，也可用于组件 typed slot/template 参数
 - 支持：current-component 上的只读 expression-bodied property、单返回 getter property、以及 `readonly` field 形式的 `RenderFragment<T>` carrier，只要其初始化器仍可静态还原到匿名模板
 - 支持：current-component method / local function 的零参数 fragment factory，只要返回值本身仍可静态还原到匿名模板
-- 支持：current-component method / local function 的“普通按值参数 fragment factory”直接用于 `AddContent(...)` 立即调用，例如 `builder.AddContent(0, CreateTemplate(Title), 42);`
-- 支持：带参数 fragment factory 在 frontend / canonical / H / SFC 中保留额外参数局部作用域；参数绑定按形参声明顺序稳定映射到对应实参，即使调用点使用 named argument 打乱书写顺序，也不会把参数错绑
+- 支持：current-component method / local function 的“普通按值参数 fragment factory”可直接用于：
+  - `builder.AddContent(0, CreateTemplate(Title), 42);`
+  - 组件 typed slot/template 参数，例如 `builder.AddAttribute(1, "ItemTemplate", CreateTemplate(Title));`
+- 支持：带参数 fragment factory 在 frontend / canonical / H / SFC 中保留额外参数局部作用域；named argument 打乱书写顺序时，仍按调用点左到右求值顺序保留外层 scope 包裹，而不是按形参声明顺序重排求值
 - 支持：frontend / canonical / H / SFC 对局部 carrier 与 inline 形态保持相同 lowering 结果
 - 支持：当前组件 slot outlet / slot forwarding 仅从 `[Parameter] RenderFragment...` 属性识别
 - 不支持：任意 delegate 值流分析
 - 不支持：settable property / 非只读 field 承载的 `RenderFragment<T>`
-- 不支持：带参数 fragment factory 作为组件 typed slot/template 参数值；这类形态会显式失败，而不是静默降级为普通 attribute
 - 不支持：generic fragment factory
 - 不支持：递归 fragment factory
 - 不支持：动态重赋值后的 carrier
@@ -713,6 +714,6 @@ builder.AddContent(0, template, 42);
 - H lowering 与 inline typed fragment 保持相同立即调用输出
 - SFC lowering 与 inline typed fragment 保持相同局部 template scope wrapper
 - current-component / local zero-argument fragment factory 与 inline typed fragment 保持相同作用域与 lowering 结果
-- direct `AddContent(...)` 上的 parameterized fragment factory 已支持，并在 frontend / canonical / H / SFC 四层保持一致作用域语义
-- parameterized fragment factory 用作组件 typed slot/template 参数值仍显式失败
+- direct `AddContent(...)` 与组件 typed slot/template 参数上的 parameterized fragment factory 均已支持，并在 frontend / canonical / H / SFC 四层保持一致作用域语义
+- parameterized fragment factory 的 named-argument 路径已锁定为“按调用点左到右求值顺序保留嵌套 scope”，避免回退成按形参声明顺序重排
 - recursive fragment factory 仍显式失败

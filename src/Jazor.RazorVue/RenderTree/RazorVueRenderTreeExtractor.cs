@@ -1466,6 +1466,56 @@ internal sealed class RazorVueRenderTreeExtractor
                 out fragment);
         }
 
+        private bool TryParseSlotTemplateFragmentFactory(
+            IInvocationOperation slotInvocation,
+            IOperation value,
+            out ParsedSlotTemplate slotTemplate)
+        {
+            slotTemplate = default;
+            if (Unwrap(value) is not IInvocationOperation factoryInvocation)
+                return false;
+
+            if (!IsCurrentComponentMethod(factoryInvocation.TargetMethod, factoryInvocation.Instance) ||
+                !IsRenderFragmentType(factoryInvocation.TargetMethod.ReturnType))
+            {
+                return false;
+            }
+
+            if (!TryGetSupportedRenderFragmentFactorySignature(
+                    factoryInvocation.TargetMethod,
+                    out _,
+                    out var failureMessage))
+            {
+                throw CreateUnsupportedBuilderCall(factoryInvocation, failureMessage);
+            }
+
+            if (!TryGetRenderFragmentFactoryInvocationBindings(
+                    factoryInvocation,
+                    out var extraArgumentBindings,
+                    out failureMessage))
+            {
+                throw CreateUnsupportedBuilderCall(factoryInvocation, failureMessage);
+            }
+
+            if (!TryResolveFactoryCarrier(factoryInvocation, requireZeroArguments: false, out var parsedFactoryTemplate))
+                return false;
+
+            if (extraArgumentBindings.IsDefaultOrEmpty)
+            {
+                slotTemplate = parsedFactoryTemplate;
+                return true;
+            }
+
+            slotTemplate = new ParsedSlotTemplate(
+                parsedFactoryTemplate.ParameterName,
+                parsedFactoryTemplate.ParameterSymbol,
+                WrapCapturedTemplateScopes(
+                    parsedFactoryTemplate.Children,
+                    extraArgumentBindings,
+                    CreateOrigins(factoryInvocation, RazorVueOriginKind.Template)));
+            return true;
+        }
+
         private bool TryCreateBoundAddContentFragment(
             IInvocationOperation addContentInvocation,
             IInvocationOperation factoryInvocation,
@@ -1575,6 +1625,9 @@ internal sealed class RazorVueRenderTreeExtractor
         private bool TryParseSlotTemplate(IOperation? operation, out ParsedSlotTemplate slotTemplate)
         {
             slotTemplate = default;
+            if (TryParseSlotTemplateFragmentFactoryOperation(operation, out slotTemplate))
+                return true;
+
             if (TryResolveStoredSlotTemplate(operation, out slotTemplate))
                 return true;
 
@@ -1594,6 +1647,13 @@ internal sealed class RazorVueRenderTreeExtractor
                 return true;
 
             return false;
+        }
+
+        private bool TryParseSlotTemplateFragmentFactoryOperation(IOperation? operation, out ParsedSlotTemplate slotTemplate)
+        {
+            slotTemplate = default;
+            return Unwrap(operation) is IInvocationOperation invocation &&
+                   TryParseSlotTemplateFragmentFactory(invocation, invocation, out slotTemplate);
         }
 
         private bool TryResolveStoredSlotTemplate(IOperation? operation, out ParsedSlotTemplate slotTemplate)
@@ -1835,7 +1895,7 @@ internal sealed class RazorVueRenderTreeExtractor
             }
 
             var boundParameters = new HashSet<IParameterSymbol>(SymbolEqualityComparer.Default);
-            var bindingsByParameter = new Dictionary<IParameterSymbol, RenderHelperValueBinding>(SymbolEqualityComparer.Default);
+            var extraBindingsBuilder = ImmutableArray.CreateBuilder<RenderHelperValueBinding>(invocation.Arguments.Length);
             foreach (var argument in invocation.Arguments)
             {
                 if (argument.Parameter is not { } parameter ||
@@ -1854,7 +1914,7 @@ internal sealed class RazorVueRenderTreeExtractor
                     return false;
                 }
 
-                bindingsByParameter.Add(parameter, new RenderHelperValueBinding(parameter, initializer));
+                extraBindingsBuilder.Add(new RenderHelperValueBinding(parameter, initializer));
             }
 
             if (boundParameters.Count != invocation.TargetMethod.Parameters.Length)
@@ -1862,19 +1922,6 @@ internal sealed class RazorVueRenderTreeExtractor
                 failureMessage =
                     $"BuildRenderTree fragment factory method '{GetBuilderCallDisplayName(invocation)}' must be invoked with arguments matching its declared signature in component '{_snapshot.Descriptor.FullName}'.";
                 return false;
-            }
-
-            var extraBindingsBuilder = ImmutableArray.CreateBuilder<RenderHelperValueBinding>(invocation.TargetMethod.Parameters.Length);
-            foreach (var parameter in invocation.TargetMethod.Parameters)
-            {
-                if (!bindingsByParameter.TryGetValue(parameter, out var binding))
-                {
-                    failureMessage =
-                        $"BuildRenderTree fragment factory method '{GetBuilderCallDisplayName(invocation)}' must be invoked with arguments matching its declared signature in component '{_snapshot.Descriptor.FullName}'.";
-                    return false;
-                }
-
-                extraBindingsBuilder.Add(binding);
             }
 
             extraArgumentBindings = extraBindingsBuilder.ToImmutable();

@@ -21477,7 +21477,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_LowersParameterizedCurrentComponentRenderFragmentFactoryMethodUsingNamedArgumentsOutOfDeclarationOrder_WithDeclarationBoundNesting()
+    public void RazorVue_Pipeline_LowersParameterizedCurrentComponentRenderFragmentFactoryMethodUsingNamedArgumentsOutOfDeclarationOrder_PreservingCallSiteEvaluationOrder()
     {
         var context = CreateContext(
             """
@@ -21526,11 +21526,11 @@ public sealed class RazorVuePipelineTests
             """);
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
-        StringAssert.Contains(artifact.ModuleCode, "return () => ((title) => ((subtitle) => ((item) => h(\"span\", null, [title, subtitle, item]))(42))(props.subtitle))(props.title);");
+        StringAssert.Contains(artifact.ModuleCode, "return () => ((subtitle) => ((title) => ((item) => h(\"span\", null, [title, subtitle, item]))(42))(props.title))(props.subtitle);");
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_WithParameterizedCurrentComponentRenderFragmentFactoryMethodForTypedSlotTemplate_ThrowsCanonicalizationFailed()
+    public void RazorVue_Pipeline_LowersParameterizedCurrentComponentRenderFragmentFactoryMethodForTypedSlotTemplate()
     {
         var context = CreateContext(
             """
@@ -21583,12 +21583,70 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
-            CreateBuildRenderTreePipeline().Execute(context));
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "Host");
+        StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (item) => ((title) => h(\"span\", null, [title, item]))(props.title)");
+    }
 
-        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "child content parameter 'ItemTemplate'");
-        StringAssert.Contains(exception.Issue.Message, "RenderFragment shape");
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersParameterizedCurrentComponentRenderFragmentFactoryMethodForTypedSlotTemplateUsingNamedArgumentsOutOfDeclarationOrder_PreservingCallSiteEvaluationOrder()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public string? Subtitle { get; set; }
+
+                    private RenderFragment<int> CreateTemplate(string? title, string? subtitle)
+                        => item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, title);
+                            itemBuilder.AddContent(3, subtitle);
+                            itemBuilder.AddContent(4, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<ChildCard>(0);
+                        builder.AddAttribute(1, "ItemTemplate", CreateTemplate(subtitle: Subtitle, title: Title));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "Host");
+        StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (item) => ((subtitle) => ((title) => h(\"span\", null, [title, subtitle, item]))(props.title))(props.subtitle)");
     }
 
     [TestMethod]
