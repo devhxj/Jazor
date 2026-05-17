@@ -53,6 +53,65 @@ public sealed class VbenNativeAdminLayoutTests
     }
 
     [TestMethod]
+    public void Vben_AdminLayout_SidebarMode_WithoutEffectiveSidebarContent_DoesNotRenderEmptySidebarRegion()
+    {
+        var component = new VbenAdminLayout();
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenAdminLayout.Mode), VbenLayoutMode.Sidebar);
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenAdminLayout.NavItems), new VbenNavItems([null!]));
+
+        var frames = VbenNativeRenderTreeTestHelper.RenderComponent(component);
+
+        Assert.IsFalse(frames.ContainsElementWithClassToken("aside", "vben-shell__sidebar"));
+        Assert.IsFalse(frames.ContainsComponent<VbenSidebarMenu>());
+        Assert.IsTrue(frames.ContainsElementWithClassToken("div", "vben-shell__main"));
+        Assert.IsTrue(frames.ContainsElementWithClassToken("main", "vben-shell__content"));
+    }
+
+    [TestMethod]
+    public void Vben_AdminLayout_SidebarMode_WithLogoOnly_RendersSidebarRegionAndDefaultSidebarMenu()
+    {
+        var component = new VbenAdminLayout();
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenAdminLayout.Mode), VbenLayoutMode.Sidebar);
+        VbenNativeRenderTreeTestHelper.SetParameter(
+            component,
+            nameof(VbenAdminLayout.Logo),
+            (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "span");
+                builder.AddAttribute(1, "class", "layout-logo");
+                builder.AddContent(2, "J");
+                builder.CloseElement();
+            }));
+
+        var frames = VbenNativeRenderTreeTestHelper.RenderComponent(component);
+
+        Assert.IsTrue(frames.ContainsElementWithClassToken("aside", "vben-shell__sidebar"));
+        Assert.IsTrue(frames.ContainsComponent<VbenSidebarMenu>());
+    }
+
+    [TestMethod]
+    public void Vben_AdminLayout_SidebarMode_WithLogoOnly_DoesNotRenderDefaultHeaderRegion()
+    {
+        var component = new VbenAdminLayout();
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenAdminLayout.Mode), VbenLayoutMode.Sidebar);
+        VbenNativeRenderTreeTestHelper.SetParameter(
+            component,
+            nameof(VbenAdminLayout.Logo),
+            (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "span");
+                builder.AddAttribute(1, "class", "layout-logo");
+                builder.AddContent(2, "J");
+                builder.CloseElement();
+            }));
+
+        var frames = VbenNativeRenderTreeTestHelper.RenderComponent(component);
+
+        Assert.IsFalse(frames.ContainsElementWithClassToken("header", "vben-shell__header"));
+        Assert.IsFalse(frames.ContainsComponent<VbenHeaderBar>());
+    }
+
+    [TestMethod]
     public void Vben_AdminLayout_MixedMode_PreservesSidebarRegion()
     {
         var component = new VbenAdminLayout();

@@ -24,6 +24,12 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
     [Parameter]
     public RenderFragment? Logo { get; set; }
 
+    private bool HasItems
+        => VbenNavItemRenderHelper.HasRenderableItems(Items);
+
+    private bool HasContent
+        => Logo is not null || HasItems;
+
     private VueClassValue RootCssClass
         => Collapsed
             ? BuildCssClass("vben-sidebar", "vben-sidebar--collapsed")
@@ -108,7 +114,7 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
             return expandedKeys;
         }
 
-        foreach (var item in items)
+        foreach (var item in VbenNavItemRenderHelper.FilterRenderableItems(items))
         {
             CollectExpandedKeysForSelection(item, SelectedKey, expandedKeys);
         }
@@ -149,7 +155,7 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
             return false;
         }
 
-        if (TryResolveNavigationHref(item) is not null)
+        if (ResolveNavigationTarget(item).IsNavigable)
         {
             return true;
         }
@@ -227,28 +233,41 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
 
     private RenderFragment RenderNavigationElement(VbenNavItem item, bool isDisabled) => builder =>
     {
-        if (!isDisabled && TryResolveNavigationHref(item) is string href)
+        var navigationTarget = ResolveNavigationTarget(item);
+
+        if (!isDisabled && navigationTarget.HasRoute)
         {
-            builder.OpenElement(0, "a");
+            builder.OpenElement(0, "router-link");
             builder.AddAttribute(1, "class", "vben-sidebar__link");
-            builder.AddAttribute(2, "href", href);
+            builder.AddAttribute(2, "to", navigationTarget.Route);
             builder.AddAttribute(3, "onclick", EventCallback.Factory.Create(this, () => OnItemSelected(item)));
             builder.AddContent(4, item.Title);
             builder.CloseElement();
             return;
         }
 
-        builder.OpenElement(10, "button");
-        builder.AddAttribute(11, "type", "button");
-        builder.AddAttribute(12, "class", "vben-sidebar__button");
-        builder.AddAttribute(13, "disabled", isDisabled);
-        builder.AddAttribute(14, "onclick", EventCallback.Factory.Create(this, () => OnItemSelected(item)));
-        if (TryResolveNavigationHref(item) is not null)
+        if (!isDisabled && navigationTarget.HasHref)
         {
-            builder.AddAttribute(15, "aria-disabled", true);
+            builder.OpenElement(10, "a");
+            builder.AddAttribute(11, "class", "vben-sidebar__link");
+            builder.AddAttribute(12, "href", navigationTarget.Href);
+            builder.AddAttribute(13, "onclick", EventCallback.Factory.Create(this, () => OnItemSelected(item)));
+            builder.AddContent(14, item.Title);
+            builder.CloseElement();
+            return;
         }
 
-        builder.AddContent(16, item.Title);
+        builder.OpenElement(20, "button");
+        builder.AddAttribute(21, "type", "button");
+        builder.AddAttribute(22, "class", "vben-sidebar__button");
+        builder.AddAttribute(23, "disabled", isDisabled);
+        builder.AddAttribute(24, "onclick", EventCallback.Factory.Create(this, () => OnItemSelected(item)));
+        if (navigationTarget.IsNavigable)
+        {
+            builder.AddAttribute(25, "aria-disabled", true);
+        }
+
+        builder.AddContent(26, item.Title);
         builder.CloseElement();
     };
 
@@ -345,8 +364,8 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
     }
 
     private static VbenNavItem[] GetChildren(VbenNavItem item)
-        => item.Children?.AsArray ?? Array.Empty<VbenNavItem>();
+        => VbenNavItemRenderHelper.FilterRenderableItems(item.Children);
 
-    private static string? TryResolveNavigationHref(VbenNavItem item)
-        => VbenNavigationTargetResolver.TryResolveHref(item.Target);
+    private static VbenResolvedNavigationTarget ResolveNavigationTarget(VbenNavItem item)
+        => VbenNavigationTargetResolver.Resolve(item.Target);
 }

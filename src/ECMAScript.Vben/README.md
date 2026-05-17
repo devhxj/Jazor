@@ -16,6 +16,9 @@ Authoring notes:
 - Public shell components also act as container contracts through `IVueContainerComponent`
 - Concrete replacements implement `IVueContainerImplementation<TContainer>` and are selected through assembly-level `[VueInject]`
 - Shared metadata such as prop/slot overrides belongs to the general Vue authoring layer via `VueProp` / `VueSlot`
+- The shared `Logo` slot follows layout semantics in the native shell: `Top` mode feeds the default header, while `Sidebar` / `Mixed` modes feed the default sidebar and do not duplicate the same branding fragment into the default header
+- `VbenNavTarget` is intentionally split by semantics: `string` targets stay on raw anchor `href`, while `VbenRouteLocation` targets lower to native `<router-link :to="...">` navigation
+- For `VbenRouteLocation`, the native path uses `Path` first, then `Name`, and always normalizes `Hash` to a leading `#`; whitespace-only targets are ignored rather than emitted as navigable links
 
 Verified baseline:
 
@@ -23,6 +26,7 @@ Verified baseline:
 - `[VueInject]` replacement is regression-covered for all four public shell components
 - Injected runtime shape lowering is regression-covered at both Vue SFC and pipeline artifact levels for all four public Vben shell components
 - Multi-shell composition is regression-covered at both Vue SFC and pipeline artifact levels, including cross-container import aggregation, style/plugin dependency aggregation, and nested slot/prop/model mapping stability
+- Native route-target semantics are regression-covered at three layers: render-tree behavior for `VbenSidebarMenu` / `VbenPageContainer`, resolver normalization for `Path` / `Name` / `Hash`, and direct `router-link` lowering probes at Vue SFC and pipeline artifact levels
 - Container compatibility failures are regression-covered for missing props, prop type mismatch, emit payload mismatch, default-slot mismatch, `CaptureUnmatchedValues` mismatch, duplicate registrations, and mismatched `IVueContainerImplementation<TContainer>` contracts
 - A real sample now exists under `samples/ECMAScript.Vben.ElementPlusInject/`, proving Razor-authored Vben shell composition, sample-local `Element Plus` container injection, official `razorvue-consumer-entry` bridge generation, and Deno-only SSR/browser/bundle smoke verification
 

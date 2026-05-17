@@ -41,56 +41,76 @@ public partial class VbenPageContainer : VbenContentComponentBase, IVueContainer
     private RenderFragment RenderBreadcrumbItem(VbenBreadcrumbItem item) => builder =>
     {
         var isDisabled = item.Disabled ?? false;
-        var href = VbenNavigationTargetResolver.TryResolveHref(item.Target);
-        var cssClass = BuildBreadcrumbItemCssClass(item, isDisabled, href is not null);
+        var navigationTarget = VbenNavigationTargetResolver.Resolve(item.Target);
+        var cssClass = BuildBreadcrumbItemCssClass(item, isDisabled, navigationTarget.IsNavigable);
 
-        if (!isDisabled && href is not null)
+        if (!isDisabled && navigationTarget.HasRoute)
         {
-            builder.OpenElement(0, "a");
+            builder.OpenElement(0, "router-link");
             builder.AddAttribute(1, "class", cssClass);
-            builder.AddAttribute(2, "href", href);
+            builder.AddAttribute(2, "to", navigationTarget.Route);
             builder.AddContent(3, item.Title);
             builder.CloseElement();
             return;
         }
 
-        builder.OpenElement(10, "span");
-        builder.AddAttribute(11, "class", cssClass);
-        if (isDisabled)
+        if (!isDisabled && navigationTarget.HasHref)
         {
-            builder.AddAttribute(12, "aria-disabled", true);
+            builder.OpenElement(10, "a");
+            builder.AddAttribute(11, "class", cssClass);
+            builder.AddAttribute(12, "href", navigationTarget.Href);
+            builder.AddContent(13, item.Title);
+            builder.CloseElement();
+            return;
         }
 
-        builder.AddContent(13, item.Title);
+        builder.OpenElement(20, "span");
+        builder.AddAttribute(21, "class", cssClass);
+        if (isDisabled)
+        {
+            builder.AddAttribute(22, "aria-disabled", true);
+        }
+
+        builder.AddContent(23, item.Title);
         builder.CloseElement();
     };
 
     private RenderFragment RenderAction(VbenPageAction action) => builder =>
     {
         var isDisabled = action.Disabled ?? false;
-        var href = VbenNavigationTargetResolver.TryResolveHref(action.Target);
+        var navigationTarget = VbenNavigationTargetResolver.Resolve(action.Target);
         var cssClass = BuildActionCssClass(action);
 
-        if (!isDisabled && href is not null)
+        if (!isDisabled && navigationTarget.HasRoute)
         {
-            builder.OpenElement(0, "a");
+            builder.OpenElement(0, "router-link");
             builder.AddAttribute(1, "class", cssClass);
-            builder.AddAttribute(2, "href", href);
+            builder.AddAttribute(2, "to", navigationTarget.Route);
             builder.AddContent(3, action.Text);
             builder.CloseElement();
             return;
         }
 
-        builder.OpenElement(10, "button");
-        builder.AddAttribute(11, "type", "button");
-        builder.AddAttribute(12, "class", cssClass);
-        builder.AddAttribute(13, "disabled", isDisabled);
-        if (isDisabled && href is not null)
+        if (!isDisabled && navigationTarget.HasHref)
         {
-            builder.AddAttribute(14, "aria-disabled", true);
+            builder.OpenElement(10, "a");
+            builder.AddAttribute(11, "class", cssClass);
+            builder.AddAttribute(12, "href", navigationTarget.Href);
+            builder.AddContent(13, action.Text);
+            builder.CloseElement();
+            return;
         }
 
-        builder.AddContent(15, action.Text);
+        builder.OpenElement(20, "button");
+        builder.AddAttribute(21, "type", "button");
+        builder.AddAttribute(22, "class", cssClass);
+        builder.AddAttribute(23, "disabled", isDisabled);
+        if (isDisabled && navigationTarget.IsNavigable)
+        {
+            builder.AddAttribute(24, "aria-disabled", true);
+        }
+
+        builder.AddContent(25, action.Text);
         builder.CloseElement();
     };
 

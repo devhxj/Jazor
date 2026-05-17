@@ -119,6 +119,42 @@ public sealed partial class VbenContainerInjectTests
     }
 
     [TestMethod]
+    public void Vben_AdminLayout_DefaultNativeComponent_WithoutSidebarContent_DoesNotLowerEmptySidebarRegion()
+    {
+        var context = CreateContext(
+            """
+            using ECMAScript;
+            using ECMAScript.Vben;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./pages/layout-without-sidebar")]
+                public sealed class LayoutWithoutSidebar : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent(0, typeof(VbenAdminLayout));
+                        builder.AddComponentParameter(1, nameof(VbenAdminLayout.Mode), VbenLayoutMode.Sidebar);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+        var snapshot = context.CreateSemanticSnapshots()
+            .Single(static item => item.ComponentSymbol.Name == "LayoutWithoutSidebar");
+        var sfcArtifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+        var pipelineArtifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts
+            .Single(static item => item.ComponentName == "LayoutWithoutSidebar");
+
+        Assert.IsFalse(sfcArtifact.TemplateText.Contains("vben-shell__sidebar", StringComparison.Ordinal), sfcArtifact.TemplateText);
+        Assert.IsFalse(sfcArtifact.TemplateText.Contains("VbenSidebarMenuComponent", StringComparison.Ordinal), sfcArtifact.TemplateText);
+
+        Assert.IsFalse(pipelineArtifact.ModuleCode.Contains("vben-shell__sidebar", StringComparison.Ordinal), pipelineArtifact.ModuleCode);
+        Assert.IsFalse(pipelineArtifact.ModuleCode.Contains("VbenSidebarMenuComponent", StringComparison.Ordinal), pipelineArtifact.ModuleCode);
+    }
+
+    [TestMethod]
     public void Vben_MultiShell_DefaultNativeComponents_LowerIntoVueSfcArtifact()
     {
         var context = CreateNativeMultiShellContext();
@@ -192,6 +228,91 @@ public sealed partial class VbenContainerInjectTests
             artifact.Imports.ToArray());
         Assert.AreEqual(0, artifact.Styles.Count(), artifact.ModuleCode);
         Assert.AreEqual(0, artifact.PluginRequirements.Count(), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void Vben_RouterLinkElement_WithRouteObject_LowersIntoVueSfcArtifact()
+    {
+        var context = CreateContext(
+            """
+            using ECMAScript;
+            using ECMAScript.Vben;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./pages/router-link-probe")]
+                public sealed class RouterLinkProbe : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public VbenRouteLocation Target { get; set; } = new()
+                    {
+                        Name = "reports.daily",
+                        Hash = "#summary"
+                    };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "router-link");
+                        builder.AddAttribute(1, "class", "probe-link");
+                        builder.AddAttribute(2, "to", Target);
+                        builder.AddContent(3, "Reports");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+        var snapshot = context.CreateSemanticSnapshots()
+            .Single(static item => item.ComponentSymbol.Name == "RouterLinkProbe");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<router-link");
+        StringAssert.Contains(artifact.TemplateText, "class=\"probe-link\"");
+        StringAssert.Contains(artifact.TemplateText, ":to=\"props.target\"");
+        StringAssert.Contains(artifact.ScriptSetupText, "defineProps<{ target?: any }>()");
+        StringAssert.Contains(artifact.ScriptSetupText, "const defaultValue = { name: \"reports.daily\", hash: \"#summary\" };");
+    }
+
+    [TestMethod]
+    public void Vben_RouterLinkElement_WithRouteObject_LowersIntoPipelineArtifact()
+    {
+        var context = CreateContext(
+            """
+            using ECMAScript;
+            using ECMAScript.Vben;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./pages/router-link-probe")]
+                public sealed class RouterLinkProbe : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public VbenRouteLocation Target { get; set; } = new()
+                    {
+                        Name = "reports.daily",
+                        Hash = "#summary"
+                    };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "router-link");
+                        builder.AddAttribute(1, "class", "probe-link");
+                        builder.AddAttribute(2, "to", Target);
+                        builder.AddContent(3, "Reports");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts
+            .Single(static item => item.ComponentName == "RouterLinkProbe");
+
+        StringAssert.Contains(artifact.ModuleCode, "h(\"router-link\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"class\": \"probe-link\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"to\": props.target");
+        Assert.AreEqual(1, artifact.Imports.Count(), artifact.ModuleCode);
+        CollectionAssert.AreEquivalent(new[] { "vue" }, artifact.Imports.ToArray());
     }
 
     private static RazorVueCompilationContext CreateNativeMultiShellContext()

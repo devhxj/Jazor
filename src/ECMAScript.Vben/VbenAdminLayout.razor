@@ -1,14 +1,14 @@
 @inherits VbenContentComponentBase
 
 <div class="@RootCssClass" style="@CssStyle" @attributes="AdditionalAttributes">
-    @if (IsSidebarLayout)
+    @if (HasSidebarRegion)
     {
         <aside class='@("vben-shell__sidebar")'>
             @if (Sidebar is not null)
             {
                 @Sidebar
             }
-            else if (NavItems is not null)
+            else
             {
                 <VbenSidebarMenu Items="@NavItems"
                                  Collapsed="@Collapsed"
@@ -33,7 +33,7 @@
                 {
                     <VbenHeaderBar Title="@Title"
                                    Subtitle="@Subtitle"
-                                   Logo="@Logo"
+                                   Logo="@DefaultHeaderLogo"
                                    Actions="@HeaderActions"
                                    UserRegion="@UserRegion" />
                 }

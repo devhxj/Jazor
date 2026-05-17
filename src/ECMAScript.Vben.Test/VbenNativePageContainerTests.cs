@@ -58,7 +58,7 @@ public sealed class VbenNativePageContainerTests
     }
 
     [TestMethod]
-    public void Vben_PageContainer_BreadcrumbRouteHash_RendersResolvedHref()
+    public void Vben_PageContainer_BreadcrumbRouteHash_RendersRouterLinkTarget()
     {
         var breadcrumb = new VbenBreadcrumbItem
         {
@@ -73,8 +73,30 @@ public sealed class VbenNativePageContainerTests
 
         var frames = RenderBreadcrumbItem(breadcrumb);
 
-        Assert.IsTrue(frames.ContainsElement("a"));
-        Assert.IsTrue(frames.ContainsAttribute("href", "/ops#logs"));
+        Assert.IsTrue(frames.ContainsElement("router-link"));
+        Assert.IsTrue(frames.ContainsAttribute("to"));
+        Assert.IsFalse(frames.ContainsAttribute("href", "/ops#logs"));
+    }
+
+    [TestMethod]
+    public void Vben_PageContainer_BreadcrumbRouteName_RendersRouterLinkTarget()
+    {
+        var breadcrumb = new VbenBreadcrumbItem
+        {
+            Key = "reports",
+            Title = "Reports",
+            Target = new VbenRouteLocation
+            {
+                Name = "reports.daily",
+                Hash = "summary"
+            }
+        };
+
+        var frames = RenderBreadcrumbItem(breadcrumb);
+
+        Assert.IsTrue(frames.ContainsElement("router-link"));
+        Assert.IsTrue(frames.ContainsAttribute("to"));
+        Assert.IsFalse(frames.ContainsAttribute("href"));
     }
 
     [TestMethod]
@@ -116,7 +138,7 @@ public sealed class VbenNativePageContainerTests
     }
 
     [TestMethod]
-    public void Vben_PageContainer_ActionRouteHash_RendersResolvedHref()
+    public void Vben_PageContainer_ActionRouteHash_RendersRouterLinkTarget()
     {
         var action = new VbenPageAction
         {
@@ -131,10 +153,34 @@ public sealed class VbenNativePageContainerTests
 
         var frames = RenderAction(action);
 
-        Assert.IsTrue(frames.ContainsElement("a"));
-        Assert.IsTrue(frames.ContainsAttribute("href", "#preview"));
+        Assert.IsTrue(frames.ContainsElement("router-link"));
+        Assert.IsTrue(frames.ContainsAttribute("to"));
+        Assert.IsFalse(frames.ContainsAttribute("href", "#preview"));
         Assert.IsTrue(frames.ContainsClassToken("vben-page__action"));
         Assert.IsTrue(frames.ContainsClassToken("vben-page__action--link"));
+    }
+
+    [TestMethod]
+    public void Vben_PageContainer_ActionRouteName_RendersRouterLinkTarget()
+    {
+        var action = new VbenPageAction
+        {
+            Key = "inspect",
+            Text = "Inspect",
+            Kind = VbenPageActionKind.Secondary,
+            Target = new VbenRouteLocation
+            {
+                Name = "ops.inspect"
+            }
+        };
+
+        var frames = RenderAction(action);
+
+        Assert.IsTrue(frames.ContainsElement("router-link"));
+        Assert.IsTrue(frames.ContainsAttribute("to"));
+        Assert.IsFalse(frames.ContainsAttribute("href"));
+        Assert.IsTrue(frames.ContainsClassToken("vben-page__action"));
+        Assert.IsTrue(frames.ContainsClassToken("vben-page__action--secondary"));
     }
 
     [TestMethod]
