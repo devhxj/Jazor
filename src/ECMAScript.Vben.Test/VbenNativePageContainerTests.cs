@@ -248,6 +248,45 @@ public sealed class VbenNativePageContainerTests
         Assert.IsTrue(frames.ContainsClassToken("vben-page__action--primary"));
     }
 
+    [TestMethod]
+    public void Vben_PageContainer_WhitespaceOnlyBreadcrumbAndActionEntries_DoNotRenderEmptyHeaderContent()
+    {
+        var component = new VbenPageContainer();
+        VbenNativeRenderTreeTestHelper.SetParameter(
+            component,
+            nameof(VbenPageContainer.BreadcrumbItems),
+            new[]
+            {
+                new VbenBreadcrumbItem
+                {
+                    Key = "empty-breadcrumb",
+                    Title = "   ",
+                    Target = "/ignored"
+                }
+            });
+        VbenNativeRenderTreeTestHelper.SetParameter(
+            component,
+            nameof(VbenPageContainer.Actions),
+            new[]
+            {
+                new VbenPageAction
+                {
+                    Key = "empty-action",
+                    Text = "   ",
+                    Kind = VbenPageActionKind.Primary,
+                    Target = "/ignored"
+                }
+            });
+
+        var frames = RenderPageContainer(component);
+
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-page__header"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("nav", "vben-page__breadcrumb"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-page__actions"));
+        Assert.IsFalse(frames.ContainsAttribute("href", "/ignored"));
+        Assert.IsTrue(frames.ContainsElementWithClassToken("div", "vben-page__body"));
+    }
+
     private static NativeRenderTreeSnapshot RenderPageContainer(VbenPageContainer component)
         => VbenNativeRenderTreeTestHelper.RenderComponent(component);
 

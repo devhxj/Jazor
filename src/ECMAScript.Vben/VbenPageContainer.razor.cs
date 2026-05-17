@@ -23,8 +23,8 @@ public partial class VbenPageContainer : VbenContentComponentBase, IVueContainer
 
     private PageHeaderRenderState BuildHeaderRenderState()
     {
-        var breadcrumbItems = FilterRenderableItems(BreadcrumbItems);
-        var actions = FilterRenderableItems(Actions);
+        var breadcrumbItems = FilterRenderableBreadcrumbItems(BreadcrumbItems);
+        var actions = FilterRenderableActions(Actions);
         var hasTitles =
             breadcrumbItems.Length > 0
             || !string.IsNullOrWhiteSpace(Title)
@@ -190,6 +190,60 @@ public partial class VbenPageContainer : VbenContentComponentBase, IVueContainer
         return filtered is null
             ? Array.Empty<TItem>()
             : filtered.ToArray();
+    }
+
+    private static VbenBreadcrumbItem[] FilterRenderableBreadcrumbItems(VbenBreadcrumbItem[]? items)
+    {
+        var filtered = FilterRenderableItems(items);
+        if (filtered.Length == 0)
+        {
+            return filtered;
+        }
+
+        List<VbenBreadcrumbItem>? renderable = null;
+        foreach (var item in filtered)
+        {
+            if (string.IsNullOrWhiteSpace(item.Title))
+            {
+                continue;
+            }
+
+            renderable ??= new List<VbenBreadcrumbItem>(filtered.Length);
+            renderable.Add(item);
+        }
+
+        return renderable is null
+            ? Array.Empty<VbenBreadcrumbItem>()
+            : renderable.Count == filtered.Length
+                ? filtered
+                : renderable.ToArray();
+    }
+
+    private static VbenPageAction[] FilterRenderableActions(VbenPageAction[]? items)
+    {
+        var filtered = FilterRenderableItems(items);
+        if (filtered.Length == 0)
+        {
+            return filtered;
+        }
+
+        List<VbenPageAction>? renderable = null;
+        foreach (var item in filtered)
+        {
+            if (string.IsNullOrWhiteSpace(item.Text))
+            {
+                continue;
+            }
+
+            renderable ??= new List<VbenPageAction>(filtered.Length);
+            renderable.Add(item);
+        }
+
+        return renderable is null
+            ? Array.Empty<VbenPageAction>()
+            : renderable.Count == filtered.Length
+                ? filtered
+                : renderable.ToArray();
     }
 
     private readonly record struct PageHeaderRenderState(

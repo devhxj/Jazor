@@ -184,6 +184,34 @@ public sealed class VbenNativeSidebarMenuTests
     }
 
     [TestMethod]
+    public void Vben_SidebarMenu_DisabledBranch_WithExplicitExpandedKey_DoesNotRenderExpandedChildren()
+    {
+        var child = new VbenNavItem
+        {
+            Key = "settings.audit",
+            Title = "Audit"
+        };
+
+        var disabledParent = new VbenNavItem
+        {
+            Key = "settings",
+            Title = "Settings",
+            Disabled = true,
+            Children = [child]
+        };
+
+        var component = new VbenSidebarMenu();
+        SetParameter(component, nameof(VbenSidebarMenu.Items), new VbenNavItems([disabledParent]));
+        SetParameter(component, nameof(VbenSidebarMenu.ExpandedKeys), new[] { "settings" });
+
+        var frames = RenderSidebarMenu(component);
+
+        Assert.IsTrue(frames.ContainsAttribute("data-key", "settings"));
+        Assert.IsFalse(frames.ContainsClassToken("is-expanded"));
+        Assert.IsFalse(frames.ContainsAttribute("data-key", "settings.audit"));
+    }
+
+    [TestMethod]
     public void Vben_SidebarMenu_DisabledHrefLeaf_RendersAsDisabledButtonInsteadOfNavigableLink()
     {
         var item = new VbenNavItem
@@ -270,32 +298,90 @@ public sealed class VbenNativeSidebarMenuTests
     [TestMethod]
     public void Vben_SidebarMenu_OnBranchToggled_AppendsExpandedKeyInSortedOrder()
     {
-        var child = new VbenNavItem
+        var alphaChild = new VbenNavItem
         {
             Key = "reports.daily",
             Title = "Daily"
         };
 
-        var parent = new VbenNavItem
+        var alphaParent = new VbenNavItem
         {
             Key = "reports.alpha",
             Title = "Reports",
-            Children = [child]
+            Children = [alphaChild]
+        };
+
+        var zetaChild = new VbenNavItem
+        {
+            Key = "reports.zeta.child",
+            Title = "Archive"
+        };
+
+        var zetaParent = new VbenNavItem
+        {
+            Key = "reports.zeta",
+            Title = "Reports archive",
+            Children = [zetaChild]
         };
 
         var component = new VbenSidebarMenu();
         var recorder = new EventRecorder<string[]>();
-        SetParameter(component, nameof(VbenSidebarMenu.Items), new VbenNavItems([parent]));
+        SetParameter(component, nameof(VbenSidebarMenu.Items), new VbenNavItems([alphaParent, zetaParent]));
         SetParameter(component, nameof(VbenSidebarMenu.ExpandedKeys), new[] { "reports.zeta" });
         SetParameter(
             component,
             nameof(VbenSidebarMenu.ExpandedKeysChanged),
             EventCallback.Factory.Create<string[]>(recorder, recorder.Record));
 
-        InvokeOnBranchToggled(component, parent);
+        InvokeOnBranchToggled(component, alphaParent);
 
         Assert.AreEqual(1, recorder.Values.Count);
         CollectionAssert.AreEqual(new[] { "reports.alpha", "reports.zeta" }, recorder.Values[0]);
+    }
+
+    [TestMethod]
+    public void Vben_SidebarMenu_OnBranchToggled_DropsDisabledAndUnknownExpandedKeysFromChangedPayload()
+    {
+        var validChild = new VbenNavItem
+        {
+            Key = "reports.daily",
+            Title = "Daily"
+        };
+
+        var validParent = new VbenNavItem
+        {
+            Key = "reports",
+            Title = "Reports",
+            Children = [validChild]
+        };
+
+        var disabledChild = new VbenNavItem
+        {
+            Key = "settings.audit",
+            Title = "Audit"
+        };
+
+        var disabledParent = new VbenNavItem
+        {
+            Key = "settings",
+            Title = "Settings",
+            Disabled = true,
+            Children = [disabledChild]
+        };
+
+        var component = new VbenSidebarMenu();
+        var recorder = new EventRecorder<string[]>();
+        SetParameter(component, nameof(VbenSidebarMenu.Items), new VbenNavItems([validParent, disabledParent]));
+        SetParameter(component, nameof(VbenSidebarMenu.ExpandedKeys), new[] { "missing", "settings" });
+        SetParameter(
+            component,
+            nameof(VbenSidebarMenu.ExpandedKeysChanged),
+            EventCallback.Factory.Create<string[]>(recorder, recorder.Record));
+
+        InvokeOnBranchToggled(component, validParent);
+
+        Assert.AreEqual(1, recorder.Values.Count);
+        CollectionAssert.AreEqual(new[] { "reports" }, recorder.Values[0]);
     }
 
     [TestMethod]

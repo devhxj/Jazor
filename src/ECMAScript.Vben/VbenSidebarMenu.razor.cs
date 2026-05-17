@@ -100,7 +100,7 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
     {
         if (ExpandedKeys is not null)
         {
-            return NormalizeKeys(ExpandedKeys);
+            return NormalizeExpandedKeys(ExpandedKeys);
         }
 
         if (string.IsNullOrWhiteSpace(SelectedKey))
@@ -123,7 +123,9 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
     }
 
     private bool IsExpanded(VbenNavItem item)
-        => GetChildren(item).Length > 0 && GetEffectiveExpandedKeySet().Contains(item.Key);
+        => !(item.Disabled ?? false)
+           && HasNavigableChildren(item)
+           && GetEffectiveExpandedKeySet().Contains(item.Key);
 
     private bool IsSelected(VbenNavItem item)
         => !(item.Disabled ?? false)
@@ -348,6 +350,57 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
         }
 
         return normalized;
+    }
+
+    private HashSet<string> NormalizeExpandedKeys(IEnumerable<string> keys)
+    {
+        var normalized = NormalizeKeys(keys);
+        if (normalized.Count == 0 || Items?.AsArray is not { Length: > 0 } items)
+        {
+            return normalized.Count == 0
+                ? normalized
+                : new HashSet<string>(StringComparer.Ordinal);
+        }
+
+        var expandableKeys = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var item in VbenNavItemRenderHelper.FilterRenderableItems(items))
+        {
+            CollectExpandableKeys(item, expandableKeys);
+        }
+
+        if (expandableKeys.Count == 0)
+        {
+            return new HashSet<string>(StringComparer.Ordinal);
+        }
+
+        normalized.IntersectWith(expandableKeys);
+        return normalized;
+    }
+
+    private static bool CollectExpandableKeys(
+        VbenNavItem item,
+        HashSet<string> expandableKeys)
+    {
+        if (item.Disabled ?? false)
+        {
+            return false;
+        }
+
+        var hasNavigableDescendant = false;
+        foreach (var child in GetChildren(item))
+        {
+            if (CanNavigate(child) || CollectExpandableKeys(child, expandableKeys))
+            {
+                hasNavigableDescendant = true;
+            }
+        }
+
+        if (hasNavigableDescendant)
+        {
+            expandableKeys.Add(item.Key);
+        }
+
+        return hasNavigableDescendant;
     }
 
     private static string[] ToOrderedArray(HashSet<string> keys)
