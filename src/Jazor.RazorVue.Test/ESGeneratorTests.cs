@@ -1174,6 +1174,59 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithOfficialRazorSgDocument_TailBridge_LowersAtKeyIntoVueTemplateKeys()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string razorDocumentText = """
+            <section @key="'root'">
+                <SharedBadge @key="Id" Text="@Title" />
+            </section>
+            """;
+        var normalizedDocumentPath = documentPath.Replace('\\', '/');
+
+        var (compilation, input) = CreateRazorSgTailBridgeInput(
+            assemblyName: "RazorVue.Generator.PreferredFrontend.TailBridge.Key.Tests",
+            documentPath: normalizedDocumentPath,
+            documentText: razorDocumentText,
+            componentSource:
+            """
+            namespace Demo.Shared
+            {
+                [ECMAScript.ECMAScriptModule("./components/shared-badge")]
+                public partial class SharedBadge : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Text { get; set; }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Id { get; set; }
+
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            importsText: "@using Demo.Shared");
+
+        var result = RazorVueRazorSourceGeneratorTailBridge.ExecuteSfcPipeline(
+            compilation,
+            ImmutableArray.Create(input));
+
+        Assert.IsTrue(result.Success, result.Failure);
+        var artifact = result.Catalog.Artifacts.Single(static item => item.Identity.ComponentId == "Demo.Pages.TodoApp");
+        StringAssert.Contains(artifact.TemplateText, "<section :key=\"&quot;root&quot;\">");
+        StringAssert.Contains(artifact.TemplateText, "<SharedBadgeComponent :key=\"props.id\" :text=\"props.title\" />");
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithGeneratedRazorComponentButNoCarrier_DefaultGenerator_ReportsJAZORVGA001()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";

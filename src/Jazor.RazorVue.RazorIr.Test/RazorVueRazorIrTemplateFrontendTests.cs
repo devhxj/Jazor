@@ -174,6 +174,63 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_ForAtKeyAttributes_ResolvesLiteralAndExpressionKeys()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            <section @key="'root'">
+                <SharedBadge @key="Id" Text="@Title" />
+            </section>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.AtKey.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Shared
+            {
+                [ECMAScript.ECMAScriptModule("./components/shared-badge")]
+                public partial class SharedBadge : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Text { get; set; }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                using Demo.Shared;
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Id { get; set; }
+
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """,
+            importsText: "@using Demo.Shared");
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+
+        var section = renderTree.Children[0] as RazorVueElementNode;
+        Assert.IsNotNull(section);
+        Assert.IsNotNull(section.Key);
+        Assert.IsTrue(section.Key.Expression.ConstantValue.HasValue);
+        Assert.AreEqual("root", section.Key.Expression.ConstantValue.Value);
+
+        var badge = section.Children.Children[0] as RazorVueComponentNode;
+        Assert.IsNotNull(badge);
+        Assert.IsNotNull(badge.Key);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(badge.Key.Expression);
+        Assert.AreEqual("Id", ((IPropertyReferenceOperation)badge.Key.Expression).Property.Name);
+    }
+
+    [TestMethod]
     public void CreateRenderTree_ForElementBind_CurrentHostStillExposesRawBindAttribute()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -902,8 +959,8 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
             .Single();
 
         StringAssert.Contains(artifact.ModuleCode, "props.items.map((item)");
-        StringAssert.Contains(artifact.ModuleCode, "!item.IsDone");
-        StringAssert.Contains(artifact.ModuleCode, "h(\"li\", null, item.Title)");
+        StringAssert.Contains(artifact.ModuleCode, "!item.isDone");
+        StringAssert.Contains(artifact.ModuleCode, "h(\"li\", null, item.title)");
     }
 
     [TestMethod]
@@ -1533,4 +1590,6 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
                 Source: null,
                 Prefix: prefix);
     }
+
+
 }

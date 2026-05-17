@@ -212,6 +212,9 @@ internal sealed class RazorVueRenderTreeExtractor
                 case "AddMultipleAttributes":
                     AddMultipleAttributes(invocation);
                     break;
+                case "SetKey":
+                    SetKey(invocation);
+                    break;
                 case "OpenRegion":
                     OpenRegion(invocation);
                     break;
@@ -423,6 +426,13 @@ internal sealed class RazorVueRenderTreeExtractor
             currentNode.AddAttribute(new RazorVueAttributeSpreadNode(
                 value,
                 CreateOrigins(invocation, RazorVueOriginKind.Template)));
+        }
+
+        private void SetKey(IInvocationOperation invocation)
+        {
+            var currentNode = GetRequiredOpenNodeBuilder(invocation);
+            var key = GetInvocationArgument(invocation, 0);
+            currentNode.SetKey(key, CreateOrigins(invocation, RazorVueOriginKind.Template));
         }
 
         private void AddContent(IInvocationOperation invocation)
@@ -1323,6 +1333,7 @@ internal sealed class RazorVueRenderTreeExtractor
 
     private abstract class OpenNodeBuilder : OpenFrame
     {
+        private RazorVueNodeKey? _key;
         private readonly List<RazorVueAttributeEntry> _attributes = [];
         private readonly List<RazorVueComponentSlotTemplateNode> _slotTemplates = [];
         private readonly List<RazorVueRenderNode> _children = [];
@@ -1335,6 +1346,9 @@ internal sealed class RazorVueRenderTreeExtractor
         public void AddAttribute(RazorVueAttributeEntry attribute)
             => _attributes.Add(attribute);
 
+        public void SetKey(IOperation? key, ImmutableArray<RazorVueSourceOrigin> origins)
+            => _key = key is null ? null : new RazorVueNodeKey(key, origins);
+
         public void AddSlotTemplate(RazorVueComponentSlotTemplateNode slotTemplate)
             => _slotTemplates.Add(slotTemplate);
 
@@ -1343,6 +1357,9 @@ internal sealed class RazorVueRenderTreeExtractor
 
         protected ImmutableArray<RazorVueAttributeEntry> BuildAttributes()
             => [.. _attributes];
+
+        protected RazorVueNodeKey? BuildKey()
+            => _key;
 
         protected ImmutableArray<RazorVueComponentSlotTemplateNode> BuildSlotTemplates()
             => [.. _slotTemplates];
@@ -1362,7 +1379,7 @@ internal sealed class RazorVueRenderTreeExtractor
             => $"element <{tagName}>";
 
         public override RazorVueRenderNode Build()
-            => new RazorVueElementNode(tagName, BuildAttributes(), BuildChildren(), Origins);
+            => new RazorVueElementNode(tagName, BuildKey(), BuildAttributes(), BuildChildren(), Origins);
     }
 
     private sealed class ComponentBuilder(string componentName, string componentFullName, string resolutionName, ImmutableArray<RazorVueSourceOrigin> origins)
@@ -1372,6 +1389,6 @@ internal sealed class RazorVueRenderTreeExtractor
             => $"component '{componentFullName}'";
 
         public override RazorVueRenderNode Build()
-            => new RazorVueComponentNode(componentName, componentFullName, resolutionName, BuildAttributes(), BuildSlotTemplates(), BuildChildren(), Origins);
+            => new RazorVueComponentNode(componentName, componentFullName, resolutionName, BuildKey(), BuildAttributes(), BuildSlotTemplates(), BuildChildren(), Origins);
     }
 }

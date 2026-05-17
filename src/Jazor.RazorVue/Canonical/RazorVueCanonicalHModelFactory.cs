@@ -118,6 +118,7 @@ internal sealed class RazorVueCanonicalHModelFactory
         {
             RazorVueElementNode element => new RazorVueCanonicalElementNode(
                 TagName: element.TagName,
+                Key: CreateNodeKey(snapshot, expressionEmitter, element.Key, allowedLocalSymbols, allowedParameterSymbols),
                 Attributes: CreateHtmlAttributeBindings(snapshot, expressionEmitter, element.Attributes, allowedLocalSymbols, allowedParameterSymbols),
                 Children: CreateTemplateFragment(snapshot, expressionEmitter, resolvedComponents, element.Children, allowedLocalSymbols, allowedParameterSymbols),
                 TemplateEncodability: RazorVueTemplateEncodability.DirectTemplate,
@@ -315,6 +316,7 @@ internal sealed class RazorVueCanonicalHModelFactory
             ComponentFullName: component.ComponentFullName,
             ResolutionName: component.ResolutionName,
             ResolvedDescriptor: resolvedDescriptor,
+            Key: CreateNodeKey(snapshot, expressionEmitter, component.Key, allowedLocalSymbols, allowedParameterSymbols),
             Attributes: CreateComponentAttributeBindings(
                 snapshot,
                 expressionEmitter,
@@ -328,6 +330,25 @@ internal sealed class RazorVueCanonicalHModelFactory
             TemplateExpressionSafety: RazorVueTemplateExpressionSafety.DirectTemplateSafe,
             SideEffectClassification: RazorVueSideEffectClassification.None,
             SourceOrigins: component.Origins);
+    }
+
+    private static RazorVueCanonicalNodeKey? CreateNodeKey(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter expressionEmitter,
+        RazorVueNodeKey? key,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+    {
+        if (key is null)
+            return null;
+
+        return new RazorVueCanonicalNodeKey(
+            ExpressionText: EmitTemplateExpression(snapshot, expressionEmitter, key.Expression, allowedLocalSymbols, allowedParameterSymbols),
+            BindingKind: ClassifyBindingKind(snapshot, key.Expression),
+            TemplateEncodability: ClassifyTemplateEncodability(key.Expression),
+            TemplateExpressionSafety: ClassifyTemplateExpressionSafety(snapshot, key.Expression),
+            SideEffectClassification: ClassifySideEffects(key.Expression),
+            SourceOrigins: key.Origins);
     }
 
     private static void ValidateDefaultLibrarySlotUsage(

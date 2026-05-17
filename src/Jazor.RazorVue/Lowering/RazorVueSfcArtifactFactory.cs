@@ -239,6 +239,7 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         {
             case RazorVueCanonicalElementNode element:
                 builder.Append(indent).Append('<').Append(element.TagName);
+                AppendNodeKeyBinding(builder, element.Key, bindingSiteMap, path + "/key", templateScopeDepth);
                 AppendAttributeBindings(builder, element.Attributes, bindingSiteMap, path + "/attrs", templateScopeDepth);
                 if (element.Children.Children.IsDefaultOrEmpty)
                 {
@@ -255,6 +256,7 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
             case RazorVueCanonicalComponentNode component:
                 var componentTagName = ResolveTemplateComponentTagName(component);
                 builder.Append(indent).Append('<').Append(componentTagName);
+                AppendNodeKeyBinding(builder, component.Key, bindingSiteMap, path + "/key", templateScopeDepth);
                 AppendAttributeBindings(builder, component.Attributes, bindingSiteMap, path + "/attrs", templateScopeDepth);
                 if (component.Children.Children.IsDefaultOrEmpty && component.Slots.IsDefaultOrEmpty)
                 {
@@ -589,6 +591,28 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
                     break;
             }
         }
+    }
+
+    private static void AppendNodeKeyBinding(
+        StringBuilder builder,
+        RazorVueCanonicalNodeKey? key,
+        IReadOnlyDictionary<string, string> bindingSiteMap,
+        string path,
+        int templateScopeDepth)
+    {
+        if (key is null)
+            return;
+
+        var expressionText = ResolveTemplateExpression(
+            key.ExpressionText,
+            key.TemplateEncodability,
+            bindingSiteMap,
+            path,
+            templateScopeDepth);
+
+        builder.Append(" :key=\"")
+            .Append(EscapeAttributeValue(expressionText))
+            .Append('"');
     }
 
     private static bool CanEmitStaticLiteralAttribute(RazorVueCanonicalAttributeBinding attribute)

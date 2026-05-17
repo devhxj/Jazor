@@ -313,6 +313,11 @@ internal sealed partial class RazorVueExpressionEmitter
         switch (node)
         {
             case RazorVueElementNode element:
+                if (element.Key is not null)
+                {
+                    foreach (var origin in element.Key.Origins)
+                        yield return origin;
+                }
                 foreach (var attribute in element.Attributes)
                 {
                     foreach (var origin in attribute.Origins)
@@ -323,6 +328,11 @@ internal sealed partial class RazorVueExpressionEmitter
                     yield return childOrigin;
                 break;
             case RazorVueComponentNode component:
+                if (component.Key is not null)
+                {
+                    foreach (var origin in component.Key.Origins)
+                        yield return origin;
+                }
                 foreach (var attribute in component.Attributes)
                 {
                     foreach (var origin in attribute.Origins)

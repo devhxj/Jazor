@@ -49,11 +49,13 @@ internal sealed partial class RazorVueExpressionEmitter
         {
             case RazorVueElementNode element:
                 builder.Append("element(").Append(element.TagName).Append(')');
+                AppendKeyShape(builder, element.Key);
                 AppendAttributesShape(builder, element.Attributes);
                 AppendFragmentShape(builder, element.Children);
                 break;
             case RazorVueComponentNode component:
                 builder.Append("component(").Append(component.ComponentName).Append(')');
+                AppendKeyShape(builder, component.Key);
                 AppendAttributesShape(builder, component.Attributes);
                 AppendSlotTemplatesShape(builder, component.SlotTemplates);
                 AppendFragmentShape(builder, component.Children);
@@ -121,6 +123,14 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         builder.Append('}');
+    }
+
+    private static void AppendKeyShape(StringBuilder builder, RazorVueNodeKey? key)
+    {
+        builder.Append("key(");
+        if (key is not null)
+            builder.Append(key.Expression.Syntax.ToString());
+        builder.Append(')');
     }
 
     private void AppendSlotTemplatesShape(StringBuilder builder, ImmutableArray<RazorVueComponentSlotTemplateNode> slotTemplates)

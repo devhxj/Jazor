@@ -332,6 +332,69 @@ public sealed class RazorVueCanonicalSfcSemanticTests
     }
 
     [TestMethod]
+    public void RazorVue_CanonicalModelFactory_MapsVNodeKeys_ForElementAndComponent()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Id { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.SetKey("root");
+                        builder.OpenComponent<ChildCard>(1);
+                        builder.SetKey(Id);
+                        builder.CloseComponent();
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+        var root = AssertNode<RazorVueCanonicalElementNode>(canonical.Template.Children.Single());
+        var child = AssertNode<RazorVueCanonicalComponentNode>(root.Children.Children.Single());
+        var sfc = new RazorVueSfcSemanticModelFactory().Create(canonical);
+
+        Assert.IsNotNull(root.Key);
+        Assert.AreEqual("\"root\"", root.Key.ExpressionText);
+        Assert.AreEqual(RazorVueExpressionBindingKind.Literal, root.Key.BindingKind);
+        Assert.AreEqual(RazorVueTemplateEncodability.DirectTemplate, root.Key.TemplateEncodability);
+
+        Assert.IsNotNull(child.Key);
+        Assert.AreEqual("props.id", child.Key.ExpressionText);
+        Assert.AreEqual(RazorVueTemplateEncodability.DirectTemplate, child.Key.TemplateEncodability);
+        Assert.IsTrue(sfc.TemplateBlock.BindingSites.IsDefaultOrEmpty);
+    }
+
+    [TestMethod]
     public void RazorVue_SfcSemanticModelFactory_ThrowsForNotTemplateEncodableCanonicalNode()
     {
         var descriptor = new VueComponentDescriptor(

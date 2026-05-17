@@ -14,8 +14,13 @@ internal sealed record RazorVueRenderFragment(
 internal abstract record RazorVueRenderNode(
     ImmutableArray<RazorVueSourceOrigin> Origins);
 
+internal sealed record RazorVueNodeKey(
+    IOperation Expression,
+    ImmutableArray<RazorVueSourceOrigin> Origins);
+
 internal sealed record RazorVueElementNode(
     string TagName,
+    RazorVueNodeKey? Key,
     ImmutableArray<RazorVueAttributeEntry> Attributes,
     RazorVueRenderFragment Children,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins);
@@ -24,6 +29,7 @@ internal sealed record RazorVueComponentNode(
     string ComponentName,
     string ComponentFullName,
     string ResolutionName,
+    RazorVueNodeKey? Key,
     ImmutableArray<RazorVueAttributeEntry> Attributes,
     ImmutableArray<RazorVueComponentSlotTemplateNode> SlotTemplates,
     RazorVueRenderFragment Children,

@@ -45,7 +45,7 @@ internal sealed partial class RazorVueExpressionEmitter
         ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
         => EmitVNodeCall(
             ToJavaScriptString(element.TagName),
-            EmitAttributesArgument(element.Attributes, allowedLocalSymbols, allowedParameterSymbols),
+            EmitAttributesArgument(element.Attributes, element.Key, allowedLocalSymbols, allowedParameterSymbols),
             EmitFragmentArgument(element.Children, allowedLocalSymbols, allowedParameterSymbols));
 
     private string EmitComponentNode(
@@ -75,7 +75,7 @@ internal sealed partial class RazorVueExpressionEmitter
 
         return EmitVNodeCall(
             ResolveComponentReference(component),
-            attributes,
+            ApplyNodeKey(attributes, component.Key, allowedLocalSymbols, allowedParameterSymbols),
             slots);
     }
 
@@ -240,11 +240,12 @@ internal sealed partial class RazorVueExpressionEmitter
 
     private OptionalJsArgument EmitAttributesArgument(
         ImmutableArray<RazorVueAttributeEntry> attributes,
+        RazorVueNodeKey? key,
         ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
         ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
     {
         if (attributes.IsDefaultOrEmpty)
-            return OptionalJsArgument.Missing;
+            return ApplyNodeKey(OptionalJsArgument.Missing, key, allowedLocalSymbols, allowedParameterSymbols);
 
         var segments = new List<string>();
         var objectEntries = new List<string>();
@@ -265,7 +266,7 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         FlushObjectEntries(segments, objectEntries);
-        return BuildPropsArgument(segments, containsSpread);
+        return ApplyNodeKey(BuildPropsArgument(segments, containsSpread), key, allowedLocalSymbols, allowedParameterSymbols);
     }
 
     private OptionalJsArgument EmitAttributesArgument(
@@ -363,6 +364,24 @@ internal sealed partial class RazorVueExpressionEmitter
 
         FlushObjectEntries(segments, objectEntries);
         return BuildPropsArgument(segments, containsSpread);
+    }
+
+    private OptionalJsArgument ApplyNodeKey(
+        OptionalJsArgument props,
+        RazorVueNodeKey? key,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+    {
+        if (key is null)
+            return props;
+
+        var keyEntry = "{ \"key\": " + EmitScopedExpression(key.Expression, allowedLocalSymbols, allowedParameterSymbols) + " }";
+        if (!props.HasValue)
+            return new OptionalJsArgument(keyEntry, true);
+
+        return new OptionalJsArgument(
+            RazorVueAttributeMergeHelper.BuildInvocation([props.Expression, keyEntry]),
+            true);
     }
 
     private OptionalJsArgument BuildPropsArgument(List<string> segments, bool containsSpread)

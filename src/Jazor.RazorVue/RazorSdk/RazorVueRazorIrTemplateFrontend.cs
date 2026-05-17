@@ -10,6 +10,7 @@ using Jazor.RazorVue.Extensibility;
 using Jazor.RazorVue.RenderTree;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Jazor.RazorVue.RazorSdk;
 
@@ -110,6 +111,8 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         private readonly RazorVueSemanticSnapshot _snapshot = snapshot;
         private readonly RazorVueRazorIrOperationResolver _resolver = resolver;
         private readonly Dictionary<string, IOperation> _literalStringOperationCache = new(StringComparer.Ordinal);
+        private int _elementKeyOrdinal;
+        private int _componentKeyOrdinal;
 
         public RazorVueRenderFragment Convert(RazorVueRazorIrNode document)
         {
@@ -287,17 +290,23 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         private RazorVueElementNode ConvertElement(RazorVueRazorIrNode node)
         {
             RejectElementExtensions(node.CapturesOrEmpty, "ReferenceCaptureIntermediateNode");
-            RejectElementExtensions(node.SetKeysOrEmpty, "SetKeyIntermediateNode");
 
+            var key = ResolveElementKey(node);
             var attributes = ImmutableArray.CreateBuilder<RazorVueAttributeEntry>();
             foreach (var attribute in node.AttributesOrEmpty)
+            {
+                if (IsKeyAttribute(attribute))
+                    continue;
+
                 attributes.Add(ConvertHtmlAttributeEntry(attribute));
+            }
             foreach (var splat in node.BodyOrEmpty.Where(static child => child.Kind == RazorVueRazorIrNodeKind.Splat))
                 attributes.Add(ConvertSplatAttribute(splat));
             var children = ConvertTemplateMethodBody(node.BodyOrEmpty);
 
             return new RazorVueElementNode(
                 node.TagName ?? string.Empty,
+                key,
                 attributes.ToImmutable(),
                 children,
                 CreateOrigins(node.Source));
@@ -306,14 +315,16 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         private RazorVueComponentNode ConvertComponent(RazorVueRazorIrNode node)
         {
             RejectComponentExtensions(node.CapturesOrEmpty, "ReferenceCaptureIntermediateNode");
-            RejectComponentExtensions(node.SetKeysOrEmpty, "SetKeyIntermediateNode");
 
+            var key = ResolveComponentKey(node);
             var attributes = ImmutableArray.CreateBuilder<RazorVueAttributeEntry>();
             foreach (var attribute in node.AttributesOrEmpty)
             {
                 if (attribute.IsDesignTimePropertyAccessHelper)
                     continue;
                 if (attribute.IsSynthesized && attribute.Source is null)
+                    continue;
+                if (IsKeyAttribute(attribute))
                     continue;
 
                 attributes.Add(ConvertComponentAttribute(attribute));
@@ -349,6 +360,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 GetComponentName(node),
                 NormalizeTypeName(node.TypeName),
                 string.IsNullOrWhiteSpace(node.TagName) ? GetComponentName(node) : node.TagName!,
+                key,
                 attributes.ToImmutable(),
                 slotTemplates.ToImmutable(),
                 new RazorVueRenderFragment(children.ToImmutable()),
@@ -595,6 +607,229 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             if (first is not null)
                 throw CreateUnsupportedNodeException(first, detail);
         }
+
+        private RazorVueNodeKey? ResolveSetKeyValue(ImmutableArray<RazorVueRazorIrNode> setKeys)
+        {
+            if (setKeys.IsDefaultOrEmpty)
+                return null;
+
+            if (setKeys.Length != 1)
+            {
+                throw CreateUnsupportedAttributeException(
+                    GetBestSourceSpan(setKeys[0]),
+                    $"RazorVue Razor IR frontend expected exactly one SetKeyIntermediateNode for component '{_snapshot.Descriptor.FullName}'.");
+            }
+
+            var setKeyNode = setKeys[0];
+            var sourceSpan = GetBestSourceSpan(setKeyNode) ??
+                             TryGetBestSourceSpan(setKeyNode.Children.FirstOrDefault()) ??
+                             throw new InvalidOperationException("The Razor IR node 'SetKeyIntermediateNode' did not expose a source span.");
+
+            if (setKeyNode.Children.Length == 1)
+            {
+                var child = setKeyNode.Children[0];
+                var expression = child.Kind switch
+                {
+                    RazorVueRazorIrNodeKind.CSharpExpression => ConvertExpression(child).Expression,
+                    RazorVueRazorIrNodeKind.CSharpExpressionAttributeValue => ResolveExpressionAttributeOperation(
+                        "key",
+                        child,
+                        sourceSpan,
+                        setKeyNode),
+                    RazorVueRazorIrNodeKind.IntermediateToken when IsCSharpIntermediateToken(child) => ResolveExpressionAttributeOperation(
+                        "key",
+                        child,
+                        sourceSpan,
+                        setKeyNode),
+                    RazorVueRazorIrNodeKind.HtmlContent => CreateLiteralStringOperation(ResolveLiteralText(child)),
+                    RazorVueRazorIrNodeKind.IntermediateToken => CreateLiteralStringOperation(ResolveLiteralText(child)),
+                    _ => _resolver.ResolveRequiredOperation(sourceSpan, "Razor IR @key expression")
+                };
+
+                return new RazorVueNodeKey(
+                    expression,
+                    CreateOrigins(GetBestSourceSpan(child) ?? sourceSpan));
+            }
+
+            return new RazorVueNodeKey(
+                    _resolver.ResolveRequiredOperation(sourceSpan, "Razor IR @key expression"),
+                    CreateOrigins(sourceSpan));
+        }
+
+        private RazorVueNodeKey? ResolveElementKey(RazorVueRazorIrNode node)
+            => ResolveNodeKey(node.SetKeysOrEmpty, node.AttributesOrEmpty, isComponent: false);
+
+        private RazorVueNodeKey? ResolveComponentKey(RazorVueRazorIrNode node)
+            => ResolveNodeKey(node.SetKeysOrEmpty, node.AttributesOrEmpty, isComponent: true);
+
+        private RazorVueNodeKey? ResolveNodeKey(
+            ImmutableArray<RazorVueRazorIrNode> setKeys,
+            ImmutableArray<RazorVueRazorIrNode> attributes,
+            bool isComponent)
+        {
+            var keyFromSetKey = ResolveSetKeyValue(setKeys);
+            if (keyFromSetKey is not null)
+                return keyFromSetKey;
+
+            foreach (var attribute in attributes)
+            {
+                if (!IsKeyAttribute(attribute))
+                    continue;
+
+                return ResolveKeyAttributeValue(attribute, isComponent);
+            }
+
+            return null;
+        }
+
+        private RazorVueNodeKey ResolveKeyAttributeValue(RazorVueRazorIrNode attribute, bool isComponent)
+        {
+            var sourceSpan = attribute.Source ?? GetBestSourceSpan(attribute);
+            var value = ResolveKeyOperation(attribute, isComponent)
+                        ?? throw CreateUnsupportedAttributeException(
+                            sourceSpan,
+                            $"RazorVue Razor IR frontend requires an expression or literal value for '@key' in component '{_snapshot.Descriptor.FullName}'.");
+
+            return new RazorVueNodeKey(
+                value,
+                CreateOrigins(sourceSpan));
+        }
+
+        private IOperation? ResolveKeyOperation(RazorVueRazorIrNode attribute, bool isComponent)
+        {
+            var sourceExpressionOperation = TryResolveSourceKeyOperation(attribute, isComponent);
+            if (sourceExpressionOperation is not null)
+                return sourceExpressionOperation;
+
+            var mappedOperation = TryResolveMappedKeyOperation(attribute);
+            if (mappedOperation is not null)
+                return mappedOperation;
+
+            return ResolveAttributeValue("@key", attribute.Children, attribute.Source, attribute);
+        }
+
+        private IOperation? TryResolveMappedKeyOperation(RazorVueRazorIrNode attribute)
+        {
+            var sourceSpan = attribute.Source
+                             ?? GetBestSourceSpan(attribute)
+                             ?? TryGetBestSourceSpan(attribute.Children.FirstOrDefault());
+            if (sourceSpan is null)
+                return null;
+
+            if (!_resolver.TryResolveOperation(sourceSpan, out var operation))
+                return null;
+
+            operation = Jazor.RazorVue.RazorVueOperationNormalizer.Unwrap(operation);
+            return operation switch
+            {
+                IConversionOperation conversion => Jazor.RazorVue.RazorVueOperationNormalizer.Unwrap(conversion.Operand),
+                IArgumentOperation argument => Jazor.RazorVue.RazorVueOperationNormalizer.Unwrap(argument.Value),
+                _ => operation
+            };
+        }
+
+        private IOperation? TryResolveSourceKeyOperation(RazorVueRazorIrNode attribute, bool isComponent)
+        {
+            var sourceSpan = attribute.Source
+                             ?? GetBestSourceSpan(attribute);
+            if (sourceSpan is null)
+                return null;
+
+            if (!TryReadSourceSpanText(sourceSpan.Value, out var sourceText))
+                return null;
+
+            if (!TryExtractKeyExpressionText(sourceText, out var expressionText, out var isStringLiteral))
+                return null;
+
+            if (isStringLiteral)
+                return CreateLiteralStringOperation(UnquoteStringLiteral(expressionText));
+
+            if (_resolver.TryResolveRewrittenSourceExpression(expressionText, sourceSpan, out var rewrittenOperation))
+                return rewrittenOperation;
+
+            var ordinal = isComponent ? _componentKeyOrdinal++ : _elementKeyOrdinal++;
+            if (_resolver.TryResolveRewrittenBuilderAttributeValue(
+                    isComponent ? "AddComponentParameter" : "AddAttribute",
+                    "@key",
+                    ordinal,
+                    expressionText,
+                    out var builderRewrittenOperation))
+            {
+                return builderRewrittenOperation;
+            }
+
+            if (_resolver.TryResolveGeneratedExpression(expressionText, sourceSpan, out var generatedOperation))
+                return generatedOperation;
+
+            return null;
+        }
+
+        private bool TryReadSourceSpanText(RazorVueRazorSourceSpan sourceSpan, out string text)
+        {
+            text = string.Empty;
+            var primaryDocument = _snapshot.RazorSourceGeneratorDocument?.PrimaryDocument;
+            if (primaryDocument is null)
+                return false;
+
+            if (!PathsEqual(primaryDocument.Path, sourceSpan.FilePath) &&
+                !string.Equals(primaryDocument.NormalizedPath, Jazor.RazorVue.RazorVueRazorDocument.NormalizePath(sourceSpan.FilePath ?? string.Empty), StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            if (sourceSpan.AbsoluteIndex < 0 ||
+                sourceSpan.Length <= 0 ||
+                sourceSpan.AbsoluteIndex + sourceSpan.Length > primaryDocument.Text.Length)
+            {
+                return false;
+            }
+
+            text = primaryDocument.Text.ToString(TextSpan.FromBounds(sourceSpan.AbsoluteIndex, sourceSpan.AbsoluteIndex + sourceSpan.Length));
+            return !string.IsNullOrWhiteSpace(text);
+        }
+
+        private static bool TryExtractKeyExpressionText(string sourceText, out string expressionText, out bool isStringLiteral)
+        {
+            expressionText = string.Empty;
+            isStringLiteral = false;
+
+            var equalsIndex = sourceText.IndexOf('=');
+            var valueText = equalsIndex < 0
+                ? sourceText.Trim()
+                : sourceText.Substring(equalsIndex + 1).Trim();
+            if (valueText.Length == 0)
+                return false;
+
+            if ((valueText[0] == '"' && valueText[valueText.Length - 1] == '"') ||
+                (valueText[0] == '\'' && valueText[valueText.Length - 1] == '\''))
+            {
+                valueText = valueText.Substring(1, valueText.Length - 2);
+            }
+
+            valueText = valueText.Trim();
+            if (valueText.Length == 0)
+                return false;
+
+            expressionText = valueText;
+            isStringLiteral = IsQuotedStringLiteral(valueText);
+            return true;
+        }
+
+        private static bool IsQuotedStringLiteral(string text)
+            => text.Length >= 2 &&
+               ((text[0] == '"' && text[text.Length - 1] == '"') ||
+                (text[0] == '\'' && text[text.Length - 1] == '\''));
+
+        private static string UnquoteStringLiteral(string text)
+            => IsQuotedStringLiteral(text)
+                ? text.Substring(1, text.Length - 2)
+                : text;
+
+        private static RazorVueRazorSourceSpan? TryGetBestSourceSpan(RazorVueRazorIrNode? node)
+            => node is null ? null : GetBestSourceSpan(node);
+
+        private static bool IsKeyAttribute(RazorVueRazorIrNode attribute)
+            => string.Equals(attribute.AttributeName, "@key", StringComparison.Ordinal);
 
         private RazorVueCompilationIssueException CreateUnsupportedNodeException(RazorVueRazorIrNode node, string detail)
             => CreateUnsupportedAttributeException(
@@ -1530,6 +1765,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             public RazorVueElementNode Build()
                 => new(
                     TagName,
+                    Key: null,
                     Attributes,
                     new RazorVueRenderFragment(Children.ToImmutable()),
                     Origins);

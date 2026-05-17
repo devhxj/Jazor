@@ -962,7 +962,7 @@ public sealed class BuildRenderTreeTemplateFrontendTests
     }
 
     [TestMethod]
-    public void CreateRenderTree_WithSetKey_ThrowsCanonicalizationFailed()
+    public void CreateRenderTree_WithElementSetKey_PreservesNodeKey()
     {
         var context = CreateContext(
             """
@@ -997,11 +997,62 @@ public sealed class BuildRenderTreeTemplateFrontendTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
-            () => BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+        var element = renderTree.Children.Single() as RazorVueElementNode;
+        Assert.IsNotNull(element);
+        Assert.IsNotNull(element.Key);
+        Assert.AreEqual("\"k\"", element.Key.Expression.Syntax.ToString());
+    }
 
-        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "SetKey");
+    [TestMethod]
+    public void CreateRenderTree_WithComponentSetKey_PreservesNodeKey()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Id { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<ChildCard>(0);
+                        builder.SetKey(Id);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+        var component = renderTree.Children.Single() as RazorVueComponentNode;
+        Assert.IsNotNull(component);
+        Assert.IsNotNull(component.Key);
+        Assert.AreEqual("Id", component.Key.Expression.Syntax.ToString());
     }
 
     [TestMethod]

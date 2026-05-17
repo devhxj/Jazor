@@ -81,6 +81,59 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersVNodeKeys_ToTemplateKeyBindings()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Id { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.SetKey("root");
+                        builder.OpenComponent<ChildCard>(1);
+                        builder.SetKey(Id);
+                        builder.CloseComponent();
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<section :key=\"&quot;root&quot;\">");
+        StringAssert.Contains(artifact.TemplateText, "<ChildCardComponent :key=\"props.id\" />");
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_LowersParameterInitializerDefaults_ThroughRuntimeProxy()
     {
         var context = CreateContext(
@@ -1000,12 +1053,14 @@ public sealed class RazorVueSfcArtifactFactoryTests
                 "LayoutCard",
                 "Demo.Components.LayoutCard",
                 "LayoutCard",
+                null,
                 ImmutableArray<RazorVueAttributeEntry>.Empty,
                 ImmutableArray<RazorVueComponentSlotTemplateNode>.Empty,
                 new RazorVueRenderFragment(
                 [
                     new RazorVueElementNode(
                         "span",
+                        null,
                         ImmutableArray<RazorVueAttributeEntry>.Empty,
                         new RazorVueRenderFragment(
                         [
@@ -1626,7 +1681,8 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
         StringAssert.Contains(artifact.TemplateText, "<VTextField :modelValue=\"props.modelValue\" @update:modelValue=\"__jazor$0\" />");
-        StringAssert.Contains(artifact.ScriptSetupText, "const props = defineProps<{ modelValue?: any }>();");
+        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorRawProps = defineProps<{ modelValue?: any }>();");
+        StringAssert.Contains(artifact.ScriptSetupText, "const props = __jazorRawProps;");
         StringAssert.Contains(artifact.ScriptSetupText, "const emit = defineEmits<{ (event: \"update:modelValue\", payload?: any): void }>();");
         StringAssert.Contains(artifact.ScriptSetupText, "const __jazor$0 = computed(() => (__value) => emit(\"update:modelValue\", __value));");
     }
@@ -1976,6 +2032,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
                 "VBtn",
                 "ECMAScript.Vuetify.VBtn",
                 "VBtn",
+                null,
                 ImmutableArray<RazorVueAttributeEntry>.Empty,
                 [
                     new RazorVueComponentSlotTemplateNode(
@@ -2871,9 +2928,9 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
         StringAssert.Contains(artifact.TemplateText, "<template #[`header-item.profile`]=\"item\">");
-        StringAssert.Contains(artifact.TemplateText, "{{ item.Title }}");
+        StringAssert.Contains(artifact.TemplateText, "{{ item.title }}");
         StringAssert.Contains(artifact.TemplateText, "<template #[`item.profile`]=\"item\">");
-        StringAssert.Contains(artifact.TemplateText, "{{ item.Value }}");
+        StringAssert.Contains(artifact.TemplateText, "{{ item.value }}");
         Assert.IsFalse(artifact.TemplateText.Contains("<template #header-item=", StringComparison.Ordinal), artifact.TemplateText);
         Assert.IsFalse(artifact.TemplateText.Contains("<template #item=", StringComparison.Ordinal), artifact.TemplateText);
     }
@@ -2929,9 +2986,9 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
         StringAssert.Contains(artifact.TemplateText, "<template #[`header-item.profile`]=\"item\">");
-        StringAssert.Contains(artifact.TemplateText, "{{ item.Step }}");
+        StringAssert.Contains(artifact.TemplateText, "{{ item.step }}");
         StringAssert.Contains(artifact.TemplateText, "<template #[`item.profile`]=\"item\">");
-        StringAssert.Contains(artifact.TemplateText, "{{ item.Title }}");
+        StringAssert.Contains(artifact.TemplateText, "{{ item.title }}");
         Assert.IsFalse(artifact.TemplateText.Contains("<template #header-item=", StringComparison.Ordinal), artifact.TemplateText);
         Assert.IsFalse(artifact.TemplateText.Contains("<template #item=", StringComparison.Ordinal), artifact.TemplateText);
     }
@@ -3244,6 +3301,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
             ImmutableArray.Create<RazorVueRenderNode>(
                 new RazorVueElementNode(
                     "section",
+                    null,
                     ImmutableArray<RazorVueAttributeEntry>.Empty,
                     new RazorVueRenderFragment(
                         ImmutableArray.Create<RazorVueRenderNode>(

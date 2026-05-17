@@ -14,6 +14,7 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
         ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
     {
         var builder = CreateBaseDescriptorShape(ownerDescriptor);
+        AppendRenderTreeKeyShape(builder, renderTree);
         AppendResolvedComponentRuntimeShape(builder, CollectFromRenderTree(renderTree, resolvedComponents));
         return builder.ToString();
     }
@@ -23,8 +24,85 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
         RazorVueCanonicalTemplateFragment template)
     {
         var builder = CreateBaseDescriptorShape(ownerDescriptor);
+        AppendCanonicalKeyShape(builder, template);
         AppendResolvedComponentRuntimeShape(builder, CollectFromCanonicalTemplate(template));
         return builder.ToString();
+    }
+
+    private static void AppendRenderTreeKeyShape(StringBuilder builder, RazorVueRenderFragment fragment)
+    {
+        if (fragment.Children.IsDefaultOrEmpty)
+            return;
+
+        foreach (var child in fragment.Children)
+            AppendRenderTreeKeyShape(builder, child);
+    }
+
+    private static void AppendRenderTreeKeyShape(StringBuilder builder, RazorVueRenderNode node)
+    {
+        switch (node)
+        {
+            case RazorVueElementNode element:
+                if (element.Key is not null)
+                    builder.AppendLine("render:key:" + element.Key.Expression.Syntax.ToString());
+                AppendRenderTreeKeyShape(builder, element.Children);
+                break;
+            case RazorVueComponentNode component:
+                if (component.Key is not null)
+                    builder.AppendLine("render:key:" + component.Key.Expression.Syntax.ToString());
+                AppendRenderTreeKeyShape(builder, component.Children);
+                foreach (var slotTemplate in component.SlotTemplates)
+                    AppendRenderTreeKeyShape(builder, slotTemplate.Children);
+                break;
+            case RazorVueConditionalNode conditional:
+                AppendRenderTreeKeyShape(builder, conditional.WhenTrue);
+                AppendRenderTreeKeyShape(builder, conditional.WhenFalse);
+                break;
+            case RazorVueForEachNode loop:
+                AppendRenderTreeKeyShape(builder, loop.Body);
+                break;
+            case RazorVueForNode loop:
+                AppendRenderTreeKeyShape(builder, loop.Body);
+                break;
+        }
+    }
+
+    private static void AppendCanonicalKeyShape(StringBuilder builder, RazorVueCanonicalTemplateFragment fragment)
+    {
+        if (fragment.Children.IsDefaultOrEmpty)
+            return;
+
+        foreach (var child in fragment.Children)
+            AppendCanonicalKeyShape(builder, child);
+    }
+
+    private static void AppendCanonicalKeyShape(StringBuilder builder, RazorVueCanonicalTemplateNode node)
+    {
+        switch (node)
+        {
+            case RazorVueCanonicalElementNode element:
+                if (element.Key is not null)
+                    builder.AppendLine("canonical:key:" + element.Key.ExpressionText);
+                AppendCanonicalKeyShape(builder, element.Children);
+                break;
+            case RazorVueCanonicalComponentNode component:
+                if (component.Key is not null)
+                    builder.AppendLine("canonical:key:" + component.Key.ExpressionText);
+                AppendCanonicalKeyShape(builder, component.Children);
+                foreach (var slot in component.Slots)
+                    AppendCanonicalKeyShape(builder, slot.Children);
+                break;
+            case RazorVueCanonicalConditionalNode conditional:
+                AppendCanonicalKeyShape(builder, conditional.WhenTrue);
+                AppendCanonicalKeyShape(builder, conditional.WhenFalse);
+                break;
+            case RazorVueCanonicalForEachNode loop:
+                AppendCanonicalKeyShape(builder, loop.Body);
+                break;
+            case RazorVueCanonicalForNode loop:
+                AppendCanonicalKeyShape(builder, loop.Body);
+                break;
+        }
     }
 
     private static StringBuilder CreateBaseDescriptorShape(VueComponentDescriptor descriptor)

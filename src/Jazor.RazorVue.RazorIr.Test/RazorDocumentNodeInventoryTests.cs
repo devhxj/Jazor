@@ -250,6 +250,59 @@ public sealed class RazorDocumentNodeInventoryTests
     }
 
     [TestMethod]
+    public void AlignedContext_ForAtKey_ProducesKeyInventory()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            <section @key="'root'">
+                <SharedBadge @key="Id" Text="@Title" />
+            </section>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.Inventory.AtKey",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Shared
+            {
+                [ECMAScript.ECMAScriptModule("./components/shared-badge")]
+                public partial class SharedBadge : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Text { get; set; }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                using Demo.Shared;
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Id { get; set; }
+
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """,
+            importsText: "@using Demo.Shared");
+
+        var tree = RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot);
+        TestContext.WriteLine(tree);
+
+        StringAssert.Contains(tree, "MarkupElementIntermediateNode TagName=\"section\"");
+        StringAssert.Contains(tree, "ComponentIntermediateNode");
+        StringAssert.Contains(tree, "HtmlAttributeIntermediateNode AttributeName=\"@key\"");
+        StringAssert.Contains(tree, "ComponentAttributeIntermediateNode AttributeName=\"@key\"");
+        StringAssert.Contains(tree, "HtmlAttributeValueIntermediateNode");
+        StringAssert.Contains(tree, "HtmlContentIntermediateNode");
+    }
+
+    [TestMethod]
     public void ProcessDesignTime_ForComponentNamedAndTypedChildContent_ProducesComponentChildContentInventory()
     {
         var codeDocument = RazorIrTestHost.CreateCodeDocument(

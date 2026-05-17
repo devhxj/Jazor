@@ -154,11 +154,13 @@ internal sealed class RazorVueSfcSemanticModelFactory
         switch (node)
         {
             case RazorVueCanonicalElementNode element:
+                CollectLiftedBindings(ownerComponentFullName, element.Key, bindings, templateScopeDepth, path + "/key");
                 CollectLiftedBindings(ownerComponentFullName, element.Attributes, bindings, templateScopeDepth, path + "/attrs");
                 CollectLiftedBindings(ownerComponentFullName, element.Children, bindings, templateScopeDepth, path);
                 return;
 
             case RazorVueCanonicalComponentNode component:
+                CollectLiftedBindings(ownerComponentFullName, component.Key, bindings, templateScopeDepth, path + "/key");
                 CollectLiftedBindings(ownerComponentFullName, component.Attributes, bindings, templateScopeDepth, path + "/attrs");
                 CollectLiftedBindings(ownerComponentFullName, component.Slots, bindings, templateScopeDepth, path + "/slots");
                 CollectLiftedBindings(ownerComponentFullName, component.Children, bindings, templateScopeDepth, path);
@@ -340,6 +342,29 @@ internal sealed class RazorVueSfcSemanticModelFactory
                 slot.SourceOrigins);
             CollectLiftedBindings(ownerComponentFullName, slot.Children, bindings, effectiveScopeDepth, pathPrefix + "/slot[" + index + "]");
         }
+    }
+
+    private static void CollectLiftedBindings(
+        string ownerComponentFullName,
+        RazorVueCanonicalNodeKey? key,
+        BindingCollection bindings,
+        int templateScopeDepth,
+        string path)
+    {
+        if (key is null)
+            return;
+
+        if (!ShouldCreateBindingSite(key.TemplateEncodability, key.SideEffectClassification, templateScopeDepth))
+            return;
+
+        bindings.Add(
+            ownerComponentFullName,
+            path,
+            key.ExpressionText,
+            key.BindingKind,
+            key.TemplateExpressionSafety,
+            key.SideEffectClassification,
+            key.SourceOrigins);
     }
 
     private static bool ShouldCreateBindingSite(

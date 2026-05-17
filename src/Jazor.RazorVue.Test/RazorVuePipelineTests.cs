@@ -166,6 +166,57 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersVNodeKeys_IntoHProps()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Id { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.SetKey("root");
+                        builder.OpenComponent<ChildCard>(1);
+                        builder.SetKey(Id);
+                        builder.CloseComponent();
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "Host");
+
+        StringAssert.Contains(artifact.ModuleCode, "h(\"section\", { \"key\": \"root\" }, h(ChildCardComponent, { \"key\": props.id }))");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersParameterInitializerDefaults_WithoutPropsRedeclaration()
     {
         var context = CreateContext(
@@ -3372,8 +3423,8 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(
             artifact.ModuleCode,
             "import { VStepper as VStepperComponent } from \"vuetify/components\";");
-        StringAssert.Contains(artifact.ModuleCode, "\"header-item.profile\": (item) => h(\"strong\", null, item.Title)");
-        StringAssert.Contains(artifact.ModuleCode, "\"item.profile\": (item) => h(\"section\", null, item.Value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"header-item.profile\": (item) => h(\"strong\", null, item.title)");
+        StringAssert.Contains(artifact.ModuleCode, "\"item.profile\": (item) => h(\"section\", null, item.value)");
         Assert.IsFalse(artifact.ModuleCode.Contains("\"header-item\": (item) => h(\"strong\"", StringComparison.Ordinal), artifact.ModuleCode);
         Assert.IsFalse(artifact.ModuleCode.Contains("item: (item) => h(\"section\"", StringComparison.Ordinal), artifact.ModuleCode);
     }
@@ -3600,8 +3651,8 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"items\": [{");
         StringAssert.Contains(artifact.ModuleCode, "title: \"Profile\"");
         StringAssert.Contains(artifact.ModuleCode, "value: \"profile\"");
-        StringAssert.Contains(artifact.ModuleCode, "\"header-item.profile\": (item) => h(\"strong\", null, item.Step)");
-        StringAssert.Contains(artifact.ModuleCode, "\"item.profile\": (item) => h(\"section\", null, item.Title)");
+        StringAssert.Contains(artifact.ModuleCode, "\"header-item.profile\": (item) => h(\"strong\", null, item.step)");
+        StringAssert.Contains(artifact.ModuleCode, "\"item.profile\": (item) => h(\"section\", null, item.title)");
         StringAssert.Contains(artifact.ModuleCode, "default: (context) => slots.stepperDefault ? slots.stepperDefault(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "actions: (context) => slots.stepperActions ? slots.stepperActions(context) : null");
         Assert.IsFalse(artifact.ModuleCode.Contains("\"header-item\": (item) => h(\"strong\"", StringComparison.Ordinal), artifact.ModuleCode);
@@ -5744,9 +5795,9 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "import { VDialog as VDialogComponent } from \"vuetify/components\";");
         StringAssert.Contains(artifact.ModuleCode, "activator: (context) => slots.activator ? slots.activator(context) : null");
         StringAssert.Contains(artifact.ModuleCode, "\"activator\": 'parent'");
-        StringAssert.Contains(artifact.ModuleCode, "\"data-active\": context.IsActive");
-        StringAssert.Contains(artifact.ModuleCode, "\"data-props\": context.Props");
-        StringAssert.Contains(artifact.ModuleCode, "\"data-target\": context.TargetRef");
+        StringAssert.Contains(artifact.ModuleCode, "\"data-active\": context.isActive");
+        StringAssert.Contains(artifact.ModuleCode, "\"data-props\": context.props");
+        StringAssert.Contains(artifact.ModuleCode, "\"data-target\": context.targetRef");
         StringAssert.Contains(artifact.ModuleCode, "default: () => slots.default ? slots.default() : null");
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
@@ -20285,6 +20336,7 @@ public sealed class RazorVuePipelineTests
             ImmutableArray.Create<RazorVueRenderNode>(
                 new RazorVueElementNode(
                     "section",
+                    null,
                     ImmutableArray<RazorVueAttributeEntry>.Empty,
                     new RazorVueRenderFragment(
                         ImmutableArray.Create<RazorVueRenderNode>(

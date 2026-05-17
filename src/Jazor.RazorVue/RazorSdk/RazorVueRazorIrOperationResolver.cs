@@ -38,6 +38,8 @@ internal sealed class RazorVueRazorIrOperationResolver
         SourceRange BodyRange);
 
     private readonly RazorVueSemanticSnapshot _snapshot;
+    private readonly Compilation _compilation;
+    private readonly SyntaxTree _generatedTree;
     private readonly SyntaxNode _generatedRoot;
     private readonly SemanticModel _semanticModel;
     private readonly SourceText _generatedText;
@@ -56,12 +58,13 @@ internal sealed class RazorVueRazorIrOperationResolver
             throw new ArgumentNullException(nameof(document));
 
         _snapshot = snapshot;
-        var generatedTree = GetGeneratedRazorSyntaxTree(context, snapshot, document);
-        _generatedRoot = generatedTree.GetRoot();
-        _semanticModel = context.Compilation.ContainsSyntaxTree(generatedTree)
-            ? context.Compilation.GetSemanticModel(generatedTree)
-            : context.Compilation.AddSyntaxTrees(generatedTree).GetSemanticModel(generatedTree);
-        _generatedText = generatedTree.GetText();
+        _compilation = context.Compilation;
+        _generatedTree = GetGeneratedRazorSyntaxTree(context, snapshot, document);
+        _generatedRoot = _generatedTree.GetRoot();
+        _semanticModel = _compilation.ContainsSyntaxTree(_generatedTree)
+            ? _compilation.GetSemanticModel(_generatedTree)
+            : _compilation.AddSyntaxTrees(_generatedTree).GetSemanticModel(_generatedTree);
+        _generatedText = _generatedTree.GetText();
         _sourceMappings = document.SourceMappings;
     }
 
@@ -136,6 +139,104 @@ internal sealed class RazorVueRazorIrOperationResolver
         }
 
         return false;
+    }
+
+    public bool TryResolveRewrittenSourceExpression(
+        string expressionText,
+        RazorVueRazorSourceSpan? sourceSpan,
+        out IOperation operation)
+    {
+        operation = default!;
+        if (sourceSpan is null || string.IsNullOrWhiteSpace(expressionText))
+            return false;
+
+        if (!TryMapToGeneratedSpan(sourceSpan.Value, out var generatedSpan))
+            return false;
+
+        ExpressionSyntax? replacementTarget = null;
+        if (TryResolveOperation(sourceSpan, out var mappedOperation))
+        {
+            replacementTarget = mappedOperation.Syntax as ExpressionSyntax
+                ?? mappedOperation.Syntax.AncestorsAndSelf().OfType<ExpressionSyntax>().FirstOrDefault();
+        }
+
+        replacementTarget ??= FindBestSyntaxNode(generatedSpan)?
+            .AncestorsAndSelf()
+            .OfType<ExpressionSyntax>()
+            .FirstOrDefault();
+        if (replacementTarget is null)
+            return false;
+
+        var updatedSource = _generatedText.ToString().Remove(replacementTarget.Span.Start, replacementTarget.Span.Length)
+            .Insert(replacementTarget.Span.Start, expressionText);
+        var updatedTree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(
+            updatedSource,
+            options: _generatedTree.Options as Microsoft.CodeAnalysis.CSharp.CSharpParseOptions,
+            path: _generatedTree.FilePath,
+            encoding: _generatedText.Encoding);
+        var updatedCompilation = _compilation.ContainsSyntaxTree(_generatedTree)
+            ? _compilation.ReplaceSyntaxTree(_generatedTree, updatedTree)
+            : _compilation.AddSyntaxTrees(updatedTree);
+        var updatedModel = updatedCompilation.GetSemanticModel(updatedTree);
+        var updatedRoot = updatedTree.GetRoot();
+        var replacementSpan = new TextSpan(replacementTarget.Span.Start, expressionText.Length);
+
+        operation = updatedRoot.DescendantNodes()
+            .OfType<ExpressionSyntax>()
+            .Where(candidate =>
+                string.Equals(
+                    NormalizeComparableCode(candidate.ToString()),
+                    NormalizeComparableCode(expressionText),
+                    StringComparison.Ordinal))
+            .Where(candidate =>
+                Contains(candidate.FullSpan, replacementSpan) ||
+                Contains(candidate.Span, replacementSpan) ||
+                Contains(replacementSpan, candidate.FullSpan) ||
+                Contains(replacementSpan, candidate.Span) ||
+                Overlaps(candidate.FullSpan, replacementSpan) ||
+                Overlaps(candidate.Span, replacementSpan))
+            .OrderBy(static candidate => candidate.Span.Length)
+            .ThenBy(candidate => Math.Abs(candidate.SpanStart - replacementSpan.Start))
+            .Select(candidate => GetBestOperation(updatedModel, candidate))
+            .FirstOrDefault(static candidate => candidate is not null)!;
+
+        return operation is not null;
+    }
+
+    public bool TryResolveRewrittenBuilderAttributeValue(
+        string methodName,
+        string attributeName,
+        int ordinal,
+        string expressionText,
+        out IOperation operation)
+    {
+        operation = default!;
+        if (string.IsNullOrWhiteSpace(methodName) ||
+            string.IsNullOrWhiteSpace(attributeName) ||
+            ordinal < 0 ||
+            string.IsNullOrWhiteSpace(expressionText))
+        {
+            return false;
+        }
+
+        var candidates = _generatedRoot.DescendantNodes()
+            .OfType<InvocationExpressionSyntax>()
+            .Where(candidate => string.Equals(GetInvocationMethodName(candidate), methodName, StringComparison.Ordinal))
+            .Where(candidate => candidate.ArgumentList.Arguments.Count >= 3)
+            .Where(candidate =>
+            {
+                var attributeArgument = candidate.ArgumentList.Arguments[1].Expression;
+                return attributeArgument is LiteralExpressionSyntax literal &&
+                       literal.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.StringLiteralExpression) &&
+                       string.Equals(literal.Token.ValueText, attributeName, StringComparison.Ordinal);
+            })
+            .OrderBy(static candidate => candidate.SpanStart)
+            .ToArray();
+        if (ordinal >= candidates.Length)
+            return false;
+
+        var replacementTarget = candidates[ordinal].ArgumentList.Arguments[2].Expression;
+        return TryResolveOperationFromRewrittenExpression(expressionText, replacementTarget, out operation);
     }
 
     public bool TryResolveConditional(RazorVueRazorSourceSpan? sourceSpan, out ResolvedConditional conditional)
@@ -357,11 +458,11 @@ internal sealed class RazorVueRazorIrOperationResolver
         }
     }
 
-    private IOperation? GetBestOperation(SyntaxNode syntax)
+    private IOperation? GetBestOperation(SemanticModel semanticModel, SyntaxNode syntax)
     {
         for (var current = syntax; current is not null; current = current.Parent)
         {
-            var operation = _semanticModel.GetOperation(current);
+            var operation = semanticModel.GetOperation(current);
             if (operation is IArgumentOperation argumentOperation)
                 operation = argumentOperation.Value;
 
@@ -372,6 +473,65 @@ internal sealed class RazorVueRazorIrOperationResolver
 
         return null;
     }
+
+    private IOperation? GetBestOperation(SyntaxNode syntax)
+        => GetBestOperation(_semanticModel, syntax);
+
+    private bool TryResolveOperationFromRewrittenExpression(
+        string expressionText,
+        ExpressionSyntax replacementTarget,
+        out IOperation operation)
+    {
+        operation = default!;
+        var updatedSource = _generatedText.ToString().Remove(replacementTarget.Span.Start, replacementTarget.Span.Length)
+            .Insert(replacementTarget.Span.Start, expressionText);
+        var updatedTree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(
+            updatedSource,
+            options: _generatedTree.Options as Microsoft.CodeAnalysis.CSharp.CSharpParseOptions,
+            path: _generatedTree.FilePath,
+            encoding: _generatedText.Encoding);
+        var updatedCompilation = _compilation.ContainsSyntaxTree(_generatedTree)
+            ? _compilation.ReplaceSyntaxTree(_generatedTree, updatedTree)
+            : _compilation.AddSyntaxTrees(updatedTree);
+        var updatedModel = updatedCompilation.GetSemanticModel(updatedTree);
+        var updatedRoot = updatedTree.GetRoot();
+        var replacementSpan = new TextSpan(replacementTarget.Span.Start, expressionText.Length);
+        var updatedExpression = updatedRoot.DescendantNodes()
+            .OfType<ExpressionSyntax>()
+            .Where(candidate =>
+                string.Equals(
+                    NormalizeComparableCode(candidate.ToString()),
+                    NormalizeComparableCode(expressionText),
+                    StringComparison.Ordinal))
+            .Where(candidate =>
+                Contains(candidate.FullSpan, replacementSpan) ||
+                Contains(candidate.Span, replacementSpan) ||
+                Contains(replacementSpan, candidate.FullSpan) ||
+                Contains(replacementSpan, candidate.Span) ||
+                Overlaps(candidate.FullSpan, replacementSpan) ||
+                Overlaps(candidate.Span, replacementSpan))
+            .OrderBy(static candidate => candidate.Span.Length)
+            .ThenBy(candidate => Math.Abs(candidate.SpanStart - replacementSpan.Start))
+            .FirstOrDefault();
+        if (updatedExpression is null)
+            return false;
+
+        var resolvedOperation = GetBestOperation(updatedModel, updatedExpression);
+        if (resolvedOperation is null)
+            return false;
+
+        operation = resolvedOperation;
+        return true;
+    }
+
+    private static string? GetInvocationMethodName(InvocationExpressionSyntax invocation)
+        => invocation.Expression switch
+        {
+            MemberAccessExpressionSyntax memberAccess => memberAccess.Name.Identifier.ValueText,
+            IdentifierNameSyntax identifier => identifier.Identifier.ValueText,
+            GenericNameSyntax genericName => genericName.Identifier.ValueText,
+            _ => null
+        };
 
     private static int ScoreGeneratedExpressionCandidate(ExpressionSyntax candidate, TextSpan? preferredSpan)
     {

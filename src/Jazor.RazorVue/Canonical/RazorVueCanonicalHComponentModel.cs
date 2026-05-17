@@ -43,6 +43,7 @@ internal abstract record RazorVueCanonicalTemplateNode(
 
 internal sealed record RazorVueCanonicalElementNode(
     string TagName,
+    RazorVueCanonicalNodeKey? Key,
     ImmutableArray<RazorVueCanonicalAttributeEntry> Attributes,
     RazorVueCanonicalTemplateFragment Children,
     RazorVueTemplateEncodability TemplateEncodability,
@@ -56,6 +57,7 @@ internal sealed record RazorVueCanonicalComponentNode(
     string ComponentFullName,
     string ResolutionName,
     VueComponentDescriptor? ResolvedDescriptor,
+    RazorVueCanonicalNodeKey? Key,
     ImmutableArray<RazorVueCanonicalAttributeEntry> Attributes,
     ImmutableArray<RazorVueCanonicalSlotBinding> Slots,
     RazorVueCanonicalTemplateFragment Children,
@@ -136,6 +138,14 @@ internal sealed record RazorVueCanonicalSlotOutletNode(
     RazorVueSideEffectClassification SideEffectClassification,
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins)
     : RazorVueCanonicalTemplateNode(RazorVueCanonicalNodeKind.SlotOutlet, TemplateEncodability, TemplateExpressionSafety, SideEffectClassification, SourceOrigins);
+
+internal sealed record RazorVueCanonicalNodeKey(
+    string ExpressionText,
+    RazorVueExpressionBindingKind BindingKind,
+    RazorVueTemplateEncodability TemplateEncodability,
+    RazorVueTemplateExpressionSafety TemplateExpressionSafety,
+    RazorVueSideEffectClassification SideEffectClassification,
+    ImmutableArray<RazorVueSourceOrigin> SourceOrigins);
 
 internal abstract record RazorVueCanonicalAttributeEntry(
     RazorVueTemplateEncodability TemplateEncodability,
