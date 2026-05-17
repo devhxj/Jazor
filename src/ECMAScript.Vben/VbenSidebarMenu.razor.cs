@@ -24,8 +24,8 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
     [Parameter]
     public RenderFragment? Logo { get; set; }
 
-    private bool HasItems
-        => VbenNavItemRenderHelper.HasRenderableItems(Items);
+    private VbenEffectiveNavItem[] EffectiveItems
+        => VbenNavItemRenderHelper.BuildEffectiveItems(Items);
 
     private VueClassValue RootCssClass
         => Collapsed
@@ -34,23 +34,27 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
 
     private RenderFragment RenderItem(VbenNavItem item) => builder =>
     {
-        var itemKey = VbenNavigationKeyHelper.Normalize(item.Key);
-        if (itemKey is null || string.IsNullOrWhiteSpace(item.Title))
+        if (!TryResolveEffectiveItem(item, out var effectiveItem))
         {
             return;
         }
 
-        var isExpanded = IsExpanded(item);
-        var isSelected = IsSelected(item);
-        var hasSelectedDescendant = HasSelectedDescendant(item);
-        var isDisabled = item.Disabled ?? false;
-        var canNavigate = CanNavigate(item);
-        var hasNavigableChildren = HasNavigableChildren(item);
-        var hasChildren = GetChildren(item).Length > 0;
+        RenderEffectiveItem(effectiveItem)(builder);
+    };
+
+    private RenderFragment RenderEffectiveItem(VbenEffectiveNavItem item) => builder =>
+    {
+        var isExpanded = IsExpandedCore(item);
+        var isSelected = IsSelectedCore(item);
+        var hasSelectedDescendant = HasSelectedDescendantCore(item);
+        var isDisabled = item.Source.Disabled ?? false;
+        var canNavigate = CanNavigateCore(item);
+        var hasNavigableChildren = HasNavigableChildrenCore(item);
+        var hasChildren = item.Children.Length > 0;
 
         builder.OpenElement(0, "li");
         builder.AddAttribute(1, "class", BuildItemCssClass(item, isExpanded, isSelected, hasSelectedDescendant));
-        builder.AddAttribute(2, "data-key", itemKey);
+        builder.AddAttribute(2, "data-key", item.Key);
 
         builder.OpenElement(3, "div");
         builder.AddAttribute(4, "class", "vben-sidebar__item-content");
@@ -62,7 +66,7 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
             builder.AddAttribute(7, "class", "vben-sidebar__button vben-sidebar__button--branch");
             builder.AddAttribute(8, "disabled", isDisabled || !hasNavigableChildren);
             builder.AddAttribute(9, "aria-expanded", isExpanded);
-            builder.AddAttribute(10, "onclick", EventCallback.Factory.Create(this, () => OnBranchToggled(item)));
+            builder.AddAttribute(10, "onclick", EventCallback.Factory.Create(this, () => OnBranchToggledCore(item)));
             builder.AddContent(11, item.Title);
             builder.CloseElement();
         }
@@ -78,7 +82,7 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
             builder.AddAttribute(22, "class", "vben-sidebar__toggle");
             builder.AddAttribute(23, "disabled", isDisabled);
             builder.AddAttribute(24, "aria-expanded", isExpanded);
-            builder.AddAttribute(25, "onclick", EventCallback.Factory.Create(this, () => OnBranchToggled(item)));
+            builder.AddAttribute(25, "onclick", EventCallback.Factory.Create(this, () => OnBranchToggledCore(item)));
             builder.AddContent(26, isExpanded ? "-" : "+");
             builder.CloseElement();
         }
@@ -89,9 +93,9 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
         {
             builder.OpenElement(30, "ul");
             builder.AddAttribute(31, "class", "vben-sidebar__children");
-            foreach (var child in GetChildren(item))
+            foreach (var child in item.Children)
             {
-                RenderItem(child)(builder);
+                RenderEffectiveItem(child)(builder);
             }
             builder.CloseElement();
         }
@@ -113,14 +117,14 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
         }
 
         var expandedKeys = new HashSet<string>(StringComparer.Ordinal);
-        if (Items?.AsArray is not { Length: > 0 } items)
+        if (EffectiveItems is not { Length: > 0 } items)
         {
             return expandedKeys;
         }
 
-        foreach (var item in VbenNavItemRenderHelper.FilterRenderableItems(items))
+        foreach (var item in items)
         {
-            CollectExpandedKeysForSelection(item, selectedKey, expandedKeys);
+            CollectExpandedKeysForSelectionCore(item, selectedKey, expandedKeys);
         }
 
         return expandedKeys;
@@ -128,39 +132,20 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
 
     private bool IsExpanded(VbenNavItem item)
     {
-        var itemKey = VbenNavigationKeyHelper.Normalize(item.Key);
-        return itemKey is not null
-               && !(item.Disabled ?? false)
-               && HasNavigableChildren(item)
-               && GetEffectiveExpandedKeySet().Contains(itemKey);
+        return TryResolveEffectiveItem(item, out var effectiveItem)
+               && IsExpandedCore(effectiveItem);
     }
 
     private bool IsSelected(VbenNavItem item)
     {
-        var selectedKey = VbenNavigationKeyHelper.Normalize(SelectedKey);
-        var itemKey = VbenNavigationKeyHelper.Normalize(item.Key);
-        return itemKey is not null
-               && selectedKey is not null
-               && !(item.Disabled ?? false)
-               && StringComparer.Ordinal.Equals(itemKey, selectedKey);
+        return TryResolveEffectiveItem(item, out var effectiveItem)
+               && IsSelectedCore(effectiveItem);
     }
 
     private bool HasSelectedDescendant(VbenNavItem item)
     {
-        if (item.Disabled ?? false || VbenNavigationKeyHelper.Normalize(SelectedKey) is null)
-        {
-            return false;
-        }
-
-        foreach (var child in GetChildren(item))
-        {
-            if (ContainsSelectedItem(child))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return TryResolveEffectiveItem(item, out var effectiveItem)
+               && HasSelectedDescendantCore(effectiveItem);
     }
 
     private static bool CanNavigate(VbenNavItem item)
@@ -198,25 +183,8 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
 
     private bool ContainsSelectedItem(VbenNavItem item)
     {
-        if (item.Disabled ?? false)
-        {
-            return false;
-        }
-
-        if (IsSelected(item))
-        {
-            return true;
-        }
-
-        foreach (var child in GetChildren(item))
-        {
-            if (ContainsSelectedItem(child))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return TryResolveEffectiveItem(item, out var effectiveItem)
+               && ContainsSelectedItemCore(effectiveItem);
     }
 
     private bool CollectExpandedKeysForSelection(
@@ -224,30 +192,11 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
         string selectedKey,
         HashSet<string> expandedKeys)
     {
-        var itemKey = VbenNavigationKeyHelper.Normalize(item.Key);
-        if (item.Disabled ?? false || itemKey is null)
-        {
-            return false;
-        }
-
-        var subtreeContainsSelection = StringComparer.Ordinal.Equals(itemKey, selectedKey);
-        foreach (var child in GetChildren(item))
-        {
-            if (CollectExpandedKeysForSelection(child, selectedKey, expandedKeys))
-            {
-                subtreeContainsSelection = true;
-            }
-        }
-
-        if (subtreeContainsSelection && HasNavigableChildren(item))
-        {
-            expandedKeys.Add(itemKey!);
-        }
-
-        return subtreeContainsSelection;
+        return TryResolveEffectiveItem(item, out var effectiveItem)
+               && CollectExpandedKeysForSelectionCore(effectiveItem, selectedKey, expandedKeys);
     }
 
-    private RenderFragment RenderNavigationElement(VbenNavItem item, bool isDisabled) => builder =>
+    private RenderFragment RenderNavigationElement(VbenEffectiveNavItem item, bool isDisabled) => builder =>
     {
         var navigationTarget = ResolveNavigationTarget(item);
 
@@ -256,7 +205,7 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
             builder.OpenElement(0, "router-link");
             builder.AddAttribute(1, "class", "vben-sidebar__link");
             builder.AddAttribute(2, "to", navigationTarget.Route);
-            builder.AddAttribute(3, "onclick", EventCallback.Factory.Create(this, () => OnItemSelected(item)));
+            builder.AddAttribute(3, "onclick", EventCallback.Factory.Create(this, () => OnItemSelectedCore(item)));
             builder.AddContent(4, item.Title);
             builder.CloseElement();
             return;
@@ -267,7 +216,7 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
             builder.OpenElement(10, "a");
             builder.AddAttribute(11, "class", "vben-sidebar__link");
             builder.AddAttribute(12, "href", navigationTarget.Href);
-            builder.AddAttribute(13, "onclick", EventCallback.Factory.Create(this, () => OnItemSelected(item)));
+            builder.AddAttribute(13, "onclick", EventCallback.Factory.Create(this, () => OnItemSelectedCore(item)));
             builder.AddContent(14, item.Title);
             builder.CloseElement();
             return;
@@ -277,7 +226,7 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
         builder.AddAttribute(21, "type", "button");
         builder.AddAttribute(22, "class", "vben-sidebar__button");
         builder.AddAttribute(23, "disabled", isDisabled);
-        builder.AddAttribute(24, "onclick", EventCallback.Factory.Create(this, () => OnItemSelected(item)));
+        builder.AddAttribute(24, "onclick", EventCallback.Factory.Create(this, () => OnItemSelectedCore(item)));
         if (navigationTarget.IsNavigable)
         {
             builder.AddAttribute(25, "aria-disabled", true);
@@ -289,39 +238,52 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
 
     private async Task OnItemSelected(VbenNavItem item)
     {
-        var itemKey = VbenNavigationKeyHelper.Normalize(item.Key);
-        if (itemKey is null || !CanNavigate(item))
+        if (!TryResolveEffectiveItem(item, out var effectiveItem))
         {
             return;
         }
 
-        await SelectedKeyChanged.InvokeAsync(itemKey);
+        await OnItemSelectedCore(effectiveItem);
     }
 
     private async Task OnBranchToggled(VbenNavItem item)
     {
-        var itemKey = VbenNavigationKeyHelper.Normalize(item.Key);
-        if (itemKey is null)
+        if (!TryResolveEffectiveItem(item, out var effectiveItem))
         {
             return;
         }
 
-        if ((item.Disabled ?? false) || !HasNavigableChildren(item))
+        await OnBranchToggledCore(effectiveItem);
+    }
+
+    private async Task OnItemSelectedCore(VbenEffectiveNavItem item)
+    {
+        if (!CanNavigateCore(item))
+        {
+            return;
+        }
+
+        await SelectedKeyChanged.InvokeAsync(item.Key);
+    }
+
+    private async Task OnBranchToggledCore(VbenEffectiveNavItem item)
+    {
+        if ((item.Source.Disabled ?? false) || !HasNavigableChildrenCore(item))
         {
             return;
         }
 
         var expandedKeys = GetEffectiveExpandedKeySet();
-        if (!expandedKeys.Add(itemKey))
+        if (!expandedKeys.Add(item.Key))
         {
-            expandedKeys.Remove(itemKey);
+            expandedKeys.Remove(item.Key);
         }
 
         await ExpandedKeysChanged.InvokeAsync(ToOrderedArray(expandedKeys));
     }
 
     private static string BuildItemCssClass(
-        VbenNavItem item,
+        VbenEffectiveNavItem item,
         bool isExpanded,
         bool isSelected,
         bool hasSelectedDescendant)
@@ -331,12 +293,12 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
             "vben-sidebar__item"
         };
 
-        if (GetChildren(item).Length > 0)
+        if (item.Children.Length > 0)
         {
             classes.Add("has-children");
         }
 
-        if (item.Disabled ?? false)
+        if (item.Source.Disabled ?? false)
         {
             classes.Add("is-disabled");
         }
@@ -377,7 +339,7 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
     private HashSet<string> NormalizeExpandedKeys(IEnumerable<string> keys)
     {
         var normalized = NormalizeKeys(keys);
-        if (normalized.Count == 0 || Items?.AsArray is not { Length: > 0 } items)
+        if (normalized.Count == 0 || EffectiveItems is not { Length: > 0 } items)
         {
             return normalized.Count == 0
                 ? normalized
@@ -385,9 +347,9 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
         }
 
         var expandableKeys = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var item in VbenNavItemRenderHelper.FilterRenderableItems(items))
+        foreach (var item in items)
         {
-            CollectExpandableKeys(item, expandableKeys);
+            CollectExpandableKeysCore(item, expandableKeys);
         }
 
         if (expandableKeys.Count == 0)
@@ -426,6 +388,146 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
         return hasNavigableDescendant;
     }
 
+    private bool IsExpandedCore(VbenEffectiveNavItem item)
+        => !(item.Source.Disabled ?? false)
+           && HasNavigableChildrenCore(item)
+           && GetEffectiveExpandedKeySet().Contains(item.Key);
+
+    private bool IsSelectedCore(VbenEffectiveNavItem item)
+    {
+        var selectedKey = VbenNavigationKeyHelper.Normalize(SelectedKey);
+        return selectedKey is not null
+               && !(item.Source.Disabled ?? false)
+               && StringComparer.Ordinal.Equals(item.Key, selectedKey);
+    }
+
+    private bool HasSelectedDescendantCore(VbenEffectiveNavItem item)
+    {
+        if ((item.Source.Disabled ?? false) || VbenNavigationKeyHelper.Normalize(SelectedKey) is null)
+        {
+            return false;
+        }
+
+        foreach (var child in item.Children)
+        {
+            if (ContainsSelectedItemCore(child))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool CanNavigateCore(VbenEffectiveNavItem item)
+    {
+        if (item.Source.Disabled ?? false)
+        {
+            return false;
+        }
+
+        if (ResolveNavigationTarget(item).IsNavigable)
+        {
+            return true;
+        }
+
+        return item.Children.Length == 0;
+    }
+
+    private static bool HasNavigableChildrenCore(VbenEffectiveNavItem item)
+    {
+        if (item.Source.Disabled ?? false)
+        {
+            return false;
+        }
+
+        foreach (var child in item.Children)
+        {
+            if (CanNavigateCore(child) || HasNavigableChildrenCore(child))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool ContainsSelectedItemCore(VbenEffectiveNavItem item)
+    {
+        if (item.Source.Disabled ?? false)
+        {
+            return false;
+        }
+
+        if (IsSelectedCore(item))
+        {
+            return true;
+        }
+
+        foreach (var child in item.Children)
+        {
+            if (ContainsSelectedItemCore(child))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool CollectExpandedKeysForSelectionCore(
+        VbenEffectiveNavItem item,
+        string selectedKey,
+        HashSet<string> expandedKeys)
+    {
+        if (item.Source.Disabled ?? false)
+        {
+            return false;
+        }
+
+        var subtreeContainsSelection = StringComparer.Ordinal.Equals(item.Key, selectedKey);
+        foreach (var child in item.Children)
+        {
+            if (CollectExpandedKeysForSelectionCore(child, selectedKey, expandedKeys))
+            {
+                subtreeContainsSelection = true;
+            }
+        }
+
+        if (subtreeContainsSelection && HasNavigableChildrenCore(item))
+        {
+            expandedKeys.Add(item.Key);
+        }
+
+        return subtreeContainsSelection;
+    }
+
+    private static bool CollectExpandableKeysCore(
+        VbenEffectiveNavItem item,
+        HashSet<string> expandableKeys)
+    {
+        if (item.Source.Disabled ?? false)
+        {
+            return false;
+        }
+
+        var hasNavigableDescendant = false;
+        foreach (var child in item.Children)
+        {
+            if (CanNavigateCore(child) || CollectExpandableKeysCore(child, expandableKeys))
+            {
+                hasNavigableDescendant = true;
+            }
+        }
+
+        if (hasNavigableDescendant)
+        {
+            expandableKeys.Add(item.Key);
+        }
+
+        return hasNavigableDescendant;
+    }
+
     private static string[] ToOrderedArray(HashSet<string> keys)
     {
         if (keys.Count == 0)
@@ -444,4 +546,51 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
 
     private static VbenResolvedNavigationTarget ResolveNavigationTarget(VbenNavItem item)
         => VbenNavigationTargetResolver.Resolve(item.Target);
+
+    private static VbenResolvedNavigationTarget ResolveNavigationTarget(VbenEffectiveNavItem item)
+        => VbenNavigationTargetResolver.Resolve(item.Source.Target);
+
+    private bool TryResolveEffectiveItem(VbenNavItem item, out VbenEffectiveNavItem effectiveItem)
+    {
+        if (TryFindEffectiveItem(EffectiveItems, item, out effectiveItem))
+        {
+            return true;
+        }
+
+        if (Items?.AsArray is not { Length: > 0 })
+        {
+            var standaloneItems = VbenNavItemRenderHelper.BuildEffectiveItems([item]);
+            if (standaloneItems.Length == 1)
+            {
+                effectiveItem = standaloneItems[0];
+                return true;
+            }
+        }
+
+        effectiveItem = null!;
+        return false;
+    }
+
+    private static bool TryFindEffectiveItem(
+        VbenEffectiveNavItem[] items,
+        VbenNavItem source,
+        out VbenEffectiveNavItem effectiveItem)
+    {
+        foreach (var item in items)
+        {
+            if (ReferenceEquals(item.Source, source))
+            {
+                effectiveItem = item;
+                return true;
+            }
+
+            if (TryFindEffectiveItem(item.Children, source, out effectiveItem))
+            {
+                return true;
+            }
+        }
+
+        effectiveItem = null!;
+        return false;
+    }
 }

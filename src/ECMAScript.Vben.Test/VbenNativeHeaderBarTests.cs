@@ -89,6 +89,21 @@ public sealed class VbenNativeHeaderBarTests
     }
 
     [TestMethod]
+    public void Vben_HeaderBar_TitleAndSubtitle_AreTrimmedBeforeRender()
+    {
+        var component = new VbenHeaderBar();
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenHeaderBar.Title), "  Workbench  ");
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenHeaderBar.Subtitle), "  Operations  ");
+
+        var frames = VbenNativeRenderTreeTestHelper.RenderComponent(component);
+
+        Assert.IsTrue(frames.ContainsText("Workbench"));
+        Assert.IsTrue(frames.ContainsText("Operations"));
+        Assert.IsFalse(frames.ContainsText("  Workbench  "));
+        Assert.IsFalse(frames.ContainsText("  Operations  "));
+    }
+
+    [TestMethod]
     public void Vben_HeaderBar_EmptyLogoActionsAndUserRegion_DoNotRenderEmptyWrappers()
     {
         var component = new VbenHeaderBar();

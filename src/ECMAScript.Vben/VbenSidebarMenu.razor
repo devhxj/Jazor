@@ -1,7 +1,8 @@
 @inherits VbenComponentBase
 @{
     var logo = VbenRenderFragmentHelper.Normalize(Logo);
-    var hasContent = logo is not null || HasItems;
+    var items = EffectiveItems;
+    var hasContent = logo is not null || items.Length > 0;
 }
 
 @if (hasContent)
@@ -12,12 +13,12 @@
             <div class='@("vben-sidebar__logo")'>@logo</div>
         }
 
-        @if (HasItems)
+        @if (items.Length > 0)
         {
             <ul class='@("vben-sidebar__list")'>
-                @foreach (var item in VbenNavItemRenderHelper.FilterRenderableItems(Items))
+                @foreach (var item in items)
                 {
-                    @RenderItem(item)
+                    @RenderEffectiveItem(item)
                 }
             </ul>
         }

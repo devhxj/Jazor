@@ -184,6 +184,35 @@ internal readonly struct NativeRenderTreeSnapshot(ArrayRange<RenderTreeFrame> fr
         return false;
     }
 
+    public int CountAttributes(
+        string attributeName,
+        string? expectedValue = null)
+    {
+        var count = 0;
+        for (var index = 0; index < frames.Count; index++)
+        {
+            var frame = frames.Array[index];
+            if (frame.FrameType != RenderTreeFrameType.Attribute
+                || !string.Equals(frame.AttributeName, attributeName, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (expectedValue is null)
+            {
+                count++;
+                continue;
+            }
+
+            if (string.Equals(frame.AttributeValue?.ToString(), expectedValue, StringComparison.Ordinal))
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
     public bool ContainsClassToken(string expectedToken)
     {
         for (var index = 0; index < frames.Count; index++)
@@ -207,6 +236,21 @@ internal readonly struct NativeRenderTreeSnapshot(ArrayRange<RenderTreeFrame> fr
                 {
                     return true;
                 }
+            }
+        }
+
+        return false;
+    }
+
+    public bool ContainsText(string expectedText)
+    {
+        for (var index = 0; index < frames.Count; index++)
+        {
+            var frame = frames.Array[index];
+            if (frame.FrameType == RenderTreeFrameType.Text
+                && string.Equals(frame.TextContent, expectedText, StringComparison.Ordinal))
+            {
+                return true;
             }
         }
 

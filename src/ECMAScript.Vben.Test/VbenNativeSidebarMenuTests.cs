@@ -164,6 +164,74 @@ public sealed class VbenNativeSidebarMenuTests
     }
 
     [TestMethod]
+    public void Vben_SidebarMenu_DuplicateNormalizedRootKeys_IgnoreLaterItemsAndAvoidDuplicateDomKeys()
+    {
+        VbenNavItems items =
+        [
+            new VbenNavItem
+            {
+                Key = "reports",
+                Title = "Overview",
+                Target = "/overview"
+            },
+            new VbenNavItem
+            {
+                Key = " reports ",
+                Title = "Reports",
+                Target = "/reports"
+            }
+        ];
+
+        var component = new VbenSidebarMenu();
+        SetParameter(component, nameof(VbenSidebarMenu.Items), items);
+
+        var frames = RenderSidebarMenu(component);
+
+        Assert.IsTrue(frames.ContainsText("Overview"));
+        Assert.IsFalse(frames.ContainsText("Reports"));
+        Assert.IsTrue(frames.ContainsAttribute("href", "/overview"));
+        Assert.IsFalse(frames.ContainsAttribute("href", "/reports"));
+        Assert.AreEqual(1, frames.CountAttributes("data-key", "reports"));
+    }
+
+    [TestMethod]
+    public void Vben_SidebarMenu_DuplicateNormalizedBranchKeys_DoNotParticipateInSelectionExpansion()
+    {
+        var duplicateChild = new VbenNavItem
+        {
+            Key = "reports.daily",
+            Title = "Daily"
+        };
+
+        VbenNavItems items =
+        [
+            new VbenNavItem
+            {
+                Key = "reports",
+                Title = "Overview",
+                Target = "/overview"
+            },
+            new VbenNavItem
+            {
+                Key = " reports ",
+                Title = "Reports",
+                Children = [duplicateChild]
+            }
+        ];
+
+        var component = new VbenSidebarMenu();
+        SetParameter(component, nameof(VbenSidebarMenu.Items), items);
+        SetParameter(component, nameof(VbenSidebarMenu.SelectedKey), "reports.daily");
+
+        var frames = RenderSidebarMenu(component);
+        var expandedKeys = InvokeGetEffectiveExpandedKeySet(component);
+
+        Assert.IsFalse(frames.ContainsText("Daily"));
+        Assert.IsFalse(frames.ContainsClassToken("is-expanded"));
+        Assert.AreEqual(0, expandedKeys.Count);
+    }
+
+    [TestMethod]
     public void Vben_SidebarMenu_KeyNormalization_TrimsSelectedAndExpandedStateKeys()
     {
         var reportsLeaf = new VbenNavItem
@@ -363,6 +431,22 @@ public sealed class VbenNativeSidebarMenuTests
     }
 
     [TestMethod]
+    public void Vben_SidebarMenu_Title_IsTrimmedBeforeRender()
+    {
+        var item = new VbenNavItem
+        {
+            Key = "reports",
+            Title = "  Reports  ",
+            Target = "/reports"
+        };
+
+        var frames = RenderSingleItem(item);
+
+        Assert.IsTrue(frames.ContainsText("Reports"));
+        Assert.IsFalse(frames.ContainsText("  Reports  "));
+    }
+
+    [TestMethod]
     public void Vben_SidebarMenu_KeyNormalization_RendersAndEmitsTrimmedKeys()
     {
         var item = new VbenNavItem
@@ -430,6 +514,36 @@ public sealed class VbenNativeSidebarMenuTests
                 Disabled = true,
                 Target = "/reports"
             });
+
+        Assert.AreEqual(0, recorder.Values.Count);
+    }
+
+    [TestMethod]
+    public void Vben_SidebarMenu_OnItemSelected_DuplicateNormalizedKeyItem_DoesNotInvokeSelectedKeyChanged()
+    {
+        var first = new VbenNavItem
+        {
+            Key = "reports",
+            Title = "Overview",
+            Target = "/overview"
+        };
+
+        var duplicate = new VbenNavItem
+        {
+            Key = " reports ",
+            Title = "Reports",
+            Target = "/reports"
+        };
+
+        var component = new VbenSidebarMenu();
+        var recorder = new EventRecorder<string>();
+        SetParameter(component, nameof(VbenSidebarMenu.Items), new VbenNavItems([first, duplicate]));
+        SetParameter(
+            component,
+            nameof(VbenSidebarMenu.SelectedKeyChanged),
+            EventCallback.Factory.Create<string>(recorder, recorder.Record));
+
+        InvokeOnItemSelected(component, duplicate);
 
         Assert.AreEqual(0, recorder.Values.Count);
     }
@@ -714,6 +828,12 @@ public sealed class VbenNativeSidebarMenuTests
         string attributeName,
         string? expectedValue = null)
         => frames.ContainsAttribute(attributeName, expectedValue);
+
+    private static int CountAttributes(
+        NativeRenderTreeSnapshot frames,
+        string attributeName,
+        string? expectedValue = null)
+        => frames.CountAttributes(attributeName, expectedValue);
 
     private static readonly RenderFragment EmptyFragment = _ => { };
     private static readonly RenderFragment WhitespaceFragment = builder => builder.AddContent(0, "   ");

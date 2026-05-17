@@ -18,6 +18,12 @@ public partial class VbenPageContainer : VbenContentComponentBase, IVueContainer
     [Parameter]
     public RenderFragment? Extra { get; set; }
 
+    private string? NormalizedTitle
+        => VbenDisplayTextHelper.Normalize(Title);
+
+    private string? NormalizedSubtitle
+        => VbenDisplayTextHelper.Normalize(Subtitle);
+
     private VueClassValue RootCssClass
         => BuildCssClass("vben-page");
 
@@ -28,8 +34,8 @@ public partial class VbenPageContainer : VbenContentComponentBase, IVueContainer
         var extra = VbenRenderFragmentHelper.Normalize(Extra);
         var hasTitles =
             breadcrumbItems.Length > 0
-            || !string.IsNullOrWhiteSpace(Title)
-            || !string.IsNullOrWhiteSpace(Subtitle);
+            || NormalizedTitle is not null
+            || NormalizedSubtitle is not null;
         var hasActions = actions.Length > 0 || extra is not null;
 
         return new(
@@ -42,6 +48,12 @@ public partial class VbenPageContainer : VbenContentComponentBase, IVueContainer
 
     private RenderFragment RenderBreadcrumbItem(VbenBreadcrumbItem item) => builder =>
     {
+        var title = VbenDisplayTextHelper.Normalize(item.Title);
+        if (title is null)
+        {
+            return;
+        }
+
         var isDisabled = item.Disabled ?? false;
         var navigationTarget = VbenNavigationTargetResolver.Resolve(item.Target);
         var cssClass = BuildBreadcrumbItemCssClass(item, isDisabled, navigationTarget.IsNavigable);
@@ -51,7 +63,7 @@ public partial class VbenPageContainer : VbenContentComponentBase, IVueContainer
             builder.OpenElement(0, "router-link");
             builder.AddAttribute(1, "class", cssClass);
             builder.AddAttribute(2, "to", navigationTarget.Route);
-            builder.AddContent(3, item.Title);
+            builder.AddContent(3, title);
             builder.CloseElement();
             return;
         }
@@ -61,7 +73,7 @@ public partial class VbenPageContainer : VbenContentComponentBase, IVueContainer
             builder.OpenElement(10, "a");
             builder.AddAttribute(11, "class", cssClass);
             builder.AddAttribute(12, "href", navigationTarget.Href);
-            builder.AddContent(13, item.Title);
+            builder.AddContent(13, title);
             builder.CloseElement();
             return;
         }
@@ -73,12 +85,18 @@ public partial class VbenPageContainer : VbenContentComponentBase, IVueContainer
             builder.AddAttribute(22, "aria-disabled", true);
         }
 
-        builder.AddContent(23, item.Title);
+        builder.AddContent(23, title);
         builder.CloseElement();
     };
 
     private RenderFragment RenderAction(VbenPageAction action) => builder =>
     {
+        var text = VbenDisplayTextHelper.Normalize(action.Text);
+        if (text is null)
+        {
+            return;
+        }
+
         var isDisabled = action.Disabled ?? false;
         var navigationTarget = VbenNavigationTargetResolver.Resolve(action.Target);
         var cssClass = BuildActionCssClass(action);
@@ -88,7 +106,7 @@ public partial class VbenPageContainer : VbenContentComponentBase, IVueContainer
             builder.OpenElement(0, "router-link");
             builder.AddAttribute(1, "class", cssClass);
             builder.AddAttribute(2, "to", navigationTarget.Route);
-            builder.AddContent(3, action.Text);
+            builder.AddContent(3, text);
             builder.CloseElement();
             return;
         }
@@ -98,7 +116,7 @@ public partial class VbenPageContainer : VbenContentComponentBase, IVueContainer
             builder.OpenElement(10, "a");
             builder.AddAttribute(11, "class", cssClass);
             builder.AddAttribute(12, "href", navigationTarget.Href);
-            builder.AddContent(13, action.Text);
+            builder.AddContent(13, text);
             builder.CloseElement();
             return;
         }
@@ -112,7 +130,7 @@ public partial class VbenPageContainer : VbenContentComponentBase, IVueContainer
             builder.AddAttribute(24, "aria-disabled", true);
         }
 
-        builder.AddContent(25, action.Text);
+        builder.AddContent(25, text);
         builder.CloseElement();
     };
 

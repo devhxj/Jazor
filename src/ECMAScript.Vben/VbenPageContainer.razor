@@ -20,14 +20,14 @@
                         </nav>
                     }
 
-                    @if (!string.IsNullOrWhiteSpace(Title))
+                    @if (NormalizedTitle is not null)
                     {
-                        <h1 class='@("vben-page__title")'>@Title</h1>
+                        <h1 class='@("vben-page__title")'>@NormalizedTitle</h1>
                     }
 
-                    @if (!string.IsNullOrWhiteSpace(Subtitle))
+                    @if (NormalizedSubtitle is not null)
                     {
-                        <p class='@("vben-page__subtitle")'>@Subtitle</p>
+                        <p class='@("vben-page__subtitle")'>@NormalizedSubtitle</p>
                     }
                 </div>
             }

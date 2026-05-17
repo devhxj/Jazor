@@ -315,6 +315,48 @@ public sealed class VbenNativePageContainerTests
         Assert.IsTrue(frames.ContainsElementWithClassToken("div", "vben-page__body"));
     }
 
+    [TestMethod]
+    public void Vben_PageContainer_TitleSubtitleBreadcrumbAndActionText_AreTrimmedBeforeRender()
+    {
+        var component = new VbenPageContainer();
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenPageContainer.Title), "  Dashboard  ");
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenPageContainer.Subtitle), "  Realtime  ");
+        VbenNativeRenderTreeTestHelper.SetParameter(
+            component,
+            nameof(VbenPageContainer.BreadcrumbItems),
+            new[]
+            {
+                new VbenBreadcrumbItem
+                {
+                    Key = "dashboard",
+                    Title = "  Dashboard  ",
+                    Target = "/dashboard"
+                }
+            });
+        VbenNativeRenderTreeTestHelper.SetParameter(
+            component,
+            nameof(VbenPageContainer.Actions),
+            new[]
+            {
+                new VbenPageAction
+                {
+                    Key = "refresh",
+                    Text = "  Refresh  ",
+                    Kind = VbenPageActionKind.Primary,
+                    Target = "/refresh"
+                }
+            });
+
+        var frames = RenderPageContainer(component);
+
+        Assert.IsTrue(frames.ContainsText("Dashboard"));
+        Assert.IsTrue(frames.ContainsText("Realtime"));
+        Assert.IsTrue(frames.ContainsText("Refresh"));
+        Assert.IsFalse(frames.ContainsText("  Dashboard  "));
+        Assert.IsFalse(frames.ContainsText("  Realtime  "));
+        Assert.IsFalse(frames.ContainsText("  Refresh  "));
+    }
+
     private static NativeRenderTreeSnapshot RenderPageContainer(VbenPageContainer component)
         => VbenNativeRenderTreeTestHelper.RenderComponent(component);
 

@@ -18,8 +18,14 @@ public partial class VbenHeaderBar : VbenComponentBase, IVueContainerComponent
     [Parameter]
     public RenderFragment? UserRegion { get; set; }
 
+    private string? NormalizedTitle
+        => VbenDisplayTextHelper.Normalize(Title);
+
+    private string? NormalizedSubtitle
+        => VbenDisplayTextHelper.Normalize(Subtitle);
+
     private bool HasTitles
-        => !string.IsNullOrWhiteSpace(Title) || !string.IsNullOrWhiteSpace(Subtitle);
+        => NormalizedTitle is not null || NormalizedSubtitle is not null;
 
     private VueClassValue RootCssClass
         => BuildCssClass("vben-header");

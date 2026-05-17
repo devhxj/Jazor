@@ -22,13 +22,13 @@
                 @if (HasTitles)
                 {
                     <div class='@("vben-header__titles")'>
-                        @if (!string.IsNullOrWhiteSpace(Title))
+                        @if (NormalizedTitle is not null)
                         {
-                            <div class='@("vben-header__title")'>@Title</div>
+                            <div class='@("vben-header__title")'>@NormalizedTitle</div>
                         }
-                        @if (!string.IsNullOrWhiteSpace(Subtitle))
+                        @if (NormalizedSubtitle is not null)
                         {
-                            <div class='@("vben-header__subtitle")'>@Subtitle</div>
+                            <div class='@("vben-header__subtitle")'>@NormalizedSubtitle</div>
                         }
                     </div>
                 }

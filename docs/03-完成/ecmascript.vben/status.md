@@ -72,6 +72,8 @@
 - 原生菜单现在明确区分两类导航目标：字符串 `Target` 继续输出原始 `href`，`VbenRouteLocation` 则统一输出原生 `router-link` / `to`；
 - `VbenRouteLocation.Path/Name/Hash` 的原生解析规则已经稳定：`Path` 优先于 `Name`，`Hash` 会统一补 `#` 前缀，非空 `href/path/name/hash` 会先做首尾空白归一化，空白 `href`/route 字段不会再被当作可导航目标；
 - 菜单 key 现在也进入统一规范化主链：空白 `Key` 菜单项会在渲染前被忽略，首尾空格 `Key` 不会再污染选中态、展开态、DOM `data-key` 或 `SelectedKeyChanged` / `ExpandedKeysChanged` payload；
+- 原生 sidebar 现在还会基于规范化后的 key 构建一棵“有效唯一菜单树”：同一棵菜单树中，后出现的重复 key 项会被整体忽略，不再制造重复 `data-key`、歧义选中态、冲突展开态或重复回调来源；
+- nav item `Title` 现在也会在原生输出前裁剪首尾空格，避免后台菜单文案把脏 authoring 文本直接落进链接或按钮节点；
 - 当 `Logo` 与有效菜单项都不存在时，原生 `SidebarMenu` 不再输出空的根 `nav` / `ul` wrapper；
 - 当仅提供 `Logo` 时，原生 `SidebarMenu` 会保留 logo region，但不会附带空的菜单列表；
 - 当 `Logo` slot 实际只产出空内容、纯空白文本或仅 HTML 注释 markup 时，原生 `SidebarMenu` 也会把它视为无效 branding 内容，不再制造空的根 `nav` 或 logo wrapper；
@@ -86,6 +88,7 @@
 - action 不再一律退化为朴素按钮；当 `Target` 可导航且未禁用时会按目标语义输出真实锚点或 `router-link`；
 - action `Kind` 已稳定映射为原生语义类（`default/primary/secondary/link/danger`），方便后续样式与容器实现保持语义一致；
 - 禁用 action 即使携带 `Target`，也不会保留可跳转 `href`，并会显式带上禁用语义状态。
+- `Title` / `Subtitle` / breadcrumb `Title` / action `Text` 在原生输出前都会统一裁剪首尾空格，避免 page header 把带 padding 的显示文本直接带进 DOM；
 - 仅包含空白 `Title` 的 breadcrumb 项和仅包含空白 `Text` 的 action 项现在会在渲染前被忽略，不再把脏输入误判为有效 page header 语义，也不会再生成空链接、空按钮或空 header 区域；
 - 当页面没有任何 header 语义内容时，原生 `PageContainer` 不再输出空的 `vben-page__header` / `vben-page__titles` wrapper；
 - 当只有 `Extra` 区域时，原生 `PageContainer` 会保留 actions region，但不会附带空的 titles 容器；
@@ -108,6 +111,7 @@
 当前对 `VbenHeaderBar` 的原生 DOM 语义也已收口：
 
 - 当 `Title` / `Subtitle` 都为空时，不再输出空的 titles 容器；
+- `Title` / `Subtitle` 在原生输出前会先裁剪首尾空格，不再把带 padding 的 header 文本直接落进 DOM；
 - 当 `Actions` / `UserRegion` 都为空时，不再输出空的右侧 actions 容器；
 - 当 `Logo` / `Title` / `Subtitle` 都为空时，不再输出空的 `vben-header__main` 左侧主区域；
 - 当整个 `HeaderBar` 没有任何可见内容时，原生默认实现不再输出空的根 wrapper；
@@ -214,6 +218,8 @@
   - `Items` / `Children` 中的 `null` 项会被忽略，不会导致默认 native 渲染抛异常；
   - 空白 `Key` 菜单项会被忽略，不会制造空的 sidebar 根、列表或导航元素；
   - 首尾空格 `Key` 会在选中态、展开态、DOM `data-key` 与回调 payload 上统一裁剪，不再让脏 key 把内部状态与输出结构带偏；
+  - 规范化后重复的菜单 key 会按 first-win 构建有效唯一菜单树，后出现的冲突项不会再参与渲染、选中、展开或回调；
+  - nav item `Title` 在原生输出前会先裁剪首尾空格，不再把带 padding 的菜单文案直接落进链接或按钮文本节点；
   - `ExpandedKeys` 显式状态与 `SelectedKey` 祖先展开回退的优先级；
   - 显式空 `ExpandedKeys` 覆盖默认回退；
   - 选中节点与祖先选中链状态；
@@ -236,6 +242,7 @@
   - action `Kind` 会落为稳定原生语义类；
   - 禁用 action 即使携带 `Target` 也不会再输出可跳转链接；
   - `BreadcrumbItems` / `Actions` 中的 `null` 项会被忽略，不会导致默认 native 渲染抛异常；
+  - `Title` / `Subtitle` / breadcrumb `Title` / action `Text` 在原生输出前会统一裁剪首尾空格，不再把带 padding 的显示文本直接带进 page header；
   - 仅包含空白标题/文本的 breadcrumb/action 项会被忽略，不会制造空的 page header 内容；
 - `VbenNavigationTargetResolverTests` 校验：
   - `Path` 分支会规范化 `Hash`；
@@ -263,6 +270,7 @@
   - 整个组件无内容时不会再输出空根 wrapper；
   - 无 logo/titles 时不会再输出空的 `main` 区域；
   - 无标题时不会再输出空的 titles 容器；
+  - `Title` / `Subtitle` 在原生输出前会统一裁剪首尾空格，不再把带 padding 的 header 文本直接带进 DOM；
   - 无 actions / user-region 时不会再输出空的右侧容器；
   - `Logo` / `Actions` / `UserRegion` 仅输出空内容或纯空白文本时，也不会再制造空的 main/logo/actions/toolbar/user-region wrapper；
   - `VbenRenderFragmentHelper` 会把 comment-only markup 归一化为无效内容，并保证可见 slot 内容只捕获一次、回放一次，不会为判空重复执行原始 fragment；
@@ -291,17 +299,17 @@
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenContainerInjectTests|FullyQualifiedName~VbenAuthoringSurfaceTests|FullyQualifiedName~VueAuthoringMetadataTests' -v minimal`：已通过；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~Vben_MultiShell_ContainerInject' -v minimal`：已通过（2/2）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNavigationTargetResolverTests|FullyQualifiedName~VbenNativePageContainerTests|FullyQualifiedName~VbenNativeSidebarMenuTests' -v minimal`：已通过（25/25）；
-- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeSidebarMenuTests' -v minimal`：已通过（23/23）；
-- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativePageContainerTests' -v minimal`：已通过（12/12）；
+- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeSidebarMenuTests' -v minimal`：已通过（27/27）；
+- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativePageContainerTests' -v minimal`：已通过（13/13）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeAdminLayoutTests' -v minimal`：已通过（9/9）；
-- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeHeaderBarTests' -v minimal`：已通过（3/3）；
+- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeHeaderBarTests' -v minimal`：已通过（7/7）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~Vben_RouterLinkElement_WithRouteObject_LowersIntoVueSfcArtifact|FullyQualifiedName~Vben_RouterLinkElement_WithRouteObject_LowersIntoPipelineArtifact' -v minimal`：已通过（2/2）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~Vben_MultiShell_DefaultNativeComponents' -v minimal`：已通过（2/2）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeSidebarMenuTests|FullyQualifiedName~VbenAuthoringSurfaceTests|FullyQualifiedName~VbenContainerInjectTests' -v minimal`：已通过（49/49）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeSidebarMenuTests|FullyQualifiedName~VbenNavigationTargetResolverTests|FullyQualifiedName~VbenNativeAdminLayoutTests' -v minimal`：已通过（29/29）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeSidebarMenuTests|FullyQualifiedName~VbenNativeAdminLayoutTests|FullyQualifiedName~VbenNativePageContainerTests|FullyQualifiedName~VbenNavigationTargetResolverTests' -v minimal`：已通过（43/43）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativePageContainerTests|FullyQualifiedName~VbenNavigationTargetResolverTests|FullyQualifiedName~VbenNativeArtifactTests' -v minimal`：已通过（17/17）；
-- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj -v minimal`：已通过（117/117）；测试层当前输出未再出现 `BL0005` / `BL0006`；
+- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj -v minimal`：已通过（123/123）；测试层当前输出未再出现 `BL0005` / `BL0006`；
 - `samples/ECMAScript.Vben.ElementPlusInject/verify-smoke.cs`：已纳入当前阶段的真实 sample 验证入口，目标覆盖本地 package pack、host rebuild、host requirements 断言、Deno SSR smoke、Deno bundle smoke、browser build、browser smoke；
 - `RazorVue` 聚焦回归已覆盖 Vben 相关 descriptor / authoring contract 收口，不再依赖旧兼容别名。
 

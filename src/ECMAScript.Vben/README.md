@@ -20,6 +20,8 @@ Authoring notes:
 - `VbenNavTarget` is intentionally split by semantics: `string` targets stay on raw anchor `href`, while `VbenRouteLocation` targets lower to native `<router-link :to="...">` navigation
 - For `VbenRouteLocation`, the native path uses `Path` first, then `Name`, and always normalizes `Hash` to a leading `#`; non-empty `href/path/name/hash` values are trimmed before emission, and whitespace-only targets are ignored rather than emitted as navigable links
 - Sidebar navigation keys are normalized too: blank `VbenNavItem.Key` values are ignored as non-renderable menu entries, and padded keys are trimmed before selected/expanded-state matching, DOM `data-key` emission, and `SelectedKeyChanged` / `ExpandedKeysChanged` callbacks
+- Sidebar also builds an effective unique-key tree before render and interaction logic: normalized duplicate keys are first-win, and later conflicting items are dropped rather than producing ambiguous selected/expanded state or duplicate DOM keys
+- Native display text is normalized as well: header/page titles, breadcrumb titles, page-action text, and sidebar nav titles are trimmed before render, while whitespace-only values continue to count as absent
 - Disabled sidebar branches stay non-expandable even when callers pass their keys through explicit `ExpandedKeys`; native shell state cannot force illegal expanded DOM back onto disabled navigation
 - Sidebar expanded-state callbacks are normalized against the current navigation tree, so disabled branches and stale unknown keys are not echoed back through `ExpandedKeysChanged`
 - The current native sidebar treats only non-blank `VbenNavItem.Title` values as renderable menu content, so whitespace-only nav items do not produce empty links, buttons, or sidebar regions
@@ -35,6 +37,8 @@ Verified baseline:
 - Native route-target semantics are regression-covered at three layers: render-tree behavior for `VbenSidebarMenu` / `VbenPageContainer`, resolver normalization for `Path` / `Name` / `Hash`, and direct `router-link` lowering probes at Vue SFC and pipeline artifact levels
 - Resolver normalization also regression-covers leading/trailing whitespace on non-empty `href/path/name/hash` values, so native shell output does not leak padded DOM `href` values or padded route-object fields
 - Sidebar key normalization is regression-covered for blank-key filtering, selected/expanded-state matching against trimmed keys, DOM `data-key` trimming, and normalized `SelectedKeyChanged` / `ExpandedKeysChanged` payloads
+- Sidebar duplicate-key handling is regression-covered for first-win effective-tree construction, duplicate DOM-key suppression, selection/expansion isolation, and blocked callbacks from dropped duplicate items
+- Display-text normalization is regression-covered for trimmed header titles/subtitles, page titles/subtitles, breadcrumb/action text, and sidebar nav-item titles
 - Disabled sidebar branch behavior is regression-covered for both derived navigability and explicit-expanded-state suppression
 - Sidebar expanded-state writeback is regression-covered for invalid explicit keys and current-tree normalization
 - Sidebar/admin-layout empty-content semantics are regression-covered for null nav items and whitespace-only nav-item titles
