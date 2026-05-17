@@ -11,9 +11,11 @@ public sealed class VbenNativeHeaderBarTests
     {
         var frames = VbenNativeRenderTreeTestHelper.RenderComponent(new VbenHeaderBar());
 
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-header__main"));
         Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-header__titles"));
         Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-header__title"));
         Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-header__subtitle"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-header__actions"));
     }
 
     [TestMethod]
@@ -54,10 +56,35 @@ public sealed class VbenNativeHeaderBarTests
             }));
         var frames = VbenNativeRenderTreeTestHelper.RenderComponent(component);
 
+        Assert.IsFalse(frames.ContainsElementWithClassToken("div", "vben-header__main"));
         Assert.IsTrue(frames.ContainsElementWithClassToken("div", "vben-header__actions"));
         Assert.IsTrue(frames.ContainsElementWithClassToken("div", "vben-header__toolbar"));
         Assert.IsTrue(frames.ContainsElementWithClassToken("div", "vben-header__user-region"));
         Assert.IsTrue(frames.ContainsElementWithClassToken("button", "header-action"));
         Assert.IsTrue(frames.ContainsElementWithClassToken("span", "current-user"));
+    }
+
+    [TestMethod]
+    public void Vben_HeaderBar_WithLogoAndTitle_RendersMainRegion()
+    {
+        var component = new VbenHeaderBar();
+        VbenNativeRenderTreeTestHelper.SetParameter(
+            component,
+            nameof(VbenHeaderBar.Logo),
+            (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "span");
+                builder.AddAttribute(1, "class", "brand-logo");
+                builder.AddContent(2, "J");
+                builder.CloseElement();
+            }));
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenHeaderBar.Title), "Workbench");
+
+        var frames = VbenNativeRenderTreeTestHelper.RenderComponent(component);
+
+        Assert.IsTrue(frames.ContainsElementWithClassToken("div", "vben-header__main"));
+        Assert.IsTrue(frames.ContainsElementWithClassToken("div", "vben-header__logo"));
+        Assert.IsTrue(frames.ContainsElementWithClassToken("div", "vben-header__titles"));
+        Assert.IsTrue(frames.ContainsElementWithClassToken("span", "brand-logo"));
     }
 }

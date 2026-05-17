@@ -50,6 +50,16 @@ public partial class VbenAdminLayout : VbenContentComponentBase, IVueContainerCo
 
     private bool IsSidebarLayout => Mode != VbenLayoutMode.Top;
 
+    private bool HasDefaultHeaderContent
+        => !string.IsNullOrWhiteSpace(Title)
+           || !string.IsNullOrWhiteSpace(Subtitle)
+           || Logo is not null
+           || HeaderActions is not null
+           || UserRegion is not null;
+
+    private bool HasHeaderRegion
+        => Header is not null || HasDefaultHeaderContent;
+
     private VueClassValue RootCssClass => Mode switch
     {
         VbenLayoutMode.Top => BuildCssClass("vben-shell", "vben-shell--top"),

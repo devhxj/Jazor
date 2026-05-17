@@ -3,6 +3,82 @@ namespace ECMAScript.Vben.Test;
 public sealed partial class VbenContainerInjectTests
 {
     [TestMethod]
+    public void Vben_AdminLayout_DefaultNativeComponent_WithoutHeaderContent_DoesNotLowerEmptyHeaderRegion()
+    {
+        var context = CreateContext(
+            """
+            using ECMAScript;
+            using ECMAScript.Vben;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./pages/layout-without-header")]
+                public sealed class LayoutWithoutHeader : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent(0, typeof(VbenAdminLayout));
+                        builder.AddComponentParameter(1, nameof(VbenAdminLayout.Mode), VbenLayoutMode.Top);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+        var snapshot = context.CreateSemanticSnapshots()
+            .Single(static item => item.ComponentSymbol.Name == "LayoutWithoutHeader");
+        var sfcArtifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+        var pipelineArtifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts
+            .Single(static item => item.ComponentName == "LayoutWithoutHeader");
+
+        Assert.IsFalse(sfcArtifact.TemplateText.Contains("vben-shell__header", StringComparison.Ordinal), sfcArtifact.TemplateText);
+        Assert.IsFalse(sfcArtifact.TemplateText.Contains("VbenHeaderBarComponent", StringComparison.Ordinal), sfcArtifact.TemplateText);
+
+        Assert.IsFalse(pipelineArtifact.ModuleCode.Contains("vben-shell__header", StringComparison.Ordinal), pipelineArtifact.ModuleCode);
+        Assert.IsFalse(pipelineArtifact.ModuleCode.Contains("VbenHeaderBarComponent", StringComparison.Ordinal), pipelineArtifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void Vben_HeaderBar_DefaultNativeComponent_WithOnlyUserRegion_DoesNotLowerEmptyMainRegion()
+    {
+        var context = CreateContext(
+            """
+            using ECMAScript;
+            using ECMAScript.Vben;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./pages/header-with-user-region-only")]
+                public sealed class HeaderWithUserRegionOnly : ComponentBase, IVueComponent
+                {
+                    [Parameter] public RenderFragment? UserRegionContent { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent(0, typeof(VbenHeaderBar));
+                        builder.AddComponentParameter(1, nameof(VbenHeaderBar.UserRegion), UserRegionContent);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+        var snapshot = context.CreateSemanticSnapshots()
+            .Single(static item => item.ComponentSymbol.Name == "HeaderWithUserRegionOnly");
+        var sfcArtifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+        var pipelineArtifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts
+            .Single(static item => item.ComponentName == "HeaderWithUserRegionOnly");
+
+        Assert.IsFalse(sfcArtifact.TemplateText.Contains("vben-header__main", StringComparison.Ordinal), sfcArtifact.TemplateText);
+        StringAssert.Contains(sfcArtifact.TemplateText, "<slot name=\"userRegionContent\" />");
+
+        Assert.IsFalse(pipelineArtifact.ModuleCode.Contains("vben-header__main", StringComparison.Ordinal), pipelineArtifact.ModuleCode);
+        StringAssert.Contains(
+            pipelineArtifact.ModuleCode,
+            "userRegion: () => slots.userRegionContent ? slots.userRegionContent() : null");
+    }
+
+    [TestMethod]
     public void Vben_PageContainer_DefaultNativeComponent_WithOnlyExtra_DoesNotLowerEmptyTitlesRegion()
     {
         var context = CreateContext(

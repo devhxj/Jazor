@@ -84,12 +84,16 @@
 
 - `Mode.Top` 不再错误输出侧栏区域，也不会再默认挂出 `VbenSidebarMenu`；
 - `Mode.Sidebar` 与 `Mode.Mixed` 继续保留侧栏区域，保持后台壳层与混合布局的结构能力；
+- 当没有任何 header 内容时，原生 `AdminLayout` 不再输出空的 `vben-shell__header` 区域，也不会默认挂出空 `VbenHeaderBar`；
+- 当显式提供 `Header` 或默认 header props 真正存在时，`AdminLayout` 才会输出 header region；
 - 原生 `AdminLayout` 的模式分支现在与现有参考实现保持一致，不再出现同一 public contract 在 native / reference implementation 之间的结构漂移。
 
 当前对 `VbenHeaderBar` 的原生 DOM 语义也已收口：
 
 - 当 `Title` / `Subtitle` 都为空时，不再输出空的 titles 容器；
 - 当 `Actions` / `UserRegion` 都为空时，不再输出空的右侧 actions 容器；
+- 当 `Logo` / `Title` / `Subtitle` 都为空时，不再输出空的 `vben-header__main` 左侧主区域；
+- 当整个 `HeaderBar` 没有任何可见内容时，原生默认实现不再输出空的根 wrapper；
 - `Actions` 与 `UserRegion` 现在有独立的原生语义 wrapper，后续样式、对齐与壳层组合可以稳定落在明确 DOM 边界上；
 - 原生 `HeaderBar` 不再把所有右侧内容直接平铺到同一个裸容器里，减少了样式耦合和空结构噪音。
 
@@ -202,13 +206,20 @@
   - `BreadcrumbItems` / `Actions` 中的 `null` 项会被忽略，不会导致默认 native 渲染抛异常；
 - `VbenNativeAdminLayoutTests` 校验：
   - `Mode.Top` 不会再渲染侧栏区域或默认 `VbenSidebarMenu`；
+  - 无 header 内容时不会再输出空的 shell header 区域或默认 `VbenHeaderBar`；
   - `Mode.Sidebar` 在存在 `NavItems` 时会继续渲染默认 `VbenSidebarMenu`；
   - `Mode.Mixed` 会继续保留侧栏区域并承接自定义 `Sidebar` 内容；
+  - 显式 `Header` 与默认 header props 场景下仍会正确输出 header region；
 - `VbenNativeHeaderBarTests` 校验：
+  - 整个组件无内容时不会再输出空根 wrapper；
+  - 无 logo/titles 时不会再输出空的 `main` 区域；
   - 无标题时不会再输出空的 titles 容器；
   - 无 actions / user-region 时不会再输出空的右侧容器；
   - `Actions` 与 `UserRegion` 会落到独立语义 wrapper 中；
+  - 仅右侧区域场景不会再附带空的 `main` wrapper；
 - `VbenNativeArtifactTests` 校验：
+  - `VbenAdminLayout` 在无 header 内容场景下不会 lower 出空的 shell header 区域；
+  - `VbenHeaderBar` 在仅右侧区域场景下不会 lower 出空的 `main` wrapper；
   - 默认 native 多壳层组合在无 `[VueInject]` 情况下可稳定 lower 为 Vue SFC artifact；
   - 默认 native 多壳层组合在无 `[VueInject]` 情况下可稳定 lower 为 pipeline artifact；
   - `VbenAdminLayout` / `VbenHeaderBar` / `VbenSidebarMenu` / `VbenPageContainer` 的默认 native import 路径、slot 映射与 typed callback 透传已进入回归；
@@ -220,6 +231,7 @@
 
 2026-05-17 当前基线复核：
 
+- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeHeaderBarTests|FullyQualifiedName~VbenNativeAdminLayoutTests|FullyQualifiedName~Vben_AdminLayout_DefaultNativeComponent_WithoutHeaderContent_DoesNotLowerEmptyHeaderRegion|FullyQualifiedName~Vben_HeaderBar_DefaultNativeComponent_WithOnlyUserRegion_DoesNotLowerEmptyMainRegion' -v minimal`：已通过（11/11）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativePageContainerTests|FullyQualifiedName~Vben_PageContainer_DefaultNativeComponent_WithOnlyExtra_DoesNotLowerEmptyTitlesRegion' -v minimal`：已通过（10/10）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeAdminLayoutTests|FullyQualifiedName~VbenNativeHeaderBarTests|FullyQualifiedName~VbenNativePageContainerTests|FullyQualifiedName~VbenNativeSidebarMenuTests|FullyQualifiedName~DefaultComponentRegistryResolution' -v minimal`：已通过（20/20）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenContainerInjectTests' -v minimal`：已通过（23/23）；
@@ -231,7 +243,7 @@
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeHeaderBarTests' -v minimal`：已通过（3/3）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~Vben_MultiShell_DefaultNativeComponents' -v minimal`：已通过（2/2）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeSidebarMenuTests|FullyQualifiedName~VbenAuthoringSurfaceTests|FullyQualifiedName~VbenContainerInjectTests' -v minimal`：已通过（35/35）；
-- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj -v minimal`：已通过（63/63），且当前输出未再出现 `BL0005` / `BL0006`；
+- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj -v minimal`：已通过（68/68），且当前输出未再出现 `BL0005` / `BL0006`；
 - `samples/ECMAScript.Vben.ElementPlusInject/verify-smoke.cs`：已纳入当前阶段的真实 sample 验证入口，目标覆盖本地 package pack、host rebuild、host requirements 断言、Deno SSR smoke、Deno bundle smoke、browser build、browser smoke；
 - `RazorVue` 聚焦回归已覆盖 Vben 相关 descriptor / authoring contract 收口，不再依赖旧兼容别名。
 

@@ -26,7 +26,8 @@ public sealed class VbenNativeAdminLayoutTests
         Assert.IsFalse(frames.ContainsElementWithClassToken("aside", "vben-shell__sidebar"));
         Assert.IsFalse(frames.ContainsComponent<VbenSidebarMenu>());
         Assert.IsTrue(frames.ContainsElementWithClassToken("div", "vben-shell__main"));
-        Assert.IsTrue(frames.ContainsElementWithClassToken("header", "vben-shell__header"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("header", "vben-shell__header"));
+        Assert.IsFalse(frames.ContainsComponent<VbenHeaderBar>());
         Assert.IsTrue(frames.ContainsElementWithClassToken("main", "vben-shell__content"));
     }
 
@@ -70,5 +71,41 @@ public sealed class VbenNativeAdminLayoutTests
 
         Assert.IsTrue(frames.ContainsElementWithClassToken("aside", "vben-shell__sidebar"));
         Assert.IsTrue(frames.ContainsElementWithClassToken("section", "custom-sidebar"));
+    }
+
+    [TestMethod]
+    public void Vben_AdminLayout_DefaultHeaderContent_RendersHeaderRegionAndDefaultHeaderBar()
+    {
+        var component = new VbenAdminLayout();
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenAdminLayout.Mode), VbenLayoutMode.Top);
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenAdminLayout.Title), "Workbench");
+
+        var frames = VbenNativeRenderTreeTestHelper.RenderComponent(component);
+
+        Assert.IsTrue(frames.ContainsElementWithClassToken("header", "vben-shell__header"));
+        Assert.IsTrue(frames.ContainsComponent<VbenHeaderBar>());
+    }
+
+    [TestMethod]
+    public void Vben_AdminLayout_CustomHeader_RendersHeaderRegionWithoutDefaultHeaderBar()
+    {
+        var component = new VbenAdminLayout();
+        VbenNativeRenderTreeTestHelper.SetParameter(component, nameof(VbenAdminLayout.Mode), VbenLayoutMode.Top);
+        VbenNativeRenderTreeTestHelper.SetParameter(
+            component,
+            nameof(VbenAdminLayout.Header),
+            (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "section");
+                builder.AddAttribute(1, "class", "custom-header");
+                builder.AddContent(2, "Header");
+                builder.CloseElement();
+            }));
+
+        var frames = VbenNativeRenderTreeTestHelper.RenderComponent(component);
+
+        Assert.IsTrue(frames.ContainsElementWithClassToken("header", "vben-shell__header"));
+        Assert.IsFalse(frames.ContainsComponent<VbenHeaderBar>());
+        Assert.IsTrue(frames.ContainsElementWithClassToken("section", "custom-header"));
     }
 }

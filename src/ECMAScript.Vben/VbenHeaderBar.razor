@@ -1,39 +1,45 @@
 @inherits VbenComponentBase
 
-<div class="@RootCssClass" style="@CssStyle" @attributes="AdditionalAttributes">
-    <div class='@("vben-header__main")'>
-        @if (Logo is not null)
+@if (HasContent)
+{
+    <div class="@RootCssClass" style="@CssStyle" @attributes="AdditionalAttributes">
+        @if (HasMainRegion)
         {
-            <div class='@("vben-header__logo")'>@Logo</div>
+            <div class='@("vben-header__main")'>
+                @if (Logo is not null)
+                {
+                    <div class='@("vben-header__logo")'>@Logo</div>
+                }
+
+                @if (HasTitles)
+                {
+                    <div class='@("vben-header__titles")'>
+                        @if (!string.IsNullOrWhiteSpace(Title))
+                        {
+                            <div class='@("vben-header__title")'>@Title</div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(Subtitle))
+                        {
+                            <div class='@("vben-header__subtitle")'>@Subtitle</div>
+                        }
+                    </div>
+                }
+            </div>
         }
 
-        @if (HasTitles)
+        @if (HasRightRegion)
         {
-            <div class='@("vben-header__titles")'>
-                @if (!string.IsNullOrWhiteSpace(Title))
+            <div class='@("vben-header__actions")'>
+                @if (Actions is not null)
                 {
-                    <div class='@("vben-header__title")'>@Title</div>
+                    <div class='@("vben-header__toolbar")'>@Actions</div>
                 }
-                @if (!string.IsNullOrWhiteSpace(Subtitle))
+
+                @if (UserRegion is not null)
                 {
-                    <div class='@("vben-header__subtitle")'>@Subtitle</div>
+                    <div class='@("vben-header__user-region")'>@UserRegion</div>
                 }
             </div>
         }
     </div>
-
-    @if (HasRightRegion)
-    {
-        <div class='@("vben-header__actions")'>
-            @if (Actions is not null)
-            {
-                <div class='@("vben-header__toolbar")'>@Actions</div>
-            }
-
-            @if (UserRegion is not null)
-            {
-                <div class='@("vben-header__user-region")'>@UserRegion</div>
-            }
-        </div>
-    }
-</div>
+}

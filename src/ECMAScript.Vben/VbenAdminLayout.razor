@@ -22,20 +22,23 @@
     }
 
     <div class='@("vben-shell__main")'>
-        <header class='@("vben-shell__header")'>
-            @if (Header is not null)
-            {
-                @Header
-            }
-            else
-            {
-                <VbenHeaderBar Title="@Title"
-                               Subtitle="@Subtitle"
-                               Logo="@Logo"
-                               Actions="@HeaderActions"
-                               UserRegion="@UserRegion" />
-            }
-        </header>
+        @if (HasHeaderRegion)
+        {
+            <header class='@("vben-shell__header")'>
+                @if (Header is not null)
+                {
+                    @Header
+                }
+                else
+                {
+                    <VbenHeaderBar Title="@Title"
+                                   Subtitle="@Subtitle"
+                                   Logo="@Logo"
+                                   Actions="@HeaderActions"
+                                   UserRegion="@UserRegion" />
+                }
+            </header>
+        }
 
         <main class='@("vben-shell__content")'>
             @ChildContent
