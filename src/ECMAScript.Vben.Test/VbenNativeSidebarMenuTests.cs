@@ -104,6 +104,31 @@ public sealed class VbenNativeSidebarMenuTests
     }
 
     [TestMethod]
+    public void Vben_SidebarMenu_WhitespaceOnlyKeyItems_DoNotRenderEmptyRootOrList()
+    {
+        var component = new VbenSidebarMenu();
+        SetParameter(
+            component,
+            nameof(VbenSidebarMenu.Items),
+            new VbenNavItems(
+            [
+                new VbenNavItem
+                {
+                    Key = "   ",
+                    Title = "Reports",
+                    Target = "/reports"
+                }
+            ]));
+
+        var frames = RenderSidebarMenu(component);
+
+        Assert.IsFalse(frames.ContainsElement("nav"));
+        Assert.IsFalse(frames.ContainsElementWithClassToken("ul", "vben-sidebar__list"));
+        Assert.IsFalse(frames.ContainsAttribute("data-key"));
+        Assert.IsFalse(frames.ContainsAttribute("href", "/reports"));
+    }
+
+    [TestMethod]
     public void Vben_SidebarMenu_NullRootAndChildEntries_AreIgnoredDuringRender()
     {
         VbenNavItems items =
@@ -136,6 +161,42 @@ public sealed class VbenNativeSidebarMenuTests
         Assert.IsTrue(frames.ContainsAttribute("data-key", "analytics"));
         Assert.IsTrue(frames.ContainsAttribute("data-key", "analytics.metrics"));
         Assert.IsTrue(frames.ContainsClassToken("is-expanded"));
+    }
+
+    [TestMethod]
+    public void Vben_SidebarMenu_KeyNormalization_TrimsSelectedAndExpandedStateKeys()
+    {
+        var reportsLeaf = new VbenNavItem
+        {
+            Key = " reports.daily ",
+            Title = "Daily reports"
+        };
+
+        var reportsParent = new VbenNavItem
+        {
+            Key = " reports ",
+            Title = "Reports",
+            Children = [reportsLeaf]
+        };
+
+        var expandedBySelection = InvokeIsExpanded(
+            selectedKey: "reports.daily",
+            expandedKeys: null,
+            item: reportsParent,
+            allExpandedKeys: out var expandedKeysFromSelection);
+
+        Assert.IsTrue(expandedBySelection);
+        CollectionAssert.AreEquivalent(new[] { "reports" }, expandedKeysFromSelection.ToArray());
+
+        var expandedByExplicitState = InvokeIsExpanded(
+            selectedKey: null,
+            expandedKeys: ["reports"],
+            item: reportsParent,
+            allExpandedKeys: out var expandedKeysFromExplicitState);
+
+        Assert.IsTrue(expandedByExplicitState);
+        CollectionAssert.AreEquivalent(new[] { "reports" }, expandedKeysFromExplicitState.ToArray());
+        Assert.IsTrue(InvokeIsSelected("reports.daily", reportsLeaf));
     }
 
     [TestMethod]
@@ -302,6 +363,33 @@ public sealed class VbenNativeSidebarMenuTests
     }
 
     [TestMethod]
+    public void Vben_SidebarMenu_KeyNormalization_RendersAndEmitsTrimmedKeys()
+    {
+        var item = new VbenNavItem
+        {
+            Key = " reports ",
+            Title = "Reports",
+            Target = "/reports"
+        };
+
+        var frames = RenderSingleItem(item);
+
+        Assert.IsTrue(ContainsAttribute(frames, "data-key", "reports"));
+        Assert.IsFalse(ContainsAttribute(frames, "data-key", " reports "));
+
+        var component = new VbenSidebarMenu();
+        var recorder = new EventRecorder<string>();
+        SetParameter(
+            component,
+            nameof(VbenSidebarMenu.SelectedKeyChanged),
+            EventCallback.Factory.Create<string>(recorder, recorder.Record));
+
+        InvokeOnItemSelected(component, item);
+
+        CollectionAssert.AreEqual(new[] { "reports" }, recorder.Values.ToArray());
+    }
+
+    [TestMethod]
     public void Vben_SidebarMenu_OnItemSelected_NavigableLeaf_InvokesSelectedKeyChanged()
     {
         var component = new VbenSidebarMenu();
@@ -344,6 +432,50 @@ public sealed class VbenNativeSidebarMenuTests
             });
 
         Assert.AreEqual(0, recorder.Values.Count);
+    }
+
+    [TestMethod]
+    public void Vben_SidebarMenu_OnBranchToggled_NormalizesExpandedKeysBeforeChangedPayload()
+    {
+        var alphaChild = new VbenNavItem
+        {
+            Key = " reports.alpha.daily ",
+            Title = "Daily"
+        };
+
+        var alphaParent = new VbenNavItem
+        {
+            Key = " reports.alpha ",
+            Title = "Reports",
+            Children = [alphaChild]
+        };
+
+        var zetaChild = new VbenNavItem
+        {
+            Key = " reports.zeta.child ",
+            Title = "Archive"
+        };
+
+        var zetaParent = new VbenNavItem
+        {
+            Key = " reports.zeta ",
+            Title = "Reports archive",
+            Children = [zetaChild]
+        };
+
+        var component = new VbenSidebarMenu();
+        var recorder = new EventRecorder<string[]>();
+        SetParameter(component, nameof(VbenSidebarMenu.Items), new VbenNavItems([alphaParent, zetaParent]));
+        SetParameter(component, nameof(VbenSidebarMenu.ExpandedKeys), new[] { " reports.zeta " });
+        SetParameter(
+            component,
+            nameof(VbenSidebarMenu.ExpandedKeysChanged),
+            EventCallback.Factory.Create<string[]>(recorder, recorder.Record));
+
+        InvokeOnBranchToggled(component, alphaParent);
+
+        Assert.AreEqual(1, recorder.Values.Count);
+        CollectionAssert.AreEqual(new[] { "reports.alpha", "reports.zeta" }, recorder.Values[0]);
     }
 
     [TestMethod]

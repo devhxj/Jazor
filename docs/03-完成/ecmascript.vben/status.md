@@ -71,6 +71,7 @@
 - `VbenRouteLocation` 在原生菜单中已收口到统一导航目标解析，不再只支持纯字符串 `href`；
 - 原生菜单现在明确区分两类导航目标：字符串 `Target` 继续输出原始 `href`，`VbenRouteLocation` 则统一输出原生 `router-link` / `to`；
 - `VbenRouteLocation.Path/Name/Hash` 的原生解析规则已经稳定：`Path` 优先于 `Name`，`Hash` 会统一补 `#` 前缀，非空 `href/path/name/hash` 会先做首尾空白归一化，空白 `href`/route 字段不会再被当作可导航目标；
+- 菜单 key 现在也进入统一规范化主链：空白 `Key` 菜单项会在渲染前被忽略，首尾空格 `Key` 不会再污染选中态、展开态、DOM `data-key` 或 `SelectedKeyChanged` / `ExpandedKeysChanged` payload；
 - 当 `Logo` 与有效菜单项都不存在时，原生 `SidebarMenu` 不再输出空的根 `nav` / `ul` wrapper；
 - 当仅提供 `Logo` 时，原生 `SidebarMenu` 会保留 logo region，但不会附带空的菜单列表；
 - 当 `Logo` slot 实际只产出空内容、纯空白文本或仅 HTML 注释 markup 时，原生 `SidebarMenu` 也会把它视为无效 branding 内容，不再制造空的根 `nav` 或 logo wrapper；
@@ -211,6 +212,8 @@
   - `Logo` slot 仅输出空内容或纯空白文本时，也不会再制造空的 sidebar 根或 logo wrapper；
   - `Logo` slot 仅输出 HTML 注释 markup 时，也不会再被误判为有效 branding 内容；
   - `Items` / `Children` 中的 `null` 项会被忽略，不会导致默认 native 渲染抛异常；
+  - 空白 `Key` 菜单项会被忽略，不会制造空的 sidebar 根、列表或导航元素；
+  - 首尾空格 `Key` 会在选中态、展开态、DOM `data-key` 与回调 payload 上统一裁剪，不再让脏 key 把内部状态与输出结构带偏；
   - `ExpandedKeys` 显式状态与 `SelectedKey` 祖先展开回退的优先级；
   - 显式空 `ExpandedKeys` 覆盖默认回退；
   - 选中节点与祖先选中链状态；
@@ -288,7 +291,7 @@
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenContainerInjectTests|FullyQualifiedName~VbenAuthoringSurfaceTests|FullyQualifiedName~VueAuthoringMetadataTests' -v minimal`：已通过；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~Vben_MultiShell_ContainerInject' -v minimal`：已通过（2/2）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNavigationTargetResolverTests|FullyQualifiedName~VbenNativePageContainerTests|FullyQualifiedName~VbenNativeSidebarMenuTests' -v minimal`：已通过（25/25）；
-- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeSidebarMenuTests' -v minimal`：已通过（17/17）；
+- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeSidebarMenuTests' -v minimal`：已通过（23/23）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativePageContainerTests' -v minimal`：已通过（12/12）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeAdminLayoutTests' -v minimal`：已通过（9/9）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeHeaderBarTests' -v minimal`：已通过（3/3）；
@@ -298,7 +301,7 @@
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeSidebarMenuTests|FullyQualifiedName~VbenNavigationTargetResolverTests|FullyQualifiedName~VbenNativeAdminLayoutTests' -v minimal`：已通过（29/29）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativeSidebarMenuTests|FullyQualifiedName~VbenNativeAdminLayoutTests|FullyQualifiedName~VbenNativePageContainerTests|FullyQualifiedName~VbenNavigationTargetResolverTests' -v minimal`：已通过（43/43）；
 - `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj --filter 'FullyQualifiedName~VbenNativePageContainerTests|FullyQualifiedName~VbenNavigationTargetResolverTests|FullyQualifiedName~VbenNativeArtifactTests' -v minimal`：已通过（17/17）；
-- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj -v minimal`：已通过（113/113）；测试层当前输出未再出现 `BL0005` / `BL0006`；
+- `dotnet test src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj -v minimal`：已通过（117/117）；测试层当前输出未再出现 `BL0005` / `BL0006`；
 - `samples/ECMAScript.Vben.ElementPlusInject/verify-smoke.cs`：已纳入当前阶段的真实 sample 验证入口，目标覆盖本地 package pack、host rebuild、host requirements 断言、Deno SSR smoke、Deno bundle smoke、browser build、browser smoke；
 - `RazorVue` 聚焦回归已覆盖 Vben 相关 descriptor / authoring contract 收口，不再依赖旧兼容别名。
 

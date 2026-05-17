@@ -69,5 +69,6 @@ internal static class VbenNavItemRenderHelper
 
     private static bool IsRenderable(VbenNavItem? item)
         => item is not null
-           && !string.IsNullOrWhiteSpace(item.Title);
+           && !string.IsNullOrWhiteSpace(item.Title)
+           && VbenNavigationKeyHelper.Normalize(item.Key) is not null;
 }

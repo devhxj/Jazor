@@ -34,6 +34,12 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
 
     private RenderFragment RenderItem(VbenNavItem item) => builder =>
     {
+        var itemKey = VbenNavigationKeyHelper.Normalize(item.Key);
+        if (itemKey is null || string.IsNullOrWhiteSpace(item.Title))
+        {
+            return;
+        }
+
         var isExpanded = IsExpanded(item);
         var isSelected = IsSelected(item);
         var hasSelectedDescendant = HasSelectedDescendant(item);
@@ -44,7 +50,7 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
 
         builder.OpenElement(0, "li");
         builder.AddAttribute(1, "class", BuildItemCssClass(item, isExpanded, isSelected, hasSelectedDescendant));
-        builder.AddAttribute(2, "data-key", item.Key);
+        builder.AddAttribute(2, "data-key", itemKey);
 
         builder.OpenElement(3, "div");
         builder.AddAttribute(4, "class", "vben-sidebar__item-content");
@@ -100,7 +106,8 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
             return NormalizeExpandedKeys(ExpandedKeys);
         }
 
-        if (string.IsNullOrWhiteSpace(SelectedKey))
+        var selectedKey = VbenNavigationKeyHelper.Normalize(SelectedKey);
+        if (selectedKey is null)
         {
             return new HashSet<string>(StringComparer.Ordinal);
         }
@@ -113,25 +120,34 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
 
         foreach (var item in VbenNavItemRenderHelper.FilterRenderableItems(items))
         {
-            CollectExpandedKeysForSelection(item, SelectedKey, expandedKeys);
+            CollectExpandedKeysForSelection(item, selectedKey, expandedKeys);
         }
 
         return expandedKeys;
     }
 
     private bool IsExpanded(VbenNavItem item)
-        => !(item.Disabled ?? false)
-           && HasNavigableChildren(item)
-           && GetEffectiveExpandedKeySet().Contains(item.Key);
+    {
+        var itemKey = VbenNavigationKeyHelper.Normalize(item.Key);
+        return itemKey is not null
+               && !(item.Disabled ?? false)
+               && HasNavigableChildren(item)
+               && GetEffectiveExpandedKeySet().Contains(itemKey);
+    }
 
     private bool IsSelected(VbenNavItem item)
-        => !(item.Disabled ?? false)
-           && !string.IsNullOrWhiteSpace(SelectedKey)
-           && StringComparer.Ordinal.Equals(item.Key, SelectedKey);
+    {
+        var selectedKey = VbenNavigationKeyHelper.Normalize(SelectedKey);
+        var itemKey = VbenNavigationKeyHelper.Normalize(item.Key);
+        return itemKey is not null
+               && selectedKey is not null
+               && !(item.Disabled ?? false)
+               && StringComparer.Ordinal.Equals(itemKey, selectedKey);
+    }
 
     private bool HasSelectedDescendant(VbenNavItem item)
     {
-        if (item.Disabled ?? false || string.IsNullOrWhiteSpace(SelectedKey))
+        if (item.Disabled ?? false || VbenNavigationKeyHelper.Normalize(SelectedKey) is null)
         {
             return false;
         }
@@ -208,12 +224,13 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
         string selectedKey,
         HashSet<string> expandedKeys)
     {
-        if (item.Disabled ?? false)
+        var itemKey = VbenNavigationKeyHelper.Normalize(item.Key);
+        if (item.Disabled ?? false || itemKey is null)
         {
             return false;
         }
 
-        var subtreeContainsSelection = StringComparer.Ordinal.Equals(item.Key, selectedKey);
+        var subtreeContainsSelection = StringComparer.Ordinal.Equals(itemKey, selectedKey);
         foreach (var child in GetChildren(item))
         {
             if (CollectExpandedKeysForSelection(child, selectedKey, expandedKeys))
@@ -224,7 +241,7 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
 
         if (subtreeContainsSelection && HasNavigableChildren(item))
         {
-            expandedKeys.Add(item.Key);
+            expandedKeys.Add(itemKey!);
         }
 
         return subtreeContainsSelection;
@@ -272,25 +289,32 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
 
     private async Task OnItemSelected(VbenNavItem item)
     {
-        if (!CanNavigate(item))
+        var itemKey = VbenNavigationKeyHelper.Normalize(item.Key);
+        if (itemKey is null || !CanNavigate(item))
         {
             return;
         }
 
-        await SelectedKeyChanged.InvokeAsync(item.Key);
+        await SelectedKeyChanged.InvokeAsync(itemKey);
     }
 
     private async Task OnBranchToggled(VbenNavItem item)
     {
-        if (item.Disabled ?? false || !HasNavigableChildren(item))
+        var itemKey = VbenNavigationKeyHelper.Normalize(item.Key);
+        if (itemKey is null)
+        {
+            return;
+        }
+
+        if ((item.Disabled ?? false) || !HasNavigableChildren(item))
         {
             return;
         }
 
         var expandedKeys = GetEffectiveExpandedKeySet();
-        if (!expandedKeys.Add(item.Key))
+        if (!expandedKeys.Add(itemKey))
         {
-            expandedKeys.Remove(item.Key);
+            expandedKeys.Remove(itemKey);
         }
 
         await ExpandedKeysChanged.InvokeAsync(ToOrderedArray(expandedKeys));
@@ -340,9 +364,10 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
         var normalized = new HashSet<string>(StringComparer.Ordinal);
         foreach (var key in keys)
         {
-            if (!string.IsNullOrWhiteSpace(key))
+            var normalizedKey = VbenNavigationKeyHelper.Normalize(key);
+            if (normalizedKey is not null)
             {
-                normalized.Add(key);
+                normalized.Add(normalizedKey);
             }
         }
 
@@ -378,7 +403,8 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
         VbenNavItem item,
         HashSet<string> expandableKeys)
     {
-        if (item.Disabled ?? false)
+        var itemKey = VbenNavigationKeyHelper.Normalize(item.Key);
+        if (item.Disabled ?? false || itemKey is null)
         {
             return false;
         }
@@ -394,7 +420,7 @@ public partial class VbenSidebarMenu : VbenComponentBase, IVueContainerComponent
 
         if (hasNavigableDescendant)
         {
-            expandableKeys.Add(item.Key);
+            expandableKeys.Add(itemKey!);
         }
 
         return hasNavigableDescendant;
