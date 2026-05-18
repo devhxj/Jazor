@@ -44,6 +44,52 @@
 - Razor SDK / Razor IR authoring 支持 Razor `@key`。
 - 对官方 Razor Source Generator 当前会把 component `@key="Id"` 编成 `AddComponentParameter(..., "@key", "Id")` 的形态，RazorVue 会基于原始 Razor 源片段与生成调用位次恢复 C# 表达式语义，确保 `<Child @key="Id" />` 仍然按属性访问降为 `props.id`，而不是错误地固定成字符串 `"Id"`。
 
+## Mixed Attribute Support
+
+- Razor IR frontend 现已支持 mixed HTML attribute content，不再只接受“单个 attribute value child”或“全部静态 literal child”。
+- 当前已覆盖的 authoring 形态包括：
+  - `class="todo-card @Title"`
+  - `class="todo-card @(Title?.Trim() ?? "untitled")"`
+  - 其他按 Razor IR 拆成“静态 literal child + C# expression/code child”的同类 attribute
+- 这类 mixed attribute 会在前端重建为真实 C# 运行时表达式，再交给 Roslyn 解析；因此 downstream canonical model / H lowering / SFC lowering 会继续看到正常的 `IBinaryOperation`、条件/null 合并等语义，而不是被退化成字符串拼接文本。
+- 当表达式语义要求单次求值保护时，最终 JS lowering 允许输出 IIFE / 临时变量，而不是强制追求最短文本形式。
+- 仍保留显式失败边界：如果某个 mixed attribute child 既不是可证明静态 literal，也不是可重建的 Razor expression/code 节点，frontend 会直接报 unsupported，而不会静默生成不可靠代码。
+
+## Static Markup Support
+
+- handwritten `BuildRenderTree` 现已支持常量 `AddMarkupContent(...)` 静态标记片段，只要内容可安全解析为静态 HTML subtree。
+- 当前已覆盖的 authoring 形态包括：
+  - `builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span><p>ok</p></section>");`
+  - 含标准静态 attribute、嵌套 element、void element、自闭合 element、普通文本与 HTML comment 的同类静态片段
+- 该能力在 `BuildRenderTree` frontend 与 Razor IR frontend 之间复用了同一个静态标记解析器，因此两条路径对静态 HTML 片段的 element/text/attribute 还原语义保持一致。
+- `AddMarkupContent(...)` 仍刻意收窄为“编译期可证明为常量字符串”的静态 HTML；动态 markup、运行时拼接 markup 或需要执行脚本语义的 raw HTML 当前仍不支持。
+
+## Razor IR Template Locals
+
+- Razor IR frontend 现已支持模板内局部 `@{ ... }` code-block 的受控生产切片：带初始化器的不可变局部声明，以及 Razor IR boundary code node 驱动的顺序控制语句恢复。
+- 当前已覆盖的 authoring 形态包括：
+  - `@{ var localTitle = Title; }`
+  - `@{ var decorated = item + "!"; }` 这类 loop body 内局部缓存/别名
+  - `<ItemTemplate Context="item">@{ var decorated = item + "!"; } <p>@decorated</p></ItemTemplate>` 这类 typed child-content/slot body 内局部缓存/别名
+  - `@{ RenderFragment<string> template = item => @<p>@item</p>; } <LayoutCard ItemTemplate="template" />` 这类 Razor IR template code-block 内局部 typed `RenderFragment<T>` carrier 赋给组件 typed slot/template 参数
+  - `@{ var localTitle = Title; if (Show) { <section>@localTitle</section> } }`
+  - `@{ var localTitle = Title; if (Show) { <section>@localTitle</section> } else { <p>hidden</p> } }`
+  - `@{ var localTitle = Title; if (ShowPrimary) { <section>@localTitle</section> } if (ShowSecondary) { <p>secondary</p> } }`
+  - `@{ var prefix = Title; if (ShowPrimary) { <section>@prefix</section> } foreach (var item in Items!) { <p>@prefix @item</p> } }`
+  - `@{ var prefix = Title; foreach (var item in Items!) { <p>@prefix @item</p> } if (ShowTail) { <section>@prefix</section> } }`
+  - `@{ var prefix = Title; foreach (var item in Items!) { <p>@prefix @item</p> } }`
+  - `@{ var prefix = Title; for (var i = 0; i < Count; i++) { <p>@prefix @i</p> } if (ShowTail) { <section>@prefix</section> } }`
+  - `@{ var prefix = Title; for (var i = 0; i < Count; i++) { <p>@prefix @i</p> } }`
+- 这类 Razor code-block 会被还原为现有的 `RazorVueLocalDeclarationNode`，因此 downstream canonical model / H lowering / SFC lowering 会沿用 handwritten `BuildRenderTree` 已有的 template-scoped local 语义，而不是走另一套特殊分支。
+- 对于 Razor IR template code-block 内部、初始化器本身是 inline Razor template 的局部 `RenderFragment` / `RenderFragment<T>` carrier，frontend 现在会按 handwritten `BuildRenderTree` 既有 contract 直接吸收为后续 `AddContent` / 组件 slot 参数可消费的结构化 template carrier，而不是把该 carrier 继续保留为根级 `RazorVueLocalDeclarationNode`。
+- 当前支持边界刻意收窄为“局部声明优先、且只进入受支持的顺序控制语句”的模板 code-block：
+  - 每个局部必须在声明点提供 initializer
+  - initializer 只能捕获当前可见的 template local、loop local、typed slot context parameter 或合法模板表达式
+  - 支持局部声明后进入 `if` / `if-else` / `foreach` / count-style `for`
+  - 支持 Razor IR 把 `}` 与下一个 `if` / `foreach` / `for` header 线性化到同一 `CSharpCodeIntermediateNode` 时的顺序恢复，包括 `if -> if`、`if -> foreach`、`foreach -> if`、`for -> if`
+  - 支持一个更窄的 Razor IR local `RenderFragment` carrier 子集：必须是声明点初始化、且其模板体必须由 Razor SDK 暴露为紧邻的 `TemplateIntermediateNode`
+  - 不支持局部声明后进入不受支持的控制语句或一般语句执行模型；例如赋值语句、递增/递减、delegate/callable template state、`switch` / `while` / `try-catch` / `using` / `lock`
+
 ## Runtime Naming Contract
 
 - C# authoring surface 继续使用正常的 `PascalCase` 成员名，例如 `Title`、`IsDone`、`ModelValue`。
@@ -89,14 +135,21 @@
 - 对于 `AddContent(sequence, RenderFragment<T>, value)`，当前支持源码可分析的 typed fragment：可以是 inline anonymous-function fragment，也可以是同一可分析作用域内、初始化即为该匿名模板的局部 `RenderFragment<T>` carrier；仍不把任意 delegate 值、属性承载或动态 callable 形态放宽为模板执行。
 - 同一条“源码可分析的局部 `RenderFragment<T>` carrier”规则也适用于组件 typed slot/template 参数，例如 `builder.AddAttribute(1, "ItemTemplate", template);`。
 - 在 current-component member 层，当前还支持一个更窄的 carrier 子集：只读 expression-bodied property、单返回 getter property、或 `readonly` field，只要其 `RenderFragment` / `RenderFragment<T>` 初始化器本身仍是源码可分析匿名模板，就可被 `AddContent` 与组件 typed slot/template 参数消费。
+- 上述受控 carrier 现在也允许把“当前组件方法 / local function 的受支持 fragment factory 调用结果”作为初始化器承载；例如局部 `RenderFragment<int> template = CreateTemplate(Title);`，或只读 property / `readonly` field 返回 `CreateTemplate(Title)`，同样可被 `AddContent` 与组件 typed slot/template 参数消费。
 - 上述 current-component member carrier 也支持有限的“只读 member 转发链”，例如一个只读 property 返回另一个只读 property / `readonly` field carrier；只要最终仍能静态追到源码可分析匿名模板，就会被接受。
 - handwritten `BuildRenderTree` 当前还支持一个更窄的 fragment factory helper 子集：
   - 当前组件方法或 local function 可以零参数返回 `RenderFragment` / `RenderFragment<T>`，只要其返回值本身仍能静态追到源码可分析匿名模板，就可被 `AddContent` 与组件 typed slot/template 参数消费。
   - 当前组件方法或 local function 也可以带普通按值参数返回 `RenderFragment` / `RenderFragment<T>`，支持两类直接调用点：
     - `builder.AddContent(0, CreateTemplate(Title), 42);`
     - `builder.AddAttribute(1, "ItemTemplate", CreateTemplate(Title));`
+  - 这类 factory 调用结果也可以先落入受控 carrier，再由后续调用点消费，例如 `RenderFragment<int> template = CreateTemplate(Title); builder.AddContent(0, template, 42);` 或只读 property / `readonly` field 转发该结果。
   - 对于带参数 fragment factory，额外参数会通过嵌套 template scope / 嵌套 IIFE 保留单次求值与局部不泄漏语义；named argument 即使打乱调用书写顺序，也会继续按调用点左到右求值顺序保留作用域包裹，而不会退化成按形参声明顺序重排求值
-- 当前组件自身的 slot outlet / slot forwarding 源只认 `[Parameter] RenderFragment...` 属性；普通 current-component property / field 即使类型也是 `RenderFragment` / `RenderFragment<T>`，当前也不会被静默当成 slot source。
+- 当前组件自身的 slot outlet / slot forwarding 源只认 `[Parameter] RenderFragment...` 属性。
+- 该规则同时覆盖：
+  - 默认 slot / named slot 的直接 outlet 使用
+  - 当前组件 `[Parameter] RenderFragment?` 转发到子组件默认/未参数化 slot
+  - 当前组件 `[Parameter] RenderFragment<T>?` 转发到子组件 typed/scoped slot，并保留子组件 slot contract 的上下文参数名
+- 普通 current-component property / field 即使类型也是 `RenderFragment` / `RenderFragment<T>`，当前也不会被静默当成 slot source。
 - settable property、动态重赋值 field、以及需要任意 getter/dataflow 分析的 member carrier 当前仍明确不支持。
 - current-component member carrier 一旦形成自引用或环引用，会显式失败；RazorVue 不支持递归 current-component `RenderFragment` member carrier。
 - fragment factory helper 目前只支持非 generic、源码可分析返回值。

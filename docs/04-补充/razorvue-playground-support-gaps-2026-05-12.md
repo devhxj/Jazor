@@ -71,7 +71,14 @@ class="playground-page playground-page--catalog"
 - `playground-page playground-page--catalog`
 - 不再需要改成 `playground-page-catalog`
 
-动态 mixed attribute content 仍然不在当前支持边界内，例如静态 literal 与 `@Title` 表达式混写的 `class="todo-card @Title"` 仍会明确失败。这个边界是有意保留的，避免把真实动态内容误降级为静态字符串。
+该问题已继续扩展修复：Razor IR frontend 现在不仅支持“多 child 但全部静态 literal”的 attribute，也支持“静态 literal + Razor 表达式/代码块”混写的动态 attribute，例如：
+
+```razor
+class="todo-card @Title"
+class="todo-card @(Title?.Trim() ?? "untitled")"
+```
+
+这类 mixed attribute 会被还原为真实运行时表达式，而不是错误降级为静态字符串。
 
 ### 相关代码
 
@@ -83,8 +90,9 @@ class="playground-page playground-page--catalog"
 
 - `RazorVueReflectedRazorIrReader` 读取 Razor IR attribute value 的 `Prefix`/`Suffix` 元数据。
 - `ResolveAttributeValue(...)` 在多 child 场景下先尝试静态 literal 拼接。
-- 只有 `HtmlContent`、`HtmlAttributeValue` 和非 C# `IntermediateToken` 会参与静态拼接。
-- 一旦出现 C# expression、C# token 或未知节点，仍按 mixed attribute content 抛出显式错误。
+- 当多 child 中包含 C# expression / code attribute value 时，会按 child 顺序重建字符串拼接表达式，并优先通过 source-span / `BuildRenderTree` builder attribute 位点回写为 Roslyn `IOperation`。
+- 复杂表达式若 lowering 为单次求值保护的 IIFE / 临时变量，也按真实 Roslyn 语义保留，不强行改写成更“短”的 JS。
+- 剩余明确边界是：如果某个 mixed child 既不能判为静态 literal，也不能提取为可重建的 Razor 表达式节点，前端仍会显式失败，而不是静默生成不可靠代码。
 
 ## 3. library component 上原样 authoring `class=` / `style=` 已落地稳定契约
 
@@ -174,7 +182,12 @@ handwritten `BuildRenderTree` 当前已支持以下 typed `RenderFragment` carri
 
 ### 当前保护
 
-- slot outlet / slot forwarding source 仍只认 `[Parameter] RenderFragment...` property，不会把普通 current-component member 静默当成 slot source。
+- slot outlet / slot forwarding source 仍只认 `[Parameter] RenderFragment...` property。
+- 当前已支持：
+  - 默认 slot / named slot outlet
+  - 当前组件 `[Parameter] RenderFragment?` -> 子组件默认/未参数化 slot forwarding
+  - 当前组件 `[Parameter] RenderFragment<T>?` -> 子组件 typed/scoped slot forwarding，并保留目标 slot 的 context 参数名
+- 仍不会把普通 current-component member 静默当成 slot source。
 - settable property、非 `readonly` field、动态重赋值、需要任意 getter/dataflow 推理的 member carrier 仍明确不支持。
 - current-component member carrier 一旦出现自引用或环引用，会显式失败；不会递归展开到栈溢出或产生不稳定结果。
 - `src/Jazor.RazorVue.Test/BuildRenderTreeTemplateFrontendTests.cs`
@@ -547,6 +560,15 @@ builder.AddAttribute(1, nameof(ChildCard.ItemTemplate), (RenderFragment<int>)((i
 - typed `AddContent(RenderFragment<T>, value)` 模板作用域成功
 - “无初始化器后续赋值”仍明确失败
 
+在 Razor IR frontend 路线下，这一批 support gap 也继续向“复杂 code-block 的顺序控制恢复”扩展并已锁定：
+
+- `local + if + if`
+- `local + if + foreach`
+- `local + foreach + if`
+- `local + for + if`
+
+这些组合都已覆盖 Razor IR inventory / operation resolver / frontend / parity / pipeline 回归。当前 contract 仍然是“显式支持的顺序控制恢复子集”，不是放宽成任意语句执行模型。
+
 ## 11. 已完成：handwritten `BuildRenderTree` render helper 额外值参数支持
 
 ### 现象
@@ -686,13 +708,17 @@ builder.AddContent(0, template, 42);
 - 支持：同一可分析作用域内、初始化即为可分析匿名模板的局部 `RenderFragment<T>` carrier
 - 支持：该局部 carrier 既可用于 `AddContent(sequence, RenderFragment<T>, value)`，也可用于组件 typed slot/template 参数
 - 支持：current-component 上的只读 expression-bodied property、单返回 getter property、以及 `readonly` field 形式的 `RenderFragment<T>` carrier，只要其初始化器仍可静态还原到匿名模板
+- 支持：上述局部 / current-component 受控 carrier 也可以把“受支持的 current-component method / local function fragment factory 调用结果”作为初始化器承载；例如 `RenderFragment<int> template = CreateTemplate(Title);`、只读 property 返回 `CreateTemplate(Title)`、或 `readonly` field 持有该结果
 - 支持：current-component method / local function 的零参数 fragment factory，只要返回值本身仍可静态还原到匿名模板
 - 支持：current-component method / local function 的“普通按值参数 fragment factory”可直接用于：
   - `builder.AddContent(0, CreateTemplate(Title), 42);`
   - 组件 typed slot/template 参数，例如 `builder.AddAttribute(1, "ItemTemplate", CreateTemplate(Title));`
+- 支持：带参数 fragment factory 的调用结果即使先经过上述受控 carrier，再用于 `AddContent(...)` 或组件 typed slot/template 参数，frontend / canonical / H / SFC 四层也会保持与直接调用点一致的作用域语义
 - 支持：带参数 fragment factory 在 frontend / canonical / H / SFC 中保留额外参数局部作用域；named argument 打乱书写顺序时，仍按调用点左到右求值顺序保留外层 scope 包裹，而不是按形参声明顺序重排求值
 - 支持：frontend / canonical / H / SFC 对局部 carrier 与 inline 形态保持相同 lowering 结果
 - 支持：当前组件 slot outlet / slot forwarding 仅从 `[Parameter] RenderFragment...` 属性识别
+- 支持：当前组件 `[Parameter] RenderFragment?` 转发到子组件默认/未参数化 slot
+- 支持：当前组件 `[Parameter] RenderFragment<T>?` 转发到子组件 typed/scoped slot，frontend / canonical / H / SFC 四层保留 forwarded-slot 语义与目标 slot context 参数名
 - 不支持：任意 delegate 值流分析
 - 不支持：settable property / 非只读 field 承载的 `RenderFragment<T>`
 - 不支持：generic fragment factory
@@ -715,5 +741,133 @@ builder.AddContent(0, template, 42);
 - SFC lowering 与 inline typed fragment 保持相同局部 template scope wrapper
 - current-component / local zero-argument fragment factory 与 inline typed fragment 保持相同作用域与 lowering 结果
 - direct `AddContent(...)` 与组件 typed slot/template 参数上的 parameterized fragment factory 均已支持，并在 frontend / canonical / H / SFC 四层保持一致作用域语义
+- parameterized fragment factory 结果即使先通过局部 carrier、只读 property 或 `readonly` field 承载，再被 direct `AddContent(...)` 或组件 typed slot/template 参数消费，四层仍保持“外层 captured-value scope、内层 typed fragment scope”的一致顺序
 - parameterized fragment factory 的 named-argument 路径已锁定为“按调用点左到右求值顺序保留嵌套 scope”，避免回退成按形参声明顺序重排
+- 当前组件 `[Parameter] RenderFragment...` 作为 slot forwarding source 时，默认 slot 与 typed/scoped slot 两条路径都已锁定回归；typed forwarding 会按目标子组件 slot contract 保留 context 参数名，而不是退化成普通值表达式或错误的无参 slot template
 - recursive fragment factory 仍显式失败
+
+## 14. 已完成：handwritten `BuildRenderTree` 常量 `AddMarkupContent(...)` 静态标记支持
+
+### 现象
+
+此前 handwritten `BuildRenderTree` 对下面这种真实 authoring 会直接失败：
+
+```csharp
+builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span><p>ok</p></section>");
+```
+
+这类片段本质上是静态 HTML subtree，并不需要执行任意 raw HTML/runtime script 语义；如果完全拒绝，会迫使真实项目把原本清晰的静态 markup 改写回繁琐的 `OpenElement` / `AddAttribute` / `AddContent` 序列。
+
+### 当前落地方式
+
+该缺口已在 RazorVue handwritten `BuildRenderTree` frontend 中收口：
+
+- `AddMarkupContent(...)` 在第二参数可证明为常量字符串时，会交给共享静态标记解析器还原为 render tree subtree
+- 共享静态标记解析器同时被 Razor IR frontend 复用，保证静态 HTML 片段在两条 frontend 路径上的 element/text/attribute 还原语义一致
+- 还原出的 subtree 继续走现有 canonical / H / SFC lowering 链路，不额外引入 raw-html 特判分支
+
+因此以下场景现已稳定支持：
+
+- 常量 `AddMarkupContent(...)` 静态 element subtree
+- 静态 attribute、嵌套 element、void element/self-closing element
+- 静态文本节点与 HTML comment 跳过
+
+### 当前支持边界
+
+- 支持：`builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span></section>");`
+- 支持：可安全解析为静态 HTML subtree 的常量 markup
+- 不支持：运行时拼接/动态 markup
+- 不支持：需要当作任意 raw HTML script 语义执行的内容
+- 不支持：结构非法、闭合不匹配或无法解析的静态 markup；这类输入仍显式失败，而不是静默降级成字符串注入
+
+### 当前保护
+
+- `src/Jazor.RazorVue/RenderTree/RazorVueStaticMarkupParser.cs`
+- `src/Jazor.RazorVue/RenderTree/RazorVueRenderTreeExtractor.cs`
+- `src/Jazor.RazorVue/RazorSdk/RazorVueRazorIrTemplateFrontend.cs`
+- `src/Jazor.RazorVue.Test/BuildRenderTreeTemplateFrontendTests.cs`
+- `src/Jazor.RazorVue.Test/RazorVuePipelineTests.cs`
+- `src/Jazor.RazorVue.Test/RazorVueSfcArtifactFactoryTests.cs`
+
+当前回归同时锁定：
+
+- frontend 产出静态 markup subtree
+- H lowering 输出正常 `h(...)` 嵌套结构
+- SFC lowering 输出正常 template subtree
+- Razor IR frontend 与 handwritten `BuildRenderTree` frontend 复用同一静态标记解析器，不会在静态 HTML 片段语义上漂移
+
+## 15. 已完成：Razor IR 模板局部 `@{ ... }` code-block 受控生产切片
+
+### 现象
+
+此前 Razor IR frontend 对模板内普通 `@{ ... }` code-block 没有稳定的结构化支持。像下面这种很常见的局部缓存/别名写法，会停留在 `CSharpCodeIntermediateNode` 层而无法进入现有 template local 语义：
+
+```razor
+@{
+    var localTitle = Title;
+}
+
+<section>@localTitle</section>
+```
+
+这会让 Razor authored 组件和 handwritten `BuildRenderTree` 组件在“模板局部变量”能力上产生不必要分裂。
+
+### 当前落地方式
+
+该缺口已在 Razor IR frontend 中收口为受控生产切片：
+
+- 模板内 `CSharpCodeIntermediateNode` 现在会尝试回映到 Roslyn 变量声明 operation
+- 当 code-block 可证明包含“前置带初始化器的局部声明”时，会先还原为现有 `RazorVueLocalDeclarationNode`
+- 若这些局部声明之后进入可结构化绑定的受支持控制语句，则同一 code-block 会继续还原出对应的 `RazorVueConditionalNode` / `RazorVueForEachNode` / `RazorVueForNode`
+- 对 Razor IR 常见的 boundary 线性化形态，例如一个 `CSharpCodeIntermediateNode` 同时承载 `"}"` 与下一个 `if` / `foreach` / `for` header，frontend 现已能恢复后续顺序控制流，而不会把后一个 control 静默吞掉
+- 还原后的节点继续走现有 canonical / H / SFC lowering，与 handwritten `BuildRenderTree` 的 template-scoped local 复用同一契约
+
+因此以下场景现已稳定支持：
+
+- 顶层模板中的 `@{ var localTitle = Title; }`
+- loop body 中基于 loop local 的 `@{ var decorated = item + "!"; }`
+- typed child-content / scoped slot body 中基于 slot context parameter 的 `@{ var decorated = item + "!"; }`
+- `@{ RenderFragment<string> template = item => @<p>@item</p>; } <LayoutCard ItemTemplate="template" />`
+- `@{ var localTitle = Title; if (Show) { <section>@localTitle</section> } }`
+- `@{ var localTitle = Title; if (Show) { <section>@localTitle</section> } else { <p>hidden</p> } }`
+- `@{ var localTitle = Title; if (ShowPrimary) { <section>@localTitle</section> } if (ShowSecondary) { <p>secondary</p> } }`
+- `@{ var prefix = Title; if (ShowPrimary) { <section>@prefix</section> } foreach (var item in Items!) { <p>@prefix @item</p> } }`
+- `@{ var prefix = Title; foreach (var item in Items!) { <p>@prefix @item</p> } }`
+- `@{ var prefix = Title; for (var i = 0; i < Count; i++) { <p>@prefix @i</p> } }`
+
+### 当前支持边界
+
+支持边界刻意收窄为“局部声明优先、且只进入受支持顺序控制语句”的模板 code-block：
+
+- 支持：`@{ var localTitle = Title; }`
+- 支持：一个 code-block 内多个连续局部声明，只要都带 initializer 且按声明顺序可作用域化
+- 支持：initializer 捕获当前可见 template local、loop local 与 typed slot/scoped slot context parameter
+- 支持：局部声明后进入 `if` / `if-else` / `foreach` / count-style `for`
+- 支持：Razor IR 把 `}` 与下一个 `if` / `foreach` / `for` header 合并进同一 boundary code node 时，frontend 会继续恢复后续控制语句
+- 支持：声明点初始化、且 Razor SDK 已显式物化为紧邻 `TemplateIntermediateNode` 的局部 `RenderFragment` / `RenderFragment<T>` carrier；当前可用于后续组件 slot/template 参数消费
+- 不支持：先声明后赋值
+- 不支持：同一 template code-block 中“局部 `RenderFragment` carrier + trailing if/foreach/for”混合结构
+- 不支持：局部声明后进入不受支持的控制语句或一般语句执行模型
+- 不支持：赋值语句、递增/递减、delegate/callable template state
+- 不支持：`switch` / `while` / `try-catch` / `using` / `lock` 等一般语句执行模型
+
+### 当前保护
+
+- `src/Jazor.RazorVue/RazorSdk/RazorVueRazorIrTemplateFrontend.cs`
+- `src/Jazor.RazorVue/RazorSdk/RazorVueRazorIrOperationResolver.cs`
+- `src/Jazor.RazorVue.RazorIr.Test/RazorDocumentNodeInventoryTests.cs`
+- `src/Jazor.RazorVue.RazorIr.Test/RazorVueRazorIrCompilerExpressionBridgeTests.cs`
+- `src/Jazor.RazorVue.RazorIr.Test/RazorVueRazorIrTemplateFrontendTests.cs`
+
+当前回归同时锁定：
+
+- Razor IR inventory 确实产出模板 code-block 对应的 `CSharpCodeIntermediateNode`
+- operation resolver 能把该 code-block 回映为变量声明 operation
+- operation resolver 也能把“局部声明 + 控制语句”这类复杂 template code-block 回映为 block/conditional/loop operation
+- frontend 产出 `RazorVueLocalDeclarationNode`，并在同一片段内继续产出对应 conditional / foreach / for node
+- 对于局部 `RenderFragment` / `RenderFragment<T>` carrier，frontend 会按 handwritten `BuildRenderTree` 既有契约直接吸收为结构化 slot template carrier，而不是保留为根级 `RazorVueLocalDeclarationNode`
+- frontend 对 `"}"` + 下一个 control header 共处同一 `CSharpCodeIntermediateNode` 的 boundary 形态具备稳定恢复能力
+- H lowering 输出局部 `const`
+- H lowering 对 `if` / `if-else` / `foreach` / count-style `for` 的后续节点保持与 handwritten `BuildRenderTree` 一致的作用域顺序
+- SFC lowering 输出局部 `<template v-for="(...) in [...]">` scope wrapper
+- typed child-content / scoped slot body 中的 template-local code-block 会忽略同一 generated block 内追加的 Razor builder 尾巴，不会误判成“混入任意语句执行模型”

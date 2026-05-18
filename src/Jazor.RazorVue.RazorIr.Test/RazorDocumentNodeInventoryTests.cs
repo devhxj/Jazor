@@ -218,6 +218,26 @@ public sealed class RazorDocumentNodeInventoryTests
     }
 
     [TestMethod]
+    public void AlignedContext_ForMixedAttributeWithCodeBlock_ProducesCodeAttributeValueInventory()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<div class="todo-card @(Title?.Trim() ?? "untitled")">Hello</div>""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.Inventory.MixedAttribute.CodeBlock",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var tree = RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot);
+        TestContext.WriteLine(tree);
+
+        StringAssert.Contains(tree, "HtmlAttributeIntermediateNode AttributeName=\"class\"");
+        StringAssert.Contains(tree, "HtmlAttributeValueIntermediateNode");
+        StringAssert.Contains(tree, "CSharpExpressionAttributeValueIntermediateNode");
+    }
+
+    [TestMethod]
     public void AlignedContext_ForElementSplat_ProducesSplatInventory()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -383,6 +403,205 @@ public sealed class RazorDocumentNodeInventoryTests
         StringAssert.Contains(tree, "ComponentIntermediateNode");
         StringAssert.Contains(tree, "ComponentChildContentIntermediateNode AttributeName=\"Header\"");
         StringAssert.Contains(tree, "ComponentChildContentIntermediateNode AttributeName=\"ItemTemplate\"");
+    }
+
+    [TestMethod]
+    public void ProcessDesignTime_ForTemplateLocalCodeBlock_ProducesCodeAndExpressionInventory()
+    {
+        var codeDocument = RazorIrTestHost.CreateCodeDocument(
+            @"D:\temp\InventoryTemplateLocalCodeBlock.razor",
+            """
+            @{
+                var localTitle = Title;
+            }
+
+            <section>@localTitle</section>
+
+            @code {
+                private string? Title = "hello";
+            }
+            """);
+
+        var documentNode = RazorIrTestHost.GetDocumentNode(codeDocument);
+        var tree = RazorIrTestHost.DumpIntermediateNodeTree(documentNode);
+
+        TestContext.WriteLine(tree);
+
+        StringAssert.Contains(tree, "CSharpCodeIntermediateNode");
+        StringAssert.Contains(tree, "Content=\"\\n    var localTitle = Title;\\n\"");
+        StringAssert.Contains(tree, "MarkupElementIntermediateNode TagName=\"section\"");
+        StringAssert.Contains(tree, "CSharpExpressionIntermediateNode");
+    }
+
+    [TestMethod]
+    public void ProcessDesignTime_ForComplexTemplateCodeBlock_ProbeInventory()
+    {
+        var codeDocument = RazorIrTestHost.CreateCodeDocument(
+            @"D:\temp\InventoryComplexTemplateCodeBlock.razor",
+            """
+            @{
+                var localTitle = Title;
+                <section>@localTitle</section>
+            }
+
+            @code {
+                private string? Title = "hello";
+            }
+            """);
+
+        var documentNode = RazorIrTestHost.GetDocumentNode(codeDocument);
+        var tree = RazorIrTestHost.DumpIntermediateNodeTree(documentNode);
+
+        TestContext.WriteLine(tree);
+
+        StringAssert.Contains(tree, "CSharpCodeIntermediateNode");
+        StringAssert.Contains(tree, "MarkupElementIntermediateNode TagName=\"section\"");
+    }
+
+    [TestMethod]
+    public void ProcessDesignTime_ForComplexTemplateCodeBlockWithNestedIf_ProbeInventory()
+    {
+        var codeDocument = RazorIrTestHost.CreateCodeDocument(
+            @"D:\temp\InventoryComplexTemplateCodeBlockWithNestedIf.razor",
+            """
+            @{
+                var localTitle = Title;
+                if (Show)
+                {
+                    <section>@localTitle</section>
+                }
+            }
+
+            @code {
+                private string? Title = "hello";
+                private bool Show = true;
+            }
+            """);
+
+        var documentNode = RazorIrTestHost.GetDocumentNode(codeDocument);
+        var tree = RazorIrTestHost.DumpIntermediateNodeTree(documentNode);
+
+        TestContext.WriteLine(tree);
+
+        StringAssert.Contains(tree, "CSharpCodeIntermediateNode");
+        StringAssert.Contains(tree, "Content=\"\\n    var localTitle = Title;\\n    if (Show)\\n    {\\n        \"");
+        StringAssert.Contains(tree, "MarkupElementIntermediateNode TagName=\"section\"");
+        StringAssert.Contains(tree, "Content=\"\\n    }\\n\"");
+    }
+
+    [TestMethod]
+    public void ProcessDesignTime_ForComplexTemplateCodeBlockWithSequentialIfs_ProbeInventory()
+    {
+        var codeDocument = RazorIrTestHost.CreateCodeDocument(
+            @"D:\temp\InventoryComplexTemplateCodeBlockWithSequentialIfs.razor",
+            """
+            @{
+                var localTitle = Title;
+                if (ShowPrimary)
+                {
+                    <section>@localTitle</section>
+                }
+
+                if (ShowSecondary)
+                {
+                    <p>secondary</p>
+                }
+            }
+
+            @code {
+                private string? Title = "hello";
+                private bool ShowPrimary = true;
+                private bool ShowSecondary = true;
+            }
+            """);
+
+        var documentNode = RazorIrTestHost.GetDocumentNode(codeDocument);
+        var tree = RazorIrTestHost.DumpIntermediateNodeTree(documentNode);
+
+        TestContext.WriteLine(tree);
+
+        StringAssert.Contains(tree, "CSharpCodeIntermediateNode");
+        StringAssert.Contains(tree, "MarkupElementIntermediateNode TagName=\"section\"");
+        StringAssert.Contains(tree, "MarkupElementIntermediateNode TagName=\"p\"");
+        StringAssert.Contains(tree, "Content=\"\\n    }\\n\\n    if (ShowSecondary)\\n    {\\n        \"");
+    }
+
+    [TestMethod]
+    public void ProcessDesignTime_ForComplexTemplateCodeBlockWithForeachThenIf_ProbeInventory()
+    {
+        var codeDocument = RazorIrTestHost.CreateCodeDocument(
+            @"D:\temp\InventoryComplexTemplateCodeBlockWithForeachThenIf.razor",
+            """
+            @{
+                var prefix = Title;
+                foreach (var item in Items!)
+                {
+                    <p>@prefix @item</p>
+                }
+
+                if (ShowTail)
+                {
+                    <section>@prefix</section>
+                }
+            }
+
+            @code {
+                private string? Title = "hello";
+                private List<string>? Items = [];
+                private bool ShowTail = true;
+            }
+            """);
+
+        var documentNode = RazorIrTestHost.GetDocumentNode(codeDocument);
+        var tree = RazorIrTestHost.DumpIntermediateNodeTree(documentNode);
+
+        TestContext.WriteLine(tree);
+
+        StringAssert.Contains(tree, "CSharpCodeIntermediateNode");
+        StringAssert.Contains(tree, "MarkupElementIntermediateNode TagName=\"p\"");
+        StringAssert.Contains(tree, "MarkupElementIntermediateNode TagName=\"section\"");
+        StringAssert.Contains(tree, "Content=\"\\n    }\\n\\n    if (ShowTail)\\n    {\\n        \"");
+    }
+
+    [TestMethod]
+    public void AlignedContext_ForRenderFragmentLocalCarrierInTemplateCodeBlock_ProducesCodeBlockAndComponentAttributeInventory()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @{
+                RenderFragment<string> template = item => @<p>@item</p>;
+            }
+
+            <LayoutCard ItemTemplate="template" />
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.Inventory.RenderFragmentLocalCarrier",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/layout-card")]
+                public partial class LayoutCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<string>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        var tree = RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot);
+        TestContext.WriteLine(tree);
+
+        StringAssert.Contains(tree, "CSharpCode");
+        StringAssert.Contains(tree, "Component");
+        StringAssert.Contains(tree, "AttributeName=\"ItemTemplate\"");
     }
 
 }

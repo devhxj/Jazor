@@ -248,6 +248,16 @@ internal sealed class RazorVueRazorIrOperationResolver
         if (syntax is null || GetBestOperation(syntax) is not IConditionalOperation operation)
             return false;
 
+        return TryResolveConditional(operation, out conditional);
+    }
+
+    public bool TryResolveConditional(IConditionalOperation operation, out ResolvedConditional conditional)
+    {
+        conditional = default;
+        var syntax = operation.Syntax.AncestorsAndSelf().OfType<IfStatementSyntax>().FirstOrDefault();
+        if (syntax is null)
+            return false;
+
         if (!TryMapGeneratedSpanToSourceRange(syntax.Span, out var statementRange) ||
             !TryMapGeneratedSpanToSourceRange(syntax.Statement.Span, out var whenTrueRange))
         {
@@ -276,6 +286,16 @@ internal sealed class RazorVueRazorIrOperationResolver
         if (syntax is null || GetBestOperation(syntax) is not IForEachLoopOperation operation)
             return false;
 
+        return TryResolveForEach(operation, out loop);
+    }
+
+    public bool TryResolveForEach(IForEachLoopOperation operation, out ResolvedForEach loop)
+    {
+        loop = default;
+        var syntax = operation.Syntax.AncestorsAndSelf().OfType<ForEachStatementSyntax>().FirstOrDefault();
+        if (syntax is null)
+            return false;
+
         if (!TryMapGeneratedSpanToSourceRange(syntax.Span, out var statementRange) ||
             !TryMapGeneratedSpanToSourceRange(syntax.Statement.Span, out var bodyRange))
         {
@@ -293,6 +313,16 @@ internal sealed class RazorVueRazorIrOperationResolver
             return false;
 
         if (syntax is null || GetBestOperation(syntax) is not IForLoopOperation operation)
+            return false;
+
+        return TryResolveFor(operation, out loop);
+    }
+
+    public bool TryResolveFor(IForLoopOperation operation, out ResolvedFor loop)
+    {
+        loop = default;
+        var syntax = operation.Syntax.AncestorsAndSelf().OfType<ForStatementSyntax>().FirstOrDefault();
+        if (syntax is null)
             return false;
 
         if (!TryMapGeneratedSpanToSourceRange(syntax.Span, out var statementRange) ||
@@ -561,12 +591,21 @@ internal sealed class RazorVueRazorIrOperationResolver
         if (!TryMapToGeneratedSpan(sourceSpan.Value, out var generatedSpan))
             return false;
 
-        var node = FindBestSyntaxNode(generatedSpan);
-        if (node is null)
+        var candidates = _generatedRoot
+            .DescendantNodes()
+            .OfType<TStatementSyntax>()
+            .Where(candidate => Contains(candidate.FullSpan, generatedSpan) ||
+                                Contains(candidate.Span, generatedSpan) ||
+                                Overlaps(candidate.FullSpan, generatedSpan) ||
+                                Overlaps(candidate.Span, generatedSpan))
+            .OrderBy(static candidate => candidate.Span.Length)
+            .ThenBy(candidate => Math.Abs(candidate.SpanStart - generatedSpan.Start))
+            .ToArray();
+        if (candidates.Length == 0)
             return false;
 
-        syntax = node.AncestorsAndSelf().OfType<TStatementSyntax>().FirstOrDefault();
-        return syntax is not null;
+        syntax = candidates[0];
+        return true;
     }
 
     private bool TryResolveBestIfStatement(RazorVueRazorSourceSpan? sourceSpan, out IfStatementSyntax? syntax)

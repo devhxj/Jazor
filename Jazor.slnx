@@ -12,8 +12,8 @@
   <Folder Name="/test/">
     <Project Path="src/ECMAScript.Pinia.Test/ECMAScript.Pinia.Test.csproj" />
     <Project Path="src/ECMAScript.Pinia.Testing.Test/ECMAScript.Pinia.Testing.Test.csproj" />
-    <Project Path="src/ECMAScript.WebIDL.GeneratorTest/ECMAScript.WebIDL.GeneratorTest.csproj" />
     <Project Path="src/ECMAScript.VueRoute.Test/ECMAScript.VueRoute.Test.csproj" />
+    <Project Path="src/ECMAScript.WebIDL.GeneratorTest/ECMAScript.WebIDL.GeneratorTest.csproj" />
     <Project Path="src/Jazor.CLR.Test/Jazor.CLR.Test.csproj" />
     <Project Path="src/Jazor.CompilerTest/Jazor.CompilerTest.csproj" />
     <Project Path="src/Jazor.EmitTest/Jazor.EmitTest.csproj" />
@@ -22,26 +22,27 @@
     <Project Path="src/Jolt.Test/Jolt.Test.csproj" />
   </Folder>
   <Project Path="src/ECMAScript.Contract/ECMAScript.Contract.csproj" />
+  <Project Path="src/ECMAScript.ElementPlus/ECMAScript.ElementPlus.csproj" />
+  <Project Path="src/ECMAScript.Pinia.Testing/ECMAScript.Pinia.Testing.csproj" />
   <Project Path="src/ECMAScript.Pinia/ECMAScript.Pinia.csproj" />
   <Project Path="src/ECMAScript.TDesign/ECMAScript.TDesign.csproj" />
+  <Project Path="src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj" />
   <Project Path="src/ECMAScript.Vben/ECMAScript.Vben.csproj" />
-    <Project Path="src/ECMAScript.Pinia.Testing/ECMAScript.Pinia.Testing.csproj" />
-    <Project Path="src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj" />
-    <Project Path="src/ECMAScript.VueContract/ECMAScript.VueContract.csproj" />
   <Project Path="src/ECMAScript.Vue3/ECMAScript.Vue3.csproj" />
+  <Project Path="src/ECMAScript.VueContract/ECMAScript.VueContract.csproj" />
   <Project Path="src/ECMAScript.VueRoute/ECMAScript.VueRoute.csproj" />
   <Project Path="src/ECMAScript.Vuetify/ECMAScript.Vuetify.csproj" />
   <Project Path="src/ECMAScript/ECMAScript.csproj" />
   <Project Path="src/Jazor.Analyzer/Jazor.Analyzer.csproj" />
-  <Project Path="src/Jazor.CLR/Jazor.CLR.csproj" />
-  <Project Path="src/Jazor.Compiler/Jazor.Compiler.csproj" />
-  <Project Path="src/Jazor.AspNetCore/Jazor.AspNetCore.csproj" />
   <Project Path="src/Jazor.AspNetCore.Dev/Jazor.AspNetCore.Dev.csproj" />
-  <Project Path="src/Jazor.Emit/Jazor.Emit.csproj" />
+  <Project Path="src/Jazor.AspNetCore/Jazor.AspNetCore.csproj" />
+  <Project Path="src/Jazor.CLR/Jazor.CLR.csproj" />
   <Project Path="src/Jazor.Common/Jazor.Common.csproj" />
-  <Project Path="src/Playground/Playground.csproj" />
-  <Project Path="src/Wiki/Wiki.csproj" />
+  <Project Path="src/Jazor.Compiler/Jazor.Compiler.csproj" />
+  <Project Path="src/Jazor.Emit/Jazor.Emit.csproj" />
   <Project Path="src/Jazor.RazorVue/Jazor.RazorVue.csproj" />
   <Project Path="src/Jazor/Jazor.csproj" />
   <Project Path="src/Jolt/Jolt.csproj" />
+  <Project Path="src/Playground/Playground.csproj" />
+  <Project Path="src/Wiki/Wiki.csproj" />
 </Solution>

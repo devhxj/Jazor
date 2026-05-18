@@ -57,7 +57,33 @@ internal sealed class RazorVueRenderTreeExtractor
     private readonly record struct ParsedSlotTemplate(
         string? ParameterName,
         IParameterSymbol? ParameterSymbol,
-        RazorVueRenderFragment Children);
+        RazorVueRenderFragment Children,
+        ImmutableArray<RenderHelperValueBinding> CapturedBindings)
+    {
+        public static ParsedSlotTemplate Create(
+            string? parameterName,
+            IParameterSymbol? parameterSymbol,
+            RazorVueRenderFragment children)
+            => new(
+                parameterName,
+                parameterSymbol,
+                children,
+                ImmutableArray<RenderHelperValueBinding>.Empty);
+
+        public ParsedSlotTemplate PrependCapturedBindings(ImmutableArray<RenderHelperValueBinding> capturedBindings)
+        {
+            if (capturedBindings.IsDefaultOrEmpty)
+                return this;
+
+            if (CapturedBindings.IsDefaultOrEmpty)
+                return new ParsedSlotTemplate(ParameterName, ParameterSymbol, Children, capturedBindings);
+
+            var builder = ImmutableArray.CreateBuilder<RenderHelperValueBinding>(capturedBindings.Length + CapturedBindings.Length);
+            builder.AddRange(capturedBindings);
+            builder.AddRange(CapturedBindings);
+            return new ParsedSlotTemplate(ParameterName, ParameterSymbol, Children, builder.MoveToImmutable());
+        }
+    }
 
     private readonly record struct RenderFragmentLocalCarrier(
         ILocalSymbol LocalSymbol,
@@ -122,6 +148,7 @@ internal sealed class RazorVueRenderTreeExtractor
         private readonly HashSet<IParameterSymbol> _accessibleTemplateParameters = accessibleTemplateParameters is null
                 ? [with(SymbolEqualityComparer.Default)]
                 : new HashSet<IParameterSymbol>(accessibleTemplateParameters, SymbolEqualityComparer.Default);
+        private readonly Dictionary<string, IOperation> _literalStringOperationCache = new(StringComparer.Ordinal);
         private readonly List<RazorVueRenderNode> _rootChildren = [];
         private readonly Stack<OpenFrame> _openFrames = new();
         private readonly bool _allowTemplateScopedLocals = allowTemplateScopedLocals;
@@ -509,9 +536,10 @@ internal sealed class RazorVueRenderTreeExtractor
                 return;
             }
 
-            if (TryParseTypedAddContentTemplate(invocation, value, out var templateScope))
+            if (TryParseTypedAddContentTemplate(invocation, value, out var typedFragment))
             {
-                AddNode(templateScope);
+                foreach (var child in typedFragment.Children)
+                    AddNode(child);
                 return;
             }
 
@@ -551,9 +579,16 @@ internal sealed class RazorVueRenderTreeExtractor
                 string.IsNullOrEmpty(markup))
                 return;
 
-            throw CreateUnsupportedBuilderCall(
-                invocation,
-                $"BuildRenderTree call '{GetBuilderCallDisplayName(invocation)}' emits raw markup that RazorVue cannot safely canonicalize in component '{_snapshot.Descriptor.FullName}'.");
+            var nodes = RazorVueStaticMarkupParser.Parse(
+                markup,
+                CreateOrigins(invocation, RazorVueOriginKind.Template),
+                new RazorVueStaticMarkupParser.Dependencies(
+                    CreateLiteralStringOperation,
+                    detail => CreateUnsupportedBuilderCall(
+                        invocation,
+                        $"BuildRenderTree call '{GetBuilderCallDisplayName(invocation)}' {detail} in component '{_snapshot.Descriptor.FullName}'.")));
+            foreach (var node in nodes)
+                AddNode(node);
         }
 
         private RazorVueRenderFragment ParseNestedBranch(IOperation? operation)
@@ -1325,6 +1360,33 @@ internal sealed class RazorVueRenderTreeExtractor
             return null;
         }
 
+        private IOperation CreateLiteralStringOperation(string value)
+        {
+            if (_literalStringOperationCache.TryGetValue(value, out var cached))
+                return cached;
+
+            var parseOptions = _compilation.SyntaxTrees.FirstOrDefault()?.Options as CSharpParseOptions
+                               ?? CSharpParseOptions.Default;
+            var source = "file static class __RazorVueLiteralHolder { internal static object Value => "
+                         + SymbolDisplay.FormatLiteral(value, quote: true)
+                         + "; }";
+            var syntaxTree = CSharpSyntaxTree.ParseText(source, parseOptions);
+            var compilation = CSharpCompilation.Create(
+                "__RazorVueLiteralHolder",
+                [syntaxTree],
+                _compilation.References,
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            var literal = syntaxTree.GetRoot()
+                .DescendantNodes()
+                .OfType<LiteralExpressionSyntax>()
+                .Single();
+            var operation = compilation.GetSemanticModel(syntaxTree).GetOperation(literal)
+                            ?? throw new InvalidOperationException("Could not materialize a Roslyn literal operation for static BuildRenderTree markup.");
+
+            _literalStringOperationCache[value] = operation;
+            return operation;
+        }
+
         private static bool IsConstantNull(IOperation? operation)
         {
             var current = Unwrap(operation);
@@ -1379,8 +1441,17 @@ internal sealed class RazorVueRenderTreeExtractor
             if (string.Equals(name, "ChildContent", StringComparison.Ordinal) &&
                 string.IsNullOrWhiteSpace(slotTemplate.ParameterName))
             {
-                foreach (var child in slotTemplate.Children.Children)
+                foreach (var child in MaterializeCapturedTemplateChildren(
+                    slotTemplate,
+                    CreateOrigins(invocation, RazorVueOriginKind.Template)).Children)
                     currentNode.AddChild(child);
+                return true;
+            }
+
+            var slotOrigins = CreateOrigins(invocation, RazorVueOriginKind.Template);
+            if (TryCreateCurrentComponentForwardedSlotAttribute(componentBuilder.ComponentType, name, value, slotOrigins, out var forwardedSlotAttribute))
+            {
+                currentNode.AddAttribute(forwardedSlotAttribute);
                 return true;
             }
 
@@ -1391,8 +1462,31 @@ internal sealed class RazorVueRenderTreeExtractor
                     : ToLowerCamelCase(name),
                 ParameterName: slotTemplate.ParameterName,
                 ParameterSymbol: slotTemplate.ParameterSymbol,
-                Children: slotTemplate.Children,
-                Origins: CreateOrigins(invocation, RazorVueOriginKind.Template)));
+                Children: MaterializeCapturedTemplateChildren(
+                    slotTemplate,
+                    slotOrigins),
+                Origins: slotOrigins));
+            return true;
+        }
+
+        private bool TryCreateCurrentComponentForwardedSlotAttribute(
+            INamedTypeSymbol componentType,
+            string parameterName,
+            IOperation? value,
+            ImmutableArray<RazorVueSourceOrigin> origins,
+            out RazorVueAttributeNode attribute)
+        {
+            attribute = default!;
+            var current = Unwrap(value);
+            if (current is not IPropertyReferenceOperation propertyReference ||
+                !TryResolveSlotOutlet(propertyReference, out _) ||
+                !TryGetDeclaredComponentSlotProperty(componentType, parameterName, out var slotProperty) ||
+                !IsParameterizedRenderFragmentType(slotProperty.Type))
+            {
+                return false;
+            }
+
+            attribute = new RazorVueAttributeNode(parameterName, propertyReference, origins);
             return true;
         }
 
@@ -1405,7 +1499,11 @@ internal sealed class RazorVueRenderTreeExtractor
             if (!string.IsNullOrWhiteSpace(slotTemplate.ParameterName))
                 return false;
 
-            fragment = slotTemplate.Children;
+            fragment = MaterializeCapturedTemplateChildren(
+                slotTemplate,
+                operation is null
+                    ? ImmutableArray<RazorVueSourceOrigin>.Empty
+                    : CreateOrigins(operation, RazorVueOriginKind.Template));
             return true;
         }
 
@@ -1506,13 +1604,7 @@ internal sealed class RazorVueRenderTreeExtractor
                 return true;
             }
 
-            slotTemplate = new ParsedSlotTemplate(
-                parsedFactoryTemplate.ParameterName,
-                parsedFactoryTemplate.ParameterSymbol,
-                WrapCapturedTemplateScopes(
-                    parsedFactoryTemplate.Children,
-                    extraArgumentBindings,
-                    CreateOrigins(factoryInvocation, RazorVueOriginKind.Template)));
+            slotTemplate = parsedFactoryTemplate.PrependCapturedBindings(extraArgumentBindings);
             return true;
         }
 
@@ -1538,18 +1630,11 @@ internal sealed class RazorVueRenderTreeExtractor
                 if (initializer is null || IsConstantNull(initializer))
                     return false;
 
-                fragment = WrapCapturedTemplateScopes(
-                    new RazorVueRenderFragment(
-                    [
-                        new RazorVueTemplateScopeNode(
-                            ScopeName: slotTemplate.ParameterName!,
-                            ScopeParameterSymbol: slotTemplate.ParameterSymbol,
-                            Initializer: initializer,
-                            Children: slotTemplate.Children,
-                            Origins: CreateOrigins(addContentInvocation, RazorVueOriginKind.Template))
-                    ]),
-                    extraArgumentBindings,
-                    invocationOrigins);
+                fragment = CreateTypedFragmentScope(
+                    addContentInvocation,
+                    slotTemplate,
+                    initializer);
+                fragment = WrapCapturedTemplateScopes(fragment, extraArgumentBindings, invocationOrigins);
                 return true;
             }
 
@@ -1560,8 +1645,35 @@ internal sealed class RazorVueRenderTreeExtractor
                 return false;
             }
 
-            fragment = WrapCapturedTemplateScopes(slotTemplate.Children, extraArgumentBindings, invocationOrigins);
+            fragment = MaterializeCapturedTemplateChildren(slotTemplate, invocationOrigins);
+            fragment = WrapCapturedTemplateScopes(fragment, extraArgumentBindings, invocationOrigins);
             return true;
+        }
+
+        private static RazorVueRenderFragment MaterializeCapturedTemplateChildren(
+            ParsedSlotTemplate slotTemplate,
+            ImmutableArray<RazorVueSourceOrigin> origins)
+            => WrapCapturedTemplateScopes(slotTemplate.Children, slotTemplate.CapturedBindings, origins);
+
+        private RazorVueRenderFragment CreateTypedFragmentScope(
+            IInvocationOperation invocation,
+            ParsedSlotTemplate slotTemplate,
+            IOperation initializer)
+        {
+            var fragment = new RazorVueRenderFragment(
+            [
+                new RazorVueTemplateScopeNode(
+                    ScopeName: slotTemplate.ParameterName!,
+                    ScopeParameterSymbol: slotTemplate.ParameterSymbol,
+                    Initializer: initializer,
+                    Children: slotTemplate.Children,
+                    Origins: CreateOrigins(invocation, RazorVueOriginKind.Template))
+            ]);
+
+            return WrapCapturedTemplateScopes(
+                fragment,
+                slotTemplate.CapturedBindings,
+                CreateOrigins(invocation, RazorVueOriginKind.Template));
         }
 
         private static RazorVueRenderFragment WrapCapturedTemplateScopes(
@@ -1590,9 +1702,9 @@ internal sealed class RazorVueRenderTreeExtractor
         private bool TryParseTypedAddContentTemplate(
             IInvocationOperation invocation,
             IOperation value,
-            out RazorVueTemplateScopeNode templateScope)
+            out RazorVueRenderFragment fragment)
         {
-            templateScope = default!;
+            fragment = RazorVueRenderFragment.Empty;
             if (!IsTypedRenderFragmentAddContent(invocation))
                 return false;
 
@@ -1612,13 +1724,7 @@ internal sealed class RazorVueRenderTreeExtractor
             if (initializer is null || IsConstantNull(initializer))
                 return false;
 
-            var scopeName = slotTemplate.ParameterName!;
-            templateScope = new RazorVueTemplateScopeNode(
-                ScopeName: scopeName,
-                ScopeParameterSymbol: slotTemplate.ParameterSymbol,
-                Initializer: initializer,
-                Children: slotTemplate.Children,
-                Origins: CreateOrigins(invocation, RazorVueOriginKind.Template));
+            fragment = CreateTypedFragmentScope(invocation, slotTemplate, initializer);
             return true;
         }
 
@@ -1626,6 +1732,9 @@ internal sealed class RazorVueRenderTreeExtractor
         {
             slotTemplate = default;
             if (TryParseSlotTemplateFragmentFactoryOperation(operation, out slotTemplate))
+                return true;
+
+            if (TryParseCurrentComponentSlotSource(operation, out slotTemplate))
                 return true;
 
             if (TryResolveStoredSlotTemplate(operation, out slotTemplate))
@@ -1647,6 +1756,26 @@ internal sealed class RazorVueRenderTreeExtractor
                 return true;
 
             return false;
+        }
+
+        private bool TryParseCurrentComponentSlotSource(IOperation? operation, out ParsedSlotTemplate slotTemplate)
+        {
+            slotTemplate = default;
+            var current = Unwrap(operation);
+            if (current is null || !TryResolveSlotOutlet(current, out var slotName))
+                return false;
+
+            slotTemplate = ParsedSlotTemplate.Create(
+                parameterName: null,
+                parameterSymbol: null,
+                children: new RazorVueRenderFragment(
+                [
+                    new RazorVueSlotOutletNode(
+                        slotName,
+                        null,
+                        CreateOrigins(current, RazorVueOriginKind.Template))
+                ]));
+            return true;
         }
 
         private bool TryParseSlotTemplateFragmentFactoryOperation(IOperation? operation, out ParsedSlotTemplate slotTemplate)
@@ -2042,26 +2171,7 @@ internal sealed class RazorVueRenderTreeExtractor
         private bool TryGetParsedSlotTemplateFromCarrierInitializer(IOperation initializer, out ParsedSlotTemplate slotTemplate)
         {
             slotTemplate = default;
-
-            if (TryResolveStoredSlotTemplate(initializer, out slotTemplate))
-                return true;
-
-            if (TryResolveCurrentComponentMemberSlotTemplate(initializer, out slotTemplate))
-                return true;
-
-            if (TryResolveCurrentComponentFragmentFactory(initializer, out slotTemplate))
-                return true;
-
-            if (!TryGetAnonymousFunction(initializer, out var anonymousFunction))
-                return false;
-
-            if (TryParseUntypedSlotTemplate(anonymousFunction, out slotTemplate))
-                return true;
-
-            if (TryParseTypedSlotTemplate(anonymousFunction, out slotTemplate))
-                return true;
-
-            return false;
+            return TryParseSlotTemplate(initializer, out slotTemplate);
         }
 
         private bool TryParseUntypedSlotTemplate(
@@ -2072,10 +2182,10 @@ internal sealed class RazorVueRenderTreeExtractor
             if (!TryGetSingleBuilderParameter(anonymousFunction, out _))
                 return false;
 
-            slotTemplate = new ParsedSlotTemplate(
-                ParameterName: null,
-                ParameterSymbol: null,
-                Children: ParseAnonymousFunctionBody(anonymousFunction));
+            slotTemplate = ParsedSlotTemplate.Create(
+                parameterName: null,
+                parameterSymbol: null,
+                children: ParseAnonymousFunctionBody(anonymousFunction));
             return true;
         }
 
@@ -2115,10 +2225,10 @@ internal sealed class RazorVueRenderTreeExtractor
             if (!TryGetSingleBuilderParameter(builderAnonymousFunction, out _))
                 return false;
 
-            slotTemplate = new ParsedSlotTemplate(
-                ParameterName: slotContextParameter.Name,
-                ParameterSymbol: slotContextParameter,
-                Children: ParseAnonymousFunctionBody(builderAnonymousFunction));
+            slotTemplate = ParsedSlotTemplate.Create(
+                parameterName: slotContextParameter.Name,
+                parameterSymbol: slotContextParameter,
+                children: ParseAnonymousFunctionBody(builderAnonymousFunction));
             return true;
         }
 
@@ -2297,7 +2407,14 @@ internal sealed class RazorVueRenderTreeExtractor
         }
 
         private bool IsDeclaredComponentSlot(INamedTypeSymbol componentType, string parameterName)
+            => TryGetDeclaredComponentSlotProperty(componentType, parameterName, out _);
+
+        private bool TryGetDeclaredComponentSlotProperty(
+            INamedTypeSymbol componentType,
+            string parameterName,
+            out IPropertySymbol property)
         {
+            property = default!;
             if (_symbols.ParameterAttribute is null)
                 return false;
 
@@ -2305,16 +2422,17 @@ internal sealed class RazorVueRenderTreeExtractor
             {
                 foreach (var member in current.GetMembers(parameterName))
                 {
-                    if (member is not IPropertySymbol property ||
-                        property.IsStatic ||
-                        !IsRenderFragmentType(property.Type))
+                    if (member is not IPropertySymbol candidateProperty ||
+                        candidateProperty.IsStatic ||
+                        !IsRenderFragmentType(candidateProperty.Type))
                     {
                         continue;
                     }
 
-                    if (property.GetAttributes().Any(attribute =>
+                    if (candidateProperty.GetAttributes().Any(attribute =>
                             SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, _symbols.ParameterAttribute)))
                     {
+                        property = candidateProperty;
                         return true;
                     }
                 }
@@ -2348,6 +2466,23 @@ internal sealed class RazorVueRenderTreeExtractor
             }
 
             return IsRenderFragment(typeSymbol);
+        }
+
+        private bool IsParameterizedRenderFragmentType(ITypeSymbol? typeSymbol)
+        {
+            if (typeSymbol is null)
+                return false;
+
+            if (typeSymbol is INamedTypeSymbol namedType &&
+                namedType.IsGenericType &&
+                namedType.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
+            {
+                typeSymbol = namedType.TypeArguments[0];
+            }
+
+            return typeSymbol is INamedTypeSymbol renderFragmentType &&
+                   _symbols.RenderFragmentOfT is not null &&
+                   SymbolEqualityComparer.Default.Equals(renderFragmentType.OriginalDefinition, _symbols.RenderFragmentOfT);
         }
 
         private static bool IsMarkupStringType(ITypeSymbol? typeSymbol)
