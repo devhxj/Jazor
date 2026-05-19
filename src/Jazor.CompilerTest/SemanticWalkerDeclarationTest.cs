@@ -1457,24 +1457,365 @@ public sealed class SemanticWalkerDeclarationTest
         var block = GetBlockOperation(@"
             class TestClass
             {
+                class TestDisposable : System.IDisposable
+                {
+                    public void Dispose() { }
+                }
+
                 void TestMethod()
                 {
                     using var disposable = new TestDisposable();
                     Console.WriteLine(""test"");
                 }
             }
+            ");
 
-            class TestDisposable : System.IDisposable
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{
+  let disposable = new TestDisposable;
+  try {
+    console.log(""test"");
+  } finally {
+    if (disposable !== null)
+      disposable.dispose();
+  }
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_UsingDeclaration_MultipleDeclarators_DisposesInReverseOrder()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
             {
-                public void Dispose() { }
+                class TestDisposable : System.IDisposable
+                {
+                    public void Dispose() { }
+                }
+
+                void TestMethod()
+                {
+                    using TestDisposable first = new TestDisposable(), second = new TestDisposable();
+                    Console.WriteLine(""body"");
+                }
             }
             ");
 
         var walker = new SemanticWalker(true);
-        Assert.Throws<OperationTransformationException>(() =>
-        {
-            _ = walker.Visit(block, new());
-        });
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{
+  let first = new TestDisposable;
+  try {
+    let second = new TestDisposable;
+    try {
+      console.log(""body"");
+    } finally {
+      if (second !== null)
+        second.dispose();
+    }
+  } finally {
+    if (first !== null)
+      first.dispose();
+  }
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_UsingDeclaration_MultipleDeclarators_DisposesEarlierResourceWhenLaterInitializationThrows()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                class TestDisposable : System.IDisposable
+                {
+                    public void Dispose() { }
+                }
+
+                void TestMethod()
+                {
+                    using TestDisposable first = new TestDisposable(), second = CreateDisposable();
+                    Console.WriteLine(""body"");
+                }
+
+                TestDisposable CreateDisposable() => new TestDisposable();
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertJsNamingScriptEqual(@"{
+  let first = new TestDisposable;
+  try {
+    let second = this.CreateDisposable();
+    try {
+      console.log(""body"");
+    } finally {
+      if (second !== null)
+        second.dispose();
+    }
+  } finally {
+    if (first !== null)
+      first.dispose();
+  }
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_UsingExpression_InterfaceTypedResource_UsesDisposeInterfaceHelper()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                class TestDisposable : System.IDisposable
+                {
+                    public void Dispose() { }
+                }
+
+                void TestMethod(System.IDisposable disposable)
+                {
+                    using (disposable)
+                    {
+                        Console.WriteLine(""body"");
+                    }
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{
+  try {
+    console.log(""body"");
+  } finally {
+    if (disposable !== null)
+      _6f97d94b6f2e4bc1(disposable);
+  }
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_UsingExpression_NonSimpleExpression_CachesResourceOnceAndUsesInterfaceHelper()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(System.IDisposable disposable)
+                {
+                    using (GetDisposable(disposable))
+                    {
+                        Console.WriteLine(""body"");
+                    }
+                }
+
+                System.IDisposable GetDisposable(System.IDisposable disposable) => disposable;
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertJsNamingScriptEqual(@"{
+  {
+    let v$0 = this.GetDisposable(disposable);
+    try {
+      console.log(""body"");
+    } finally {
+      if (v$0 !== null)
+        _6f97d94b6f2e4bc1(v$0);
+    }
+  }
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_AwaitUsingDeclaration_Basic()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                class AsyncDisposable : System.IAsyncDisposable
+                {
+                    public System.Threading.Tasks.ValueTask DisposeAsync() => default;
+                }
+
+                async System.Threading.Tasks.Task TestMethod()
+                {
+                    await using var disposable = new AsyncDisposable();
+                    await System.Threading.Tasks.Task.Yield();
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{
+  let disposable = new AsyncDisposable;
+  try {
+    await Promise.resolve();
+  } finally {
+    if (disposable !== null)
+      await disposable.disposeAsync();
+  }
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_AwaitUsingDeclaration_MultipleDeclarators_DisposesInReverseOrder()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                class AsyncDisposable : System.IAsyncDisposable
+                {
+                    public System.Threading.Tasks.ValueTask DisposeAsync() => default;
+                }
+
+                async System.Threading.Tasks.Task TestMethod()
+                {
+                    await using AsyncDisposable first = new AsyncDisposable(), second = new AsyncDisposable();
+                    await System.Threading.Tasks.Task.Yield();
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{
+  let first = new AsyncDisposable;
+  try {
+    let second = new AsyncDisposable;
+    try {
+      await Promise.resolve();
+    } finally {
+      if (second !== null)
+        await second.disposeAsync();
+    }
+  } finally {
+    if (first !== null)
+      await first.disposeAsync();
+  }
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_AwaitUsingDeclaration_MultipleDeclarators_DisposesEarlierResourceWhenLaterInitializationThrows()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                class AsyncDisposable : System.IAsyncDisposable
+                {
+                    public System.Threading.Tasks.ValueTask DisposeAsync() => default;
+                }
+
+                async System.Threading.Tasks.Task TestMethod()
+                {
+                    await using AsyncDisposable first = new AsyncDisposable(), second = CreateDisposableAsync();
+                    await System.Threading.Tasks.Task.Yield();
+                }
+
+                AsyncDisposable CreateDisposableAsync() => new AsyncDisposable();
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertJsNamingScriptEqual(@"{
+  let first = new AsyncDisposable;
+  try {
+    let second = this.CreateDisposableAsync();
+    try {
+      await Promise.resolve();
+    } finally {
+      if (second !== null)
+        await second.disposeAsync();
+    }
+  } finally {
+    if (first !== null)
+      await first.disposeAsync();
+  }
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_AwaitUsingExpression_InterfaceTypedResource_UsesDisposeAsyncInterfaceHelper()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                async System.Threading.Tasks.Task TestMethod(System.IAsyncDisposable disposable)
+                {
+                    await using (disposable)
+                    {
+                        await System.Threading.Tasks.Task.Yield();
+                    }
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{
+  try {
+    await Promise.resolve();
+  } finally {
+    if (disposable !== null)
+      await _d17f7fbf9eb14eef(disposable);
+  }
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_AwaitUsingExpression_NonSimpleExpression_CachesResourceOnceAndUsesDisposeAsyncInterfaceHelper()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                async System.Threading.Tasks.Task TestMethod(System.IAsyncDisposable disposable)
+                {
+                    await using (GetDisposable(disposable))
+                    {
+                        await System.Threading.Tasks.Task.Yield();
+                    }
+                }
+
+                System.IAsyncDisposable GetDisposable(System.IAsyncDisposable disposable) => disposable;
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertJsNamingScriptEqual(@"{
+  {
+    let v$0 = this.GetDisposable(disposable);
+    try {
+      await Promise.resolve();
+    } finally {
+      if (v$0 !== null)
+        await _d17f7fbf9eb14eef(v$0);
+    }
+  }
+}", script);
     }
 
     #endregion

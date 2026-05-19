@@ -239,6 +239,53 @@ public partial class SemanticWalker
 		return expr;
 	}
 
+	private Expression BuildRuntimeTypeTokenExpression(IOperation operation, ITypeSymbol typeSymbol, SenseArgument argument)
+	{
+		if (typeSymbol is INamedTypeSymbol namedType && namedType.IsRecord)
+		{
+			return HandleTransformationFailure<Expression>(
+				operation,
+				$"Type '{typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat)}' does not expose a stable runtime type token because record lowering is structural. Use property/positional contracts instead of typeof(...).");
+		}
+
+		if (typeSymbol.IsTupleType || typeSymbol.IsAnonymousType || typeSymbol.TypeKind == TypeKind.Interface)
+		{
+			return HandleTransformationFailure<Expression>(
+				operation,
+				$"Type '{typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat)}' does not expose a stable runtime type token in JavaScript conversion.");
+		}
+
+		var displayName = typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
+		if (displayName is "System.DateTime" or "System.DateOnly" or "System.DateTimeOffset" or "System.TimeOnly" or "System.TimeSpan")
+		{
+			return HandleTransformationFailure<Expression>(
+				operation,
+				$"Type '{displayName}' does not expose a stable runtime type token because it lowers to a shaped carrier rather than a single JavaScript constructor.");
+		}
+
+		var (mapper, typeName) = GetMapperType(typeSymbol);
+		switch (mapper)
+		{
+			case TypeMapper.String:
+			case TypeMapper.Number:
+			case TypeMapper.BigInt:
+			case TypeMapper.Boolean:
+			case TypeMapper.Date:
+			case TypeMapper.Map:
+			case TypeMapper.Set:
+			case TypeMapper.Array:
+				return new Identifier(typeName);
+			case TypeMapper.Class:
+				RejectUnsupportedTypeFallback(operation, typeSymbol, "typeof type token");
+				RejectAmbiguousRuntimeTypeFilter(operation, typeSymbol, "typeof type token");
+				return BuildFullTypeName(typeSymbol, argument) ?? new Identifier(typeName);
+			default:
+				return HandleTransformationFailure<Expression>(
+					operation,
+					$"Type '{typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat)}' does not expose a stable runtime type token in JavaScript conversion.");
+		}
+	}
+
 	/// <summary>
 	/// 从静态成员访问语法中提取“宿主”部分。
 	/// 例如：
@@ -1052,8 +1099,20 @@ public partial class SemanticWalker
 		return new ThrowStatement(errorExpression);
 	}
 
+	private static ThrowStatement BuildThrowTypeErrorStatement(string message)
+	{
+		var escapedMessage = message.Replace("\\", "\\\\").Replace("\"", "\\\"");
+		var errorExpression = new NewExpression(
+			new Identifier("TypeError"),
+			NodeList.From<Expression>(new StringLiteral(message, $"\"{escapedMessage}\"")));
+		return new ThrowStatement(errorExpression);
+	}
+
 	private static ThrowStatement BuildArgumentNullThrowStatement(string parameterName)
-		=> BuildThrowErrorStatement($"ArgumentNullException: {parameterName} is null");
+		=> BuildArgumentNullTypeErrorThrowStatement(parameterName);
+
+	private static ThrowStatement BuildArgumentNullTypeErrorThrowStatement(string parameterName)
+		=> BuildThrowTypeErrorStatement(parameterName);
 
 	private static bool IsEnumerableContractType(ITypeSymbol? typeSymbol)
 		=> HasContractType(typeSymbol, static displayName =>

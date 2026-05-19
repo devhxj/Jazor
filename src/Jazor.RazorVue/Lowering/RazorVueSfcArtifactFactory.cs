@@ -15,12 +15,14 @@ namespace Jazor.RazorVue.Lowering;
 
 internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
 {
+    private readonly IRazorVueTemplateFrontend _templateFrontend;
     private readonly RazorVueCanonicalHModelFactory _canonicalFactory;
     private readonly RazorVueSfcSemanticModelFactory _semanticFactory = new();
     private static readonly System.Threading.AsyncLocal<IReadOnlyDictionary<string, RazorVueSfcComponentImport>?> CurrentComponentImportMap = new();
 
     public RazorVueSfcArtifactFactory(IRazorVueTemplateFrontend templateFrontend)
     {
+        _templateFrontend = templateFrontend ?? throw new ArgumentNullException(nameof(templateFrontend));
         _canonicalFactory = new RazorVueCanonicalHModelFactory(templateFrontend);
     }
 
@@ -31,9 +33,54 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         if (snapshot is null)
             throw new ArgumentNullException(nameof(snapshot));
 
-        var canonical = _canonicalFactory.Create(context, snapshot);
+        var renderTree = _templateFrontend.CreateRenderTree(context, snapshot);
+        if (ContainsImperativeRenderTreeNode(renderTree))
+            return CreateImperativeArtifact(context, snapshot, renderTree);
+
+        var canonical = _canonicalFactory.Create(context, snapshot, renderTree);
         var semantic = _semanticFactory.Create(canonical);
         return CreateArtifact(snapshot, semantic);
+    }
+
+    private static bool ContainsImperativeRenderTreeNode(RazorVueRenderFragment fragment)
+    {
+        if (fragment.Children.IsDefaultOrEmpty)
+            return false;
+
+        foreach (var child in fragment.Children)
+        {
+            switch (child)
+            {
+                case RazorVueImperativeBlockNode:
+                    return true;
+                case RazorVueElementNode element when ContainsImperativeRenderTreeNode(element.Children):
+                    return true;
+                case RazorVueComponentNode component:
+                    if (ContainsImperativeRenderTreeNode(component.Children))
+                        return true;
+                    foreach (var slotTemplate in component.SlotTemplates)
+                    {
+                        if (ContainsImperativeRenderTreeNode(slotTemplate.Children))
+                            return true;
+                    }
+                    break;
+                case RazorVueConditionalNode conditional:
+                    if (ContainsImperativeRenderTreeNode(conditional.WhenTrue) ||
+                        ContainsImperativeRenderTreeNode(conditional.WhenFalse))
+                    {
+                        return true;
+                    }
+                    break;
+                case RazorVueTemplateScopeNode templateScope when ContainsImperativeRenderTreeNode(templateScope.Children):
+                    return true;
+                case RazorVueForEachNode loop when ContainsImperativeRenderTreeNode(loop.Body):
+                    return true;
+                case RazorVueForNode loop when ContainsImperativeRenderTreeNode(loop.Body):
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     private static VueSfcArtifact CreateArtifact(
@@ -58,7 +105,12 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
                 RazorVueAttributeMergeHelper.ContainsInvocation(templateText));
             var styleBlocks = BuildStyleBlocks(semantic.StyleBlocks);
             var customBlocks = BuildCustomBlocks(semantic.CustomBlocks);
-            var sfcText = BuildSfcText(templateText, scriptSetupText, styleBlocks, customBlocks);
+            var sfcText = BuildSfcText(
+                new VueSfcTemplateBlock(templateText, semantic.TemplateBlock.SourceOrigins),
+                new VueSfcScriptSetupBlock(scriptSetupText, "ts", semantic.ScriptSetupBlock.SourceOrigins),
+                new VueSfcScriptBlock(string.Empty, null, ImmutableArray<RazorVueSourceOrigin>.Empty),
+                styleBlocks,
+                customBlocks);
             var sourceOrigins = semantic.SourceOrigins
                 .AddRange(semantic.TemplateBlock.SourceOrigins)
                 .AddRange(semantic.ScriptSetupBlock.SourceOrigins)
@@ -76,6 +128,11 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
                     scriptSetupText,
                     Language: "ts",
                     semantic.ScriptSetupBlock.SourceOrigins),
+                ScriptBlock: new VueSfcScriptBlock(
+                    string.Empty,
+                    Language: null,
+                    ImmutableArray<RazorVueSourceOrigin>.Empty),
+                RenderMode: VueSfcArtifactRenderMode.Template,
                 StyleBlocks: styleBlocks,
                 CustomBlocks: customBlocks,
                 RouteTemplates: semantic.Descriptor.RouteTemplates,
@@ -90,6 +147,54 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         {
             CurrentComponentImportMap.Value = null;
         }
+    }
+
+    private static VueSfcArtifact CreateImperativeArtifact(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueRenderFragment renderTree)
+    {
+        var descriptor = snapshot.Descriptor;
+        var resolvedComponents = RazorVueArtifactFactory.ResolveComponentsForCanonicalization(context, snapshot, renderTree);
+        var imperativeResolvedComponents = NormalizeResolvedComponentsForSfc(resolvedComponents, descriptor.ImportSpecifier);
+        var expressionEmitter = RazorVueArtifactFactory.CreateExpressionEmitterForCanonicalization(snapshot, imperativeResolvedComponents);
+        var moduleCode = RazorVueImperativeSfcModuleBuilder.BuildModuleCode(
+            snapshot,
+            renderTree,
+            expressionEmitter,
+            imperativeResolvedComponents,
+            out var compilerImports);
+        var styleBlocks = ImmutableArray<VueSfcStyleBlock>.Empty;
+        var customBlocks = ImmutableArray<VueSfcCustomBlock>.Empty;
+        var scriptOrigins = snapshot.Origins.AddRange(expressionEmitter.CollectOrigins(renderTree)).Distinct().ToImmutableArray();
+        var templateBlock = new VueSfcTemplateBlock(string.Empty, ImmutableArray<RazorVueSourceOrigin>.Empty);
+        var scriptSetupBlock = new VueSfcScriptSetupBlock(string.Empty, null, ImmutableArray<RazorVueSourceOrigin>.Empty);
+        var scriptBlock = new VueSfcScriptBlock(moduleCode, "ts", scriptOrigins);
+        var sfcText = BuildSfcText(templateBlock, scriptSetupBlock, scriptBlock, styleBlocks, customBlocks);
+        var relativeSfcPath = RazorVueSfcSemanticModelFactory.ChangeExtensionToVuePublic(
+            RazorVueArtifactFactory.NormalizeRelativePathForCanonicalization(descriptor.ImportSpecifier));
+        var sourceOrigins = snapshot.Origins
+            .AddRange(expressionEmitter.CollectOrigins(renderTree))
+            .Distinct()
+            .ToImmutableArray();
+
+        return new VueSfcArtifact(
+            ComponentName: descriptor.Name,
+            RelativeSfcPath: relativeSfcPath,
+            SfcText: sfcText,
+            TemplateBlock: templateBlock,
+            ScriptSetupBlock: scriptSetupBlock,
+            ScriptBlock: scriptBlock,
+            RenderMode: VueSfcArtifactRenderMode.RenderFunction,
+            StyleBlocks: styleBlocks,
+            CustomBlocks: customBlocks,
+            RouteTemplates: descriptor.RouteTemplates,
+            Imports: BuildImperativeSfcImports(imperativeResolvedComponents, compilerImports),
+            Styles: RazorVueArtifactFactory.BuildStylesForCanonicalization(descriptor, imperativeResolvedComponents),
+            PluginRequirements: RazorVueArtifactFactory.BuildPluginRequirementsForCanonicalization(descriptor, imperativeResolvedComponents),
+            Identity: BuildImperativeIdentity(snapshot, renderTree, expressionEmitter, relativeSfcPath, imperativeResolvedComponents),
+            Hints: RazorVueArtifactFactory.BuildHintsForCanonicalization(snapshot, renderTree),
+            SourceOrigins: sourceOrigins);
     }
 
     private static VueSfcArtifactIdentity BuildIdentity(
@@ -109,6 +214,29 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
             StyleHash: ComputeSha256Hex(string.Join("\n---\n", styleBlocks.Select(static block => block.Text + "|" + (block.SourceFilePath ?? string.Empty)))),
             HmrBoundaryKind: ClassifyHmrBoundary(semantic));
 
+    private static VueSfcArtifactIdentity BuildImperativeIdentity(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueRenderFragment renderTree,
+        RazorVueExpressionEmitter expressionEmitter,
+        string relativeSfcPath,
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
+    {
+        var descriptor = snapshot.Descriptor;
+        var descriptorShape = RazorVueDescriptorIdentityShapeBuilder.BuildForRenderTree(descriptor, renderTree, resolvedComponents);
+        var templateShape = expressionEmitter.DescribeFragment(renderTree);
+        var logicShape = RazorVueImperativeSfcModuleBuilder.BuildLogicShape(snapshot, renderTree, expressionEmitter);
+        var boundaryKind = RazorVueImperativeSfcModuleBuilder.ClassifyHmrBoundary(renderTree, snapshot);
+
+        return new VueSfcArtifactIdentity(
+            ComponentId: descriptor.FullName,
+            ModuleId: relativeSfcPath,
+            DescriptorHash: ComputeSha256Hex(descriptorShape),
+            TemplateHash: ComputeSha256Hex(templateShape),
+            LogicHash: ComputeSha256Hex(logicShape),
+            StyleHash: string.Empty,
+            HmrBoundaryKind: boundaryKind);
+    }
+
     private static HmrBoundaryKind ClassifyHmrBoundary(RazorVueSfcSemanticModel semantic)
     {
         if (semantic.TemplateBlock.Template.Children.IsDefaultOrEmpty)
@@ -123,6 +251,47 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         }
 
         return HmrBoundaryKind.TemplateOnly;
+    }
+
+    private static ImmutableDictionary<string, VueComponentDescriptor> NormalizeResolvedComponentsForSfc(
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
+        string ownerImportSpecifier)
+    {
+        if (resolvedComponents.IsEmpty)
+            return resolvedComponents;
+
+        var ownerRelativeSfcPath = RazorVueSfcSemanticModelFactory.ChangeExtensionToVuePublic(
+            RazorVueArtifactFactory.NormalizeRelativePathForCanonicalization(ownerImportSpecifier));
+        var builder = ImmutableDictionary.CreateBuilder<string, VueComponentDescriptor>(StringComparer.Ordinal);
+        foreach (var pair in resolvedComponents)
+        {
+            var descriptor = pair.Value with
+            {
+                ImportSpecifier = RazorVueSfcSemanticModelFactory.NormalizeSfcImportSpecifierPublic(
+                    pair.Value.ImportSpecifier,
+                    pair.Value.SourceKind,
+                    ownerRelativeSfcPath)
+            };
+
+            builder[pair.Key] = descriptor;
+        }
+
+        return builder.ToImmutable();
+    }
+
+    private static ImmutableArray<string> BuildImperativeSfcImports(
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
+        ImmutableArray<RazorVueCompilerImportBinding> compilerImports)
+    {
+        var builder = ImmutableArray.CreateBuilder<string>();
+        builder.Add("vue");
+        builder.AddRange(RazorVueCompilerImportFormatter.CollectImportSources(compilerImports));
+        builder.AddRange(
+            resolvedComponents.Values
+                .Select(static descriptor => descriptor.ImportSpecifier)
+                .Where(static importSpecifier => !string.Equals(importSpecifier, "vue", StringComparison.Ordinal))
+                .Distinct(StringComparer.Ordinal));
+        return builder.Distinct(StringComparer.Ordinal).ToImmutableArray();
     }
 
     private static ImmutableArray<VueSfcStyleBlock> BuildStyleBlocks(ImmutableArray<RazorVueSfcStyleBlockModel> styleModels)
@@ -156,23 +325,49 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
     }
 
     private static string BuildSfcText(
-        string templateText,
-        string scriptSetupText,
+        VueSfcTemplateBlock templateBlock,
+        VueSfcScriptSetupBlock scriptSetupBlock,
+        VueSfcScriptBlock scriptBlock,
         ImmutableArray<VueSfcStyleBlock> styleBlocks,
         ImmutableArray<VueSfcCustomBlock> customBlocks)
     {
         var builder = new StringBuilder();
-        builder.AppendLine("<template>");
-        builder.Append(templateText);
-        if (!templateText.EndsWith("\n", StringComparison.Ordinal))
-            builder.AppendLine();
-        builder.AppendLine("</template>");
-        builder.AppendLine();
-        builder.AppendLine("<script setup lang=\"ts\">");
-        builder.Append(scriptSetupText);
-        if (!scriptSetupText.EndsWith("\n", StringComparison.Ordinal))
-            builder.AppendLine();
-        builder.AppendLine("</script>");
+        if (!string.IsNullOrEmpty(templateBlock.Text))
+        {
+            builder.AppendLine("<template>");
+            builder.Append(templateBlock.Text);
+            if (!templateBlock.Text.EndsWith("\n", StringComparison.Ordinal))
+                builder.AppendLine();
+            builder.AppendLine("</template>");
+        }
+
+        if (!string.IsNullOrEmpty(scriptSetupBlock.Text))
+        {
+            if (builder.Length > 0)
+                builder.AppendLine();
+            builder.Append("<script setup");
+            if (!string.IsNullOrWhiteSpace(scriptSetupBlock.Language))
+                builder.Append(" lang=\"").Append(scriptSetupBlock.Language).Append('"');
+            builder.AppendLine(">");
+            builder.Append(scriptSetupBlock.Text);
+            if (!scriptSetupBlock.Text.EndsWith("\n", StringComparison.Ordinal))
+                builder.AppendLine();
+            builder.AppendLine("</script>");
+        }
+
+        if (!string.IsNullOrEmpty(scriptBlock.Text))
+        {
+            if (builder.Length > 0)
+                builder.AppendLine();
+            builder.Append("<script");
+            if (!string.IsNullOrWhiteSpace(scriptBlock.Language))
+                builder.Append(" lang=\"").Append(scriptBlock.Language).Append('"');
+            builder.AppendLine(">");
+            builder.Append(scriptBlock.Text);
+            if (!scriptBlock.Text.EndsWith("\n", StringComparison.Ordinal))
+                builder.AppendLine();
+            builder.AppendLine("</script>");
+        }
 
         foreach (var styleBlock in styleBlocks)
         {

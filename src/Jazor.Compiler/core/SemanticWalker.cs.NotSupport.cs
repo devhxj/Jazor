@@ -8,20 +8,6 @@ namespace Jazor.Compiler;
 public partial class SemanticWalker
 {
 	/// <summary>
-	/// 处理 using 语句操作
-	/// C# 示例：
-	/// using (var resource = new DisposableResource()) {
-	///     resource.DoWork();
-	/// }
-	/// 转换结果：不支持，JavaScript 没有内置的资源管理机制
-	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitUsing(IUsingOperation operation, SenseArgument argument)
-		=> HandleTransformationFailure<Node>(operation, "Using statements are not supported in JavaScript conversion.");
-
-	/// <summary>
 	/// 处理 Stop 操作（编译器内部）
 	/// 这是编译器内部使用的操作，不对应具体的 C# 语法
 	/// 转换结果：不支持
@@ -72,22 +58,6 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitForToLoop(IForToLoopOperation operation, SenseArgument argument)
 		=> HandleTransformationFailure<Node>(operation, "For-To loops are not supported in JavaScript conversion.");
-
-	/// <summary>
-	/// 处理 lock 语句操作
-	/// C# 示例：
-	/// lock (lockObject) {
-	///     // 线程安全代码
-	/// }
-	/// 转换结果：不支持，JavaScript 是单线程语言且没有内置的锁机制
-	/// 原因：JavaScript 是单线程事件循环模型，没有多线程竞争条件，因此不需要锁机制
-	/// 替代方案：在 JavaScript 中，异步操作使用 Promise/async-await，共享状态使用原子操作或互斥锁库
-	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitLock(ILockOperation operation, SenseArgument argument)
-		=> HandleTransformationFailure<Node>(operation, "Lock statements are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理事件引用操作
@@ -196,21 +166,6 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitTranslatedQuery(ITranslatedQueryOperation operation, SenseArgument argument)
 		=> HandleTransformationFailure<Node>(operation, "Translated LINQ queries are not supported in JavaScript conversion.");
-
-	/// <summary>
-	/// 处理 typeof 运算符操作
-	/// C# 示例：
-	/// typeof(int)                         // 获取类型信息
-	/// typeof(MyClass)                     // 获取自定义类型信息
-	/// 转换结果：不支持，JavaScript typeof 语义与 C# 不同
-	/// 原因：C# typeof 获取类型信息（System.Type），而 JavaScript typeof 获取值类型（string、number等）
-	/// 替代方案：在 JavaScript 中使用 typeof 操作符获取值类型，或使用 constructor.name 获取构造函数名
-	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitTypeOf(ITypeOfOperation operation, SenseArgument argument)
-		=> HandleTransformationFailure<Node>(operation, "typeof operator is not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理 sizeof 运算符操作
@@ -387,21 +342,6 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitReDimClause(IReDimClauseOperation operation, SenseArgument argument)
 		=> HandleTransformationFailure<Node>(operation, "ReDim clause operations are not supported in JavaScript conversion.");
-
-	/// <summary>
-	/// 处理 using 声明操作
-	/// C# 示例：
-	/// using var file = File.OpenRead("data.txt"); // using 声明
-	/// using FileStream fs = new FileStream(...);   // 传统 using 声明
-	/// 转换结果：不支持
-	/// 原因：JavaScript 没有内置的资源管理机制，没有确定性析构
-	/// 替代方案：在 JavaScript 中使用 try-finally 块手动管理资源，或使用具有 close/dispose 方法的对象
-	/// </summary>
-	/// <param name="operation">当前访问的operation</param>
-	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
-	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitUsingDeclaration(IUsingDeclarationOperation operation, SenseArgument argument)
-		=> HandleTransformationFailure<Node>(operation, "Using declaration operations are not supported in JavaScript conversion.");
 
 	/// <summary>
 	/// 处理插值字符串处理器创建操作

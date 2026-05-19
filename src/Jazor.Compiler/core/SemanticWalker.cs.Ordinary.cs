@@ -31,32 +31,7 @@ public partial class SemanticWalker
 		var ctx = scopedArgument.ScopeContext is not null && ReferenceEquals(scopedArgument.ScopeContext.Anchor, operation)
 			? scopedArgument
 			: scopedArgument.EnterScope(operation, ScopeSite.NestedBlock());
-		var pendingStatements = new List<Statement>();
-		foreach (var stmt in operation.Operations)
-		{
-			var node = Visit(stmt, ctx);
-
-			if (node is Statement statement)
-				pendingStatements.Add(statement);
-
-			else if (node is Expression expr)
-			{
-				// 剔除等于0的情况，因为它在JavaScript中没有副作用，不需要生成语句
-				if (expr is SequenceExpression seqExpr)
-				{
-					if (seqExpr.Expressions.Count == 1)
-						pendingStatements.Add(new NonSpecialExpressionStatement(seqExpr.Expressions[0]));
-
-					else if (seqExpr.Expressions.Count > 1)
-						pendingStatements.Add(new NonSpecialExpressionStatement(expr));
-				}
-				else
-					pendingStatements.Add(new NonSpecialExpressionStatement(expr));
-			}
-
-			else
-				HandleTransformationFailure<Node>(stmt, $"{stmt.Kind} could not be translated to JavaScript.");
-		}
+		var pendingStatements = TranslateOperationsToStatements(operation.Operations, ctx);
 
 		// 所有 stmt 处理完后，将 out/pattern 变量声明集中提升到块顶
 		// C# 编译器保证同一作用域内不会有同名变量，提升是安全的
@@ -281,20 +256,9 @@ public partial class SemanticWalker
 
 		// 函数边界：隔离 _declarators，共享 _specifiers（import 需跨函数边界传播）
 		var bodyCtx = EnsureScopeContext(operation, argument).EnterScope(operation, ScopeSite.LocalFunctionBody());
-		var pendingStatements = new List<Statement>();
-		if (operation.Body is not null)
-		{
-			foreach (var stmt in operation.Body.Operations)
-			{
-				var node = Visit(stmt, bodyCtx);
-				if (node is Statement statement)
-					pendingStatements.Add(statement);
-				else if (node is Expression expr)
-					pendingStatements.Add(new NonSpecialExpressionStatement(expr));
-				else
-					HandleTransformationFailure<Node>(stmt, "Local function statement could not be translated to JavaScript.");
-			}
-		}
+		var pendingStatements = operation.Body is not null
+			? TranslateOperationsToStatements(operation.Body.Operations, bodyCtx)
+			: [];
 
 		// 将函数体内的变量声明提升到函数体顶部
 		var bodyStatements = MaterializeScopedStatements(bodyCtx, pendingStatements);
@@ -314,7 +278,10 @@ public partial class SemanticWalker
 
 	private static bool ContainsAwaitOperation(IOperation? operation)
 		=> operation is not null &&
-		   (ContainsOperation(operation, static op => op.Kind == OperationKind.Await) ||
+		   (ContainsOperation(operation, static op =>
+				op.Kind == OperationKind.Await ||
+				op is IUsingOperation { IsAsynchronous: true } ||
+				op is IUsingDeclarationOperation { IsAsynchronous: true }) ||
 			ContainsAwaitSyntax(operation.Syntax));
 
 	private static bool ContainsYieldOperation(IOperation? operation)
@@ -1013,17 +980,7 @@ public partial class SemanticWalker
 
 		// 函数边界：隔离 _declarators，共享 _specifiers（import 需跨函数边界传播）
 		var bodyCtx = EnsureScopeContext(operation, argument).EnterScope(operation, ScopeSite.LambdaBody());
-		var pendingStatements = new List<Statement>();
-		foreach (var stmt in operation.Body.Operations)
-		{
-			var node = Visit(stmt, bodyCtx);
-			if (node is Statement statement)
-				pendingStatements.Add(statement);
-			else if (node is Expression expr)
-				pendingStatements.Add(new NonSpecialExpressionStatement(expr));
-			else
-				return HandleTransformationFailure<Node>(stmt, "Anonymous function body statement could not be translated to JavaScript.");
-		}
+		var pendingStatements = TranslateOperationsToStatements(operation.Body.Operations, bodyCtx);
 
 		// 将函数体内的变量声明提升到函数体顶部
 		var bodyStatements = MaterializeScopedStatements(bodyCtx, pendingStatements);
@@ -1479,6 +1436,23 @@ public partial class SemanticWalker
 			return HandleTransformationFailure<Node>(operation.Argument, "NameOf expression could not be translated to JavaScript.");
 
 		return new StringLiteral(name, $"\"{name}\"");
+	}
+
+	/// <summary>
+	/// 处理 typeof 运算符操作。
+	/// 当前支持的是稳定运行时类型令牌，而不是完整 CLR System.Type 反射对象。
+	/// </summary>
+	/// <param name="operation">当前访问的operation</param>
+	/// <param name="argument">当前 lowering 上下文</param>
+	/// <returns>JavaScript 运行时类型令牌表达式</returns>
+	public override Node? VisitTypeOf(ITypeOfOperation operation, SenseArgument argument)
+	{
+		var typeOperand = operation.TypeOperand;
+		if (typeOperand is null)
+			return HandleTransformationFailure<Node>(operation, "typeof operation must have a target type.");
+
+		var typeToken = BuildRuntimeTypeTokenExpression(operation, typeOperand, argument);
+		return WithOriginIfMissing(typeToken, operation);
 	}
 
 	/// <summary>

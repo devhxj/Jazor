@@ -90,6 +90,12 @@ public sealed class SemanticWalkerTryCatchTest
         var block = GetBlockOperation(@"
             class TestClass
             {
+                class TestDisposable : System.IDisposable
+                {
+                    public string ReadToEnd() => ""content"";
+                    public void Dispose() { }
+                }
+
                 void TestMethod()
                 {
                     try
@@ -135,6 +141,12 @@ public sealed class SemanticWalkerTryCatchTest
         var block = GetBlockOperation(@"
             class TestClass
             {
+                class TestDisposable : System.IDisposable
+                {
+                    public string ReadToEnd() => ""content"";
+                    public void Dispose() { }
+                }
+
                 void TestMethod()
                 {
                     try
@@ -184,6 +196,12 @@ public sealed class SemanticWalkerTryCatchTest
         var block = GetBlockOperation(@"
             class TestClass
             {
+                class TestDisposable : System.IDisposable
+                {
+                    public string ReadToEnd() => ""content"";
+                    public void Dispose() { }
+                }
+
                 void TestMethod()
                 {
                     try
@@ -241,6 +259,12 @@ public sealed class SemanticWalkerTryCatchTest
         var block = GetBlockOperation(@"
             class TestClass
             {
+                class TestDisposable : System.IDisposable
+                {
+                    public string ReadToEnd() => ""content"";
+                    public void Dispose() { }
+                }
+
                 void TestMethod()
                 {
                     try
@@ -288,6 +312,12 @@ public sealed class SemanticWalkerTryCatchTest
         var block = GetBlockOperation(@"
             class TestClass
             {
+                class TestDisposable : System.IDisposable
+                {
+                    public string ReadToEnd() => ""content"";
+                    public void Dispose() { }
+                }
+
                 void TestMethod()
                 {
                     try
@@ -2822,11 +2852,17 @@ AssertScriptEqual(@"{
         var block = GetBlockOperation(@"
             class TestClass
             {
+                class TestDisposable : System.IDisposable
+                {
+                    public string ReadToEnd() => ""content"";
+                    public void Dispose() { }
+                }
+
                 void TestMethod()
                 {
                     try
                     {
-                        using var reader = new System.IO.StreamReader(""test.txt"");
+                        using var reader = CreateReader();
                         var content = reader.ReadToEnd();
                     }
                     catch (Exception)
@@ -2834,14 +2870,28 @@ AssertScriptEqual(@"{
                         Console.WriteLine(""error"");
                     }
                 }
+
+                TestDisposable CreateReader() => new TestDisposable();
             }
         ");
 
         var walker = new SemanticWalker(true);
-        Assert.Throws<OperationTransformationException>(() =>
-        {
-            _ = walker.Visit(block, new());
-        });
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{
+  try {
+    let reader = this.CreateReader();
+    try {
+      let content = reader.ReadToEnd();
+    } finally {
+      if (reader !== null)
+        reader.dispose();
+    }
+  } catch {
+    console.log(""error"");
+  }
+}", script);
     }
 
     /// <summary>

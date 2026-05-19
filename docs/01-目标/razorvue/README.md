@@ -80,6 +80,34 @@ RazorVueCatalog + VueCompiledArtifact
 JavaScript 模块 / RazorVue manifest / source maps
 ```
 
+## Block Code Phase 1 状态
+
+- RazorVue 已正式引入命令式 block 的一等中间语义：`RazorVueImperativeBlockNode` / `RazorVueImperativeBlockKind`。
+- handwritten `BuildRenderTree` frontend 与 Razor IR frontend 现在共享同一条 body-level promotion 规则；当模板 body 超出当前声明式可结构化子集时，不再继续各自扩 statement 特判矩阵。
+- 当前 Phase 1 已落地的是“render tree 建模 + 双前端 promotion 对齐 + render-function 主线承载”：
+  - render tree 能显式承载命令式 body
+  - `.mjs` / H artifact 已能稳定 lower body-level imperative render
+  - `.vue` / SFC artifact 已能稳定生成 render-function SFC，而不是对 imperative body 一律拒绝
+  - 当前已覆盖：`return`、`while`、`switch`、`lock`、`try/catch/finally`、局部 mutation、常量 `AddMarkupContent(...)`、`using` / `using declaration`
+- 当前仍未完成的是：
+  - imperative body 的 canonical template path
+  - `await using` 的 RazorVue imperative render runtime 承载
+  - `lock` 的 CLR monitor / cross-thread 互斥语义
+  - 更复杂资源管理与异常控制流的继续扩面
+
+## Default Slot 合同
+
+- `RazorVueComponentNode` 现在区分两类 default-slot 来源：
+  - `AmbientDefaultSlotChildren`：组件标签体天然 child content
+  - `ImplicitDefaultSlotAssignments`：通过 `ChildContent` 参数等路径扁平化得到的隐式 default-slot 赋值事件
+- 这条模型用于稳定解决：
+  - library component default slot unknown-slot 校验
+  - implicit + explicit / duplicate default slot 赋值检测
+  - handwritten `BuildRenderTree` 与 Razor IR frontend 的默认 slot 计数一致性
+- typed implicit default slot 的参数名策略也已统一：
+  - 优先保留库声明的 slot 参数名，例如 `context`
+  - 若与当前可见局部/参数重名，再回退到 `__jazorSlotContext*`
+
 ## 与 Jolt 的关系
 
 | 维度 | RazorVue（库模式） | Jolt（开发时宿主） |
@@ -94,5 +122,7 @@ JavaScript 模块 / RazorVue manifest / source maps
 
 - [architecture.md](architecture.md)
 - [design/](design/)
+- [design/RazorVue.BlockCode.ExecutionModel.md](design/RazorVue.BlockCode.ExecutionModel.md)
+- [design/RazorVue.BlockCode.ExecutionModel.Phase1.md](design/RazorVue.BlockCode.ExecutionModel.Phase1.md)
 
 `design/` 中的文档描述的是 RazorVue 语义和规则本身，不要求和当前物理项目名一一对应。

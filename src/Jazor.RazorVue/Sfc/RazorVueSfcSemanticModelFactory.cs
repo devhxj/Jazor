@@ -492,6 +492,15 @@ internal sealed class RazorVueSfcSemanticModelFactory
     private static string CreateLiftedBindingName(int index)
         => "__jazor$" + index.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
+    internal static string ChangeExtensionToVuePublic(string relativePath)
+        => ChangeExtensionToVue(relativePath);
+
+    internal static string NormalizeSfcImportSpecifierPublic(
+        string importSpecifier,
+        VueComponentSourceKind sourceKind,
+        string ownerRelativeSfcPath)
+        => NormalizeSfcImportSpecifier(importSpecifier, sourceKind, ownerRelativeSfcPath);
+
     private static string ChangeExtensionToVue(string relativePath)
     {
         if (string.IsNullOrWhiteSpace(relativePath))

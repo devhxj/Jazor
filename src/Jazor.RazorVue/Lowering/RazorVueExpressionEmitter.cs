@@ -11,6 +11,7 @@ using Jazor.RazorVue.Descriptor;
 using Jazor.RazorVue.RenderTree;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Jazor.RazorVue.Lowering;
 
@@ -110,6 +111,15 @@ internal sealed partial class RazorVueExpressionEmitter
         return emission.HasValue ? emission.Expression : "null";
     }
 
+    internal bool ContainsImperativeRenderBody(RazorVueRenderFragment fragment)
+        => ContainsImperativeRenderBodyCore(fragment);
+
+    internal string EmitImperativeRenderBody(RazorVueRenderFragment fragment)
+    {
+        var imperative = GetSingleImperativeRenderBody(fragment);
+        return EmitImperativeBlockBody(imperative, "__jazorBuilder");
+    }
+
     private string EmitFragment(
         RazorVueRenderFragment fragment,
         ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
@@ -152,6 +162,71 @@ internal sealed partial class RazorVueExpressionEmitter
         return new OptionalJsArgument(
             "[" + string.Join(", ", fragment.Children.Select(child => EmitNode(child, allowedLocalSymbols, allowedParameterSymbols))) + "]",
             true);
+    }
+
+    private static bool ContainsImperativeRenderBodyCore(RazorVueRenderFragment fragment)
+    {
+        if (fragment.Children.IsDefaultOrEmpty)
+            return false;
+
+        foreach (var child in fragment.Children)
+        {
+            switch (child)
+            {
+                case RazorVueImperativeBlockNode:
+                    return true;
+                case RazorVueElementNode element when ContainsImperativeRenderBodyCore(element.Children):
+                    return true;
+                case RazorVueComponentNode component:
+                    if (ContainsImperativeRenderBodyCore(component.Children) ||
+                        ContainsImperativeRenderBodyCore(component.AmbientDefaultSlotChildren))
+                    {
+                        return true;
+                    }
+
+                    foreach (var slotTemplate in component.SlotTemplates)
+                    {
+                        if (ContainsImperativeRenderBodyCore(slotTemplate.Children))
+                            return true;
+                    }
+
+                    foreach (var assignment in component.ImplicitDefaultSlotAssignments)
+                    {
+                        if (ContainsImperativeRenderBodyCore(assignment.Children))
+                            return true;
+                    }
+
+                    break;
+                case RazorVueConditionalNode conditional:
+                    if (ContainsImperativeRenderBodyCore(conditional.WhenTrue) ||
+                        ContainsImperativeRenderBodyCore(conditional.WhenFalse))
+                    {
+                        return true;
+                    }
+
+                    break;
+                case RazorVueTemplateScopeNode templateScope when ContainsImperativeRenderBodyCore(templateScope.Children):
+                    return true;
+                case RazorVueForEachNode loop when ContainsImperativeRenderBodyCore(loop.Body):
+                    return true;
+                case RazorVueForNode loop when ContainsImperativeRenderBodyCore(loop.Body):
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private RazorVueImperativeBlockNode GetSingleImperativeRenderBody(RazorVueRenderFragment fragment)
+    {
+        if (fragment.Children.Length != 1 ||
+            fragment.Children[0] is not RazorVueImperativeBlockNode imperative)
+        {
+            throw new NotSupportedException(
+                $"RazorVue imperative render lowering requires a single imperative root block in component '{_snapshot.Descriptor.FullName}'.");
+        }
+
+        return imperative;
     }
 
     public string DescribeFragment(RazorVueRenderFragment fragment)
@@ -355,6 +430,14 @@ internal sealed partial class RazorVueExpressionEmitter
                         yield return childOrigin;
                 }
 
+                foreach (var implicitDefaultSlotAssignment in component.ImplicitDefaultSlotAssignments)
+                {
+                    foreach (var origin in implicitDefaultSlotAssignment.Origins)
+                        yield return origin;
+                    foreach (var childOrigin in CollectOrigins(implicitDefaultSlotAssignment.Children))
+                        yield return childOrigin;
+                }
+
                 foreach (var childOrigin in CollectOrigins(component.Children))
                     yield return childOrigin;
                 break;
@@ -381,6 +464,8 @@ internal sealed partial class RazorVueExpressionEmitter
             case RazorVueForNode loop:
                 foreach (var childOrigin in CollectOrigins(loop.Body))
                     yield return childOrigin;
+                break;
+            case RazorVueImperativeBlockNode:
                 break;
         }
     }
@@ -440,6 +525,11 @@ internal sealed partial class RazorVueExpressionEmitter
             Expression? instance,
             IReadOnlyList<Expression> arguments)
             => _emitter.TryRewriteInvocation(operation, argument, out var expression)
+                ? ParseJavaScriptExpression(expression)
+                : null;
+
+        public override Expression? RewriteInstanceReference(IInstanceReferenceOperation operation, SenseArgument argument)
+            => _emitter.TryRewriteInstanceReference(operation, argument, out var expression)
                 ? ParseJavaScriptExpression(expression)
                 : null;
     }

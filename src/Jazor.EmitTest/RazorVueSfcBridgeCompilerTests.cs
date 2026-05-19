@@ -230,6 +230,45 @@ public sealed class RazorVueSfcBridgeCompilerTests
         Assert.IsTrue(File.Exists(Path.Combine(workspace.HostJazorRoot, "components", "parent-card.vue")));
     }
 
+    [TestMethod]
+    public async Task CompileAsync_RenderFunctionOnlyVueSfc_WritesNamedExportBridgeModule()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(new ManifestModule("Demo.Components.CounterCard", "CounterCard", "components/counter-card.vue"));
+        workspace.WriteVue(
+            "components/counter-card.vue",
+            """
+            <script lang="ts">
+            import { defineComponent, h } from "vue";
+
+            export default defineComponent({
+              name: "CounterCard",
+              setup() {
+                return () => h("section", { class: "counter-card" }, "Counter");
+              }
+            });
+            </script>
+            """);
+
+        var compiler = new RazorVueSfcBridgeCompiler();
+        var result = await compiler.CompileAsync(new RazorVueSfcBridgeOptions(
+            workspace.HostJazorRoot,
+            workspace.BrowserOutputRoot,
+            workspace.ManifestPath,
+            RazorVueSfcBridgeMode.Browser,
+            Production: true,
+            Clean: true));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var module = await File.ReadAllTextAsync(
+            Path.Combine(workspace.BrowserOutputRoot, "components", "counter-card.mjs"),
+            TestContext.CancellationTokenSource.Token);
+        Assert.Contains("const _sfc_main =", module);
+        Assert.Contains("export { _sfc_main as CounterCard };", module);
+        Assert.DoesNotContain(module, "render = render", StringComparison.Ordinal);
+    }
+
     private sealed class TestWorkspace : IDisposable
     {
         public TestWorkspace(bool writeManifest = true)

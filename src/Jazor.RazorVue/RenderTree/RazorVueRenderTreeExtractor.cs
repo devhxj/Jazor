@@ -45,14 +45,127 @@ internal sealed class RazorVueRenderTreeExtractor
                     : null;
 
             if (operation is IBlockOperation block)
+            {
+                if (RazorVueImperativeRenderPromotionAnalyzer.ShouldPromoteBody(block.Operations))
+                {
+                    return CreateImperativeBodyFragment(
+                        block,
+                        RazorVueImperativeRenderPromotionAnalyzer.ClassifyBodyKind(block.Operations),
+                        builderParameters);
+                }
+
                 return new Parser(snapshot, context.Compilation, context.Symbols, builderParameters, allowTemplateScopedLocals: true).Parse(block.Operations);
+            }
 
             if (operation is not null)
+            {
+                if (RazorVueImperativeRenderPromotionAnalyzer.ShouldPromoteBody([operation]))
+                {
+                    return CreateImperativeBodyFragment(
+                        operation,
+                        RazorVueImperativeRenderPromotionAnalyzer.ClassifyBodyKind([operation]),
+                        builderParameters);
+                }
+
                 return new Parser(snapshot, context.Compilation, context.Symbols, builderParameters, allowTemplateScopedLocals: true).Parse([operation]);
+            }
         }
 
         return RazorVueRenderFragment.Empty;
     }
+
+    private static RazorVueRenderFragment CreateImperativeBodyFragment(
+        IOperation operation,
+        RazorVueImperativeBlockKind kind,
+        ImmutableHashSet<IParameterSymbol> builderParameters)
+    {
+        var visibleLocals = CollectVisibleLocals(operation);
+        var visibleParameters = builderParameters.ToImmutableArray();
+
+        return new RazorVueRenderFragment(
+        [
+            new RazorVueImperativeBlockNode(
+                operation,
+                kind,
+                visibleLocals,
+                visibleParameters,
+                CreateOriginsStatic(operation, RazorVueOriginKind.Template))
+        ]);
+    }
+
+    private static ImmutableArray<ILocalSymbol> CollectVisibleLocals(IOperation operation)
+    {
+        var builder = ImmutableArray.CreateBuilder<ILocalSymbol>();
+        var seen = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
+
+        foreach (var candidate in EnumerateOperationAndDescendants(operation))
+        {
+            switch (candidate)
+            {
+                case IVariableDeclarationGroupOperation declarationGroup:
+                    foreach (var declaration in declarationGroup.Declarations)
+                    {
+                        foreach (var declarator in declaration.Declarators)
+                        {
+                            if (seen.Add(declarator.Symbol))
+                                builder.Add(declarator.Symbol);
+                        }
+                    }
+
+                    break;
+                case IForEachLoopOperation foreachLoop:
+                    foreach (var local in foreachLoop.Locals)
+                    {
+                        if (seen.Add(local))
+                            builder.Add(local);
+                    }
+
+                    break;
+                case IForLoopOperation forLoop:
+                    foreach (var local in forLoop.Locals)
+                    {
+                        if (seen.Add(local))
+                            builder.Add(local);
+                    }
+
+                    break;
+                case IUsingDeclarationOperation usingDeclaration:
+                    if (usingDeclaration.DeclarationGroup is null)
+                        break;
+
+                    foreach (var declaration in usingDeclaration.DeclarationGroup.Declarations)
+                    {
+                        foreach (var declarator in declaration.Declarators)
+                        {
+                            if (seen.Add(declarator.Symbol))
+                                builder.Add(declarator.Symbol);
+                        }
+                    }
+
+                    break;
+            }
+        }
+
+        return builder.ToImmutable();
+    }
+
+    private static IEnumerable<IOperation> EnumerateOperationAndDescendants(IOperation operation)
+    {
+        yield return operation;
+        foreach (var child in operation.ChildOperations)
+        {
+            if (child is null)
+                continue;
+
+            foreach (var nested in EnumerateOperationAndDescendants(child))
+                yield return nested;
+        }
+    }
+
+    private static ImmutableArray<RazorVueSourceOrigin> CreateOriginsStatic(IOperation operation, RazorVueOriginKind originKind)
+        => operation.Syntax is null
+            ? ImmutableArray<RazorVueSourceOrigin>.Empty
+            : [RazorVueSourceOrigin.FromLocation(operation.Syntax.GetLocation(), originKind)];
 
     private readonly record struct ParsedSlotTemplate(
         string? ParameterName,
@@ -451,6 +564,9 @@ internal sealed class RazorVueRenderTreeExtractor
             if (string.Equals(name, "ChildContent", StringComparison.Ordinal) &&
                 TryParseChildContent(value, out var childContent))
             {
+                currentNode.AddImplicitDefaultSlotAssignment(new RazorVueImplicitDefaultSlotAssignmentNode(
+                    childContent,
+                    CreateOrigins(invocation, RazorVueOriginKind.Template)));
                 foreach (var child in childContent.Children)
                     currentNode.AddChild(child);
                 return;
@@ -483,6 +599,9 @@ internal sealed class RazorVueRenderTreeExtractor
             if (string.Equals(name, "ChildContent", StringComparison.Ordinal) &&
                 TryParseChildContent(value, out var childContent))
             {
+                currentNode.AddImplicitDefaultSlotAssignment(new RazorVueImplicitDefaultSlotAssignmentNode(
+                    childContent,
+                    CreateOrigins(invocation, RazorVueOriginKind.Template)));
                 foreach (var child in childContent.Children)
                     currentNode.AddChild(child);
                 return;
@@ -701,9 +820,15 @@ internal sealed class RazorVueRenderTreeExtractor
         private void AddNode(RazorVueRenderNode node)
         {
             if (TryGetNearestOpenNodeBuilder(out var currentNode))
+            {
+                if (currentNode is ComponentBuilder)
+                    currentNode.AddAmbientDefaultSlotChild(node);
                 currentNode.AddChild(node);
+            }
             else
+            {
                 _rootChildren.Add(node);
+            }
         }
 
         private bool IsRenderTreeBuilderInvocation(IInvocationOperation invocation)
@@ -1428,7 +1553,9 @@ internal sealed class RazorVueRenderTreeExtractor
 
             if (!TryParseSlotTemplate(value, out var slotTemplate))
             {
-                if (IsDeclaredComponentSlot(componentBuilder.ComponentType, name))
+                if (IsDeclaredComponentSlot(componentBuilder.ComponentType, name) &&
+                    value is not null &&
+                    IsRenderFragmentLikeValue(value))
                 {
                     throw CreateUnsupportedBuilderCall(
                         invocation,
@@ -1441,9 +1568,13 @@ internal sealed class RazorVueRenderTreeExtractor
             if (string.Equals(name, "ChildContent", StringComparison.Ordinal) &&
                 string.IsNullOrWhiteSpace(slotTemplate.ParameterName))
             {
-                foreach (var child in MaterializeCapturedTemplateChildren(
+                var childContent = MaterializeCapturedTemplateChildren(
                     slotTemplate,
-                    CreateOrigins(invocation, RazorVueOriginKind.Template)).Children)
+                    CreateOrigins(invocation, RazorVueOriginKind.Template));
+                currentNode.AddImplicitDefaultSlotAssignment(new RazorVueImplicitDefaultSlotAssignmentNode(
+                    childContent,
+                    CreateOrigins(invocation, RazorVueOriginKind.Template)));
+                foreach (var child in childContent.Children)
                     currentNode.AddChild(child);
                 return true;
             }
@@ -1467,6 +1598,17 @@ internal sealed class RazorVueRenderTreeExtractor
                     slotOrigins),
                 Origins: slotOrigins));
             return true;
+        }
+
+        private static bool IsRenderFragmentLikeValue(IOperation operation)
+        {
+            var current = Unwrap(operation);
+            if (current?.Type is not INamedTypeSymbol namedType)
+                return false;
+
+            var typeName = namedType.OriginalDefinition.ToDisplayString();
+            return string.Equals(typeName, "Microsoft.AspNetCore.Components.RenderFragment", StringComparison.Ordinal) ||
+                   string.Equals(typeName, "Microsoft.AspNetCore.Components.RenderFragment<T>", StringComparison.Ordinal);
         }
 
         private bool TryCreateCurrentComponentForwardedSlotAttribute(
@@ -2120,26 +2262,8 @@ internal sealed class RazorVueRenderTreeExtractor
                     continue;
 
                 var semanticModel = _compilation.GetSemanticModel(declaration.SyntaxTree);
-                if (declaration.ExpressionBody?.Expression is { } expressionBody &&
-                    RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(semanticModel, expressionBody, out var expressionBodyOperation))
-                {
-                    return expressionBodyOperation;
-                }
-
-                if (declaration.AccessorList is null)
-                    continue;
-
-                var getter = declaration.AccessorList.Accessors
-                    .FirstOrDefault(static accessor => accessor.IsKind(SyntaxKind.GetAccessorDeclaration));
-                if (getter?.Body is null ||
-                    getter.Body.Statements.Count != 1 ||
-                    getter.Body.Statements[0] is not ReturnStatementSyntax { Expression: { } returnExpression })
-                {
-                    continue;
-                }
-
-                if (RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(semanticModel, returnExpression, out var getterOperation))
-                    return getterOperation;
+                if (RazorVuePropertyInitializerHelper.TryGetPropertyValueOperation(semanticModel, declaration, out var propertyOperation))
+                    return propertyOperation;
             }
 
             return null;
@@ -2591,6 +2715,8 @@ internal sealed class RazorVueRenderTreeExtractor
         private RazorVueNodeKey? _key;
         private readonly List<RazorVueAttributeEntry> _attributes = [];
         private readonly List<RazorVueComponentSlotTemplateNode> _slotTemplates = [];
+        private readonly List<RazorVueImplicitDefaultSlotAssignmentNode> _implicitDefaultSlotAssignments = [];
+        private readonly List<RazorVueRenderNode> _ambientDefaultSlotChildren = [];
         private readonly List<RazorVueRenderNode> _children = [];
 
         protected OpenNodeBuilder(ImmutableArray<RazorVueSourceOrigin> origins)
@@ -2607,6 +2733,12 @@ internal sealed class RazorVueRenderTreeExtractor
         public void AddSlotTemplate(RazorVueComponentSlotTemplateNode slotTemplate)
             => _slotTemplates.Add(slotTemplate);
 
+        public void AddImplicitDefaultSlotAssignment(RazorVueImplicitDefaultSlotAssignmentNode assignment)
+            => _implicitDefaultSlotAssignments.Add(assignment);
+
+        public void AddAmbientDefaultSlotChild(RazorVueRenderNode child)
+            => _ambientDefaultSlotChildren.Add(child);
+
         public void AddChild(RazorVueRenderNode child)
             => _children.Add(child);
 
@@ -2618,6 +2750,12 @@ internal sealed class RazorVueRenderTreeExtractor
 
         protected ImmutableArray<RazorVueComponentSlotTemplateNode> BuildSlotTemplates()
             => [.. _slotTemplates];
+
+        protected ImmutableArray<RazorVueImplicitDefaultSlotAssignmentNode> BuildImplicitDefaultSlotAssignments()
+            => [.. _implicitDefaultSlotAssignments];
+
+        protected RazorVueRenderFragment BuildAmbientDefaultSlotChildren()
+            => new([.. _ambientDefaultSlotChildren]);
 
         protected RazorVueRenderFragment BuildChildren()
             => new([.. _children]);
@@ -2648,6 +2786,6 @@ internal sealed class RazorVueRenderTreeExtractor
             => $"component '{ComponentFullName}'";
 
         public override RazorVueRenderNode Build()
-            => new RazorVueComponentNode(componentName, ComponentFullName, resolutionName, BuildKey(), BuildAttributes(), BuildSlotTemplates(), BuildChildren(), Origins);
+            => new RazorVueComponentNode(componentName, ComponentFullName, resolutionName, BuildKey(), BuildAttributes(), BuildSlotTemplates(), BuildImplicitDefaultSlotAssignments(), BuildAmbientDefaultSlotChildren(), BuildChildren(), Origins);
     }
 }

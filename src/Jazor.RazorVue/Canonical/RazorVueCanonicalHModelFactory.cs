@@ -290,6 +290,7 @@ internal sealed class RazorVueCanonicalHModelFactory
                     ClassifySideEffects(loop.LimitValue),
                     ClassifySideEffects(loop.StepValue)),
                 SourceOrigins: loop.Origins),
+            RazorVueImperativeBlockNode imperative => throw CreateUnsupportedImperativeRenderException(snapshot, imperative),
             _ => throw CreateUnsupportedCanonicalizationException(snapshot, node.GetType().Name, node.Origins)
         };
 
@@ -323,10 +324,11 @@ internal sealed class RazorVueCanonicalHModelFactory
             resolvedDescriptor,
             allowedLocalSymbols,
             allowedParameterSymbols));
-        if (!component.Children.Children.IsDefaultOrEmpty)
+        if (HasAnyDefaultSlotContent(component))
         {
             var defaultSlotParameterName = TryGetDefaultSlotParameterName(
                 resolvedDescriptor,
+                component,
                 allowedLocalSymbols,
                 allowedParameterSymbols);
             slotBindings = slotBindings.Add(new RazorVueCanonicalSlotBinding(
@@ -344,10 +346,10 @@ internal sealed class RazorVueCanonicalHModelFactory
                     snapshot,
                     expressionEmitter,
                     resolvedComponents,
-                    component.Children,
+                    GetDefaultSlotFragment(component),
                     allowedLocalSymbols,
                     allowedParameterSymbols),
-                SourceOrigins: component.Children.Children
+                SourceOrigins: GetDefaultSlotFragment(component).Children
                     .SelectMany(static child => child.Origins)
                     .ToImmutableArray()));
         }
@@ -398,14 +400,17 @@ internal sealed class RazorVueCanonicalHModelFactory
         RazorVueComponentNode component)
     {
         if (descriptor.SourceKind != VueComponentSourceKind.LibraryComponent ||
-            component.Children.Children.IsDefaultOrEmpty)
+            !HasAnyDefaultSlotAssignment(component))
         {
             return;
         }
 
-        var origin = component.Children.Children
+        var origin = GetDefaultSlotFragment(component).Children
             .SelectMany(static child => child.Origins)
-            .FirstOrDefault() ?? component.Origins.FirstOrDefault();
+            .FirstOrDefault() ??
+            component.ImplicitDefaultSlotAssignments.SelectMany(static assignment => assignment.Origins).FirstOrDefault() ??
+            component.AmbientDefaultSlotChildren.Children.SelectMany(static child => child.Origins).FirstOrDefault() ??
+            component.Origins.FirstOrDefault();
 
         if (VueSlotResolver.TryResolve(descriptor.Slots, "ChildContent", out var defaultSlot))
         {
@@ -417,11 +422,15 @@ internal sealed class RazorVueCanonicalHModelFactory
 
     private static string? TryGetDefaultSlotParameterName(
         VueComponentDescriptor descriptor,
+        RazorVueComponentNode component,
         ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
         ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
         => VueSlotResolver.TryResolve(descriptor.Slots, "ChildContent", out var defaultSlot) &&
            !defaultSlot.Descriptor.Parameters.IsDefaultOrEmpty
-            ? RazorVueSlotParameterNames.CreateImplicitDefaultSlotParameterName(allowedLocalSymbols, allowedParameterSymbols)
+            ? RazorVueSlotParameterNames.CreateImplicitDefaultSlotParameterName(
+                defaultSlot.Descriptor.Parameters[0].Name,
+                allowedLocalSymbols,
+                allowedParameterSymbols)
             : null;
 
     private static void ValidateDuplicateLibrarySlotUsage(
@@ -436,9 +445,19 @@ internal sealed class RazorVueCanonicalHModelFactory
             return;
 
         var assignedSlots = new HashSet<string>(StringComparer.Ordinal);
-        if (!component.Children.Children.IsDefaultOrEmpty &&
+        if (HasAnyDefaultSlotAssignment(component) &&
             VueSlotResolver.TryResolve(descriptor.Slots, "ChildContent", out var childContentSlot))
         {
+            var defaultSlotAssignmentCount = GetDefaultSlotAssignmentCount(component);
+            if (defaultSlotAssignmentCount > 1)
+            {
+                throw CreateDuplicateSlotValueException(
+                    snapshot,
+                    descriptor,
+                    "ChildContent",
+                    GetSecondDefaultSlotAssignmentOrigin(snapshot, component));
+            }
+
             assignedSlots.Add(childContentSlot.SlotName);
         }
 
@@ -474,6 +493,54 @@ internal sealed class RazorVueCanonicalHModelFactory
                 attribute.Name,
                 attribute.Origins.IsDefaultOrEmpty ? snapshot.Origins.FirstOrDefault() : attribute.Origins[0]);
         }
+    }
+
+    private static bool HasImplicitDefaultSlotAssignment(RazorVueComponentNode component)
+        => !component.ImplicitDefaultSlotAssignments.IsDefaultOrEmpty;
+
+    private static bool HasAmbientDefaultSlotContent(RazorVueComponentNode component)
+        => !component.AmbientDefaultSlotChildren.Children.IsDefaultOrEmpty;
+
+    private static bool HasAnyDefaultSlotContent(RazorVueComponentNode component)
+        => HasImplicitDefaultSlotAssignment(component) || HasAmbientDefaultSlotContent(component);
+
+    private static bool HasAnyDefaultSlotAssignment(RazorVueComponentNode component)
+        => component.ImplicitDefaultSlotAssignments.Length > 0 || HasAmbientDefaultSlotContent(component);
+
+    private static int GetDefaultSlotAssignmentCount(RazorVueComponentNode component)
+        => component.ImplicitDefaultSlotAssignments.Length + (HasAmbientDefaultSlotContent(component) ? 1 : 0);
+
+    private static RazorVueRenderFragment GetImplicitDefaultSlotFragment(RazorVueComponentNode component)
+        => component.ImplicitDefaultSlotAssignments.IsDefaultOrEmpty
+            ? component.Children
+            : component.ImplicitDefaultSlotAssignments[0].Children;
+
+    private static RazorVueRenderFragment GetDefaultSlotFragment(RazorVueComponentNode component)
+        => !component.ImplicitDefaultSlotAssignments.IsDefaultOrEmpty
+            ? component.ImplicitDefaultSlotAssignments[0].Children
+            : component.AmbientDefaultSlotChildren;
+
+    private static RazorVueSourceOrigin? GetSecondDefaultSlotAssignmentOrigin(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueComponentNode component)
+    {
+        if (HasAmbientDefaultSlotContent(component) && component.ImplicitDefaultSlotAssignments.Length > 0)
+        {
+            return component.ImplicitDefaultSlotAssignments[0].Origins.IsDefaultOrEmpty
+                ? snapshot.Origins.FirstOrDefault()
+                : component.ImplicitDefaultSlotAssignments[0].Origins[0];
+        }
+
+        if (component.ImplicitDefaultSlotAssignments.Length > 1)
+        {
+            return component.ImplicitDefaultSlotAssignments[1].Origins.IsDefaultOrEmpty
+                ? snapshot.Origins.FirstOrDefault()
+                : component.ImplicitDefaultSlotAssignments[1].Origins[0];
+        }
+
+        return component.AmbientDefaultSlotChildren.Children
+            .SelectMany(static child => child.Origins)
+            .FirstOrDefault() ?? snapshot.Origins.FirstOrDefault();
     }
 
     private static RazorVueCanonicalInterpolationNode CreateInterpolationNode(
@@ -1130,6 +1197,19 @@ internal sealed class RazorVueCanonicalHModelFactory
             RazorVueIssueSeverity.Error,
             $"Component '{descriptor.Name}' does not declare a child content parameter named '{publicName}'.",
             ImmutableArray<string>.Empty);
+        return new RazorVueCompilationIssueException(issue, snapshot.Descriptor.FullName, origin);
+    }
+
+    private static RazorVueCompilationIssueException CreateUnsupportedImperativeRenderException(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueImperativeBlockNode imperative)
+    {
+        var issue = new RazorVueCompilationIssue(
+            RazorVueIssueCode.CanonicalizationFailed,
+            RazorVueIssueSeverity.Error,
+            $"RazorVue canonical template lowering does not support imperative render block '{imperative.Kind}' in component '{snapshot.Descriptor.FullName}'. Use H/render-function artifact lowering for this body.",
+            ImmutableArray<string>.Empty);
+        var origin = imperative.Origins.IsDefaultOrEmpty ? snapshot.Origins.FirstOrDefault() : imperative.Origins[0];
         return new RazorVueCompilationIssueException(issue, snapshot.Descriptor.FullName, origin);
     }
 

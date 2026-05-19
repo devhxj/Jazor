@@ -8677,7 +8677,7 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
-        StringAssert.Contains(artifact.ModuleCode, "default: (__jazorSlotContext) => \"warn\"");
+        StringAssert.Contains(artifact.ModuleCode, "default: (context) => \"warn\"");
     }
 
     [TestMethod]
@@ -21053,6 +21053,50 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersAnalyzableCurrentComponentRenderFragmentAutoPropertyCarrierIntoVueRenderFunction()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/typed-fragment-card")]
+                public class TypedFragmentCard : ComponentBase, IVueComponent
+                {
+                    private RenderFragment<int> Template { get; } = item => itemBuilder =>
+                    {
+                        itemBuilder.OpenElement(1, "span");
+                        itemBuilder.AddContent(2, item);
+                        itemBuilder.CloseElement();
+                    };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, Template, 42);
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => ((item) => h(\"span\", null, item))(42);");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersAnalyzableCurrentComponentRenderFragmentFieldCarrierIntoVueRenderFunction()
     {
         var context = CreateContext(
@@ -21857,6 +21901,59 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersAnalyzableCurrentComponentRenderFragmentAutoPropertyCarrierForTypedSlotTemplate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    private RenderFragment<int> Template { get; } = item => itemBuilder =>
+                    {
+                        itemBuilder.OpenElement(1, "span");
+                        itemBuilder.AddContent(2, item);
+                        itemBuilder.CloseElement();
+                    };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<ChildCard>(0);
+                        builder.AddAttribute(1, "ItemTemplate", Template);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "Host");
+        StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (item) => h(\"span\", null, item)");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_WithCyclicCurrentComponentRenderFragmentFactoryMethods_ThrowsCanonicalizationFailed()
     {
         var context = CreateContext(
@@ -21938,7 +22035,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_RejectsConditionalReturnInBuildRenderTree()
+    public void RazorVue_Pipeline_LowersConditionalReturnInBuildRenderTree_UsingImperativeRenderBridge()
     {
         var context = CreateContext(
             """
@@ -21980,9 +22077,962 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "return");
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.ModuleCode, "if (props.hide) {");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorBuilder.complete();");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(\"ready\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.CloseElement();");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersWhileLoopInBuildRenderTree_UsingImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/while-card")]
+                public class WhileCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        var index = 0;
+                        while (index < Count)
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, index);
+                            builder.CloseElement();
+                            index++;
+                        }
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.ModuleCode, "let index = 0;");
+        StringAssert.Contains(artifact.ModuleCode, "while (index < props.count)");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(index);");
+        StringAssert.Contains(artifact.ModuleCode, "index++;");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersSwitchStatementInBuildRenderTree_UsingImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/switch-card")]
+                public class SwitchCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        switch (Count)
+                        {
+                            case 0:
+                                builder.OpenElement(0, "p");
+                                builder.AddContent(1, "empty");
+                                builder.CloseElement();
+                                break;
+                            default:
+                                builder.OpenElement(2, "section");
+                                builder.AddContent(3, Count);
+                                builder.CloseElement();
+                                break;
+                        }
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.ModuleCode, "switch (props.count)");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"p\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(\"empty\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(props.count);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersTryCatchFinallyInBuildRenderTree_UsingImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/try-card")]
+                public class TryCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        try
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, "ready");
+                            builder.CloseElement();
+                        }
+                        catch
+                        {
+                            builder.OpenElement(2, "p");
+                            builder.AddContent(3, "fallback");
+                            builder.CloseElement();
+                        }
+                        finally
+                        {
+                            _count++;
+                        }
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.ModuleCode, "try {");
+        StringAssert.Contains(artifact.ModuleCode, "} catch {");
+        StringAssert.Contains(artifact.ModuleCode, "} finally {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(\"ready\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"p\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(\"fallback\");");
+        StringAssert.Contains(artifact.ModuleCode, "_count++;");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersUsingDeclarationInBuildRenderTree_UsingImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/using-card")]
+                public class UsingCard : ComponentBase, IVueComponent
+                {
+                    private sealed class TestDisposable : IDisposable
+                    {
+                        public void Dispose() { }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        using var disposable = new TestDisposable();
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.ModuleCode, "let disposable = new ");
+        StringAssert.Contains(artifact.ModuleCode, "try {");
+        StringAssert.Contains(artifact.ModuleCode, "} finally {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(\"ready\");");
+        StringAssert.Contains(artifact.ModuleCode, "if (disposable !== null)");
+        StringAssert.Contains(artifact.ModuleCode, "disposable.dispose();");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersUsingExpressionWithInterfaceResourceInBuildRenderTree_UsingImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                public sealed class TestDisposable : IDisposable
+                {
+                    public void Dispose() { }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/using-interface-card")]
+                public class UsingInterfaceCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        using (GetDisposable())
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, "ready");
+                            builder.CloseElement();
+                        }
+                    }
+
+                    private IDisposable GetDisposable() => new TestDisposable();
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.ModuleCode, "let ");
+        StringAssert.Contains(artifact.ModuleCode, " = getDisposable();");
+        StringAssert.Contains(artifact.ModuleCode, "try {");
+        StringAssert.Contains(artifact.ModuleCode, "} finally {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(\"ready\");");
+        StringAssert.Contains(artifact.ModuleCode, "!== null)");
+        StringAssert.Contains(artifact.ModuleCode, "_6f97d94b6f2e4bc1(");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersLockStatementInBuildRenderTree_UsingImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lock-card")]
+                public class LockCard : ComponentBase, IVueComponent
+                {
+                    private readonly object _gate = new();
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        lock (_gate)
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, "ready");
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.ModuleCode, "if (_gate == null)");
+        StringAssert.Contains(artifact.ModuleCode, "throw new TypeError(\"obj\");");
+        StringAssert.Contains(artifact.ModuleCode, "try {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(\"ready\");");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersStandaloneFieldMutationInBuildRenderTree_UsingImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/mutation-card")]
+                public class MutationCard : ComponentBase, IVueComponent
+                {
+                    private int _count = 1;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        _count++;
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, _count);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.ModuleCode, "_count++;");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(_count);");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorBuilder.complete();");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersConstantAddMarkupContentInsideImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-markup-card")]
+                public class ImperativeMarkupCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowMarkup { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (ShowMarkup)
+                        {
+                            builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span></section>");
+                            return;
+                        }
+
+                        builder.OpenElement(1, "p");
+                        builder.AddContent(2, "fallback");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "if (props.showMarkup) {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")));");
+        Assert.IsFalse(
+            artifact.ModuleCode.Contains("__jazorBuilder.AddMarkupContent(", StringComparison.Ordinal),
+            artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersTypedComponentSlotTemplateInsideImperativeBuildRenderTree_UsingNestedBuilderAdapter()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.CompilerServices;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/item-editor")]
+                public class ItemEditor : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int ModelValue { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/list-card")]
+                public class ListCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/imperative-slot-host")]
+                public class ImperativeSlotHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowEditor { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (!ShowEditor)
+                        {
+                            builder.OpenElement(0, "p");
+                            builder.AddContent(1, "fallback");
+                            builder.CloseElement();
+                            return;
+                        }
+
+                        builder.OpenComponent<ListCard>(2);
+                        builder.AddComponentParameter(3, nameof(ListCard.ItemTemplate), RuntimeHelpers.TypeCheck<RenderFragment<int>>((RenderFragment<int>)((item) => (__slotBuilder) =>
+                        {
+                            __slotBuilder.OpenComponent<ItemEditor>(4);
+                            __slotBuilder.AddComponentParameter(5, nameof(ItemEditor.ModelValue), RuntimeHelpers.TypeCheck<int>(item));
+                            __slotBuilder.CloseComponent();
+                        })));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ImperativeSlotHost");
+
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.ModuleCode, "function __jazorInvokeBuilderFragment(fragment)");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenComponent(ListCardComponent, __jazorImperativeComponentMetadata_ListCard);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddComponentParameter(\"ItemTemplate\", __jazorCreateContextualBuilderSlot(");
+        StringAssert.Contains(artifact.ModuleCode, "__slotBuilder.OpenComponent(ItemEditorComponent, __jazorImperativeComponentMetadata_ItemEditor);");
+        Assert.IsFalse(
+            artifact.ModuleCode.Contains("__jazorBuilder.OpenComponent(ItemEditorComponent", StringComparison.Ordinal),
+            artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersInjectedNamedSlotForwardingInsideImperativeBuildRenderTree_UsingRuntimeSlotMetadata()
+    {
+        var artifact = CreateBuildRenderTreePipeline().Execute(CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using ECMAScript.VueContract.Descriptor;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            [assembly: VueInject(
+                typeof(Demo.Containers.NavShell),
+                typeof(Demo.Implementations.ElementPlusNavShell))]
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Contracts
+            {
+                public sealed record HeaderContext(string Title);
+            }
+
+            namespace Demo.Containers
+            {
+                [ECMAScript.ECMAScriptModule("./containers/nav-shell")]
+                public sealed class NavShell : ComponentBase, IVueComponent, IVueContainerComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+                }
+            }
+
+            namespace Demo.Implementations
+            {
+                [VueLibraryComponent("element-plus", "ElMenu")]
+                [VueProp(nameof(Title), Name = "navigationTitle")]
+                [VueSlot(nameof(Header), Name = "top", ContextTypeName = "Demo.Contracts.HeaderContext", ContextParameterName = "headerContext")]
+                public sealed class ElementPlusNavShell : ComponentBase, IVueLibraryComponent, IVueContainerImplementation<Demo.Containers.NavShell>
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./pages/imperative-home-page")]
+                public sealed class ImperativeHomePage : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowShell { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (!ShowShell)
+                        {
+                            builder.OpenElement(0, "p");
+                            builder.AddContent(1, "hidden");
+                            builder.CloseElement();
+                            return;
+                        }
+
+                        builder.OpenComponent(2, typeof(Demo.Containers.NavShell));
+                        builder.AddComponentParameter(3, nameof(Demo.Containers.NavShell.Title), "Overview");
+                        builder.AddComponentParameter(4, nameof(Demo.Containers.NavShell.Header), Header);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """)).Artifacts.Single(static artifact => artifact.ComponentName == "ImperativeHomePage");
+
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenComponent(NavShellComponent, __jazorImperativeComponentMetadata_NavShell);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddComponentParameter(\"Title\", \"Overview\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddComponentParameter(\"Header\", __jazorCreateSlotReference(slots.header ?? null, true));");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorImperativeComponentMetadata_NavShell = {");
+        StringAssert.Contains(artifact.ModuleCode, "\"navigationTitle\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"top\"");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ImperativeUsedInjectedSlotRuntimeShapeAffectsDescriptorHash()
+    {
+        var identityA = CreateBuildRenderTreePipeline().Execute(CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using ECMAScript.VueContract.Descriptor;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            [assembly: VueInject(
+                typeof(Demo.Containers.NavShell),
+                typeof(Demo.Implementations.ElementPlusNavShell))]
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Contracts
+            {
+                public sealed record HeaderContext(string Title);
+            }
+
+            namespace Demo.Containers
+            {
+                [ECMAScript.ECMAScriptModule("./containers/nav-shell")]
+                public sealed class NavShell : ComponentBase, IVueComponent, IVueContainerComponent
+                {
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+                }
+            }
+
+            namespace Demo.Implementations
+            {
+                [VueLibraryComponent("element-plus", "ElMenu")]
+                [VueSlot(nameof(Header), Name = "top", ContextTypeName = "Demo.Contracts.HeaderContext", ContextParameterName = "headerContext")]
+                public sealed class ElementPlusNavShell : ComponentBase, IVueLibraryComponent, IVueContainerImplementation<Demo.Containers.NavShell>
+                {
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./pages/imperative-home-page")]
+                public sealed class ImperativeHomePage : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowShell { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (!ShowShell)
+                        {
+                            return;
+                        }
+
+                        builder.OpenComponent(0, typeof(Demo.Containers.NavShell));
+                        builder.AddComponentParameter(1, nameof(Demo.Containers.NavShell.Header), Header);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """)).Artifacts.Single(static artifact => artifact.ComponentName == "ImperativeHomePage").Identity;
+
+        var identityB = CreateBuildRenderTreePipeline().Execute(CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using ECMAScript.VueContract.Descriptor;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            [assembly: VueInject(
+                typeof(Demo.Containers.NavShell),
+                typeof(Demo.Implementations.ElementPlusNavShell))]
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Contracts
+            {
+                public sealed record HeaderContext(string Title);
+            }
+
+            namespace Demo.Containers
+            {
+                [ECMAScript.ECMAScriptModule("./containers/nav-shell")]
+                public sealed class NavShell : ComponentBase, IVueComponent, IVueContainerComponent
+                {
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+                }
+            }
+
+            namespace Demo.Implementations
+            {
+                [VueLibraryComponent("element-plus", "ElMenu")]
+                [VueSlot(nameof(Header), Name = "banner", ContextTypeName = "Demo.Contracts.HeaderContext", ContextParameterName = "headerContext")]
+                public sealed class ElementPlusNavShell : ComponentBase, IVueLibraryComponent, IVueContainerImplementation<Demo.Containers.NavShell>
+                {
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./pages/imperative-home-page")]
+                public sealed class ImperativeHomePage : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowShell { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (!ShowShell)
+                        {
+                            return;
+                        }
+
+                        builder.OpenComponent(0, typeof(Demo.Containers.NavShell));
+                        builder.AddComponentParameter(1, nameof(Demo.Containers.NavShell.Header), Header);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """)).Artifacts.Single(static artifact => artifact.ComponentName == "ImperativeHomePage").Identity;
+
+        Assert.AreNotEqual(identityA.DescriptorHash, identityB.DescriptorHash);
+        Assert.AreEqual(identityA.TemplateHash, identityB.TemplateHash);
+        Assert.AreEqual(identityA.LogicHash, identityB.LogicHash);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ImperativeUnusedInjectedSlotRuntimeShapeDoesNotAffectDescriptorHash()
+    {
+        var identityA = CreateBuildRenderTreePipeline().Execute(CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using ECMAScript.VueContract.Descriptor;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            [assembly: VueInject(
+                typeof(Demo.Containers.NavShell),
+                typeof(Demo.Implementations.ElementPlusNavShell))]
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Contracts
+            {
+                public sealed record HeaderContext(string Title);
+            }
+
+            namespace Demo.Containers
+            {
+                [ECMAScript.ECMAScriptModule("./containers/nav-shell")]
+                public sealed class NavShell : ComponentBase, IVueComponent, IVueContainerComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? Footer { get; set; }
+                }
+            }
+
+            namespace Demo.Implementations
+            {
+                [VueLibraryComponent("element-plus", "ElMenu")]
+                [VueProp(nameof(Title), Name = "navigationTitle")]
+                [VueSlot(nameof(Header), Name = "top", ContextTypeName = "Demo.Contracts.HeaderContext", ContextParameterName = "headerContext")]
+                [VueSlot(nameof(Footer), Name = "footer")]
+                public sealed class ElementPlusNavShell : ComponentBase, IVueLibraryComponent, IVueContainerImplementation<Demo.Containers.NavShell>
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? Footer { get; set; }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./pages/imperative-home-page")]
+                public sealed class ImperativeHomePage : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowShell { get; set; }
+
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (!ShowShell)
+                        {
+                            return;
+                        }
+
+                        builder.OpenComponent(0, typeof(Demo.Containers.NavShell));
+                        builder.AddComponentParameter(1, nameof(Demo.Containers.NavShell.Title), Title);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """)).Artifacts.Single(static artifact => artifact.ComponentName == "ImperativeHomePage").Identity;
+
+        var identityB = CreateBuildRenderTreePipeline().Execute(CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using ECMAScript.VueContract.Descriptor;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            [assembly: VueInject(
+                typeof(Demo.Containers.NavShell),
+                typeof(Demo.Implementations.ElementPlusNavShell))]
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Contracts
+            {
+                public sealed record HeaderContext(string Title);
+            }
+
+            namespace Demo.Containers
+            {
+                [ECMAScript.ECMAScriptModule("./containers/nav-shell")]
+                public sealed class NavShell : ComponentBase, IVueComponent, IVueContainerComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? Footer { get; set; }
+                }
+            }
+
+            namespace Demo.Implementations
+            {
+                [VueLibraryComponent("element-plus", "ElMenu")]
+                [VueProp(nameof(Title), Name = "navigationTitle")]
+                [VueSlot(nameof(Header), Name = "banner", ContextTypeName = "Demo.Contracts.HeaderContext", ContextParameterName = "headerContext")]
+                [VueSlot(nameof(Footer), Name = "bottom")]
+                public sealed class ElementPlusNavShell : ComponentBase, IVueLibraryComponent, IVueContainerImplementation<Demo.Containers.NavShell>
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<Demo.Contracts.HeaderContext>? Header { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? Footer { get; set; }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./pages/imperative-home-page")]
+                public sealed class ImperativeHomePage : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowShell { get; set; }
+
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (!ShowShell)
+                        {
+                            return;
+                        }
+
+                        builder.OpenComponent(0, typeof(Demo.Containers.NavShell));
+                        builder.AddComponentParameter(1, nameof(Demo.Containers.NavShell.Title), Title);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """)).Artifacts.Single(static artifact => artifact.ComponentName == "ImperativeHomePage").Identity;
+
+        Assert.AreEqual(identityA.DescriptorHash, identityB.DescriptorHash);
+        Assert.AreEqual(identityA.TemplateHash, identityB.TemplateHash);
+        Assert.AreEqual(identityA.LogicHash, identityB.LogicHash);
     }
 
     private sealed class FixedTemplateFrontend(RazorVueRenderFragment renderTree) : IRazorVueTemplateFrontend

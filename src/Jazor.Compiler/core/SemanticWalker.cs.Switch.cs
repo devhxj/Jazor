@@ -68,16 +68,7 @@ public partial class SemanticWalker
 			}
 			
 			// 处理case体
-			foreach (var bodyOp in switchCase.Body)
-			{
-				var bodyNode = Visit(bodyOp, argument);
-				if (bodyNode is Statement stmt)
-					consequent.Add(stmt);
-				else if (bodyNode is Expression expr)
-					consequent.Add(new NonSpecialExpressionStatement(expr));
-				else
-					return HandleTransformationFailure<SwitchStatement>(bodyOp, "Switch case body statement could not be translated to JavaScript.");
-			}
+			consequent.AddRange(TranslateOperationsToStatements(switchCase.Body, argument));
 
 			// 为每个 test 值创建一个 SwitchCase。
 			// C# 的 case label 共享同一个 body 时，语句应挂在最后一个 label 上，
@@ -138,16 +129,7 @@ public partial class SemanticWalker
 		}
 
 		// 如果有body操作，添加到语句中
-		foreach (var bodyOp in operation.Body)
-		{
-			var bodyNode = Visit(bodyOp, argument);
-			if (bodyNode is Statement bodyStmt)
-				statements.Add(bodyStmt);
-			else if (bodyNode is Expression bodyExpr)
-				statements.Add(new NonSpecialExpressionStatement(bodyExpr));
-			else
-				return HandleTransformationFailure<Node>(bodyOp, "Switch case body could not be translated to JavaScript.");
-		}
+		statements.AddRange(TranslateOperationsToStatements(operation.Body, argument));
 
 		return statements.Count > 0 ? new NestedBlockStatement(NodeList.From(statements)) : null;
 	}

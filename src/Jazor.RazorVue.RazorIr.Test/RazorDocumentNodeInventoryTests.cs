@@ -604,4 +604,104 @@ public sealed class RazorDocumentNodeInventoryTests
         StringAssert.Contains(tree, "AttributeName=\"ItemTemplate\"");
     }
 
+    [TestMethod]
+    public void AlignedContext_ForRenderFragmentLocalCarrierWithTrailingIfInTemplateCodeBlock_ProducesTemplateAndTailInventory()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @{
+                RenderFragment<string> template = item => @<p>@item</p>;
+                if (Show)
+                {
+                    <section>tail</section>
+                }
+            }
+
+            <LayoutCard ItemTemplate="template" />
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.Inventory.RenderFragmentLocalCarrier.TrailingIf",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/layout-card")]
+                public partial class LayoutCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<string>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Show { get; set; }
+                }
+            }
+            """);
+
+        var tree = RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot);
+        TestContext.WriteLine(tree);
+
+        StringAssert.Contains(tree, "CSharpCode");
+        StringAssert.Contains(tree, "Template");
+        StringAssert.Contains(tree, "MarkupBlockIntermediateNode");
+        StringAssert.Contains(tree, "AttributeName=\"ItemTemplate\"");
+    }
+
+    [TestMethod]
+    public void AlignedContext_ForRenderFragmentLocalCarrierInitializedFromFactoryMethodInTemplateCodeBlock_ProducesCodeBlockAndCodeSectionInventory()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @using Microsoft.AspNetCore.Components
+
+            @{
+                RenderFragment<int> template = CreateTemplate(Title);
+            }
+
+            <LayoutCard ItemTemplate="template" />
+
+            @code {
+                [Parameter]
+                public string? Title { get; set; }
+
+                private RenderFragment<int> CreateTemplate(string? title)
+                    => item => @<span>@title @item</span>;
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.Inventory.RenderFragmentLocalCarrier.Factory",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/layout-card")]
+                public partial class LayoutCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        var tree = RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot);
+        TestContext.WriteLine(tree);
+
+        StringAssert.Contains(tree, "CSharpCode");
+        StringAssert.Contains(tree, "AttributeName=\"ItemTemplate\"");
+        StringAssert.Contains(tree, "Template");
+        StringAssert.Contains(tree, "MarkupElementIntermediateNode TagName=\"span\"");
+    }
+
 }

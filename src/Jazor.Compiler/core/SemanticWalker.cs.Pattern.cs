@@ -2115,25 +2115,7 @@ public partial class SemanticWalker
 
 			// 处理 case 体：隔离 scope，变量声明留在 case 块内
 			var caseCtx = caseArg.EnterScope(switchCase, ScopeSite.SwitchCaseBody());
-			var casePending = new List<Statement>();
-			foreach (var bodyOp in switchCase.Body)
-			{
-				var node = Visit(bodyOp, caseCtx);
-				if (bodyOp is IBranchOperation branchOp)
-				{
-					if (branchOp.BranchKind == BranchKind.Break)
-						casePending.Add(new ReturnStatement(null));
-					else if (branchOp.BranchKind == BranchKind.Continue)
-						HandleTransformationFailure<Node>(branchOp, "Continue statements inside pattern-matching switch are not supported (IIFE boundary).");
-					else if (node is Statement branchStmt)
-						casePending.Add(branchStmt);
-				}
-				else if (node is Statement stmt)
-					casePending.Add(stmt);
-
-				else if (node is Expression expr)
-					casePending.Add(new NonSpecialExpressionStatement(expr));
-			}
+			var casePending = TranslatePatternSwitchCaseBodyStatements(switchCase.Body, caseCtx);
 
 			var bodyStatements = MaterializeScopedStatements(caseCtx, casePending);
 
@@ -2165,6 +2147,60 @@ public partial class SemanticWalker
 		);
 
 		return new CallExpression(arrowFunction, NodeList.From<Expression>(), optional: false);
+	}
+
+	private List<Statement> TranslatePatternSwitchCaseBodyStatements(
+		IReadOnlyList<IOperation> operations,
+		SenseArgument context)
+	{
+		var pendingStatements = new List<Statement>();
+		for (var index = 0; index < operations.Count; index++)
+		{
+			var operation = operations[index];
+			if (operation is IUsingDeclarationOperation usingDeclaration)
+			{
+				pendingStatements.AddRange(LowerUsingDeclarationToPatternSwitchCaseStatements(usingDeclaration, operations, index + 1, context));
+				break;
+			}
+
+			if (operation is IBranchOperation branchOperation)
+			{
+				switch (branchOperation.BranchKind)
+				{
+					case BranchKind.Break:
+						pendingStatements.Add(new ReturnStatement(null));
+						continue;
+
+					case BranchKind.Continue:
+						HandleTransformationFailure<Node>(branchOperation, "Continue statements inside pattern-matching switch are not supported (IIFE boundary).");
+						continue;
+				}
+			}
+
+			var node = Visit(operation, context);
+			if (node is Statement statement)
+				pendingStatements.Add(statement);
+			else if (node is Expression expr)
+				pendingStatements.Add(new NonSpecialExpressionStatement(expr));
+			else
+				HandleTransformationFailure<Node>(operation, $"{operation.Kind} could not be translated to JavaScript.");
+		}
+
+		return pendingStatements;
+	}
+
+	private List<Statement> LowerUsingDeclarationToPatternSwitchCaseStatements(
+		IUsingDeclarationOperation operation,
+		IReadOnlyList<IOperation> siblingOperations,
+		int nextIndex,
+		SenseArgument context)
+	{
+		var disposalKind = GetUsingDisposalKind(operation.IsAsynchronous);
+		var resources = BindUsingDeclarationResources(operation, context, disposalKind);
+		var bodyStatements = TranslatePatternSwitchCaseBodyStatements(
+			siblingOperations.Skip(nextIndex).ToArray(),
+			context);
+		return BuildUsingTryFinallyStatements(resources, bodyStatements, context);
 	}
 
 	/// <summary>

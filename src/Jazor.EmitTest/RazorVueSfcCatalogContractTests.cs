@@ -34,6 +34,11 @@ public sealed class RazorVueSfcCatalogContractTests
                 Text: "const value = 1;",
                 Language: "ts",
                 SourceOrigins: [scriptOrigin]),
+            ScriptBlock: new RazorVueEmitSfcScriptBlockRecord(
+                Text: string.Empty,
+                Language: null,
+                SourceOrigins: []),
+            RenderMode: RazorVueEmitSfcRenderMode.Template,
             StyleBlocks:
             [
                 new RazorVueEmitSfcStyleBlockRecord(
@@ -85,6 +90,7 @@ public sealed class RazorVueSfcCatalogContractTests
         Assert.AreEqual("components/counter-card.vue", artifact.RelativeSfcPath);
         Assert.AreEqual("<div>{{ value }}</div>", artifact.TemplateText);
         Assert.AreEqual("const value = 1;", artifact.ScriptSetupText);
+        Assert.AreEqual(string.Empty, artifact.ScriptText);
         Assert.AreEqual("style-hash", artifact.Identity.StyleHash);
         CollectionAssert.AreEqual(new[] { "/", "/counter" }, artifact.RouteTemplates.ToArray());
         Assert.AreEqual(RazorVueSfcOriginKindRecord.Style, artifact.StyleBlocks[0].SourceOrigins[0].OriginKind);

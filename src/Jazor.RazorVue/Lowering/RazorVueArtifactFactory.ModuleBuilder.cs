@@ -20,8 +20,10 @@ internal sealed partial class RazorVueArtifactFactory
         out ImmutableArray<RazorVueCompilerImportBinding> compilerImports)
     {
         var descriptor = snapshot.Descriptor;
-        var renderExpression = expressionEmitter.EmitFragment(renderTree);
-        var requiresAttributeMergeHelper = RazorVueAttributeMergeHelper.ContainsInvocation(renderExpression);
+        var usesImperativeRenderBody = expressionEmitter.ContainsImperativeRenderBody(renderTree);
+        var renderExpression = usesImperativeRenderBody ? null : expressionEmitter.EmitFragment(renderTree);
+        var requiresAttributeMergeHelper = renderExpression is not null &&
+                                           RazorVueAttributeMergeHelper.ContainsInvocation(renderExpression);
         var propDefaultBindings = CollectPropDefaultBindings(snapshot, descriptor, expressionEmitter);
         var setupBodyBuilder = new StringBuilder();
         setupBodyBuilder.AppendLine("  setup(__jazorRawProps, { emit, slots, expose, attrs }) {");
@@ -30,9 +32,30 @@ internal sealed partial class RazorVueArtifactFactory
             RazorVueForLoopLoweringSupport.AppendForRangeHelper(setupBodyBuilder, "    ");
         if (requiresAttributeMergeHelper)
             RazorVueAttributeMergeHelper.AppendHelper(setupBodyBuilder, "    ");
+        if (usesImperativeRenderBody)
+            AppendImperativeComponentMetadataBindings(setupBodyBuilder, resolvedComponents, "    ");
+        if (usesImperativeRenderBody)
+            AppendImperativeRenderBridgeHelper(setupBodyBuilder, "    ");
         AppendLifecycleLowering(setupBodyBuilder, snapshot);
         AppendSetupLogicLowering(setupBodyBuilder, snapshot, expressionEmitter);
-        setupBodyBuilder.Append("    return () => ").Append(renderExpression).AppendLine(";");
+        if (usesImperativeRenderBody)
+        {
+            setupBodyBuilder.AppendLine("    const __jazorComponent = { props, emit, slots, expose, attrs };");
+            setupBodyBuilder.AppendLine("    return () => {");
+            setupBodyBuilder.AppendLine("      const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+            setupBodyBuilder.AppendLine("      __jazorComponent.props = props;");
+            setupBodyBuilder.AppendLine("      __jazorComponent.emit = emit;");
+            setupBodyBuilder.AppendLine("      __jazorComponent.slots = slots;");
+            setupBodyBuilder.AppendLine("      __jazorComponent.expose = expose;");
+            setupBodyBuilder.AppendLine("      __jazorComponent.attrs = attrs;");
+            setupBodyBuilder.AppendLine("      __jazorComponent.__builder = __jazorBuilder;");
+            setupBodyBuilder.Append("      ").Append(expressionEmitter.EmitImperativeRenderBody(renderTree).Replace("\n", "\n      ")).AppendLine();
+            setupBodyBuilder.AppendLine("    };");
+        }
+        else
+        {
+            setupBodyBuilder.Append("    return () => ").Append(renderExpression).AppendLine(";");
+        }
         setupBodyBuilder.AppendLine("  }");
 
         compilerImports = expressionEmitter.FlushCompilerImports();
@@ -48,6 +71,179 @@ internal sealed partial class RazorVueArtifactFactory
         builder.AppendLine("});");
         return builder.ToString();
     }
+
+    internal static void AppendImperativeRenderBridgeHelperForSfc(StringBuilder builder, string indent)
+        => AppendImperativeRenderBridgeHelper(builder, indent);
+
+    private static void AppendImperativeRenderBridgeHelper(StringBuilder builder, string indent)
+    {
+        builder.Append(indent).AppendLine("function __jazorCreateRenderTreeBuilder(h) {");
+        builder.Append(indent).AppendLine("  const __rootNodes = [];");
+        builder.Append(indent).AppendLine("  const __stack = [];");
+        builder.Append(indent).AppendLine("  const __regions = [];");
+        builder.Append(indent).AppendLine("  function __jazorCreateSlotReference(slot, acceptsContext) {");
+        builder.Append(indent).AppendLine("    return { __jazorSlotReference: true, slot, acceptsContext: !!acceptsContext };");
+        builder.Append(indent).AppendLine("  }");
+        builder.Append(indent).AppendLine("  function __jazorCreateBuilderSlot(fragment) { return { __jazorSlotBuilder: true, fragment }; }");
+        builder.Append(indent).AppendLine("  function __jazorCreateContextualBuilderSlot(fragment) { return { __jazorContextualSlotBuilder: true, fragment }; }");
+        builder.Append(indent).AppendLine("  function __jazorCreateSlotMap() { return Object.create(null); }");
+        builder.Append(indent).AppendLine("  function __jazorInvokeBuilderFragment(fragment) {");
+        builder.Append(indent).AppendLine("    const fragmentBuilder = __jazorCreateRenderTreeBuilder(h);");
+        builder.Append(indent).AppendLine("    fragment(fragmentBuilder);");
+        builder.Append(indent).AppendLine("    return fragmentBuilder.complete();");
+        builder.Append(indent).AppendLine("  }");
+        builder.Append(indent).AppendLine("  function __jazorIsSlotReference(value) { return !!(value && value.__jazorSlotReference === true); }");
+        builder.Append(indent).AppendLine("  function __jazorIsBuilderSlot(value) { return !!(value && value.__jazorSlotBuilder === true); }");
+        builder.Append(indent).AppendLine("  function __jazorIsContextualBuilderSlot(value) { return !!(value && value.__jazorContextualSlotBuilder === true); }");
+        builder.Append(indent).AppendLine("  function __jazorResolveSlotValue(value, context) {");
+        builder.Append(indent).AppendLine("    if (__jazorIsSlotReference(value)) {");
+        builder.Append(indent).AppendLine("      const slot = value.slot;");
+        builder.Append(indent).AppendLine("      if (typeof slot !== \"function\") return null;");
+        builder.Append(indent).AppendLine("      return value.acceptsContext ? slot(context) : slot();");
+        builder.Append(indent).AppendLine("    }");
+        builder.Append(indent).AppendLine("    if (__jazorIsBuilderSlot(value)) {");
+        builder.Append(indent).AppendLine("      return () => __jazorInvokeBuilderFragment(value.fragment);");
+        builder.Append(indent).AppendLine("    }");
+        builder.Append(indent).AppendLine("    if (__jazorIsContextualBuilderSlot(value)) {");
+        builder.Append(indent).AppendLine("      return (slotContext) => {");
+        builder.Append(indent).AppendLine("        const templateResult = value.fragment(slotContext);");
+        builder.Append(indent).AppendLine("        return typeof templateResult === \"function\"");
+        builder.Append(indent).AppendLine("          ? __jazorInvokeBuilderFragment(templateResult)");
+        builder.Append(indent).AppendLine("          : templateResult;");
+        builder.Append(indent).AppendLine("      };");
+        builder.Append(indent).AppendLine("    }");
+        builder.Append(indent).AppendLine("    if (typeof value !== \"function\") return value;");
+        builder.Append(indent).AppendLine("    return value;");
+        builder.Append(indent).AppendLine("  }");
+        builder.Append(indent).AppendLine("  function __applyProp(frame, key, value) {");
+        builder.Append(indent).AppendLine("    if (!key || value === null || value === undefined || value === false) return;");
+        builder.Append(indent).AppendLine("    frame.props[key] = value === true ? true : value;");
+        builder.Append(indent).AppendLine("    frame.hasProps = true;");
+        builder.Append(indent).AppendLine("  }");
+        builder.Append(indent).AppendLine("  function __applyComponentParameter(frame, key, value) {");
+        builder.Append(indent).AppendLine("    const metadata = frame.metadata;");
+        builder.Append(indent).AppendLine("    if (metadata && metadata.slots) {");
+        builder.Append(indent).AppendLine("      const slot = metadata.slots[key];");
+        builder.Append(indent).AppendLine("      if (slot) {");
+        builder.Append(indent).AppendLine("        frame.slots[slot.runtimeName] = __jazorResolveSlotValue(value);");
+        builder.Append(indent).AppendLine("        frame.hasSlots = true;");
+        builder.Append(indent).AppendLine("        return;");
+        builder.Append(indent).AppendLine("      }");
+        builder.Append(indent).AppendLine("    }");
+        builder.Append(indent).AppendLine("    if (metadata && metadata.emits && Object.prototype.hasOwnProperty.call(metadata.emits, key)) {");
+        builder.Append(indent).AppendLine("      __applyProp(frame, metadata.emits[key], value);");
+        builder.Append(indent).AppendLine("      return;");
+        builder.Append(indent).AppendLine("    }");
+        builder.Append(indent).AppendLine("    if (metadata && metadata.props && Object.prototype.hasOwnProperty.call(metadata.props, key)) {");
+        builder.Append(indent).AppendLine("      __applyProp(frame, metadata.props[key], value);");
+        builder.Append(indent).AppendLine("      return;");
+        builder.Append(indent).AppendLine("    }");
+        builder.Append(indent).AppendLine("    __applyProp(frame, key, value);");
+        builder.Append(indent).AppendLine("  }");
+        builder.Append(indent).AppendLine("  function __appendNode(node) {");
+        builder.Append(indent).AppendLine("    if (node === null || node === undefined || node === false) return;");
+        builder.Append(indent).AppendLine("    if (Array.isArray(node)) {");
+        builder.Append(indent).AppendLine("      for (const child of node) __appendNode(child);");
+        builder.Append(indent).AppendLine("      return;");
+        builder.Append(indent).AppendLine("    }");
+        builder.Append(indent).AppendLine("    const current = __stack.length === 0 ? null : __stack[__stack.length - 1];");
+        builder.Append(indent).AppendLine("    if (current) current.children.push(node); else __rootNodes.push(node);");
+        builder.Append(indent).AppendLine("  }");
+        builder.Append(indent).AppendLine("  function __invokeFragment(fragment, value, hasValueArgument) {");
+        builder.Append(indent).AppendLine("    if (typeof fragment !== \"function\") return fragment;");
+        builder.Append(indent).AppendLine("    return hasValueArgument ? fragment(value) : fragment();");
+        builder.Append(indent).AppendLine("  }");
+        builder.Append(indent).AppendLine("  function __materializeChildren(children) {");
+        builder.Append(indent).AppendLine("    if (!children || children.length === 0) return null;");
+        builder.Append(indent).AppendLine("    return children.length === 1 ? children[0] : children;");
+        builder.Append(indent).AppendLine("  }");
+        builder.Append(indent).AppendLine("  function __closeFrame(expectedKind) {");
+        builder.Append(indent).AppendLine("    const frame = __stack.pop();");
+        builder.Append(indent).AppendLine("    if (!frame || frame.kind !== expectedKind) throw new Error(`RazorVue imperative render bridge encountered mismatched ${expectedKind} closure.`);");
+        builder.Append(indent).AppendLine("    const props = frame.hasProps ? frame.props : null;");
+        builder.Append(indent).AppendLine("    const slotChildren = frame.hasSlots ? frame.slots : null;");
+        builder.Append(indent).AppendLine("    const children = frame.hasSlots ? slotChildren : __materializeChildren(frame.children);");
+        builder.Append(indent).AppendLine("    __appendNode(h(frame.target, props, children));");
+        builder.Append(indent).AppendLine("  }");
+        builder.Append(indent).AppendLine("  function __applyMultipleAttributes(frame, values) {");
+        builder.Append(indent).AppendLine("    if (!values) return;");
+        builder.Append(indent).AppendLine("    if (typeof values[Symbol.iterator] === \"function\") {");
+        builder.Append(indent).AppendLine("      for (const entry of values) {");
+        builder.Append(indent).AppendLine("        if (!entry) continue;");
+        builder.Append(indent).AppendLine("        const key = Array.isArray(entry) ? entry[0] : entry.key;");
+        builder.Append(indent).AppendLine("        const value = Array.isArray(entry) ? entry[1] : entry.value;");
+        builder.Append(indent).AppendLine("        __applyProp(frame, key, value);");
+        builder.Append(indent).AppendLine("      }");
+        builder.Append(indent).AppendLine("      return;");
+        builder.Append(indent).AppendLine("    }");
+        builder.Append(indent).AppendLine("    for (const [key, value] of Object.entries(values)) __applyProp(frame, key, value);");
+        builder.Append(indent).AppendLine("  }");
+        builder.Append(indent).AppendLine("  return {");
+        builder.Append(indent).AppendLine("    OpenElement(name) { __stack.push({ kind: \"element\", target: name, props: Object.create(null), hasProps: false, children: [] }); },");
+        builder.Append(indent).AppendLine("    CloseElement() { __closeFrame(\"element\"); },");
+        builder.Append(indent).AppendLine("    OpenComponent(component, metadata) { __stack.push({ kind: \"component\", target: component, metadata: metadata ?? null, props: Object.create(null), hasProps: false, slots: __jazorCreateSlotMap(), hasSlots: false, children: [] }); },");
+        builder.Append(indent).AppendLine("    CloseComponent() { __closeFrame(\"component\"); },");
+        builder.Append(indent).AppendLine("    AddContent(fragmentOrValue, value) { __appendNode(__invokeFragment(fragmentOrValue, value, arguments.length >= 2)); },");
+        builder.Append(indent).AppendLine("    AddMarkupContent(markup) { throw new Error(\"RazorVue imperative render bridge only supports compile-time constant AddMarkupContent(...).\"); },");
+        builder.Append(indent).AppendLine("    AddAttribute(name, value) { const frame = __stack[__stack.length - 1]; if (!frame) throw new Error(\"RazorVue imperative render bridge AddAttribute requires an open frame.\"); if (frame.kind === \"component\") { __applyComponentParameter(frame, name, value); return; } __applyProp(frame, name, value); },");
+        builder.Append(indent).AppendLine("    AddComponentParameter(name, value) { const frame = __stack[__stack.length - 1]; if (!frame || frame.kind !== \"component\") throw new Error(\"RazorVue imperative render bridge AddComponentParameter requires an open component frame.\"); __applyComponentParameter(frame, name, value); },");
+        builder.Append(indent).AppendLine("    AddMultipleAttributes(values) { const frame = __stack[__stack.length - 1]; if (!frame) throw new Error(\"RazorVue imperative render bridge AddMultipleAttributes requires an open frame.\"); __applyMultipleAttributes(frame, values); },");
+        builder.Append(indent).AppendLine("    SetKey(value) { const frame = __stack[__stack.length - 1]; if (!frame) throw new Error(\"RazorVue imperative render bridge SetKey requires an open frame.\"); __applyProp(frame, \"key\", value); },");
+        builder.Append(indent).AppendLine("    OpenRegion() { __regions.push(__rootNodes.length); },");
+        builder.Append(indent).AppendLine("    CloseRegion() { if (__regions.length === 0) throw new Error(\"RazorVue imperative render bridge CloseRegion requires a matching OpenRegion.\"); __regions.pop(); },");
+        builder.Append(indent).AppendLine("    complete() {");
+        builder.Append(indent).AppendLine("      if (__stack.length !== 0) throw new Error(\"RazorVue imperative render bridge completed with unclosed frames.\");");
+        builder.Append(indent).AppendLine("      if (__rootNodes.length === 0) return null;");
+        builder.Append(indent).AppendLine("      return __rootNodes.length === 1 ? __rootNodes[0] : __rootNodes;");
+        builder.Append(indent).AppendLine("    }");
+        builder.Append(indent).AppendLine("  };");
+        builder.Append(indent).AppendLine("}");
+    }
+
+    internal static void AppendImperativeComponentMetadataBindingsForSfc(
+        StringBuilder builder,
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
+        string indent)
+        => AppendImperativeComponentMetadataBindings(builder, resolvedComponents, indent);
+
+    private static void AppendImperativeComponentMetadataBindings(
+        StringBuilder builder,
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
+        string indent)
+    {
+        foreach (var item in resolvedComponents.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
+        {
+            builder.Append(indent)
+                .Append("const ")
+                .Append(CreateImperativeComponentMetadataAlias(item.Key))
+                .Append(" = ")
+                .Append(BuildImperativeComponentMetadata(item.Value))
+                .AppendLine(";");
+        }
+    }
+
+    private static string BuildImperativeComponentMetadata(VueComponentDescriptor descriptor)
+    {
+        var propEntries = descriptor.Props
+            .OrderBy(static prop => prop.PublicName, StringComparer.Ordinal)
+            .Select(static prop => ToJavaScriptString(prop.PublicName) + ": " + ToJavaScriptString(prop.Name));
+        var emitEntries = descriptor.Emits
+            .Where(static emit => !string.IsNullOrWhiteSpace(emit.RazorAlias))
+            .OrderBy(static emit => emit.RazorAlias, StringComparer.Ordinal)
+            .Select(static emit => ToJavaScriptString(emit.RazorAlias!) + ": " + ToJavaScriptString(ToVueEventHandlerName(emit.Name)));
+        var slotEntries = descriptor.Slots
+            .OrderBy(static slot => slot.PublicName, StringComparer.Ordinal)
+            .Select(static slot => ToJavaScriptString(slot.PublicName) + ": { runtimeName: " + ToJavaScriptString(slot.Name) + " }");
+
+        return "{ props: { " + string.Join(", ", propEntries) + " }, emits: { " + string.Join(", ", emitEntries) + " }, slots: { " + string.Join(", ", slotEntries) + " } }";
+    }
+
+    internal static void AppendVueImportsForSfc(
+        StringBuilder builder,
+        RazorVueSemanticSnapshot snapshot,
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
+        ImmutableArray<RazorVueCompilerImportBinding> compilerImports)
+        => AppendVueImports(builder, snapshot, resolvedComponents, compilerImports);
 
     private static void AppendVueImports(
         StringBuilder builder,
@@ -65,10 +261,21 @@ internal sealed partial class RazorVueArtifactFactory
         AppendComponentImports(builder, resolvedComponents);
     }
 
+    internal static void AppendLifecycleLoweringForSfc(
+        StringBuilder builder,
+        RazorVueSemanticSnapshot snapshot)
+        => AppendLifecycleLowering(builder, snapshot);
+
     private static void AppendLifecycleLowering(
         StringBuilder builder,
         RazorVueSemanticSnapshot snapshot)
         => RazorVueSetupAndLifecycleLoweringSupport.AppendLifecycleLowering(builder, snapshot, "    ");
+
+    internal static void AppendSetupLogicLoweringForSfc(
+        StringBuilder builder,
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter expressionEmitter)
+        => AppendSetupLogicLowering(builder, snapshot, expressionEmitter);
 
     private static void AppendSetupLogicLowering(
         StringBuilder builder,
@@ -81,6 +288,12 @@ internal sealed partial class RazorVueArtifactFactory
             ImmutableArray<VueLogicFieldDescriptor>.Empty,
             ImmutableArray<VueLogicMethodDescriptor>.Empty,
             "    ");
+
+    internal static ImmutableArray<PropDefaultBinding> CollectPropDefaultBindingsForSfc(
+        RazorVueSemanticSnapshot snapshot,
+        VueComponentDescriptor descriptor,
+        RazorVueExpressionEmitter expressionEmitter)
+        => CollectPropDefaultBindings(snapshot, descriptor, expressionEmitter);
 
     private static ImmutableArray<PropDefaultBinding> CollectPropDefaultBindings(
         RazorVueSemanticSnapshot snapshot,
@@ -103,6 +316,11 @@ internal sealed partial class RazorVueArtifactFactory
 
         return builder.ToImmutable();
     }
+
+    internal static void AppendPropsBindingForSfc(
+        StringBuilder builder,
+        ImmutableArray<PropDefaultBinding> propDefaultBindings)
+        => AppendPropsBinding(builder, propDefaultBindings);
 
     private static void AppendPropsBinding(
         StringBuilder builder,
@@ -189,7 +407,7 @@ internal sealed partial class RazorVueArtifactFactory
         return prop.DefaultExpression!;
     }
 
-    private sealed record PropDefaultBinding(string PropName, string ExpressionText);
+    internal sealed record PropDefaultBinding(string PropName, string ExpressionText);
 
     private static string DescribeSetupFieldShape(IFieldSymbol field)
     {
@@ -224,6 +442,9 @@ internal sealed partial class RazorVueArtifactFactory
 
         return "unsupported";
     }
+
+    internal static string FormatStringArrayForSfc(IEnumerable<string> values)
+        => FormatStringArray(values);
 
     private static string FormatStringArray(IEnumerable<string> values)
         => "[" + string.Join(", ", values.Select(ToJavaScriptString)) + "]";

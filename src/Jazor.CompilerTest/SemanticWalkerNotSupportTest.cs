@@ -192,33 +192,6 @@ public sealed class SemanticWalkerNotSupportTest
     }
 
     [TestMethod]
-    public void VisitLock_NotSupported()
-    {
-        const string code = """
-            class TestClass
-            {
-                void TestMethod()
-                {
-                    object gate = new object();
-                    lock (gate)
-                    {
-                        Console.WriteLine(gate);
-                    }
-                }
-            }
-            """;
-
-        var block = GetBlockOperation(code);
-        AssertUnsupportedDirect(
-            block,
-            static x => FindFirstOperation<ILockOperation>(x),
-            static (walker, operation) => walker.VisitLock(operation, new()),
-            "Lock statements are not supported");
-
-        AssertUnsupportedByDispatch(code, OperationKind.Lock, "Lock statements are not supported");
-    }
-
-    [TestMethod]
     public void VisitDynamicObjectCreation_NotSupported()
     {
         const string code = """
@@ -334,14 +307,16 @@ public sealed class SemanticWalkerNotSupportTest
     }
 
     [TestMethod]
-    public void VisitTypeOf_NotSupported()
+    public void VisitTypeOf_Record_NotSupported()
     {
         const string code = """
             class TestClass
             {
+                record Person(string Name);
+
                 void TestMethod()
                 {
-                    var type = typeof(int);
+                    var type = typeof(Person);
                 }
             }
             """;
@@ -351,9 +326,32 @@ public sealed class SemanticWalkerNotSupportTest
             block,
             static x => FindFirstOperation<ITypeOfOperation>(x),
             static (walker, operation) => walker.VisitTypeOf(operation, new()),
-            "typeof operator is not supported");
+            "does not expose a stable runtime type token");
 
-        AssertUnsupportedByDispatch(code, OperationKind.TypeOf, "typeof operator is not supported");
+        AssertUnsupportedByDispatch(code, OperationKind.TypeOf, "does not expose a stable runtime type token");
+    }
+
+    [TestMethod]
+    public void VisitTypeOf_DateTime_NotSupported()
+    {
+        const string code = """
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var type = typeof(System.DateTime);
+                }
+            }
+            """;
+
+        var block = GetBlockOperation(code);
+        AssertUnsupportedDirect(
+            block,
+            static x => FindFirstOperation<ITypeOfOperation>(x),
+            static (walker, operation) => walker.VisitTypeOf(operation, new()),
+            "does not expose a stable runtime type token");
+
+        AssertUnsupportedByDispatch(code, OperationKind.TypeOf, "does not expose a stable runtime type token");
     }
 
     [TestMethod]
@@ -377,39 +375,6 @@ public sealed class SemanticWalkerNotSupportTest
             "Standalone range operations are not supported");
 
         AssertUnsupportedByDispatch(code, OperationKind.Range, "Standalone range operations are not supported");
-    }
-
-    [TestMethod]
-    public void VisitUsingStatementForm_NotSupported()
-    {
-        const string code = """
-            class DisposableThing : System.IDisposable
-            {
-                public void Dispose()
-                {
-                }
-            }
-
-            class TestClass
-            {
-                void TestMethod()
-                {
-                    using (new DisposableThing())
-                    {
-                        Console.WriteLine(1);
-                    }
-                }
-            }
-            """;
-
-        var block = GetBlockOperation(code);
-        AssertUnsupportedDirect(
-            block,
-            static x => FindFirstOperation<IUsingOperation>(x),
-            static (walker, operation) => walker.VisitUsing(operation, new()),
-            "Using statements are not supported");
-
-        AssertUnsupportedByDispatch(code, OperationKind.Using, "Using statements are not supported");
     }
 
     [TestMethod]
@@ -441,11 +406,7 @@ public sealed class SemanticWalkerNotSupportTest
             {
                 void TestMethod()
                 {
-                    object gate = new object();
-                    lock (gate)
-                    {
-                        Console.WriteLine(gate);
-                    }
+                    System.Range range = 1..3;
                 }
             }
             """;
@@ -453,7 +414,7 @@ public sealed class SemanticWalkerNotSupportTest
         var block = GetBlockOperation(code);
         var walker = new SemanticWalker(true);
         var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
-        Assert.AreEqual(OperationKind.Lock, exception.Kind);
+        Assert.AreEqual(OperationKind.Range, exception.Kind);
 
         var path = exception.Data["location.path"] as string;
         Assert.IsFalse(string.IsNullOrWhiteSpace(path));

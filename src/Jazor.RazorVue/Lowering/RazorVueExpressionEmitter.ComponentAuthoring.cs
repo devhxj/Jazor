@@ -39,6 +39,10 @@ internal sealed partial class RazorVueExpressionEmitter
                                                   EmitFragment(conditional.WhenFalse, allowedLocalSymbols, allowedParameterSymbols) + ")",
             RazorVueForEachNode loop => EmitLoop(loop, allowedLocalSymbols, allowedParameterSymbols),
             RazorVueForNode loop => EmitForLoop(loop, allowedLocalSymbols, allowedParameterSymbols),
+            RazorVueImperativeBlockNode imperative => throw CreateAuthoringIssue(
+                RazorVueIssueCode.CanonicalizationFailed,
+                $"RazorVue H lowering has not yet materialized imperative render block '{imperative.Kind}' in component '{_snapshot.Descriptor.FullName}'.",
+                imperative.Origins.IsDefaultOrEmpty ? _snapshot.Origins.FirstOrDefault() : imperative.Origins[0]),
             _ => throw new NotSupportedException($"Unsupported RazorVue render node: {node.GetType().Name}.")
         };
 
@@ -67,7 +71,7 @@ internal sealed partial class RazorVueExpressionEmitter
         ValidateDuplicateLibrarySlotUsage(component, descriptor, descriptor?.Slots ?? ImmutableArray<VueSlotDescriptor>.Empty);
 
         var slotEntries = new List<string>();
-        if (!component.Children.Children.IsDefaultOrEmpty)
+        if (HasAnyDefaultSlotContent(component))
             slotEntries.Add(EmitImplicitDefaultSlotEntry(component, descriptor, allowedLocalSymbols, allowedParameterSymbols));
         AppendExplicitSlotTemplates(component, descriptor, slotsByPublicName, slotEntries, allowedLocalSymbols, allowedParameterSymbols);
 
@@ -87,7 +91,7 @@ internal sealed partial class RazorVueExpressionEmitter
         VueComponentDescriptor? descriptor,
         ImmutableArray<VueSlotDescriptor> slots)
     {
-        var hasDefaultChildren = !component.Children.Children.IsDefaultOrEmpty;
+        var hasDefaultChildren = HasAnyDefaultSlotAssignment(component);
         if (descriptor is null ||
             descriptor.SourceKind != VueComponentSourceKind.LibraryComponent ||
             !hasDefaultChildren)
@@ -95,7 +99,9 @@ internal sealed partial class RazorVueExpressionEmitter
             return;
         }
 
-        var origin = CollectOrigins(component.Children).FirstOrDefault() ??
+        var origin = CollectOrigins(GetDefaultSlotFragment(component)).FirstOrDefault() ??
+                     component.ImplicitDefaultSlotAssignments.SelectMany(static assignment => assignment.Origins).FirstOrDefault() ??
+                     component.AmbientDefaultSlotChildren.Children.SelectMany(static child => child.Origins).FirstOrDefault() ??
                      component.Origins.FirstOrDefault();
 
         if (VueSlotResolver.TryResolve(slots, "ChildContent", out var defaultSlot))
@@ -121,12 +127,51 @@ internal sealed partial class RazorVueExpressionEmitter
             !defaultSlot.Descriptor.Parameters.IsDefaultOrEmpty)
         {
             var slotParameterName = RazorVueSlotParameterNames.CreateImplicitDefaultSlotParameterName(
+                defaultSlot.Descriptor.Parameters[0].Name,
                 allowedLocalSymbols,
                 allowedParameterSymbols);
+            var implicitDefaultSlotFragment = GetDefaultSlotFragment(component);
+            if (TryGetSingleCurrentComponentDefaultSlot(implicitDefaultSlotFragment, out var currentSlot))
+            {
+                return "default: (" + slotParameterName + ") => " + EmitCurrentComponentSlotInvocation(currentSlot, slotParameterName);
+            }
+
             prefix = "default: (" + slotParameterName + ") => ";
         }
 
-        return prefix + EmitFragment(component.Children, allowedLocalSymbols, allowedParameterSymbols);
+        return prefix + EmitFragment(GetDefaultSlotFragment(component), allowedLocalSymbols, allowedParameterSymbols);
+    }
+
+    private bool TryGetSingleCurrentComponentDefaultSlot(
+        RazorVueRenderFragment fragment,
+        out VueSlotDescriptor slotDescriptor)
+    {
+        slotDescriptor = default!;
+        if (fragment.Children.Length != 1 ||
+            fragment.Children[0] is not RazorVueSlotOutletNode slotOutlet ||
+            slotOutlet.Argument is not null)
+        {
+            return false;
+        }
+
+        return TryResolveCurrentComponentSlotDescriptorBySlotName(slotOutlet.SlotName, out slotDescriptor);
+    }
+
+    private bool TryResolveCurrentComponentSlotDescriptorBySlotName(
+        string slotName,
+        out VueSlotDescriptor slotDescriptor)
+    {
+        foreach (var slot in _snapshot.Descriptor.Slots)
+        {
+            if (string.Equals(slot.Name, slotName, StringComparison.Ordinal))
+            {
+                slotDescriptor = slot;
+                return true;
+            }
+        }
+
+        slotDescriptor = default!;
+        return false;
     }
 
     private void ValidateDuplicateLibrarySlotUsage(
@@ -144,9 +189,18 @@ internal sealed partial class RazorVueExpressionEmitter
         // Library slots are single-assignment authoring contracts. A duplicate
         // slot input would otherwise collapse into duplicate Vue slot keys.
         var assignedSlots = new HashSet<string>(StringComparer.Ordinal);
-        if (!component.Children.Children.IsDefaultOrEmpty &&
+        if (HasAnyDefaultSlotAssignment(component) &&
             VueSlotResolver.TryResolve(slots, "ChildContent", out var childContentSlot))
         {
+            var defaultSlotAssignmentCount = GetDefaultSlotAssignmentCount(component);
+            if (defaultSlotAssignmentCount > 1)
+            {
+                throw CreateAuthoringIssue(
+                    RazorVueIssueCode.DuplicateSlotValue,
+                    $"Component '{descriptor.Name}' receives child content parameter 'ChildContent' more than once.",
+                    GetSecondDefaultSlotAssignmentOrigin(component));
+            }
+
             assignedSlots.Add(childContentSlot.SlotName);
         }
 
@@ -180,6 +234,52 @@ internal sealed partial class RazorVueExpressionEmitter
                 $"Component '{descriptor.Name}' receives child content parameter '{attribute.Name}' more than once.",
                 attribute);
         }
+    }
+
+    private static bool HasImplicitDefaultSlotAssignment(RazorVueComponentNode component)
+        => !component.ImplicitDefaultSlotAssignments.IsDefaultOrEmpty;
+
+    private static bool HasAmbientDefaultSlotContent(RazorVueComponentNode component)
+        => !component.AmbientDefaultSlotChildren.Children.IsDefaultOrEmpty;
+
+    private static bool HasAnyDefaultSlotContent(RazorVueComponentNode component)
+        => HasImplicitDefaultSlotAssignment(component) || HasAmbientDefaultSlotContent(component);
+
+    private static bool HasAnyDefaultSlotAssignment(RazorVueComponentNode component)
+        => component.ImplicitDefaultSlotAssignments.Length > 0 || HasAmbientDefaultSlotContent(component);
+
+    private static int GetDefaultSlotAssignmentCount(RazorVueComponentNode component)
+        => component.ImplicitDefaultSlotAssignments.Length + (HasAmbientDefaultSlotContent(component) ? 1 : 0);
+
+    private static RazorVueRenderFragment GetImplicitDefaultSlotFragment(RazorVueComponentNode component)
+        => component.ImplicitDefaultSlotAssignments.IsDefaultOrEmpty
+            ? component.Children
+            : component.ImplicitDefaultSlotAssignments[0].Children;
+
+    private static RazorVueRenderFragment GetDefaultSlotFragment(RazorVueComponentNode component)
+        => !component.ImplicitDefaultSlotAssignments.IsDefaultOrEmpty
+            ? component.ImplicitDefaultSlotAssignments[0].Children
+            : component.AmbientDefaultSlotChildren;
+
+    private static RazorVueSourceOrigin? GetSecondDefaultSlotAssignmentOrigin(RazorVueComponentNode component)
+    {
+        if (HasAmbientDefaultSlotContent(component) && component.ImplicitDefaultSlotAssignments.Length > 0)
+        {
+            return component.ImplicitDefaultSlotAssignments[0].Origins.IsDefaultOrEmpty
+                ? null
+                : component.ImplicitDefaultSlotAssignments[0].Origins[0];
+        }
+
+        if (component.ImplicitDefaultSlotAssignments.Length > 1)
+        {
+            return component.ImplicitDefaultSlotAssignments[1].Origins.IsDefaultOrEmpty
+                ? null
+                : component.ImplicitDefaultSlotAssignments[1].Origins[0];
+        }
+
+        return component.AmbientDefaultSlotChildren.Children
+            .SelectMany(static child => child.Origins)
+            .FirstOrDefault();
     }
 
     private string EmitSlotOutlet(
@@ -837,7 +937,7 @@ internal sealed partial class RazorVueExpressionEmitter
     private bool TryGetCurrentComponentSlotDescriptor(IOperation operation, out VueSlotDescriptor slotDescriptor)
     {
         slotDescriptor = default!;
-        var current = Unwrap(operation);
+        var current = UnwrapDelegateCarrier(operation) ?? Unwrap(operation);
         if (current is not IPropertyReferenceOperation propertyReference ||
             !IsCurrentComponentMember(propertyReference.Property, propertyReference.Instance))
         {

@@ -34,6 +34,7 @@ internal static partial class WhiteList
 		types["System.Globalization.GregorianCalendar"] = new(Op.Alias, "Object");
 		types["System.Guid"] = new(Op.Alias, "String");
 		types["System.Collections.Generic.HashSet<T>"] = new(Op.Alias, "Set");
+		types["System.IAsyncDisposable"] = new(Op.Alias, "Object");
 		types["System.Collections.ICollection"] = new(Op.Alias, "Array");
 		types["System.Collections.Generic.ICollection<T>"] = new(Op.Alias, "Array");
 		types["System.IComparable"] = new(Op.Alias, "Object");
@@ -41,6 +42,7 @@ internal static partial class WhiteList
 		types["System.Collections.IComparer"] = new(Op.Alias, "Object");
 		types["System.Collections.Generic.IComparer<T>"] = new(Op.Alias, "Object");
 		types["System.Collections.Generic.IDictionary<TKey, TValue>"] = new(Op.Alias, "Map");
+		types["System.IDisposable"] = new(Op.Alias, "Object");
 		types["System.Collections.IEnumerable"] = new(Op.Alias, "Array");
 		types["System.Collections.Generic.IEnumerable<T>"] = new(Op.Alias, "Array");
 		types["System.Collections.IEqualityComparer"] = new(Op.Alias, "Object");
@@ -1015,6 +1017,7 @@ internal static partial class WhiteList
 		members["System.Collections.Generic.HashSet<T>.IsProperSupersetOf(System.Collections.Generic.IEnumerable<T>)"] = new(Op.Import, "_cc0cc2d0f5be70db", "System/Collections/Generic/HashSetT1Module.js");
 		members["System.Collections.Generic.HashSet<T>.Overlaps(System.Collections.Generic.IEnumerable<T>)"] = new(Op.Import, "_84709aa8ff70a52a", "System/Collections/Generic/HashSetT1Module.js");
 		members["System.Collections.Generic.HashSet<T>.SetEquals(System.Collections.Generic.IEnumerable<T>)"] = new(Op.Import, "_55425d259e5f54ea", "System/Collections/Generic/HashSetT1Module.js");
+		members["System.IAsyncDisposable.DisposeAsync()"] = new(Op.Import, "_d17f7fbf9eb14eef", "System/IAsyncDisposableModule.js");
 		members["System.Collections.ICollection.Count.get"] = new(Op.Alias, "length");
 		members["System.Collections.ICollection.CopyTo(System.Array, int)"] = new(Op.Import, "_5d3d00c3ee9d4076", "System/Collections/ICollectionModule.js");
 		members["System.Collections.Generic.ICollection<T>.Count.get"] = new(Op.Alias, "length");
@@ -1030,6 +1033,7 @@ internal static partial class WhiteList
 		members["System.Collections.Generic.IDictionary<TKey, TValue>.Values.get"] = new(Op.Inline, "Array.from(__arg1.values())");
 		members["System.Collections.Generic.IDictionary<TKey, TValue>.ContainsKey(TKey)"] = new(Op.Alias, "has");
 		members["System.Collections.Generic.IDictionary<TKey, TValue>.TryGetValue(TKey, out TValue)"] = new(Op.Import, "_ebaafc4d4a520807", "System/Collections/Generic/IDictionaryT2Module.js");
+		members["System.IDisposable.Dispose()"] = new(Op.Import, "_6f97d94b6f2e4bc1", "System/IDisposableModule.js");
 		members["System.Collections.IEqualityComparer.Equals(object, object)"] = new(Op.Import, "_eb0a1792ad8b44b7", "System/Collections/IEqualityComparerModule.js");
 		members["System.Collections.IEqualityComparer.GetHashCode(object)"] = new(Op.Import, "_8f16da840d40722e", "System/Collections/IEqualityComparerModule.js");
 		members["System.Collections.Generic.IEqualityComparer<T>.Equals(T, T)"] = new(Op.Import, "_dae184550b995be1", "System/Collections/Generic/IEqualityComparerT1Module.js");

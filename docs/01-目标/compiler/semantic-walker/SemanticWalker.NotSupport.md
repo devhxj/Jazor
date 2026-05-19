@@ -36,7 +36,7 @@
 
 主要包括：
 
-- 资源管理：`using` / `using declaration`
+- 资源管理：当前未承接 `await using` 之外的更复杂 async render/resource-runtime 语义边界
 - 事件系统：raise / event reference / event assignment
 - dynamic：动态创建、动态成员访问、动态调用、动态索引
 - CLR / unsafe：`sizeof`、取地址、函数指针
@@ -44,6 +44,12 @@
 - 编译器内部 / flow analysis：`Stop`、`End`、`FlowCapture`、`CaughtException` 等
 - VB 特有节点：`ForToLoop`、`RangeCaseClause`、`ReDim` 等
 - 其他明确拒绝的输入：独立 `RangeOperation`、`InlineArrayAccess`、`IInvalidOperation`
+
+已经从这份“不支持面”中移出、进入正式 lowering 主线的切片包括：
+
+- `using` / `using declaration` / `await using`
+- `lock`
+- 窄语义 `typeof(T)` 运行时类型令牌
 
 ### 3. 文档化当前设计边界
 
@@ -61,7 +67,6 @@
 
 例如：
 
-- `using`
 - dynamic
 - 事件系统
 - 函数指针
@@ -107,17 +112,23 @@
 - `IInvalidOperation` 没有单独 fallback 转换器
 - 它现在就是不支持路径的一部分
 
+### 5. `typeof(T)` 不是完整反射能力
+
+当前 `typeof(T)` 已不再由 `NotSupport` 统一拒绝，但它支持的是“稳定运行时类型令牌”，不是完整 CLR `System.Type` 反射对象。
+
+当前允许：
+
+- `typeof(int)` 这类稳定映射到 JS 构造器的类型
+- `typeof(Person)` 这类稳定映射到运行时 class/constructor 的类型
+- `typeof(Person).Name` 这类最小后续消费
+
+当前继续拒绝：
+
+- record 的 structural lowering 类型
+- `System.DateTime` / `System.DateOnly` / `System.DateTimeOffset` / `System.TimeOnly` / `System.TimeSpan` 这类 shaped carrier
+- tuple / anonymous type / erased interface
+
 ## 现状与典型边界
-
-### `using`
-
-```csharp
-using var file = File.OpenRead("data.txt");
-```
-
-当前结果：
-
-- 直接 transformation failure
 
 ### dynamic
 
@@ -150,6 +161,21 @@ WriteInterpolated($"Hello {name}");
 
 - 直接 transformation failure
 
+### `typeof(record)`
+
+```csharp
+record Person(string Name);
+var type = typeof(Person);
+```
+
+当前结果：
+
+- 直接 transformation failure
+
+原因：
+
+- record 当前走 structural lowering，不承诺稳定 nominal runtime type token
+
 ## 边界
 
 当前提供的是：
@@ -166,6 +192,7 @@ WriteInterpolated($"Hello {name}");
 
 - `src/Jazor.CompilerTest/SemanticWalkerDeclarationTest.cs`
   - `Visit_UsingDeclaration_Basic`
+  - `Visit_AwaitUsingDeclaration_Basic`
 - `src/Jazor.CompilerTest/SemanticWalkerTryCatchTest.cs`
   - `VisitTry_UsingInTry`
 - `src/Jazor.CompilerTest/SemanticWalkerInvalidTest.cs`

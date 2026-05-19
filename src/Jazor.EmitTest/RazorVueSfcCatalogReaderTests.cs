@@ -31,6 +31,8 @@ public sealed class RazorVueSfcCatalogReaderTests
         Assert.AreEqual("components/counter-card.vue", artifact.RelativeSfcPath);
         Assert.AreEqual("<div>{{ value }}</div>", artifact.TemplateText);
         Assert.AreEqual("const value = 1;", artifact.ScriptSetupText);
+        Assert.AreEqual(string.Empty, artifact.ScriptText);
+        Assert.AreEqual(RazorVueEmitSfcRenderMode.Template, artifact.RenderMode);
         CollectionAssert.AreEqual(new[] { "/", "/counter" }, artifact.RouteTemplates.ToArray());
         Assert.AreEqual("style-hash", artifact.Identity.StyleHash);
         Assert.AreEqual(RazorVueSfcOriginKindRecord.Style, artifact.StyleBlocks[0].SourceOrigins[0].OriginKind);
@@ -53,6 +55,8 @@ public sealed class RazorVueSfcCatalogReaderTests
             public string SfcText => "<template><div>{{ value }}</div></template>";
             public GeneratedTemplateBlock TemplateBlock => new GeneratedTemplateBlock();
             public GeneratedScriptSetupBlock ScriptSetupBlock => new GeneratedScriptSetupBlock();
+            public GeneratedScriptBlock ScriptBlock => new GeneratedScriptBlock();
+            public GeneratedRenderMode RenderMode => GeneratedRenderMode.Template;
             public GeneratedStyleBlock[]? StyleBlocks => null;
             public GeneratedCustomBlock[] CustomBlocks => new[] { new GeneratedCustomBlock() };
             public string[] RouteTemplates => Array.Empty<string>();
@@ -128,6 +132,8 @@ public sealed class RazorVueSfcCatalogReaderTests
         public string SfcText => "<template><div>{{ value }}</div></template>\n<script setup lang=\"ts\">\nconst value = 1;\n</script>\n<style scoped>\n.card { color: red; }\n</style>";
         public GeneratedTemplateBlock TemplateBlock => new GeneratedTemplateBlock();
         public GeneratedScriptSetupBlock ScriptSetupBlock => new GeneratedScriptSetupBlock();
+        public GeneratedScriptBlock ScriptBlock => new GeneratedScriptBlock();
+        public GeneratedRenderMode RenderMode => GeneratedRenderMode.Template;
         public GeneratedStyleBlock[] StyleBlocks => new[] { new GeneratedStyleBlock() };
         public GeneratedCustomBlock[] CustomBlocks => new[] { new GeneratedCustomBlock() };
         public string[] RouteTemplates => new[] { "/", "/counter" };
@@ -203,6 +209,13 @@ public sealed class RazorVueSfcCatalogReaderTests
                     {
                         new GeneratedOrigin(GeneratedOriginKind.Logic, "Counter.razor", 49, 40, "components/counter-card.vue", 49, 40)
                     };
+                }
+
+                private sealed class GeneratedScriptBlock
+                {
+                    public string Text => string.Empty;
+                    public string? Language => null;
+                    public GeneratedOrigin[] SourceOrigins => Array.Empty<GeneratedOrigin>();
                 }
 
                 private sealed class GeneratedStyleBlock
@@ -296,6 +309,12 @@ public sealed class RazorVueSfcCatalogReaderTests
                     TemplateOnly,
                     LogicSafe,
                     FullReloadRequired
+                }
+
+                private enum GeneratedRenderMode
+                {
+                    Template,
+                    RenderFunction
                 }
 
                 private enum GeneratedOriginKind

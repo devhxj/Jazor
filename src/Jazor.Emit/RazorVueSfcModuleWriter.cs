@@ -186,6 +186,7 @@ internal sealed class RazorVueSfcModuleWriter
                 templateHash = artifact.Identity.TemplateHash,
                 logicHash = artifact.Identity.LogicHash,
                 styleHash = artifact.Identity.StyleHash,
+                renderMode = artifact.RenderMode,
                 templateBlock = new
                 {
                     textLength = artifact.TemplateBlock.Text.Length,
@@ -196,6 +197,12 @@ internal sealed class RazorVueSfcModuleWriter
                     language = artifact.ScriptSetupBlock.Language,
                     textLength = artifact.ScriptSetupBlock.Text.Length,
                     origins = artifact.ScriptSetupBlock.SourceOrigins.Select(ToOriginJsonModel).ToArray()
+                },
+                scriptBlock = new
+                {
+                    language = artifact.ScriptBlock.Language,
+                    textLength = artifact.ScriptBlock.Text.Length,
+                    origins = artifact.ScriptBlock.SourceOrigins.Select(ToOriginJsonModel).ToArray()
                 },
                 styleBlocks = artifact.StyleBlocks.Select(static block => new
                 {

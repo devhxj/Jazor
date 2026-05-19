@@ -10,34 +10,6 @@ namespace Jazor.Compiler;
 
 public partial class SemanticWalker
 {
-    private List<Statement> TranslateOperationsToStatements(IEnumerable<IOperation> operations, SenseArgument context)
-    {
-        var pendingStatements = new List<Statement>();
-        foreach (var operation in operations)
-        {
-            var node = Visit(operation, context);
-
-            if (node is Statement statement)
-                pendingStatements.Add(statement);
-            else if (node is Expression expr)
-            {
-                if (expr is SequenceExpression seqExpr)
-                {
-                    if (seqExpr.Expressions.Count == 1)
-                        pendingStatements.Add(new NonSpecialExpressionStatement(seqExpr.Expressions[0]));
-                    else if (seqExpr.Expressions.Count > 1)
-                        pendingStatements.Add(new NonSpecialExpressionStatement(expr));
-                }
-                else
-                    pendingStatements.Add(new NonSpecialExpressionStatement(expr));
-            }
-            else
-                HandleTransformationFailure<Node>(operation, $"{operation.Kind} could not be translated to JavaScript.");
-        }
-
-        return pendingStatements;
-    }
-
     /// <summary>
     /// 处理 try-catch-finally 语句操作
     /// C# 示例：

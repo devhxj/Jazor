@@ -499,6 +499,75 @@ public sealed class SemanticWalkerSourceOriginTest
     }
 
     [TestMethod]
+    public void VisitLock_AttachesSourceOrigin()
+    {
+        var operation = GetFirstOperation<ILockOperation>(
+            """
+            class TestClass
+            {
+                void M(object gate)
+                {
+                    lock (gate)
+                    {
+                        System.Console.WriteLine("ready");
+                    }
+                }
+            }
+            """);
+
+        var node = new SemanticWalker(true).Visit(operation, new());
+        AssertHasSourceOrigin(node, operation);
+    }
+
+    [TestMethod]
+    public void VisitAwaitUsing_AttachesSourceOrigin()
+    {
+        var operation = GetFirstOperation<IUsingOperation>(
+            """
+            class TestClass
+            {
+                sealed class AsyncDisposable : System.IAsyncDisposable
+                {
+                    public System.Threading.Tasks.ValueTask DisposeAsync() => default;
+                }
+
+                async System.Threading.Tasks.Task M()
+                {
+                    await using (new AsyncDisposable())
+                    {
+                        await System.Threading.Tasks.Task.Yield();
+                    }
+                }
+            }
+            """);
+
+        var node = new SemanticWalker(true).Visit(operation, new());
+        AssertHasSourceOrigin(node, operation);
+    }
+
+    [TestMethod]
+    public void VisitTypeOf_AttachesSourceOrigin()
+    {
+        var operation = GetFirstOperation<ITypeOfOperation>(
+            """
+            class TestClass
+            {
+                sealed class Person
+                {
+                }
+
+                void M()
+                {
+                    var type = typeof(Person);
+                }
+            }
+            """);
+
+        var node = new SemanticWalker(true).Visit(operation, new());
+        AssertHasSourceOrigin(node, operation);
+    }
+
+    [TestMethod]
     public void VisitSwitchExpression_AttachesSourceOrigin()
     {
         var operation = GetFirstOperation<ISwitchExpressionOperation>(

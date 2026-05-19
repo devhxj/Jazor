@@ -35,6 +35,11 @@ public sealed class VueSfcArtifactTests
                 Text: "const value = 1;",
                 Language: "ts",
                 SourceOrigins: [scriptOrigin]),
+            ScriptBlock: new VueSfcScriptBlock(
+                Text: string.Empty,
+                Language: null,
+                SourceOrigins: []),
+            RenderMode: VueSfcArtifactRenderMode.Template,
             StyleBlocks:
             [
                 new VueSfcStyleBlock(
@@ -82,6 +87,9 @@ public sealed class VueSfcArtifactTests
         Assert.AreEqual("components/counter-card.vue", artifact.RelativeSfcPath);
         Assert.AreEqual("<div>{{ value }}</div>", artifact.TemplateText);
         Assert.AreEqual("const value = 1;", artifact.ScriptSetupText);
+        Assert.AreEqual(string.Empty, artifact.ScriptText);
+        Assert.IsTrue(artifact.HasTemplateBlock);
+        Assert.IsTrue(artifact.UsesScriptSetup);
         CollectionAssert.AreEqual(new[] { "/", "/counter" }, artifact.RouteTemplates.ToArray());
         Assert.AreEqual("style-hash", artifact.Identity.StyleHash);
         Assert.IsTrue(artifact.StyleBlocks[0].IsScoped);
@@ -93,6 +101,61 @@ public sealed class VueSfcArtifactTests
         CollectionAssert.AreEqual(new[] { "vuetify/styles" }, artifact.Styles.ToArray());
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
         Assert.HasCount(5, artifact.SourceOrigins);
+    }
+
+    [TestMethod]
+    public void VueSfcArtifact_SupportsRenderFunctionOnlyShape()
+    {
+        var scriptOrigin = CreateOrigin(RazorVueOriginKind.GeneratedRender, "Counter.razor", "components/counter-card.vue", 0, 128);
+
+        var artifact = new VueSfcArtifact(
+            ComponentName: "CounterCard",
+            RelativeSfcPath: "components/counter-card.vue",
+            SfcText:
+            """
+            <script lang="ts">
+            export default defineComponent({});
+            </script>
+            """,
+            TemplateBlock: new VueSfcTemplateBlock(
+                Text: string.Empty,
+                SourceOrigins: []),
+            ScriptSetupBlock: new VueSfcScriptSetupBlock(
+                Text: string.Empty,
+                Language: null,
+                SourceOrigins: []),
+            ScriptBlock: new VueSfcScriptBlock(
+                Text: "export default defineComponent({});",
+                Language: "ts",
+                SourceOrigins: [scriptOrigin]),
+            RenderMode: VueSfcArtifactRenderMode.RenderFunction,
+            StyleBlocks: [],
+            CustomBlocks: [],
+            RouteTemplates: [],
+            Imports: ["vue"],
+            Styles: [],
+            PluginRequirements: [],
+            Identity: new VueSfcArtifactIdentity(
+                ComponentId: "Demo.Components.CounterCard",
+                ModuleId: "components/counter-card.vue",
+                DescriptorHash: "descriptor-hash",
+                TemplateHash: "template-hash",
+                LogicHash: "logic-hash",
+                StyleHash: string.Empty,
+                HmrBoundaryKind: HmrBoundaryKind.LogicSafe),
+            Hints: new VueRuntimeHints(
+                RequiresVueRuntime: true,
+                RequiresHydration: false,
+                SupportsSsr: true,
+                UsesTeleport: false,
+                UsesSuspense: false,
+                UsesKeepAlive: false),
+            SourceOrigins: [scriptOrigin]);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock);
+        Assert.IsFalse(artifact.UsesScriptSetup);
+        Assert.AreEqual("export default defineComponent({});", artifact.ScriptText);
     }
 
     private static RazorVueSourceOrigin CreateOrigin(

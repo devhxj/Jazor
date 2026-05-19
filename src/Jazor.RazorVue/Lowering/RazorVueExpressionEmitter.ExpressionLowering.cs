@@ -450,6 +450,9 @@ internal sealed partial class RazorVueExpressionEmitter
 
     internal bool TryRewriteInvocation(IInvocationOperation invocation, SenseArgument argument, out string expression)
     {
+        if (TryRewriteImperativeBuilderInvocation(invocation, argument, out expression))
+            return true;
+
         var normalizedCallbackFactory = TryNormalizeRazorGeneratedCallbackFactory(invocation);
         if (normalizedCallbackFactory.Length != 0)
         {

@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Operations;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
 using Jazor.RazorVue.RenderTree;
@@ -205,8 +206,81 @@ internal sealed partial class RazorVueArtifactFactory
                 foreach (var child in loop.Body.Children)
                     CollectComponents(child, components);
                 break;
+            case RazorVueImperativeBlockNode imperative:
+                CollectComponents(imperative.Operation, imperative.Origins, components);
+                break;
             case RazorVueLocalDeclarationNode:
                 break;
+        }
+    }
+
+    private static void CollectComponents(
+        IOperation operation,
+        ImmutableArray<RazorVueSourceOrigin> origins,
+        HashSet<RazorVueComponentNode> components)
+    {
+        foreach (var current in EnumerateOperationAndDescendants(operation))
+        {
+            if (current is not IInvocationOperation invocation)
+                continue;
+
+            if (!IsOpenComponentInvocation(invocation, out var componentType, out var resolutionName))
+                continue;
+
+            components.Add(new RazorVueComponentNode(
+                componentType.Name,
+                componentType.ToDisplayString(),
+                resolutionName,
+                Key: null,
+                Attributes: ImmutableArray<RazorVueAttributeEntry>.Empty,
+                SlotTemplates: ImmutableArray<RazorVueComponentSlotTemplateNode>.Empty,
+                ImplicitDefaultSlotAssignments: ImmutableArray<RazorVueImplicitDefaultSlotAssignmentNode>.Empty,
+                AmbientDefaultSlotChildren: RazorVueRenderFragment.Empty,
+                Children: RazorVueRenderFragment.Empty,
+                Origins: origins));
+        }
+    }
+
+    private static bool IsOpenComponentInvocation(
+        IInvocationOperation invocation,
+        out INamedTypeSymbol componentType,
+        out string resolutionName)
+    {
+        componentType = default!;
+        resolutionName = string.Empty;
+
+        if (!string.Equals(invocation.TargetMethod.Name, "OpenComponent", StringComparison.Ordinal))
+            return false;
+
+        if (invocation.TargetMethod.TypeArguments.Length == 1 &&
+            invocation.TargetMethod.TypeArguments[0] is INamedTypeSymbol genericComponentType)
+        {
+            componentType = genericComponentType;
+            resolutionName = genericComponentType.ToDisplayString();
+            return true;
+        }
+
+        if (invocation.Arguments.Length >= 2 &&
+            RazorVueOperationNormalizer.Unwrap(invocation.Arguments[1].Value) is ITypeOfOperation { TypeOperand: INamedTypeSymbol explicitComponentType })
+        {
+            componentType = explicitComponentType;
+            resolutionName = explicitComponentType.ToDisplayString();
+            return true;
+        }
+
+        return false;
+    }
+
+    private static IEnumerable<IOperation> EnumerateOperationAndDescendants(IOperation operation)
+    {
+        yield return operation;
+        foreach (var child in operation.ChildOperations)
+        {
+            if (child is null)
+                continue;
+
+            foreach (var nested in EnumerateOperationAndDescendants(child))
+                yield return nested;
         }
     }
 

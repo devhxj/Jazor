@@ -1056,6 +1056,19 @@ public sealed class RazorVueSfcArtifactFactoryTests
                 null,
                 ImmutableArray<RazorVueAttributeEntry>.Empty,
                 ImmutableArray<RazorVueComponentSlotTemplateNode>.Empty,
+                ImmutableArray<RazorVueImplicitDefaultSlotAssignmentNode>.Empty,
+                new RazorVueRenderFragment(
+                [
+                    new RazorVueElementNode(
+                        "span",
+                        null,
+                        ImmutableArray<RazorVueAttributeEntry>.Empty,
+                        new RazorVueRenderFragment(
+                        [
+                            new RazorVueTextNode("Body", ImmutableArray<RazorVueSourceOrigin>.Empty)
+                        ]),
+                        ImmutableArray<RazorVueSourceOrigin>.Empty)
+                ]),
                 new RazorVueRenderFragment(
                 [
                     new RazorVueElementNode(
@@ -2046,6 +2059,8 @@ public sealed class RazorVueSfcArtifactFactoryTests
                         ]),
                         ImmutableArray<RazorVueSourceOrigin>.Empty)
                 ],
+                ImmutableArray<RazorVueImplicitDefaultSlotAssignmentNode>.Empty,
+                RazorVueRenderFragment.Empty,
                 RazorVueRenderFragment.Empty,
                 ImmutableArray<RazorVueSourceOrigin>.Empty)
         ]);
@@ -2151,7 +2166,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "TypedContentHost");
         var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
-        StringAssert.Contains(artifact.TemplateText, "<template #default=\"__jazorSlotContext\">");
+        StringAssert.Contains(artifact.TemplateText, "<template #default=\"context\">");
         StringAssert.Contains(artifact.TemplateText, "warn");
         StringAssert.Contains(artifact.TemplateText, "</template>");
     }
@@ -3313,7 +3328,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
-    public void RazorVue_SfcArtifactFactory_WithConditionalReturnInBuildRenderTree_ThrowsCanonicalizationFailed()
+    public void RazorVue_SfcArtifactFactory_WithConditionalReturnInBuildRenderTree_LowersRenderFunctionVueSfc()
     {
         var context = CreateContext(
             """
@@ -3356,11 +3371,325 @@ public sealed class RazorVueSfcArtifactFactoryTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
-            CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
-        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "return");
+        Assert.AreEqual("components/conditional-return-card.vue", artifact.RelativeSfcPath);
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        Assert.IsFalse(artifact.UsesScriptSetup, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "<script lang=\"ts\">");
+        StringAssert.Contains(artifact.SfcText, "export default defineComponent({");
+        StringAssert.Contains(artifact.SfcText, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.SfcText, "if (props.hide) {");
+        StringAssert.Contains(artifact.SfcText, "return __jazorBuilder.complete();");
+        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"section\");");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithSwitchStatementInBuildRenderTree_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/switch-card")]
+                public class SwitchCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        switch (Count)
+                        {
+                            case 0:
+                                builder.OpenElement(0, "p");
+                                builder.AddContent(1, "empty");
+                                builder.CloseElement();
+                                break;
+                            default:
+                                builder.OpenElement(2, "section");
+                                builder.AddContent(3, Count);
+                                builder.CloseElement();
+                                break;
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual("components/switch-card.vue", artifact.RelativeSfcPath);
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        Assert.IsFalse(artifact.UsesScriptSetup, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "<script lang=\"ts\">");
+        StringAssert.Contains(artifact.SfcText, "switch (props.count)");
+        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"p\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.AddContent(\"empty\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"section\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.AddContent(props.count);");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithTryCatchFinallyInBuildRenderTree_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/try-card")]
+                public class TryCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        try
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, "ready");
+                            builder.CloseElement();
+                        }
+                        catch
+                        {
+                            builder.OpenElement(2, "p");
+                            builder.AddContent(3, "fallback");
+                            builder.CloseElement();
+                        }
+                        finally
+                        {
+                            _count++;
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual("components/try-card.vue", artifact.RelativeSfcPath);
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        Assert.IsFalse(artifact.UsesScriptSetup, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "<script lang=\"ts\">");
+        StringAssert.Contains(artifact.SfcText, "try {");
+        StringAssert.Contains(artifact.SfcText, "} catch {");
+        StringAssert.Contains(artifact.SfcText, "} finally {");
+        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"section\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.AddContent(\"ready\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"p\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.AddContent(\"fallback\");");
+        StringAssert.Contains(artifact.SfcText, "_count++;");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithUsingDeclarationInBuildRenderTree_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/using-card")]
+                public class UsingCard : ComponentBase, IVueComponent
+                {
+                    private sealed class TestDisposable : IDisposable
+                    {
+                        public void Dispose() { }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        using var disposable = new TestDisposable();
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual("components/using-card.vue", artifact.RelativeSfcPath);
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        Assert.IsFalse(artifact.UsesScriptSetup, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "<script lang=\"ts\">");
+        StringAssert.Contains(artifact.SfcText, "let disposable = new ");
+        StringAssert.Contains(artifact.SfcText, "try {");
+        StringAssert.Contains(artifact.SfcText, "} finally {");
+        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"section\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.AddContent(\"ready\");");
+        StringAssert.Contains(artifact.SfcText, "if (disposable !== null)");
+        StringAssert.Contains(artifact.SfcText, "disposable.dispose();");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithUsingExpressionInterfaceResourceInBuildRenderTree_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                public sealed class TestDisposable : IDisposable
+                {
+                    public void Dispose() { }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/using-interface-card")]
+                public class UsingInterfaceCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        using (GetDisposable())
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, "ready");
+                            builder.CloseElement();
+                        }
+                    }
+
+                    private IDisposable GetDisposable() => new TestDisposable();
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual("components/using-interface-card.vue", artifact.RelativeSfcPath);
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        Assert.IsFalse(artifact.UsesScriptSetup, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "<script lang=\"ts\">");
+        StringAssert.Contains(artifact.SfcText, "let ");
+        StringAssert.Contains(artifact.SfcText, " = getDisposable();");
+        StringAssert.Contains(artifact.SfcText, "try {");
+        StringAssert.Contains(artifact.SfcText, "} finally {");
+        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"section\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.AddContent(\"ready\");");
+        StringAssert.Contains(artifact.SfcText, "!== null)");
+        StringAssert.Contains(artifact.SfcText, "_6f97d94b6f2e4bc1(");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithLockStatementInBuildRenderTree_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lock-card")]
+                public class LockCard : ComponentBase, IVueComponent
+                {
+                    private readonly object _gate = new();
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        lock (_gate)
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, "ready");
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual("components/lock-card.vue", artifact.RelativeSfcPath);
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        Assert.IsFalse(artifact.UsesScriptSetup, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "<script lang=\"ts\">");
+        StringAssert.Contains(artifact.SfcText, "if (_gate == null)");
+        StringAssert.Contains(artifact.SfcText, "throw new TypeError(\"obj\");");
+        StringAssert.Contains(artifact.SfcText, "try {");
+        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"section\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.AddContent(\"ready\");");
     }
 
     [TestMethod]
@@ -3623,6 +3952,53 @@ public sealed class RazorVueSfcArtifactFactoryTests
                 public class Host : ComponentBase, IVueComponent
                 {
                     private RenderFragment<int> Template => item => itemBuilder =>
+                    {
+                        itemBuilder.OpenElement(1, "span");
+                        itemBuilder.AddContent(2, item);
+                        itemBuilder.CloseElement();
+                    };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, Template, 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(item) in [42]\">");
+        StringAssert.Contains(artifact.TemplateText, "{{ item }}");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersAnalyzableCurrentComponentRenderFragmentAutoPropertyCarrier_IntoTemplateScopeWrapper()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    private RenderFragment<int> Template { get; } = item => itemBuilder =>
                     {
                         itemBuilder.OpenElement(1, "span");
                         itemBuilder.AddContent(2, item);
@@ -4508,6 +4884,62 @@ public sealed class RazorVueSfcArtifactFactoryTests
 
         StringAssert.Contains(artifact.TemplateText, "<template #itemTemplate=\"item\">");
         StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(title) in [props.title]\">");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersAnalyzableCurrentComponentRenderFragmentAutoPropertyCarrierForTypedSlotTemplate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    private RenderFragment<int> Template { get; } = item => itemBuilder =>
+                    {
+                        itemBuilder.OpenElement(1, "span");
+                        itemBuilder.AddContent(2, item);
+                        itemBuilder.CloseElement();
+                    };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<ChildCard>(0);
+                        builder.AddAttribute(1, "ItemTemplate", Template);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<template #itemTemplate=\"item\">");
+        StringAssert.Contains(artifact.TemplateText, "{{ item }}");
     }
 
     [TestMethod]

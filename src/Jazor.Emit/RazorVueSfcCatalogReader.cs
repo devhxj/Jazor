@@ -46,6 +46,8 @@ internal static class RazorVueSfcCatalogReader
             ReadString(itemType, item, "SfcText"),
             ReadTemplateBlock(itemType, item),
             ReadScriptSetupBlock(itemType, item),
+            ReadScriptBlock(itemType, item),
+            ReadEnum<RazorVueEmitSfcRenderMode>(itemType, item, "RenderMode"),
             ReadStyleBlocks(itemType, item),
             ReadCustomBlocks(itemType, item),
             ReadStringArray(itemType, item, "RouteTemplates"),
@@ -98,6 +100,16 @@ internal static class RazorVueSfcCatalogReader
         var value = ReadObject(itemType, item, "ScriptSetupBlock");
         var valueType = value.GetType();
         return new RazorVueEmitSfcScriptSetupBlockRecord(
+            ReadString(valueType, value, "Text"),
+            TryReadNullableString(valueType, value, "Language"),
+            ReadOrigins(valueType, value, "SourceOrigins"));
+    }
+
+    private static RazorVueEmitSfcScriptBlockRecord ReadScriptBlock(Type itemType, object item)
+    {
+        var value = ReadObject(itemType, item, "ScriptBlock");
+        var valueType = value.GetType();
+        return new RazorVueEmitSfcScriptBlockRecord(
             ReadString(valueType, value, "Text"),
             TryReadNullableString(valueType, value, "Language"),
             ReadOrigins(valueType, value, "SourceOrigins"));

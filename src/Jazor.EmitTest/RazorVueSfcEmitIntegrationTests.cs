@@ -363,6 +363,11 @@ public sealed class RazorVueSfcEmitIntegrationTests
                 [
                     CreateOrigin(RazorVueSfcOriginKindRecord.Logic, sourceFilePath, "components/counter-card.vue", 49, 40)
                 ]),
+            ScriptBlock: new RazorVueEmitSfcScriptBlockRecord(
+                string.Empty,
+                null,
+                []),
+            RenderMode: RazorVueEmitSfcRenderMode.Template,
             StyleBlocks:
             [
                 new RazorVueEmitSfcStyleBlockRecord(
@@ -616,6 +621,8 @@ public sealed class RazorVueSfcEmitIntegrationTests
                     public string SfcText => "<template><div>{{ value }}</div></template>";
                     public GeneratedTemplateBlock TemplateBlock => new GeneratedTemplateBlock();
                     public GeneratedScriptSetupBlock ScriptSetupBlock => new GeneratedScriptSetupBlock();
+                    public GeneratedScriptBlock ScriptBlock => new GeneratedScriptBlock();
+                    public GeneratedRenderMode RenderMode => GeneratedRenderMode.Template;
                     public GeneratedStyleBlock[] StyleBlocks => new[] { new GeneratedStyleBlock() };
                     public GeneratedCustomBlock[] CustomBlocks => Array.Empty<GeneratedCustomBlock>();
                     public string[] RouteTemplates => new[] { "/", "/counter" };
@@ -638,6 +645,13 @@ public sealed class RazorVueSfcEmitIntegrationTests
                     public string Text => "const value = 1;";
                     public string Language => "ts";
                     public GeneratedOrigin[] SourceOrigins => new[] { new GeneratedOrigin(GeneratedOriginKind.Logic) };
+                }
+
+                private sealed class GeneratedScriptBlock
+                {
+                    public string Text => string.Empty;
+                    public string? Language => null;
+                    public GeneratedOrigin[] SourceOrigins => Array.Empty<GeneratedOrigin>();
                 }
 
                 private sealed class GeneratedStyleBlock
@@ -713,6 +727,12 @@ public sealed class RazorVueSfcEmitIntegrationTests
                     TemplateOnly,
                     LogicSafe,
                     FullReloadRequired
+                }
+
+                private enum GeneratedRenderMode
+                {
+                    Template,
+                    RenderFunction
                 }
 
                 private enum GeneratedOriginKind

@@ -2529,6 +2529,60 @@ public sealed class BuildRenderTreeTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_WithAnalyzableCurrentComponentRenderFragmentAutoPropertyCarrier_ProducesTemplateScopeNode()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    private RenderFragment<int> Template { get; } = item => itemBuilder =>
+                    {
+                        itemBuilder.OpenElement(1, "span");
+                        itemBuilder.AddContent(2, item);
+                        itemBuilder.CloseElement();
+                    };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, Template, 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+
+        var templateScope = renderTree.Children.Single() as RazorVueTemplateScopeNode;
+        Assert.IsNotNull(templateScope);
+        Assert.AreEqual("item", templateScope.ScopeName);
+        Assert.IsInstanceOfType<ILiteralOperation>(templateScope.Initializer);
+
+        var span = templateScope.Children.Children.Single() as RazorVueElementNode;
+        Assert.IsNotNull(span);
+        Assert.AreEqual("span", span.TagName);
+        Assert.IsInstanceOfType<RazorVueExpressionNode>(span.Children.Children.Single());
+    }
+
+    [TestMethod]
     public void CreateRenderTree_WithAnalyzableCurrentComponentRenderFragmentFieldCarrier_ProducesTemplateScopeNode()
     {
         var context = CreateContext(
@@ -3606,6 +3660,72 @@ public sealed class BuildRenderTreeTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_WithAnalyzableCurrentComponentRenderFragmentAutoPropertyCarrierForTypedSlotTemplate_ProducesStructuredSlotTemplate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    private RenderFragment<int> Template { get; } = item => itemBuilder =>
+                    {
+                        itemBuilder.OpenElement(1, "span");
+                        itemBuilder.AddContent(2, item);
+                        itemBuilder.CloseElement();
+                    };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<ChildCard>(0);
+                        builder.AddAttribute(1, "ItemTemplate", Template);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+
+        var component = renderTree.Children.Single() as RazorVueComponentNode;
+        Assert.IsNotNull(component);
+        var itemTemplateSlot = component.SlotTemplates.Single(static slot => slot.PublicName == "ItemTemplate");
+        Assert.AreEqual("itemTemplate", itemTemplateSlot.SlotName);
+        Assert.AreEqual("item", itemTemplateSlot.ParameterName);
+
+        var span = itemTemplateSlot.Children.Children.Single() as RazorVueElementNode;
+        Assert.IsNotNull(span);
+        Assert.AreEqual("span", span.TagName);
+        var expression = span.Children.Children.Single() as RazorVueExpressionNode;
+        Assert.IsNotNull(expression);
+        Assert.IsInstanceOfType<IParameterReferenceOperation>(expression.Expression);
+    }
+
+    [TestMethod]
     public void CreateRenderTree_WithCyclicCurrentComponentRenderFragmentFactoryMethods_ThrowsCanonicalizationFailed()
     {
         var context = CreateContext(
@@ -3828,7 +3948,7 @@ public sealed class BuildRenderTreeTemplateFrontendTests
     }
 
     [TestMethod]
-    public void CreateRenderTree_WithConditionalReturn_ThrowsCanonicalizationFailed()
+    public void CreateRenderTree_WithConditionalReturn_ProducesImperativeMethodBodyNode()
     {
         var context = CreateContext(
             """
@@ -3871,15 +3991,17 @@ public sealed class BuildRenderTreeTemplateFrontendTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
-            () => BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
-
-        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "return");
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+        Assert.AreEqual(1, renderTree.Children.Length);
+        var imperative = renderTree.Children[0] as RazorVueImperativeBlockNode;
+        Assert.IsNotNull(imperative);
+        Assert.AreEqual(RazorVueImperativeBlockKind.MethodBody, imperative.Kind);
+        Assert.AreEqual(1, imperative.VisibleParameters.Length);
+        Assert.AreEqual("builder", imperative.VisibleParameters[0].Name);
     }
 
     [TestMethod]
-    public void CreateRenderTree_WithWhileLoop_ThrowsCanonicalizationFailed()
+    public void CreateRenderTree_WithWhileLoop_ProducesImperativeLoopBlockNode()
     {
         var context = CreateContext(
             """
@@ -3921,16 +4043,178 @@ public sealed class BuildRenderTreeTemplateFrontendTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
-            () => BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
-
-        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "loop statement");
-        StringAssert.Contains(exception.Issue.Message, "while");
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+        Assert.AreEqual(1, renderTree.Children.Length);
+        var imperative = renderTree.Children[0] as RazorVueImperativeBlockNode;
+        Assert.IsNotNull(imperative);
+        Assert.AreEqual(RazorVueImperativeBlockKind.LoopBlock, imperative.Kind);
+        CollectionAssert.Contains(imperative.VisibleLocals.Select(static local => local.Name).ToArray(), "index");
     }
 
     [TestMethod]
-    public void CreateRenderTree_WithStandaloneFieldMutation_ThrowsCanonicalizationFailed()
+    public void CreateRenderTree_WithSwitchStatement_ProducesImperativeSwitchBlockNode()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        switch (Count)
+                        {
+                            case 0:
+                                builder.OpenElement(0, "p");
+                                builder.AddContent(1, "empty");
+                                builder.CloseElement();
+                                break;
+                            default:
+                                builder.OpenElement(2, "section");
+                                builder.AddContent(3, Count);
+                                builder.CloseElement();
+                                break;
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+        Assert.AreEqual(1, renderTree.Children.Length);
+        var imperative = renderTree.Children[0] as RazorVueImperativeBlockNode;
+        Assert.IsNotNull(imperative);
+        Assert.AreEqual(RazorVueImperativeBlockKind.SwitchBlock, imperative.Kind);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithTryCatchFinally_ProducesImperativeTryBlockNode()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        try
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, "ready");
+                            builder.CloseElement();
+                        }
+                        catch
+                        {
+                            builder.OpenElement(2, "p");
+                            builder.AddContent(3, "fallback");
+                            builder.CloseElement();
+                        }
+                        finally
+                        {
+                            _count++;
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+        Assert.AreEqual(1, renderTree.Children.Length);
+        var imperative = renderTree.Children[0] as RazorVueImperativeBlockNode;
+        Assert.IsNotNull(imperative);
+        Assert.AreEqual(RazorVueImperativeBlockKind.TryBlock, imperative.Kind);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithLockStatement_ProducesImperativeLockBlockNode()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lock-card")]
+                public class LockCard : ComponentBase, IVueComponent
+                {
+                    private readonly object _gate = new();
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        lock (_gate)
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, "ready");
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+        Assert.AreEqual(1, renderTree.Children.Length);
+        var imperative = renderTree.Children[0] as RazorVueImperativeBlockNode;
+        Assert.IsNotNull(imperative);
+        Assert.AreEqual(RazorVueImperativeBlockKind.LockBlock, imperative.Kind);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithStandaloneFieldMutation_ProducesImperativeLocalBlockNode()
     {
         var context = CreateContext(
             """
@@ -3968,11 +4252,11 @@ public sealed class BuildRenderTreeTemplateFrontendTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
-            () => BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
-
-        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "_count");
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+        Assert.AreEqual(1, renderTree.Children.Length);
+        var imperative = renderTree.Children[0] as RazorVueImperativeBlockNode;
+        Assert.IsNotNull(imperative);
+        Assert.AreEqual(RazorVueImperativeBlockKind.LocalBlock, imperative.Kind);
     }
 
     [TestMethod]
@@ -4087,7 +4371,7 @@ public sealed class BuildRenderTreeTemplateFrontendTests
     }
 
     [TestMethod]
-    public void CreateRenderTree_WithTemplateScopedLocalWithoutInitializer_ThrowsCanonicalizationFailed()
+    public void CreateRenderTree_WithTemplateScopedLocalWithoutInitializer_ProducesImperativeLocalBlockNode()
     {
         var context = CreateContext(
             """
@@ -4127,11 +4411,12 @@ public sealed class BuildRenderTreeTemplateFrontendTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
-            () => BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
-
-        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "requires an initializer");
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+        Assert.AreEqual(1, renderTree.Children.Length);
+        var imperative = renderTree.Children[0] as RazorVueImperativeBlockNode;
+        Assert.IsNotNull(imperative);
+        Assert.AreEqual(RazorVueImperativeBlockKind.LocalBlock, imperative.Kind);
+        CollectionAssert.Contains(imperative.VisibleLocals.Select(static local => local.Name).ToArray(), "localTitle");
     }
 
     private static RazorVueCompilationContext CreateContext(string source)

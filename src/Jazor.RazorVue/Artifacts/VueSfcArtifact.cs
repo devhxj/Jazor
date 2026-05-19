@@ -8,6 +8,8 @@ internal sealed record VueSfcArtifact(
     string SfcText,
     VueSfcTemplateBlock TemplateBlock,
     VueSfcScriptSetupBlock ScriptSetupBlock,
+    VueSfcScriptBlock ScriptBlock,
+    VueSfcArtifactRenderMode RenderMode,
     ImmutableArray<VueSfcStyleBlock> StyleBlocks,
     ImmutableArray<VueSfcCustomBlock> CustomBlocks,
     ImmutableArray<string> RouteTemplates,
@@ -21,6 +23,12 @@ internal sealed record VueSfcArtifact(
     public string TemplateText => TemplateBlock.Text;
 
     public string ScriptSetupText => ScriptSetupBlock.Text;
+
+    public string ScriptText => ScriptBlock.Text;
+
+    public bool HasTemplateBlock => !string.IsNullOrEmpty(TemplateBlock.Text);
+
+    public bool UsesScriptSetup => !string.IsNullOrEmpty(ScriptSetupBlock.Text);
 }
 
 internal sealed record VueSfcArtifactIdentity(
@@ -40,6 +48,17 @@ internal sealed record VueSfcScriptSetupBlock(
     string Text,
     string? Language,
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins);
+
+internal sealed record VueSfcScriptBlock(
+    string Text,
+    string? Language,
+    ImmutableArray<RazorVueSourceOrigin> SourceOrigins);
+
+internal enum VueSfcArtifactRenderMode
+{
+    Template,
+    RenderFunction
+}
 
 internal sealed record VueSfcStyleBlock(
     string Text,

@@ -6341,6 +6341,80 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_Reference_TypeOfClass_UsesRuntimeConstructor()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                sealed class Person
+                {
+                }
+
+                void TestMethod()
+                {
+                    var type = typeof(Person);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let type = Person;
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_TypeOfInt_UsesNumberConstructor()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var type = typeof(int);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let type = Number;
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_TypeOfClassName_UsesTypeTokenName()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                sealed class Person
+                {
+                }
+
+                void TestMethod()
+                {
+                    var name = typeof(Person).Name;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let name = Person.name;
+}", script);
+	}
+
+	[TestMethod]
 	public void Visit_Reference_GlobalRegExp_UsesOrdinaryStaticCall()
 	{
 		var block = GetBlockOperation(@"
@@ -6591,8 +6665,30 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let comparer = globalThis.__jazorComparerDefault ??= {};
+	let comparer = globalThis.__jazorComparerDefault ??= {};
   let order = _7dffdd7244581cc5(comparer, left, right);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_IDisposableDispose_UsesInterfaceMapping()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(System.IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  _6f97d94b6f2e4bc1(disposable);
 }", script);
 	}
 
@@ -6950,6 +7046,52 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.AreEqual("Import", compareOp);
 		Assert.AreEqual("_7dffdd7244581cc5", compareMethod);
 		Assert.AreEqual("System/Collections/IComparerModule.js", comparePath);
+	}
+
+	[TestMethod]
+	public void WhiteList_IDisposableDispose_IsMapped()
+	{
+		var membersField = typeof(SemanticWalker).Assembly
+			.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!
+			.GetField("Members", BindingFlags.Public | BindingFlags.Static);
+		var members = (IDictionary?)membersField?.GetValue(null);
+
+		Assert.IsNotNull(members);
+		Assert.IsTrue(members.Contains("System.IDisposable.Dispose()"));
+
+		var disposeValue = members["System.IDisposable.Dispose()"];
+		Assert.IsNotNull(disposeValue);
+		var disposeValueType = disposeValue.GetType();
+		var disposeOp = disposeValueType.GetProperty("Op", BindingFlags.Instance | BindingFlags.Public)?.GetValue(disposeValue)?.ToString();
+		var disposeMethod = (string?)disposeValueType.GetProperty("Value", BindingFlags.Instance | BindingFlags.Public)?.GetValue(disposeValue);
+		var disposePath = (string?)disposeValueType.GetProperty("Path", BindingFlags.Instance | BindingFlags.Public)?.GetValue(disposeValue);
+
+		Assert.AreEqual("Import", disposeOp);
+		Assert.AreEqual("_6f97d94b6f2e4bc1", disposeMethod);
+		Assert.AreEqual("System/IDisposableModule.js", disposePath);
+	}
+
+	[TestMethod]
+	public void WhiteList_IAsyncDisposableDisposeAsync_IsMapped()
+	{
+		var membersField = typeof(SemanticWalker).Assembly
+			.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!
+			.GetField("Members", BindingFlags.Public | BindingFlags.Static);
+		var members = (IDictionary?)membersField?.GetValue(null);
+
+		Assert.IsNotNull(members);
+		Assert.IsTrue(members.Contains("System.IAsyncDisposable.DisposeAsync()"));
+
+		var disposeAsyncValue = members["System.IAsyncDisposable.DisposeAsync()"];
+		Assert.IsNotNull(disposeAsyncValue);
+		var disposeAsyncValueType = disposeAsyncValue.GetType();
+		var disposeAsyncOp = disposeAsyncValueType.GetProperty("Op", BindingFlags.Instance | BindingFlags.Public)?.GetValue(disposeAsyncValue)?.ToString();
+		var disposeAsyncMethod = (string?)disposeAsyncValueType.GetProperty("Value", BindingFlags.Instance | BindingFlags.Public)?.GetValue(disposeAsyncValue);
+		var disposeAsyncPath = (string?)disposeAsyncValueType.GetProperty("Path", BindingFlags.Instance | BindingFlags.Public)?.GetValue(disposeAsyncValue);
+
+		Assert.AreEqual("Import", disposeAsyncOp);
+		Assert.AreEqual("_d17f7fbf9eb14eef", disposeAsyncMethod);
+		Assert.AreEqual("System/IAsyncDisposableModule.js", disposeAsyncPath);
 	}
 
 	[TestMethod]

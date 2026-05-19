@@ -785,6 +785,8 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         builder.Append("                sfcText: ").Append(EscapeCSharpString(artifact.SfcText)).AppendLine(",");
         builder.Append("                templateBlock: ").Append(BuildTemplateBlockLiteral(artifact.TemplateBlock)).AppendLine(",");
         builder.Append("                scriptSetupBlock: ").Append(BuildScriptSetupBlockLiteral(artifact.ScriptSetupBlock)).AppendLine(",");
+        builder.Append("                scriptBlock: ").Append(BuildScriptBlockLiteral(artifact.ScriptBlock)).AppendLine(",");
+        builder.Append("                renderMode: GeneratedRenderMode.").Append(artifact.RenderMode).AppendLine(",");
         builder.Append("                styleBlocks: ").Append(BuildStyleBlocksArrayLiteral(artifact.StyleBlocks)).AppendLine(",");
         builder.Append("                customBlocks: ").Append(BuildCustomBlocksArrayLiteral(artifact.CustomBlocks)).AppendLine(",");
         builder.Append("                routeTemplates: ").Append(BuildStringArrayLiteral(artifact.RouteTemplates)).AppendLine(",");
@@ -835,13 +837,15 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
         builder.AppendLine("        private sealed class GeneratedArtifact");
         builder.AppendLine("        {");
-        builder.AppendLine("            public GeneratedArtifact(string componentName, string relativeSfcPath, string sfcText, GeneratedTemplateBlock templateBlock, GeneratedScriptSetupBlock scriptSetupBlock, GeneratedStyleBlock[] styleBlocks, GeneratedCustomBlock[] customBlocks, string[] routeTemplates, string[] imports, string[] styles, string[] pluginRequirements, GeneratedIdentity identity, GeneratedHints hints, GeneratedOrigin[] sourceOrigins)");
+        builder.AppendLine("            public GeneratedArtifact(string componentName, string relativeSfcPath, string sfcText, GeneratedTemplateBlock templateBlock, GeneratedScriptSetupBlock scriptSetupBlock, GeneratedScriptBlock scriptBlock, GeneratedRenderMode renderMode, GeneratedStyleBlock[] styleBlocks, GeneratedCustomBlock[] customBlocks, string[] routeTemplates, string[] imports, string[] styles, string[] pluginRequirements, GeneratedIdentity identity, GeneratedHints hints, GeneratedOrigin[] sourceOrigins)");
         builder.AppendLine("            {");
         builder.AppendLine("                ComponentName = componentName;");
         builder.AppendLine("                RelativeSfcPath = relativeSfcPath;");
         builder.AppendLine("                SfcText = sfcText;");
         builder.AppendLine("                TemplateBlock = templateBlock;");
         builder.AppendLine("                ScriptSetupBlock = scriptSetupBlock;");
+        builder.AppendLine("                ScriptBlock = scriptBlock;");
+        builder.AppendLine("                RenderMode = renderMode;");
         builder.AppendLine("                StyleBlocks = styleBlocks;");
         builder.AppendLine("                CustomBlocks = customBlocks;");
         builder.AppendLine("                RouteTemplates = routeTemplates;");
@@ -858,6 +862,8 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         builder.AppendLine("            public string SfcText { get; }");
         builder.AppendLine("            public GeneratedTemplateBlock TemplateBlock { get; }");
         builder.AppendLine("            public GeneratedScriptSetupBlock ScriptSetupBlock { get; }");
+        builder.AppendLine("            public GeneratedScriptBlock ScriptBlock { get; }");
+        builder.AppendLine("            public GeneratedRenderMode RenderMode { get; }");
         builder.AppendLine("            public GeneratedStyleBlock[] StyleBlocks { get; }");
         builder.AppendLine("            public GeneratedCustomBlock[] CustomBlocks { get; }");
         builder.AppendLine("            public string[] RouteTemplates { get; }");
@@ -886,6 +892,21 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         builder.AppendLine("        private sealed class GeneratedScriptSetupBlock");
         builder.AppendLine("        {");
         builder.AppendLine("            public GeneratedScriptSetupBlock(string text, string? language, GeneratedOrigin[] sourceOrigins)");
+        builder.AppendLine("            {");
+        builder.AppendLine("                Text = text;");
+        builder.AppendLine("                Language = language;");
+        builder.AppendLine("                SourceOrigins = sourceOrigins;");
+        builder.AppendLine("            }");
+        builder.AppendLine();
+        builder.AppendLine("            public string Text { get; }");
+        builder.AppendLine("            public string? Language { get; }");
+        builder.AppendLine("            public GeneratedOrigin[] SourceOrigins { get; }");
+        builder.AppendLine("        }");
+        builder.AppendLine();
+        builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
+        builder.AppendLine("        private sealed class GeneratedScriptBlock");
+        builder.AppendLine("        {");
+        builder.AppendLine("            public GeneratedScriptBlock(string text, string? language, GeneratedOrigin[] sourceOrigins)");
         builder.AppendLine("            {");
         builder.AppendLine("                Text = text;");
         builder.AppendLine("                Language = language;");
@@ -1052,6 +1073,12 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         builder.AppendLine("            GeneratedOnly");
         builder.AppendLine("        }");
         builder.AppendLine();
+        builder.AppendLine("        private enum GeneratedRenderMode");
+        builder.AppendLine("        {");
+        builder.AppendLine("            Template,");
+        builder.AppendLine("            RenderFunction");
+        builder.AppendLine("        }");
+        builder.AppendLine();
         builder.AppendLine("        private enum GeneratedOriginProvenance");
         builder.AppendLine("        {");
         builder.AppendLine("            RazorSourceMap,");
@@ -1077,6 +1104,9 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
 
     private static string BuildScriptSetupBlockLiteral(VueSfcScriptSetupBlock block)
         => "new GeneratedScriptSetupBlock(" + EscapeCSharpString(block.Text) + ", " + EscapeNullableCSharpString(block.Language) + ", " + BuildSfcOriginsArrayLiteral(block.SourceOrigins) + ")";
+
+    private static string BuildScriptBlockLiteral(VueSfcScriptBlock block)
+        => "new GeneratedScriptBlock(" + EscapeCSharpString(block.Text) + ", " + EscapeNullableCSharpString(block.Language) + ", " + BuildSfcOriginsArrayLiteral(block.SourceOrigins) + ")";
 
     private static string BuildStyleBlocksArrayLiteral(ImmutableArray<VueSfcStyleBlock> blocks)
     {

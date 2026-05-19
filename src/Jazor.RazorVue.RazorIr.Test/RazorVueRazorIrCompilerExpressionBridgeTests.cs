@@ -387,4 +387,83 @@ public sealed class RazorVueRazorIrCompilerExpressionBridgeTests
             $"Unexpected operation type: {operation.GetType().FullName}, kind: {operation.Kind}, syntax: {operation.Syntax}");
     }
 
+    [TestMethod]
+    public void RazorVueRazorIrOperationResolver_ForRenderFragmentLocalCarrierTrailingIfBoundaryCodeNode_MapsToConditional()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @{
+                RenderFragment<string> template = item => @<p>@item</p>;
+                if (Show)
+                {
+                    <section>tail</section>
+                }
+            }
+
+            <LayoutCard ItemTemplate="template" />
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.OperationResolver.RenderFragmentLocalCarrier.TrailingIf.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/layout-card")]
+                public partial class LayoutCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<string>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Show { get; set; }
+                }
+            }
+            """);
+
+        static string ResolveNodeText(RazorVueRazorIrNode node)
+        {
+            var text = string.Concat(node.Tokens.Select(static token => token.Content));
+            return text.Length == 0 ? node.Content ?? string.Empty : text;
+        }
+
+        static IEnumerable<RazorVueRazorIrNode> EnumerateNodes(RazorVueRazorIrNode node)
+        {
+            yield return node;
+            foreach (var child in node.Children)
+            {
+                foreach (var nested in EnumerateNodes(child))
+                    yield return nested;
+            }
+        }
+
+        var codeNode = EnumerateNodes(snapshot.RazorSourceGeneratorDocument!.DocumentNode)
+            .First(static node => node.Kind == RazorVueRazorIrNodeKind.CSharpCode &&
+                                  ResolveNodeText(node).Contains("if (Show)", StringComparison.Ordinal));
+
+        var rawText = ResolveNodeText(codeNode);
+        var keywordIndex = rawText.IndexOf("if (Show)", StringComparison.Ordinal);
+        Assert.IsTrue(keywordIndex >= 0, rawText);
+
+        var narrowedSourceSpan = codeNode.Source!.Value with
+        {
+            AbsoluteIndex = codeNode.Source.Value.AbsoluteIndex + keywordIndex,
+            Length = Math.Max(1, codeNode.Source.Value.Length - keywordIndex)
+        };
+
+        var resolver = new RazorVueRazorIrOperationResolver(
+            context,
+            snapshot,
+            snapshot.RazorSourceGeneratorDocument!);
+        var resolved = resolver.TryResolveConditional(narrowedSourceSpan, out var conditional);
+
+        Assert.IsTrue(resolved);
+        Assert.AreEqual("Show", conditional.Operation.Condition.Syntax.ToString());
+    }
+
 }

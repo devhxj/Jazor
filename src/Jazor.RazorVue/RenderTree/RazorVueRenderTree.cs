@@ -32,8 +32,14 @@ internal sealed record RazorVueComponentNode(
     RazorVueNodeKey? Key,
     ImmutableArray<RazorVueAttributeEntry> Attributes,
     ImmutableArray<RazorVueComponentSlotTemplateNode> SlotTemplates,
+    ImmutableArray<RazorVueImplicitDefaultSlotAssignmentNode> ImplicitDefaultSlotAssignments,
+    RazorVueRenderFragment AmbientDefaultSlotChildren,
     RazorVueRenderFragment Children,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins);
+
+internal sealed record RazorVueImplicitDefaultSlotAssignmentNode(
+    RazorVueRenderFragment Children,
+    ImmutableArray<RazorVueSourceOrigin> Origins);
 
 internal sealed record RazorVueComponentSlotTemplateNode(
     string PublicName,
@@ -96,6 +102,13 @@ internal sealed record RazorVueForNode(
     RazorVueRenderFragment Body,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins);
 
+internal sealed record RazorVueImperativeBlockNode(
+    IOperation Operation,
+    RazorVueImperativeBlockKind Kind,
+    ImmutableArray<ILocalSymbol> VisibleLocals,
+    ImmutableArray<IParameterSymbol> VisibleParameters,
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins);
+
 internal abstract record RazorVueAttributeEntry(
     ImmutableArray<RazorVueSourceOrigin> Origins);
 
@@ -122,4 +135,14 @@ internal enum RazorVueForStepKind
     Decrement,
     AddAssign,
     SubtractAssign
+}
+
+internal enum RazorVueImperativeBlockKind
+{
+    LocalBlock,
+    LoopBlock,
+    SwitchBlock,
+    LockBlock,
+    TryBlock,
+    MethodBody
 }

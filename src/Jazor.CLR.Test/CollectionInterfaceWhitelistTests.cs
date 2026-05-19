@@ -122,6 +122,20 @@ public sealed class CollectionInterfaceWhitelistTests
 	}
 
 	[TestMethod]
+	public void IDisposableInterfaceMappings_SupportDisposeDispatch()
+	{
+		AssertTypeAlias(typeof(Jazor.CLR.IDisposableModule), "System.IDisposable", "Object");
+		AssertMemberOp(typeof(Jazor.CLR.IDisposableModule), "System.IDisposable.Dispose()", Op.Import);
+	}
+
+	[TestMethod]
+	public void IAsyncDisposableInterfaceMappings_SupportDisposeAsyncDispatch()
+	{
+		AssertTypeAlias(typeof(Jazor.CLR.IAsyncDisposableModule), "System.IAsyncDisposable", "Object");
+		AssertMemberOp(typeof(Jazor.CLR.IAsyncDisposableModule), "System.IAsyncDisposable.DisposeAsync()", Op.Import);
+	}
+
+	[TestMethod]
 	public void StringCompareToMappings_SupportCompareDispatch()
 	{
 		AssertMemberOp(typeof(Jazor.CLR.StringModule), "string.CompareTo(object)", Op.Import);

@@ -337,6 +337,7 @@ enum 的路线应定义为：
 - `Flags` 只是 bitmask 值域，不是特殊 runtime 对象；
 - `E.A`、显式/隐式到底层数值类型的转换、`default(E)`、nullable enum 的值语义，都应按底层标量处理；
 - `typeof(E)`、反射、装箱身份、`System.Enum` 家族 API、按名字取值/格式化等能力，不应被默认视为仍然成立；
+- 当前 `typeof(E)` 仅允许一个窄例外：当目标类型能稳定对应到 JavaScript 构造器或运行时宿主时，可以把它 lower 成“runtime type token”；这不是完整 CLR `System.Type` 反射对象，也不自动为 shaped carrier / structural lowering 类型建立 nominal type identity；
 - 如果未来确实要支持“按名字看 enum”的能力，应通过显式 host seam 或编译期元数据映射引入，而不是反向恢复一个伪 CLR enum object；
 - 对于超出 JS `Number` 安全整数范围的底层枚举值，编译器不能继续假装“普通 number 就够了”；
 - 这类场景必须二选一：

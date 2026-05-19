@@ -1214,6 +1214,16 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                 builder.Append("creation");
                 break;
 
+            case LoweringSiteKind.LockValueTemp:
+                builder.Append("lock|").Append(site.Slot).Append('|');
+                builder.Append(BuildSemanticNameKey(operation));
+                break;
+
+            case LoweringSiteKind.UsingResourceTemp:
+                builder.Append("using|").Append(site.Slot).Append('|');
+                builder.Append(BuildSemanticNameKey(operation));
+                break;
+
             case LoweringSiteKind.SwitchExpressionInput:
                 if (operation is ISwitchExpressionOperation switchExpression)
                     builder.Append(BuildSemanticNameKey(switchExpression.Value));

@@ -58,6 +58,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 AppendKeyShape(builder, component.Key);
                 AppendAttributesShape(builder, component.Attributes);
                 AppendSlotTemplatesShape(builder, component.SlotTemplates);
+                AppendImplicitDefaultSlotAssignmentsShape(builder, component.ImplicitDefaultSlotAssignments);
                 AppendFragmentShape(builder, component.Children);
                 break;
             case RazorVueTextNode text:
@@ -112,7 +113,27 @@ internal sealed partial class RazorVueExpressionEmitter
                 builder.Append(')');
                 AppendFragmentShape(builder, loop.Body);
                 break;
+            case RazorVueImperativeBlockNode imperative:
+                builder.Append("imperative(")
+                    .Append(imperative.Kind)
+                    .Append(':')
+                    .Append(imperative.Operation.Syntax.ToString())
+                    .Append(')');
+                break;
         }
+    }
+
+    private void AppendImplicitDefaultSlotAssignmentsShape(
+        StringBuilder builder,
+        ImmutableArray<RazorVueImplicitDefaultSlotAssignmentNode> assignments)
+    {
+        if (assignments.IsDefaultOrEmpty)
+            return;
+
+        builder.Append("[implicitDefault:");
+        foreach (var assignment in assignments)
+            AppendFragmentShape(builder, assignment.Children);
+        builder.Append(']');
     }
 
     private static void AppendAttributesShape(StringBuilder builder, ImmutableArray<RazorVueAttributeEntry> attributes)

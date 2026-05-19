@@ -12,6 +12,8 @@ internal sealed record RazorVueEmitSfcArtifactRecord(
     string SfcText,
     RazorVueEmitSfcTemplateBlockRecord TemplateBlock,
     RazorVueEmitSfcScriptSetupBlockRecord ScriptSetupBlock,
+    RazorVueEmitSfcScriptBlockRecord ScriptBlock,
+    RazorVueEmitSfcRenderMode RenderMode,
     IReadOnlyList<RazorVueEmitSfcStyleBlockRecord> StyleBlocks,
     IReadOnlyList<RazorVueEmitSfcCustomBlockRecord> CustomBlocks,
     IReadOnlyList<string> RouteTemplates,
@@ -25,6 +27,8 @@ internal sealed record RazorVueEmitSfcArtifactRecord(
     public string TemplateText => TemplateBlock.Text;
 
     public string ScriptSetupText => ScriptSetupBlock.Text;
+
+    public string ScriptText => ScriptBlock.Text;
 }
 
 internal sealed record RazorVueEmitSfcArtifactIdentity(
@@ -44,6 +48,17 @@ internal sealed record RazorVueEmitSfcScriptSetupBlockRecord(
     string Text,
     string? Language,
     IReadOnlyList<RazorVueEmitSfcSourceOriginRecord> SourceOrigins);
+
+internal sealed record RazorVueEmitSfcScriptBlockRecord(
+    string Text,
+    string? Language,
+    IReadOnlyList<RazorVueEmitSfcSourceOriginRecord> SourceOrigins);
+
+internal enum RazorVueEmitSfcRenderMode
+{
+    Template,
+    RenderFunction
+}
 
 internal sealed record RazorVueEmitSfcStyleBlockRecord(
     string Text,

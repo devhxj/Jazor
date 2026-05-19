@@ -3,6 +3,8 @@ using System.Text;
 using Jazor.RazorVue.Canonical;
 using Jazor.RazorVue.Descriptor;
 using Jazor.RazorVue.RenderTree;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Jazor.RazorVue.Lowering;
 
@@ -53,6 +55,11 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
                 AppendRenderTreeKeyShape(builder, component.Children);
                 foreach (var slotTemplate in component.SlotTemplates)
                     AppendRenderTreeKeyShape(builder, slotTemplate.Children);
+                foreach (var implicitDefaultSlotAssignment in component.ImplicitDefaultSlotAssignments)
+                {
+                    builder.AppendLine("render:implicit-default-slot");
+                    AppendRenderTreeKeyShape(builder, implicitDefaultSlotAssignment.Children);
+                }
                 break;
             case RazorVueLocalDeclarationNode localDeclaration:
                 builder.AppendLine("render:local:" + localDeclaration.LocalSymbol.Name + "=" + localDeclaration.Initializer.Syntax.ToString());
@@ -70,6 +77,9 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
                 break;
             case RazorVueForNode loop:
                 AppendRenderTreeKeyShape(builder, loop.Body);
+                break;
+            case RazorVueImperativeBlockNode imperative:
+                builder.AppendLine("render:imperative:" + imperative.Kind + "|" + imperative.Operation.Syntax.ToString());
                 break;
         }
     }
@@ -254,6 +264,8 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
                 CollectFromRenderTree(component.Children, resolvedComponents, usageByComponent);
                 foreach (var slotTemplate in component.SlotTemplates)
                     CollectFromRenderTree(slotTemplate.Children, resolvedComponents, usageByComponent);
+                foreach (var implicitDefaultSlotAssignment in component.ImplicitDefaultSlotAssignments)
+                    CollectFromRenderTree(implicitDefaultSlotAssignment.Children, resolvedComponents, usageByComponent);
                 break;
             case RazorVueLocalDeclarationNode:
                 break;
@@ -270,7 +282,19 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
             case RazorVueForNode loop:
                 CollectFromRenderTree(loop.Body, resolvedComponents, usageByComponent);
                 break;
+            case RazorVueImperativeBlockNode imperative:
+                CollectFromImperativeRenderTree(imperative, resolvedComponents, usageByComponent);
+                break;
         }
+    }
+
+    private static void CollectFromImperativeRenderTree(
+        RazorVueImperativeBlockNode imperative,
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
+        Dictionary<string, RuntimeUsageBuilder> usageByComponent)
+    {
+        var collector = new ImperativeRuntimeUsageCollector(resolvedComponents, usageByComponent);
+        collector.Collect(imperative.Operation, imperative.VisibleParameters);
     }
 
     private static void CollectFromRenderTreeComponent(
@@ -310,10 +334,10 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
             }
         }
 
-        if (!component.Children.Children.IsDefaultOrEmpty &&
-            VueSlotResolver.TryResolve(descriptor.Slots, "ChildContent", out var childContentSlot))
+        if (!component.ImplicitDefaultSlotAssignments.IsDefaultOrEmpty &&
+            VueSlotResolver.TryResolve(descriptor.Slots, "ChildContent", out var implicitDefaultSlot))
         {
-            usage.MarkSlot(childContentSlot.Descriptor);
+            usage.MarkSlot(implicitDefaultSlot.Descriptor);
         }
 
         foreach (var slotTemplate in component.SlotTemplates)
@@ -433,6 +457,124 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
             .Select(static pair => pair.Value.Build())
             .ToImmutableArray();
 
+    private static bool TryGetCurrentComponentSlotForwarding(IOperation? operation, out string slotName)
+    {
+        slotName = string.Empty;
+        if (RazorVueOperationNormalizer.Unwrap(operation) is not IPropertyReferenceOperation propertyReference ||
+            propertyReference.Instance is not IInstanceReferenceOperation)
+        {
+            return false;
+        }
+
+        slotName = propertyReference.Property.Name;
+        return !string.IsNullOrWhiteSpace(slotName);
+    }
+
+    private static bool IsRenderTreeBuilderType(ITypeSymbol? typeSymbol)
+        => string.Equals(
+            typeSymbol?.ToDisplayString(),
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder",
+            StringComparison.Ordinal);
+
+    private static bool IsRenderFragmentType(ITypeSymbol? typeSymbol)
+        => typeSymbol is INamedTypeSymbol namedType &&
+           string.Equals(
+               namedType.OriginalDefinition.ToDisplayString(),
+               "Microsoft.AspNetCore.Components.RenderFragment",
+               StringComparison.Ordinal);
+
+    private static bool IsTypedRenderFragmentType(ITypeSymbol? typeSymbol)
+        => typeSymbol is INamedTypeSymbol namedType &&
+           string.Equals(
+               namedType.OriginalDefinition.ToDisplayString(),
+               "Microsoft.AspNetCore.Components.RenderFragment<T>",
+               StringComparison.Ordinal);
+
+    private static bool TryGetAnonymousFunction(IOperation? operation, out IAnonymousFunctionOperation anonymousFunction)
+    {
+        anonymousFunction = default!;
+        var current = RazorVueOperationNormalizer.Unwrap(operation);
+        while (current is not null)
+        {
+            switch (current)
+            {
+                case IAnonymousFunctionOperation direct:
+                    anonymousFunction = direct;
+                    return true;
+                case IDelegateCreationOperation delegateCreation:
+                    current = RazorVueOperationNormalizer.Unwrap(delegateCreation.Target);
+                    continue;
+                case IConversionOperation conversion when conversion.IsImplicit:
+                    current = RazorVueOperationNormalizer.Unwrap(conversion.Operand);
+                    continue;
+                default:
+                    return false;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TryGetSingleBuilderParameter(
+        IAnonymousFunctionOperation anonymousFunction,
+        out IParameterSymbol builderParameter)
+    {
+        builderParameter = anonymousFunction.Symbol.Parameters.FirstOrDefault(
+            static parameter => IsRenderTreeBuilderType(parameter.Type))!;
+        return builderParameter is not null && anonymousFunction.Symbol.Parameters.Length == 1;
+    }
+
+    private static bool TryGetTypedBuilderTemplate(
+        IOperation? operation,
+        out IAnonymousFunctionOperation outerAnonymousFunction,
+        out IAnonymousFunctionOperation builderAnonymousFunction)
+    {
+        outerAnonymousFunction = default!;
+        builderAnonymousFunction = default!;
+        if (!TryGetAnonymousFunction(operation, out outerAnonymousFunction) ||
+            outerAnonymousFunction.Symbol.Parameters.Length != 1)
+        {
+            return false;
+        }
+
+        if (!TryGetReturnedAnonymousFunction(outerAnonymousFunction.Body, out builderAnonymousFunction))
+            return false;
+
+        return TryGetSingleBuilderParameter(builderAnonymousFunction, out _);
+    }
+
+    private static bool TryGetReturnedAnonymousFunction(
+        IOperation? body,
+        out IAnonymousFunctionOperation anonymousFunction)
+    {
+        anonymousFunction = default!;
+        switch (RazorVueOperationNormalizer.Unwrap(body))
+        {
+            case IAnonymousFunctionOperation direct:
+                anonymousFunction = direct;
+                return true;
+            case IBlockOperation block when TryGetSingleReturnedValue(block, out var returnValue):
+                return TryGetAnonymousFunction(returnValue, out anonymousFunction);
+            case IReturnOperation returnOperation when returnOperation.ReturnedValue is not null:
+                return TryGetAnonymousFunction(returnOperation.ReturnedValue, out anonymousFunction);
+            default:
+                return false;
+        }
+    }
+
+    private static bool TryGetSingleReturnedValue(IBlockOperation block, out IOperation? returnedValue)
+    {
+        returnedValue = null;
+        if (block.Operations.Length != 1 ||
+            block.Operations[0] is not IReturnOperation returnOperation)
+        {
+            return false;
+        }
+
+        returnedValue = RazorVueOperationNormalizer.Unwrap(returnOperation.ReturnedValue);
+        return returnedValue is not null;
+    }
+
     private static bool TryResolvePropByRuntimeName(
         VueComponentDescriptor descriptor,
         string runtimeName,
@@ -499,6 +641,372 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
         ImmutableArray<VuePropDescriptor> UsedProps,
         ImmutableArray<VueEmitDescriptor> UsedEmits,
         ImmutableArray<VueSlotDescriptor> UsedSlots);
+
+    private sealed class ImperativeRuntimeUsageCollector
+    {
+        private readonly ImmutableDictionary<string, VueComponentDescriptor> _resolvedComponents;
+        private readonly Dictionary<string, RuntimeUsageBuilder> _usageByComponent;
+        private readonly Dictionary<IParameterSymbol, BuilderState> _builderStates = new(SymbolEqualityComparer.Default);
+        private readonly Dictionary<ILocalSymbol, BuilderState> _builderAliases = new(SymbolEqualityComparer.Default);
+
+        public ImperativeRuntimeUsageCollector(
+            ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
+            Dictionary<string, RuntimeUsageBuilder> usageByComponent)
+        {
+            _resolvedComponents = resolvedComponents;
+            _usageByComponent = usageByComponent;
+        }
+
+        public void Collect(IOperation operation, ImmutableArray<IParameterSymbol> visibleParameters)
+        {
+            foreach (var parameter in visibleParameters)
+            {
+                if (IsRenderTreeBuilderType(parameter.Type))
+                    _builderStates[parameter] = new BuilderState();
+            }
+
+            Visit(operation);
+        }
+
+        private void Visit(IOperation? operation)
+        {
+            var current = RazorVueOperationNormalizer.Unwrap(operation);
+            if (current is null)
+                return;
+
+            switch (current)
+            {
+                case IBlockOperation block:
+                    foreach (var child in block.Operations)
+                        Visit(child);
+                    break;
+                case IVariableDeclarationGroupOperation declarationGroup:
+                    VisitVariableDeclarationGroup(declarationGroup);
+                    break;
+                case IExpressionStatementOperation expressionStatement:
+                    Visit(expressionStatement.Operation);
+                    break;
+                case ISimpleAssignmentOperation assignment:
+                    VisitSimpleAssignment(assignment);
+                    break;
+                case IInvocationOperation invocation:
+                    VisitInvocation(invocation);
+                    break;
+                case IConditionalOperation conditional:
+                    Visit(conditional.WhenTrue);
+                    Visit(conditional.WhenFalse);
+                    break;
+                case IWhileLoopOperation whileLoop:
+                    Visit(whileLoop.Body);
+                    break;
+                case IForLoopOperation forLoop:
+                    foreach (var before in forLoop.Before)
+                        Visit(before);
+                    Visit(forLoop.Body);
+                    foreach (var atLoopBottom in forLoop.AtLoopBottom)
+                        Visit(atLoopBottom);
+                    break;
+                case IForEachLoopOperation forEachLoop:
+                    Visit(forEachLoop.Body);
+                    break;
+                case ISwitchOperation switchOperation:
+                    foreach (var @case in switchOperation.Cases)
+                    {
+                        foreach (var statement in @case.Body)
+                            Visit(statement);
+                    }
+                    break;
+                case ITryOperation tryOperation:
+                    Visit(tryOperation.Body);
+                    foreach (var @catch in tryOperation.Catches)
+                        Visit(@catch.Handler);
+                    Visit(tryOperation.Finally);
+                    break;
+                case IReturnOperation returnOperation:
+                    Visit(returnOperation.ReturnedValue);
+                    break;
+                case IAnonymousFunctionOperation:
+                    break;
+                default:
+                    foreach (var child in current.ChildOperations)
+                        Visit(child);
+                    break;
+            }
+        }
+
+        private void VisitVariableDeclarationGroup(IVariableDeclarationGroupOperation declarationGroup)
+        {
+            foreach (var declaration in declarationGroup.Declarations)
+            {
+                foreach (var declarator in declaration.Declarators)
+                {
+                    Visit(declarator.Initializer?.Value);
+                    if (TryResolveBuilderState(declarator.Initializer?.Value, out var state))
+                        _builderAliases[declarator.Symbol] = state;
+                }
+            }
+        }
+
+        private void VisitSimpleAssignment(ISimpleAssignmentOperation assignment)
+        {
+            Visit(assignment.Value);
+            if (assignment.Target is ILocalReferenceOperation localReference &&
+                TryResolveBuilderState(assignment.Value, out var state))
+            {
+                _builderAliases[localReference.Local] = state;
+            }
+        }
+
+        private void VisitInvocation(IInvocationOperation invocation)
+        {
+            if (!TryResolveBuilderState(invocation.Instance, out var builderState))
+            {
+                foreach (var argument in invocation.Arguments)
+                    Visit(argument.Value);
+                return;
+            }
+
+            switch (invocation.TargetMethod.Name)
+            {
+                case "OpenComponent":
+                    VisitOpenComponent(invocation, builderState);
+                    break;
+                case "CloseComponent":
+                    builderState.PopComponentFrame();
+                    break;
+                case "OpenElement":
+                    builderState.PushNonComponentFrame();
+                    break;
+                case "CloseElement":
+                    builderState.PopFrame();
+                    break;
+                case "OpenRegion":
+                    builderState.PushNonComponentFrame();
+                    break;
+                case "CloseRegion":
+                    builderState.PopFrame();
+                    break;
+                case "AddAttribute":
+                case "AddComponentParameter":
+                    VisitAddParameterInvocation(invocation, builderState);
+                    break;
+                case "AddMultipleAttributes":
+                    VisitAddMultipleAttributesInvocation(builderState);
+                    break;
+                case "AddContent":
+                    VisitAddContentInvocation(invocation);
+                    break;
+                default:
+                    foreach (var argument in invocation.Arguments)
+                        Visit(argument.Value);
+                    break;
+            }
+        }
+
+        private void VisitOpenComponent(IInvocationOperation invocation, BuilderState builderState)
+        {
+            foreach (var argument in invocation.Arguments)
+                Visit(argument.Value);
+
+            if (!TryResolveOpenComponent(invocation, out var componentKey, out var descriptor))
+            {
+                builderState.PushNonComponentFrame();
+                return;
+            }
+
+            builderState.PushComponentFrame(GetOrAddUsage(_usageByComponent, componentKey, descriptor));
+        }
+
+        private void VisitAddParameterInvocation(IInvocationOperation invocation, BuilderState builderState)
+        {
+            if (!builderState.TryGetCurrentComponentUsage(out var usage))
+                return;
+
+            var name = TryGetConstantString(invocation.Arguments.ElementAtOrDefault(1)?.Value);
+            if (string.IsNullOrWhiteSpace(name))
+                return;
+
+            var value = invocation.Arguments.ElementAtOrDefault(2)?.Value;
+            if (VueSlotResolver.TryResolve(usage.Descriptor.Slots, name!, out var slotResolution))
+            {
+                usage.MarkSlot(slotResolution.Descriptor);
+                VisitSlotValue(value);
+                return;
+            }
+
+            if (VuePropResolver.TryResolve(usage.Descriptor.Props, name!, out var propResolution))
+            {
+                usage.MarkProp(propResolution.Descriptor);
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(name))
+                usage.MarkEmitByAlias(name!);
+        }
+
+        private void VisitAddMultipleAttributesInvocation(BuilderState builderState)
+        {
+            if (!builderState.TryGetCurrentComponentUsage(out var usage))
+                return;
+
+            usage.MarkAllPropsAndEmits();
+        }
+
+        private void VisitAddContentInvocation(IInvocationOperation invocation)
+        {
+            foreach (var argument in invocation.Arguments.Skip(1))
+                VisitRenderFragmentValue(argument.Value);
+        }
+
+        private void VisitSlotValue(IOperation? operation)
+        {
+            if (TryGetCurrentComponentSlotForwarding(operation, out _))
+                return;
+
+            VisitRenderFragmentValue(operation);
+        }
+
+        private void VisitRenderFragmentValue(IOperation? operation)
+        {
+            var current = RazorVueOperationNormalizer.Unwrap(operation);
+            if (current is null)
+                return;
+
+            if (TryGetAnonymousFunction(current, out var anonymousFunction) &&
+                TryGetSingleBuilderParameter(anonymousFunction, out var builderParameter))
+            {
+                CollectBuilderLambda(anonymousFunction, builderParameter);
+                return;
+            }
+
+            if (TryGetTypedBuilderTemplate(current, out _, out var builderAnonymousFunction) &&
+                TryGetSingleBuilderParameter(builderAnonymousFunction, out var typedBuilderParameter))
+            {
+                CollectBuilderLambda(builderAnonymousFunction, typedBuilderParameter);
+                return;
+            }
+
+            Visit(current);
+        }
+
+        private void CollectBuilderLambda(
+            IAnonymousFunctionOperation anonymousFunction,
+            IParameterSymbol builderParameter)
+        {
+            var state = new BuilderState();
+            _builderStates[builderParameter] = state;
+            try
+            {
+                Visit(anonymousFunction.Body);
+            }
+            finally
+            {
+                _builderStates.Remove(builderParameter);
+            }
+        }
+
+        private bool TryResolveBuilderState(IOperation? operation, out BuilderState builderState)
+        {
+            builderState = default!;
+            switch (RazorVueOperationNormalizer.Unwrap(operation))
+            {
+                case IParameterReferenceOperation parameterReference when IsRenderTreeBuilderType(parameterReference.Parameter.Type):
+                    return _builderStates.TryGetValue(parameterReference.Parameter, out builderState);
+                case ILocalReferenceOperation localReference when IsRenderTreeBuilderType(localReference.Local.Type):
+                    return _builderAliases.TryGetValue(localReference.Local, out builderState);
+                default:
+                    return false;
+            }
+        }
+
+        private bool TryResolveOpenComponent(
+            IInvocationOperation invocation,
+            out string componentKey,
+            out VueComponentDescriptor descriptor)
+        {
+            componentKey = string.Empty;
+            descriptor = default!;
+
+            INamedTypeSymbol? componentType = null;
+            if (invocation.TargetMethod.TypeArguments.Length == 1 &&
+                invocation.TargetMethod.TypeArguments[0] is INamedTypeSymbol genericComponentType)
+            {
+                componentType = genericComponentType;
+            }
+            else if (invocation.Arguments.Length >= 2 &&
+                     RazorVueOperationNormalizer.Unwrap(invocation.Arguments[1].Value) is ITypeOfOperation { TypeOperand: INamedTypeSymbol explicitComponentType })
+            {
+                componentType = explicitComponentType;
+            }
+
+            if (componentType is null)
+                return false;
+
+            foreach (var pair in _resolvedComponents)
+            {
+                if (!string.Equals(pair.Value.FullName, componentType.ToDisplayString(), StringComparison.Ordinal))
+                    continue;
+
+                componentKey = pair.Key;
+                descriptor = pair.Value;
+                return true;
+            }
+
+            return false;
+        }
+
+        private static string? TryGetConstantString(IOperation? operation)
+        {
+            var current = RazorVueOperationNormalizer.Unwrap(operation);
+            return current?.ConstantValue.HasValue == true &&
+                   current.ConstantValue.Value is string text
+                ? text
+                : null;
+        }
+
+        private sealed class BuilderState
+        {
+            private readonly Stack<FrameState> _frames = new();
+
+            public void PushComponentFrame(RuntimeUsageBuilder usage)
+                => _frames.Push(new FrameState(usage));
+
+            public void PushNonComponentFrame()
+                => _frames.Push(new FrameState(null));
+
+            public void PopComponentFrame()
+            {
+                if (_frames.Count == 0)
+                    return;
+
+                _frames.Pop();
+            }
+
+            public void PopFrame()
+            {
+                if (_frames.Count == 0)
+                    return;
+
+                _frames.Pop();
+            }
+
+            public bool TryGetCurrentComponentUsage(out RuntimeUsageBuilder usage)
+            {
+                usage = default!;
+                if (_frames.Count == 0)
+                    return false;
+
+                var frame = _frames.Peek();
+                if (frame.ComponentUsage is null)
+                    return false;
+
+                usage = frame.ComponentUsage;
+                return true;
+            }
+
+            private sealed record FrameState(RuntimeUsageBuilder? ComponentUsage);
+        }
+    }
 
     private sealed class RuntimeUsageBuilder
     {

@@ -32,6 +32,9 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
 
     private readonly IRazorVueTemplateFrontend _templateFrontend;
 
+    internal static string CreateImperativeComponentMetadataAlias(string componentName)
+        => "__jazorImperativeComponentMetadata_" + componentName;
+
     public RazorVueArtifactFactory(IRazorVueTemplateFrontend templateFrontend)
     {
         _templateFrontend = templateFrontend ?? throw new ArgumentNullException(nameof(templateFrontend));
@@ -177,6 +180,12 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         return logicShape.ToString();
     }
 
+    internal static string BuildLogicShapeForSfc(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueRenderFragment renderTree,
+        RazorVueExpressionEmitter expressionEmitter)
+        => BuildLogicShape(context: null, snapshot, renderTree, expressionEmitter);
+
     private static HmrBoundaryKind ClassifyHmrBoundary(
         RazorVueRenderFragment renderTree,
         RazorVueSemanticSnapshot snapshot)
@@ -220,6 +229,11 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         return HmrBoundaryKind.Unknown;
     }
 
+    internal static HmrBoundaryKind ClassifyHmrBoundaryForSfc(
+        RazorVueRenderFragment renderTree,
+        RazorVueSemanticSnapshot snapshot)
+        => ClassifyHmrBoundary(renderTree, snapshot);
+
     private static bool HasTemplateShape(RazorVueRenderFragment fragment)
     {
         if (fragment.Children.IsDefaultOrEmpty)
@@ -253,6 +267,8 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
                     if (HasTemplateShape(loop.Body))
                         return true;
                     break;
+                case RazorVueImperativeBlockNode:
+                    return true;
             }
         }
 
@@ -284,6 +300,8 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
                     if (HasUnsupportedTemplateNode(loop.Body))
                         return true;
                     break;
+                case RazorVueImperativeBlockNode:
+                    return true;
                 case RazorVueUnsupportedTemplateNode:
                     return true;
                 case RazorVueRenderNode:

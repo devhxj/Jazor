@@ -7,6 +7,54 @@ namespace Jazor.RazorVue;
 
 internal static class RazorVuePropertyInitializerHelper
 {
+    public static bool TryGetPropertyValueOperation(
+        SemanticModel semanticModel,
+        PropertyDeclarationSyntax declaration,
+        out IOperation? operation)
+    {
+        if (semanticModel is null)
+            throw new ArgumentNullException(nameof(semanticModel));
+        if (declaration is null)
+            throw new ArgumentNullException(nameof(declaration));
+
+        if (declaration.ExpressionBody?.Expression is { } propertyExpressionBody &&
+            TryGetNormalizedOperation(semanticModel, propertyExpressionBody, out operation))
+        {
+            return true;
+        }
+
+        if (declaration.Initializer?.Value is { } propertyInitializer &&
+            TryGetNormalizedOperation(semanticModel, propertyInitializer, out operation))
+        {
+            return true;
+        }
+
+        if (declaration.AccessorList is null)
+        {
+            operation = null;
+            return false;
+        }
+
+        var getter = declaration.AccessorList.Accessors
+            .FirstOrDefault(static accessor => accessor.IsKind(SyntaxKind.GetAccessorDeclaration));
+        if (getter?.ExpressionBody?.Expression is { } getterExpressionBody &&
+            TryGetNormalizedOperation(semanticModel, getterExpressionBody, out operation))
+        {
+            return true;
+        }
+
+        if (getter?.Body is not null &&
+            getter.Body.Statements.Count == 1 &&
+            getter.Body.Statements[0] is ReturnStatementSyntax { Expression: { } returnExpression } &&
+            TryGetNormalizedOperation(semanticModel, returnExpression, out operation))
+        {
+            return true;
+        }
+
+        operation = null;
+        return false;
+    }
+
     public static bool IsNullForgivingPlaceholder(ExpressionSyntax initializerExpression)
     {
         if (initializerExpression is null)

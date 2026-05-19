@@ -120,35 +120,85 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         private readonly Dictionary<string, int> _componentAttributeOrdinals = new(StringComparer.Ordinal);
         private readonly Dictionary<ILocalSymbol, ParsedSlotTemplate> _localRenderFragmentCarriers =
             new(SymbolEqualityComparer.Default);
+        private readonly Dictionary<ISymbol, ParsedSlotTemplate> _memberRenderFragmentCarriers =
+            new(SymbolEqualityComparer.Default);
+        private readonly Dictionary<IMethodSymbol, ParsedSlotTemplate> _factoryRenderFragmentCarriers =
+            new(SymbolEqualityComparer.Default);
+        private readonly HashSet<ISymbol> _activeRenderFragmentMembers =
+            new(SymbolEqualityComparer.Default);
+        private readonly HashSet<IMethodSymbol> _activeRenderFragmentFactories =
+            new(SymbolEqualityComparer.Default);
+        private readonly HashSet<ConsumedTemplateNodeKey> _consumedTemplateNodes = [];
+        private RazorVueRazorIrNode? _documentRoot;
         private int _elementKeyOrdinal;
         private int _componentKeyOrdinal;
 
         private readonly record struct ParsedSlotTemplate(
             string? ParameterName,
             IParameterSymbol? ParameterSymbol,
-            RazorVueRenderFragment Children);
+            RazorVueRenderFragment Children,
+            ImmutableArray<RenderHelperValueBinding> CapturedBindings)
+        {
+            public static ParsedSlotTemplate Create(
+                string? parameterName,
+                IParameterSymbol? parameterSymbol,
+                RazorVueRenderFragment children)
+                => new(
+                    parameterName,
+                    parameterSymbol,
+                    children,
+                    ImmutableArray<RenderHelperValueBinding>.Empty);
+
+            public ParsedSlotTemplate PrependCapturedBindings(ImmutableArray<RenderHelperValueBinding> capturedBindings)
+            {
+                if (capturedBindings.IsDefaultOrEmpty)
+                    return this;
+
+                if (CapturedBindings.IsDefaultOrEmpty)
+                    return new ParsedSlotTemplate(ParameterName, ParameterSymbol, Children, capturedBindings);
+
+                var builder = ImmutableArray.CreateBuilder<RenderHelperValueBinding>(capturedBindings.Length + CapturedBindings.Length);
+                builder.AddRange(capturedBindings);
+                builder.AddRange(CapturedBindings);
+                return new ParsedSlotTemplate(ParameterName, ParameterSymbol, Children, builder.MoveToImmutable());
+            }
+        }
+
+        private readonly record struct RenderHelperValueBinding(
+            IParameterSymbol ParameterSymbol,
+            IOperation Initializer);
+
+        private readonly record struct ConsumedTemplateNodeKey(
+            string FilePath,
+            int Start,
+            int Length);
 
         public RazorVueRenderFragment Convert(RazorVueRazorIrNode document)
         {
             if (document is null)
                 throw new ArgumentNullException(nameof(document));
 
-            return ConvertLooseNodes(document.Children, insideTemplate: false, EmptyLocalScope, EmptyParameterScope);
+            _documentRoot = document;
+            return ConvertLooseNodes(document.Children, insideTemplate: false, allowImperativePromotion: false, EmptyLocalScope, EmptyParameterScope);
         }
 
         private RazorVueRenderFragment ConvertLooseNodes(
             IEnumerable<RazorVueRazorIrNode> nodes,
             bool insideTemplate,
+            bool allowImperativePromotion,
             ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
             ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
         {
             if (insideTemplate)
-                return ConvertTemplateMethodBody(nodes, allowedLocalSymbols, allowedParameterSymbols);
+                return ConvertTemplateMethodBody(nodes, allowImperativePromotion, allowedLocalSymbols, allowedParameterSymbols);
 
             var builder = ImmutableArray.CreateBuilder<RazorVueRenderNode>();
 
             foreach (var node in nodes)
             {
+                if (IsConsumedTemplateExtensionNode(node))
+                    continue;
+
                 switch (node.Kind)
                 {
                     case RazorVueRazorIrNodeKind.MarkupElement:
@@ -164,13 +214,13 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                         builder.Add(ConvertExpressionOrSlotOutlet(node));
                         break;
                     case RazorVueRazorIrNodeKind.Document:
-                        builder.AddRange(ConvertLooseNodes(node.Children, insideTemplate, allowedLocalSymbols, allowedParameterSymbols).Children);
+                        builder.AddRange(ConvertLooseNodes(node.Children, insideTemplate, allowImperativePromotion, allowedLocalSymbols, allowedParameterSymbols).Children);
                         break;
                     case RazorVueRazorIrNodeKind.NamespaceDeclaration:
-                        builder.AddRange(ConvertLooseNodes(node.Children, insideTemplate, allowedLocalSymbols, allowedParameterSymbols).Children);
+                        builder.AddRange(ConvertLooseNodes(node.Children, insideTemplate, allowImperativePromotion, allowedLocalSymbols, allowedParameterSymbols).Children);
                         break;
                     case RazorVueRazorIrNodeKind.ClassDeclaration:
-                        builder.AddRange(ConvertLooseNodes(node.Children, insideTemplate, allowedLocalSymbols, allowedParameterSymbols).Children);
+                        builder.AddRange(ConvertLooseNodes(node.Children, insideTemplate, allowImperativePromotion, allowedLocalSymbols, allowedParameterSymbols).Children);
                         break;
                     case RazorVueRazorIrNodeKind.MethodDeclaration:
                         builder.AddRange(ConvertMethodDeclaration(node, allowedLocalSymbols, allowedParameterSymbols).Children);
@@ -179,7 +229,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                         AppendMarkupBlock(builder, node, allowedLocalSymbols, allowedParameterSymbols);
                         break;
                     case RazorVueRazorIrNodeKind.TagHelperBody:
-                        builder.AddRange(ConvertTemplateMethodBody(node.Children, allowedLocalSymbols, allowedParameterSymbols).Children);
+                        builder.AddRange(ConvertTemplateMethodBody(node.Children, allowImperativePromotion: false, allowedLocalSymbols, allowedParameterSymbols).Children);
                         break;
                     case RazorVueRazorIrNodeKind.CSharpCode:
                     case RazorVueRazorIrNodeKind.FieldDeclaration:
@@ -192,9 +242,12 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     case RazorVueRazorIrNodeKind.TagHelper:
                         throw CreateUnsupportedNodeException(node, "TagHelperIntermediateNode");
                     default:
+                        if (IsConsumedTemplateExtensionNode(node))
+                            break;
+
                         if (node.Children.Length > 0)
                         {
-                            builder.AddRange(ConvertLooseNodes(node.Children, insideTemplate, allowedLocalSymbols, allowedParameterSymbols).Children);
+                            builder.AddRange(ConvertLooseNodes(node.Children, insideTemplate, allowImperativePromotion, allowedLocalSymbols, allowedParameterSymbols).Children);
                             break;
                         }
 
@@ -214,19 +267,24 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 throw new ArgumentNullException(nameof(node));
 
             if (!string.Equals(GetMethodDeclarationName(node), "BuildRenderTree", StringComparison.Ordinal))
-                return ConvertLooseNodes(node.Children, insideTemplate: false, allowedLocalSymbols, allowedParameterSymbols);
+                return ConvertLooseNodes(node.Children, insideTemplate: false, allowImperativePromotion: false, allowedLocalSymbols, allowedParameterSymbols);
 
-            return ConvertTemplateMethodBody(node.Children, allowedLocalSymbols, allowedParameterSymbols);
+            return ConvertTemplateMethodBody(node.Children, allowImperativePromotion: true, allowedLocalSymbols, allowedParameterSymbols);
         }
 
         private RazorVueRenderFragment ConvertTemplateMethodBody(
             IEnumerable<RazorVueRazorIrNode> nodes,
+            bool allowImperativePromotion,
             ImmutableHashSet<ILocalSymbol>? allowedLocalSymbols = null,
             ImmutableHashSet<IParameterSymbol>? allowedParameterSymbols = null)
         {
             var bufferedNodes = nodes.ToList();
             if (bufferedNodes.Count == 0)
                 return RazorVueRenderFragment.Empty;
+
+            if (allowImperativePromotion &&
+                TryPromoteTemplateMethodBodyToImperative(bufferedNodes, out var imperativeBody))
+                return imperativeBody;
 
             var currentLocalScope = allowedLocalSymbols ?? EmptyLocalScope;
             var currentParameterScope = allowedParameterSymbols ?? EmptyParameterScope;
@@ -236,6 +294,12 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             while (index < bufferedNodes.Count)
             {
                 var node = bufferedNodes[index];
+                if (IsConsumedTemplateExtensionNode(node))
+                {
+                    index++;
+                    continue;
+                }
+
                 if (TryConvertConditional(bufferedNodes, ref index, currentLocalScope, currentParameterScope, out var conditionalNode))
                 {
                     builder.Add(conditionalNode);
@@ -308,7 +372,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                         index++;
                         break;
                     case RazorVueRazorIrNodeKind.TagHelperBody:
-                        builder.AddRange(ConvertTemplateMethodBody(node.Children, currentLocalScope, currentParameterScope).Children);
+                        builder.AddRange(ConvertTemplateMethodBody(node.Children, allowImperativePromotion: false, currentLocalScope, currentParameterScope).Children);
                         index++;
                         break;
                     case RazorVueRazorIrNodeKind.CSharpCode:
@@ -334,7 +398,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     default:
                         if (node.Children.Length > 0)
                         {
-                            builder.AddRange(ConvertTemplateMethodBody(node.Children, currentLocalScope, currentParameterScope).Children);
+                            builder.AddRange(ConvertTemplateMethodBody(node.Children, allowImperativePromotion: false, currentLocalScope, currentParameterScope).Children);
                         }
 
                         index++;
@@ -343,6 +407,155 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             }
 
             return new RazorVueRenderFragment(builder.ToImmutable());
+        }
+
+        private bool TryPromoteTemplateMethodBodyToImperative(
+            IReadOnlyList<RazorVueRazorIrNode> nodes,
+            out RazorVueRenderFragment fragment)
+        {
+            fragment = RazorVueRenderFragment.Empty;
+            if (!_resolver.TryResolveBuildRenderTreeBodyOperation(out var bodyOperation))
+                return false;
+
+            if (bodyOperation is IBlockOperation block)
+            {
+                if (!RazorVueImperativeRenderPromotionAnalyzer.ShouldPromoteBody(block.Operations))
+                    return false;
+
+                fragment = CreateImperativeBodyFragment(
+                    block,
+                    RazorVueImperativeRenderPromotionAnalyzer.ClassifyBodyKind(block.Operations),
+                    CreateImperativeOrigins(block, nodes));
+                return true;
+            }
+
+            if (!RazorVueImperativeRenderPromotionAnalyzer.ShouldPromoteBody([bodyOperation]))
+                return false;
+
+            fragment = CreateImperativeBodyFragment(
+                bodyOperation,
+                RazorVueImperativeRenderPromotionAnalyzer.ClassifyBodyKind([bodyOperation]),
+                CreateImperativeOrigins(bodyOperation, nodes));
+            return true;
+        }
+
+        private ImmutableArray<RazorVueSourceOrigin> CreateImperativeOrigins(
+            IOperation operation,
+            IReadOnlyList<RazorVueRazorIrNode> nodes)
+        {
+            if (_resolver.TryMapGeneratedOperationToOriginalSourceSpan(operation, out var sourceSpan))
+                return CreateOrigins(sourceSpan);
+
+            foreach (var node in nodes)
+            {
+                var origins = CreateOrigins(GetBestSourceSpan(node));
+                if (!origins.IsDefaultOrEmpty)
+                    return origins;
+            }
+
+            return ImmutableArray<RazorVueSourceOrigin>.Empty;
+        }
+
+        private static RazorVueRenderFragment CreateImperativeBodyFragment(
+            IOperation operation,
+            RazorVueImperativeBlockKind kind,
+            ImmutableArray<RazorVueSourceOrigin> origins)
+        {
+            var visibleLocals = CollectVisibleLocals(operation);
+            var visibleParameters = CollectVisibleParameters(operation);
+
+            return new RazorVueRenderFragment(
+            [
+                new RazorVueImperativeBlockNode(
+                    operation,
+                    kind,
+                    visibleLocals,
+                    visibleParameters,
+                    origins)
+            ]);
+        }
+
+        private static ImmutableArray<ILocalSymbol> CollectVisibleLocals(IOperation operation)
+        {
+            var builder = ImmutableArray.CreateBuilder<ILocalSymbol>();
+            var seen = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
+
+            foreach (var candidate in EnumerateOperationAndDescendants(operation))
+            {
+                switch (candidate)
+                {
+                    case IVariableDeclarationGroupOperation declarationGroup:
+                        foreach (var declaration in declarationGroup.Declarations)
+                        {
+                            foreach (var declarator in declaration.Declarators)
+                            {
+                                if (seen.Add(declarator.Symbol))
+                                    builder.Add(declarator.Symbol);
+                            }
+                        }
+
+                        break;
+                    case IForEachLoopOperation foreachLoop:
+                        foreach (var local in foreachLoop.Locals)
+                        {
+                            if (seen.Add(local))
+                                builder.Add(local);
+                        }
+
+                        break;
+                case IForLoopOperation forLoop:
+                    foreach (var local in forLoop.Locals)
+                    {
+                        if (seen.Add(local))
+                            builder.Add(local);
+                    }
+
+                    break;
+                case IUsingDeclarationOperation usingDeclaration:
+                    if (usingDeclaration.DeclarationGroup is null)
+                        break;
+
+                    foreach (var declaration in usingDeclaration.DeclarationGroup.Declarations)
+                    {
+                        foreach (var declarator in declaration.Declarators)
+                        {
+                            if (seen.Add(declarator.Symbol))
+                                builder.Add(declarator.Symbol);
+                        }
+                    }
+
+                    break;
+            }
+        }
+
+        return builder.ToImmutable();
+    }
+
+        private static ImmutableArray<IParameterSymbol> CollectVisibleParameters(IOperation operation)
+        {
+            var builder = ImmutableArray.CreateBuilder<IParameterSymbol>();
+            var seen = new HashSet<IParameterSymbol>(SymbolEqualityComparer.Default);
+
+            foreach (var parameterReference in EnumerateOperationAndDescendants(operation).OfType<IParameterReferenceOperation>())
+            {
+                if (seen.Add(parameterReference.Parameter))
+                    builder.Add(parameterReference.Parameter);
+            }
+
+            return builder.ToImmutable();
+        }
+
+        private static IEnumerable<IOperation> EnumerateOperationAndDescendants(IOperation operation)
+        {
+            yield return operation;
+            foreach (var child in operation.ChildOperations)
+            {
+                if (child is null)
+                    continue;
+
+                foreach (var nested in EnumerateOperationAndDescendants(child))
+                    yield return nested;
+            }
         }
 
         private RazorVueElementNode ConvertElement(
@@ -363,7 +576,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             }
             foreach (var splat in node.BodyOrEmpty.Where(static child => child.Kind == RazorVueRazorIrNodeKind.Splat))
                 attributes.Add(ConvertSplatAttribute(splat));
-            var children = ConvertTemplateMethodBody(node.BodyOrEmpty, allowedLocalSymbols, allowedParameterSymbols);
+            var children = ConvertTemplateMethodBody(node.BodyOrEmpty, allowImperativePromotion: false, allowedLocalSymbols, allowedParameterSymbols);
 
             return new RazorVueElementNode(
                 node.TagName ?? string.Empty,
@@ -384,6 +597,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             var attributes = ImmutableArray.CreateBuilder<RazorVueAttributeEntry>();
             var children = ImmutableArray.CreateBuilder<RazorVueRenderNode>();
             var slotTemplates = ImmutableArray.CreateBuilder<RazorVueComponentSlotTemplateNode>();
+            var implicitDefaultSlotAssignments = ImmutableArray.CreateBuilder<RazorVueImplicitDefaultSlotAssignmentNode>();
             foreach (var attribute in node.AttributesOrEmpty)
             {
                 if (attribute.IsDesignTimePropertyAccessHelper)
@@ -422,10 +636,13 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 attributes.Add(ConvertSplatAttribute(splat));
             foreach (var childContent in node.ChildContentsOrEmpty)
             {
-                var slotFragment = ConvertTemplateMethodBody(childContent.Children, allowedLocalSymbols, allowedParameterSymbols);
+                var slotFragment = ConvertTemplateMethodBody(childContent.Children, allowImperativePromotion: false, allowedLocalSymbols, allowedParameterSymbols);
                 var attributeName = childContent.AttributeName ?? string.Empty;
                 if (string.Equals(attributeName, "ChildContent", StringComparison.Ordinal))
                 {
+                    implicitDefaultSlotAssignments.Add(new RazorVueImplicitDefaultSlotAssignmentNode(
+                        slotFragment,
+                        CreateOrigins(childContent.Source ?? node.Source ?? node.StartTagSpan)));
                     children.AddRange(slotFragment.Children);
                     continue;
                 }
@@ -449,6 +666,8 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 key,
                 attributes.ToImmutable(),
                 slotTemplates.ToImmutable(),
+                implicitDefaultSlotAssignments.ToImmutable(),
+                new RazorVueRenderFragment(children.ToImmutable()),
                 new RazorVueRenderFragment(children.ToImmutable()),
                 CreateOrigins(node.Source is null ? node.StartTagSpan : node.Source));
         }
@@ -479,7 +698,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         {
             if (node.Children.Length > 0)
             {
-                builder.AddRange(ConvertTemplateMethodBody(node.Children, allowedLocalSymbols, allowedParameterSymbols).Children);
+                builder.AddRange(ConvertTemplateMethodBody(node.Children, allowImperativePromotion: false, allowedLocalSymbols, allowedParameterSymbols).Children);
                 return;
             }
 
@@ -1305,8 +1524,8 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 whenFalseNodes = [];
             }
 
-            var whenTrue = ConvertTemplateMethodBody(whenTrueNodes, allowedLocalSymbols, allowedParameterSymbols);
-            var whenFalse = ConvertTemplateMethodBody(whenFalseNodes, allowedLocalSymbols, allowedParameterSymbols);
+            var whenTrue = ConvertTemplateMethodBody(whenTrueNodes, allowImperativePromotion: false, allowedLocalSymbols, allowedParameterSymbols);
+            var whenFalse = ConvertTemplateMethodBody(whenFalseNodes, allowImperativePromotion: false, allowedLocalSymbols, allowedParameterSymbols);
 
             index = bodyEnd;
             conditionalNode = new RazorVueConditionalNode(
@@ -1352,6 +1571,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 : SliceNodesByRange(coveredNodes, resolvedLoop.BodyRange, sourceSpan, "foreach-body", trimLeadingControlNode: false);
             var body = ConvertTemplateMethodBody(
                 bodyNodes,
+                allowImperativePromotion: false,
                 resolvedLoop.Operation.Locals.Length > 0
                     ? allowedLocalSymbols.Add(resolvedLoop.Operation.Locals[0])
                     : allowedLocalSymbols,
@@ -1405,6 +1625,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 : SliceNodesByRange(coveredNodes, resolvedLoop.BodyRange, sourceSpan, "for-body", trimLeadingControlNode: false);
             var body = ConvertTemplateMethodBody(
                 bodyNodes,
+                allowImperativePromotion: false,
                 resolvedLoop.Operation.Locals.Length > 0
                     ? allowedLocalSymbols.Add(resolvedLoop.Operation.Locals[0])
                     : allowedLocalSymbols,
@@ -1500,17 +1721,12 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     }
                     else
                     {
-                        whenTrueNodes = SliceNodesByRange(
-                            coveredNodes,
-                            resolvedConditional.WhenTrueRange,
-                            pending.SourceSpan,
-                            "embedded if-true",
-                            trimLeadingControlNode: false);
+                        whenTrueNodes = BindCoveredControlBodyNodes(coveredNodes, pending.SourceSpan, "embedded if-true");
                         whenFalseNodes = [];
                     }
 
-                    var whenTrue = ConvertTemplateMethodBody(whenTrueNodes, allowedLocalSymbols, allowedParameterSymbols);
-                    var whenFalse = ConvertTemplateMethodBody(whenFalseNodes, allowedLocalSymbols, allowedParameterSymbols);
+                    var whenTrue = ConvertTemplateMethodBody(whenTrueNodes, allowImperativePromotion: false, allowedLocalSymbols, allowedParameterSymbols);
+                    var whenFalse = ConvertTemplateMethodBody(whenFalseNodes, allowImperativePromotion: false, allowedLocalSymbols, allowedParameterSymbols);
 
                     index = bodyEnd;
                     renderNode = new RazorVueConditionalNode(
@@ -1544,6 +1760,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                         trimLeadingControlNode: false);
                     var body = ConvertTemplateMethodBody(
                         bodyNodes,
+                        allowImperativePromotion: false,
                         resolvedLoop.Operation.Locals.Length > 0
                             ? allowedLocalSymbols.Add(resolvedLoop.Operation.Locals[0])
                             : allowedLocalSymbols,
@@ -1586,6 +1803,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                         trimLeadingControlNode: false);
                     var body = ConvertTemplateMethodBody(
                         bodyNodes,
+                        allowImperativePromotion: false,
                         resolvedLoop.Operation.Locals.Length > 0
                             ? allowedLocalSymbols.Add(resolvedLoop.Operation.Locals[0])
                             : allowedLocalSymbols,
@@ -1623,6 +1841,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             localDeclarations = ImmutableArray<RazorVueLocalDeclarationNode>.Empty;
             pendingControlNode = null;
             consumedNodeCount = 0;
+            var encounteredRenderFragmentCarrier = false;
             var declarators = ImmutableArray.CreateBuilder<IVariableDeclaratorOperation>();
             if (!TryCollectTemplateLocalDeclarators(codeNode, operation, declarators, out pendingControlNode))
                 return false;
@@ -1641,23 +1860,25 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
                 if (IsRenderFragment(declarator.Symbol.Type))
                 {
-                    if (pendingControlNode is not null)
-                    {
-                        throw CreateUnsupportedAttributeException(
-                            GetBestSourceSpan(codeNode),
-                            $"RazorVue Razor IR frontend does not yet support mixing RenderFragment local carriers with trailing control-flow in the same template code block for component '{_snapshot.Descriptor.FullName}'.");
-                    }
-
-                    var templateNode = ConsumeRequiredRenderFragmentCarrierTemplateNode(
-                        nodes,
-                        ref continuationIndex,
-                        codeNode,
-                        declarator);
                     RegisterRenderFragmentLocalCarrier(
                         declarator,
-                        templateNode,
                         currentLocalScope,
-                        allowedParameterSymbols);
+                        allowedParameterSymbols,
+                        out var inlineTemplateNode);
+                    if (inlineTemplateNode is not null)
+                    {
+                        _ = ConsumeRequiredRenderFragmentCarrierTemplateNode(
+                            nodes,
+                            ref continuationIndex,
+                            codeNode,
+                            declarator);
+                    }
+
+                    ConsumeRenderFragmentCarrierContinuation(
+                        nodes,
+                        ref continuationIndex,
+                        ref pendingControlNode);
+                    encounteredRenderFragmentCarrier = true;
                     continue;
                 }
 
@@ -1682,7 +1903,8 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
             localDeclarations = declarationBuilder.ToImmutable();
             consumedNodeCount = Math.Max(1, continuationIndex - startIndex);
-            return localDeclarations.Length > 0 ||
+            return encounteredRenderFragmentCarrier ||
+                   localDeclarations.Length > 0 ||
                    pendingControlNode is not null ||
                    continuationIndex > startIndex + 1;
         }
@@ -1955,7 +2177,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             if (string.Equals(attributeName, "ChildContent", StringComparison.Ordinal) &&
                 string.IsNullOrWhiteSpace(slotTemplate.ParameterName))
             {
-                children.AddRange(slotTemplate.Children.Children);
+                children.AddRange(MaterializeCapturedTemplateChildren(slotTemplate, origins).Children);
                 return true;
             }
 
@@ -1966,7 +2188,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     : ToLowerCamelCase(attributeName),
                 ParameterName: slotTemplate.ParameterName,
                 ParameterSymbol: slotTemplate.ParameterSymbol,
-                Children: slotTemplate.Children,
+                Children: MaterializeCapturedTemplateChildren(slotTemplate, origins),
                 Origins: origins));
             return true;
         }
@@ -1974,19 +2196,25 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         private bool TryResolveStoredSlotTemplate(IOperation? operation, out ParsedSlotTemplate slotTemplate)
         {
             slotTemplate = default;
-            var current = Unwrap(operation);
-            if (current is not ILocalReferenceOperation localReference)
-                return false;
+            if (TryResolveStoredLocalSlotTemplate(operation, out slotTemplate))
+                return true;
 
-            return _localRenderFragmentCarriers.TryGetValue(localReference.Local, out slotTemplate);
+            if (TryResolveCurrentComponentMemberSlotTemplate(operation, out slotTemplate))
+                return true;
+
+            if (TryResolveCurrentComponentFragmentFactory(operation, out slotTemplate))
+                return true;
+
+            return false;
         }
 
         private void RegisterRenderFragmentLocalCarrier(
             IVariableDeclaratorOperation declarator,
-            RazorVueRazorIrNode templateNode,
             ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
-            ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+            ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
+            out RazorVueRazorIrNode? inlineTemplateNode)
         {
+            inlineTemplateNode = null;
             if (declarator.Initializer?.Value is not { } initializer)
             {
                 throw CreateUnsupportedAttributeException(
@@ -1994,27 +2222,20 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     $"RazorVue RenderFragment local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' requires an analyzable initializer.");
             }
 
-            if (!TryParseRenderFragmentCarrierSignature(
+            if (!TryResolveRenderFragmentLocalCarrierTemplate(
+                    declarator,
                     initializer,
-                    out var parameterName,
-                    out var parameterSymbol))
+                    allowedLocalSymbols,
+                    allowedParameterSymbols,
+                    out var slotTemplate,
+                    out inlineTemplateNode))
             {
                 throw CreateUnsupportedAttributeException(
                     CreateSourceSpanFromSyntax(declarator.Syntax),
-                    $"RazorVue RenderFragment local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be initialized from an analyzable inline template.");
+                    $"RazorVue RenderFragment local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be initialized from an analyzable inline template, current-component RenderFragment member, or supported fragment factory.");
             }
 
-            var templateParameterScope = parameterSymbol is null
-                ? allowedParameterSymbols
-                : allowedParameterSymbols.Add(parameterSymbol);
-            var children = ConvertTemplateMethodBody(
-                templateNode.Children,
-                allowedLocalSymbols,
-                templateParameterScope);
-            _localRenderFragmentCarriers[declarator.Symbol] = new ParsedSlotTemplate(
-                parameterName,
-                parameterSymbol,
-                children);
+            _localRenderFragmentCarriers[declarator.Symbol] = slotTemplate;
         }
 
         private RazorVueRazorIrNode ConsumeRequiredRenderFragmentCarrierTemplateNode(
@@ -2033,14 +2254,643 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
             var templateNode = nodes[continuationIndex];
             continuationIndex++;
+            return templateNode;
+        }
 
-            if (continuationIndex < nodes.Count &&
-                IsRenderFragmentCarrierContinuationCodeNode(nodes[continuationIndex]))
+        private bool TryResolveRenderFragmentLocalCarrierTemplate(
+            IVariableDeclaratorOperation declarator,
+            IOperation initializer,
+            ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+            ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
+            out ParsedSlotTemplate slotTemplate,
+            out RazorVueRazorIrNode? inlineTemplateNode)
+        {
+            slotTemplate = default;
+            inlineTemplateNode = null;
+            return TryResolveRenderFragmentCarrierInitializerTemplate(
+                declarator,
+                initializer,
+                allowedLocalSymbols,
+                allowedParameterSymbols,
+                out slotTemplate,
+                out inlineTemplateNode);
+        }
+
+        private bool TryResolveRenderFragmentCarrierInitializerTemplate(
+            IVariableDeclaratorOperation? declarator,
+            IOperation initializer,
+            ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+            ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
+            out ParsedSlotTemplate slotTemplate,
+            out RazorVueRazorIrNode? inlineTemplateNode)
+        {
+            slotTemplate = default;
+            inlineTemplateNode = null;
+
+            if (TryResolveRenderFragmentCarrierTemplateFromOperation(initializer, out slotTemplate))
+                return true;
+
+            return TryResolveInlineRenderFragmentCarrierTemplate(
+                declarator,
+                initializer,
+                allowedLocalSymbols,
+                allowedParameterSymbols,
+                out slotTemplate,
+                out inlineTemplateNode);
+        }
+
+        private bool TryResolveInlineRenderFragmentCarrierTemplate(
+            IVariableDeclaratorOperation? declarator,
+            IOperation initializer,
+            ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+            ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
+            out ParsedSlotTemplate slotTemplate,
+            out RazorVueRazorIrNode? inlineTemplateNode)
+        {
+            slotTemplate = default;
+            inlineTemplateNode = null;
+            if (!TryParseRenderFragmentCarrierSignature(
+                    initializer,
+                    out var parameterName,
+                    out var parameterSymbol))
             {
-                continuationIndex++;
+                return false;
             }
 
-            return templateNode;
+            if (!TryFindTemplateNodeForOperation(initializer, out var templateNode))
+                return false;
+
+            inlineTemplateNode = templateNode;
+            MarkConsumedTemplateNode(templateNode);
+            var templateParameterScope = parameterSymbol is null
+                ? allowedParameterSymbols
+                : allowedParameterSymbols.Add(parameterSymbol);
+            var children = ConvertTemplateMethodBody(
+                templateNode.Children,
+                allowImperativePromotion: false,
+                allowedLocalSymbols,
+                templateParameterScope);
+            slotTemplate = ParsedSlotTemplate.Create(
+                parameterName,
+                parameterSymbol,
+                children);
+            return true;
+        }
+
+        private bool TryFindTemplateNodeForOperation(IOperation operation, out RazorVueRazorIrNode templateNode)
+        {
+            templateNode = default!;
+            if (_documentRoot is null)
+                return false;
+
+            if (!_resolver.TryMapGeneratedOperationToOriginalSourceSpan(operation, out var sourceSpan))
+                return false;
+
+            var candidates = EnumerateNodes(_documentRoot)
+                .Where(IsTemplateIntermediateNode)
+                .Select(node => new
+                {
+                    Node = node,
+                    Range = TryGetNodeSourceRange(node)
+                })
+                .Where(item => item.Range is not null &&
+                               PathsEqual(item.Range.Value.FilePath, sourceSpan.FilePath) &&
+                               item.Range.Value.Start >= sourceSpan.AbsoluteIndex)
+                .OrderBy(item => item.Range!.Value.Start - sourceSpan.AbsoluteIndex)
+                .ThenBy(item => item.Range!.Value.Length)
+                .ToArray();
+            if (candidates.Length == 0)
+                return false;
+
+            templateNode = candidates[0].Node;
+            return true;
+        }
+
+        private void MarkConsumedTemplateNode(RazorVueRazorIrNode templateNode)
+        {
+            if (!IsTemplateIntermediateNode(templateNode))
+                return;
+
+            if (TryGetNodeSourceRange(templateNode) is not { } range)
+                return;
+
+            _consumedTemplateNodes.Add(new ConsumedTemplateNodeKey(
+                range.FilePath,
+                range.Start,
+                range.Length));
+        }
+
+        private bool IsConsumedTemplateExtensionNode(RazorVueRazorIrNode node)
+        {
+            if (!IsTemplateIntermediateNode(node))
+                return false;
+
+            if (TryGetNodeSourceRange(node) is not { } range)
+                return false;
+
+            return _consumedTemplateNodes.Contains(new ConsumedTemplateNodeKey(
+                range.FilePath,
+                range.Start,
+                range.Length));
+        }
+
+        private static IEnumerable<RazorVueRazorIrNode> EnumerateNodes(RazorVueRazorIrNode node)
+        {
+            yield return node;
+            foreach (var child in node.Children)
+            {
+                foreach (var nested in EnumerateNodes(child))
+                    yield return nested;
+            }
+        }
+
+        private bool TryResolveRenderFragmentCarrierTemplateFromOperation(
+            IOperation? operation,
+            out ParsedSlotTemplate slotTemplate)
+        {
+            if (TryResolveStoredLocalSlotTemplate(operation, out slotTemplate))
+                return true;
+
+            if (TryResolveCurrentComponentMemberSlotTemplate(operation, out slotTemplate))
+                return true;
+
+            if (TryResolveCurrentComponentFragmentFactory(operation, out slotTemplate))
+                return true;
+
+            slotTemplate = default;
+            return false;
+        }
+
+        private bool TryResolveStoredLocalSlotTemplate(IOperation? operation, out ParsedSlotTemplate slotTemplate)
+        {
+            slotTemplate = default;
+            var current = Unwrap(operation);
+            if (current is not ILocalReferenceOperation localReference)
+                return false;
+
+            return _localRenderFragmentCarriers.TryGetValue(localReference.Local, out slotTemplate);
+        }
+
+        private bool TryResolveCurrentComponentMemberSlotTemplate(IOperation? operation, out ParsedSlotTemplate slotTemplate)
+        {
+            slotTemplate = default;
+            var current = Unwrap(operation);
+            switch (current)
+            {
+                case IPropertyReferenceOperation propertyReference
+                    when IsCurrentComponentMember(propertyReference.Property, propertyReference.Instance):
+                    return TryResolveMemberCarrier(propertyReference.Property, propertyReference, out slotTemplate);
+                case IFieldReferenceOperation fieldReference
+                    when IsCurrentComponentMember(fieldReference.Field, fieldReference.Instance):
+                    return TryResolveMemberCarrier(fieldReference.Field, fieldReference, out slotTemplate);
+                default:
+                    return false;
+            }
+        }
+
+        private bool TryResolveCurrentComponentFragmentFactory(IOperation? operation, out ParsedSlotTemplate slotTemplate)
+        {
+            slotTemplate = default;
+            if (Unwrap(operation) is not IInvocationOperation invocation)
+                return false;
+
+            if (!IsCurrentComponentMethod(invocation.TargetMethod, invocation.Instance))
+                return false;
+
+            return TryResolveFactoryCarrier(invocation, requireZeroArguments: false, out slotTemplate);
+        }
+
+        private bool TryResolveMemberCarrier(
+            ISymbol member,
+            IOperation referenceOperation,
+            out ParsedSlotTemplate slotTemplate)
+        {
+            if (_memberRenderFragmentCarriers.TryGetValue(member, out slotTemplate))
+                return true;
+
+            if (!_activeRenderFragmentMembers.Add(member))
+            {
+                throw CreateUnsupportedAttributeException(
+                    CreateSourceSpanFromSyntax(referenceOperation.Syntax),
+                    $"RazorVue uses current-component RenderFragment member '{member.Name}' recursively; cyclic current-component RenderFragment member carriers are not supported in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
+            try
+            {
+                if (!TryCreateMemberCarrier(member, out slotTemplate))
+                    return false;
+
+                _memberRenderFragmentCarriers[member] = slotTemplate;
+                return true;
+            }
+            finally
+            {
+                _activeRenderFragmentMembers.Remove(member);
+            }
+        }
+
+        private bool TryResolveFactoryCarrier(
+            IInvocationOperation invocation,
+            bool requireZeroArguments,
+            out ParsedSlotTemplate slotTemplate)
+        {
+            slotTemplate = default;
+            if (requireZeroArguments &&
+                (invocation.TargetMethod.Parameters.Length != 0 || invocation.Arguments.Length != 0))
+            {
+                return false;
+            }
+
+            var method = invocation.TargetMethod;
+            if (_factoryRenderFragmentCarriers.TryGetValue(method, out slotTemplate))
+            {
+                if (requireZeroArguments && !slotTemplate.CapturedBindings.IsDefaultOrEmpty)
+                    return false;
+
+                return true;
+            }
+
+            if (!_activeRenderFragmentFactories.Add(method))
+            {
+                throw CreateUnsupportedAttributeException(
+                    CreateSourceSpanFromSyntax(invocation.Syntax),
+                    $"RazorVue fragment factory method '{GetBuilderCallDisplayName(invocation)}' is recursive; recursive RenderFragment factory methods are not supported in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
+            try
+            {
+                if (!TryCreateFactoryCarrier(invocation, out slotTemplate))
+                    return false;
+
+                _factoryRenderFragmentCarriers[method] = slotTemplate;
+                if (requireZeroArguments && !slotTemplate.CapturedBindings.IsDefaultOrEmpty)
+                    return false;
+
+                return true;
+            }
+            finally
+            {
+                _activeRenderFragmentFactories.Remove(method);
+            }
+        }
+
+        private bool TryCreateMemberCarrier(ISymbol member, out ParsedSlotTemplate slotTemplate)
+        {
+            slotTemplate = default;
+            if (!IsRenderFragment(member switch
+                {
+                    IPropertySymbol property => property.Type,
+                    IFieldSymbol field => field.Type,
+                    _ => null!
+                }))
+            {
+                return false;
+            }
+
+            if (member is IPropertySymbol propertySymbol && propertySymbol.SetMethod is not null)
+                return false;
+
+            if (member is IFieldSymbol fieldSymbol && !fieldSymbol.IsReadOnly)
+                return false;
+
+            IOperation? initializer = member switch
+            {
+                IPropertySymbol property => TryGetPropertyRenderFragmentInitializer(property),
+                IFieldSymbol field => TryGetFieldRenderFragmentInitializer(field),
+                _ => null
+            };
+
+            if (initializer is null)
+                return false;
+
+            return TryResolveRenderFragmentCarrierInitializerTemplate(
+                declarator: null,
+                initializer,
+                EmptyLocalScope,
+                EmptyParameterScope,
+                out slotTemplate,
+                out _);
+        }
+
+        private bool TryCreateFactoryCarrier(
+            IInvocationOperation invocation,
+            out ParsedSlotTemplate slotTemplate)
+        {
+            slotTemplate = default;
+            var method = invocation.TargetMethod;
+            if (!TryGetSupportedRenderFragmentFactorySignature(
+                    method,
+                    out _,
+                    out var failureMessage))
+            {
+                if (!IsRenderFragment(method.ReturnType))
+                    return false;
+
+                throw CreateUnsupportedAttributeException(
+                    CreateSourceSpanFromSyntax(invocation.Syntax),
+                    failureMessage);
+            }
+
+            if (!TryGetRenderFragmentFactoryInvocationBindings(
+                    invocation,
+                    out var extraArgumentBindings,
+                    out failureMessage))
+            {
+                throw CreateUnsupportedAttributeException(
+                    CreateSourceSpanFromSyntax(invocation.Syntax),
+                    failureMessage);
+            }
+
+            if (!TryGetRenderFragmentFactoryReturnedValue(invocation, out var returnedValue))
+            {
+                throw CreateUnsupportedAttributeException(
+                    CreateSourceSpanFromSyntax(invocation.Syntax),
+                    $"RazorVue fragment factory method '{GetBuilderCallDisplayName(invocation)}' must be source-authored with an analyzable return value in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
+            if (!TryResolveRenderFragmentCarrierInitializerTemplate(
+                    declarator: null,
+                    initializer: returnedValue,
+                    allowedLocalSymbols: EmptyLocalScope,
+                    allowedParameterSymbols: EmptyParameterScope,
+                    out var parsedFactoryTemplate,
+                    out _))
+            {
+                throw CreateUnsupportedAttributeException(
+                    CreateSourceSpanFromSyntax(invocation.Syntax),
+                    $"RazorVue fragment factory method '{GetBuilderCallDisplayName(invocation)}' must return an analyzable RenderFragment template shape in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
+            slotTemplate = extraArgumentBindings.IsDefaultOrEmpty
+                ? parsedFactoryTemplate
+                : parsedFactoryTemplate.PrependCapturedBindings(extraArgumentBindings);
+            return true;
+        }
+
+        private bool TryGetSupportedRenderFragmentFactorySignature(
+            IMethodSymbol method,
+            out ImmutableArray<IParameterSymbol> extraParameters,
+            out string failureMessage)
+        {
+            extraParameters = ImmutableArray<IParameterSymbol>.Empty;
+            failureMessage = string.Empty;
+            if (!IsRenderFragment(method.ReturnType))
+                return false;
+
+            var helperDisplayName = method.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+            if (method.IsGenericMethod)
+            {
+                failureMessage =
+                    $"RazorVue fragment factory method '{helperDisplayName}' must not be generic in component '{_snapshot.Descriptor.FullName}'.";
+                return false;
+            }
+
+            if (ContainsRenderTreeBuilderParameter(method))
+            {
+                failureMessage =
+                    $"RazorVue fragment factory method '{helperDisplayName}' must not declare RenderTreeBuilder parameters in component '{_snapshot.Descriptor.FullName}'.";
+                return false;
+            }
+
+            foreach (var parameter in method.Parameters)
+            {
+                if (parameter.RefKind != RefKind.None)
+                {
+                    var modifier = parameter.RefKind switch
+                    {
+                        RefKind.Ref => "ref",
+                        RefKind.Out => "out",
+                        RefKind.In => "in",
+                        _ => parameter.RefKind.ToString().ToLowerInvariant()
+                    };
+                    failureMessage =
+                        $"RazorVue fragment factory method '{helperDisplayName}' cannot declare '{modifier}' parameter '{parameter.Name}' in component '{_snapshot.Descriptor.FullName}'. Only ordinary by-value parameters are supported.";
+                    return false;
+                }
+
+                if (parameter.IsParams)
+                {
+                    failureMessage =
+                        $"RazorVue fragment factory method '{helperDisplayName}' cannot declare 'params' parameter '{parameter.Name}' in component '{_snapshot.Descriptor.FullName}'. Only ordinary by-value parameters are supported.";
+                    return false;
+                }
+            }
+
+            extraParameters = [.. method.Parameters];
+            return true;
+        }
+
+        private bool TryGetRenderFragmentFactoryInvocationBindings(
+            IInvocationOperation invocation,
+            out ImmutableArray<RenderHelperValueBinding> extraArgumentBindings,
+            out string failureMessage)
+        {
+            extraArgumentBindings = ImmutableArray<RenderHelperValueBinding>.Empty;
+            failureMessage = string.Empty;
+
+            if (invocation.Arguments.Length != invocation.TargetMethod.Parameters.Length)
+            {
+                failureMessage =
+                    $"RazorVue fragment factory method '{GetBuilderCallDisplayName(invocation)}' must be invoked with arguments matching its declared signature in component '{_snapshot.Descriptor.FullName}'.";
+                return false;
+            }
+
+            var boundParameters = new HashSet<IParameterSymbol>(SymbolEqualityComparer.Default);
+            var bindingsBuilder = ImmutableArray.CreateBuilder<RenderHelperValueBinding>(invocation.Arguments.Length);
+            foreach (var argument in invocation.Arguments)
+            {
+                if (argument.Parameter is not { } parameter ||
+                    !boundParameters.Add(parameter))
+                {
+                    failureMessage =
+                        $"RazorVue fragment factory method '{GetBuilderCallDisplayName(invocation)}' must use direct one-to-one argument binding in component '{_snapshot.Descriptor.FullName}'.";
+                    return false;
+                }
+
+                var initializer = Unwrap(argument.Value);
+                if (initializer is null)
+                {
+                    failureMessage =
+                        $"RazorVue fragment factory method '{GetBuilderCallDisplayName(invocation)}' contains an unsupported argument value for parameter '{parameter.Name}' in component '{_snapshot.Descriptor.FullName}'.";
+                    return false;
+                }
+
+                bindingsBuilder.Add(new RenderHelperValueBinding(parameter, initializer));
+            }
+
+            if (boundParameters.Count != invocation.TargetMethod.Parameters.Length)
+            {
+                failureMessage =
+                    $"RazorVue fragment factory method '{GetBuilderCallDisplayName(invocation)}' must be invoked with arguments matching its declared signature in component '{_snapshot.Descriptor.FullName}'.";
+                return false;
+            }
+
+            extraArgumentBindings = bindingsBuilder.ToImmutable();
+            return true;
+        }
+
+        private bool TryGetRenderFragmentFactoryReturnedValue(
+            IInvocationOperation invocation,
+            out IOperation returnedValue)
+        {
+            returnedValue = default!;
+            foreach (var syntaxReference in invocation.TargetMethod.DeclaringSyntaxReferences)
+            {
+                var syntax = syntaxReference.GetSyntax();
+                var semanticModel = _context.Compilation.GetSemanticModel(syntax.SyntaxTree);
+                switch (syntax)
+                {
+                    case MethodDeclarationSyntax methodDeclaration:
+                        if (methodDeclaration.ExpressionBody?.Expression is { } methodExpressionBody &&
+                            RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(semanticModel, methodExpressionBody, out var methodExpressionBodyOperation) &&
+                            methodExpressionBodyOperation is not null)
+                        {
+                            returnedValue = methodExpressionBodyOperation;
+                            return true;
+                        }
+
+                        if (methodDeclaration.Body is not null &&
+                            semanticModel.GetOperation(methodDeclaration.Body) is IBlockOperation methodBlock &&
+                            TryGetSingleReturnedValue(methodBlock, out var methodReturnValue) &&
+                            methodReturnValue is not null)
+                        {
+                            returnedValue = methodReturnValue;
+                            return true;
+                        }
+
+                        break;
+                    case LocalFunctionStatementSyntax localFunction:
+                        if (localFunction.ExpressionBody?.Expression is { } localExpressionBody &&
+                            RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(semanticModel, localExpressionBody, out var localExpressionBodyOperation) &&
+                            localExpressionBodyOperation is not null)
+                        {
+                            returnedValue = localExpressionBodyOperation;
+                            return true;
+                        }
+
+                        if (localFunction.Body is not null &&
+                            semanticModel.GetOperation(localFunction.Body) is IBlockOperation localBlock &&
+                            TryGetSingleReturnedValue(localBlock, out var localReturnValue) &&
+                            localReturnValue is not null)
+                        {
+                            returnedValue = localReturnValue;
+                            return true;
+                        }
+
+                        break;
+                }
+            }
+
+            return false;
+        }
+
+        private IOperation? TryGetPropertyRenderFragmentInitializer(IPropertySymbol property)
+        {
+            foreach (var reference in property.DeclaringSyntaxReferences)
+            {
+                if (reference.GetSyntax() is not PropertyDeclarationSyntax declaration)
+                    continue;
+
+                var semanticModel = _context.Compilation.GetSemanticModel(declaration.SyntaxTree);
+                if (RazorVuePropertyInitializerHelper.TryGetPropertyValueOperation(semanticModel, declaration, out var propertyOperation))
+                    return propertyOperation;
+            }
+
+            return null;
+        }
+
+        private IOperation? TryGetFieldRenderFragmentInitializer(IFieldSymbol field)
+        {
+            foreach (var reference in field.DeclaringSyntaxReferences)
+            {
+                if (reference.GetSyntax() is not VariableDeclaratorSyntax declarator ||
+                    declarator.Initializer?.Value is null)
+                {
+                    continue;
+                }
+
+                var semanticModel = _context.Compilation.GetSemanticModel(declarator.SyntaxTree);
+                if (RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
+                        semanticModel,
+                        declarator.Initializer.Value,
+                        out var initializerOperation))
+                {
+                    return initializerOperation;
+                }
+            }
+
+            return null;
+        }
+
+        private void ConsumeRenderFragmentCarrierContinuation(
+            IReadOnlyList<RazorVueRazorIrNode> nodes,
+            ref int continuationIndex,
+            ref PendingTemplateControlNode? pendingControlNode)
+        {
+            if (continuationIndex >= nodes.Count)
+                return;
+
+            var continuationNode = nodes[continuationIndex];
+            if (!IsRenderFragmentCarrierContinuationCodeNode(continuationNode))
+                return;
+
+            var normalized = NormalizeTemplateCodeText(GetNodeText(continuationNode));
+            var remainder = normalized.TrimStart(';');
+            if (pendingControlNode is null &&
+                TryCreatePendingTemplateControlNodeFromRenderFragmentContinuation(
+                    continuationNode,
+                    remainder,
+                    out var emittedPendingControlNode))
+            {
+                pendingControlNode = emittedPendingControlNode;
+            }
+
+            continuationIndex++;
+        }
+
+        private bool TryCreatePendingTemplateControlNodeFromRenderFragmentContinuation(
+            RazorVueRazorIrNode continuationNode,
+            string normalizedContinuationRemainder,
+            out PendingTemplateControlNode? pendingControlNode)
+        {
+            pendingControlNode = null;
+            if (string.IsNullOrEmpty(normalizedContinuationRemainder) ||
+                string.Equals(normalizedContinuationRemainder, "}", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            if (normalizedContinuationRemainder.StartsWith("if(", StringComparison.Ordinal))
+            {
+                var sourceSpan = GetRequiredControlSourceSpan(continuationNode, "if");
+                if (!_resolver.TryResolveConditional(sourceSpan, out var resolvedConditional))
+                    return false;
+
+                pendingControlNode = PendingTemplateControlNode.CreateConditional(sourceSpan, resolvedConditional.Operation);
+                return true;
+            }
+
+            if (normalizedContinuationRemainder.StartsWith("foreach(", StringComparison.Ordinal))
+            {
+                var sourceSpan = GetRequiredControlSourceSpan(continuationNode, "foreach");
+                if (!_resolver.TryResolveForEach(sourceSpan, out var resolvedLoop))
+                    return false;
+
+                pendingControlNode = PendingTemplateControlNode.CreateForEach(sourceSpan, resolvedLoop.Operation);
+                return true;
+            }
+
+            if (normalizedContinuationRemainder.StartsWith("for(", StringComparison.Ordinal))
+            {
+                var sourceSpan = GetRequiredControlSourceSpan(continuationNode, "for");
+                if (!_resolver.TryResolveFor(sourceSpan, out var resolvedLoop))
+                    return false;
+
+                pendingControlNode = PendingTemplateControlNode.CreateFor(sourceSpan, resolvedLoop.Operation);
+                return true;
+            }
+
+            return false;
         }
 
         private bool TryParseRenderFragmentCarrierSignature(
@@ -2092,6 +2942,34 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return true;
         }
 
+        private static RazorVueRenderFragment MaterializeCapturedTemplateChildren(
+            ParsedSlotTemplate slotTemplate,
+            ImmutableArray<RazorVueSourceOrigin> origins)
+            => WrapCapturedTemplateScopes(slotTemplate.Children, slotTemplate.CapturedBindings, origins);
+
+        private static RazorVueRenderFragment WrapCapturedTemplateScopes(
+            RazorVueRenderFragment fragment,
+            ImmutableArray<RenderHelperValueBinding> extraArgumentBindings,
+            ImmutableArray<RazorVueSourceOrigin> origins)
+        {
+            var wrappedFragment = fragment;
+            for (var index = extraArgumentBindings.Length - 1; index >= 0; index--)
+            {
+                var binding = extraArgumentBindings[index];
+                wrappedFragment = new RazorVueRenderFragment(
+                [
+                    new RazorVueTemplateScopeNode(
+                        ScopeName: binding.ParameterSymbol.Name,
+                        ScopeParameterSymbol: binding.ParameterSymbol,
+                        Initializer: binding.Initializer,
+                        Children: wrappedFragment,
+                        Origins: origins)
+                ]);
+            }
+
+            return wrappedFragment;
+        }
+
         private static bool TryGetSingleReturnedValue(IBlockOperation block, out IOperation? returnedValue)
         {
             returnedValue = null;
@@ -2129,6 +3007,23 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 current = Unwrap(conversion.Operand);
             return current;
         }
+
+        private bool IsCurrentComponentMethod(IMethodSymbol method, IOperation? instance)
+        {
+            for (var current = _snapshot.ComponentSymbol; current is not null; current = current.BaseType)
+            {
+                if (SymbolEqualityComparer.Default.Equals(method.ContainingType, current))
+                    return instance is null || Unwrap(instance) is IInstanceReferenceOperation;
+            }
+
+            return false;
+        }
+
+        private static bool ContainsRenderTreeBuilderParameter(IMethodSymbol method)
+            => method.Parameters.Any(static parameter => IsRenderTreeBuilderType(parameter.Type));
+
+        private static string GetBuilderCallDisplayName(IInvocationOperation invocation)
+            => invocation.TargetMethod.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
 
         private static bool TryGetSingleBuilderParameter(
             IAnonymousFunctionOperation anonymousFunction,
@@ -2562,7 +3457,11 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 return false;
 
             var remainder = normalized.TrimStart(';');
-            return remainder.Length == 0 || string.Equals(remainder, "}", StringComparison.Ordinal);
+            return remainder.Length == 0 ||
+                   string.Equals(remainder, "}", StringComparison.Ordinal) ||
+                   remainder.StartsWith("if(", StringComparison.Ordinal) ||
+                   remainder.StartsWith("foreach(", StringComparison.Ordinal) ||
+                   remainder.StartsWith("for(", StringComparison.Ordinal);
         }
 
         private static string NormalizeTemplateCodeText(string text)

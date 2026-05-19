@@ -93,6 +93,26 @@ internal sealed class RazorVueRazorIrOperationResolver
         return operation is not null;
     }
 
+    public bool TryResolveBuildRenderTreeBodyOperation(out IOperation operation)
+    {
+        operation = default!;
+
+        var methodSyntax = FindGeneratedBuildRenderTreeMethod();
+        if (methodSyntax?.Body is not null)
+        {
+            operation = GetBestOperation(methodSyntax.Body)!;
+            return operation is not null;
+        }
+
+        if (methodSyntax?.ExpressionBody is not null)
+        {
+            operation = GetBestOperation(methodSyntax.ExpressionBody.Expression)!;
+            return operation is not null;
+        }
+
+        return false;
+    }
+
     public bool TryResolveGeneratedExpression(
         string expressionText,
         RazorVueRazorSourceSpan? sourceSpan,
@@ -335,6 +355,15 @@ internal sealed class RazorVueRazorIrOperationResolver
         return true;
     }
 
+    public bool TryMapGeneratedOperationToOriginalSourceSpan(IOperation operation, out RazorVueRazorSourceSpan sourceSpan)
+    {
+        sourceSpan = default;
+        if (operation?.Syntax is null)
+            return false;
+
+        return TryMapGeneratedSpanToOriginalSourceSpan(operation.Syntax.Span, out sourceSpan);
+    }
+
     private static SyntaxTree GetGeneratedRazorSyntaxTree(
         Jazor.RazorVue.RazorVueCompilationContext context,
         RazorVueSemanticSnapshot snapshot,
@@ -372,22 +401,17 @@ internal sealed class RazorVueRazorIrOperationResolver
                 : document.HintName);
     }
 
-    private static MethodDeclarationSyntax GetBuildRenderTreeSyntax(RazorVueSemanticSnapshot snapshot)
+    private MethodDeclarationSyntax? FindGeneratedBuildRenderTreeMethod()
     {
-        if (snapshot.BuildRenderTreeMethod is null)
-        {
-            throw new InvalidOperationException(
-                $"RazorVue Razor IR expression resolution requires BuildRenderTree to be present for component '{snapshot.Descriptor.FullName}'.");
-        }
+        if (_snapshot.BuildRenderTreeMethod is null)
+            return null;
 
-        foreach (var syntaxReference in snapshot.BuildRenderTreeMethod.DeclaringSyntaxReferences)
-        {
-            if (syntaxReference.GetSyntax() is MethodDeclarationSyntax methodDeclaration)
-                return methodDeclaration;
-        }
-
-        throw new InvalidOperationException(
-            $"BuildRenderTree syntax could not be located for component '{snapshot.Descriptor.FullName}'.");
+        var expectedName = _snapshot.BuildRenderTreeMethod.Name;
+        return _generatedRoot
+            .DescendantNodes()
+            .OfType<MethodDeclarationSyntax>()
+            .FirstOrDefault(method =>
+                string.Equals(method.Identifier.ValueText, expectedName, StringComparison.Ordinal));
     }
 
     private bool TryMapToGeneratedSpan(RazorVueRazorSourceSpan sourceSpan, out TextSpan generatedSpan)
@@ -456,6 +480,47 @@ internal sealed class RazorVueRazorIrOperationResolver
             NormalizeComparablePath(originalFilePath),
             originalStart,
             originalEnd);
+        return true;
+    }
+
+    private bool TryMapGeneratedSpanToOriginalSourceSpan(TextSpan generatedSpan, out RazorVueRazorSourceSpan sourceSpan)
+    {
+        sourceSpan = default;
+        if (_sourceMappings.IsDefaultOrEmpty)
+            return false;
+
+        var mappings = _sourceMappings
+            .Where(mapping => Overlaps(mapping.GeneratedSpan.AbsoluteIndex, mapping.GeneratedSpan.Length, generatedSpan.Start, generatedSpan.Length) ||
+                              Contains(mapping.GeneratedSpan.AbsoluteIndex, mapping.GeneratedSpan.Length, generatedSpan.Start, generatedSpan.Length) ||
+                              Contains(generatedSpan.Start, generatedSpan.Length, mapping.GeneratedSpan.AbsoluteIndex, mapping.GeneratedSpan.Length))
+            .ToArray();
+        if (mappings.Length == 0)
+            return false;
+
+        var originalFilePath = mappings
+            .Select(static mapping => mapping.OriginalSpan.FilePath)
+            .FirstOrDefault(static path => !string.IsNullOrWhiteSpace(path));
+        if (string.IsNullOrWhiteSpace(originalFilePath))
+            return false;
+
+        if (mappings.Any(mapping => !PathsEqual(mapping.OriginalSpan.FilePath, originalFilePath)))
+            return false;
+
+        var originalStart = mappings.Min(static mapping => mapping.OriginalSpan.AbsoluteIndex);
+        var originalEnd = mappings.Max(static mapping => mapping.OriginalSpan.AbsoluteIndex + mapping.OriginalSpan.Length);
+        if (originalStart < 0 || originalEnd <= originalStart)
+            return false;
+
+        var anchor = mappings
+            .OrderBy(static mapping => mapping.OriginalSpan.AbsoluteIndex)
+            .First()
+            .OriginalSpan;
+        sourceSpan = anchor with
+        {
+            FilePath = originalFilePath,
+            AbsoluteIndex = originalStart,
+            Length = originalEnd - originalStart
+        };
         return true;
     }
 
