@@ -833,6 +833,7 @@ builder.AddContent(0, template, 42);
 - 支持：current-component method / local function 的 `params` 数组 fragment factory；expanded / empty `params` 调用会保留为单个数组绑定结果，而不是在 RazorVue 前端自行拍平成多个逻辑形参
 - 支持：带参数 fragment factory 的调用结果即使先经过上述受控 carrier，再用于 `AddContent(...)` 或组件 typed slot/template 参数，frontend / canonical / H / SFC 四层也会保持与直接调用点一致的作用域语义
 - 支持：带参数 fragment factory 在 frontend / canonical / H / SFC 中保留额外参数局部作用域；named argument 打乱书写顺序时，仍按调用点左到右求值顺序保留外层 scope 包裹，而不是按形参声明顺序重排求值
+- 支持：同一个带参 fragment factory 在同一组件内被多个不同调用点重复使用时，RazorVue 只复用模板骨架，不复用某一次调用点的 captured 值绑定；`CreateTemplate(Title)` 与 `CreateTemplate(Subtitle)` 这类多次调用会各自保留独立外层 scope
 - 支持：若带参 fragment factory 的 captured 参数是数组创建（典型如 `params` expanded call），SFC 路径会在需要时把该数组初始化提升为 setup binding，再通过局部 template scope wrapper 消费，以避免模板内重复构造
 - 支持：frontend / canonical / H / SFC 对局部 carrier 与 inline 形态保持相同 lowering 结果
 - 支持：当前组件 slot outlet / slot forwarding 仅从 `[Parameter] RenderFragment...` 属性识别
@@ -862,6 +863,7 @@ builder.AddContent(0, template, 42);
 - direct `AddContent(...)` 与组件 typed slot/template 参数上的 parameterized fragment factory 均已支持，并在 frontend / canonical / H / SFC 四层保持一致作用域语义
 - parameterized fragment factory 结果即使先通过局部 carrier、只读 property 或 `readonly` field 承载，再被 direct `AddContent(...)` 或组件 typed slot/template 参数消费，四层仍保持“外层 captured-value scope、内层 typed fragment scope”的一致顺序
 - parameterized fragment factory 的 named-argument 路径已锁定为“按调用点左到右求值顺序保留嵌套 scope”，避免回退成按形参声明顺序重排
+- parameterized fragment factory 的“同方法多调用点”路径已锁定为“仅缓存模板骨架，不缓存调用点 captured binding”；Razor IR frontend 不会再把第一次调用的 captured 参数错误复用到后续不同调用点
 - 当前组件 `[Parameter] RenderFragment...` 作为 slot forwarding source 时，默认 slot 与 typed/scoped slot 两条路径都已锁定回归；typed forwarding 会按目标子组件 slot contract 保留 context 参数名，而不是退化成普通值表达式或错误的无参 slot template
 - recursive fragment factory 仍显式失败
 

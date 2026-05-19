@@ -193,6 +193,7 @@
     - `builder.AddAttribute(1, "ItemTemplate", CreateTemplate(Title));`
   - 这类 factory 调用结果也可以先落入受控 carrier，再由后续调用点消费，例如 `RenderFragment<int> template = CreateTemplate(Title); builder.AddContent(0, template, 42);` 或只读 property / `readonly` field 转发该结果。
   - 对于带参数 fragment factory，额外参数会通过嵌套 template scope / 嵌套 IIFE 保留单次求值与局部不泄漏语义；named argument 即使打乱调用书写顺序，也会继续按调用点左到右求值顺序保留作用域包裹，而不会退化成按形参声明顺序重排求值
+  - 同一个带参 fragment factory 即使在同一组件内被多个不同调用点重复使用，RazorVue 也只缓存“模板骨架”，不会缓存某一次调用点的 captured 值绑定；`CreateTemplate(Title)` 与 `CreateTemplate(Subtitle)` 会各自保留自己的外层 scope，而不会互相污染
 - 当前组件自身的 slot outlet / slot forwarding 源只认 `[Parameter] RenderFragment...` 属性。
 - 该规则同时覆盖：
   - 默认 slot / named slot 的直接 outlet 使用

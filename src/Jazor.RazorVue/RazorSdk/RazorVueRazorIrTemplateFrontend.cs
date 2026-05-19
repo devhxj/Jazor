@@ -2457,7 +2457,36 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             if (!IsCurrentComponentMethod(invocation.TargetMethod, invocation.Instance))
                 return false;
 
-            return TryResolveFactoryCarrier(invocation, requireZeroArguments: false, out slotTemplate);
+            if (!TryGetSupportedRenderFragmentFactorySignature(
+                    invocation.TargetMethod,
+                    out _,
+                    out var failureMessage))
+            {
+                if (!IsRenderFragment(invocation.TargetMethod.ReturnType))
+                    return false;
+
+                throw CreateUnsupportedAttributeException(
+                    CreateSourceSpanFromSyntax(invocation.Syntax),
+                    failureMessage);
+            }
+
+            if (!TryGetRenderFragmentFactoryInvocationBindings(
+                    invocation,
+                    out var extraArgumentBindings,
+                    out failureMessage))
+            {
+                throw CreateUnsupportedAttributeException(
+                    CreateSourceSpanFromSyntax(invocation.Syntax),
+                    failureMessage);
+            }
+
+            if (!TryResolveFactoryCarrier(invocation, requireZeroArguments: false, out var parsedFactoryTemplate))
+                return false;
+
+            slotTemplate = extraArgumentBindings.IsDefaultOrEmpty
+                ? parsedFactoryTemplate
+                : parsedFactoryTemplate.PrependCapturedBindings(extraArgumentBindings);
+            return true;
         }
 
         private bool TryResolveMemberCarrier(
@@ -2591,16 +2620,6 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     failureMessage);
             }
 
-            if (!TryGetRenderFragmentFactoryInvocationBindings(
-                    invocation,
-                    out var extraArgumentBindings,
-                    out failureMessage))
-            {
-                throw CreateUnsupportedAttributeException(
-                    CreateSourceSpanFromSyntax(invocation.Syntax),
-                    failureMessage);
-            }
-
             if (!TryGetRenderFragmentFactoryReturnedValue(invocation, out var returnedValue))
             {
                 throw CreateUnsupportedAttributeException(
@@ -2621,9 +2640,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     $"RazorVue fragment factory method '{GetBuilderCallDisplayName(invocation)}' must return an analyzable RenderFragment template shape in component '{_snapshot.Descriptor.FullName}'.");
             }
 
-            slotTemplate = extraArgumentBindings.IsDefaultOrEmpty
-                ? parsedFactoryTemplate
-                : parsedFactoryTemplate.PrependCapturedBindings(extraArgumentBindings);
+            slotTemplate = parsedFactoryTemplate;
             return true;
         }
 

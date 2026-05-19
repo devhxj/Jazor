@@ -517,6 +517,59 @@ public sealed class RazorVueTemplateFrontendParityTests
     }
 
     [TestMethod]
+    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForMultipleRenderFragmentLocalCarriersInitializedFromSameFactoryMethodWithDifferentArgumentsAssignedToDifferentTypedComponentSlots()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @using Microsoft.AspNetCore.Components
+
+            @{
+                RenderFragment<int> primaryTemplate = CreateTemplate(Title);
+                RenderFragment<int> secondaryTemplate = CreateTemplate(Subtitle);
+            }
+
+            <LayoutCard PrimaryTemplate="primaryTemplate" SecondaryTemplate="secondaryTemplate" />
+
+            @code {
+                [Parameter]
+                public string? Title { get; set; }
+
+                [Parameter]
+                public string? Subtitle { get; set; }
+
+                private RenderFragment<int> CreateTemplate(string? title)
+                    => item => @<span>@title @item</span>;
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.Parity.RenderFragmentLocalCarrier.FactoryMultiInvocation.TypedSlot.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/layout-card")]
+                public partial class LayoutCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? PrimaryTemplate { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<int>? SecondaryTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+    }
+
+    [TestMethod]
     public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromCurrentComponentFieldCarrierAssignedToTypedComponentSlot()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";

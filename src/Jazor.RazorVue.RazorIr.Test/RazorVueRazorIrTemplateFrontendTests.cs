@@ -1406,6 +1406,73 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_ForMultipleRenderFragmentLocalCarriersInitializedFromSameFactoryMethodWithDifferentArguments_AssignedToDifferentTypedComponentSlots_PreservesPerInvocationCapturedScopes()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @using Microsoft.AspNetCore.Components
+
+            @{
+                RenderFragment<int> primaryTemplate = CreateTemplate(Title);
+                RenderFragment<int> secondaryTemplate = CreateTemplate(Subtitle);
+            }
+
+            <LayoutCard PrimaryTemplate="primaryTemplate" SecondaryTemplate="secondaryTemplate" />
+
+            @code {
+                [Parameter]
+                public string? Title { get; set; }
+
+                [Parameter]
+                public string? Subtitle { get; set; }
+
+                private RenderFragment<int> CreateTemplate(string? title)
+                    => item => @<span>@title @item</span>;
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.RenderFragmentLocalCarrier.FactoryMultiInvocation.TypedSlot.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/layout-card")]
+                public partial class LayoutCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? PrimaryTemplate { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<int>? SecondaryTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+
+        var component = Assert.IsInstanceOfType<RazorVueComponentNode>(renderTree.Children.Single());
+        var primarySlot = component.SlotTemplates.Single(static slot => slot.PublicName == "PrimaryTemplate");
+        var secondarySlot = component.SlotTemplates.Single(static slot => slot.PublicName == "SecondaryTemplate");
+
+        var primaryTitleScope = Assert.IsInstanceOfType<RazorVueTemplateScopeNode>(primarySlot.Children.Children.Single());
+        Assert.AreEqual("title", primaryTitleScope.ScopeName);
+        var primaryInitializer = Assert.IsInstanceOfType<IPropertyReferenceOperation>(primaryTitleScope.Initializer);
+        Assert.AreEqual("Title", primaryInitializer.Property.Name);
+
+        var secondaryTitleScope = Assert.IsInstanceOfType<RazorVueTemplateScopeNode>(secondarySlot.Children.Children.Single());
+        Assert.AreEqual("title", secondaryTitleScope.ScopeName);
+        var secondaryInitializer = Assert.IsInstanceOfType<IPropertyReferenceOperation>(secondaryTitleScope.Initializer);
+        Assert.AreEqual("Subtitle", secondaryInitializer.Property.Name);
+    }
+
+    [TestMethod]
     public void CreateRenderTree_ForRenderFragmentLocalCarrierInitializedFromCurrentComponentPropertyCarrier_AssignedToTypedComponentSlot_ProducesCapturedScopeAndStructuredSlotTemplate()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -2005,6 +2072,62 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
         var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
 
         StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (item) => ((values) => h(\"span\", null, [values.length, \" \", item]))([props.title, \"suffix\"])");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_CanLowerMultipleRenderFragmentLocalCarriersInitializedFromSameFactoryMethodWithDifferentArguments_AssignedToDifferentTypedComponentSlots()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @using Microsoft.AspNetCore.Components
+
+            @{
+                RenderFragment<int> primaryTemplate = CreateTemplate(Title);
+                RenderFragment<int> secondaryTemplate = CreateTemplate(Subtitle);
+            }
+
+            <LayoutCard PrimaryTemplate="primaryTemplate" SecondaryTemplate="secondaryTemplate" />
+
+            @code {
+                [Parameter]
+                public string? Title { get; set; }
+
+                [Parameter]
+                public string? Subtitle { get; set; }
+
+                private RenderFragment<int> CreateTemplate(string? title)
+                    => item => @<span>@title @item</span>;
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.RenderFragmentLocalCarrier.FactoryMultiInvocation.TypedSlot.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/layout-card")]
+                public partial class LayoutCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? PrimaryTemplate { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<int>? SecondaryTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ModuleCode, "primaryTemplate: (item) => ((title) => h(\"span\", null, [title, \" \", item]))(props.title)");
+        StringAssert.Contains(artifact.ModuleCode, "secondaryTemplate: (item) => ((title) => h(\"span\", null, [title, \" \", item]))(props.subtitle)");
     }
 
     [TestMethod]
