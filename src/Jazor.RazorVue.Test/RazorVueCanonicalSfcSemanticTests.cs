@@ -882,7 +882,7 @@ public sealed class RazorVueCanonicalSfcSemanticTests
     }
 
     [TestMethod]
-    public void RazorVue_CanonicalModelFactory_WithSettableCurrentComponentRenderFragmentPropertyCarrier_ThrowsCanonicalizationFailed()
+    public void RazorVue_CanonicalModelFactory_MapsUnwrittenSettableCurrentComponentRenderFragmentPropertyCarrier_ToTemplateScopeNode()
     {
         var context = CreateContext(
             """
@@ -907,6 +907,57 @@ public sealed class RazorVueCanonicalSfcSemanticTests
                 public class Host : ComponentBase, IVueComponent
                 {
                     private RenderFragment<int> Template { get; set; } = item => itemBuilder =>
+                    {
+                        itemBuilder.OpenElement(1, "span");
+                        itemBuilder.AddContent(2, item);
+                        itemBuilder.CloseElement();
+                    };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, Template, 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+        var scope = AssertNode<RazorVueCanonicalTemplateScopeNode>(canonical.Template.Children.Single());
+
+        Assert.AreEqual("item", scope.ScopeName);
+        Assert.AreEqual("42", scope.InitializerExpressionText);
+        var span = AssertNode<RazorVueCanonicalElementNode>(scope.Children.Children.Single());
+        var interpolation = AssertNode<RazorVueCanonicalInterpolationNode>(span.Children.Children.Single());
+        Assert.AreEqual("item", interpolation.ExpressionText);
+    }
+
+    [TestMethod]
+    public void RazorVue_CanonicalModelFactory_WithNonPrivateSettableCurrentComponentRenderFragmentPropertyCarrier_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    internal RenderFragment<int> Template { get; set; } = item => itemBuilder =>
                     {
                         itemBuilder.OpenElement(1, "span");
                         itemBuilder.AddContent(2, item);

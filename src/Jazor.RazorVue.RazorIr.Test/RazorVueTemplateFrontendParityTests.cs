@@ -197,6 +197,133 @@ public sealed class RazorVueTemplateFrontendParityTests
     }
 
     [TestMethod]
+    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateLocalCodeBlockWithoutInitializerThenImmediateAssignment()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            <LayoutCard>
+                <ItemTemplate Context="item">
+                    @{
+                        string? decorated;
+                        decorated = item;
+                    }
+                    <p>@decorated</p>
+                </ItemTemplate>
+            </LayoutCard>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.Parity.TypedChildContent.TemplateLocalCodeBlock.ImmediateAssignment.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/layout-card")]
+                public partial class LayoutCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<string>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+    }
+
+    [TestMethod]
+    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneIf()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            <LayoutCard>
+                <ItemTemplate Context="item">
+                    @{
+                        if (Show)
+                        {
+                            <p>@item</p>
+                        }
+                    }
+                </ItemTemplate>
+            </LayoutCard>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.Parity.TypedChildContent.TemplateCodeBlock.StandaloneIf.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/layout-card")]
+                public partial class LayoutCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<string>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Show { get; set; }
+                }
+            }
+            """);
+
+        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+    }
+
+    [TestMethod]
+    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneWhileLoop()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            <LayoutCard>
+                <ItemTemplate Context="item">
+                    @{
+                        while (Show)
+                        {
+                            <p>@item</p>
+                            break;
+                        }
+                    }
+                </ItemTemplate>
+            </LayoutCard>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.Parity.TypedChildContent.TemplateCodeBlock.StandaloneWhile.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/layout-card")]
+                public partial class LayoutCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<string>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Show { get; set; }
+                }
+            }
+            """);
+
+        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+    }
+
+    [TestMethod]
     public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithSwitch()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -386,6 +513,54 @@ public sealed class RazorVueTemplateFrontendParityTests
             documentPath,
             documentText,
             RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+    }
+
+    [TestMethod]
+    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForUnwrittenSettableMarkupStringPropertyExpression()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """@HeroMarkup""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.Parity.SettablePropertyMarkupStringCarrier.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    private MarkupString HeroMarkup { get; set; } = (MarkupString)"<section class='hero'><span>safe</span><p>ok</p></section>";
+                }
+            }
+            """);
+
+        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+    }
+
+    [TestMethod]
+    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForUnwrittenNonReadonlyMarkupStringFieldExpression()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """@_heroMarkup""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.Parity.NonReadonlyFieldMarkupStringCarrier.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    private MarkupString _heroMarkup = (MarkupString)"<section class='hero'><span>safe</span><p>ok</p></section>";
+                }
+            }
+            """);
 
         AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
@@ -1007,6 +1182,90 @@ public sealed class RazorVueTemplateFrontendParityTests
 
         var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
             "RazorVue.RazorIr.Parity.RenderFragmentLocalCarrier.AutoProperty.TypedSlot.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/layout-card")]
+                public partial class LayoutCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+    }
+
+    [TestMethod]
+    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromUnwrittenCurrentComponentSettablePropertyCarrierAssignedToTypedComponentSlot()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @using Microsoft.AspNetCore.Components
+
+            @{
+                RenderFragment<int> template = Template;
+            }
+
+            <LayoutCard ItemTemplate="template" />
+
+            @code {
+                private RenderFragment<int> Template { get; set; } = item => @<span>@item</span>;
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.Parity.RenderFragmentLocalCarrier.SettableAutoProperty.TypedSlot.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/layout-card")]
+                public partial class LayoutCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+    }
+
+    [TestMethod]
+    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromUnwrittenCurrentComponentNonReadonlyFieldCarrierAssignedToTypedComponentSlot()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @using Microsoft.AspNetCore.Components
+
+            @{
+                RenderFragment<int> template = _template;
+            }
+
+            <LayoutCard ItemTemplate="template" />
+
+            @code {
+                private RenderFragment<int> _template = item => @<span>@item</span>;
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.Parity.RenderFragmentLocalCarrier.NonReadonlyField.TypedSlot.Tests",
             documentPath,
             documentText,
             """
@@ -2027,6 +2286,42 @@ public sealed class RazorVueTemplateFrontendParityTests
 
         var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
             "RazorVue.RazorIr.Parity.ForLoop.SimpleAssignmentStep.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Start { get; set; }
+
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    [Parameter]
+                    public int Step { get; set; }
+                }
+            }
+            """);
+
+        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+    }
+
+    [TestMethod]
+    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForCountStyleForLoopWithCommutativeSimpleAssignmentStep()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @for (var i = Start; i <= Count; i = Step + i)
+            {
+                <p>@i</p>
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.Parity.ForLoop.SimpleAssignmentCommutativeAdd.Tests",
             documentPath,
             documentText,
             """

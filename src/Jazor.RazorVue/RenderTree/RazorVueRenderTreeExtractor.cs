@@ -2298,10 +2298,7 @@ internal sealed class RazorVueRenderTreeExtractor
                 return false;
             }
 
-            if (member is IPropertySymbol propertySymbol && propertySymbol.SetMethod is not null)
-                return false;
-
-            if (member is IFieldSymbol fieldSymbol && !fieldSymbol.IsReadOnly)
+            if (!IsSupportedCurrentComponentRenderFragmentCarrierMember(member))
                 return false;
 
             IOperation? initializer = member switch
@@ -2315,6 +2312,31 @@ internal sealed class RazorVueRenderTreeExtractor
                 return false;
 
             return TryGetParsedSlotTemplateFromCarrierInitializer(initializer, out slotTemplate);
+        }
+
+        private bool IsSupportedCurrentComponentRenderFragmentCarrierMember(ISymbol member)
+        {
+            switch (member)
+            {
+                case IPropertySymbol propertySymbol:
+                    if (propertySymbol.SetMethod is null)
+                        return true;
+
+                    if (!RazorVueMemberWriteAnalysis.CanUseSourceStableMutableCarrierMember(propertySymbol))
+                        return false;
+
+                    return !RazorVueMemberWriteAnalysis.HasObservableWritesOutsideDeclarationInitializer(_compilation, propertySymbol);
+                case IFieldSymbol fieldSymbol:
+                    if (fieldSymbol.IsReadOnly)
+                        return true;
+
+                    if (!RazorVueMemberWriteAnalysis.CanUseSourceStableMutableCarrierMember(fieldSymbol))
+                        return false;
+
+                    return !RazorVueMemberWriteAnalysis.HasObservableWritesOutsideDeclarationInitializer(_compilation, fieldSymbol);
+                default:
+                    return false;
+            }
         }
 
         private bool TryCreateFactoryCarrier(

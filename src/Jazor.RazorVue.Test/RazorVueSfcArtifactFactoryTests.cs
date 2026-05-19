@@ -1014,6 +1014,61 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersCountStyleForLoopWithCommutativeSimpleAssignmentStep_IntoTemplateRangeHelperAndSetupBindings()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/list-card")]
+                public class ListCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Start { get; set; }
+
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    [Parameter]
+                    public int Step { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        for (var i = Start; i <= Count; i = Step + i)
+                        {
+                            builder.OpenElement(0, "span");
+                            builder.AddContent(1, i);
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"i in __jazorVueForRange(props.start, props.count, &quot;&lt;=&quot;, &quot;+=&quot;, props.step)\">");
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("__jazor$", StringComparison.Ordinal), artifact.ScriptSetupText);
+        StringAssert.Contains(artifact.ScriptSetupText, "const stepDelta = stepOperator === \"++\" ? 1");
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_LowersRazorGeneratedChildContentLambdaShape()
     {
         var context = CreateContext(
@@ -4078,6 +4133,49 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersUnwrittenSettableAddMarkupContentPropertyCarrier()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-card")]
+                public class MarkupCard : ComponentBase, IVueComponent
+                {
+                    private string HeroMarkup { get; set; } = "<section class=\"hero\"><span>safe</span><p>ok</p></section>";
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddMarkupContent(0, HeroMarkup);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<section class=\"hero\">");
+        StringAssert.Contains(artifact.TemplateText, "<span>");
+        StringAssert.Contains(artifact.TemplateText, "<p>");
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_LowersReadonlyAddMarkupContentFieldCarrier()
     {
         var context = CreateContext(
@@ -4103,6 +4201,49 @@ public sealed class RazorVueSfcArtifactFactoryTests
                 public class MarkupCard : ComponentBase, IVueComponent
                 {
                     private readonly string _heroMarkup = "<section class=\"hero\"><span>safe</span><p>ok</p></section>";
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddMarkupContent(0, _heroMarkup);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<section class=\"hero\">");
+        StringAssert.Contains(artifact.TemplateText, "<span>");
+        StringAssert.Contains(artifact.TemplateText, "<p>");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersUnwrittenNonReadonlyAddMarkupContentFieldCarrier()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-card")]
+                public class MarkupCard : ComponentBase, IVueComponent
+                {
+                    private string _heroMarkup = "<section class=\"hero\"><span>safe</span><p>ok</p></section>";
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -4296,6 +4437,51 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersUnwrittenSettableMarkupStringPropertyCarrierAddContent()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-string-card")]
+                public class MarkupStringCard : ComponentBase, IVueComponent
+                {
+                    private MarkupString HeroMarkup { get; set; } = (MarkupString)"<section class=\"hero\"><span>safe</span><p>ok</p></section>";
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, HeroMarkup);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<section class=\"hero\">");
+        StringAssert.Contains(artifact.TemplateText, "<span>");
+        StringAssert.Contains(artifact.TemplateText, "safe");
+        StringAssert.Contains(artifact.TemplateText, "<p>");
+        StringAssert.Contains(artifact.TemplateText, "ok");
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_LowersReadonlyMarkupStringFieldCarrierAddContent()
     {
         var context = CreateContext(
@@ -4321,6 +4507,51 @@ public sealed class RazorVueSfcArtifactFactoryTests
                 public class MarkupStringCard : ComponentBase, IVueComponent
                 {
                     private readonly MarkupString _heroMarkup = (MarkupString)"<section class=\"hero\"><span>safe</span><p>ok</p></section>";
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, _heroMarkup);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<section class=\"hero\">");
+        StringAssert.Contains(artifact.TemplateText, "<span>");
+        StringAssert.Contains(artifact.TemplateText, "safe");
+        StringAssert.Contains(artifact.TemplateText, "<p>");
+        StringAssert.Contains(artifact.TemplateText, "ok");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersUnwrittenNonReadonlyMarkupStringFieldCarrierAddContent()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-string-card")]
+                public class MarkupStringCard : ComponentBase, IVueComponent
+                {
+                    private MarkupString _heroMarkup = (MarkupString)"<section class=\"hero\"><span>safe</span><p>ok</p></section>";
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -4784,7 +5015,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
-    public void RazorVue_SfcArtifactFactory_WithSettableCurrentComponentRenderFragmentPropertyCarrier_ThrowsCanonicalizationFailed()
+    public void RazorVue_SfcArtifactFactory_WithNonPrivateSettableCurrentComponentRenderFragmentPropertyCarrier_ThrowsCanonicalizationFailed()
     {
         var context = CreateContext(
             """
@@ -4808,7 +5039,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
                 [ECMAScript.ECMAScriptModule("./components/host")]
                 public class Host : ComponentBase, IVueComponent
                 {
-                    private RenderFragment<int> Template { get; set; } = item => itemBuilder =>
+                    internal RenderFragment<int> Template { get; set; } = item => itemBuilder =>
                     {
                         itemBuilder.OpenElement(1, "span");
                         itemBuilder.AddContent(2, item);
@@ -4857,6 +5088,53 @@ public sealed class RazorVueSfcArtifactFactoryTests
                 public class Host : ComponentBase, IVueComponent
                 {
                     private RenderFragment<int> Template => item => itemBuilder =>
+                    {
+                        itemBuilder.OpenElement(1, "span");
+                        itemBuilder.AddContent(2, item);
+                        itemBuilder.CloseElement();
+                    };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, Template, 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(item) in [42]\">");
+        StringAssert.Contains(artifact.TemplateText, "{{ item }}");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersUnwrittenSettableCurrentComponentRenderFragmentPropertyCarrier_IntoTemplateScopeWrapper()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    private RenderFragment<int> Template { get; set; } = item => itemBuilder =>
                     {
                         itemBuilder.OpenElement(1, "span");
                         itemBuilder.AddContent(2, item);
@@ -4969,6 +5247,101 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
         StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(item) in [42]\">");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersUnwrittenNonReadonlyCurrentComponentRenderFragmentFieldCarrier_IntoTemplateScopeWrapper()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    private RenderFragment<int> _template = item => itemBuilder =>
+                    {
+                        itemBuilder.OpenElement(1, "span");
+                        itemBuilder.AddContent(2, item);
+                        itemBuilder.CloseElement();
+                    };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, _template, 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(item) in [42]\">");
+        StringAssert.Contains(artifact.TemplateText, "{{ item }}");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithNonPrivateNonReadonlyCurrentComponentRenderFragmentFieldCarrier_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    internal RenderFragment<int> _template = item => itemBuilder =>
+                    {
+                        itemBuilder.OpenElement(1, "span");
+                        itemBuilder.AddContent(2, item);
+                        itemBuilder.CloseElement();
+                    };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, _template, 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "RenderFragment shape");
     }
 
     [TestMethod]

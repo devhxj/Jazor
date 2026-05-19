@@ -128,7 +128,7 @@ internal static class RazorVueStaticMarkupValueHelper
 
             case IPropertyReferenceOperation propertyReference:
                 if (propertyInitializerResolver is null ||
-                    propertyReference.Property.SetMethod is not null ||
+                    !IsSupportedStaticMarkupCarrierMember(compilation, propertyReference.Property) ||
                     !visitedMembers.Add(propertyReference.Property))
                 {
                     return null;
@@ -145,7 +145,7 @@ internal static class RazorVueStaticMarkupValueHelper
 
             case IFieldReferenceOperation fieldReference:
                 if (fieldInitializerResolver is null ||
-                    !fieldReference.Field.IsReadOnly ||
+                    !IsSupportedStaticMarkupCarrierMember(compilation, fieldReference.Field) ||
                     !visitedMembers.Add(fieldReference.Field))
                 {
                     return null;
@@ -162,6 +162,33 @@ internal static class RazorVueStaticMarkupValueHelper
 
             default:
                 return null;
+        }
+    }
+
+    private static bool IsSupportedStaticMarkupCarrierMember(Compilation compilation, ISymbol member)
+    {
+        switch (member)
+        {
+            case IPropertySymbol propertySymbol:
+                if (propertySymbol.SetMethod is null)
+                    return true;
+
+                if (!RazorVueMemberWriteAnalysis.CanUseSourceStableMutableCarrierMember(propertySymbol))
+                    return false;
+
+                return !RazorVueMemberWriteAnalysis.HasObservableWritesOutsideDeclarationInitializer(compilation, propertySymbol);
+
+            case IFieldSymbol fieldSymbol:
+                if (fieldSymbol.IsReadOnly)
+                    return true;
+
+                if (!RazorVueMemberWriteAnalysis.CanUseSourceStableMutableCarrierMember(fieldSymbol))
+                    return false;
+
+                return !RazorVueMemberWriteAnalysis.HasObservableWritesOutsideDeclarationInitializer(compilation, fieldSymbol);
+
+            default:
+                return false;
         }
     }
 }

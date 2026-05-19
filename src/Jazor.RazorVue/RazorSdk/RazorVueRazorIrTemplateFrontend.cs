@@ -2117,6 +2117,15 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             localDeclarations = ImmutableArray<RazorVueLocalDeclarationNode>.Empty;
             pendingControlNode = null;
             consumedNodeCount = 0;
+            if (TryCreateStandaloneTemplateImperativeContinuation(
+                    codeNode,
+                    operation,
+                    out pendingControlNode))
+            {
+                consumedNodeCount = 1;
+                return true;
+            }
+
             var encounteredRenderFragmentCarrier = false;
             var encounteredStaticMarkupCarrier = false;
             var declarators = ImmutableArray.CreateBuilder<IVariableDeclaratorOperation>();
@@ -2205,6 +2214,59 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                    localDeclarations.Length > 0 ||
                    pendingControlNode is not null ||
                    continuationIndex > startIndex + 1;
+        }
+
+        private bool TryCreateStandaloneTemplateImperativeContinuation(
+            RazorVueRazorIrNode codeNode,
+            IOperation operation,
+            out PendingTemplateControlNode? pendingControlNode)
+        {
+            pendingControlNode = null;
+            var unwrapped = Unwrap(operation);
+            if (unwrapped is null)
+                return false;
+
+            return unwrapped switch
+            {
+                IBlockOperation blockOperation when
+                    TryGetStandaloneTemplateImperativeStartOperation(blockOperation, out var blockStartOperation) &&
+                    TryCreatePendingTemplateImperativeNode(codeNode, blockOperation.Operations, blockStartOperation, out pendingControlNode) => true,
+                IWhileLoopOperation or
+                ISwitchOperation or
+                ITryOperation or
+                ILockOperation or
+                IUsingOperation or
+                IUsingDeclarationOperation or
+                IReturnOperation or
+                IThrowOperation or
+                IAssignmentOperation or
+                IIncrementOrDecrementOperation
+                    when TryCreatePendingTemplateImperativeNode(codeNode, [unwrapped], unwrapped, out pendingControlNode) => true,
+                IExpressionStatementOperation expressionStatement
+                    when TryCreatePendingTemplateImperativeNode(codeNode, [expressionStatement], expressionStatement, out pendingControlNode) => true,
+                _ => false
+            };
+        }
+
+        private static bool TryGetStandaloneTemplateImperativeStartOperation(
+            IBlockOperation blockOperation,
+            out IOperation startOperation)
+        {
+            startOperation = default!;
+            foreach (var operation in blockOperation.Operations)
+            {
+                var current = Unwrap(operation);
+                if (current is null or IEmptyOperation)
+                    continue;
+
+                if (current is IVariableDeclarationGroupOperation or IVariableDeclarationOperation)
+                    return false;
+
+                startOperation = operation;
+                return true;
+            }
+
+            return false;
         }
 
         private void RegisterStaticMarkupLocalCarrier(
@@ -3066,10 +3128,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 return false;
             }
 
-            if (member is IPropertySymbol propertySymbol && propertySymbol.SetMethod is not null)
-                return false;
-
-            if (member is IFieldSymbol fieldSymbol && !fieldSymbol.IsReadOnly)
+            if (!IsSupportedCurrentComponentRenderFragmentCarrierMember(member))
                 return false;
 
             IOperation? initializer = member switch
@@ -3089,6 +3148,31 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 EmptyParameterScope,
                 out slotTemplate,
                 out _);
+        }
+
+        private bool IsSupportedCurrentComponentRenderFragmentCarrierMember(ISymbol member)
+        {
+            switch (member)
+            {
+                case IPropertySymbol propertySymbol:
+                    if (propertySymbol.SetMethod is null)
+                        return true;
+
+                    if (!RazorVueMemberWriteAnalysis.CanUseSourceStableMutableCarrierMember(propertySymbol))
+                        return false;
+
+                    return !RazorVueMemberWriteAnalysis.HasObservableWritesOutsideDeclarationInitializer(_context.Compilation, propertySymbol);
+                case IFieldSymbol fieldSymbol:
+                    if (fieldSymbol.IsReadOnly)
+                        return true;
+
+                    if (!RazorVueMemberWriteAnalysis.CanUseSourceStableMutableCarrierMember(fieldSymbol))
+                        return false;
+
+                    return !RazorVueMemberWriteAnalysis.HasObservableWritesOutsideDeclarationInitializer(_context.Compilation, fieldSymbol);
+                default:
+                    return false;
+            }
         }
 
         private bool TryCreateFactoryCarrier(
