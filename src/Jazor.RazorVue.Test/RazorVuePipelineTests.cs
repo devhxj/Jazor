@@ -22373,6 +22373,53 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_WithAwaitUsingInBuildRenderTree_ThrowsUnsupportedImperativeRenderLowering()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/await-using-card")]
+                public class AwaitUsingCard : ComponentBase, IVueComponent
+                {
+                    private sealed class AsyncDisposable : IAsyncDisposable
+                    {
+                        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+                    }
+
+                    protected override async void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        await using var disposable = new AsyncDisposable();
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedImperativeRenderLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "await using");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersLockStatementInBuildRenderTree_UsingImperativeRenderBridge()
     {
         var context = CreateContext(

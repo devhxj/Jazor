@@ -34,6 +34,7 @@ RazorVue 对复杂 block code 的路线已不再是“前端继续堆 statement 
 当前仍未完成的主要缺口是：
 
 - imperative body 的 canonical template path：未完成
+- 真正 async imperative render contract：未完成；当前同步 `.mjs` / render-function `.vue` 主线对 `await using` 显式失败
 - 更复杂控制流下的进一步覆盖仍需继续扩大，但 `switch` / `lock` / `try-catch/finally` 已进入正式 imperative render runtime 主线
 
 其中 `imperative AddComponentParameter(...)` 这一项本轮已完成第一阶段正式支持：
@@ -978,7 +979,9 @@ builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span><p>ok</p><
 - RazorVue imperative render 主线现已贯通 handwritten `BuildRenderTree`、Razor IR root template `@{ ... }`、`.mjs` artifact 与 render-function SFC artifact，对 `using` / `using declaration` 统一复用 compiler lowering
 - RazorVue imperative render 主线现已贯通 handwritten `BuildRenderTree`、Razor IR root template `@{ ... }`、`.mjs` artifact 与 render-function SFC artifact，对 `lock` 统一复用 compiler lowering
 - compiler block-code 主线中的 `await using` 已完成 lowering，当前 contract 为：保留单次求值、异步释放顺序、multiple declarator 逆序释放，以及后续资源初始化抛错时对前序已获取资源的异步释放
-- `await using` 目前仍未进入 RazorVue imperative render runtime 主线；也就是说 compiler 已支持，但 RazorVue render-function/SFC 承载仍未落地
+- `await using` 当前不会再被 RazorVue imperative render 悄悄放行；handwritten `BuildRenderTree` 命令式主线会显式报 `UnsupportedImperativeRenderLowering`
+- 原因不是 compiler 不会 lower，而是当前 `.mjs` / render-function `.vue` artifact contract 仍是同步 render，不能诚实承载 async render 语义
+- Razor authored root template `@{ ... }` 场景下，`await using` 还受到上游 Razor SDK/`BuildRenderTree` 同步方法 contract 约束；这一路径在 Razor 生成阶段本身就不成立，不属于 RazorVue 单独漏支持
 
 ### 当前保护
 

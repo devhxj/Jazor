@@ -4,6 +4,7 @@ using System.Linq;
 using Acornima.Ast;
 using Jazor.Compiler;
 using Jazor.RazorVue.Artifacts;
+using Jazor.RazorVue.Descriptor;
 using Jazor.RazorVue.RenderTree;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -22,6 +23,7 @@ internal sealed partial class RazorVueExpressionEmitter
         string builderAlias)
     {
         var operation = imperative.Operation;
+        EnsureSupportedImperativeOperation(operation);
         var bodyArgument = new SenseArgument(Sense.FunctionBody, UseImportAliases: true);
         var visibleLocalAliases = new Dictionary<ILocalSymbol, string>(SymbolEqualityComparer.Default);
         var imperativeBuilderTargets = new Dictionary<IParameterSymbol, string>(SymbolEqualityComparer.Default);
@@ -68,6 +70,85 @@ internal sealed partial class RazorVueExpressionEmitter
             _imperativeBuilderAlias = previous;
         }
     }
+
+    private void EnsureSupportedImperativeOperation(IOperation operation)
+    {
+        if (TryGetUnsupportedImperativeAsyncOperation(operation, out var unsupportedOperation))
+            throw CreateUnsupportedImperativeRenderLoweringException(unsupportedOperation);
+    }
+
+    private static bool TryGetUnsupportedImperativeAsyncOperation(IOperation? operation, out IOperation unsupportedOperation)
+    {
+        unsupportedOperation = null!;
+        if (operation is null)
+            return false;
+
+        foreach (var current in EnumerateImperativeOperationAndDescendants(operation))
+        {
+            if (current is IAnonymousFunctionOperation or ILocalFunctionOperation)
+                continue;
+
+            if (current is IUsingOperation { IsAsynchronous: true } or IUsingDeclarationOperation { IsAsynchronous: true })
+            {
+                unsupportedOperation = current;
+                return true;
+            }
+
+            if (current is IAwaitOperation)
+            {
+                unsupportedOperation = current;
+                return true;
+            }
+
+            if (current is IForEachLoopOperation { IsAsynchronous: true })
+            {
+                unsupportedOperation = current;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static IEnumerable<IOperation> EnumerateImperativeOperationAndDescendants(IOperation root)
+    {
+        yield return root;
+        if (root is IAnonymousFunctionOperation or ILocalFunctionOperation)
+            yield break;
+
+        foreach (var child in root.ChildOperations)
+        {
+            if (child is null)
+                continue;
+
+            foreach (var nested in EnumerateImperativeOperationAndDescendants(child))
+                yield return nested;
+        }
+    }
+
+    private RazorVueCompilationIssueException CreateUnsupportedImperativeRenderLoweringException(IOperation operation)
+    {
+        var origin = operation.Syntax is null
+            ? _snapshot.Origins.FirstOrDefault()
+            : RazorVueSourceOrigin.FromLocation(operation.Syntax.GetLocation(), RazorVueOriginKind.Template);
+        var construct = DescribeUnsupportedImperativeOperation(operation);
+        var issue = new RazorVueCompilationIssue(
+            RazorVueIssueCode.UnsupportedImperativeRenderLowering,
+            RazorVueIssueSeverity.Error,
+            $"RazorVue imperative render lowering does not support '{construct}' in component '{_snapshot.Descriptor.FullName}' because the current `.mjs`/render-function `.vue` artifact contract is synchronous and cannot carry async render semantics.",
+            ImmutableArray<string>.Empty);
+        return new RazorVueCompilationIssueException(issue, _snapshot.Descriptor.FullName, origin);
+    }
+
+    private static string DescribeUnsupportedImperativeOperation(IOperation operation)
+        => operation switch
+        {
+            IUsingOperation { IsAsynchronous: true } => "await using",
+            IUsingDeclarationOperation { IsAsynchronous: true } => "await using",
+            IAwaitOperation => "await",
+            IForEachLoopOperation { IsAsynchronous: true } => "await foreach",
+            _ => operation.Kind.ToString()
+        };
 
     private T WithImperativeBuilderParameterTargets<T>(
         IReadOnlyDictionary<IParameterSymbol, string> targets,

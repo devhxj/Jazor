@@ -3638,6 +3638,54 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithAwaitUsingInBuildRenderTree_ThrowsUnsupportedImperativeRenderLowering()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/await-using-card")]
+                public class AwaitUsingCard : ComponentBase, IVueComponent
+                {
+                    private sealed class AsyncDisposable : IAsyncDisposable
+                    {
+                        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+                    }
+
+                    protected override async void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        await using var disposable = new AsyncDisposable();
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedImperativeRenderLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "await using");
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_WithLockStatementInBuildRenderTree_LowersRenderFunctionVueSfc()
     {
         var context = CreateContext(

@@ -13,6 +13,7 @@ internal enum RazorVueIssueCode
     ComponentNotFound,
     AmbiguousComponentName,
     ReservedIntrinsicNameCollision,
+    UnsupportedImperativeRenderLowering,
     UnsupportedLifecycleLowering,
     UnsupportedSetupLogicLowering,
     CanonicalizationFailed,

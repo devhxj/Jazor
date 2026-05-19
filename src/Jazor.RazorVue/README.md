@@ -111,7 +111,7 @@
   - canonical template path 的稳定显式边界
 - 当前 Phase 1 仍未落地的是：
   - imperative body 的 canonical template path
-  - `await using` 的 RazorVue imperative render runtime 承载，以及更复杂资源管理与异常控制流的正式运行时承载
+  - 真正 async imperative render contract 的设计与产物承载；当前同步 `.mjs` / render-function `.vue` 主线会对 `await using` 显式 fail-fast，而不是生成非法 async render
   - `lock` 当前已进入正式命令式渲染通道，但语义边界刻意收敛为 single-agent erased lock lowering：保留单次求值、空值失败、同步顺序与异常传播，不宣称 CLR monitor / cross-thread 互斥语义
 - imperative component parameter bridge 现已进入 descriptor-aware 路线：
   - `OpenComponent(...)` 在 imperative render bridge 中会携带已解析组件 metadata，而不再把 `AddComponentParameter(...)` 一律当成原样 prop
@@ -122,7 +122,7 @@
   - Razor IR root template `@{ ... }` promotion 后的 imperative 路径也已与 handwritten `BuildRenderTree` 对齐，current-component slot forwarding 不再在 SG/IR 路径退化成普通 slot 函数值
 - 当前仍未落地的是：
   - imperative body 的 canonical template path
-  - `await using` 的 RazorVue imperative render runtime 承载，以及更复杂资源管理与异常控制流的正式运行时承载
+  - 真正 async imperative render contract 的设计与产物承载；当前同步 `.mjs` / render-function `.vue` 主线会对 `await using` 显式 fail-fast，而不是生成非法 async render
 
 ## Default Slot Modeling
 

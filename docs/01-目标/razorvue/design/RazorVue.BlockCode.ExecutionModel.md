@@ -401,7 +401,7 @@ SFC 输出从此分为两类：
 当前仍保留的边界包括：
 
 1. canonical template path 不接受 imperative body
-2. `await using`
+2. `await using` / 其他需要 async render contract 的 imperative 语义；当前同步 `.mjs` / render-function `.vue` 主线必须显式失败
 3. `lock` 的 CLR monitor / cross-thread 互斥语义
 4. 更复杂资源生命周期与异常控制流仍需继续扩面
 
@@ -448,6 +448,7 @@ SFC 输出从此分为两类：
 2. handwritten frontend 与 Razor IR frontend 必须共享同一 promotion 语义，而不是分别发展。
 3. 命令式 block 是正式中间语义，不是 undocumented fallback。
 4. 不能稳定 lower 的命令式 block 必须显式失败，不能 silent degrade。
+5. 任何会把当前同步 imperative render 主线污染为 async render 的语义（例如 `await using`）都必须在 lowering 入口 fail-fast，不能生成包含非法 `await`/async render 约定的产物。
 5. 新增支持面必须同时更新：
    - 架构文档
    - README 支持边界
