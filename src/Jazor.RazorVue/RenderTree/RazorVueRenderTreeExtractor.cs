@@ -1104,13 +1104,6 @@ internal sealed class RazorVueRenderTreeExtractor
                         $"BuildRenderTree helper method '{helperDisplayName}' cannot declare '{modifier}' parameter '{parameter.Name}' in component '{_snapshot.Descriptor.FullName}'. Only ordinary by-value parameters are supported.";
                     return false;
                 }
-
-                if (parameter.IsParams)
-                {
-                    failureMessage =
-                        $"BuildRenderTree helper method '{helperDisplayName}' cannot declare 'params' parameter '{parameter.Name}' in component '{_snapshot.Descriptor.FullName}'. Only ordinary by-value parameters are supported.";
-                    return false;
-                }
             }
 
             var selectedBuilderParameter = builderParameters[0];
@@ -2135,13 +2128,6 @@ internal sealed class RazorVueRenderTreeExtractor
                     };
                     failureMessage =
                         $"BuildRenderTree fragment factory method '{helperDisplayName}' cannot declare '{modifier}' parameter '{parameter.Name}' in component '{_snapshot.Descriptor.FullName}'. Only ordinary by-value parameters are supported.";
-                    return false;
-                }
-
-                if (parameter.IsParams)
-                {
-                    failureMessage =
-                        $"BuildRenderTree fragment factory method '{helperDisplayName}' cannot declare 'params' parameter '{parameter.Name}' in component '{_snapshot.Descriptor.FullName}'. Only ordinary by-value parameters are supported.";
                     return false;
                 }
             }

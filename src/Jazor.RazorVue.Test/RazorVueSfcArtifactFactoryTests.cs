@@ -3215,6 +3215,58 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersCurrentComponentRenderHelperMethodWithParamsParameter()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/render-helper-card")]
+                public class RenderHelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderBody(builder, Title, "suffix");
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder, params string?[] values)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, values.Length);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ScriptSetupText, "const __jazor$0 = computed(() => [props.title, \"suffix\"]);");
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(values) in [__jazor$0]\">");
+        StringAssert.Contains(artifact.TemplateText, "<section>");
+        StringAssert.Contains(artifact.TemplateText, "{{ values.length }}");
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_WithTypedSlotTemplateComponentLocalVariableInTemplate_LowersTemplateScopedAlias()
     {
         var context = CreateContext(
@@ -4566,6 +4618,61 @@ public sealed class RazorVueSfcArtifactFactoryTests
         StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(title) in [\"fallback-title\"]\">");
         StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(item) in [42]\">");
         StringAssert.Contains(artifact.TemplateText, "{{ title }}");
+        StringAssert.Contains(artifact.TemplateText, "{{ item }}");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersParameterizedCurrentComponentRenderFragmentFactoryMethodWithParamsParameter_IntoNestedTemplateScopeWrappers()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private RenderFragment<int> CreateTemplate(params string?[] values)
+                        => item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, values.Length);
+                            itemBuilder.AddContent(3, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, CreateTemplate(Title, "suffix"), 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ScriptSetupText, "const __jazor$0 = computed(() => [props.title, \"suffix\"]);");
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(values) in [__jazor$0]\">");
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(item) in [42]\">");
+        StringAssert.Contains(artifact.TemplateText, "{{ values.length }}");
         StringAssert.Contains(artifact.TemplateText, "{{ item }}");
     }
 

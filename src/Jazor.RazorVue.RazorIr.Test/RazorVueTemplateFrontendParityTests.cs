@@ -471,6 +471,52 @@ public sealed class RazorVueTemplateFrontendParityTests
     }
 
     [TestMethod]
+    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromFactoryMethodWithParamsParameterAssignedToTypedComponentSlot()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @using Microsoft.AspNetCore.Components
+
+            @{
+                RenderFragment<int> template = CreateTemplate(Title, "suffix");
+            }
+
+            <LayoutCard ItemTemplate="template" />
+
+            @code {
+                [Parameter]
+                public string? Title { get; set; }
+
+                private RenderFragment<int> CreateTemplate(params string?[] values)
+                    => item => @<span>@values.Length @item</span>;
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.Parity.RenderFragmentLocalCarrier.FactoryParams.TypedSlot.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/layout-card")]
+                public partial class LayoutCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+    }
+
+    [TestMethod]
     public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromCurrentComponentFieldCarrierAssignedToTypedComponentSlot()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";

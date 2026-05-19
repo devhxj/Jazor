@@ -13392,6 +13392,53 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersCurrentComponentRenderHelperMethodWithParamsParameter()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/render-helper-card")]
+                public class RenderHelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderBody(builder, Title, "suffix");
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder, params string?[] values)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, values.Length);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => ((values) => h(\"section\", null, values.length))([props.title, \"suffix\"]);");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_ThrowsCompilationIssueForInheritedNonParameterLifecyclePayload()
     {
         var context = CreateContext(
@@ -21564,6 +21611,55 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "return () => ((title) => ((item) => h(\"span\", null, [title, item]))(42))(\"fallback-title\");");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersParameterizedCurrentComponentRenderFragmentFactoryMethodWithParamsParameter()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/typed-fragment-card")]
+                public class TypedFragmentCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private RenderFragment<int> CreateTemplate(params string?[] values)
+                        => item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, values.Length);
+                            itemBuilder.AddContent(3, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, CreateTemplate(Title, "suffix"), 42);
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => ((values) => ((item) => h(\"span\", null, [values.length, item]))(42))([props.title, \"suffix\"]);");
     }
 
     [TestMethod]

@@ -1345,6 +1345,69 @@ public sealed class RazorVueCanonicalSfcSemanticTests
     }
 
     [TestMethod]
+    public void RazorVue_CanonicalModelFactory_MapsParameterizedCurrentComponentRenderFragmentFactoryMethodWithParamsParameter_ToNestedTemplateScopeNodes()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private RenderFragment<int> CreateTemplate(params string?[] values)
+                        => item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, values.Length);
+                            itemBuilder.AddContent(3, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, CreateTemplate(Title, "suffix"), 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+
+        var valuesScope = AssertNode<RazorVueCanonicalTemplateScopeNode>(canonical.Template.Children.Single());
+        Assert.AreEqual("values", valuesScope.ScopeName);
+        Assert.AreEqual("[props.title, \"suffix\"]", valuesScope.InitializerExpressionText);
+
+        var itemScope = AssertNode<RazorVueCanonicalTemplateScopeNode>(valuesScope.Children.Children.Single());
+        Assert.AreEqual("item", itemScope.ScopeName);
+        Assert.AreEqual("42", itemScope.InitializerExpressionText);
+
+        var span = AssertNode<RazorVueCanonicalElementNode>(itemScope.Children.Children.Single());
+        var lengthInterpolation = AssertNode<RazorVueCanonicalInterpolationNode>(span.Children.Children[0]);
+        var itemInterpolation = AssertNode<RazorVueCanonicalInterpolationNode>(span.Children.Children[1]);
+        Assert.AreEqual("values.length", lengthInterpolation.ExpressionText);
+        Assert.AreEqual("item", itemInterpolation.ExpressionText);
+    }
+
+    [TestMethod]
     public void RazorVue_CanonicalModelFactory_MapsParameterizedCurrentComponentRenderFragmentFactoryMethodUsingNamedArgumentsOutOfDeclarationOrder_PreservingCallSiteEvaluationOrder()
     {
         var context = CreateContext(
@@ -1946,6 +2009,65 @@ public sealed class RazorVueCanonicalSfcSemanticTests
         Assert.AreEqual("title", interpolation.ExpressionText);
         Assert.IsTrue(sfc.ScriptSetupBlock.LiftedBindings.IsDefaultOrEmpty);
         Assert.IsTrue(sfc.TemplateBlock.BindingSites.IsDefaultOrEmpty);
+    }
+
+    [TestMethod]
+    public void RazorVue_CanonicalModelFactory_MapsCurrentComponentRenderHelperMethodWithParamsParameter_ToTemplateScopeNode()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderBody(builder, Title, "suffix");
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder, params string?[] values)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, values.Length);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+        var scope = AssertNode<RazorVueCanonicalTemplateScopeNode>(canonical.Template.Children.Single());
+        var sfc = new RazorVueSfcSemanticModelFactory().Create(canonical);
+
+        Assert.AreEqual("values", scope.ScopeName);
+        Assert.AreEqual("[props.title, \"suffix\"]", scope.InitializerExpressionText);
+        var section = AssertNode<RazorVueCanonicalElementNode>(scope.Children.Children.Single());
+        var interpolation = AssertNode<RazorVueCanonicalInterpolationNode>(section.Children.Children.Single());
+        Assert.AreEqual("values.length", interpolation.ExpressionText);
+        Assert.AreEqual("__jazor$0", sfc.ScriptSetupBlock.LiftedBindings.Single().Name);
+        Assert.AreEqual(scope.InitializerExpressionText, sfc.ScriptSetupBlock.LiftedBindings.Single().ExpressionText);
+        Assert.AreEqual("root/child[0]/scopeInit", sfc.TemplateBlock.BindingSites.Single().SitePath);
+        Assert.AreEqual("__jazor$0", sfc.TemplateBlock.BindingSites.Single().TemplateExpressionText);
     }
 
     [TestMethod]

@@ -2085,6 +2085,65 @@ public sealed class BuildRenderTreeTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_WithCurrentComponentRenderHelperMethodUsingParamsParameter_ProducesStructuredNodes()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderBody(builder, Title, "suffix");
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder, params string?[] values)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, values.Length);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+
+        var templateScope = renderTree.Children.Single() as RazorVueTemplateScopeNode;
+        Assert.IsNotNull(templateScope);
+        Assert.AreEqual("values", templateScope.ScopeName);
+        Assert.IsInstanceOfType<IArrayCreationOperation>(templateScope.Initializer);
+
+        var section = templateScope.Children.Children.Single() as RazorVueElementNode;
+        Assert.IsNotNull(section);
+        Assert.AreEqual("section", section.TagName);
+        var expression = section.Children.Children.Single() as RazorVueExpressionNode;
+        Assert.IsNotNull(expression);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(expression.Expression);
+    }
+
+    [TestMethod]
     public void CreateRenderTree_WithElementSetKey_PreservesNodeKey()
     {
         var context = CreateContext(
@@ -3125,6 +3184,72 @@ public sealed class BuildRenderTreeTemplateFrontendTests
         Assert.IsNotNull(itemScope);
         Assert.AreEqual("item", itemScope.ScopeName);
         Assert.IsInstanceOfType<ILiteralOperation>(itemScope.Initializer);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithParameterizedCurrentComponentRenderFragmentFactoryMethodUsingParamsParameter_ProducesNestedTemplateScopeNodes()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private RenderFragment<int> CreateTemplate(params string?[] values)
+                        => item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, values.Length);
+                            itemBuilder.AddContent(3, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, CreateTemplate(Title, "suffix"), 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+
+        var outerScope = renderTree.Children.Single() as RazorVueTemplateScopeNode;
+        Assert.IsNotNull(outerScope);
+        Assert.AreEqual("values", outerScope.ScopeName);
+        Assert.IsInstanceOfType<IArrayCreationOperation>(outerScope.Initializer);
+
+        var itemScope = outerScope.Children.Children.Single() as RazorVueTemplateScopeNode;
+        Assert.IsNotNull(itemScope);
+        Assert.AreEqual("item", itemScope.ScopeName);
+        Assert.IsInstanceOfType<ILiteralOperation>(itemScope.Initializer);
+
+        var span = itemScope.Children.Children.Single() as RazorVueElementNode;
+        Assert.IsNotNull(span);
+        Assert.AreEqual("span", span.TagName);
+        Assert.AreEqual(2, span.Children.Children.Length);
+        Assert.IsInstanceOfType<RazorVueExpressionNode>(span.Children.Children[0]);
+        Assert.IsInstanceOfType<RazorVueExpressionNode>(span.Children.Children[1]);
     }
 
     [TestMethod]

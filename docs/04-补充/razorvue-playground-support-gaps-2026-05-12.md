@@ -753,9 +753,11 @@ protected override void BuildRenderTree(RenderTreeBuilder builder)
 - 支持：`private void RenderBody(RenderTreeBuilder builder, string? title, string? subtitle) { ... }`
 - 支持：named argument / builder 参数不在第一个位置，只要调用点参数与声明一一对应
 - 支持：省略 optional parameter 且默认值可安全投影到当前 template/canonical 边界
+- 支持：`params` 数组参数，只要 Roslyn 调用绑定仍是“单个数组形参 <- 单个数组实参”语义；expanded/empty `params` 调用会按正常数组创建结果进入 RazorVue，而不会被额外拍平
 - 支持：多个额外值参数按调用点实参求值顺序形成嵌套 template scope / 嵌套 IIFE，同时保持 helper 形参与实参的正确绑定；named argument 打乱声明顺序时不会退化成错误重排
+- 支持：`params` 数组实参在 canonical/H 路径保留为数组表达式；SFC 路径若模板侧不能直接内联该数组初始化，会提升为 setup binding（例如 `__jazor$0 = computed(() => [props.title, "suffix"])`）后再进入局部 `<template v-for>` scope wrapper
 - 支持：`for` / `foreach` body 中使用 loop 变量调用 helper 时，loop 变量可作为 helper 实参稳定进入后续 helper parameter scope；不会因为 loop/template scope 叠加而丢失绑定或错误提升
-- 不支持：`ref` / `out` / `in` / `params`
+- 不支持：`ref` / `out` / `in`
 - 不支持：helper body 依赖调用方已打开 element/component frame 的 `AddAttribute` / `SetKey` / `CloseElement` / `CloseComponent` 等协议
 - 不支持：递归 render helper
 
@@ -828,8 +830,10 @@ builder.AddContent(0, template, 42);
 - 支持：current-component method / local function 的“普通按值参数 fragment factory”可直接用于：
   - `builder.AddContent(0, CreateTemplate(Title), 42);`
   - 组件 typed slot/template 参数，例如 `builder.AddAttribute(1, "ItemTemplate", CreateTemplate(Title));`
+- 支持：current-component method / local function 的 `params` 数组 fragment factory；expanded / empty `params` 调用会保留为单个数组绑定结果，而不是在 RazorVue 前端自行拍平成多个逻辑形参
 - 支持：带参数 fragment factory 的调用结果即使先经过上述受控 carrier，再用于 `AddContent(...)` 或组件 typed slot/template 参数，frontend / canonical / H / SFC 四层也会保持与直接调用点一致的作用域语义
 - 支持：带参数 fragment factory 在 frontend / canonical / H / SFC 中保留额外参数局部作用域；named argument 打乱书写顺序时，仍按调用点左到右求值顺序保留外层 scope 包裹，而不是按形参声明顺序重排求值
+- 支持：若带参 fragment factory 的 captured 参数是数组创建（典型如 `params` expanded call），SFC 路径会在需要时把该数组初始化提升为 setup binding，再通过局部 template scope wrapper 消费，以避免模板内重复构造
 - 支持：frontend / canonical / H / SFC 对局部 carrier 与 inline 形态保持相同 lowering 结果
 - 支持：当前组件 slot outlet / slot forwarding 仅从 `[Parameter] RenderFragment...` 属性识别
 - 支持：当前组件 `[Parameter] RenderFragment?` 转发到子组件默认/未参数化 slot

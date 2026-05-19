@@ -2667,13 +2667,6 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                         $"RazorVue fragment factory method '{helperDisplayName}' cannot declare '{modifier}' parameter '{parameter.Name}' in component '{_snapshot.Descriptor.FullName}'. Only ordinary by-value parameters are supported.";
                     return false;
                 }
-
-                if (parameter.IsParams)
-                {
-                    failureMessage =
-                        $"RazorVue fragment factory method '{helperDisplayName}' cannot declare 'params' parameter '{parameter.Name}' in component '{_snapshot.Descriptor.FullName}'. Only ordinary by-value parameters are supported.";
-                    return false;
-                }
             }
 
             extraParameters = [.. method.Parameters];

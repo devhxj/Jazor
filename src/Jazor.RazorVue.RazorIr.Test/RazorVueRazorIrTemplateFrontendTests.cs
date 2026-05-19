@@ -1343,6 +1343,69 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_ForRenderFragmentLocalCarrierInitializedFromFactoryMethodWithParamsParameter_AssignedToTypedComponentSlot_ProducesCapturedScopeAndStructuredSlotTemplate()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @using Microsoft.AspNetCore.Components
+
+            @{
+                RenderFragment<int> template = CreateTemplate(Title, "suffix");
+            }
+
+            <LayoutCard ItemTemplate="template" />
+
+            @code {
+                [Parameter]
+                public string? Title { get; set; }
+
+                private RenderFragment<int> CreateTemplate(params string?[] values)
+                    => item => @<span>@values.Length @item</span>;
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.RenderFragmentLocalCarrier.FactoryParams.TypedSlot.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/layout-card")]
+                public partial class LayoutCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+
+        var component = Assert.IsInstanceOfType<RazorVueComponentNode>(renderTree.Children.Single());
+        var slotTemplate = component.SlotTemplates.Single();
+        Assert.AreEqual("ItemTemplate", slotTemplate.PublicName);
+        Assert.AreEqual("item", slotTemplate.ParameterName);
+
+        var valuesScope = Assert.IsInstanceOfType<RazorVueTemplateScopeNode>(slotTemplate.Children.Children.Single());
+        Assert.AreEqual("values", valuesScope.ScopeName);
+        Assert.IsInstanceOfType<IArrayCreationOperation>(valuesScope.Initializer);
+
+        var span = Assert.IsInstanceOfType<RazorVueElementNode>(valuesScope.Children.Children.Single());
+        Assert.AreEqual("span", span.TagName);
+        Assert.AreEqual(3, span.Children.Children.Length);
+        Assert.IsInstanceOfType<RazorVueExpressionNode>(span.Children.Children[0]);
+        var whitespace = Assert.IsInstanceOfType<RazorVueTextNode>(span.Children.Children[1]);
+        Assert.AreEqual(" ", whitespace.Text);
+        Assert.IsInstanceOfType<RazorVueExpressionNode>(span.Children.Children[2]);
+    }
+
+    [TestMethod]
     public void CreateRenderTree_ForRenderFragmentLocalCarrierInitializedFromCurrentComponentPropertyCarrier_AssignedToTypedComponentSlot_ProducesCapturedScopeAndStructuredSlotTemplate()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -1894,6 +1957,54 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
         var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
 
         StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (item) => ((title) => h(\"span\", null, [title, \" \", item]))(\"fallback-title\")");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_CanLowerRenderFragmentLocalCarrierInitializedFromFactoryMethodWithParamsParameter_AssignedToTypedComponentSlot()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @using Microsoft.AspNetCore.Components
+
+            @{
+                RenderFragment<int> template = CreateTemplate(Title, "suffix");
+            }
+
+            <LayoutCard ItemTemplate="template" />
+
+            @code {
+                [Parameter]
+                public string? Title { get; set; }
+
+                private RenderFragment<int> CreateTemplate(params string?[] values)
+                    => item => @<span>@values.Length @item</span>;
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.RenderFragmentLocalCarrier.FactoryParams.TypedSlot.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/layout-card")]
+                public partial class LayoutCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (item) => ((values) => h(\"span\", null, [values.length, \" \", item]))([props.title, \"suffix\"])");
     }
 
     [TestMethod]

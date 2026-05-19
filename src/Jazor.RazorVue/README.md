@@ -202,15 +202,17 @@
 - settable property、动态重赋值 field、以及需要任意 getter/dataflow 分析的 member carrier 当前仍明确不支持。
 - current-component member carrier 一旦形成自引用或环引用，会显式失败；RazorVue 不支持递归 current-component `RenderFragment` member carrier。
 - fragment factory helper 目前只支持非 generic、源码可分析返回值。
-  - direct `AddContent(...)` 路径支持零参数和普通按值参数 factory
-  - 组件 typed slot/template 参数路径也支持零参数和普通按值参数 factory，但仍要求调用点直接传入当前组件方法 / local function factory
-  - `ref` / `out` / `in` / `params` / generic / recursive fragment factory 当前仍明确不支持
+  - direct `AddContent(...)` 路径支持零参数、普通按值参数，以及 `params` 数组参数 factory
+  - 组件 typed slot/template 参数路径也支持零参数、普通按值参数，以及 `params` 数组参数 factory，但仍要求调用点直接传入当前组件方法 / local function factory
+  - `params` 在 RazorVue 中按“单个强类型数组形参绑定”处理，不扩展成 JavaScript 风格可变参数拍平协议
+  - `ref` / `out` / `in` / generic / recursive fragment factory 当前仍明确不支持
 - 对于带额外值参数的 render helper，当前只支持：
   - 恰好一个 `RenderTreeBuilder` 参数
-  - 其余参数均为普通按值参数
+  - 其余参数为普通按值参数，或一个按 Roslyn 正常绑定为单个数组实参的 `params` 参数
   - 同时适用于当前组件方法与 `BuildRenderTree` 内 local function helper
   - 调用点参数与 helper 声明一一对应；支持 named argument，也支持安全可投影的 omitted optional default value
   - 多个额外参数会按调用点实参求值顺序形成嵌套局部作用域，同时保持每个 helper 形参绑定到其正确实参；即使 named argument 打乱声明顺序，也不会退化成按声明顺序重排求值
+  - 对 `params` 参数，RazorVue 保留 Roslyn 的单数组绑定结果；canonical/H 会直接使用该数组表达式，SFC 会在需要时把数组初始化提升为 setup binding，再通过局部 template scope wrapper 消费
   - helper body 必须源码可分析且自身形成可独立 canonicalize 的片段；不支持依赖调用方已打开节点/component frame 的 attribute/key/close 协议
 - 对 SFC 输出，模板局部声明会编码为局部 template scope wrapper，而不是泄漏为顶层 `script setup` 公共绑定。
 
