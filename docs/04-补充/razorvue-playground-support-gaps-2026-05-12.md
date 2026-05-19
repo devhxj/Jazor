@@ -53,7 +53,8 @@ RazorVue 对复杂 block code 的路线已不再是“前端继续堆 statement 
 - current-component slot forwarding 现已在 imperative 路径保留 slot 语义，不再错误降级为 raw prop
 - imperative body 中真实使用到的 injected/resolved component prop / emit / slot runtime shape，现已进入 descriptor identity/runtime-usage 收集；descriptor hash / HMR 边界推导不再忽略 imperative `AddComponentParameter(...)`、slot forwarding 或 slot builder 内嵌套组件
 - Razor IR root template `@{ ... }` promotion 后的 imperative current-component slot forwarding 现已与 handwritten `BuildRenderTree` 对齐，不再在 SG/IR 路径退化成普通 `slots.xxx ?? null` 值传递
-- Razor IR typed child-content / typed slot template body 中，“局部 immutable cache + imperative statement” 现已进入正式支持：局部声明后接 `while` / `switch` / `try-catch-finally` / `lock` 会稳定提升为 `RazorVueImperativeBlockNode`，并复用现有 imperative render bridge
+- Razor IR typed child-content / typed slot template body 中，“局部 immutable cache + imperative statement” 现已进入正式支持：局部声明后接 `while` / `do-while` / 带 `break` / `continue` 的 `for` / `foreach` / `switch` / `try-catch-finally` / `using` / `using declaration` / `lock`，以及需要 method/local imperative tail 语义的 `return` / `throw` / mutation，都会稳定提升为 `RazorVueImperativeBlockNode`，并复用现有 imperative render bridge
+- 其中 typed slot/template body 的一个关键语义已锁定：一旦局部声明后的后续片段命中 imperative tail，frontend 会把“命中点到同一 slot body 末尾”的剩余片段整体收进同一个 imperative tail，而不是在命令式片段后再恢复 declarative sibling；这样才能正确保留 `return` / `throw` / mutation 对后续模板节点的可见性/终止语义
 
 因此该缺口后续剩余的不是“完全不支持 imperative slot”，而是：
 
@@ -1125,7 +1126,7 @@ builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span
 - 不支持：不是“声明后紧邻一次简单赋值”的其他先声明后赋值形态
 - 当前这一“声明式模板 code-block 结构化恢复”通道不支持：局部声明后进入更一般的语句执行模型
 - 当前这一“声明式模板 code-block 结构化恢复”通道不支持：赋值语句、递增/递减、delegate/callable template state
-- 当前这一“声明式模板 code-block 结构化恢复”通道本身仍不负责：`switch` / `while` / `do-while` / `try-catch` / `using` / `lock` 等一般语句执行模型；其中 typed child-content / slot template body 内“局部声明后接 `while` / `switch` / `try-catch-finally` / `lock`”已改走 imperative render 主线，不再属于未支持缺口
+- 当前这一“声明式模板 code-block 结构化恢复”通道本身仍不负责：`switch` / `while` / `do-while` / `try-catch` / `using` / `lock` 等一般语句执行模型；其中 typed child-content / slot template body 内“局部声明后接 `while` / `do-while` / `switch` / `try-catch-finally` / `using` / `using declaration` / `lock` / `return` / `throw` / mutation`”已改走 imperative render 主线，不再属于未支持缺口
 - 但这些 block code 不再按“无限期只能 fail-fast”处理：RazorVue 现已正式收敛到“声明式模板通道 + 命令式渲染通道”的双通道架构，后续将按 `docs/01-目标/razorvue/design/RazorVue.BlockCode.ExecutionModel.md` 进入命令式 block promotion / render-function lowering 路线，而不是继续在 Razor IR frontend 内无上限堆 statement 特判
 
 补充说明：

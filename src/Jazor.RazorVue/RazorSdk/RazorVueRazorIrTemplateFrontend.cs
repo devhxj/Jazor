@@ -2339,6 +2339,14 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                                 when builder.Count > 0:
                                 if (!encounteredNonDeclaration &&
                                     pendingControlNode is null &&
+                                    TryCreatePendingTemplateImperativeNode(codeNode, blockOperation.Operations, child, out pendingControlNode))
+                                {
+                                    encounteredNonDeclaration = true;
+                                    continue;
+                                }
+
+                                if (!encounteredNonDeclaration &&
+                                    pendingControlNode is null &&
                                     TryCreatePendingTemplateControlNode(codeNode, conditionalOperation, out pendingControlNode))
                                 {
                                     encounteredNonDeclaration = true;
@@ -2351,6 +2359,14 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                                 when builder.Count > 0:
                                 if (!encounteredNonDeclaration &&
                                     pendingControlNode is null &&
+                                    TryCreatePendingTemplateImperativeNode(codeNode, blockOperation.Operations, child, out pendingControlNode))
+                                {
+                                    encounteredNonDeclaration = true;
+                                    continue;
+                                }
+
+                                if (!encounteredNonDeclaration &&
+                                    pendingControlNode is null &&
                                     TryCreatePendingTemplateControlNode(codeNode, forEachOperation, out pendingControlNode))
                                 {
                                     encounteredNonDeclaration = true;
@@ -2361,6 +2377,14 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                                 continue;
                             case IForLoopOperation forOperation
                                 when builder.Count > 0:
+                                if (!encounteredNonDeclaration &&
+                                    pendingControlNode is null &&
+                                    TryCreatePendingTemplateImperativeNode(codeNode, blockOperation.Operations, child, out pendingControlNode))
+                                {
+                                    encounteredNonDeclaration = true;
+                                    continue;
+                                }
+
                                 if (!encounteredNonDeclaration &&
                                     pendingControlNode is null &&
                                     TryCreatePendingTemplateControlNode(codeNode, forOperation, out pendingControlNode))

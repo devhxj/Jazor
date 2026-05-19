@@ -104,7 +104,8 @@
   - 支持局部声明后进入 `if` / `if-else` / `foreach` / count-style `for`
   - 支持 Razor IR 把 `}` 与下一个 `if` / `foreach` / `for` header 线性化到同一 `CSharpCodeIntermediateNode` 时的顺序恢复，包括 `if -> if`、`if -> foreach`、`foreach -> if`、`for -> if`
   - 支持一个更窄的 Razor IR local `RenderFragment` carrier 子集：必须是声明点初始化；初始化器可以是 inline Razor template、当前组件只读 `RenderFragment` member carrier，或受支持 fragment factory 调用结果。若最终模板体对应 Razor SDK 暴露的 `TemplateIntermediateNode`，该 carrier 之后同一 code-block 仍可继续进入受支持的 `if` / `foreach` / `for` 顺序控制
-- 在 typed child-content / typed slot template body 中，局部声明后的 `while` / `switch` / `try-catch-finally` / `lock` 现已不再走声明式结构化节点扩张，而是稳定提升为 `RazorVueImperativeBlockNode` 并进入现有 imperative render 主线；该路径与 handwritten `BuildRenderTree` imperative bridge 共享同一 lowering/runtime contract
+- 在 typed child-content / typed slot template body 中，局部声明后的 `while` / `do-while` / 带 `break` / `continue` 的 `for` / `foreach` / `switch` / `try-catch-finally` / `using` / `using declaration` / `lock` 以及需要 method/local imperative tail 语义的 `return` / `throw` / mutation，现已不再走声明式结构化节点扩张，而是稳定提升为 `RazorVueImperativeBlockNode` 并进入现有 imperative render 主线；该路径与 handwritten `BuildRenderTree` imperative bridge 共享同一 lowering/runtime contract
+- 对 typed slot/template body 而言，一旦局部声明后的后续片段需要 imperative tail 语义，frontend 会把“该命中点到同一 slot body 尾部”的剩余节点统一收进同一个 imperative tail，而不是切成“局部 imperative + 后续再回 declarative sibling”的混合片段；这样才能正确保留 `return` / `throw` / mutation 对后续节点可见性的真实模板语义
 - 当前这一声明式结构化通道不支持局部声明后进入更一般的语句执行模型；除“声明后紧邻一次简单赋值”外，其他赋值语句、递增/递减、delegate/callable template state、`switch` / `while` / `do-while` / `try-catch` / `using` / `lock` 仍不走此通道
 - 上述更一般的 block code 不再被视为长期只能 fail-fast 的永久边界；其中 `while` / `do-while` / `switch` / `lock` / `try-catch/finally` / `using` / `using declaration` 已进入正式命令式渲染通道，其余语句族将继续沿这条通道扩面，而不是继续把它们塞回 `RazorVueConditionalNode` / `RazorVueForEachNode` / `RazorVueForNode`
 
