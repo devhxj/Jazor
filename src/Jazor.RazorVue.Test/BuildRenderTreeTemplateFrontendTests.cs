@@ -4361,6 +4361,119 @@ public sealed class BuildRenderTreeTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_WithDoWhileLoop_ProducesImperativeLoopBlockNode()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        var index = 0;
+                        do
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.CloseElement();
+                            index++;
+                        }
+                        while (index < Count);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+        Assert.AreEqual(1, renderTree.Children.Length);
+        var imperative = renderTree.Children[0] as RazorVueImperativeBlockNode;
+        Assert.IsNotNull(imperative);
+        Assert.AreEqual(RazorVueImperativeBlockKind.LoopBlock, imperative.Kind);
+        CollectionAssert.Contains(imperative.VisibleLocals.Select(static local => local.Name).ToArray(), "index");
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithDeclarativeSiblingsAroundWhileLoop_PromotesOnlyLoopBlock()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "header");
+                        builder.AddContent(1, "start");
+                        builder.CloseElement();
+
+                        var index = 0;
+                        while (index < Count)
+                        {
+                            builder.OpenElement(2, "section");
+                            builder.AddContent(3, index);
+                            builder.CloseElement();
+                            index++;
+                        }
+
+                        builder.OpenElement(4, "footer");
+                        builder.AddContent(5, "end");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+
+        Assert.AreEqual(3, renderTree.Children.Length);
+        Assert.IsInstanceOfType<RazorVueElementNode>(renderTree.Children[0]);
+        Assert.IsInstanceOfType<RazorVueImperativeBlockNode>(renderTree.Children[1]);
+        Assert.IsInstanceOfType<RazorVueElementNode>(renderTree.Children[2]);
+        Assert.AreEqual(RazorVueImperativeBlockKind.LoopBlock, ((RazorVueImperativeBlockNode)renderTree.Children[1]).Kind);
+    }
+
+    [TestMethod]
     public void CreateRenderTree_WithForLoopAndContinue_ProducesImperativeLoopBlockNode()
     {
         var context = CreateContext(
@@ -4791,7 +4904,7 @@ public sealed class BuildRenderTreeTemplateFrontendTests
     }
 
     [TestMethod]
-    public void CreateRenderTree_WithTemplateScopedLocalWithoutInitializer_ProducesImperativeLocalBlockNode()
+    public void CreateRenderTree_WithTemplateScopedLocalWithoutInitializerThenImmediateAssignment_ProducesTemplateScopedLocalNode()
     {
         var context = CreateContext(
             """
@@ -4832,11 +4945,18 @@ public sealed class BuildRenderTreeTemplateFrontendTests
 
         var snapshot = context.CreateSemanticSnapshots().Single();
         var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
-        Assert.AreEqual(1, renderTree.Children.Length);
-        var imperative = renderTree.Children[0] as RazorVueImperativeBlockNode;
-        Assert.IsNotNull(imperative);
-        Assert.AreEqual(RazorVueImperativeBlockKind.LocalBlock, imperative.Kind);
-        CollectionAssert.Contains(imperative.VisibleLocals.Select(static local => local.Name).ToArray(), "localTitle");
+
+        Assert.AreEqual(2, renderTree.Children.Length);
+        var local = renderTree.Children[0] as RazorVueLocalDeclarationNode;
+        Assert.IsNotNull(local);
+        Assert.AreEqual("localTitle", local.LocalSymbol.Name);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(local.Initializer);
+
+        var section = renderTree.Children[1] as RazorVueElementNode;
+        Assert.IsNotNull(section);
+        var expression = section.Children.Children.Single() as RazorVueExpressionNode;
+        Assert.IsNotNull(expression);
+        Assert.IsInstanceOfType<ILocalReferenceOperation>(expression.Expression);
     }
 
     private static RazorVueCompilationContext CreateContext(string source)

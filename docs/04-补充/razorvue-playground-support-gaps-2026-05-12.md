@@ -24,10 +24,12 @@ RazorVue 对复杂 block code 的路线已不再是“前端继续堆 statement 
 
 - render tree 层新增 `RazorVueImperativeBlockNode` / `RazorVueImperativeBlockKind`
 - handwritten `BuildRenderTree` frontend 与 Razor IR frontend 共享 body-level promotion 规则
+- handwritten `BuildRenderTree` frontend 与 Razor IR frontend 现已共享 local segment promotion 规则：声明式 siblings 保留原 render tree，只把真正命中的 imperative segment 提升为 `RazorVueImperativeBlockNode`
 - complex body 会被提升为命令式 render block，而不是继续被前端拆成越来越多的伪声明式节点
 - `.mjs` / H artifact 已具备 body-level imperative render bridge
 - `.vue` / SFC artifact 现已具备 render-function SFC 承载；imperative body 不再在 SFC lowering 阶段被显式拒绝
-- 首段真实 imperative render 承载已覆盖：提前 `return`、`while`、带 `break` / `continue` 的 `for` / `foreach`、`switch`、`lock`、`try/catch/finally`、局部 mutation、imperative body 内常量 `AddMarkupContent(...)`
+- 首段真实 imperative render 承载已覆盖：提前 `return`、`while` / `do-while`、带 `break` / `continue` 的 `for` / `foreach`、`switch`、`lock`、`try/catch/finally`、局部 mutation、imperative body 内常量 `AddMarkupContent(...)`
+- mixed declarative + imperative render tree 现已统一按“mixed render-function path”处理：任意位置只要出现 imperative node，最终 `.vue` 产物统一切到 render-function 模型，而不是试图局部回到 template canonical subtree
 
 ### 仍未完成
 
@@ -35,7 +37,7 @@ RazorVue 对复杂 block code 的路线已不再是“前端继续堆 statement 
 
 - imperative body 的 canonical template path：未完成
 - 真正 async imperative render contract：未完成；当前同步 `.mjs` / render-function `.vue` 主线对 `await using` 显式失败
-- 更复杂控制流下的进一步覆盖仍需继续扩大，但 `for` / `foreach` 的 `break` / `continue`、`switch` / `lock` / `try-catch/finally` 已进入正式 imperative render runtime 主线
+- 更复杂控制流下的进一步覆盖仍需继续扩大，但 `while` / `do-while`、`for` / `foreach` 的 `break` / `continue`、`switch` / `lock` / `try-catch/finally` 已进入正式 imperative render runtime 主线
 
 其中 `imperative AddComponentParameter(...)` 这一项本轮已完成第一阶段正式支持：
 
@@ -59,7 +61,7 @@ RazorVue 对复杂 block code 的路线已不再是“前端继续堆 statement 
 
 - 架构与中间语义已收敛
 - 双前端已对齐
-- body-level imperative H/render-function 主线已覆盖 `return` / `while` / `for` / `foreach` 中的 `break` / `continue` / `switch` / `lock` / `try-catch-finally` / mutation / constant markup
+- body-level imperative H/render-function 主线已覆盖 `return` / `while` / `do-while` / `for` / `foreach` 中的 `break` / `continue` / `switch` / `lock` / `try-catch-finally` / mutation / constant markup
 - 下一阶段重点转向 canonical template path 与更复杂语句族扩面
 
 ### 当前保护
@@ -654,8 +656,9 @@ builder.AddAttribute(1, nameof(ChildCard.ItemTemplate), (RenderFragment<int>)((i
 支持边界仍然刻意收窄为“带初始化器的不可变模板局部声明/局部模板作用域”：
 
 - 支持：`var decorated = item + "!";`
+- 支持：`string? localTitle; localTitle = Title;` 这种“声明后紧邻一次简单赋值”的窄模式；仍按不可变 template local 处理
 - 支持：`builder.AddContent(0, (RenderFragment<int>)(item => itemBuilder => { ... }), 42);`
-- 不支持：先声明后赋值
+- 不支持：声明后不是“紧邻一次简单赋值”的其他变体
 - 不支持：`++` / `--` / 其他写入型模板局部状态
 - 不支持：把模板局部声明当作匿名函数/委托状态载体继续扩散
 - 不支持：把任意 delegate 值、动态 callable、外部 fragment 变量都放宽成可立即模板执行的 `AddContent(RenderFragment<T>, value)` 形态；当前要求源码 inline 且可分析
@@ -670,10 +673,11 @@ builder.AddAttribute(1, nameof(ChildCard.ItemTemplate), (RenderFragment<int>)((i
 当前回归同时覆盖：
 
 - 顶层局部声明成功
+- 顶层“先声明后紧邻赋值”成功
 - loop body 局部声明成功
 - typed slot template 局部声明成功
 - typed `AddContent(RenderFragment<T>, value)` 模板作用域成功
-- “无初始化器后续赋值”仍明确失败
+- “无初始化器但不是紧邻一次简单赋值”的变体仍明确失败
 
 在 Razor IR frontend 路线下，这一批 support gap 也继续向“复杂 code-block 的顺序控制恢复”扩展并已锁定：
 
@@ -966,14 +970,15 @@ builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span><p>ok</p><
 
 - 支持：`@{ var localTitle = Title; }`
 - 支持：一个 code-block 内多个连续局部声明，只要都带 initializer 且按声明顺序可作用域化
+- 支持：一个 code-block 内局部声明可省略 initializer，但仅限“声明后紧邻一次简单赋值”这一窄模式，且仍被还原为不可变 template local
 - 支持：initializer 捕获当前可见 template local、loop local 与 typed slot/scoped slot context parameter
 - 支持：局部声明后进入 `if` / `if-else` / `foreach` / count-style `for`
 - 支持：Razor IR 把 `}` 与下一个 `if` / `foreach` / `for` header 合并进同一 boundary code node 时，frontend 会继续恢复后续控制语句
 - 支持：声明点初始化的局部 `RenderFragment` / `RenderFragment<T>` carrier；初始化器可以是 inline Razor template、当前组件只读 `RenderFragment` member carrier，或受支持 fragment factory 调用结果。只要最终模板体可稳定追到 Razor SDK 物化的 `TemplateIntermediateNode`，当前就可用于后续组件 slot/template 参数消费，并允许在同一 code-block 中继续恢复 trailing `if` / `foreach` / `for`
-- 不支持：先声明后赋值
+- 不支持：不是“声明后紧邻一次简单赋值”的其他先声明后赋值形态
 - 当前这一“声明式模板 code-block 结构化恢复”通道不支持：局部声明后进入更一般的语句执行模型
 - 当前这一“声明式模板 code-block 结构化恢复”通道不支持：赋值语句、递增/递减、delegate/callable template state
-- 当前这一“声明式模板 code-block 结构化恢复”通道不支持：`switch` / `while` / `try-catch` / `using` / `lock` 等一般语句执行模型
+- 当前这一“声明式模板 code-block 结构化恢复”通道不支持：`switch` / `while` / `do-while` / `try-catch` / `using` / `lock` 等一般语句执行模型
 - 但这些 block code 不再按“无限期只能 fail-fast”处理：RazorVue 现已正式收敛到“声明式模板通道 + 命令式渲染通道”的双通道架构，后续将按 `docs/01-目标/razorvue/design/RazorVue.BlockCode.ExecutionModel.md` 进入命令式 block promotion / render-function lowering 路线，而不是继续在 Razor IR frontend 内无上限堆 statement 特判
 
 补充说明：
@@ -1023,7 +1028,7 @@ builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span><p>ok</p><
 - canonical / SFC 能显式拒绝
 - `.mjs` / H artifact 还不能正式承载复杂 block
 
-这意味着 `while`、提前 `return`、局部 mutation 这类真实复杂 `BuildRenderTree` 业务虽然不再应该继续扩 statement 特判，但最终仍没有正式运行路径。
+这意味着 `while` / `do-while`、提前 `return`、局部 mutation 这类真实复杂 `BuildRenderTree` 业务虽然不再应该继续扩 statement 特判，但最终仍没有正式运行路径。
 
 ### 当前落地方式
 
@@ -1032,9 +1037,10 @@ builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span><p>ok</p><
 - 当 render tree 根为单个 `RazorVueImperativeBlockNode` 时，module builder 会切换到 render-function 路径
 - imperative body 继续复用现有 `SemanticWalker` 语句级 lowering，而不是在 RazorVue 内手写另一套 JS 控制流解释器
 - `RenderTreeBuilder` API 在 imperative body 内会重写到本地 `__jazorCreateRenderTreeBuilder(h)` bridge
+- root imperative body 现已进入 canonical / SFC semantic 正式模型：canonical model 会携带 `ImperativeRootProgram`，SFC semantic model 会以 `RenderMode = RenderFunction` 正式表示该产物，不再要求 SFC artifact factory 在入口层额外扫描 renderTree 决定是否走旁路
 - bridge 当前已稳定承载：
   - `return` 提前退出
-  - `while`
+  - `while` / `do-while`
   - 局部 mutation 后继续渲染
   - 数组/多根节点追加
   - imperative body 内常量 `AddMarkupContent(...)`，其静态 subtree 直接 lower 为 `h(...)` 表达式，而不是退化为 raw HTML 占位
@@ -1045,13 +1051,14 @@ builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span><p>ok</p><
 ### 当前支持边界
 
 - 支持：body-level imperative render root
+- 支持：单 imperative root program 进入 canonical / SFC semantic 正式模型
 - 支持：提前 `return`
-- 支持：`while`
+- 支持：`while` / `do-while`
 - 支持：带 `break` / `continue` 的 `for` / `foreach`
 - 支持：局部赋值/递增后再渲染
 - 支持：imperative body 内常量 `AddMarkupContent(...)`
 - 支持：`OpenElement` / `CloseElement` / `OpenComponent` / `CloseComponent` / `AddAttribute` / `AddMultipleAttributes` / `SetKey` 的 imperative bridge 基础协议
-- 不支持：imperative body 进入 canonical template path
+- 不支持：imperative body 继续结构化进入 template canonical subtree
 - 不支持：动态 `AddMarkupContent(...)`
 
 ### 当前保护
@@ -1063,8 +1070,9 @@ builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span><p>ok</p><
 当前回归同时锁定：
 
 - conditional return 通过 imperative render bridge
-- `while` 通过 imperative render bridge
+- `while` / `do-while` 通过 imperative render bridge
 - `for` / `foreach` 中的 `break` / `continue` 通过 imperative render bridge
 - 局部 mutation 通过 imperative render bridge
 - imperative body 内常量 `AddMarkupContent(...)` 直接发射 `h(...)` subtree，而不是残留 raw-html 占位
 - Razor authored root template code-block 中的提前 `return` / `while` / 局部 mutation 也走同一 imperative render bridge，而不是回退到另一条前端语义
+- root imperative body 经 canonical / SFC semantic 正式模型进入 render-function `.vue` 产物，不再要求 artifact factory 入口层先扫描 renderTree 决定是否走特殊旁路

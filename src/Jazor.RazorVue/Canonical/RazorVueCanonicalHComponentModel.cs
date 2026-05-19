@@ -18,6 +18,7 @@ internal sealed record RazorVueCanonicalHComponentModel(
     VueRuntimeHints Hints,
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins,
     RazorVueCanonicalTemplateFragment Template,
+    RazorVueCanonicalImperativeRootProgram? ImperativeRootProgram,
     RazorVueCanonicalSetupModel Setup);
 
 internal sealed record RazorVueCanonicalSetupModel(
@@ -33,6 +34,12 @@ internal sealed record RazorVueCanonicalTemplateFragment(
     public static RazorVueCanonicalTemplateFragment Empty { get; } =
         new(ImmutableArray<RazorVueCanonicalTemplateNode>.Empty);
 }
+
+internal sealed record RazorVueCanonicalImperativeRootProgram(
+    RazorVueImperativeBlockKind Kind,
+    RazorVueRenderFragment RenderTree,
+    bool IsRootOnly,
+    ImmutableArray<RazorVueSourceOrigin> SourceOrigins);
 
 internal abstract record RazorVueCanonicalTemplateNode(
     RazorVueCanonicalNodeKind NodeKind,

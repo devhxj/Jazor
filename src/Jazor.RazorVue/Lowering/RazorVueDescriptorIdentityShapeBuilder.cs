@@ -79,7 +79,7 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
                 AppendRenderTreeKeyShape(builder, loop.Body);
                 break;
             case RazorVueImperativeBlockNode imperative:
-                builder.AppendLine("render:imperative:" + imperative.Kind + "|" + imperative.Operation.Syntax.ToString());
+                builder.AppendLine("render:imperative:" + imperative.Kind + "|" + string.Join("||", imperative.Operations.Select(static operation => operation.Syntax.ToString())));
                 break;
         }
     }
@@ -294,7 +294,8 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
         Dictionary<string, RuntimeUsageBuilder> usageByComponent)
     {
         var collector = new ImperativeRuntimeUsageCollector(resolvedComponents, usageByComponent);
-        collector.Collect(imperative.Operation, imperative.VisibleParameters);
+        foreach (var operation in imperative.Operations)
+            collector.Collect(operation, imperative.VisibleParameters);
     }
 
     private static void CollectFromRenderTreeComponent(

@@ -117,7 +117,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 builder.Append("imperative(")
                     .Append(imperative.Kind)
                     .Append(':')
-                    .Append(imperative.Operation.Syntax.ToString())
+                    .Append(string.Join("||", imperative.Operations.Select(static operation => operation.Syntax.ToString())))
                     .Append(')');
                 break;
         }

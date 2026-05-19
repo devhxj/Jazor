@@ -116,17 +116,11 @@ internal sealed partial class RazorVueExpressionEmitter
 
     internal string EmitImperativeRenderBody(RazorVueRenderFragment fragment)
     {
-        var imperative = GetSingleImperativeRenderBody(fragment);
-        return EmitImperativeBlockBody(imperative, "__jazorBuilder");
-    }
+        var statements = EmitImperativeFragmentStatements(fragment, "__jazorBuilder", EmptyLocalScope, EmptyParameterScope);
+        if (string.IsNullOrWhiteSpace(statements))
+            return "return __jazorBuilder.complete();";
 
-    private string EmitFragment(
-        RazorVueRenderFragment fragment,
-        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
-        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
-    {
-        var emission = EmitFragmentArgument(fragment, allowedLocalSymbols, allowedParameterSymbols);
-        return emission.HasValue ? emission.Expression : "null";
+        return statements + "\nreturn __jazorBuilder.complete();";
     }
 
     internal string EmitTemplateExpression(IOperation operation)
@@ -217,16 +211,13 @@ internal sealed partial class RazorVueExpressionEmitter
         return false;
     }
 
-    private RazorVueImperativeBlockNode GetSingleImperativeRenderBody(RazorVueRenderFragment fragment)
+    private string EmitFragment(
+        RazorVueRenderFragment fragment,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
     {
-        if (fragment.Children.Length != 1 ||
-            fragment.Children[0] is not RazorVueImperativeBlockNode imperative)
-        {
-            throw new NotSupportedException(
-                $"RazorVue imperative render lowering requires a single imperative root block in component '{_snapshot.Descriptor.FullName}'.");
-        }
-
-        return imperative;
+        var emission = EmitFragmentArgument(fragment, allowedLocalSymbols, allowedParameterSymbols);
+        return emission.HasValue ? emission.Expression : "null";
     }
 
     public string DescribeFragment(RazorVueRenderFragment fragment)

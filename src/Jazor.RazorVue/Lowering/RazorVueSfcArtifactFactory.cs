@@ -34,59 +34,19 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
             throw new ArgumentNullException(nameof(snapshot));
 
         var renderTree = _templateFrontend.CreateRenderTree(context, snapshot);
-        if (ContainsImperativeRenderTreeNode(renderTree))
-            return CreateImperativeArtifact(context, snapshot, renderTree);
-
         var canonical = _canonicalFactory.Create(context, snapshot, renderTree);
         var semantic = _semanticFactory.Create(canonical);
-        return CreateArtifact(snapshot, semantic);
-    }
-
-    private static bool ContainsImperativeRenderTreeNode(RazorVueRenderFragment fragment)
-    {
-        if (fragment.Children.IsDefaultOrEmpty)
-            return false;
-
-        foreach (var child in fragment.Children)
-        {
-            switch (child)
-            {
-                case RazorVueImperativeBlockNode:
-                    return true;
-                case RazorVueElementNode element when ContainsImperativeRenderTreeNode(element.Children):
-                    return true;
-                case RazorVueComponentNode component:
-                    if (ContainsImperativeRenderTreeNode(component.Children))
-                        return true;
-                    foreach (var slotTemplate in component.SlotTemplates)
-                    {
-                        if (ContainsImperativeRenderTreeNode(slotTemplate.Children))
-                            return true;
-                    }
-                    break;
-                case RazorVueConditionalNode conditional:
-                    if (ContainsImperativeRenderTreeNode(conditional.WhenTrue) ||
-                        ContainsImperativeRenderTreeNode(conditional.WhenFalse))
-                    {
-                        return true;
-                    }
-                    break;
-                case RazorVueTemplateScopeNode templateScope when ContainsImperativeRenderTreeNode(templateScope.Children):
-                    return true;
-                case RazorVueForEachNode loop when ContainsImperativeRenderTreeNode(loop.Body):
-                    return true;
-                case RazorVueForNode loop when ContainsImperativeRenderTreeNode(loop.Body):
-                    return true;
-            }
-        }
-
-        return false;
+        return CreateArtifact(context, snapshot, semantic);
     }
 
     private static VueSfcArtifact CreateArtifact(
+        RazorVueCompilationContext context,
         RazorVueSemanticSnapshot snapshot,
         RazorVueSfcSemanticModel semantic)
     {
+        if (semantic.RenderMode == VueSfcArtifactRenderMode.RenderFunction)
+            return CreateImperativeArtifact(context, snapshot, semantic);
+
         var importMap = semantic.ComponentImports.ToDictionary(
             static item => item.ComponentKey,
             static item => item,
@@ -152,9 +112,13 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
     private static VueSfcArtifact CreateImperativeArtifact(
         RazorVueCompilationContext context,
         RazorVueSemanticSnapshot snapshot,
-        RazorVueRenderFragment renderTree)
+        RazorVueSfcSemanticModel semantic)
     {
+        if (semantic.ImperativeRootProgram is null)
+            throw new InvalidOperationException("RazorVue imperative SFC artifact creation requires an imperative root program.");
+
         var descriptor = snapshot.Descriptor;
+        var renderTree = semantic.ImperativeRootProgram.RenderTree;
         var resolvedComponents = RazorVueArtifactFactory.ResolveComponentsForCanonicalization(context, snapshot, renderTree);
         var imperativeResolvedComponents = NormalizeResolvedComponentsForSfc(resolvedComponents, descriptor.ImportSpecifier);
         var expressionEmitter = RazorVueArtifactFactory.CreateExpressionEmitterForCanonicalization(snapshot, imperativeResolvedComponents);

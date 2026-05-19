@@ -28,6 +28,16 @@ public partial class SemanticWalker
 	private List<Statement> TranslateOperationsToStatements(IEnumerable<IOperation> operations, SenseArgument context)
 		=> TranslateOperationsToStatementsCore(operations, context);
 
+	internal List<Statement> TranslateStatementSequence(IEnumerable<IOperation> operations, SenseArgument context)
+	{
+		var operationList = operations.ToList();
+		if (operationList.Count == 0)
+			return [];
+
+		var bodyContext = EnsureScopeContext(operationList[0], context, ScopeSite.FunctionBody()).With(Sense.FunctionBody);
+		return MaterializeScopedStatements(bodyContext, TranslateOperationsToStatementsCore(operationList, bodyContext));
+	}
+
 	private List<Statement> TranslateOperationsToStatementsCore(IEnumerable<IOperation> operations, SenseArgument context)
 	{
 		var operationList = operations.ToList();

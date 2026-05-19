@@ -2365,6 +2365,53 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithTemplateScopedLocalWithoutInitializerThenImmediateAssignmentInBuildRenderTree_LowersTemplateScopedAlias()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/local-card")]
+                public class LocalCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        string? localTitle;
+                        localTitle = Title;
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, localTitle);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(localTitle) in [props.title]\">");
+        StringAssert.Contains(artifact.TemplateText, "{{ localTitle }}");
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_WithLoopBodyComponentLocalVariableDeclarationInBuildRenderTree_LowersTemplateScopedAlias()
     {
         var context = CreateContext(
@@ -3947,6 +3994,130 @@ public sealed class RazorVueSfcArtifactFactoryTests
         StringAssert.Contains(artifact.SfcText, "for (let index = 0; index < props.count; index++)");
         StringAssert.Contains(artifact.SfcText, "continue;");
         StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"section\");");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithDoWhileLoopInBuildRenderTree_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/do-while-card")]
+                public class DoWhileCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        var index = 0;
+                        do
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, index);
+                            builder.CloseElement();
+                            index++;
+                        }
+                        while (index < Count);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual("components/do-while-card.vue", artifact.RelativeSfcPath);
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        Assert.IsFalse(artifact.UsesScriptSetup, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "<script lang=\"ts\">");
+        StringAssert.Contains(artifact.SfcText, "do {");
+        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"section\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.AddContent(index);");
+        StringAssert.Contains(artifact.SfcText, "index++;");
+        StringAssert.Contains(artifact.SfcText, "while (index < props.count);");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithDeclarativeSiblingsAroundWhileLoopInBuildRenderTree_LowersMixedRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/mixed-loop-card")]
+                public class MixedLoopCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "header");
+                        builder.AddContent(1, "start");
+                        builder.CloseElement();
+
+                        var index = 0;
+                        while (index < Count)
+                        {
+                            builder.OpenElement(2, "section");
+                            builder.AddContent(3, index);
+                            builder.CloseElement();
+                            index++;
+                        }
+
+                        builder.OpenElement(4, "footer");
+                        builder.AddContent(5, "end");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual("components/mixed-loop-card.vue", artifact.RelativeSfcPath);
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.AddContent(h(\"header\", null, \"start\"));");
+        StringAssert.Contains(artifact.SfcText, "let index = 0;");
+        StringAssert.Contains(artifact.SfcText, "while (index < props.count)");
+        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"section\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.AddContent(index);");
+        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.AddContent(h(\"footer\", null, \"end\"));");
     }
 
     [TestMethod]

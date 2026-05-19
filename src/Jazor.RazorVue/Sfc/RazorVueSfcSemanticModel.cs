@@ -17,7 +17,9 @@ internal sealed record RazorVueSfcSemanticModel(
     ImmutableArray<string> PluginRequirements,
     VueRuntimeHints Hints,
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins,
+    VueSfcArtifactRenderMode RenderMode,
     RazorVueSfcTemplateBlockModel TemplateBlock,
+    RazorVueCanonicalImperativeRootProgram? ImperativeRootProgram,
     RazorVueSfcScriptSetupBlockModel ScriptSetupBlock,
     ImmutableArray<RazorVueSfcStyleBlockModel> StyleBlocks,
     ImmutableArray<RazorVueSfcCustomBlockModel> CustomBlocks);

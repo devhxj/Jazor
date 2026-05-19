@@ -103,7 +103,7 @@ internal sealed record RazorVueForNode(
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins);
 
 internal sealed record RazorVueImperativeBlockNode(
-    IOperation Operation,
+    ImmutableArray<IOperation> Operations,
     RazorVueImperativeBlockKind Kind,
     ImmutableArray<ILocalSymbol> VisibleLocals,
     ImmutableArray<IParameterSymbol> VisibleParameters,

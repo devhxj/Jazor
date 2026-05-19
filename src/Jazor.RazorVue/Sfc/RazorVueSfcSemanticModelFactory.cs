@@ -13,6 +13,9 @@ internal sealed class RazorVueSfcSemanticModelFactory
         if (canonicalModel is null)
             throw new ArgumentNullException(nameof(canonicalModel));
 
+        if (canonicalModel.ImperativeRootProgram is not null)
+            return CreateImperativeSemanticModel(canonicalModel);
+
         ValidateTemplateEncodability(canonicalModel);
 
         var ownerRelativeSfcPath = ChangeExtensionToVue(canonicalModel.RelativeComponentPath);
@@ -31,11 +34,44 @@ internal sealed class RazorVueSfcSemanticModelFactory
             PluginRequirements: canonicalModel.PluginRequirements,
             Hints: canonicalModel.Hints,
             SourceOrigins: canonicalModel.SourceOrigins,
+            RenderMode: VueSfcArtifactRenderMode.Template,
             TemplateBlock: new RazorVueSfcTemplateBlockModel(
                 canonicalModel.Template,
                 bindings.Sites.ToImmutable(),
                 canonicalModel.Template.Children.SelectMany(static child => child.SourceOrigins).ToImmutableArray()),
+            ImperativeRootProgram: null,
             ScriptSetupBlock: new RazorVueSfcScriptSetupBlockModel(canonicalModel.Setup, bindings.Bindings.ToImmutable(), requiresSlotsRuntime, canonicalModel.SourceOrigins),
+            StyleBlocks: ImmutableArray<RazorVueSfcStyleBlockModel>.Empty,
+            CustomBlocks: ImmutableArray<RazorVueSfcCustomBlockModel>.Empty);
+    }
+
+    private static RazorVueSfcSemanticModel CreateImperativeSemanticModel(RazorVueCanonicalHComponentModel canonicalModel)
+    {
+        var ownerRelativeSfcPath = ChangeExtensionToVue(canonicalModel.RelativeComponentPath);
+
+        return new RazorVueSfcSemanticModel(
+            ComponentName: canonicalModel.ComponentName,
+            ComponentFullName: canonicalModel.ComponentFullName,
+            RelativeSfcPath: ownerRelativeSfcPath,
+            Descriptor: canonicalModel.Descriptor,
+            Imports: canonicalModel.Imports,
+            CompilerImports: canonicalModel.CompilerImports,
+            ComponentImports: ImmutableArray<RazorVueSfcComponentImport>.Empty,
+            Styles: canonicalModel.Styles,
+            PluginRequirements: canonicalModel.PluginRequirements,
+            Hints: canonicalModel.Hints,
+            SourceOrigins: canonicalModel.SourceOrigins,
+            RenderMode: VueSfcArtifactRenderMode.RenderFunction,
+            TemplateBlock: new RazorVueSfcTemplateBlockModel(
+                RazorVueCanonicalTemplateFragment.Empty,
+                ImmutableArray<RazorVueSfcTemplateBindingSite>.Empty,
+                ImmutableArray<RazorVueSourceOrigin>.Empty),
+            ImperativeRootProgram: canonicalModel.ImperativeRootProgram,
+            ScriptSetupBlock: new RazorVueSfcScriptSetupBlockModel(
+                canonicalModel.Setup,
+                ImmutableArray<RazorVueSfcSetupBinding>.Empty,
+                RequiresSlotsRuntime: false,
+                canonicalModel.SourceOrigins),
             StyleBlocks: ImmutableArray<RazorVueSfcStyleBlockModel>.Empty,
             CustomBlocks: ImmutableArray<RazorVueSfcCustomBlockModel>.Empty);
     }

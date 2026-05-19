@@ -46,10 +46,16 @@ internal sealed class RazorVueRenderTreeExtractor
 
             if (operation is IBlockOperation block)
             {
+                if (RazorVueImperativeRenderSegmentationPlanner.TryPlanLocalSegments(block.Operations, out var segments))
+                {
+                    return new Parser(snapshot, context.Compilation, context.Symbols, builderParameters, allowTemplateScopedLocals: true)
+                        .ParseWithImperativeSegments(block.Operations, segments);
+                }
+
                 if (RazorVueImperativeRenderPromotionAnalyzer.ShouldPromoteBody(block.Operations))
                 {
                     return CreateImperativeBodyFragment(
-                        block,
+                        block.Operations,
                         RazorVueImperativeRenderPromotionAnalyzer.ClassifyBodyKind(block.Operations),
                         builderParameters);
                 }
@@ -62,7 +68,7 @@ internal sealed class RazorVueRenderTreeExtractor
                 if (RazorVueImperativeRenderPromotionAnalyzer.ShouldPromoteBody([operation]))
                 {
                     return CreateImperativeBodyFragment(
-                        operation,
+                        [operation],
                         RazorVueImperativeRenderPromotionAnalyzer.ClassifyBodyKind([operation]),
                         builderParameters);
                 }
@@ -75,74 +81,82 @@ internal sealed class RazorVueRenderTreeExtractor
     }
 
     private static RazorVueRenderFragment CreateImperativeBodyFragment(
-        IOperation operation,
+        IReadOnlyList<IOperation> operations,
         RazorVueImperativeBlockKind kind,
         ImmutableHashSet<IParameterSymbol> builderParameters)
     {
-        var visibleLocals = CollectVisibleLocals(operation);
-        var visibleParameters = builderParameters.ToImmutableArray();
+        var visibleLocals = CollectVisibleLocals(operations);
+        var visibleParameters = CollectVisibleParameters(operations, builderParameters);
 
         return new RazorVueRenderFragment(
         [
             new RazorVueImperativeBlockNode(
-                operation,
+                [.. operations],
                 kind,
                 visibleLocals,
                 visibleParameters,
-                CreateOriginsStatic(operation, RazorVueOriginKind.Template))
+                CreateOriginsStatic(operations, RazorVueOriginKind.Template))
         ]);
     }
 
-    private static ImmutableArray<ILocalSymbol> CollectVisibleLocals(IOperation operation)
+    private static ImmutableArray<ILocalSymbol> CollectVisibleLocals(IEnumerable<IOperation> operations)
     {
         var builder = ImmutableArray.CreateBuilder<ILocalSymbol>();
         var seen = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
 
-        foreach (var candidate in EnumerateOperationAndDescendants(operation))
+        foreach (var operation in operations)
         {
-            switch (candidate)
+            foreach (var candidate in EnumerateOperationAndDescendants(operation))
             {
-                case IVariableDeclarationGroupOperation declarationGroup:
-                    foreach (var declaration in declarationGroup.Declarations)
-                    {
-                        foreach (var declarator in declaration.Declarators)
+                switch (candidate)
+                {
+                    case IVariableDeclarationGroupOperation declarationGroup:
+                        foreach (var declaration in declarationGroup.Declarations)
                         {
-                            if (seen.Add(declarator.Symbol))
-                                builder.Add(declarator.Symbol);
+                            foreach (var declarator in declaration.Declarators)
+                            {
+                                if (seen.Add(declarator.Symbol))
+                                    builder.Add(declarator.Symbol);
+                            }
                         }
-                    }
 
-                    break;
-                case IForEachLoopOperation foreachLoop:
-                    foreach (var local in foreachLoop.Locals)
-                    {
-                        if (seen.Add(local))
-                            builder.Add(local);
-                    }
-
-                    break;
-                case IForLoopOperation forLoop:
-                    foreach (var local in forLoop.Locals)
-                    {
-                        if (seen.Add(local))
-                            builder.Add(local);
-                    }
-
-                    break;
-                case IUsingDeclarationOperation usingDeclaration:
-                    if (usingDeclaration.DeclarationGroup is null)
                         break;
-
-                    foreach (var declaration in usingDeclaration.DeclarationGroup.Declarations)
-                    {
-                        foreach (var declarator in declaration.Declarators)
+                    case IForEachLoopOperation foreachLoop:
+                        foreach (var local in foreachLoop.Locals)
                         {
-                            if (seen.Add(declarator.Symbol))
-                                builder.Add(declarator.Symbol);
+                            if (seen.Add(local))
+                                builder.Add(local);
                         }
-                    }
 
-                    break;
+                        break;
+                    case IForLoopOperation forLoop:
+                        foreach (var local in forLoop.Locals)
+                        {
+                            if (seen.Add(local))
+                                builder.Add(local);
+                        }
+
+                        break;
+                    case IUsingDeclarationOperation usingDeclaration:
+                        if (usingDeclaration.DeclarationGroup is null)
+                            break;
+
+                        foreach (var declaration in usingDeclaration.DeclarationGroup.Declarations)
+                        {
+                            foreach (var declarator in declaration.Declarators)
+                            {
+                                if (seen.Add(declarator.Symbol))
+                                    builder.Add(declarator.Symbol);
+                            }
+                        }
+
+                        break;
+                    case ILocalReferenceOperation localReference:
+                        if (seen.Add(localReference.Local))
+                            builder.Add(localReference.Local);
+
+                        break;
+                }
             }
         }
 
@@ -162,10 +176,43 @@ internal sealed class RazorVueRenderTreeExtractor
         }
     }
 
-    private static ImmutableArray<RazorVueSourceOrigin> CreateOriginsStatic(IOperation operation, RazorVueOriginKind originKind)
-        => operation.Syntax is null
-            ? ImmutableArray<RazorVueSourceOrigin>.Empty
-            : [RazorVueSourceOrigin.FromLocation(operation.Syntax.GetLocation(), originKind)];
+    private static ImmutableArray<IParameterSymbol> CollectVisibleParameters(
+        IEnumerable<IOperation> operations,
+        ImmutableHashSet<IParameterSymbol> fallbackParameters)
+    {
+        var builder = ImmutableArray.CreateBuilder<IParameterSymbol>();
+        var seen = new HashSet<IParameterSymbol>(SymbolEqualityComparer.Default);
+
+        foreach (var operation in operations)
+        {
+            foreach (var parameterReference in EnumerateOperationAndDescendants(operation).OfType<IParameterReferenceOperation>())
+            {
+                if (seen.Add(parameterReference.Parameter))
+                    builder.Add(parameterReference.Parameter);
+            }
+        }
+
+        if (builder.Count > 0)
+            return builder.ToImmutable();
+
+        return fallbackParameters.ToImmutableArray();
+    }
+
+    private static ImmutableArray<RazorVueSourceOrigin> CreateOriginsStatic(
+        IEnumerable<IOperation> operations,
+        RazorVueOriginKind originKind)
+    {
+        var builder = ImmutableArray.CreateBuilder<RazorVueSourceOrigin>();
+        foreach (var operation in operations)
+        {
+            if (operation.Syntax is null)
+                continue;
+
+            builder.Add(RazorVueSourceOrigin.FromLocation(operation.Syntax.GetLocation(), originKind));
+        }
+
+        return builder.ToImmutable();
+    }
 
     private readonly record struct ParsedSlotTemplate(
         string? ParameterName,
@@ -261,6 +308,8 @@ internal sealed class RazorVueRenderTreeExtractor
         private readonly HashSet<IParameterSymbol> _accessibleTemplateParameters = accessibleTemplateParameters is null
                 ? [with(SymbolEqualityComparer.Default)]
                 : new HashSet<IParameterSymbol>(accessibleTemplateParameters, SymbolEqualityComparer.Default);
+        private readonly Dictionary<ILocalSymbol, PendingTemplateScopedDeclaration> _pendingTemplateScopedDeclarations =
+            new(SymbolEqualityComparer.Default);
         private readonly Dictionary<string, IOperation> _literalStringOperationCache = new(StringComparer.Ordinal);
         private readonly List<RazorVueRenderNode> _rootChildren = [];
         private readonly Stack<OpenFrame> _openFrames = new();
@@ -270,6 +319,33 @@ internal sealed class RazorVueRenderTreeExtractor
         {
             foreach (var operation in operations)
                 ParseOperation(operation);
+
+            EnsureNoPendingTemplateScopedDeclarations();
+
+            if (_openFrames.Count > 0)
+                throw CreateStructuralIssueForUnclosedFrames();
+
+            return new RazorVueRenderFragment(_rootChildren.ToImmutableArray());
+        }
+
+        public RazorVueRenderFragment ParseWithImperativeSegments(
+            IReadOnlyList<IOperation> operations,
+            ImmutableArray<RazorVueImperativeRenderSegmentationPlanner.PlannedSegment> segments)
+        {
+            var nextOperationIndex = 0;
+            foreach (var segment in segments)
+            {
+                for (; nextOperationIndex < segment.StartIndex; nextOperationIndex++)
+                    ParseOperation(operations[nextOperationIndex]);
+
+                AddImperativeSegment(operations, segment);
+                nextOperationIndex = segment.EndExclusive;
+            }
+
+            for (; nextOperationIndex < operations.Count; nextOperationIndex++)
+                ParseOperation(operations[nextOperationIndex]);
+
+            EnsureNoPendingTemplateScopedDeclarations();
 
             if (_openFrames.Count > 0)
                 throw CreateStructuralIssueForUnclosedFrames();
@@ -282,6 +358,12 @@ internal sealed class RazorVueRenderTreeExtractor
             var current = Unwrap(operation);
             if (current is null)
                 return;
+
+            if (_pendingTemplateScopedDeclarations.Count > 0 &&
+                !IsPendingTemplateScopedDeclarationAssignment(current))
+            {
+                ThrowPendingTemplateScopedDeclarationRequiresImmediateAssignment(current);
+            }
 
             switch (current)
             {
@@ -336,12 +418,32 @@ internal sealed class RazorVueRenderTreeExtractor
             }
         }
 
+        private void AddImperativeSegment(
+            IReadOnlyList<IOperation> operations,
+            RazorVueImperativeRenderSegmentationPlanner.PlannedSegment segment)
+        {
+            var segmentOperations = operations
+                .Skip(segment.StartIndex)
+                .Take(segment.EndExclusive - segment.StartIndex)
+                .ToImmutableArray();
+
+            AddNode(new RazorVueImperativeBlockNode(
+                segmentOperations,
+                segment.Kind,
+                CollectVisibleLocals(segmentOperations),
+                CollectVisibleParameters(segmentOperations, _builderParameters),
+                CreateOriginsStatic(segmentOperations, RazorVueOriginKind.Template)));
+        }
+
         private void ParseExpressionStatement(IExpressionStatementOperation expressionStatement)
         {
             var statementOperation = Unwrap(expressionStatement.Operation);
             if (statementOperation is ISimpleAssignmentOperation assignment)
             {
                 if (TryRegisterBuilderAliasAssignment(assignment))
+                    return;
+
+                if (TryCompletePendingTemplateScopedDeclaration(assignment))
                     return;
 
                 throw CreateStructuralIssue(
@@ -994,23 +1096,49 @@ internal sealed class RazorVueRenderTreeExtractor
             if (!_allowTemplateScopedLocals)
                 return false;
 
-            if (declarator.Initializer?.Value is not { } initializer)
-            {
-                failureMessage =
-                    $"RazorVue template-scoped local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' requires an initializer.";
-                return false;
-            }
-
             if (IsRenderTreeBuilderType(declarator.Symbol.Type))
                 return false;
 
+            if (declarator.Initializer?.Value is not { } initializer)
+            {
+                if (IsRenderFragmentType(declarator.Symbol.Type))
+                {
+                    failureMessage =
+                        $"RazorVue RenderFragment local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' requires an analyzable initializer.";
+                    return false;
+                }
+
+                _pendingTemplateScopedDeclarations[declarator.Symbol] = new PendingTemplateScopedDeclaration(declarator);
+                return true;
+            }
+
+            CommitTemplateScopedDeclaration(declarator, initializer);
+            return true;
+        }
+
+        private bool TryCompletePendingTemplateScopedDeclaration(ISimpleAssignmentOperation assignment)
+        {
+            if (assignment.Target is not ILocalReferenceOperation localReference)
+                return false;
+
+            if (!_pendingTemplateScopedDeclarations.TryGetValue(localReference.Local, out var pendingDeclaration))
+                return false;
+
+            _pendingTemplateScopedDeclarations.Remove(localReference.Local);
+            CommitTemplateScopedDeclaration(pendingDeclaration.Declarator, assignment.Value);
+            return true;
+        }
+
+        private void CommitTemplateScopedDeclaration(
+            IVariableDeclaratorOperation declarator,
+            IOperation initializer)
+        {
             ValidateTemplateScopedInitializer(declarator, initializer);
             _accessibleTemplateLocals.Add(declarator.Symbol);
             AddNode(new RazorVueLocalDeclarationNode(
                 declarator.Symbol,
                 initializer,
                 CreateOrigins(declarator, RazorVueOriginKind.Template)));
-            return true;
         }
 
         private void ValidateTemplateScopedInitializer(
@@ -2691,6 +2819,40 @@ internal sealed class RazorVueRenderTreeExtractor
 
             return char.ToLowerInvariant(value[0]) + value.Substring(1);
         }
+
+        private bool IsPendingTemplateScopedDeclarationAssignment(IOperation operation)
+        {
+            if (Unwrap(operation) is not IExpressionStatementOperation expressionStatement ||
+                Unwrap(expressionStatement.Operation) is not ISimpleAssignmentOperation assignment ||
+                assignment.Target is not ILocalReferenceOperation localReference)
+            {
+                return false;
+            }
+
+            return _pendingTemplateScopedDeclarations.ContainsKey(localReference.Local);
+        }
+
+        private void EnsureNoPendingTemplateScopedDeclarations()
+        {
+            if (_pendingTemplateScopedDeclarations.Count == 0)
+                return;
+
+            ThrowPendingTemplateScopedDeclarationRequiresImmediateAssignment(null);
+        }
+
+        private void ThrowPendingTemplateScopedDeclarationRequiresImmediateAssignment(IOperation? currentOperation)
+        {
+            var pendingDeclaration = _pendingTemplateScopedDeclarations.Values.First();
+            var message =
+                $"RazorVue template-scoped local '{pendingDeclaration.Declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once by the immediately following simple assignment statement.";
+
+            throw CreateStructuralIssue(
+                currentOperation ?? pendingDeclaration.Declarator,
+                message);
+        }
+
+        private readonly record struct PendingTemplateScopedDeclaration(
+            IVariableDeclaratorOperation Declarator);
 
     }
 

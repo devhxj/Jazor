@@ -207,7 +207,8 @@ internal sealed partial class RazorVueArtifactFactory
                     CollectComponents(child, components);
                 break;
             case RazorVueImperativeBlockNode imperative:
-                CollectComponents(imperative.Operation, imperative.Origins, components);
+                foreach (var operation in imperative.Operations)
+                    CollectComponents(operation, imperative.Origins, components);
                 break;
             case RazorVueLocalDeclarationNode:
                 break;

@@ -22,8 +22,9 @@ internal sealed partial class RazorVueExpressionEmitter
         RazorVueImperativeBlockNode imperative,
         string builderAlias)
     {
-        var operation = imperative.Operation;
-        EnsureSupportedImperativeOperation(operation);
+        foreach (var operation in imperative.Operations)
+            EnsureSupportedImperativeOperation(operation);
+
         var bodyArgument = new SenseArgument(Sense.FunctionBody, UseImportAliases: true);
         var visibleLocalAliases = new Dictionary<ILocalSymbol, string>(SymbolEqualityComparer.Default);
         var imperativeBuilderTargets = new Dictionary<IParameterSymbol, string>(SymbolEqualityComparer.Default);
@@ -46,14 +47,9 @@ internal sealed partial class RazorVueExpressionEmitter
                         imperative.VisibleParameters.Select(static parameter => parameter.Name).ToArray(),
                         () =>
                         {
-                            var node = _semanticWalker.Visit(operation, bodyArgument);
-                            if (node is not FunctionBody functionBody)
-                            {
-                                throw new NotSupportedException(
-                                    $"RazorVue imperative render lowering expected a function body for '{operation.Kind}' in component '{_snapshot.Descriptor.FullName}'.");
-                            }
-
-                            return NormalizeImperativeFunctionBody(functionBody.ToKnRECMAScript(), builderAlias);
+                            var statements = _semanticWalker.TranslateStatementSequence(imperative.Operations, bodyArgument);
+                            var functionBody = new FunctionBody(NodeList.From(statements), strict: true);
+                            return NormalizeImperativeFunctionBody(functionBody.ToKnRECMAScript(), builderAlias, appendTerminalReturn: false);
                         }))));
     }
 
@@ -173,7 +169,10 @@ internal sealed partial class RazorVueExpressionEmitter
         }
     }
 
-    private string NormalizeImperativeFunctionBody(string functionBodyText, string builderAlias)
+    private string NormalizeImperativeFunctionBody(
+        string functionBodyText,
+        string builderAlias,
+        bool appendTerminalReturn)
     {
         const string strictPrefix = "{\n\t\"use strict\";\n";
         if (functionBodyText.StartsWith(strictPrefix, System.StringComparison.Ordinal))
@@ -190,12 +189,17 @@ internal sealed partial class RazorVueExpressionEmitter
 
         var innerBody = normalized.Substring(1, normalized.Length - 2).Trim();
         if (innerBody.Length == 0)
-            return "return " + builderAlias + ".complete();";
+            return appendTerminalReturn
+                ? "return " + builderAlias + ".complete();"
+                : string.Empty;
 
-        return RewriteTerminalReturns(innerBody, builderAlias);
+        return RewriteTerminalReturns(innerBody, builderAlias, appendTerminalReturn);
     }
 
-    private static string RewriteTerminalReturns(string bodyText, string builderAlias)
+    private static string RewriteTerminalReturns(
+        string bodyText,
+        string builderAlias,
+        bool appendTerminalReturn)
     {
         var lines = bodyText.Split('\n').ToList();
         for (var index = 0; index < lines.Count; index++)
@@ -211,8 +215,11 @@ internal sealed partial class RazorVueExpressionEmitter
             }
         }
 
-        if (!lines.Any(static line => line.TrimStart().StartsWith("return ", System.StringComparison.Ordinal)))
+        if (appendTerminalReturn &&
+            !lines.Any(static line => line.TrimStart().StartsWith("return ", System.StringComparison.Ordinal)))
+        {
             lines.Add("return " + builderAlias + ".complete();");
+        }
 
         return string.Join("\n", lines);
     }

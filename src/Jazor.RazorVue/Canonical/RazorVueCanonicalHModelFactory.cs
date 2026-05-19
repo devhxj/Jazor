@@ -50,13 +50,16 @@ internal sealed class RazorVueCanonicalHModelFactory
 
         var resolvedComponents = ResolveComponents(context, snapshot, renderTree);
         var expressionEmitter = CreateExpressionEmitter(snapshot, resolvedComponents);
-        var template = CreateTemplateFragment(
-            snapshot,
-            expressionEmitter,
-            resolvedComponents,
-            renderTree,
-            EmptyLocalScope,
-            EmptyParameterScope);
+        var imperativeRootProgram = TryCreateImperativeRootProgram(snapshot, renderTree);
+        var template = imperativeRootProgram is null
+            ? CreateTemplateFragment(
+                snapshot,
+                expressionEmitter,
+                resolvedComponents,
+                renderTree,
+                EmptyLocalScope,
+                EmptyParameterScope)
+            : RazorVueCanonicalTemplateFragment.Empty;
         var compilerImports = expressionEmitter.FlushCompilerImports();
         var imports = BuildImports(resolvedComponents, compilerImports);
         var styles = BuildStyles(snapshot.Descriptor, resolvedComponents);
@@ -76,6 +79,7 @@ internal sealed class RazorVueCanonicalHModelFactory
             Hints: hints,
             SourceOrigins: sourceOrigins,
             Template: template,
+            ImperativeRootProgram: imperativeRootProgram,
             Setup: new RazorVueCanonicalSetupModel(
                 snapshot.Logic.Fields,
                 snapshot.Logic.Methods,
@@ -290,9 +294,87 @@ internal sealed class RazorVueCanonicalHModelFactory
                     ClassifySideEffects(loop.LimitValue),
                     ClassifySideEffects(loop.StepValue)),
                 SourceOrigins: loop.Origins),
-            RazorVueImperativeBlockNode imperative => throw CreateUnsupportedImperativeRenderException(snapshot, imperative),
+            RazorVueImperativeBlockNode imperative => throw CreateUnsupportedNestedImperativeRenderException(snapshot, imperative),
             _ => throw CreateUnsupportedCanonicalizationException(snapshot, node.GetType().Name, node.Origins)
         };
+
+    private static RazorVueCanonicalImperativeRootProgram? TryCreateImperativeRootProgram(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueRenderFragment renderTree)
+    {
+        _ = snapshot;
+        var imperativeNodes = EnumerateImperativeNodes(renderTree).ToImmutableArray();
+        if (imperativeNodes.IsDefaultOrEmpty)
+            return null;
+
+        var isRootOnly = renderTree.Children.Length == 1 &&
+                         renderTree.Children[0] is RazorVueImperativeBlockNode;
+        var kind = isRootOnly
+            ? ((RazorVueImperativeBlockNode)renderTree.Children[0]).Kind
+            : imperativeNodes[0].Kind;
+
+        return new RazorVueCanonicalImperativeRootProgram(
+            kind,
+            renderTree,
+            isRootOnly,
+            imperativeNodes.SelectMany(static imperative => imperative.Origins).Distinct().ToImmutableArray());
+    }
+
+    private static IEnumerable<RazorVueImperativeBlockNode> EnumerateImperativeNodes(RazorVueRenderFragment fragment)
+    {
+        if (fragment.Children.IsDefaultOrEmpty)
+            yield break;
+
+        foreach (var child in fragment.Children)
+        {
+            switch (child)
+            {
+                case RazorVueImperativeBlockNode imperative:
+                    yield return imperative;
+                    break;
+                case RazorVueElementNode element:
+                    foreach (var nested in EnumerateImperativeNodes(element.Children))
+                        yield return nested;
+                    break;
+                case RazorVueComponentNode component:
+                    foreach (var nested in EnumerateImperativeNodes(component.Children))
+                        yield return nested;
+                    foreach (var nested in EnumerateImperativeNodes(component.AmbientDefaultSlotChildren))
+                        yield return nested;
+                    foreach (var slotTemplate in component.SlotTemplates)
+                    {
+                        foreach (var nested in EnumerateImperativeNodes(slotTemplate.Children))
+                            yield return nested;
+                    }
+
+                    foreach (var assignment in component.ImplicitDefaultSlotAssignments)
+                    {
+                        foreach (var nested in EnumerateImperativeNodes(assignment.Children))
+                            yield return nested;
+                    }
+
+                    break;
+                case RazorVueConditionalNode conditional:
+                    foreach (var nested in EnumerateImperativeNodes(conditional.WhenTrue))
+                        yield return nested;
+                    foreach (var nested in EnumerateImperativeNodes(conditional.WhenFalse))
+                        yield return nested;
+                    break;
+                case RazorVueTemplateScopeNode templateScope:
+                    foreach (var nested in EnumerateImperativeNodes(templateScope.Children))
+                        yield return nested;
+                    break;
+                case RazorVueForEachNode loop:
+                    foreach (var nested in EnumerateImperativeNodes(loop.Body))
+                        yield return nested;
+                    break;
+                case RazorVueForNode loop:
+                    foreach (var nested in EnumerateImperativeNodes(loop.Body))
+                        yield return nested;
+                    break;
+            }
+        }
+    }
 
     private static RazorVueCanonicalComponentNode CreateComponentNode(
         RazorVueSemanticSnapshot snapshot,
@@ -1200,14 +1282,14 @@ internal sealed class RazorVueCanonicalHModelFactory
         return new RazorVueCompilationIssueException(issue, snapshot.Descriptor.FullName, origin);
     }
 
-    private static RazorVueCompilationIssueException CreateUnsupportedImperativeRenderException(
+    private static RazorVueCompilationIssueException CreateUnsupportedNestedImperativeRenderException(
         RazorVueSemanticSnapshot snapshot,
         RazorVueImperativeBlockNode imperative)
     {
         var issue = new RazorVueCompilationIssue(
             RazorVueIssueCode.CanonicalizationFailed,
             RazorVueIssueSeverity.Error,
-            $"RazorVue canonical template lowering does not support imperative render block '{imperative.Kind}' in component '{snapshot.Descriptor.FullName}'. Use H/render-function artifact lowering for this body.",
+            $"RazorVue canonical template lowering does not support nested imperative render block '{imperative.Kind}' inside template canonicalization for component '{snapshot.Descriptor.FullName}'. Promote the enclosing body to one imperative root program instead.",
             ImmutableArray<string>.Empty);
         var origin = imperative.Origins.IsDefaultOrEmpty ? snapshot.Origins.FirstOrDefault() : imperative.Origins[0];
         return new RazorVueCompilationIssueException(issue, snapshot.Descriptor.FullName, origin);

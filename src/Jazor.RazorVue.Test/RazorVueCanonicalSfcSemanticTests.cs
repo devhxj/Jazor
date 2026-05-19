@@ -433,6 +433,7 @@ public sealed class RazorVueCanonicalSfcSemanticTests
                         TemplateExpressionSafety: RazorVueTemplateExpressionSafety.NotTemplateSafe,
                         SideEffectClassification: RazorVueSideEffectClassification.RepeatedEvaluationRisk,
                         SourceOrigins: ImmutableArray<RazorVueSourceOrigin>.Empty))),
+            ImperativeRootProgram: null,
             Setup: new RazorVueCanonicalSetupModel(
                 ImmutableArray<VueLogicFieldDescriptor>.Empty,
                 ImmutableArray<VueLogicMethodDescriptor>.Empty,
@@ -445,6 +446,157 @@ public sealed class RazorVueCanonicalSfcSemanticTests
 
         Assert.AreEqual(RazorVueIssueCode.UnsupportedTemplateEncoding, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "does not support canonical node");
+    }
+
+    [TestMethod]
+    public void RazorVue_CanonicalModelFactory_CreatesImperativeRootProgram_ForConditionalReturnBuildRenderTree()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Hide { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (Hide)
+                        {
+                            return;
+                        }
+
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+
+        Assert.IsTrue(canonical.ImperativeRootProgram is not null);
+        Assert.AreEqual(RazorVueImperativeBlockKind.MethodBody, canonical.ImperativeRootProgram.Kind);
+        Assert.IsTrue(canonical.Template.Children.IsDefaultOrEmpty);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcSemanticModelFactory_CreatesRenderFunctionSemanticModel_ForImperativeRootProgram()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Hide { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (Hide)
+                        {
+                            return;
+                        }
+
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+        var sfc = new RazorVueSfcSemanticModelFactory().Create(canonical);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, sfc.RenderMode);
+        Assert.IsTrue(sfc.ImperativeRootProgram is not null);
+        Assert.IsTrue(sfc.TemplateBlock.Template.Children.IsDefaultOrEmpty);
+        Assert.IsTrue(sfc.ScriptSetupBlock.LiftedBindings.IsDefaultOrEmpty);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcSemanticModelFactory_PreservesTemplateMode_ForDeclarativeCanonicalModel()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/counter-card")]
+                public class CounterCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Title);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+        var sfc = new RazorVueSfcSemanticModelFactory().Create(canonical);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.Template, sfc.RenderMode);
+        Assert.IsTrue(sfc.ImperativeRootProgram is null);
+        Assert.IsFalse(sfc.TemplateBlock.Template.Children.IsDefaultOrEmpty);
     }
 
     [TestMethod]
