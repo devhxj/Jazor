@@ -296,6 +296,8 @@ internal sealed class RazorVueRenderTreeExtractor
         private readonly Dictionary<ILocalSymbol, ParsedSlotTemplate> _localRenderFragmentCarriers = localRenderFragmentCarriers is null
                 ? new Dictionary<ILocalSymbol, ParsedSlotTemplate>(SymbolEqualityComparer.Default)
                 : CreateLocalRenderFragmentCarrierDictionary(localRenderFragmentCarriers);
+        private readonly Dictionary<ILocalSymbol, IOperation> _localStaticMarkupCarriers =
+            new(SymbolEqualityComparer.Default);
         private readonly Dictionary<ISymbol, ParsedSlotTemplate> _memberRenderFragmentCarriers = memberRenderFragmentCarriers is null
                 ? new Dictionary<ISymbol, ParsedSlotTemplate>(SymbolEqualityComparer.Default)
                 : CreateMemberRenderFragmentCarrierDictionary(memberRenderFragmentCarriers);
@@ -766,9 +768,15 @@ internal sealed class RazorVueRenderTreeExtractor
 
             if (IsMarkupStringAddContent(invocation))
             {
+                if (TryGetStaticMarkupString(value) is string staticMarkup)
+                {
+                    AddStaticMarkupContent(invocation, staticMarkup);
+                    return;
+                }
+
                 throw CreateUnsupportedBuilderCall(
                     invocation,
-                    $"BuildRenderTree call '{GetBuilderCallDisplayName(invocation)}' emits raw markup that RazorVue cannot safely canonicalize in component '{_snapshot.Descriptor.FullName}'.");
+                    $"BuildRenderTree call '{GetBuilderCallDisplayName(invocation)}' uses MarkupString content that is not compile-time provable static markup in component '{_snapshot.Descriptor.FullName}'. RazorVue only supports static MarkupString literals that can be canonicalized into a safe render subtree.");
             }
 
             if (TryParseAddContentRenderFragment(invocation, value, out var fragment))
@@ -796,8 +804,26 @@ internal sealed class RazorVueRenderTreeExtractor
 
         private void AddMarkupContent(IInvocationOperation invocation)
         {
-            if (TryGetConstantString(GetInvocationArgument(invocation, 1)) is not string markup ||
-                string.IsNullOrEmpty(markup))
+            var value = GetInvocationArgument(invocation, 1);
+            if (value is null || IsConstantNull(value))
+                return;
+
+            if (TryGetStaticMarkupString(value) is not string markup)
+            {
+                throw CreateUnsupportedBuilderCall(
+                    invocation,
+                    $"BuildRenderTree call '{GetBuilderCallDisplayName(invocation)}' uses AddMarkupContent(...) content that is not compile-time provable static markup in component '{_snapshot.Descriptor.FullName}'. RazorVue only supports static markup literals/carriers that can be canonicalized into a safe render subtree.");
+            }
+
+            if (string.IsNullOrEmpty(markup))
+                return;
+
+            AddStaticMarkupContent(invocation, markup);
+        }
+
+        private void AddStaticMarkupContent(IInvocationOperation invocation, string markup)
+        {
+            if (string.IsNullOrEmpty(markup))
                 return;
 
             var nodes = RazorVueStaticMarkupParser.Parse(
@@ -811,6 +837,14 @@ internal sealed class RazorVueRenderTreeExtractor
             foreach (var node in nodes)
                 AddNode(node);
         }
+
+        private string? TryGetStaticMarkupString(IOperation? operation)
+            => RazorVueStaticMarkupValueHelper.TryGetStaticMarkupValue(
+                operation,
+                _compilation,
+                TryGetLocalMarkupStringInitializer,
+                TryGetPropertyMarkupStringInitializer,
+                TryGetFieldMarkupStringInitializer);
 
         private RazorVueRenderFragment ParseNestedBranch(IOperation? operation)
         {
@@ -1011,6 +1045,9 @@ internal sealed class RazorVueRenderTreeExtractor
                     if (TryRegisterRenderFragmentLocalCarrier(declarator, out failureMessage))
                         continue;
 
+                    if (TryRegisterStaticMarkupLocalCarrier(declarator, out failureMessage))
+                        continue;
+
                     if (TryRegisterTemplateScopedDeclaration(declarator, out failureMessage))
                         continue;
 
@@ -1083,6 +1120,34 @@ internal sealed class RazorVueRenderTreeExtractor
             }
 
             _localRenderFragmentCarriers[declarator.Symbol] = slotTemplate;
+            return true;
+        }
+
+        private bool TryRegisterStaticMarkupLocalCarrier(
+            IVariableDeclaratorOperation declarator,
+            out string failureMessage)
+        {
+            failureMessage =
+                $"BuildRenderTree does not support local variable declaration '{GetOperationDisplay(declarator)}' in component '{_snapshot.Descriptor.FullName}'.";
+
+            if (!RazorVueStaticMarkupValueHelper.IsMarkupStringType(declarator.Symbol.Type))
+                return false;
+
+            if (declarator.Initializer?.Value is not { } initializer)
+            {
+                failureMessage =
+                    $"RazorVue MarkupString local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' requires a compile-time provable static markup initializer.";
+                return true;
+            }
+
+            if (TryGetStaticMarkupString(initializer) is null)
+            {
+                failureMessage =
+                    $"RazorVue MarkupString local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be initialized from compile-time provable static markup or a previously analyzable static MarkupString carrier.";
+                return true;
+            }
+
+            _localStaticMarkupCarriers[declarator.Symbol] = initializer;
             return true;
         }
 
@@ -1604,6 +1669,72 @@ internal sealed class RazorVueRenderTreeExtractor
             if (current?.ConstantValue.HasValue == true &&
                 current.ConstantValue.Value is string text)
                 return text;
+
+            return null;
+        }
+
+        private IOperation? TryGetLocalMarkupStringInitializer(ILocalSymbol local)
+            => _localStaticMarkupCarriers.TryGetValue(local, out var initializer)
+                ? initializer
+                : TryGetLocalStaticMarkupInitializer(local);
+
+        private IOperation? TryGetLocalStaticMarkupInitializer(ILocalSymbol local)
+        {
+            foreach (var reference in local.DeclaringSyntaxReferences)
+            {
+                if (reference.GetSyntax() is not VariableDeclaratorSyntax declarator ||
+                    declarator.Initializer?.Value is null)
+                {
+                    continue;
+                }
+
+                var semanticModel = _compilation.GetSemanticModel(declarator.SyntaxTree);
+                if (RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
+                        semanticModel,
+                        declarator.Initializer.Value,
+                        out var initializerOperation))
+                {
+                    return initializerOperation;
+                }
+            }
+
+            return null;
+        }
+
+        private IOperation? TryGetPropertyMarkupStringInitializer(IPropertySymbol property)
+        {
+            foreach (var reference in property.DeclaringSyntaxReferences)
+            {
+                if (reference.GetSyntax() is not PropertyDeclarationSyntax declaration)
+                    continue;
+
+                var semanticModel = _compilation.GetSemanticModel(declaration.SyntaxTree);
+                if (RazorVuePropertyInitializerHelper.TryGetPropertyValueOperation(semanticModel, declaration, out var propertyOperation))
+                    return propertyOperation;
+            }
+
+            return null;
+        }
+
+        private IOperation? TryGetFieldMarkupStringInitializer(IFieldSymbol field)
+        {
+            foreach (var reference in field.DeclaringSyntaxReferences)
+            {
+                if (reference.GetSyntax() is not VariableDeclaratorSyntax declarator ||
+                    declarator.Initializer?.Value is null)
+                {
+                    continue;
+                }
+
+                var semanticModel = _compilation.GetSemanticModel(declarator.SyntaxTree);
+                if (RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
+                        semanticModel,
+                        declarator.Initializer.Value,
+                        out var initializerOperation))
+                {
+                    return initializerOperation;
+                }
+            }
 
             return null;
         }
@@ -2694,7 +2825,7 @@ internal sealed class RazorVueRenderTreeExtractor
 
         private bool IsMarkupStringAddContent(IInvocationOperation invocation)
             => invocation.Arguments.Length >= 2 &&
-               IsMarkupStringType(invocation.TargetMethod.Parameters[1].Type);
+               RazorVueStaticMarkupValueHelper.IsMarkupStringType(invocation.TargetMethod.Parameters[1].Type);
 
         private bool IsRenderFragmentType(ITypeSymbol? typeSymbol)
         {
@@ -2726,24 +2857,6 @@ internal sealed class RazorVueRenderTreeExtractor
             return typeSymbol is INamedTypeSymbol renderFragmentType &&
                    _symbols.RenderFragmentOfT is not null &&
                    SymbolEqualityComparer.Default.Equals(renderFragmentType.OriginalDefinition, _symbols.RenderFragmentOfT);
-        }
-
-        private static bool IsMarkupStringType(ITypeSymbol? typeSymbol)
-        {
-            if (typeSymbol is null)
-                return false;
-
-            if (typeSymbol is INamedTypeSymbol namedType &&
-                namedType.IsGenericType &&
-                namedType.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
-            {
-                typeSymbol = namedType.TypeArguments[0];
-            }
-
-            return string.Equals(
-                typeSymbol.ToDisplayString(),
-                "Microsoft.AspNetCore.Components.MarkupString",
-                StringComparison.Ordinal);
         }
 
         private RazorVueCompilationIssueException CreateStructuralIssue(

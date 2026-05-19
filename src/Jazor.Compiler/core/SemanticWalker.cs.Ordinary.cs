@@ -590,6 +590,9 @@ public partial class SemanticWalker
 	/// <returns>转换后的 JavaScript ESTree Node</returns>
 	public override Node? VisitConversion(IConversionOperation operation, SenseArgument argument)
 	{
+		if (Host?.RewriteConversionPreorder(operation, argument) is Expression preorderHostExpression)
+			return WithOriginIfMissing(preorderHostExpression, operation);
+
 		// tuple 在这里做“边界重映射”：
 		// 语义仍按位置对应，但一旦目标静态视图名字不同，就显式生成新的对象协议。
 		// 这里只处理 Roslyn 明确表示出来的 conversion；其他边界（参数、赋值、初始化器）

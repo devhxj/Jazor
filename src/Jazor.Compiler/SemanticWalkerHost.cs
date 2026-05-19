@@ -11,6 +11,12 @@ namespace Jazor.Compiler;
 /// </summary>
 public abstract class SemanticWalkerHost
 {
+    public virtual Expression? RewriteConversionPreorder(IConversionOperation operation, SenseArgument argument)
+        => null;
+
+    public virtual Expression? RewriteObjectCreationPreorder(IObjectCreationOperation operation, SenseArgument argument)
+        => null;
+
     public virtual Expression? RewriteLocalReference(ILocalReferenceOperation operation, SenseArgument argument)
         => null;
 

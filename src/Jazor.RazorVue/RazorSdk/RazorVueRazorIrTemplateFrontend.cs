@@ -118,6 +118,8 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         private readonly Dictionary<string, IOperation> _literalStringOperationCache = new(StringComparer.Ordinal);
         private readonly Dictionary<string, int> _elementAttributeOrdinals = new(StringComparer.Ordinal);
         private readonly Dictionary<string, int> _componentAttributeOrdinals = new(StringComparer.Ordinal);
+        private readonly Dictionary<ILocalSymbol, IOperation> _localStaticMarkupCarriers =
+            new(SymbolEqualityComparer.Default);
         private readonly Dictionary<ILocalSymbol, ParsedSlotTemplate> _localRenderFragmentCarriers =
             new(SymbolEqualityComparer.Default);
         private readonly Dictionary<ISymbol, ParsedSlotTemplate> _memberRenderFragmentCarriers =
@@ -211,6 +213,12 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                         AppendHtmlContent(builder, node);
                         break;
                     case RazorVueRazorIrNodeKind.CSharpExpression:
+                        if (TryConvertStaticMarkupExpression(node, out var staticMarkupNodes))
+                        {
+                            builder.AddRange(staticMarkupNodes);
+                            break;
+                        }
+
                         builder.Add(ConvertExpressionOrSlotOutlet(node));
                         break;
                     case RazorVueRazorIrNodeKind.Document:
@@ -364,6 +372,13 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                         index++;
                         break;
                     case RazorVueRazorIrNodeKind.CSharpExpression:
+                        if (TryConvertStaticMarkupExpression(node, out var staticMarkupNodes))
+                        {
+                            builder.AddRange(staticMarkupNodes);
+                            index++;
+                            break;
+                        }
+
                         builder.Add(ConvertExpressionOrSlotOutlet(node));
                         index++;
                         break;
@@ -899,6 +914,29 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             var sourceSpan = GetRequiredSourceSpan(node, "CSharpExpressionIntermediateNode");
             var operation = _resolver.ResolveRequiredOperation(sourceSpan, "Razor IR body expression");
             return new RazorVueExpressionNode(operation, CreateOrigins(sourceSpan));
+        }
+
+        private bool TryConvertStaticMarkupExpression(
+            RazorVueRazorIrNode node,
+            out ImmutableArray<RazorVueRenderNode> nodes)
+        {
+            nodes = ImmutableArray<RazorVueRenderNode>.Empty;
+            var sourceSpan = GetRequiredSourceSpan(node, "CSharpExpressionIntermediateNode");
+            var operation = _resolver.ResolveRequiredOperation(sourceSpan, "Razor IR body expression");
+            if (TryGetStaticMarkupValue(operation) is string staticMarkup)
+            {
+                nodes = ParseStaticMarkupFragment(staticMarkup, CreateOrigins(sourceSpan));
+                return true;
+            }
+
+            if (RazorVueStaticMarkupValueHelper.IsMarkupStringType(Unwrap(operation)?.Type))
+            {
+                throw CreateUnsupportedAttributeException(
+                    sourceSpan,
+                    $"RazorVue Razor IR frontend only supports compile-time provable static MarkupString template expressions in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
+            return false;
         }
 
         private void AppendHtmlContent(
@@ -2044,6 +2082,22 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                         CreateOrigins(pending.SourceSpan));
                     return true;
                 }
+                case PendingTemplateControlKind.Imperative:
+                {
+                    var operations = pending.ImperativeOperations!;
+                    var bodyEnd = FindPendingImperativeEndIndex(nodes, index, operations, pending.SourceSpan);
+                    var coveredNodes = bodyEnd > index
+                        ? nodes.Skip(index).Take(bodyEnd - index).ToArray()
+                        : [];
+
+                    renderNode = CreateImperativeBlockNode(
+                        operations,
+                        pending.ImperativeKind!.Value,
+                        CreateImperativeOrigins(operations, coveredNodes),
+                        allowedLocalSymbols);
+                    index = bodyEnd;
+                    return true;
+                }
                 default:
                     return false;
             }
@@ -2064,6 +2118,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             pendingControlNode = null;
             consumedNodeCount = 0;
             var encounteredRenderFragmentCarrier = false;
+            var encounteredStaticMarkupCarrier = false;
             var declarators = ImmutableArray.CreateBuilder<IVariableDeclaratorOperation>();
             var immediateAssignedInitializers = new Dictionary<ILocalSymbol, IOperation>(SymbolEqualityComparer.Default);
             if (!TryCollectTemplateLocalDeclarators(codeNode, operation, declarators, immediateAssignedInitializers, out pendingControlNode))
@@ -2105,6 +2160,13 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     continue;
                 }
 
+                if (RazorVueStaticMarkupValueHelper.IsMarkupStringType(declarator.Symbol.Type))
+                {
+                    RegisterStaticMarkupLocalCarrier(declarator, immediateAssignedInitializers);
+                    encounteredStaticMarkupCarrier = true;
+                    continue;
+                }
+
                 if (declarator.Initializer?.Value is not { } initializer)
                 {
                     if (immediateAssignedInitializers.TryGetValue(declarator.Symbol, out initializer))
@@ -2139,9 +2201,37 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             localDeclarations = declarationBuilder.ToImmutable();
             consumedNodeCount = Math.Max(1, continuationIndex - startIndex);
             return encounteredRenderFragmentCarrier ||
+                   encounteredStaticMarkupCarrier ||
                    localDeclarations.Length > 0 ||
                    pendingControlNode is not null ||
                    continuationIndex > startIndex + 1;
+        }
+
+        private void RegisterStaticMarkupLocalCarrier(
+            IVariableDeclaratorOperation declarator,
+            IReadOnlyDictionary<ILocalSymbol, IOperation> immediateAssignedInitializers)
+        {
+            IOperation? initializer = declarator.Initializer?.Value;
+            if (initializer is null)
+            {
+                immediateAssignedInitializers.TryGetValue(declarator.Symbol, out initializer);
+            }
+
+            if (initializer is null)
+            {
+                throw CreateUnsupportedAttributeException(
+                    CreateSourceSpanFromSyntax(declarator.Syntax),
+                    $"RazorVue MarkupString local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' requires a compile-time provable static markup initializer.");
+            }
+
+            if (TryGetStaticMarkupValue(initializer) is null)
+            {
+                throw CreateUnsupportedAttributeException(
+                    CreateSourceSpanFromSyntax(declarator.Syntax),
+                    $"RazorVue MarkupString local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be initialized from compile-time provable static markup or a previously analyzable static MarkupString carrier.");
+            }
+
+            _localStaticMarkupCarriers[declarator.Symbol] = Unwrap(initializer) ?? initializer;
         }
 
         private bool TryResolveImmediateAssignedInitializer(
@@ -2288,6 +2378,15 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                                 when IsGeneratedTemplateBuilderReturn(codeNode, returnOperation):
                                 continue;
                             default:
+                                if (builder.Count > 0 &&
+                                    !encounteredNonDeclaration &&
+                                    pendingControlNode is null &&
+                                    TryCreatePendingTemplateImperativeNode(codeNode, blockOperation.Operations, child, out pendingControlNode))
+                                {
+                                    encounteredNonDeclaration = true;
+                                    continue;
+                                }
+
                                 throw CreateUnsupportedAttributeException(
                                     GetBestSourceSpan(codeNode),
                                     $"RazorVue Razor IR frontend only supports template code blocks that contain immutable local declarations in component '{_snapshot.Descriptor.FullName}'.");
@@ -2381,6 +2480,39 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 return false;
 
             pendingControlNode = PendingTemplateControlNode.CreateFor(sourceSpan, operation);
+            return true;
+        }
+
+        private bool TryCreatePendingTemplateImperativeNode(
+            RazorVueRazorIrNode codeNode,
+            ImmutableArray<IOperation> siblingOperations,
+            IOperation startingOperation,
+            out PendingTemplateControlNode? pendingControlNode)
+        {
+            pendingControlNode = null;
+            var sourceSpan = GetRequiredSourceSpan(codeNode, "CSharpCodeIntermediateNode template imperative code block");
+            var startIndex = -1;
+
+            for (var index = 0; index < siblingOperations.Length; index++)
+            {
+                if (ReferenceEquals(siblingOperations[index], startingOperation))
+                {
+                    startIndex = index;
+                    break;
+                }
+            }
+
+            if (startIndex < 0)
+                return false;
+
+            var tailOperations = siblingOperations.Skip(startIndex).ToImmutableArray();
+            if (!RazorVueImperativeRenderPromotionAnalyzer.ShouldPromoteBody(tailOperations))
+                return false;
+
+            pendingControlNode = PendingTemplateControlNode.CreateImperative(
+                sourceSpan,
+                tailOperations,
+                RazorVueImperativeRenderPromotionAnalyzer.ClassifyBodyKind(tailOperations));
             return true;
         }
 
@@ -3448,6 +3580,56 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return matchingEndIndex;
         }
 
+        private int FindPendingImperativeEndIndex(
+            IReadOnlyList<RazorVueRazorIrNode> nodes,
+            int startIndex,
+            IReadOnlyList<IOperation> operations,
+            RazorVueRazorSourceSpan sourceSpan)
+        {
+            if (operations.Count == 0)
+                return startIndex;
+
+            var mappedRanges = operations
+                .Select(TryMapOperationToSourceRange)
+                .Where(static range => range is not null)
+                .Select(static range => range!.Value)
+                .ToArray();
+
+            if (mappedRanges.Length == 0)
+                return startIndex;
+
+            var filePath = mappedRanges[0].FilePath;
+            if (mappedRanges.Any(range => !PathsEqual(range.FilePath, filePath)))
+            {
+                throw CreateUnsupportedAttributeException(
+                    sourceSpan,
+                    $"RazorVue Razor IR frontend could not determine a single template extent for embedded imperative block in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
+            var mergedRange = new RazorVueRazorIrOperationResolver.SourceRange(
+                filePath,
+                mappedRanges.Min(static range => range.Start),
+                mappedRanges.Max(static range => range.End));
+
+            var matchingEndIndex = startIndex;
+            for (var candidateIndex = startIndex; candidateIndex < nodes.Count; candidateIndex++)
+            {
+                var candidateRange = TryGetNodeSourceRange(nodes[candidateIndex]);
+                if (candidateRange is null)
+                    continue;
+
+                if (!PathsEqual(candidateRange.Value.FilePath, mergedRange.FilePath))
+                    continue;
+
+                if (!RangesOverlap(candidateRange.Value, mergedRange))
+                    continue;
+
+                matchingEndIndex = candidateIndex + 1;
+            }
+
+            return matchingEndIndex;
+        }
+
         private List<RazorVueRazorIrNode> SliceNodesByRange(
             IReadOnlyList<RazorVueRazorIrNode> nodes,
             RazorVueRazorIrOperationResolver.SourceRange range,
@@ -4016,6 +4198,78 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                         null,
                         $"RazorVue Razor IR frontend {detail} in component '{_snapshot.Descriptor.FullName}'.")));
 
+        private string? TryGetStaticMarkupValue(IOperation? operation)
+            => RazorVueStaticMarkupValueHelper.TryGetStaticMarkupValue(
+                operation,
+                _context.Compilation,
+                TryGetLocalMarkupStringInitializer,
+                TryGetPropertyMarkupStringInitializer,
+                TryGetFieldMarkupStringInitializer);
+
+        private IOperation? TryGetLocalMarkupStringInitializer(ILocalSymbol local)
+        {
+            if (_localStaticMarkupCarriers.TryGetValue(local, out var initializer))
+                return initializer;
+
+            foreach (var reference in local.DeclaringSyntaxReferences)
+            {
+                if (reference.GetSyntax() is not VariableDeclaratorSyntax declarator ||
+                    declarator.Initializer?.Value is null)
+                {
+                    continue;
+                }
+
+                var semanticModel = _context.Compilation.GetSemanticModel(declarator.SyntaxTree);
+                if (RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
+                        semanticModel,
+                        declarator.Initializer.Value,
+                        out var initializerOperation))
+                {
+                    return initializerOperation;
+                }
+            }
+
+            return null;
+        }
+
+        private IOperation? TryGetPropertyMarkupStringInitializer(IPropertySymbol property)
+        {
+            foreach (var reference in property.DeclaringSyntaxReferences)
+            {
+                if (reference.GetSyntax() is not PropertyDeclarationSyntax declaration)
+                    continue;
+
+                var semanticModel = _context.Compilation.GetSemanticModel(declaration.SyntaxTree);
+                if (RazorVuePropertyInitializerHelper.TryGetPropertyValueOperation(semanticModel, declaration, out var propertyOperation))
+                    return propertyOperation;
+            }
+
+            return null;
+        }
+
+        private IOperation? TryGetFieldMarkupStringInitializer(IFieldSymbol field)
+        {
+            foreach (var reference in field.DeclaringSyntaxReferences)
+            {
+                if (reference.GetSyntax() is not VariableDeclaratorSyntax declarator ||
+                    declarator.Initializer?.Value is null)
+                {
+                    continue;
+                }
+
+                var semanticModel = _context.Compilation.GetSemanticModel(declarator.SyntaxTree);
+                if (RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
+                        semanticModel,
+                        declarator.Initializer.Value,
+                        out var initializerOperation))
+                {
+                    return initializerOperation;
+                }
+            }
+
+            return null;
+        }
+
         private IOperation CreateLiteralStringOperation(string value)
         {
             if (_literalStringOperationCache.TryGetValue(value, out var cached))
@@ -4059,7 +4313,8 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         {
             Conditional,
             ForEach,
-            For
+            For,
+            Imperative
         }
 
         private sealed record PendingTemplateControlNode(
@@ -4067,22 +4322,30 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             RazorVueRazorSourceSpan SourceSpan,
             IConditionalOperation? ConditionalOperation,
             IForEachLoopOperation? ForEachOperation,
-            IForLoopOperation? ForOperation)
+            IForLoopOperation? ForOperation,
+            ImmutableArray<IOperation> ImperativeOperations,
+            RazorVueImperativeBlockKind? ImperativeKind)
         {
             public static PendingTemplateControlNode CreateConditional(
                 RazorVueRazorSourceSpan sourceSpan,
                 IConditionalOperation operation)
-                => new(PendingTemplateControlKind.Conditional, sourceSpan, operation, null, null);
+                => new(PendingTemplateControlKind.Conditional, sourceSpan, operation, null, null, [], null);
 
             public static PendingTemplateControlNode CreateForEach(
                 RazorVueRazorSourceSpan sourceSpan,
                 IForEachLoopOperation operation)
-                => new(PendingTemplateControlKind.ForEach, sourceSpan, null, operation, null);
+                => new(PendingTemplateControlKind.ForEach, sourceSpan, null, operation, null, [], null);
 
             public static PendingTemplateControlNode CreateFor(
                 RazorVueRazorSourceSpan sourceSpan,
                 IForLoopOperation operation)
-                => new(PendingTemplateControlKind.For, sourceSpan, null, null, operation);
+                => new(PendingTemplateControlKind.For, sourceSpan, null, null, operation, [], null);
+
+            public static PendingTemplateControlNode CreateImperative(
+                RazorVueRazorSourceSpan sourceSpan,
+                ImmutableArray<IOperation> operations,
+                RazorVueImperativeBlockKind kind)
+                => new(PendingTemplateControlKind.Imperative, sourceSpan, null, null, null, operations, kind);
         }
     }
 }

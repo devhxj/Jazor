@@ -332,6 +332,72 @@ public sealed class RazorVueCanonicalSfcSemanticTests
     }
 
     [TestMethod]
+    public void RazorVue_CanonicalModelFactory_ClassifiesCountStyleForWithSimpleAssignmentStep_AsTemplateViaSetupBinding()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/list-card")]
+                public class ListCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Start { get; set; }
+
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    [Parameter]
+                    public int Step { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        for (var i = Start; i <= Count; i = i + Step)
+                        {
+                            builder.OpenElement(0, "span");
+                            builder.AddContent(1, i);
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+        var loop = AssertNode<RazorVueCanonicalForNode>(canonical.Template.Children.Single());
+
+        Assert.AreEqual(RazorVueTemplateEncodability.TemplateViaSetupBinding, loop.TemplateEncodability);
+        Assert.AreEqual("props.start", loop.InitialValueExpressionText);
+        Assert.AreEqual("props.count", loop.LimitValueExpressionText);
+        Assert.AreEqual("props.step", loop.StepValueExpressionText);
+
+        var sfc = new RazorVueSfcSemanticModelFactory().Create(canonical);
+        Assert.IsTrue(sfc.ScriptSetupBlock.LiftedBindings.IsDefaultOrEmpty);
+        Assert.AreEqual("root/child[0]/for/init", sfc.TemplateBlock.BindingSites[0].SitePath);
+        Assert.AreEqual("props.start", sfc.TemplateBlock.BindingSites[0].TemplateExpressionText);
+        Assert.AreEqual("root/child[0]/for/limit", sfc.TemplateBlock.BindingSites[1].SitePath);
+        Assert.AreEqual("props.count", sfc.TemplateBlock.BindingSites[1].TemplateExpressionText);
+        Assert.AreEqual("root/child[0]/for/step", sfc.TemplateBlock.BindingSites[2].SitePath);
+        Assert.AreEqual("props.step", sfc.TemplateBlock.BindingSites[2].TemplateExpressionText);
+    }
+
+    [TestMethod]
     public void RazorVue_CanonicalModelFactory_MapsVNodeKeys_ForElementAndComponent()
     {
         var context = CreateContext(

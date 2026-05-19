@@ -1841,7 +1841,12 @@ public partial class SemanticWalker
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitObjectCreation(IObjectCreationOperation operation, SenseArgument argument)
-		=> BuildObjectCreation(null, operation, argument);
+	{
+		if (Host?.RewriteObjectCreationPreorder(operation, argument) is Expression preorderHostExpression)
+			return WithOriginIfMissing(preorderHostExpression, operation);
+
+		return BuildObjectCreation(null, operation, argument);
+	}
 
 	/// <summary>
 	/// 处理对象或集合初始化器操作

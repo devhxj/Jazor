@@ -477,6 +477,16 @@ internal sealed partial class RazorVueExpressionEmitter
                 ? ParseJavaScriptExpression(expression)
                 : null;
 
+        public override Expression? RewriteConversionPreorder(IConversionOperation operation, SenseArgument argument)
+            => _emitter.TryRewriteStaticMarkupStringConversion(operation, out var expression)
+                ? ParseJavaScriptExpression(expression)
+                : null;
+
+        public override Expression? RewriteObjectCreationPreorder(IObjectCreationOperation operation, SenseArgument argument)
+            => _emitter.TryRewriteStaticMarkupStringObjectCreation(operation, out var expression)
+                ? ParseJavaScriptExpression(expression)
+                : null;
+
         public override Expression? RewriteFieldReference(
             IFieldReferenceOperation operation,
             SenseArgument argument,

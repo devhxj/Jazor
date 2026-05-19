@@ -95,7 +95,7 @@ internal static class RazorVueForLoopAnalyzer
         => CreateForLoopIssueException(
             loop,
             ownerComponentFullName,
-            $"RazorVue render currently only supports count-style for-loops with a single declared loop variable, direct comparison condition, and ++/--/+=/-= iterator in component '{ownerComponentFullName}'.");
+            $"RazorVue render currently only supports count-style for-loops with a single declared loop variable, direct comparison condition, and ++/--/+=/-= or 'i = i +/- step' iterator in component '{ownerComponentFullName}'.");
 
     private static bool TryAnalyzeForStep(
         IOperation? operation,
@@ -140,9 +140,49 @@ internal static class RazorVueForLoopAnalyzer
                 }
 
                 return false;
+
+            case ISimpleAssignmentOperation assignment
+                when TryMatchLoopVariable(assignment.Target, loopVariable, unwrap):
+                return TryAnalyzeSimpleAssignmentForStep(assignment, loopVariable, unwrap, out stepKind, out stepValue);
         }
 
         return false;
+    }
+
+    private static bool TryAnalyzeSimpleAssignmentForStep(
+        ISimpleAssignmentOperation assignment,
+        ILocalSymbol loopVariable,
+        Func<IOperation?, IOperation?> unwrap,
+        out RazorVueForStepKind stepKind,
+        out IOperation? stepValue)
+    {
+        stepKind = default;
+        stepValue = null;
+
+        var currentValue = unwrap(assignment.Value);
+        if (currentValue is not IBinaryOperation binaryOperation)
+            return false;
+
+        var leftMatchesLoopVariable = TryMatchLoopVariable(binaryOperation.LeftOperand, loopVariable, unwrap);
+        var rightMatchesLoopVariable = TryMatchLoopVariable(binaryOperation.RightOperand, loopVariable, unwrap);
+
+        switch (binaryOperation.OperatorKind)
+        {
+            case BinaryOperatorKind.Add when leftMatchesLoopVariable ^ rightMatchesLoopVariable:
+                stepKind = RazorVueForStepKind.AddAssign;
+                stepValue = leftMatchesLoopVariable
+                    ? unwrap(binaryOperation.RightOperand) ?? binaryOperation.RightOperand
+                    : unwrap(binaryOperation.LeftOperand) ?? binaryOperation.LeftOperand;
+                return true;
+
+            case BinaryOperatorKind.Subtract when leftMatchesLoopVariable && !rightMatchesLoopVariable:
+                stepKind = RazorVueForStepKind.SubtractAssign;
+                stepValue = unwrap(binaryOperation.RightOperand) ?? binaryOperation.RightOperand;
+                return true;
+
+            default:
+                return false;
+        }
     }
 
     private static bool TryMapForConditionKind(

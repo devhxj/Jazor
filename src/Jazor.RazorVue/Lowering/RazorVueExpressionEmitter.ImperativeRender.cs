@@ -129,14 +129,23 @@ internal sealed partial class RazorVueExpressionEmitter
 
     private RazorVueCompilationIssueException CreateUnsupportedImperativeRenderLoweringException(IOperation operation)
     {
+        var construct = DescribeUnsupportedImperativeOperation(operation);
+        return CreateUnsupportedImperativeRenderLoweringException(
+            operation,
+            $"RazorVue imperative render lowering does not support '{construct}' in component '{_snapshot.Descriptor.FullName}' because the current `.mjs`/render-function `.vue` artifact contract is synchronous and cannot carry async render semantics.");
+    }
+
+    private RazorVueCompilationIssueException CreateUnsupportedImperativeRenderLoweringException(
+        IOperation operation,
+        string detail)
+    {
         var origin = operation.Syntax is null
             ? _snapshot.Origins.FirstOrDefault()
             : RazorVueSourceOrigin.FromLocation(operation.Syntax.GetLocation(), RazorVueOriginKind.Template);
-        var construct = DescribeUnsupportedImperativeOperation(operation);
         var issue = new RazorVueCompilationIssue(
             RazorVueIssueCode.UnsupportedImperativeRenderLowering,
             RazorVueIssueSeverity.Error,
-            $"RazorVue imperative render lowering does not support '{construct}' in component '{_snapshot.Descriptor.FullName}' because the current `.mjs`/render-function `.vue` artifact contract is synchronous and cannot carry async render semantics.",
+            detail,
             ImmutableArray<string>.Empty);
         return new RazorVueCompilationIssueException(issue, _snapshot.Descriptor.FullName, origin);
     }
@@ -229,6 +238,32 @@ internal sealed partial class RazorVueExpressionEmitter
         return false;
     }
 
+    internal bool TryRewriteStaticMarkupStringConversion(IConversionOperation operation, out string expression)
+    {
+        expression = string.Empty;
+        if (_imperativeBuilderAlias is null)
+            return false;
+
+        if (TryGetImperativeStaticMarkupString(operation) is not string staticMarkup)
+            return false;
+
+        expression = ToJavaScriptString(staticMarkup);
+        return true;
+    }
+
+    internal bool TryRewriteStaticMarkupStringObjectCreation(IObjectCreationOperation operation, out string expression)
+    {
+        expression = string.Empty;
+        if (_imperativeBuilderAlias is null)
+            return false;
+
+        if (TryGetImperativeStaticMarkupString(operation) is not string staticMarkup)
+            return false;
+
+        expression = ToJavaScriptString(staticMarkup);
+        return true;
+    }
+
     private bool TryRewriteImperativeBuilderInvocation(IInvocationOperation invocation, SenseArgument argument, out string expression)
     {
         expression = string.Empty;
@@ -268,15 +303,30 @@ internal sealed partial class RazorVueExpressionEmitter
                 expression = builderTarget + ".openRegion()";
                 return true;
             case "AddContent":
+                if (invocation.Arguments.Length >= 2 &&
+                    RazorVueStaticMarkupValueHelper.IsMarkupStringType(invocation.TargetMethod.Parameters.ElementAtOrDefault(1)?.Type))
+                {
+                    if (TryGetImperativeStaticMarkupString(invocation.Arguments[1].Value) is not string staticMarkup)
+                    {
+                        throw CreateUnsupportedImperativeRenderLoweringException(
+                            invocation,
+                            $"RazorVue imperative render lowering only supports compile-time provable static MarkupString AddContent(...) in component '{_snapshot.Descriptor.FullName}'.");
+                    }
+
+                    expression = builderTarget + ".append(" + EmitStaticMarkupExpression(staticMarkup) + ")";
+                    return true;
+                }
+
                 expression = invocation.Arguments.Length >= 3
                     ? builderTarget + ".append(" + EmitImperativeArgument(invocation, argument, 1) + ", " + EmitImperativeArgument(invocation, argument, 2) + ")"
                     : builderTarget + ".append(" + EmitImperativeArgument(invocation, argument, 1) + ")";
                 return true;
             case "AddMarkupContent":
-                if (TryGetImperativeConstantString(invocation.Arguments[1].Value) is not string markup)
+                if (TryGetImperativeStaticMarkupContent(invocation.Arguments[1].Value) is not string markup)
                 {
-                    throw new NotSupportedException(
-                        $"RazorVue imperative render lowering only supports constant AddMarkupContent(...) in component '{_snapshot.Descriptor.FullName}'.");
+                    throw CreateUnsupportedImperativeRenderLoweringException(
+                        invocation,
+                        $"RazorVue imperative render lowering only supports compile-time provable static AddMarkupContent(...) in component '{_snapshot.Descriptor.FullName}'.");
                 }
 
                 expression = builderTarget + ".append(" + EmitStaticMarkupExpression(markup) + ")";
@@ -296,6 +346,227 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         return false;
+    }
+
+    private string? TryGetImperativeStaticMarkupString(IOperation? operation)
+        => RazorVueStaticMarkupValueHelper.TryGetStaticMarkupValue(
+            operation,
+            _snapshot.Compilation,
+            TryGetImperativeLocalMarkupStringInitializer,
+            TryGetImperativePropertyMarkupStringInitializer,
+            TryGetImperativeFieldMarkupStringInitializer);
+
+    private string? TryGetImperativeStaticMarkupContent(IOperation? operation)
+        => RazorVueStaticMarkupValueHelper.TryGetStaticMarkupValue(
+            operation,
+            _snapshot.Compilation,
+            TryGetImperativeLocalStaticMarkupInitializer,
+            TryGetImperativePropertyStaticMarkupInitializer,
+            TryGetImperativeFieldStaticMarkupInitializer);
+
+    private IOperation? TryGetImperativeLocalMarkupStringInitializer(ILocalSymbol local)
+    {
+        foreach (var syntaxReference in local.DeclaringSyntaxReferences)
+        {
+            if (syntaxReference.GetSyntax() is not VariableDeclaratorSyntax declarator ||
+                declarator.Initializer?.Value is null)
+            {
+                continue;
+            }
+
+            var semanticModel = _snapshot.Compilation.GetSemanticModel(declarator.SyntaxTree);
+            if (HasImperativeMutableLocalWrites(local, declarator, semanticModel))
+                return null;
+
+            if (RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
+                    semanticModel,
+                    declarator.Initializer.Value,
+                    out var initializerOperation))
+            {
+                return initializerOperation;
+            }
+        }
+
+        return null;
+    }
+
+    private IOperation? TryGetImperativeLocalStaticMarkupInitializer(ILocalSymbol local)
+    {
+        foreach (var syntaxReference in local.DeclaringSyntaxReferences)
+        {
+            if (syntaxReference.GetSyntax() is not VariableDeclaratorSyntax declarator ||
+                declarator.Initializer?.Value is null)
+            {
+                continue;
+            }
+
+            var semanticModel = _snapshot.Compilation.GetSemanticModel(declarator.SyntaxTree);
+            if (HasImperativeMutableLocalWrites(local, declarator, semanticModel))
+                return null;
+
+            if (RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
+                    semanticModel,
+                    declarator.Initializer.Value,
+                    out var initializerOperation))
+            {
+                return initializerOperation;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool HasImperativeMutableLocalWrites(
+        ILocalSymbol local,
+        VariableDeclaratorSyntax declarator,
+        SemanticModel semanticModel)
+    {
+        var rootBlock = declarator.Ancestors().OfType<BlockSyntax>().FirstOrDefault();
+        if (rootBlock is null)
+            return true;
+
+        if (semanticModel.GetOperation(rootBlock) is not IOperation rootOperation)
+            return true;
+
+        foreach (var operation in EnumerateLocalMutationScanOperations(rootOperation))
+        {
+            switch (operation)
+            {
+                case IAssignmentOperation assignment
+                    when ReferencesLocalSymbol(assignment.Target, local):
+                    return true;
+                case IIncrementOrDecrementOperation incrementOrDecrement
+                    when ReferencesLocalSymbol(incrementOrDecrement.Target, local):
+                    return true;
+                case IArgumentOperation argument
+                    when argument.Parameter?.RefKind is RefKind.Ref or RefKind.Out &&
+                         ReferencesLocalSymbol(argument.Value, local):
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static IEnumerable<IOperation> EnumerateLocalMutationScanOperations(IOperation root)
+    {
+        yield return root;
+
+        foreach (var child in root.ChildOperations)
+        {
+            if (child is null)
+                continue;
+
+            foreach (var nested in EnumerateLocalMutationScanOperations(child))
+                yield return nested;
+        }
+    }
+
+    private static bool ReferencesLocalSymbol(IOperation? operation, ILocalSymbol local)
+    {
+        var current = RazorVueOperationNormalizer.Unwrap(operation);
+        if (current is null)
+            return false;
+
+        if (current is ILocalReferenceOperation localReference &&
+            SymbolEqualityComparer.Default.Equals(localReference.Local, local))
+        {
+            return true;
+        }
+
+        foreach (var child in current.ChildOperations)
+        {
+            if (child is not null && ReferencesLocalSymbol(child, local))
+                return true;
+        }
+
+        return false;
+    }
+
+    private IOperation? TryGetImperativePropertyMarkupStringInitializer(IPropertySymbol property)
+    {
+        foreach (var syntaxReference in property.DeclaringSyntaxReferences)
+        {
+            if (syntaxReference.GetSyntax() is not PropertyDeclarationSyntax declaration)
+                continue;
+
+            var semanticModel = _snapshot.Compilation.GetSemanticModel(declaration.SyntaxTree);
+            if (RazorVuePropertyInitializerHelper.TryGetPropertyValueOperation(
+                    semanticModel,
+                    declaration,
+                    out var propertyOperation))
+            {
+                return propertyOperation;
+            }
+        }
+
+        return null;
+    }
+
+    private IOperation? TryGetImperativePropertyStaticMarkupInitializer(IPropertySymbol property)
+    {
+        foreach (var syntaxReference in property.DeclaringSyntaxReferences)
+        {
+            if (syntaxReference.GetSyntax() is not PropertyDeclarationSyntax declaration)
+                continue;
+
+            var semanticModel = _snapshot.Compilation.GetSemanticModel(declaration.SyntaxTree);
+            if (RazorVuePropertyInitializerHelper.TryGetPropertyValueOperation(
+                    semanticModel,
+                    declaration,
+                    out var propertyOperation))
+            {
+                return propertyOperation;
+            }
+        }
+
+        return null;
+    }
+
+    private IOperation? TryGetImperativeFieldMarkupStringInitializer(IFieldSymbol field)
+    {
+        foreach (var syntaxReference in field.DeclaringSyntaxReferences)
+        {
+            if (syntaxReference.GetSyntax() is not VariableDeclaratorSyntax declarator ||
+                declarator.Initializer?.Value is null)
+            {
+                continue;
+            }
+
+            var semanticModel = _snapshot.Compilation.GetSemanticModel(declarator.SyntaxTree);
+            if (RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
+                    semanticModel,
+                    declarator.Initializer.Value,
+                    out var initializerOperation))
+            {
+                return initializerOperation;
+            }
+        }
+
+        return null;
+    }
+
+    private IOperation? TryGetImperativeFieldStaticMarkupInitializer(IFieldSymbol field)
+    {
+        foreach (var syntaxReference in field.DeclaringSyntaxReferences)
+        {
+            if (syntaxReference.GetSyntax() is not VariableDeclaratorSyntax declarator ||
+                declarator.Initializer?.Value is null)
+            {
+                continue;
+            }
+
+            var semanticModel = _snapshot.Compilation.GetSemanticModel(declarator.SyntaxTree);
+            if (RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
+                    semanticModel,
+                    declarator.Initializer.Value,
+                    out var initializerOperation))
+            {
+                return initializerOperation;
+            }
+        }
+
+        return null;
     }
 
     private string EmitImperativeArgument(IInvocationOperation invocation, SenseArgument argument, int argumentIndex)

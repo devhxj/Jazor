@@ -29,7 +29,7 @@ RazorVue 对复杂 block code 的路线已不再是“前端继续堆 statement 
 - `.mjs` / H artifact 已具备 body-level imperative render bridge
 - `.vue` / SFC artifact 现已具备 render-function SFC 承载；imperative body 不再在 SFC lowering 阶段被显式拒绝
 - imperative runtime vocabulary 现已统一切换到 render-context 模型：最终 `.mjs` / render-function `.vue` 产物使用 `__jazorRenderContext`、`enterElement/leaveElement`、`append`、`setComponentParameter`、`finish`，不再暴露 Razor `RenderTreeBuilder` helper 名称
-- 首段真实 imperative render 承载已覆盖：提前 `return`、`while` / `do-while`、带 `break` / `continue` 的 `for` / `foreach`、`switch`、`lock`、`try/catch/finally`、局部 mutation、imperative body 内常量 `AddMarkupContent(...)`
+- 首段真实 imperative render 承载已覆盖：提前 `return`、`while` / `do-while`、带 `break` / `continue` 的 `for` / `foreach`、`switch`、`lock`、`try/catch/finally`、局部 mutation、imperative body 内静态 `AddMarkupContent(...)` / `AddContent(..., MarkupString)`
 - mixed declarative + imperative render tree 现已统一按“mixed render-function path”处理：任意位置只要出现 imperative node，最终 `.vue` 产物统一切到 render-function 模型，而不是试图局部回到 template canonical subtree
 
 ### 仍未完成
@@ -53,6 +53,7 @@ RazorVue 对复杂 block code 的路线已不再是“前端继续堆 statement 
 - current-component slot forwarding 现已在 imperative 路径保留 slot 语义，不再错误降级为 raw prop
 - imperative body 中真实使用到的 injected/resolved component prop / emit / slot runtime shape，现已进入 descriptor identity/runtime-usage 收集；descriptor hash / HMR 边界推导不再忽略 imperative `AddComponentParameter(...)`、slot forwarding 或 slot builder 内嵌套组件
 - Razor IR root template `@{ ... }` promotion 后的 imperative current-component slot forwarding 现已与 handwritten `BuildRenderTree` 对齐，不再在 SG/IR 路径退化成普通 `slots.xxx ?? null` 值传递
+- Razor IR typed child-content / typed slot template body 中，“局部 immutable cache + imperative statement” 现已进入正式支持：局部声明后接 `while` / `switch` / `try-catch-finally` / `lock` 会稳定提升为 `RazorVueImperativeBlockNode`，并复用现有 imperative render bridge
 
 因此该缺口后续剩余的不是“完全不支持 imperative slot”，而是：
 
@@ -271,6 +272,69 @@ handwritten `BuildRenderTree` 当前已支持以下 typed `RenderFragment` carri
   - 当前组件只读 property / `readonly` field carrier
   - 只读 member 链式转发
   - 自引用 / 环引用 fail-fast
+
+## 3.2 已完成：count-style `for` 等价步进赋值形态扩面
+
+### 现象
+
+此前 RazorVue 对声明式 count-style `for` 的步进子集只稳定接受：
+
+- `i++`
+- `i--`
+- `i += Step`
+- `i -= Step`
+
+但真实 authoring 里，用户也很自然会写：
+
+```csharp
+for (var i = Start; i <= Count; i = i + Step)
+{
+    ...
+}
+```
+
+或：
+
+```csharp
+for (var i = Start; i >= Count; i = i - Step)
+{
+    ...
+}
+```
+
+这两类写法与 `+=` / `-=` 在当前 RazorVue 的 count-style loop 语义里本质等价；如果继续拒绝，会让 authoring contract 显得偶然且脆弱。
+
+### 当前落地方式
+
+该缺口已在共享 `RazorVueForLoopAnalyzer` 中收口：
+
+- `ISimpleAssignmentOperation` 形态的 iterator 现会尝试识别：
+  - `i = i + step`
+  - `i = step + i`
+  - `i = i - step`
+- 命中后会规范化回现有：
+  - `RazorVueForStepKind.AddAssign`
+  - `RazorVueForStepKind.SubtractAssign`
+- 后续 canonical / H / SFC lowering 仍完全复用现有 `__jazorVueForRange(...)` 路径，不新增新的 runtime helper、manifest 语义或 Vue 产物协议
+
+### 当前支持边界
+
+- 支持：`for (var i = Start; i <= Count; i = i + Step)`
+- 支持：`for (var i = Start; i <= Count; i = Step + i)`
+- 支持：`for (var i = Start; i >= Count; i = i - Step)`
+- 仍支持：`i++` / `i--` / `i += Step` / `i -= Step`
+- 不支持：多 iterator 表达式
+- 不支持：`i = i * Step`、`i = Next(i)`、`i = i + GetStep()` 这类更宽泛 iterator 协议解释
+- 不支持：需要改变现有 “start / limit / step 先求值，再进入 range helper” 契约的逐轮动态步进模型
+
+### 当前保护
+
+- `src/Jazor.RazorVue/RenderTree/RazorVueForLoopAnalyzer.cs`
+- `src/Jazor.RazorVue.Test/RazorVueCanonicalSfcSemanticTests.cs`
+- `src/Jazor.RazorVue.Test/RazorVuePipelineTests.cs`
+- `src/Jazor.RazorVue.Test/RazorVueSfcArtifactFactoryTests.cs`
+- `src/Jazor.RazorVue.RazorIr.Test/RazorVueRazorIrTemplateFrontendTests.cs`
+- `src/Jazor.RazorVue.RazorIr.Test/RazorVueTemplateFrontendParityTests.cs`
 
 ### Razor IR 对齐状态
 
@@ -874,7 +938,7 @@ builder.AddContent(0, template, 42);
 - 当前组件 `[Parameter] RenderFragment...` 作为 slot forwarding source 时，默认 slot 与 typed/scoped slot 两条路径都已锁定回归；typed forwarding 会按目标子组件 slot contract 保留 context 参数名，而不是退化成普通值表达式或错误的无参 slot template
 - recursive fragment factory 仍显式失败
 
-## 14. 已完成：handwritten `BuildRenderTree` 常量 `AddMarkupContent(...)` 静态标记支持
+## 14. 已完成：handwritten `BuildRenderTree` 静态 `AddMarkupContent(...)` 标记支持
 
 ### 现象
 
@@ -888,22 +952,29 @@ builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span><p>ok</p><
 
 ### 当前落地方式
 
-该缺口已在 RazorVue handwritten `BuildRenderTree` frontend 中收口：
+该缺口已在 RazorVue handwritten `BuildRenderTree` frontend 与 imperative render lowering 主线中收口：
 
 - `AddMarkupContent(...)` 在第二参数可证明为常量字符串时，会交给共享静态标记解析器还原为 render tree subtree
+- 当前已继续扩展为“编译期可证明静态 markup carrier”子集：
+  - `const string markup = "<section ...>...</section>"; builder.AddMarkupContent(..., markup);`
+  - 只读 expression-bodied property / getter-only property / `readonly` field 承载同类静态 string markup，再由 `AddMarkupContent(...)` 消费
+- imperative body 内同样的静态 string direct/local/readonly-member carrier authoring，也会直接 lower 为 `h(...)` subtree
 - 共享静态标记解析器同时被 Razor IR frontend 复用，保证静态 HTML 片段在两条 frontend 路径上的 element/text/attribute 还原语义一致
 - 还原出的 subtree 继续走现有 canonical / H / SFC lowering 链路，不额外引入 raw-html 特判分支
+- 若 `AddMarkupContent(...)` 内容不是编译期可证明静态 markup，则 declarative 路径显式报 `CanonicalizationFailed`，imperative 路径显式报 `UnsupportedImperativeRenderLowering`；不会再静默当成普通 string text 或 raw helper 调用放行
 
 因此以下场景现已稳定支持：
 
 - 常量 `AddMarkupContent(...)` 静态 element subtree
+- local/readonly-member `AddMarkupContent(...)` static carrier subtree
 - 静态 attribute、嵌套 element、void element/self-closing element
 - 静态文本节点与 HTML comment 跳过
 
 ### 当前支持边界
 
 - 支持：`builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span></section>");`
-- 支持：可安全解析为静态 HTML subtree 的常量 markup
+- 支持：local `const` string / 只读 property / `readonly` field 承载的编译期可证明静态 markup
+- 支持：imperative body 内同样的静态 string direct/local/readonly-member carrier authoring
 - 不支持：运行时拼接/动态 markup
 - 不支持：需要当作任意 raw HTML script 语义执行的内容
 - 不支持：结构非法、闭合不匹配或无法解析的静态 markup；这类输入仍显式失败，而不是静默降级成字符串注入
@@ -918,6 +989,80 @@ builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span><p>ok</p><
 - `src/Jazor.RazorVue.Test/RazorVueSfcArtifactFactoryTests.cs`
 
 当前回归同时锁定：
+
+- declarative `BuildRenderTree` 中常量 `AddMarkupContent(...)`
+- declarative `BuildRenderTree` 中 local/readonly-member `AddMarkupContent(...)` carrier
+- declarative `BuildRenderTree` 中动态 `AddMarkupContent(...)` carrier fail-fast
+- imperative render bridge 中静态 `AddMarkupContent(...)` direct/local/readonly-member carrier
+- imperative render bridge 中动态 `AddMarkupContent(...)` carrier fail-fast
+
+## 15. 已完成：静态 `MarkupString` `AddContent(...)` 静态标记支持
+
+### 现象
+
+此前 handwritten `BuildRenderTree` 对下面这类真实 authoring 仍会失败：
+
+```csharp
+builder.AddContent(0, (MarkupString)"<section class=\"hero\"><span>safe</span></section>");
+builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span></section>"));
+```
+
+这些写法在 Blazor authoring 中很常见，本质上仍是“编译期可证明的静态 markup subtree”。如果这条路径继续失败，用户就必须把同一段静态 HTML 改写回 `AddMarkupContent(...)` 或更底层的 `OpenElement`/`CloseElement` 序列，authoring contract 不稳定。
+
+### 当前落地方式
+
+该缺口已在 RazorVue handwritten `BuildRenderTree` frontend 与 imperative render lowering 主线中共同收口：
+
+- 新增共享静态 markup value helper，只接受“编译期可证明为静态 markup”的 `MarkupString` 形态
+- 当前已覆盖：
+  - `(MarkupString)"<section ...>...</section>"`
+  - `new MarkupString("<section ...>...</section>")`
+- 当前已继续覆盖 Razor authored template expression 路径：
+  - `@((MarkupString)"<section ...>...</section>")`
+  - `@(new MarkupString("<section ...>...</section>"))`
+- 当前已继续覆盖受控 carrier：
+  - `MarkupString markup = (MarkupString)"<section ...>...</section>"; builder.AddContent(..., markup);`
+  - 只读 expression-bodied property / getter-only property / `readonly` field 承载同类静态 `MarkupString`，再由 `AddContent(...)` 消费
+  - Razor authored template 中局部 / 只读成员 carrier 的 `@markup` / `@HeroMarkup` / `@_heroMarkup`
+- 命中该子集时，会复用现有 `RazorVueStaticMarkupParser` 还原为正常 render tree subtree / imperative `h(...)` subtree
+- 若 `MarkupString` 不是编译期可证明静态值，则继续显式失败，而不是伪装成已支持的 raw-html 注入
+
+### 当前支持边界
+
+- 支持：`builder.AddContent(0, (MarkupString)"<section class=\"hero\"><span>safe</span></section>");`
+- 支持：`builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span></section>"));`
+- 支持：`MarkupString markup = (MarkupString)"<section class=\"hero\"><span>safe</span></section>"; builder.AddContent(0, markup);`
+- 支持：只读 property / `readonly` field 承载静态 `MarkupString`，再由 `AddContent(...)` 消费
+- 支持：Razor authored template expression 中等价的静态 `MarkupString` direct/local/readonly-member carrier authoring，直接 canonicalize 为静态 subtree
+- 支持：imperative body 内同样的静态 `MarkupString` direct/local/readonly-member carrier authoring，直接 lower 为 `h(...)` subtree
+- 不支持：imperative local `MarkupString` carrier 在声明后发生重赋值、`ref/out` 写入或其他不可静态证明变异
+- 不支持：运行时拼接字符串后再转 `MarkupString`
+- 不支持：来自变量/调用结果/条件分支汇总的动态 `MarkupString`
+- 不支持：任何需要保留任意 raw HTML/script 注入语义的场景
+
+### 当前保护
+
+- `src/Jazor.RazorVue/RazorVueStaticMarkupValueHelper.cs`
+- `src/Jazor.RazorVue/RenderTree/RazorVueRenderTreeExtractor.cs`
+- `src/Jazor.RazorVue/RazorSdk/RazorVueRazorIrTemplateFrontend.cs`
+- `src/Jazor.RazorVue/Lowering/RazorVueExpressionEmitter.ImperativeRender.cs`
+- `src/Jazor.RazorVue.Test/BuildRenderTreeTemplateFrontendTests.cs`
+- `src/Jazor.RazorVue.Test/RazorVuePipelineTests.cs`
+- `src/Jazor.RazorVue.Test/RazorVueSfcArtifactFactoryTests.cs`
+- `src/Jazor.RazorVue.RazorIr.Test/RazorVueRazorIrTemplateFrontendTests.cs`
+- `src/Jazor.RazorVue.RazorIr.Test/RazorVueTemplateFrontendParityTests.cs`
+
+当前回归同时锁定：
+
+- declarative `BuildRenderTree` 中 `(MarkupString)"..."`
+- declarative `BuildRenderTree` 中 `new MarkupString("...")`
+- declarative `BuildRenderTree` 中局部 `MarkupString` carrier
+- declarative `BuildRenderTree` 中只读 property / `readonly` field `MarkupString` carrier
+- Razor authored template expression 中静态 `MarkupString` direct/new/local/readonly-member carrier
+- Razor authored template expression 中动态 `MarkupString` fail-fast
+- imperative render bridge 中静态 `MarkupString` direct/local/readonly-member carrier
+- imperative render bridge 中 mutated local `MarkupString` carrier fail-fast
+- 最终产物不会残留 `MarkupString` authoring 语义，而是直接 lower 为静态 subtree
 
 - frontend 产出静态 markup subtree
 - H lowering 输出正常 `h(...)` 嵌套结构
@@ -980,7 +1125,7 @@ builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span><p>ok</p><
 - 不支持：不是“声明后紧邻一次简单赋值”的其他先声明后赋值形态
 - 当前这一“声明式模板 code-block 结构化恢复”通道不支持：局部声明后进入更一般的语句执行模型
 - 当前这一“声明式模板 code-block 结构化恢复”通道不支持：赋值语句、递增/递减、delegate/callable template state
-- 当前这一“声明式模板 code-block 结构化恢复”通道不支持：`switch` / `while` / `do-while` / `try-catch` / `using` / `lock` 等一般语句执行模型
+- 当前这一“声明式模板 code-block 结构化恢复”通道本身仍不负责：`switch` / `while` / `do-while` / `try-catch` / `using` / `lock` 等一般语句执行模型；其中 typed child-content / slot template body 内“局部声明后接 `while` / `switch` / `try-catch-finally` / `lock`”已改走 imperative render 主线，不再属于未支持缺口
 - 但这些 block code 不再按“无限期只能 fail-fast”处理：RazorVue 现已正式收敛到“声明式模板通道 + 命令式渲染通道”的双通道架构，后续将按 `docs/01-目标/razorvue/design/RazorVue.BlockCode.ExecutionModel.md` 进入命令式 block promotion / render-function lowering 路线，而不是继续在 Razor IR frontend 内无上限堆 statement 特判
 
 补充说明：
