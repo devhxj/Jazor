@@ -2516,6 +2516,61 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersGenericCurrentComponentRenderHelperMethodWithExtraParameters()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/render-helper-card")]
+                public class RenderHelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderBody(builder, Title);
+                    }
+
+                    private void RenderBody<TTitle>(RenderTreeBuilder builder, TTitle title)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, title);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(title) in [props.title]\">");
+        StringAssert.Contains(artifact.TemplateText, "<section>");
+        StringAssert.Contains(artifact.TemplateText, "{{ title }}");
+        Assert.IsFalse(
+            artifact.TemplateText.Contains("</template>\r\n</template>", StringComparison.Ordinal) ||
+            artifact.TemplateText.Contains("</template>\n</template>", StringComparison.Ordinal),
+            artifact.TemplateText);
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_LowersBuildRenderTreeLocalFunctionHelperWithExtraParameters()
     {
         var context = CreateContext(
@@ -3836,6 +3891,125 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithForLoopAndContinueInBuildRenderTree_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/for-continue-card")]
+                public class ForContinueCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        for (var index = 0; index < Count; index++)
+                        {
+                            if ((index % 2) == 0)
+                            {
+                                continue;
+                            }
+
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, index);
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual("components/for-continue-card.vue", artifact.RelativeSfcPath);
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        Assert.IsFalse(artifact.UsesScriptSetup, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "<script lang=\"ts\">");
+        StringAssert.Contains(artifact.SfcText, "for (let index = 0; index < props.count; index++)");
+        StringAssert.Contains(artifact.SfcText, "continue;");
+        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"section\");");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithForEachLoopAndBreakInBuildRenderTree_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/foreach-break-card")]
+                public class ForEachBreakCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public IReadOnlyList<int>? Items { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        foreach (var item in Items!)
+                        {
+                            if (item < 0)
+                            {
+                                break;
+                            }
+
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, item);
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual("components/foreach-break-card.vue", artifact.RelativeSfcPath);
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        Assert.IsFalse(artifact.UsesScriptSetup, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "<script lang=\"ts\">");
+        StringAssert.Contains(artifact.SfcText, "for (let item of props.items)");
+        StringAssert.Contains(artifact.SfcText, "break;");
+        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"section\");");
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_LowersTypedSlotOutletArgument_IntoTemplateAndSetupBinding()
     {
         var context = CreateContext(
@@ -4545,6 +4719,60 @@ public sealed class RazorVueSfcArtifactFactoryTests
                     public string? Title { get; set; }
 
                     private RenderFragment<int> CreateTemplate(string? title)
+                        => item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, title);
+                            itemBuilder.AddContent(3, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, CreateTemplate(Title), 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(title) in [props.title]\">");
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(item) in [42]\">");
+        StringAssert.Contains(artifact.TemplateText, "{{ title }}");
+        StringAssert.Contains(artifact.TemplateText, "{{ item }}");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersGenericParameterizedCurrentComponentRenderFragmentFactoryMethod_IntoNestedTemplateScopeWrappers()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private RenderFragment<int> CreateTemplate<TTitle>(TTitle title)
                         => item => itemBuilder =>
                         {
                             itemBuilder.OpenElement(1, "span");

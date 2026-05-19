@@ -106,7 +106,7 @@
   - 双前端 promotion 对齐
   - `.mjs` / H artifact 的 body-level imperative render bridge
   - `.vue` / SFC artifact 的 render-function 承载
-  - 首段真实 imperative render 承载：提前 `return`、`while`、`switch`、`lock`、`try/catch/finally`、`using` / `using declaration`、局部 mutation、imperative body 内常量 `AddMarkupContent(...)`
+  - 首段真实 imperative render 承载：提前 `return`、`while`、带 `break` / `continue` 的 `for` / `foreach`、`switch`、`lock`、`try/catch/finally`、`using` / `using declaration`、局部 mutation、imperative body 内常量 `AddMarkupContent(...)`
   - 上述承载同时覆盖 handwritten `BuildRenderTree` 与 Razor authored root template `@{ ... }` code-block，经 Razor IR frontend 提升后复用同一 imperative render 主线
   - canonical template path 的稳定显式边界
 - 当前 Phase 1 仍未落地的是：
@@ -202,14 +202,16 @@
 - 普通 current-component property / field 即使类型也是 `RenderFragment` / `RenderFragment<T>`，当前也不会被静默当成 slot source。
 - settable property、动态重赋值 field、以及需要任意 getter/dataflow 分析的 member carrier 当前仍明确不支持。
 - current-component member carrier 一旦形成自引用或环引用，会显式失败；RazorVue 不支持递归 current-component `RenderFragment` member carrier。
-- fragment factory helper 目前只支持非 generic、源码可分析返回值。
+- fragment factory helper 当前支持源码可分析返回值；generic current-component method / local function 也可接受，但仅限 Roslyn 已绑定到具体构造方法实例、且返回模板形状本身仍可静态还原的子集。
   - direct `AddContent(...)` 路径支持零参数、普通按值参数，以及 `params` 数组参数 factory
   - 组件 typed slot/template 参数路径也支持零参数、普通按值参数，以及 `params` 数组参数 factory，但仍要求调用点直接传入当前组件方法 / local function factory
+  - generic fragment factory 与 non-generic 走同一条缓存/作用域路径：RazorVue 按源码定义方法缓存模板骨架，按构造调用点绑定具体 captured 参数，不会把某一次 closed generic 调用的值污染到另一处调用点
   - `params` 在 RazorVue 中按“单个强类型数组形参绑定”处理，不扩展成 JavaScript 风格可变参数拍平协议
-  - `ref` / `out` / `in` / generic / recursive fragment factory 当前仍明确不支持
+  - `ref` / `out` / `in` / recursive fragment factory 当前仍明确不支持
 - 对于带额外值参数的 render helper，当前只支持：
   - 恰好一个 `RenderTreeBuilder` 参数
   - 其余参数为普通按值参数，或一个按 Roslyn 正常绑定为单个数组实参的 `params` 参数
+  - generic render helper 也走同一条受支持子集，只要调用点已经被 Roslyn 绑定为具体构造方法实例，且 helper body 仍满足现有 self-contained fragment / builder 协议约束
   - 同时适用于当前组件方法与 `BuildRenderTree` 内 local function helper
   - 调用点参数与 helper 声明一一对应；支持 named argument，也支持安全可投影的 omitted optional default value
   - 多个额外参数会按调用点实参求值顺序形成嵌套局部作用域，同时保持每个 helper 形参绑定到其正确实参；即使 named argument 打乱声明顺序，也不会退化成按声明顺序重排求值

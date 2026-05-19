@@ -27,7 +27,7 @@ RazorVue 对复杂 block code 的路线已不再是“前端继续堆 statement 
 - complex body 会被提升为命令式 render block，而不是继续被前端拆成越来越多的伪声明式节点
 - `.mjs` / H artifact 已具备 body-level imperative render bridge
 - `.vue` / SFC artifact 现已具备 render-function SFC 承载；imperative body 不再在 SFC lowering 阶段被显式拒绝
-- 首段真实 imperative render 承载已覆盖：提前 `return`、`while`、`switch`、`lock`、`try/catch/finally`、局部 mutation、imperative body 内常量 `AddMarkupContent(...)`
+- 首段真实 imperative render 承载已覆盖：提前 `return`、`while`、带 `break` / `continue` 的 `for` / `foreach`、`switch`、`lock`、`try/catch/finally`、局部 mutation、imperative body 内常量 `AddMarkupContent(...)`
 
 ### 仍未完成
 
@@ -35,7 +35,7 @@ RazorVue 对复杂 block code 的路线已不再是“前端继续堆 statement 
 
 - imperative body 的 canonical template path：未完成
 - 真正 async imperative render contract：未完成；当前同步 `.mjs` / render-function `.vue` 主线对 `await using` 显式失败
-- 更复杂控制流下的进一步覆盖仍需继续扩大，但 `switch` / `lock` / `try-catch/finally` 已进入正式 imperative render runtime 主线
+- 更复杂控制流下的进一步覆盖仍需继续扩大，但 `for` / `foreach` 的 `break` / `continue`、`switch` / `lock` / `try-catch/finally` 已进入正式 imperative render runtime 主线
 
 其中 `imperative AddComponentParameter(...)` 这一项本轮已完成第一阶段正式支持：
 
@@ -59,7 +59,7 @@ RazorVue 对复杂 block code 的路线已不再是“前端继续堆 statement 
 
 - 架构与中间语义已收敛
 - 双前端已对齐
-- body-level imperative H/render-function 主线已覆盖 `return` / `while` / `switch` / `lock` / `try-catch-finally` / mutation / constant markup
+- body-level imperative H/render-function 主线已覆盖 `return` / `while` / `for` / `foreach` 中的 `break` / `continue` / `switch` / `lock` / `try-catch-finally` / mutation / constant markup
 - 下一阶段重点转向 canonical template path 与更复杂语句族扩面
 
 ### 当前保护
@@ -830,18 +830,19 @@ builder.AddContent(0, template, 42);
 - 支持：current-component method / local function 的“普通按值参数 fragment factory”可直接用于：
   - `builder.AddContent(0, CreateTemplate(Title), 42);`
   - 组件 typed slot/template 参数，例如 `builder.AddAttribute(1, "ItemTemplate", CreateTemplate(Title));`
+- 支持：generic current-component method / local function fragment factory，只要调用点已经被 Roslyn 绑定为具体构造方法实例，且返回模板形状本身仍可静态还原；其缓存语义与 non-generic 一致，仍是“缓存源码定义模板骨架，调用点单独绑定 captured 参数”
 - 支持：current-component method / local function 的 `params` 数组 fragment factory；expanded / empty `params` 调用会保留为单个数组绑定结果，而不是在 RazorVue 前端自行拍平成多个逻辑形参
 - 支持：带参数 fragment factory 的调用结果即使先经过上述受控 carrier，再用于 `AddContent(...)` 或组件 typed slot/template 参数，frontend / canonical / H / SFC 四层也会保持与直接调用点一致的作用域语义
 - 支持：带参数 fragment factory 在 frontend / canonical / H / SFC 中保留额外参数局部作用域；named argument 打乱书写顺序时，仍按调用点左到右求值顺序保留外层 scope 包裹，而不是按形参声明顺序重排求值
 - 支持：同一个带参 fragment factory 在同一组件内被多个不同调用点重复使用时，RazorVue 只复用模板骨架，不复用某一次调用点的 captured 值绑定；`CreateTemplate(Title)` 与 `CreateTemplate(Subtitle)` 这类多次调用会各自保留独立外层 scope
 - 支持：若带参 fragment factory 的 captured 参数是数组创建（典型如 `params` expanded call），SFC 路径会在需要时把该数组初始化提升为 setup binding，再通过局部 template scope wrapper 消费，以避免模板内重复构造
+- 支持：generic render helper 也进入同一受支持子集，只要调用点已绑定到具体构造方法实例，且 helper 仍满足现有 builder 协议与 self-contained fragment 约束
 - 支持：frontend / canonical / H / SFC 对局部 carrier 与 inline 形态保持相同 lowering 结果
 - 支持：当前组件 slot outlet / slot forwarding 仅从 `[Parameter] RenderFragment...` 属性识别
 - 支持：当前组件 `[Parameter] RenderFragment?` 转发到子组件默认/未参数化 slot
 - 支持：当前组件 `[Parameter] RenderFragment<T>?` 转发到子组件 typed/scoped slot，frontend / canonical / H / SFC 四层保留 forwarded-slot 语义与目标 slot context 参数名
 - 不支持：任意 delegate 值流分析
 - 不支持：settable property / 非只读 field 承载的 `RenderFragment<T>`
-- 不支持：generic fragment factory
 - 不支持：递归 fragment factory
 - 不支持：动态重赋值后的 carrier
 - 不支持：无法静态还原到匿名模板 body 的 callable 形态
@@ -1046,6 +1047,7 @@ builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span><p>ok</p><
 - 支持：body-level imperative render root
 - 支持：提前 `return`
 - 支持：`while`
+- 支持：带 `break` / `continue` 的 `for` / `foreach`
 - 支持：局部赋值/递增后再渲染
 - 支持：imperative body 内常量 `AddMarkupContent(...)`
 - 支持：`OpenElement` / `CloseElement` / `OpenComponent` / `CloseComponent` / `AddAttribute` / `AddMultipleAttributes` / `SetKey` 的 imperative bridge 基础协议
@@ -1062,6 +1064,7 @@ builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span><p>ok</p><
 
 - conditional return 通过 imperative render bridge
 - `while` 通过 imperative render bridge
+- `for` / `foreach` 中的 `break` / `continue` 通过 imperative render bridge
 - 局部 mutation 通过 imperative render bridge
 - imperative body 内常量 `AddMarkupContent(...)` 直接发射 `h(...)` subtree，而不是残留 raw-html 占位
 - Razor authored root template code-block 中的提前 `return` / `while` / 局部 mutation 也走同一 imperative render bridge，而不是回退到另一条前端语义

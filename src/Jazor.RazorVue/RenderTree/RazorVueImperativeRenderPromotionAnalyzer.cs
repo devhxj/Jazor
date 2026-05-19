@@ -21,7 +21,7 @@ internal static class RazorVueImperativeRenderPromotionAnalyzer
     {
         foreach (var operation in operations)
         {
-            var kind = TryClassify(operation);
+            var kind = ClassifyOperationKind(operation);
             if (kind is not null)
                 return kind.Value;
         }
@@ -49,6 +49,7 @@ internal static class RazorVueImperativeRenderPromotionAnalyzer
             IUsingOperation usingOperation => RequiresImperativePromotion(usingOperation.Body),
             IUsingDeclarationOperation => true,
             IExpressionStatementOperation expressionStatement => RequiresImperativePromotionExpressionStatement(expressionStatement),
+            IBranchOperation { BranchKind: BranchKind.Break or BranchKind.Continue } => true,
             _ => false
         };
     }
@@ -69,6 +70,7 @@ internal static class RazorVueImperativeRenderPromotionAnalyzer
             ITryOperation => RazorVueImperativeBlockKind.TryBlock,
             IUsingOperation => RazorVueImperativeBlockKind.TryBlock,
             IUsingDeclarationOperation => RazorVueImperativeBlockKind.TryBlock,
+            IBranchOperation { BranchKind: BranchKind.Break or BranchKind.Continue } => RazorVueImperativeBlockKind.LoopBlock,
             IExpressionStatementOperation expressionStatement => TryClassifyExpressionStatement(expressionStatement),
             IAssignmentOperation => RazorVueImperativeBlockKind.LocalBlock,
             IIncrementOrDecrementOperation => RazorVueImperativeBlockKind.LocalBlock,
@@ -84,5 +86,40 @@ internal static class RazorVueImperativeRenderPromotionAnalyzer
             IIncrementOrDecrementOperation => RazorVueImperativeBlockKind.LocalBlock,
             _ => null
         };
+    }
+
+    private static RazorVueImperativeBlockKind? ClassifyOperationKind(IOperation? operation)
+    {
+        var current = RazorVueOperationNormalizer.Unwrap(operation);
+        if (current is null)
+            return null;
+
+        var directKind = TryClassify(current);
+        if (directKind is not null)
+            return directKind;
+
+        return current switch
+        {
+            IBlockOperation block => ClassifyBodyKindOrNull(block.Operations),
+            IConditionalOperation conditional => ClassifyOperationKind(conditional.WhenTrue) ??
+                                                 ClassifyOperationKind(conditional.WhenFalse),
+            IForEachLoopOperation loop => ClassifyOperationKind(loop.Body),
+            IForLoopOperation loop => ClassifyOperationKind(loop.Body),
+            ILockOperation lockOperation => ClassifyOperationKind(lockOperation.Body),
+            IUsingOperation usingOperation => ClassifyOperationKind(usingOperation.Body),
+            _ => null
+        };
+    }
+
+    private static RazorVueImperativeBlockKind? ClassifyBodyKindOrNull(IEnumerable<IOperation> operations)
+    {
+        foreach (var operation in operations)
+        {
+            var kind = ClassifyOperationKind(operation);
+            if (kind is not null)
+                return kind.Value;
+        }
+
+        return null;
     }
 }

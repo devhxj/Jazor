@@ -12759,6 +12759,53 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersGenericCurrentComponentRenderHelperMethodWithExtraParameters()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/render-helper-card")]
+                public class RenderHelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderBody(builder, Title);
+                    }
+
+                    private void RenderBody<TTitle>(RenderTreeBuilder builder, TTitle title)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, title);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => ((title) => h(\"section\", null, title))(props.title);");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersBuildRenderTreeLocalFunctionHelperWithExtraParameters()
     {
         var context = CreateContext(
@@ -21568,6 +21615,55 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersGenericParameterizedCurrentComponentRenderFragmentFactoryMethodIntoNestedImmediateInvocation()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/typed-fragment-card")]
+                public class TypedFragmentCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private RenderFragment<int> CreateTemplate<TTitle>(TTitle title)
+                        => item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, title);
+                            itemBuilder.AddContent(3, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, CreateTemplate(Title), 42);
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => ((title) => ((item) => h(\"span\", null, [title, item]))(42))(props.title);");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersParameterizedCurrentComponentRenderFragmentFactoryMethodWithOmittedOptionalParameter()
     {
         var context = CreateContext(
@@ -22234,6 +22330,117 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"section\");");
         StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(index);");
         StringAssert.Contains(artifact.ModuleCode, "index++;");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersForLoopWithContinueInBuildRenderTree_UsingImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/for-continue-card")]
+                public class ForContinueCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        for (var index = 0; index < Count; index++)
+                        {
+                            if ((index % 2) == 0)
+                            {
+                                continue;
+                            }
+
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, index);
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.ModuleCode, "for (let index = 0; index < props.count; index++)");
+        StringAssert.Contains(artifact.ModuleCode, "continue;");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(index);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersForEachLoopWithBreakInBuildRenderTree_UsingImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/foreach-break-card")]
+                public class ForEachBreakCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public IReadOnlyList<int>? Items { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        foreach (var item in Items!)
+                        {
+                            if (item < 0)
+                            {
+                                break;
+                            }
+
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, item);
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.ModuleCode, "for (let item of props.items)");
+        StringAssert.Contains(artifact.ModuleCode, "break;");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(item);");
     }
 
     [TestMethod]

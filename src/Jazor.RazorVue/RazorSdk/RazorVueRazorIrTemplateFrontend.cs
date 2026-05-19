@@ -2530,7 +2530,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 return false;
             }
 
-            var method = invocation.TargetMethod;
+            var method = RazorVueMethodSymbolNormalizer.GetCanonicalMethod(invocation.TargetMethod);
             if (_factoryRenderFragmentCarriers.TryGetValue(method, out slotTemplate))
             {
                 if (requireZeroArguments && !slotTemplate.CapturedBindings.IsDefaultOrEmpty)
@@ -2655,12 +2655,6 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 return false;
 
             var helperDisplayName = method.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
-            if (method.IsGenericMethod)
-            {
-                failureMessage =
-                    $"RazorVue fragment factory method '{helperDisplayName}' must not be generic in component '{_snapshot.Descriptor.FullName}'.";
-                return false;
-            }
 
             if (ContainsRenderTreeBuilderParameter(method))
             {
@@ -2686,7 +2680,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 }
             }
 
-            extraParameters = [.. method.Parameters];
+            extraParameters = method.Parameters
+                .Select(parameter => RazorVueMethodSymbolNormalizer.NormalizeParameter(method, parameter))
+                .ToImmutableArray();
             return true;
         }
 
@@ -2709,8 +2705,15 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             var bindingsBuilder = ImmutableArray.CreateBuilder<RenderHelperValueBinding>(invocation.Arguments.Length);
             foreach (var argument in invocation.Arguments)
             {
-                if (argument.Parameter is not { } parameter ||
-                    !boundParameters.Add(parameter))
+                if (argument.Parameter is not { } rawParameter)
+                {
+                    failureMessage =
+                        $"RazorVue fragment factory method '{GetBuilderCallDisplayName(invocation)}' must use direct one-to-one argument binding in component '{_snapshot.Descriptor.FullName}'.";
+                    return false;
+                }
+
+                var parameter = RazorVueMethodSymbolNormalizer.NormalizeParameter(invocation.TargetMethod, rawParameter);
+                if (!boundParameters.Add(parameter))
                 {
                     failureMessage =
                         $"RazorVue fragment factory method '{GetBuilderCallDisplayName(invocation)}' must use direct one-to-one argument binding in component '{_snapshot.Descriptor.FullName}'.";
@@ -2744,7 +2747,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             out IOperation returnedValue)
         {
             returnedValue = default!;
-            foreach (var syntaxReference in invocation.TargetMethod.DeclaringSyntaxReferences)
+            foreach (var syntaxReference in RazorVueMethodSymbolNormalizer.GetCanonicalMethod(invocation.TargetMethod).DeclaringSyntaxReferences)
             {
                 var syntax = syntaxReference.GetSyntax();
                 var semanticModel = _context.Compilation.GetSemanticModel(syntax.SyntaxTree);

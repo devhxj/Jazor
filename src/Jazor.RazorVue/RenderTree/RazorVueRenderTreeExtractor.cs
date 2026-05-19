@@ -1071,13 +1071,6 @@ internal sealed class RazorVueRenderTreeExtractor
                 return false;
             }
 
-            if (method.IsGenericMethod)
-            {
-                failureMessage =
-                    $"BuildRenderTree helper method '{helperDisplayName}' must not be generic in component '{_snapshot.Descriptor.FullName}'.";
-                return false;
-            }
-
             var builderParameters = method.Parameters
                 .Where(static parameter => IsRenderTreeBuilderType(parameter.Type))
                 .ToArray();
@@ -1107,9 +1100,10 @@ internal sealed class RazorVueRenderTreeExtractor
             }
 
             var selectedBuilderParameter = builderParameters[0];
-            builderParameter = selectedBuilderParameter;
+            builderParameter = RazorVueMethodSymbolNormalizer.NormalizeParameter(method, selectedBuilderParameter);
             extraParameters = method.Parameters
                 .Where(parameter => !SymbolEqualityComparer.Default.Equals(parameter, selectedBuilderParameter))
+                .Select(parameter => RazorVueMethodSymbolNormalizer.NormalizeParameter(method, parameter))
                 .ToImmutableArray();
             return true;
         }
@@ -1137,8 +1131,15 @@ internal sealed class RazorVueRenderTreeExtractor
             IArgumentOperation? matchedBuilderArgument = null;
             foreach (var argument in invocation.Arguments)
             {
-                if (argument.Parameter is not { } parameter ||
-                    !boundParameters.Add(parameter))
+                if (argument.Parameter is not { } rawParameter)
+                {
+                    failureMessage =
+                        $"BuildRenderTree helper method '{GetBuilderCallDisplayName(invocation)}' must use direct one-to-one argument binding in component '{_snapshot.Descriptor.FullName}'.";
+                    return false;
+                }
+
+                var parameter = RazorVueMethodSymbolNormalizer.NormalizeParameter(invocation.TargetMethod, rawParameter);
+                if (!boundParameters.Add(parameter))
                 {
                     failureMessage =
                         $"BuildRenderTree helper method '{GetBuilderCallDisplayName(invocation)}' must use direct one-to-one argument binding in component '{_snapshot.Descriptor.FullName}'.";
@@ -1265,7 +1266,8 @@ internal sealed class RazorVueRenderTreeExtractor
             IInvocationOperation invocation,
             Func<ImmutableArray<IOperation>, T> action)
         {
-            if (!_activeRenderHelperMethods.Add(invocation.TargetMethod))
+            var canonicalMethod = RazorVueMethodSymbolNormalizer.GetCanonicalMethod(invocation.TargetMethod);
+            if (!_activeRenderHelperMethods.Add(canonicalMethod))
             {
                 throw CreateUnsupportedBuilderCall(
                     invocation,
@@ -1279,13 +1281,13 @@ internal sealed class RazorVueRenderTreeExtractor
             }
             finally
             {
-                _activeRenderHelperMethods.Remove(invocation.TargetMethod);
+                _activeRenderHelperMethods.Remove(canonicalMethod);
             }
         }
 
         private ImmutableArray<IOperation> GetRenderHelperOperations(IInvocationOperation invocation)
         {
-            foreach (var syntaxReference in invocation.TargetMethod.DeclaringSyntaxReferences)
+            foreach (var syntaxReference in RazorVueMethodSymbolNormalizer.GetCanonicalMethod(invocation.TargetMethod).DeclaringSyntaxReferences)
             {
                 var syntax = syntaxReference.GetSyntax();
                 var semanticModel = _compilation.GetSemanticModel(syntax.SyntaxTree);
@@ -1999,7 +2001,7 @@ internal sealed class RazorVueRenderTreeExtractor
                 return false;
             }
 
-            var method = invocation.TargetMethod;
+            var method = RazorVueMethodSymbolNormalizer.GetCanonicalMethod(invocation.TargetMethod);
             if (_factoryRenderFragmentCarriers.TryGetValue(method, out slotTemplate))
                 return true;
 
@@ -2101,12 +2103,6 @@ internal sealed class RazorVueRenderTreeExtractor
                 return false;
 
             var helperDisplayName = method.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
-            if (method.IsGenericMethod)
-            {
-                failureMessage =
-                    $"BuildRenderTree fragment factory method '{helperDisplayName}' must not be generic in component '{_snapshot.Descriptor.FullName}'.";
-                return false;
-            }
 
             if (ContainsRenderTreeBuilderParameter(method))
             {
@@ -2132,7 +2128,9 @@ internal sealed class RazorVueRenderTreeExtractor
                 }
             }
 
-            extraParameters = [.. method.Parameters];
+            extraParameters = method.Parameters
+                .Select(parameter => RazorVueMethodSymbolNormalizer.NormalizeParameter(method, parameter))
+                .ToImmutableArray();
             return true;
         }
 
@@ -2155,8 +2153,15 @@ internal sealed class RazorVueRenderTreeExtractor
             var extraBindingsBuilder = ImmutableArray.CreateBuilder<RenderHelperValueBinding>(invocation.Arguments.Length);
             foreach (var argument in invocation.Arguments)
             {
-                if (argument.Parameter is not { } parameter ||
-                    !boundParameters.Add(parameter))
+                if (argument.Parameter is not { } rawParameter)
+                {
+                    failureMessage =
+                        $"BuildRenderTree fragment factory method '{GetBuilderCallDisplayName(invocation)}' must use direct one-to-one argument binding in component '{_snapshot.Descriptor.FullName}'.";
+                    return false;
+                }
+
+                var parameter = RazorVueMethodSymbolNormalizer.NormalizeParameter(invocation.TargetMethod, rawParameter);
+                if (!boundParameters.Add(parameter))
                 {
                     failureMessage =
                         $"BuildRenderTree fragment factory method '{GetBuilderCallDisplayName(invocation)}' must use direct one-to-one argument binding in component '{_snapshot.Descriptor.FullName}'.";
@@ -2190,7 +2195,7 @@ internal sealed class RazorVueRenderTreeExtractor
             out IOperation returnedValue)
         {
             returnedValue = default!;
-            foreach (var syntaxReference in invocation.TargetMethod.DeclaringSyntaxReferences)
+            foreach (var syntaxReference in RazorVueMethodSymbolNormalizer.GetCanonicalMethod(invocation.TargetMethod).DeclaringSyntaxReferences)
             {
                 var syntax = syntaxReference.GetSyntax();
                 var semanticModel = _compilation.GetSemanticModel(syntax.SyntaxTree);
