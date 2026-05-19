@@ -28,6 +28,7 @@ RazorVue 对复杂 block code 的路线已不再是“前端继续堆 statement 
 - complex body 会被提升为命令式 render block，而不是继续被前端拆成越来越多的伪声明式节点
 - `.mjs` / H artifact 已具备 body-level imperative render bridge
 - `.vue` / SFC artifact 现已具备 render-function SFC 承载；imperative body 不再在 SFC lowering 阶段被显式拒绝
+- imperative runtime vocabulary 现已统一切换到 render-context 模型：最终 `.mjs` / render-function `.vue` 产物使用 `__jazorRenderContext`、`enterElement/leaveElement`、`append`、`setComponentParameter`、`finish`，不再暴露 Razor `RenderTreeBuilder` helper 名称
 - 首段真实 imperative render 承载已覆盖：提前 `return`、`while` / `do-while`、带 `break` / `continue` 的 `for` / `foreach`、`switch`、`lock`、`try/catch/finally`、局部 mutation、imperative body 内常量 `AddMarkupContent(...)`
 - mixed declarative + imperative render tree 现已统一按“mixed render-function path”处理：任意位置只要出现 imperative node，最终 `.vue` 产物统一切到 render-function 模型，而不是试图局部回到 template canonical subtree
 
@@ -48,6 +49,7 @@ RazorVue 对复杂 block code 的路线已不再是“前端继续堆 statement 
   - emit alias/runtime handler name 映射
   - slot/template 参数映射
 - builder-style `RenderFragment` / `RenderFragment<T>` 组件参数现已在 imperative render bridge 中物化为 Vue slot callback
+- 该 slot callback 运行时也已统一切到 render-context 承载；nested slot fragment 不再泄露 Razor builder 词汇
 - current-component slot forwarding 现已在 imperative 路径保留 slot 语义，不再错误降级为 raw prop
 - imperative body 中真实使用到的 injected/resolved component prop / emit / slot runtime shape，现已进入 descriptor identity/runtime-usage 收集；descriptor hash / HMR 边界推导不再忽略 imperative `AddComponentParameter(...)`、slot forwarding 或 slot builder 内嵌套组件
 - Razor IR root template `@{ ... }` promotion 后的 imperative current-component slot forwarding 现已与 handwritten `BuildRenderTree` 对齐，不再在 SG/IR 路径退化成普通 `slots.xxx ?? null` 值传递
@@ -1036,7 +1038,7 @@ builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span><p>ok</p><
 
 - 当 render tree 根为单个 `RazorVueImperativeBlockNode` 时，module builder 会切换到 render-function 路径
 - imperative body 继续复用现有 `SemanticWalker` 语句级 lowering，而不是在 RazorVue 内手写另一套 JS 控制流解释器
-- `RenderTreeBuilder` API 在 imperative body 内会重写到本地 `__jazorCreateRenderTreeBuilder(h)` bridge
+- `RenderTreeBuilder` API 在 imperative body 内会重写到本地 `__jazorCreateRenderContext(h)` bridge
 - root imperative body 现已进入 canonical / SFC semantic 正式模型：canonical model 会携带 `ImperativeRootProgram`，SFC semantic model 会以 `RenderMode = RenderFunction` 正式表示该产物，不再要求 SFC artifact factory 在入口层额外扫描 renderTree 决定是否走旁路
 - bridge 当前已稳定承载：
   - `return` 提前退出

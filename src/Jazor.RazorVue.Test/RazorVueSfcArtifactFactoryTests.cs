@@ -3533,10 +3533,10 @@ public sealed class RazorVueSfcArtifactFactoryTests
         Assert.IsFalse(artifact.UsesScriptSetup, artifact.SfcText);
         StringAssert.Contains(artifact.SfcText, "<script lang=\"ts\">");
         StringAssert.Contains(artifact.SfcText, "export default defineComponent({");
-        StringAssert.Contains(artifact.SfcText, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.SfcText, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
         StringAssert.Contains(artifact.SfcText, "if (props.hide) {");
-        StringAssert.Contains(artifact.SfcText, "return __jazorBuilder.complete();");
-        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"section\");");
+        StringAssert.Contains(artifact.SfcText, "return __jazorRenderContext.finish();");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"section\");");
     }
 
     [TestMethod]
@@ -3596,10 +3596,10 @@ public sealed class RazorVueSfcArtifactFactoryTests
         Assert.IsFalse(artifact.UsesScriptSetup, artifact.SfcText);
         StringAssert.Contains(artifact.SfcText, "<script lang=\"ts\">");
         StringAssert.Contains(artifact.SfcText, "switch (props.count)");
-        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"p\");");
-        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.AddContent(\"empty\");");
-        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"section\");");
-        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.AddContent(props.count);");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"p\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(\"empty\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(props.count);");
     }
 
     [TestMethod]
@@ -3663,10 +3663,10 @@ public sealed class RazorVueSfcArtifactFactoryTests
         StringAssert.Contains(artifact.SfcText, "try {");
         StringAssert.Contains(artifact.SfcText, "} catch {");
         StringAssert.Contains(artifact.SfcText, "} finally {");
-        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"section\");");
-        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.AddContent(\"ready\");");
-        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"p\");");
-        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.AddContent(\"fallback\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(\"ready\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"p\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(\"fallback\");");
         StringAssert.Contains(artifact.SfcText, "_count++;");
     }
 
@@ -3722,8 +3722,8 @@ public sealed class RazorVueSfcArtifactFactoryTests
         StringAssert.Contains(artifact.SfcText, "let disposable = new ");
         StringAssert.Contains(artifact.SfcText, "try {");
         StringAssert.Contains(artifact.SfcText, "} finally {");
-        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"section\");");
-        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.AddContent(\"ready\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(\"ready\");");
         StringAssert.Contains(artifact.SfcText, "if (disposable !== null)");
         StringAssert.Contains(artifact.SfcText, "disposable.dispose();");
     }
@@ -3785,8 +3785,8 @@ public sealed class RazorVueSfcArtifactFactoryTests
         StringAssert.Contains(artifact.SfcText, " = getDisposable();");
         StringAssert.Contains(artifact.SfcText, "try {");
         StringAssert.Contains(artifact.SfcText, "} finally {");
-        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"section\");");
-        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.AddContent(\"ready\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(\"ready\");");
         StringAssert.Contains(artifact.SfcText, "!== null)");
         StringAssert.Contains(artifact.SfcText, "_6f97d94b6f2e4bc1(");
     }
@@ -3890,8 +3890,8 @@ public sealed class RazorVueSfcArtifactFactoryTests
         StringAssert.Contains(artifact.SfcText, "if (_gate == null)");
         StringAssert.Contains(artifact.SfcText, "throw new TypeError(\"obj\");");
         StringAssert.Contains(artifact.SfcText, "try {");
-        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"section\");");
-        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.AddContent(\"ready\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(\"ready\");");
     }
 
     [TestMethod]
@@ -3935,6 +3935,63 @@ public sealed class RazorVueSfcArtifactFactoryTests
         StringAssert.Contains(artifact.TemplateText, "safe");
         StringAssert.Contains(artifact.TemplateText, "<p>");
         StringAssert.Contains(artifact.TemplateText, "ok");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithThrowStatementInBuildRenderTree_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/throw-card")]
+                public class ThrowCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Fail { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (Fail)
+                        {
+                            throw new InvalidOperationException("boom");
+                        }
+
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual("components/throw-card.vue", artifact.RelativeSfcPath);
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        Assert.IsFalse(artifact.UsesScriptSetup, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "<script lang=\"ts\">");
+        StringAssert.Contains(artifact.SfcText, "if (props.fail) {");
+        StringAssert.Contains(artifact.SfcText, "throw new Error(\"boom\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(\"ready\");");
     }
 
     [TestMethod]
@@ -3993,7 +4050,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
         StringAssert.Contains(artifact.SfcText, "<script lang=\"ts\">");
         StringAssert.Contains(artifact.SfcText, "for (let index = 0; index < props.count; index++)");
         StringAssert.Contains(artifact.SfcText, "continue;");
-        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"section\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"section\");");
     }
 
     [TestMethod]
@@ -4049,8 +4106,8 @@ public sealed class RazorVueSfcArtifactFactoryTests
         Assert.IsFalse(artifact.UsesScriptSetup, artifact.SfcText);
         StringAssert.Contains(artifact.SfcText, "<script lang=\"ts\">");
         StringAssert.Contains(artifact.SfcText, "do {");
-        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"section\");");
-        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.AddContent(index);");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(index);");
         StringAssert.Contains(artifact.SfcText, "index++;");
         StringAssert.Contains(artifact.SfcText, "while (index < props.count);");
     }
@@ -4112,12 +4169,12 @@ public sealed class RazorVueSfcArtifactFactoryTests
         Assert.AreEqual("components/mixed-loop-card.vue", artifact.RelativeSfcPath);
         Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
         Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
-        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.AddContent(h(\"header\", null, \"start\"));");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(h(\"header\", null, \"start\"));");
         StringAssert.Contains(artifact.SfcText, "let index = 0;");
         StringAssert.Contains(artifact.SfcText, "while (index < props.count)");
-        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"section\");");
-        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.AddContent(index);");
-        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.AddContent(h(\"footer\", null, \"end\"));");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(index);");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(h(\"footer\", null, \"end\"));");
     }
 
     [TestMethod]
@@ -4177,7 +4234,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
         StringAssert.Contains(artifact.SfcText, "<script lang=\"ts\">");
         StringAssert.Contains(artifact.SfcText, "for (let item of props.items)");
         StringAssert.Contains(artifact.SfcText, "break;");
-        StringAssert.Contains(artifact.SfcText, "__jazorBuilder.OpenElement(\"section\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"section\");");
     }
 
     [TestMethod]

@@ -28,13 +28,12 @@ internal static class RazorVueImperativeSfcModuleBuilder
         AppendSetupLogicLowering(setupBodyBuilder, snapshot, expressionEmitter);
         setupBodyBuilder.AppendLine("    const __jazorComponent = { props, emit, slots, expose, attrs };");
         setupBodyBuilder.AppendLine("    return () => {");
-        setupBodyBuilder.AppendLine("      const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        setupBodyBuilder.Append("      const ").Append(RazorVueExpressionEmitter.ImperativeRenderContextAlias).AppendLine(" = __jazorCreateRenderContext(h);");
         setupBodyBuilder.AppendLine("      __jazorComponent.props = props;");
         setupBodyBuilder.AppendLine("      __jazorComponent.emit = emit;");
         setupBodyBuilder.AppendLine("      __jazorComponent.slots = slots;");
         setupBodyBuilder.AppendLine("      __jazorComponent.expose = expose;");
         setupBodyBuilder.AppendLine("      __jazorComponent.attrs = attrs;");
-        setupBodyBuilder.AppendLine("      __jazorComponent.__builder = __jazorBuilder;");
         setupBodyBuilder.Append("      ").Append(expressionEmitter.EmitImperativeRenderBody(renderTree).Replace("\n", "\n      ")).AppendLine();
         setupBodyBuilder.AppendLine("    };");
         setupBodyBuilder.AppendLine("  }");

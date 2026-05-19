@@ -22316,12 +22316,12 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
-        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
         StringAssert.Contains(artifact.ModuleCode, "if (props.hide) {");
-        StringAssert.Contains(artifact.ModuleCode, "return __jazorBuilder.complete();");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"section\");");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(\"ready\");");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.CloseElement();");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorRenderContext.finish();");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(\"ready\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.leaveElement();");
     }
 
     [TestMethod]
@@ -22369,11 +22369,11 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
-        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
         StringAssert.Contains(artifact.ModuleCode, "let index = 0;");
         StringAssert.Contains(artifact.ModuleCode, "while (index < props.count)");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"section\");");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(index);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(index);");
         StringAssert.Contains(artifact.ModuleCode, "index++;");
     }
 
@@ -22423,11 +22423,11 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
-        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
         StringAssert.Contains(artifact.ModuleCode, "let index = 0;");
         StringAssert.Contains(artifact.ModuleCode, "do {");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"section\");");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(index);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(index);");
         StringAssert.Contains(artifact.ModuleCode, "index++;");
         StringAssert.Contains(artifact.ModuleCode, "while (index < props.count);");
     }
@@ -22485,13 +22485,13 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
-        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(h(\"header\", null, \"start\"));");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(h(\"header\", null, \"start\"));");
         StringAssert.Contains(artifact.ModuleCode, "let index = 0;");
         StringAssert.Contains(artifact.ModuleCode, "while (index < props.count)");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"section\");");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(index);");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(h(\"footer\", null, \"end\"));");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(index);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(h(\"footer\", null, \"end\"));");
     }
 
     [TestMethod]
@@ -22542,11 +22542,11 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
-        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
         StringAssert.Contains(artifact.ModuleCode, "for (let index = 0; index < props.count; index++)");
         StringAssert.Contains(artifact.ModuleCode, "continue;");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"section\");");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(index);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(index);");
     }
 
     [TestMethod]
@@ -22598,11 +22598,11 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
-        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
         StringAssert.Contains(artifact.ModuleCode, "for (let item of props.items)");
         StringAssert.Contains(artifact.ModuleCode, "break;");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"section\");");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(item);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(item);");
     }
 
     [TestMethod]
@@ -22655,12 +22655,12 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
-        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
         StringAssert.Contains(artifact.ModuleCode, "switch (props.count)");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"p\");");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(\"empty\");");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"section\");");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(props.count);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"p\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(\"empty\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(props.count);");
     }
 
     [TestMethod]
@@ -22715,14 +22715,14 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
-        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
         StringAssert.Contains(artifact.ModuleCode, "try {");
         StringAssert.Contains(artifact.ModuleCode, "} catch {");
         StringAssert.Contains(artifact.ModuleCode, "} finally {");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"section\");");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(\"ready\");");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"p\");");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(\"fallback\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(\"ready\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"p\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(\"fallback\");");
         StringAssert.Contains(artifact.ModuleCode, "_count++;");
     }
 
@@ -22769,12 +22769,12 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
-        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
         StringAssert.Contains(artifact.ModuleCode, "let disposable = new ");
         StringAssert.Contains(artifact.ModuleCode, "try {");
         StringAssert.Contains(artifact.ModuleCode, "} finally {");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"section\");");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(\"ready\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(\"ready\");");
         StringAssert.Contains(artifact.ModuleCode, "if (disposable !== null)");
         StringAssert.Contains(artifact.ModuleCode, "disposable.dispose();");
     }
@@ -22826,13 +22826,13 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
-        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
         StringAssert.Contains(artifact.ModuleCode, "let ");
         StringAssert.Contains(artifact.ModuleCode, " = getDisposable();");
         StringAssert.Contains(artifact.ModuleCode, "try {");
         StringAssert.Contains(artifact.ModuleCode, "} finally {");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"section\");");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(\"ready\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(\"ready\");");
         StringAssert.Contains(artifact.ModuleCode, "!== null)");
         StringAssert.Contains(artifact.ModuleCode, "_6f97d94b6f2e4bc1(");
     }
@@ -22926,12 +22926,64 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
-        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
         StringAssert.Contains(artifact.ModuleCode, "if (_gate == null)");
         StringAssert.Contains(artifact.ModuleCode, "throw new TypeError(\"obj\");");
         StringAssert.Contains(artifact.ModuleCode, "try {");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenElement(\"section\");");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(\"ready\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(\"ready\");");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersThrowStatementInBuildRenderTree_UsingImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/throw-card")]
+                public class ThrowCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Fail { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (Fail)
+                        {
+                            throw new InvalidOperationException("boom");
+                        }
+
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
+        StringAssert.Contains(artifact.ModuleCode, "if (props.fail) {");
+        StringAssert.Contains(artifact.ModuleCode, "throw new Error(\"boom\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(\"ready\");");
     }
 
     [TestMethod]
@@ -22974,10 +23026,10 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
-        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
         StringAssert.Contains(artifact.ModuleCode, "_count++;");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(_count);");
-        StringAssert.Contains(artifact.ModuleCode, "return __jazorBuilder.complete();");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(h(\"section\", null, _count));");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorRenderContext.finish();");
     }
 
     [TestMethod]
@@ -23027,9 +23079,9 @@ public sealed class RazorVuePipelineTests
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "if (props.showMarkup) {");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddContent(h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")));");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")));");
         Assert.IsFalse(
-            artifact.ModuleCode.Contains("__jazorBuilder.AddMarkupContent(", StringComparison.Ordinal),
+            artifact.ModuleCode.Contains("AddMarkupContent(", StringComparison.Ordinal),
             artifact.ModuleCode);
     }
 
@@ -23101,13 +23153,14 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ImperativeSlotHost");
 
-        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
-        StringAssert.Contains(artifact.ModuleCode, "function __jazorInvokeBuilderFragment(fragment)");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenComponent(ListCardComponent, __jazorImperativeComponentMetadata_ListCard);");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddComponentParameter(\"ItemTemplate\", __jazorCreateContextualBuilderSlot(");
-        StringAssert.Contains(artifact.ModuleCode, "__slotBuilder.OpenComponent(ItemEditorComponent, __jazorImperativeComponentMetadata_ItemEditor);");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
+        StringAssert.Contains(artifact.ModuleCode, "function __jazorInvokeRenderFragment(fragment)");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterComponent(ListCardComponent, __jazorImperativeComponentMetadata_ListCard);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.setComponentParameter(\"ItemTemplate\", __jazorCreateContextualRenderSlot(");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorImperativeRenderContext0.enterComponent(ItemEditorComponent, __jazorImperativeComponentMetadata_ItemEditor);");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorImperativeRenderContext0.finish();");
         Assert.IsFalse(
-            artifact.ModuleCode.Contains("__jazorBuilder.OpenComponent(ItemEditorComponent", StringComparison.Ordinal),
+            artifact.ModuleCode.Contains("__jazorRenderContext.enterComponent(ItemEditorComponent", StringComparison.Ordinal),
             artifact.ModuleCode);
     }
 
@@ -23199,9 +23252,9 @@ public sealed class RazorVuePipelineTests
             }
             """)).Artifacts.Single(static artifact => artifact.ComponentName == "ImperativeHomePage");
 
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.OpenComponent(NavShellComponent, __jazorImperativeComponentMetadata_NavShell);");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddComponentParameter(\"Title\", \"Overview\");");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorBuilder.AddComponentParameter(\"Header\", __jazorCreateSlotReference(slots.header ?? null, true));");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterComponent(NavShellComponent, __jazorImperativeComponentMetadata_NavShell);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.setComponentParameter(\"Title\", \"Overview\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.setComponentParameter(\"Header\", __jazorCreateSlotReference(slots.header ?? null, true));");
         StringAssert.Contains(artifact.ModuleCode, "const __jazorImperativeComponentMetadata_NavShell = {");
         StringAssert.Contains(artifact.ModuleCode, "\"navigationTitle\"");
         StringAssert.Contains(artifact.ModuleCode, "\"top\"");

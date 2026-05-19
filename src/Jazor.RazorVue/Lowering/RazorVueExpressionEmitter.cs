@@ -17,6 +17,8 @@ namespace Jazor.RazorVue.Lowering;
 
 internal sealed partial class RazorVueExpressionEmitter
 {
+    internal const string ImperativeRenderContextAlias = "__jazorRenderContext";
+
     internal readonly record struct LifecyclePayloadEmission(string Expression, bool UsesFirstRender);
     // Structural omission must stay distinct from an explicit JS "null" value,
     // otherwise minimal-arity lowering would drop user-authored null expressions.
@@ -116,11 +118,11 @@ internal sealed partial class RazorVueExpressionEmitter
 
     internal string EmitImperativeRenderBody(RazorVueRenderFragment fragment)
     {
-        var statements = EmitImperativeFragmentStatements(fragment, "__jazorBuilder", EmptyLocalScope, EmptyParameterScope);
+        var statements = EmitImperativeFragmentStatements(fragment, ImperativeRenderContextAlias, EmptyLocalScope, EmptyParameterScope);
         if (string.IsNullOrWhiteSpace(statements))
-            return "return __jazorBuilder.complete();";
+            return "return " + ImperativeRenderContextAlias + ".finish();";
 
-        return statements + "\nreturn __jazorBuilder.complete();";
+        return statements + "\nreturn " + ImperativeRenderContextAlias + ".finish();";
     }
 
     internal string EmitTemplateExpression(IOperation operation)

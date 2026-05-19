@@ -35,6 +35,7 @@ internal static class RazorVueImperativeRenderPromotionAnalyzer
             ILockOperation lockOperation => RequiresImperativePromotion(lockOperation.Body),
             IUsingOperation usingOperation => RequiresImperativePromotion(usingOperation.Body),
             IUsingDeclarationOperation => true,
+            IThrowOperation => true,
             IExpressionStatementOperation expressionStatement => RequiresImperativePromotionExpressionStatement(expressionStatement),
             IBranchOperation { BranchKind: BranchKind.Break or BranchKind.Continue } => true,
             _ => false
@@ -70,6 +71,7 @@ internal static class RazorVueImperativeRenderPromotionAnalyzer
         => operation switch
         {
             IReturnOperation { IsImplicit: false } => RazorVueImperativeBlockKind.MethodBody,
+            IThrowOperation => RazorVueImperativeBlockKind.MethodBody,
             IWhileLoopOperation => RazorVueImperativeBlockKind.LoopBlock,
             ISwitchOperation => RazorVueImperativeBlockKind.SwitchBlock,
             ILockOperation => RazorVueImperativeBlockKind.LockBlock,

@@ -38,7 +38,7 @@ internal sealed partial class RazorVueExpressionEmitter
                     break;
                 default:
                     statements.Add(
-                        builderAlias + ".AddContent(" +
+                        builderAlias + ".append(" +
                         EmitImperativeCompatibleNodeValue(child, currentLocalScope, currentParameterScope) +
                         ");");
                     break;
@@ -220,10 +220,10 @@ internal sealed partial class RazorVueExpressionEmitter
         if (!ContainsImperativeRenderBodyCore(fragment))
             return EmitFragment(fragment, allowedLocalSymbols, allowedParameterSymbols);
 
-        var nestedBuilderAlias = AllocateImperativeScratchName("Builder");
+        var nestedBuilderAlias = AllocateImperativeScratchName("Context");
         var builder = new StringBuilder();
         builder.Append("(() => {\n");
-        builder.Append("const ").Append(nestedBuilderAlias).Append(" = __jazorCreateRenderTreeBuilder(h);\n");
+        builder.Append("const ").Append(nestedBuilderAlias).Append(" = __jazorCreateRenderContext(h);\n");
         var body = EmitImperativeFragmentStatements(fragment, nestedBuilderAlias, allowedLocalSymbols, allowedParameterSymbols);
         if (!string.IsNullOrWhiteSpace(body))
         {
@@ -232,7 +232,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 builder.Append('\n');
         }
 
-        builder.Append("return ").Append(nestedBuilderAlias).Append(".complete();\n");
+        builder.Append("return ").Append(nestedBuilderAlias).Append(".finish();\n");
         builder.Append("})()");
         return builder.ToString();
     }

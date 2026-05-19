@@ -357,7 +357,7 @@ public sealed class RazorVueTemplateFrontendParityTests
         Assert.AreEqual(RazorVueImperativeBlockKind.MethodBody, imperative.Kind);
 
         var artifact = new RazorVueArtifactFactory(RazorVuePreferredTemplateFrontend.Instance).Lower(context, snapshot);
-        StringAssert.Contains(artifact.ModuleCode, "const __jazorBuilder = __jazorCreateRenderTreeBuilder(h);");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
         StringAssert.Contains(artifact.ModuleCode, "if (props.hide) {");
     }
 

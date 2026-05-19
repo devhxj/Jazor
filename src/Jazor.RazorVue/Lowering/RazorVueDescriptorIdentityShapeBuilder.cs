@@ -294,8 +294,7 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
         Dictionary<string, RuntimeUsageBuilder> usageByComponent)
     {
         var collector = new ImperativeRuntimeUsageCollector(resolvedComponents, usageByComponent);
-        foreach (var operation in imperative.Operations)
-            collector.Collect(operation, imperative.VisibleParameters);
+        collector.Collect(imperative.Operations, imperative.VisibleParameters);
     }
 
     private static void CollectFromRenderTreeComponent(
@@ -658,7 +657,9 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
             _usageByComponent = usageByComponent;
         }
 
-        public void Collect(IOperation operation, ImmutableArray<IParameterSymbol> visibleParameters)
+        public void Collect(
+            IEnumerable<IOperation> operations,
+            ImmutableArray<IParameterSymbol> visibleParameters)
         {
             foreach (var parameter in visibleParameters)
             {
@@ -666,7 +667,8 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
                     _builderStates[parameter] = new BuilderState();
             }
 
-            Visit(operation);
+            foreach (var operation in operations)
+                Visit(operation);
         }
 
         private void Visit(IOperation? operation)

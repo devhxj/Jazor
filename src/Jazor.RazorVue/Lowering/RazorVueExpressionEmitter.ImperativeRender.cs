@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Text.RegularExpressions;
+using Acornima;
 using Acornima.Ast;
 using Jazor.Compiler;
 using Jazor.RazorVue.Artifacts;
@@ -48,8 +50,11 @@ internal sealed partial class RazorVueExpressionEmitter
                         () =>
                         {
                             var statements = _semanticWalker.TranslateStatementSequence(imperative.Operations, bodyArgument);
-                            var functionBody = new FunctionBody(NodeList.From(statements), strict: true);
-                            return NormalizeImperativeFunctionBody(functionBody.ToKnRECMAScript(), builderAlias, appendTerminalReturn: false);
+                            var functionBody = NormalizeImperativeFunctionBody(
+                                new FunctionBody(NodeList.From(statements), strict: true),
+                                builderAlias,
+                                appendTerminalReturn: false);
+                            return NormalizeImperativeFunctionText(functionBody.ToKnRECMAScript());
                         }))));
     }
 
@@ -169,10 +174,24 @@ internal sealed partial class RazorVueExpressionEmitter
         }
     }
 
-    private string NormalizeImperativeFunctionBody(
-        string functionBodyText,
+    private static FunctionBody NormalizeImperativeFunctionBody(
+        FunctionBody functionBody,
         string builderAlias,
         bool appendTerminalReturn)
+    {
+        var rewriter = new ImperativeTopLevelReturnRewriter(builderAlias);
+        var rewritten = (FunctionBody)(rewriter.Visit(functionBody) ?? functionBody);
+        if (appendTerminalReturn && !rewritten.Body.Any(static statement => statement is ReturnStatement))
+        {
+            var statements = rewritten.Body.ToList();
+            statements.Add(new ReturnStatement(CreateImperativeFinishCall(builderAlias)));
+            rewritten = new FunctionBody(NodeList.From(statements), rewritten.Strict);
+        }
+
+        return rewritten;
+    }
+
+    private static string NormalizeImperativeFunctionText(string functionBodyText)
     {
         const string strictPrefix = "{\n\t\"use strict\";\n";
         if (functionBodyText.StartsWith(strictPrefix, System.StringComparison.Ordinal))
@@ -189,39 +208,9 @@ internal sealed partial class RazorVueExpressionEmitter
 
         var innerBody = normalized.Substring(1, normalized.Length - 2).Trim();
         if (innerBody.Length == 0)
-            return appendTerminalReturn
-                ? "return " + builderAlias + ".complete();"
-                : string.Empty;
+            return string.Empty;
 
-        return RewriteTerminalReturns(innerBody, builderAlias, appendTerminalReturn);
-    }
-
-    private static string RewriteTerminalReturns(
-        string bodyText,
-        string builderAlias,
-        bool appendTerminalReturn)
-    {
-        var lines = bodyText.Split('\n').ToList();
-        for (var index = 0; index < lines.Count; index++)
-        {
-            var trimmed = lines[index].Trim();
-            if (!trimmed.StartsWith("return", System.StringComparison.Ordinal))
-                continue;
-
-            if (trimmed == "return;" || trimmed == "return")
-            {
-                lines[index] = lines[index].Replace(trimmed, "return " + builderAlias + ".complete();");
-                continue;
-            }
-        }
-
-        if (appendTerminalReturn &&
-            !lines.Any(static line => line.TrimStart().StartsWith("return ", System.StringComparison.Ordinal)))
-        {
-            lines.Add("return " + builderAlias + ".complete();");
-        }
-
-        return string.Join("\n", lines);
+        return innerBody;
     }
 
     internal bool TryRewriteInstanceReference(IInstanceReferenceOperation operation, SenseArgument argument, out string expression)
@@ -261,23 +250,27 @@ internal sealed partial class RazorVueExpressionEmitter
                     return false;
 
                 var componentMetadataReference = ResolveImperativeComponentMetadataReference(invocation) ?? "null";
-                expression = builderTarget + ".OpenComponent(" + componentReference + ", " + componentMetadataReference + ")";
+                expression = builderTarget + ".enterComponent(" + componentReference + ", " + componentMetadataReference + ")";
                 return true;
             case "OpenElement":
-                expression = builderTarget + ".OpenElement(" + EmitImperativeArgument(invocation, argument, 1) + ")";
+                expression = builderTarget + ".enterElement(" + EmitImperativeArgument(invocation, argument, 1) + ")";
                 return true;
             case "CloseElement":
+                expression = builderTarget + ".leaveElement()";
+                return true;
             case "CloseComponent":
+                expression = builderTarget + ".leaveComponent()";
+                return true;
             case "CloseRegion":
-                expression = builderTarget + "." + invocation.TargetMethod.Name + "()";
+                expression = builderTarget + ".closeRegion()";
                 return true;
             case "OpenRegion":
-                expression = builderTarget + ".OpenRegion()";
+                expression = builderTarget + ".openRegion()";
                 return true;
             case "AddContent":
                 expression = invocation.Arguments.Length >= 3
-                    ? builderTarget + ".AddContent(" + EmitImperativeArgument(invocation, argument, 1) + ", " + EmitImperativeArgument(invocation, argument, 2) + ")"
-                    : builderTarget + ".AddContent(" + EmitImperativeArgument(invocation, argument, 1) + ")";
+                    ? builderTarget + ".append(" + EmitImperativeArgument(invocation, argument, 1) + ", " + EmitImperativeArgument(invocation, argument, 2) + ")"
+                    : builderTarget + ".append(" + EmitImperativeArgument(invocation, argument, 1) + ")";
                 return true;
             case "AddMarkupContent":
                 if (TryGetImperativeConstantString(invocation.Arguments[1].Value) is not string markup)
@@ -286,19 +279,19 @@ internal sealed partial class RazorVueExpressionEmitter
                         $"RazorVue imperative render lowering only supports constant AddMarkupContent(...) in component '{_snapshot.Descriptor.FullName}'.");
                 }
 
-                expression = builderTarget + ".AddContent(" + EmitStaticMarkupExpression(markup) + ")";
+                expression = builderTarget + ".append(" + EmitStaticMarkupExpression(markup) + ")";
                 return true;
             case "AddAttribute":
-                expression = builderTarget + "." + invocation.TargetMethod.Name + "(" + EmitImperativeArgument(invocation, argument, 1) + ", " + EmitImperativeArgument(invocation, argument, 2) + ")";
+                expression = builderTarget + ".setAttribute(" + EmitImperativeArgument(invocation, argument, 1) + ", " + EmitImperativeArgument(invocation, argument, 2) + ")";
                 return true;
             case "AddComponentParameter":
-                expression = builderTarget + ".AddComponentParameter(" + EmitImperativeArgument(invocation, argument, 1) + ", " + EmitImperativeComponentParameterValue(invocation, argument, builderTarget, 2) + ")";
+                expression = builderTarget + ".setComponentParameter(" + EmitImperativeArgument(invocation, argument, 1) + ", " + EmitImperativeComponentParameterValue(invocation, argument, builderTarget, 2) + ")";
                 return true;
             case "AddMultipleAttributes":
-                expression = builderTarget + ".AddMultipleAttributes(" + EmitImperativeArgument(invocation, argument, 1) + ")";
+                expression = builderTarget + ".mergeAttributes(" + EmitImperativeArgument(invocation, argument, 1) + ")";
                 return true;
             case "SetKey":
-                expression = builderTarget + ".SetKey(" + EmitImperativeArgument(invocation, argument, 0) + ")";
+                expression = builderTarget + ".setKey(" + EmitImperativeArgument(invocation, argument, 0) + ")";
                 return true;
         }
 
@@ -326,13 +319,170 @@ internal sealed partial class RazorVueExpressionEmitter
                    (currentSlot.Parameters.IsDefaultOrEmpty ? "false" : "true") + ")";
         }
 
-        if (IsImperativeUntypedRenderFragmentValue(value))
-            return "__jazorCreateBuilderSlot(" + EmitSetupExpression(value, argument) + ")";
+        if (TryEmitImperativeRenderSlotFactory(value, out var renderSlotFactory))
+            return "__jazorCreateRenderSlot(" + renderSlotFactory + ")";
 
-        if (IsImperativeTypedRenderFragmentValue(value))
-            return "__jazorCreateContextualBuilderSlot(" + EmitSetupExpression(value, argument) + ")";
+        if (TryEmitImperativeContextualRenderSlotFactory(value, out var contextualRenderSlotFactory))
+            return "__jazorCreateContextualRenderSlot(" + contextualRenderSlotFactory + ")";
 
         return EmitSetupExpression(value, argument);
+    }
+
+    private bool TryEmitImperativeRenderSlotFactory(IOperation operation, out string expression)
+    {
+        expression = string.Empty;
+        if (!TryGetAnonymousFunction(operation, out var anonymousFunction) ||
+            !TryGetSingleBuilderParameter(anonymousFunction, out var builderParameter))
+        {
+            return false;
+        }
+
+        expression = EmitImperativeBuilderLambdaFactory(
+            anonymousFunction,
+            builderParameter,
+            prefixParameterNames: null);
+        return true;
+    }
+
+    private bool TryEmitImperativeContextualRenderSlotFactory(IOperation operation, out string expression)
+    {
+        expression = string.Empty;
+        if (!TryGetTypedBuilderTemplate(operation, out var outerAnonymousFunction, out var builderAnonymousFunction) ||
+            !TryGetSingleBuilderParameter(builderAnonymousFunction, out var builderParameter))
+        {
+            return false;
+        }
+
+        var templateParameterNames = outerAnonymousFunction.Symbol.Parameters
+            .Select(static parameter => parameter.Name)
+            .ToImmutableArray();
+        expression = EmitImperativeBuilderLambdaFactory(
+            builderAnonymousFunction,
+            builderParameter,
+            templateParameterNames);
+        return true;
+    }
+
+    private string EmitImperativeBuilderLambdaFactory(
+        IAnonymousFunctionOperation builderAnonymousFunction,
+        IParameterSymbol builderParameter,
+        ImmutableArray<string>? prefixParameterNames)
+    {
+        var renderContextParameterAlias = AllocateImperativeScratchBuilderAlias();
+        var builderArgument = new SenseArgument(Sense.FunctionBody, UseImportAliases: true);
+        var parameterAliases = new Dictionary<IParameterSymbol, string>(SymbolEqualityComparer.Default)
+        {
+            [builderParameter] = renderContextParameterAlias
+        };
+
+        var body = WithImperativeBuilderAlias(
+            renderContextParameterAlias,
+            () => WithImperativeBuilderParameterTargets(
+                parameterAliases,
+                () => WithScopedParameterAliases(
+                    builderAnonymousFunction.Symbol.Parameters,
+                    [renderContextParameterAlias],
+                    () =>
+                    {
+                        var walker = new SemanticWalker(
+                            _snapshot.ComponentSymbol,
+                            moduleDeclaredNames: new Dictionary<ISymbol, string>(SymbolEqualityComparer.Default))
+                        {
+                            Host = new RazorVueCompilerHost(this)
+                        };
+                        var statements = walker.TranslateStatementSequence(
+                            builderAnonymousFunction.Body.Operations,
+                            builderArgument);
+                        var functionBody = NormalizeImperativeFunctionBody(
+                            new FunctionBody(NodeList.From(statements), strict: true),
+                            renderContextParameterAlias,
+                            appendTerminalReturn: false);
+                        return NormalizeImperativeFunctionText(functionBody.ToKnRECMAScript());
+                    })));
+
+        var builder = new System.Text.StringBuilder();
+        if (prefixParameterNames.HasValue)
+        {
+            builder.Append("(")
+                .Append(string.Join(", ", prefixParameterNames.Value))
+                .Append(") => ");
+        }
+
+        builder.Append("(")
+            .Append(renderContextParameterAlias)
+            .Append(") => {\n")
+            .Append(body);
+
+        if (body.Length > 0 && !body.EndsWith("\n", System.StringComparison.Ordinal))
+            builder.Append('\n');
+
+        builder.Append("}");
+        return builder.ToString();
+    }
+
+    private static Expression CreateImperativeFinishCall(string builderAlias)
+        => new CallExpression(
+            new MemberExpression(
+                new Identifier(builderAlias),
+                new Identifier("finish"),
+                computed: false,
+                optional: false),
+            NodeList.Empty<Expression>(),
+            optional: false);
+
+    private sealed class ImperativeTopLevelReturnRewriter(string builderAlias) : AstRewriter
+    {
+        protected override object? VisitReturnStatement(ReturnStatement node)
+        {
+            if (node.Argument is not null)
+                return node;
+
+            return new ReturnStatement(CreateImperativeFinishCall(builderAlias));
+        }
+
+        protected override object VisitFunctionExpression(FunctionExpression node) => node;
+        protected override object VisitArrowFunctionExpression(ArrowFunctionExpression node) => node;
+    }
+
+    private string AllocateImperativeScratchBuilderAlias()
+        => AllocateImperativeScratchName("RenderContext");
+
+    private static bool TryGetTypedBuilderTemplate(
+        IOperation? operation,
+        out IAnonymousFunctionOperation outerAnonymousFunction,
+        out IAnonymousFunctionOperation builderAnonymousFunction)
+    {
+        outerAnonymousFunction = default!;
+        builderAnonymousFunction = default!;
+        if (!TryGetAnonymousFunction(operation, out outerAnonymousFunction) ||
+            outerAnonymousFunction.Symbol.Parameters.Length != 1)
+        {
+            return false;
+        }
+
+        if (!TryGetReturnedAnonymousFunction(outerAnonymousFunction.Body, out builderAnonymousFunction))
+            return false;
+
+        return TryGetSingleBuilderParameter(builderAnonymousFunction, out _);
+    }
+
+    private static bool TryGetReturnedAnonymousFunction(
+        IOperation? body,
+        out IAnonymousFunctionOperation anonymousFunction)
+    {
+        anonymousFunction = default!;
+        switch (Unwrap(body))
+        {
+            case IAnonymousFunctionOperation direct:
+                anonymousFunction = direct;
+                return true;
+            case IBlockOperation block when TryGetSingleReturnedValue(block, out var returnValue):
+                return TryGetAnonymousFunction(returnValue, out anonymousFunction);
+            case IReturnOperation returnOperation when returnOperation.ReturnedValue is not null:
+                return TryGetAnonymousFunction(returnOperation.ReturnedValue, out anonymousFunction);
+            default:
+                return false;
+        }
     }
 
     private string EmitStaticMarkupExpression(string markup)

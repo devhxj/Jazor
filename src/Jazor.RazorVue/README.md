@@ -108,6 +108,7 @@
   - handwritten `BuildRenderTree` 与 Razor IR `BuildRenderTree`/root template `@{ ... }` 的 local segment promotion 对齐；声明式 siblings 会保留 declarative render tree，只有命中的 imperative segment 进入 render-function lowering
   - `.mjs` / H artifact 的 body-level imperative render bridge
   - `.vue` / SFC artifact 的 render-function 承载
+  - imperative 产物 runtime vocabulary 现已统一为 render-context（`__jazorRenderContext`、`enterElement/leaveElement`、`append`、`setComponentParameter`、`finish`）；最终 Vue 产物不再暴露 Razor `RenderTreeBuilder` 语义
   - 首段真实 imperative render 承载：提前 `return`、`while` / `do-while`、带 `break` / `continue` 的 `for` / `foreach`、`switch`、`lock`、`try/catch/finally`、`using` / `using declaration`、局部 mutation、imperative body 内常量 `AddMarkupContent(...)`
   - 上述承载同时覆盖 handwritten `BuildRenderTree` 与 Razor authored root template `@{ ... }` code-block，经 Razor IR frontend 提升后复用同一 imperative render 主线
   - canonical / SFC semantic 正式模型现已承载“单 imperative root program”，不再要求 SFC artifact factory 在入口层单独扫描 renderTree 决定是否旁路
@@ -122,6 +123,7 @@
   - imperative `AddComponentParameter(...)` 现已按目标组件 descriptor 正式区分 prop / emit / slot
   - current-component slot forwarding 现已在 imperative 路径保留 slot 语义，而不是退化成普通 prop 值
   - builder-style `RenderFragment` / `RenderFragment<T>` 组件参数现已在 imperative bridge 中物化为 Vue slot callback，并继续支持 nested component subtree
+  - 上述 slot callback 最终也统一落到 render-context runtime，而不是继续把 nested fragment 暴露为 `RenderTreeBuilder` 风格 helper 名称
   - imperative body 中实际使用到的 injected/resolved component prop / emit / slot runtime shape 现已进入 descriptor identity/runtime-usage 收集；HMR/descriptor hash 不再忽略 imperative `AddComponentParameter(...)`、slot forwarding 或 slot builder 内嵌套组件
   - Razor IR root template `@{ ... }` promotion 后的 imperative 路径也已与 handwritten `BuildRenderTree` 对齐，current-component slot forwarding 不再在 SG/IR 路径退化成普通 slot 函数值
 - 当前仍未落地的是：

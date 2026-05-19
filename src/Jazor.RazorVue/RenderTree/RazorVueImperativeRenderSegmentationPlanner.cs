@@ -190,6 +190,7 @@ internal static class RazorVueImperativeRenderSegmentationPlanner
         switch (operation)
         {
             case IReturnOperation { IsImplicit: false }:
+            case IThrowOperation:
                 kind = RazorVueImperativeBlockKind.MethodBody;
                 return true;
             case IWhileLoopOperation:
