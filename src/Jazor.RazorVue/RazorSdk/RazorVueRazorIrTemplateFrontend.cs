@@ -131,6 +131,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         private readonly HashSet<IMethodSymbol> _activeRenderFragmentFactories =
             new(SymbolEqualityComparer.Default);
         private readonly HashSet<ConsumedTemplateNodeKey> _consumedTemplateNodes = [];
+        private bool _lastTemplateDeclarationScanEncounteredSupplementalDeclarations;
         private RazorVueRazorIrNode? _documentRoot;
         private int _elementKeyOrdinal;
         private int _componentKeyOrdinal;
@@ -2300,6 +2301,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             var immediateAssignedInitializers = new Dictionary<ILocalSymbol, IOperation>(SymbolEqualityComparer.Default);
             if (!TryCollectTemplateLocalDeclarators(codeNode, operation, declarators, immediateAssignedInitializers, out pendingControlNode))
                 return false;
+            var encounteredSupplementalTemplateDeclarations = _lastTemplateDeclarationScanEncounteredSupplementalDeclarations;
 
             var declarationBuilder = ImmutableArray.CreateBuilder<RazorVueLocalDeclarationNode>(declarators.Count);
             var currentLocalScope = allowedLocalSymbols;
@@ -2379,6 +2381,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             consumedNodeCount = Math.Max(1, continuationIndex - startIndex);
             return encounteredRenderFragmentCarrier ||
                    encounteredStaticMarkupCarrier ||
+                   encounteredSupplementalTemplateDeclarations ||
                    localDeclarations.Length > 0 ||
                    pendingControlNode is not null ||
                    continuationIndex > startIndex + 1;
@@ -2530,6 +2533,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             Dictionary<ILocalSymbol, IOperation> immediateAssignedInitializers,
             out PendingTemplateControlNode? pendingControlNode)
         {
+            _lastTemplateDeclarationScanEncounteredSupplementalDeclarations = false;
             pendingControlNode = null;
             switch (Unwrap(operation))
             {
@@ -2539,6 +2543,10 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 case IVariableDeclarationOperation declarationOperation:
                     CollectDeclarators([declarationOperation], builder);
                     return builder.Count > 0;
+                case ILocalFunctionOperation localFunctionOperation:
+                    _lastTemplateDeclarationScanEncounteredSupplementalDeclarations = true;
+                    MarkConsumedTemplateNodesForOperation(localFunctionOperation);
+                    return true;
                 case IBlockOperation blockOperation:
                     var encounteredNonDeclaration = false;
                     var pendingDeclarators = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
@@ -2570,6 +2578,17 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
                                 CollectDeclarators([childDeclaration], builder);
                                 RegisterPendingTemplateDeclarators([childDeclaration], pendingDeclarators);
+                                continue;
+                            case ILocalFunctionOperation:
+                                if (encounteredNonDeclaration)
+                                {
+                                    throw CreateUnsupportedAttributeException(
+                                        GetBestSourceSpan(codeNode),
+                                        $"RazorVue Razor IR frontend only supports template code blocks whose immutable local declarations appear before any control-flow statement in component '{_snapshot.Descriptor.FullName}'.");
+                                }
+
+                                _lastTemplateDeclarationScanEncounteredSupplementalDeclarations = true;
+                                MarkConsumedTemplateNodesForOperation(child);
                                 continue;
                             case IExpressionStatementOperation expressionStatement
                                 when TryConsumePendingTemplateDeclarationAssignment(expressionStatement, pendingDeclarators, out var assignedLocal, out var assignedInitializer):
@@ -2657,7 +2676,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                         }
                     }
 
-                    return builder.Count > 0 || pendingControlNode is not null;
+                    return builder.Count > 0 ||
+                           pendingControlNode is not null ||
+                           _lastTemplateDeclarationScanEncounteredSupplementalDeclarations;
                 default:
                     return false;
             }
@@ -3348,9 +3369,6 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
         private void MarkConsumedTemplateNode(RazorVueRazorIrNode templateNode)
         {
-            if (!IsTemplateIntermediateNode(templateNode))
-                return;
-
             if (TryGetNodeSourceRange(templateNode) is not { } range)
                 return;
 
@@ -3362,9 +3380,6 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
         private bool IsConsumedTemplateExtensionNode(RazorVueRazorIrNode node)
         {
-            if (!IsTemplateIntermediateNode(node))
-                return false;
-
             if (TryGetNodeSourceRange(node) is not { } range)
                 return false;
 
@@ -3372,6 +3387,94 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 range.FilePath,
                 range.Start,
                 range.Length));
+        }
+
+        private void MarkConsumedTemplateNodesForOperation(IOperation operation)
+        {
+            if (_documentRoot is null)
+                return;
+
+            if (!TryGetOperationCoverageRange(operation, out var sourceRange) &&
+                !TryCreateSourceRangeFromSyntax(operation.Syntax, out sourceRange))
+            {
+                return;
+            }
+
+            var candidates = EnumerateNodes(_documentRoot)
+                .Select(node => new
+                {
+                    Node = node,
+                    Range = TryGetNodeSourceRange(node)
+                })
+                .Where(item => item.Range is not null &&
+                               PathsEqual(item.Range.Value.FilePath, sourceRange.FilePath) &&
+                               item.Range.Value.Start >= sourceRange.Start &&
+                               item.Range.Value.End <= sourceRange.End)
+                .ToArray();
+
+            if (candidates.Length == 0)
+            {
+                candidates = EnumerateNodes(_documentRoot)
+                    .Select(node => new
+                    {
+                        Node = node,
+                        Range = TryGetNodeSourceRange(node)
+                    })
+                    .Where(item => item.Range is not null &&
+                                   PathsEqual(item.Range.Value.FilePath, sourceRange.FilePath) &&
+                                   RangesOverlap(item.Range.Value, sourceRange))
+                    .ToArray();
+            }
+
+            foreach (var candidate in candidates)
+                MarkConsumedTemplateNode(candidate.Node);
+        }
+
+        private bool TryGetOperationCoverageRange(
+            IOperation operation,
+            out RazorVueRazorIrOperationResolver.SourceRange sourceRange)
+        {
+            sourceRange = default;
+            var ranges = ImmutableArray.CreateBuilder<RazorVueRazorIrOperationResolver.SourceRange>();
+
+            if (_resolver.TryMapGeneratedOperationToOriginalSourceSpan(operation, out var directSourceSpan) &&
+                !string.IsNullOrWhiteSpace(directSourceSpan.FilePath))
+            {
+                ranges.Add(new RazorVueRazorIrOperationResolver.SourceRange(
+                    NormalizeComparablePath(directSourceSpan.FilePath),
+                    directSourceSpan.AbsoluteIndex,
+                    directSourceSpan.AbsoluteIndex + directSourceSpan.Length));
+            }
+
+            foreach (var current in EnumerateSelfAndDescendants(operation))
+            {
+                if (!_resolver.TryMapGeneratedOperationToOriginalSourceSpan(current, out var mappedSourceSpan) ||
+                    string.IsNullOrWhiteSpace(mappedSourceSpan.FilePath))
+                {
+                    continue;
+                }
+
+                ranges.Add(new RazorVueRazorIrOperationResolver.SourceRange(
+                    NormalizeComparablePath(mappedSourceSpan.FilePath),
+                    mappedSourceSpan.AbsoluteIndex,
+                    mappedSourceSpan.AbsoluteIndex + mappedSourceSpan.Length));
+            }
+
+            if (ranges.Count == 0)
+                return false;
+
+            var filePath = ranges[0].FilePath;
+            var sameFileRanges = ranges
+                .Where(range => PathsEqual(range.FilePath, filePath))
+                .ToArray();
+            if (sameFileRanges.Length == 0)
+                return false;
+
+            sourceRange = new RazorVueRazorIrOperationResolver.SourceRange(
+                filePath,
+                sameFileRanges.Min(static range => range.Start),
+                sameFileRanges.Max(static range => range.End));
+            return true;
         }
 
         private static IEnumerable<RazorVueRazorIrNode> EnumerateNodes(RazorVueRazorIrNode node)
@@ -4473,6 +4576,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         {
             var normalized = NormalizeTemplateCodeText(GetNodeText(node));
             return normalized.Length == 0 ||
+                   string.Equals(normalized, ";", StringComparison.Ordinal) ||
                    string.Equals(normalized, "{", StringComparison.Ordinal) ||
                    string.Equals(normalized, "}", StringComparison.Ordinal) ||
                    string.Equals(normalized, "else", StringComparison.Ordinal) ||

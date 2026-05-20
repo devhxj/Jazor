@@ -1857,6 +1857,7 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
         var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
 
         var component = Assert.IsInstanceOfType<RazorVueComponentNode>(renderTree.Children.Single());
+        Assert.AreEqual(1, component.SlotTemplates.Length, DescribeStructure(renderTree));
         var slotTemplate = component.SlotTemplates.Single();
         Assert.AreEqual("ItemTemplate", slotTemplate.PublicName);
         Assert.AreEqual("item", slotTemplate.ParameterName);
@@ -2052,6 +2053,66 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
         Assert.IsInstanceOfType<IArrayCreationOperation>(valuesScope.Initializer);
 
         var span = Assert.IsInstanceOfType<RazorVueElementNode>(valuesScope.Children.Children.Single());
+        Assert.AreEqual("span", span.TagName);
+        Assert.AreEqual(3, span.Children.Children.Length);
+        Assert.IsInstanceOfType<RazorVueExpressionNode>(span.Children.Children[0]);
+        var whitespace = Assert.IsInstanceOfType<RazorVueTextNode>(span.Children.Children[1]);
+        Assert.AreEqual(" ", whitespace.Text);
+        Assert.IsInstanceOfType<RazorVueExpressionNode>(span.Children.Children[2]);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForRenderFragmentLocalCarrierInitializedFromLocalFunctionFactoryMethod_AssignedToTypedComponentSlot_ProducesCapturedScopeAndStructuredSlotTemplate()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @using Microsoft.AspNetCore.Components
+
+            @{
+                RenderFragment<int> template = CreateTemplate(Title);
+
+                RenderFragment<int> CreateTemplate(string? title)
+                    => item => @<span>@title @item</span>;
+            }
+
+            <LayoutCard ItemTemplate="template" />
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.RenderFragmentLocalCarrier.LocalFunctionFactory.TypedSlot.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/layout-card")]
+                public partial class LayoutCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """);
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+
+        var component = Assert.IsInstanceOfType<RazorVueComponentNode>(renderTree.Children.Single());
+        var slotTemplate = component.SlotTemplates.Single();
+        Assert.AreEqual("ItemTemplate", slotTemplate.PublicName);
+        Assert.AreEqual("item", slotTemplate.ParameterName);
+
+        var titleScope = Assert.IsInstanceOfType<RazorVueTemplateScopeNode>(slotTemplate.Children.Children.Single());
+        Assert.AreEqual("title", titleScope.ScopeName);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(titleScope.Initializer);
+
+        var span = Assert.IsInstanceOfType<RazorVueElementNode>(titleScope.Children.Children.Single());
         Assert.AreEqual("span", span.TagName);
         Assert.AreEqual(3, span.Children.Children.Length);
         Assert.IsInstanceOfType<RazorVueExpressionNode>(span.Children.Children[0]);
@@ -5153,6 +5214,129 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_ForDirectTypedRenderFragmentFactoryInvocationUsingNamedArgumentsOutOfDeclarationOrder_PreservesCallSiteEvaluationOrder()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @using Microsoft.AspNetCore.Components
+
+            @CreateTemplate(subtitle: Subtitle, title: Title)(42)
+
+            @code {
+                [Parameter]
+                public string? Title { get; set; }
+
+                [Parameter]
+                public string? Subtitle { get; set; }
+
+                private RenderFragment<int> CreateTemplate(string? title, string? subtitle)
+                    => item => @<span>@title @subtitle @item</span>;
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.DirectFactoryNamed.Invocation.Typed.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+
+        Assert.AreEqual(
+            1,
+            renderTree.Children.Length,
+            RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot) + Environment.NewLine + DescribeStructure(renderTree));
+
+        var subtitleScope = Assert.IsInstanceOfType<RazorVueTemplateScopeNode>(renderTree.Children[0]);
+        Assert.AreEqual("subtitle", subtitleScope.ScopeName);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(subtitleScope.Initializer);
+
+        var titleScope = Assert.IsInstanceOfType<RazorVueTemplateScopeNode>(subtitleScope.Children.Children.Single());
+        Assert.AreEqual("title", titleScope.ScopeName);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(titleScope.Initializer);
+
+        var itemScope = Assert.IsInstanceOfType<RazorVueTemplateScopeNode>(titleScope.Children.Children.Single());
+        Assert.AreEqual("item", itemScope.ScopeName);
+        var itemLiteral = Assert.IsInstanceOfType<ILiteralOperation>(itemScope.Initializer);
+        Assert.AreEqual(42, itemLiteral.ConstantValue.Value);
+
+        var span = Assert.IsInstanceOfType<RazorVueElementNode>(itemScope.Children.Children.Single());
+        Assert.AreEqual("span", span.TagName);
+        Assert.AreEqual(5, span.Children.Children.Length);
+        Assert.IsInstanceOfType<RazorVueExpressionNode>(span.Children.Children[0]);
+        Assert.AreEqual(" ", Assert.IsInstanceOfType<RazorVueTextNode>(span.Children.Children[1]).Text);
+        Assert.IsInstanceOfType<RazorVueExpressionNode>(span.Children.Children[2]);
+        Assert.AreEqual(" ", Assert.IsInstanceOfType<RazorVueTextNode>(span.Children.Children[3]).Text);
+        Assert.IsInstanceOfType<RazorVueExpressionNode>(span.Children.Children[4]);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForDirectTypedRenderFragmentLocalFunctionFactoryInvocation_ProducesCapturedAndInvocationScopes()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @using Microsoft.AspNetCore.Components
+
+            @{
+                RenderFragment<int> CreateTemplate(string? title)
+                    => item => @<span>@title @item</span>;
+            }
+
+            @CreateTemplate(Title)(42)
+
+            @code {
+                [Parameter]
+                public string? Title { get; set; }
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.DirectFactory.LocalFunction.Invocation.Typed.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+
+        Assert.AreEqual(
+            1,
+            renderTree.Children.Length,
+            RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot) + Environment.NewLine + DescribeStructure(renderTree));
+
+        var titleScope = Assert.IsInstanceOfType<RazorVueTemplateScopeNode>(renderTree.Children[0]);
+        Assert.AreEqual("title", titleScope.ScopeName);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(titleScope.Initializer);
+
+        var itemScope = Assert.IsInstanceOfType<RazorVueTemplateScopeNode>(titleScope.Children.Children.Single());
+        Assert.AreEqual("item", itemScope.ScopeName);
+        var itemLiteral = Assert.IsInstanceOfType<ILiteralOperation>(itemScope.Initializer);
+        Assert.AreEqual(42, itemLiteral.ConstantValue.Value);
+
+        var span = Assert.IsInstanceOfType<RazorVueElementNode>(itemScope.Children.Children.Single());
+        Assert.AreEqual("span", span.TagName);
+        Assert.AreEqual(3, span.Children.Children.Length);
+        Assert.IsInstanceOfType<RazorVueExpressionNode>(span.Children.Children[0]);
+        Assert.AreEqual(" ", Assert.IsInstanceOfType<RazorVueTextNode>(span.Children.Children[1]).Text);
+        Assert.IsInstanceOfType<RazorVueExpressionNode>(span.Children.Children[2]);
+    }
+
+    [TestMethod]
     public void CreateRenderTree_ForImmediatelyAssignedLocalTypedRenderFragmentCarrierInvocation_ProducesCapturedAndInvocationScopes()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -6003,6 +6187,99 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
 
         StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(title) in [\"fallback-title\"]\">");
         StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(item) in [42]\">");
+        StringAssert.Contains(artifact.TemplateText, "{{ title }}");
+        StringAssert.Contains(artifact.TemplateText, "{{ item }}");
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithRazorIrTemplateFrontend_LowersDirectTypedRenderFragmentFactoryInvocationUsingNamedArgumentsOutOfDeclarationOrder_PreservingCallSiteEvaluationOrder()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @using Microsoft.AspNetCore.Components
+
+            @CreateTemplate(subtitle: Subtitle, title: Title)(42)
+
+            @code {
+                [Parameter]
+                public string? Title { get; set; }
+
+                [Parameter]
+                public string? Subtitle { get; set; }
+
+                private RenderFragment<int> CreateTemplate(string? title, string? subtitle)
+                    => item => @<span>@title @subtitle @item</span>;
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.DirectFactoryNamed.Invocation.Typed.Sfc.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        var artifact = new RazorVueSfcArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        var subtitleIndex = artifact.TemplateText.IndexOf("<template v-for=\"(subtitle) in [props.subtitle]\">", StringComparison.Ordinal);
+        var titleIndex = artifact.TemplateText.IndexOf("<template v-for=\"(title) in [props.title]\">", StringComparison.Ordinal);
+        var itemIndex = artifact.TemplateText.IndexOf("<template v-for=\"(item) in [42]\">", StringComparison.Ordinal);
+        Assert.IsTrue(subtitleIndex >= 0, artifact.TemplateText);
+        Assert.IsTrue(titleIndex >= 0, artifact.TemplateText);
+        Assert.IsTrue(itemIndex >= 0, artifact.TemplateText);
+        Assert.IsTrue(subtitleIndex < titleIndex, artifact.TemplateText);
+        Assert.IsTrue(subtitleIndex < itemIndex, artifact.TemplateText);
+        Assert.IsTrue(titleIndex < itemIndex, artifact.TemplateText);
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithRazorIrTemplateFrontend_LowersDirectTypedRenderFragmentLocalFunctionFactoryInvocation()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @using Microsoft.AspNetCore.Components
+
+            @{
+                RenderFragment<int> CreateTemplate(string? title)
+                    => item => @<span>@title @item</span>;
+            }
+
+            @CreateTemplate(Title)(42)
+
+            @code {
+                [Parameter]
+                public string? Title { get; set; }
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.DirectFactory.LocalFunction.Invocation.Typed.Sfc.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        var artifact = new RazorVueSfcArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        var titleIndex = artifact.TemplateText.IndexOf("<template v-for=\"(title) in [props.title]\">", StringComparison.Ordinal);
+        var itemIndex = artifact.TemplateText.IndexOf("<template v-for=\"(item) in [42]\">", StringComparison.Ordinal);
+        Assert.IsTrue(titleIndex >= 0, artifact.TemplateText);
+        Assert.IsTrue(itemIndex >= 0, artifact.TemplateText);
+        Assert.IsTrue(titleIndex < itemIndex, artifact.TemplateText);
         StringAssert.Contains(artifact.TemplateText, "{{ title }}");
         StringAssert.Contains(artifact.TemplateText, "{{ item }}");
     }
