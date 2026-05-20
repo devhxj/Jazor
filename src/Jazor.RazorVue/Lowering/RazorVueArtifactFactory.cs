@@ -114,7 +114,12 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
     {
         var descriptor = snapshot.Descriptor;
-        var descriptorShape = RazorVueDescriptorIdentityShapeBuilder.BuildForRenderTree(descriptor, renderTree, resolvedComponents);
+        var descriptorShape = RazorVueDescriptorIdentityShapeBuilder.BuildForRenderTree(
+            descriptor,
+            snapshot.ComponentSymbol,
+            snapshot.Compilation,
+            renderTree,
+            resolvedComponents);
         var templateShape = expressionEmitter.DescribeFragment(renderTree);
         var logicShape = BuildLogicShape(context, snapshot, renderTree, expressionEmitter);
         var boundaryKind = ClassifyHmrBoundary(renderTree, snapshot);

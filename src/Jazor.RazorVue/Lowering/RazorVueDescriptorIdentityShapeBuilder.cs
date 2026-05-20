@@ -12,12 +12,14 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
 {
     public static string BuildForRenderTree(
         VueComponentDescriptor ownerDescriptor,
+        INamedTypeSymbol ownerComponentSymbol,
+        Compilation compilation,
         RazorVueRenderFragment renderTree,
         ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
     {
         var builder = CreateBaseDescriptorShape(ownerDescriptor);
         AppendRenderTreeKeyShape(builder, renderTree);
-        AppendResolvedComponentRuntimeShape(builder, CollectFromRenderTree(renderTree, resolvedComponents));
+        AppendResolvedComponentRuntimeShape(builder, CollectFromRenderTree(ownerComponentSymbol, compilation, renderTree, resolvedComponents));
         return builder.ToString();
     }
 
@@ -226,6 +228,8 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
     }
 
     private static ImmutableArray<ResolvedComponentRuntimeUsage> CollectFromRenderTree(
+        INamedTypeSymbol ownerComponentSymbol,
+        Compilation compilation,
         RazorVueRenderFragment renderTree,
         ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
     {
@@ -233,11 +237,13 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
             return ImmutableArray<ResolvedComponentRuntimeUsage>.Empty;
 
         var usageByComponent = new Dictionary<string, RuntimeUsageBuilder>(StringComparer.Ordinal);
-        CollectFromRenderTree(renderTree, resolvedComponents, usageByComponent);
+        CollectFromRenderTree(ownerComponentSymbol, compilation, renderTree, resolvedComponents, usageByComponent);
         return BuildResult(usageByComponent);
     }
 
     private static void CollectFromRenderTree(
+        INamedTypeSymbol ownerComponentSymbol,
+        Compilation compilation,
         RazorVueRenderFragment fragment,
         ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
         Dictionary<string, RuntimeUsageBuilder> usageByComponent)
@@ -246,10 +252,12 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
             return;
 
         foreach (var child in fragment.Children)
-            CollectFromRenderTree(child, resolvedComponents, usageByComponent);
+            CollectFromRenderTree(ownerComponentSymbol, compilation, child, resolvedComponents, usageByComponent);
     }
 
     private static void CollectFromRenderTree(
+        INamedTypeSymbol ownerComponentSymbol,
+        Compilation compilation,
         RazorVueRenderNode node,
         ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
         Dictionary<string, RuntimeUsageBuilder> usageByComponent)
@@ -257,43 +265,45 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
         switch (node)
         {
             case RazorVueElementNode element:
-                CollectFromRenderTree(element.Children, resolvedComponents, usageByComponent);
+                CollectFromRenderTree(ownerComponentSymbol, compilation, element.Children, resolvedComponents, usageByComponent);
                 break;
             case RazorVueComponentNode component:
                 CollectFromRenderTreeComponent(component, resolvedComponents, usageByComponent);
-                CollectFromRenderTree(component.Children, resolvedComponents, usageByComponent);
+                CollectFromRenderTree(ownerComponentSymbol, compilation, component.Children, resolvedComponents, usageByComponent);
                 foreach (var slotTemplate in component.SlotTemplates)
-                    CollectFromRenderTree(slotTemplate.Children, resolvedComponents, usageByComponent);
+                    CollectFromRenderTree(ownerComponentSymbol, compilation, slotTemplate.Children, resolvedComponents, usageByComponent);
                 foreach (var implicitDefaultSlotAssignment in component.ImplicitDefaultSlotAssignments)
-                    CollectFromRenderTree(implicitDefaultSlotAssignment.Children, resolvedComponents, usageByComponent);
+                    CollectFromRenderTree(ownerComponentSymbol, compilation, implicitDefaultSlotAssignment.Children, resolvedComponents, usageByComponent);
                 break;
             case RazorVueLocalDeclarationNode:
                 break;
             case RazorVueTemplateScopeNode templateScope:
-                CollectFromRenderTree(templateScope.Children, resolvedComponents, usageByComponent);
+                CollectFromRenderTree(ownerComponentSymbol, compilation, templateScope.Children, resolvedComponents, usageByComponent);
                 break;
             case RazorVueConditionalNode conditional:
-                CollectFromRenderTree(conditional.WhenTrue, resolvedComponents, usageByComponent);
-                CollectFromRenderTree(conditional.WhenFalse, resolvedComponents, usageByComponent);
+                CollectFromRenderTree(ownerComponentSymbol, compilation, conditional.WhenTrue, resolvedComponents, usageByComponent);
+                CollectFromRenderTree(ownerComponentSymbol, compilation, conditional.WhenFalse, resolvedComponents, usageByComponent);
                 break;
             case RazorVueForEachNode loop:
-                CollectFromRenderTree(loop.Body, resolvedComponents, usageByComponent);
+                CollectFromRenderTree(ownerComponentSymbol, compilation, loop.Body, resolvedComponents, usageByComponent);
                 break;
             case RazorVueForNode loop:
-                CollectFromRenderTree(loop.Body, resolvedComponents, usageByComponent);
+                CollectFromRenderTree(ownerComponentSymbol, compilation, loop.Body, resolvedComponents, usageByComponent);
                 break;
             case RazorVueImperativeBlockNode imperative:
-                CollectFromImperativeRenderTree(imperative, resolvedComponents, usageByComponent);
+                CollectFromImperativeRenderTree(ownerComponentSymbol, compilation, imperative, resolvedComponents, usageByComponent);
                 break;
         }
     }
 
     private static void CollectFromImperativeRenderTree(
+        INamedTypeSymbol ownerComponentSymbol,
+        Compilation compilation,
         RazorVueImperativeBlockNode imperative,
         ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
         Dictionary<string, RuntimeUsageBuilder> usageByComponent)
     {
-        var collector = new ImperativeRuntimeUsageCollector(resolvedComponents, usageByComponent);
+        var collector = new ImperativeRuntimeUsageCollector(ownerComponentSymbol, compilation, resolvedComponents, usageByComponent);
         collector.Collect(imperative.Operations, imperative.VisibleParameters);
     }
 
@@ -477,18 +487,10 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
             StringComparison.Ordinal);
 
     private static bool IsRenderFragmentType(ITypeSymbol? typeSymbol)
-        => typeSymbol is INamedTypeSymbol namedType &&
-           string.Equals(
-               namedType.OriginalDefinition.ToDisplayString(),
-               "Microsoft.AspNetCore.Components.RenderFragment",
-               StringComparison.Ordinal);
+        => RazorVueRenderFragmentTypeHelper.IsUntypedRenderFragmentType(typeSymbol);
 
     private static bool IsTypedRenderFragmentType(ITypeSymbol? typeSymbol)
-        => typeSymbol is INamedTypeSymbol namedType &&
-           string.Equals(
-               namedType.OriginalDefinition.ToDisplayString(),
-               "Microsoft.AspNetCore.Components.RenderFragment<T>",
-               StringComparison.Ordinal);
+        => RazorVueRenderFragmentTypeHelper.IsParameterizedRenderFragmentType(typeSymbol);
 
     private static bool TryGetAnonymousFunction(IOperation? operation, out IAnonymousFunctionOperation anonymousFunction)
     {
@@ -644,15 +646,21 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
 
     private sealed class ImperativeRuntimeUsageCollector
     {
+        private readonly INamedTypeSymbol _ownerComponentSymbol;
+        private readonly Compilation _compilation;
         private readonly ImmutableDictionary<string, VueComponentDescriptor> _resolvedComponents;
         private readonly Dictionary<string, RuntimeUsageBuilder> _usageByComponent;
         private readonly Dictionary<IParameterSymbol, BuilderState> _builderStates = new(SymbolEqualityComparer.Default);
         private readonly Dictionary<ILocalSymbol, BuilderState> _builderAliases = new(SymbolEqualityComparer.Default);
 
         public ImperativeRuntimeUsageCollector(
+            INamedTypeSymbol ownerComponentSymbol,
+            Compilation compilation,
             ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
             Dictionary<string, RuntimeUsageBuilder> usageByComponent)
         {
+            _ownerComponentSymbol = ownerComponentSymbol;
+            _compilation = compilation;
             _resolvedComponents = resolvedComponents;
             _usageByComponent = usageByComponent;
         }
@@ -875,6 +883,20 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
             if (current is null)
                 return;
 
+            if (RazorVueImperativeRenderFragmentCarrierHelper.TryEnumerateNestedImperativeRenderFragmentBodies(
+                    _compilation,
+                    _ownerComponentSymbol,
+                    current,
+                    RazorVueOperationNormalizer.Unwrap,
+                    IsSourceStableMutableCarrierMember,
+                    out var nestedBodies))
+            {
+                foreach (var body in nestedBodies)
+                    Visit(body);
+
+                return;
+            }
+
             if (TryGetAnonymousFunction(current, out var anonymousFunction) &&
                 TryGetSingleBuilderParameter(anonymousFunction, out var builderParameter))
             {
@@ -966,6 +988,10 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
                 ? text
                 : null;
         }
+
+        private bool IsSourceStableMutableCarrierMember(Compilation compilation, ISymbol member)
+            => RazorVueMemberWriteAnalysis.CanUseSourceStableMutableCarrierMember(member) &&
+               !RazorVueMemberWriteAnalysis.HasObservableWritesOutsideDeclarationInitializer(compilation, member);
 
         private sealed class BuilderState
         {

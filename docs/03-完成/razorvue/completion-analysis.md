@@ -1,7 +1,7 @@
 # RazorVue 完成度与生产就绪评审
 
 > 评审日期：2026-05-07  
-> 最新更新：2026-05-10
+> 最新更新：2026-05-20
 > 评审范围：`src/Jazor.RazorVue/`、`src/Jazor.Analyzer/RazorVue/`、`src/Jazor.Emit` 的 RazorVue 路径、`src/Jazor.RazorVue.Test/`、`src/Jazor.RazorVue.RazorIr.Test/`、`src/Jazor.EmitTest/` 的 RazorVue 切片、`src/Jolt.Test` 的 Volar/VueAnalysis/JazorVue 切片、`samples/RazorVue.TodoList/`  
 > 基线说明：本评审基于当前工作区状态。当前工作区存在多处 RazorVue/emit/VueRoute 相关未提交修改，因此结论不等同于已发布包基线。
 
@@ -18,8 +18,8 @@ RazorVue 不能继续按历史文档里的“100% 完成”口径描述。当前
 | 维度 | 状态 | 说明 |
 |------|------|------|
 | 核心库编译 | 通过 | `Jazor.RazorVue` 可构建 |
-| RazorVue 单元测试 | 通过 | 557 通过 |
-| Razor IR 前端测试 | 通过 | 96 通过 |
+| RazorVue 单元测试 | 通过 | 1063 通过 |
+| Razor IR 前端测试 | 通过 | 370 通过 |
 | Jolt 关联过滤测试 | 通过 | 35 通过 |
 | solution 构建 | 通过但有警告 | 1 个 Razor IR 测试项目 nullable 警告 |
 | emit/SDK RazorVue 集成 | 通过 | RazorVue 过滤切片 45/45 通过 |
@@ -68,6 +68,20 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedNam
 6. `Build_LocalPackages_WithExternalRazorSgSfcConsumer_PureDenoPipeline_PassesInIsolatedWorkspace` 已覆盖独立临时 `.NET + Razor SG + SFC` consumer，再用独立纯 Deno consumer 执行 `test` task，包含 SSR smoke、`Deno.bundle()` smoke、browser build 和 browser smoke。
 7. `Build_LocalPackages_RazorVueTodoListSample_PureDenoPipeline_PassesInIsolatedWorkspace` 已覆盖仓库 TodoList sample 的本地 package build、纯 Deno SSR、`Deno.bundle()`、browser build、browser smoke。
 
+## 2026-05-20 状态更新
+
+本轮继续收紧 typed `RenderFragment<T>` / typed slot 的正式合同，重点不是再加一层 bridge，而是把已有 lowering 主线做实：
+
+1. `Jazor.Compiler` 新增 `SemanticWalkerHost.RewriteVariableDeclaratorPreorder(...)` seam，允许 RazorVue 在 imperative bridge 内改写局部 `RenderFragment` carrier 的 declarator，同时继续复用 `SemanticWalker` 完成 builder body 的 CLR-aware 翻译、引用绑定、import 收集和求值顺序保持。
+2. imperative bridge 中的局部 typed `RenderFragment<T>` carrier 现在直接 lower 为最终 Vue slot callback：slot callback 自己创建 `__jazorCreateRenderContext(h)`，经 `Jazor.Compiler` / `SemanticWalker` 翻译 body，最后返回 `.finish()`。
+3. 旧的中间 wrapper/helper 协议已经从这条 typed carrier 路径移除；该路径不再引入 `__jazorCreateRenderSlot`、`__jazorCreateContextualRenderSlot` 或 `__jazorInvokeRenderFragment`。
+4. `RenderFragment` / `RenderFragment<T>` 的 canonical 检测统一改为 `OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)` 精确判定。这里必须注意：`Format.NameFormat` 对 delegate 输出的是完整签名，而不是裸类型名；当前 canonical 名称分别是 `Microsoft.AspNetCore.Components.RenderFragment(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder)` 与 `Microsoft.AspNetCore.Components.RenderFragment<TValue>(TValue)`。
+5. Razor IR typed child-content/template-body 的 standalone imperative promotion 继续补齐 parity 与 pipeline 回归，覆盖 `if`、`while`、`do-while`、`foreach`/`for` + `break`/`continue`、`switch`、`try-catch-finally`、`using` / `using declaration`、`lock`、`return` / `throw` / mutation tail，以及局部 typed carrier 赋给组件 typed slot 的 imperative tail 保活场景。
+6. imperative typed slot 的 factory-backed local/member carrier 已与 inline typed template 对齐：`RenderFragment<T>` 局部 carrier、当前组件 property/field carrier，以及 `CreateTemplate(Title)` 这类 fragment factory 返回值，都会直接 lower 成最终 Vue slot callback，不再残留 `__jazorCreateRenderSlot` / `__jazorCreateContextualRenderSlot` / `__jazorInvokeRenderFragment` 或中间 wrapper JS。
+7. factory captured 参数不再通过额外 JS wrapper 传递，而是通过 canonical parameter alias 直接内联进最终 callback body；例如 `CreateTemplate(Title)` 中的 `title` 会直接 lower 为 `props.title`。
+8. 当前组件 property/field carrier、局部 carrier、fragment factory 返回值三条线现在共用一条静态 carrier 解析链；component resolution、imperative runtime-usage / descriptor identity 收集，以及最终 imperative slot callback lowering 都会沿这条链继续追踪 nested builder body，因此 factory-backed typed slot 内部的 `OpenComponent<T>` 会稳定产出组件 import、imperative metadata 和 `enterComponent(...)` lowering。
+9. handwritten `BuildRenderTree` 中局部 typed `RenderFragment<T>` carrier 的“先声明、再紧邻一次简单赋值”窄模式，现已补齐 mixed imperative 路径：即使声明/赋值出现在 declarative 前缀，而真正消费出现在后续 imperative segment，这条 carrier 仍会按同一静态合同被恢复，不会因为 segmentation 把初始化来源丢失。
+
 ## 已完成能力
 
 1. RazorVue 核心语义层已经从早期“只靠 BuildRenderTree 逆推模板”的方向明显前进到 IR 优先路线。
@@ -93,6 +107,7 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedNam
 5. 测试覆盖量较高。
    - `src/Jazor.RazorVue.Test` 和 `src/Jazor.RazorVue.RazorIr.Test` 合计当前约 625 个 `[TestMethod]`。
    - 已覆盖 descriptor、pipeline、render tree、canonical/SFC、Razor IR、parity、analyzer/generator 等多个层次。
+   - 其中 Razor IR typed child-content/template-body 切片已覆盖 standalone imperative body 的 `if`、`while`、`do-while`、`foreach`+`break/continue`、`for`+`break/continue`、`switch`、`try-catch-finally`、`using` / `using declaration`、`lock`、`throw tail`、`return tail`、mutation tail 等回归，并补上了 render-function SFC 产物验证。
 
 ## 主要缺口
 
@@ -205,13 +220,13 @@ dotnet build src/Jazor.RazorVue/Jazor.RazorVue.csproj -v minimal
 dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj -v minimal -p:UseSharedCompilation=false
 ```
 
-最新结果：557 通过，0 失败，0 跳过。
+最新结果：1063 通过，0 失败，0 跳过。
 
 ```powershell
 dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj -v minimal -p:UseSharedCompilation=false
 ```
 
-最新结果：96 通过，0 失败，0 跳过。
+最新结果：370 通过，0 失败，0 跳过。
 
 ```powershell
 dotnet test src/Jolt.Test/Jolt.Test.csproj --filter "FullyQualifiedName~Volar|FullyQualifiedName~VueAnalysis|FullyQualifiedName~VirtualArtifact|FullyQualifiedName~JazorVue" -v minimal

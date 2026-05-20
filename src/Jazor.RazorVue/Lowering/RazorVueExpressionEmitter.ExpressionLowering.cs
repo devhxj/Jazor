@@ -905,6 +905,29 @@ internal sealed partial class RazorVueExpressionEmitter
         }
     }
 
+    private T WithScopedParameterAliases<T>(
+        IReadOnlyDictionary<IParameterSymbol, string> aliases,
+        Func<T> action)
+    {
+        var previous = _scopedParameterAliases;
+        var current = previous is null
+            ? new Dictionary<IParameterSymbol, string>(SymbolEqualityComparer.Default)
+            : new Dictionary<IParameterSymbol, string>(previous, SymbolEqualityComparer.Default);
+
+        foreach (var pair in aliases)
+            current[pair.Key] = pair.Value;
+
+        _scopedParameterAliases = current;
+        try
+        {
+            return action();
+        }
+        finally
+        {
+            _scopedParameterAliases = previous;
+        }
+    }
+
     private T WithScopedLocalAliases<T>(
         IReadOnlyDictionary<ILocalSymbol, string> aliases,
         Func<T> action)

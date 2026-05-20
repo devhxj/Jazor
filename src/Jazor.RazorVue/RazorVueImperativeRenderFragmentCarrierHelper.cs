@@ -1,0 +1,750 @@
+using System.Collections.Immutable;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Operations;
+
+namespace Jazor.RazorVue;
+
+internal static class RazorVueImperativeRenderFragmentCarrierHelper
+{
+    private readonly record struct SourceStableLocalRenderFragmentInitializer(
+        IOperation Initializer,
+        SyntaxNode? AllowedAssignmentSyntax);
+
+    public static bool IsRenderFragmentCarrierType(ITypeSymbol? typeSymbol)
+        => RazorVueRenderFragmentTypeHelper.IsRenderFragmentType(typeSymbol);
+
+    public static Dictionary<ILocalSymbol, IOperation> CollectSourceStableLocalRenderFragmentInitializers(
+        Compilation compilation,
+        IReadOnlyList<IOperation> operations)
+    {
+        var collected = CollectSourceStableLocalRenderFragmentInitializerStates(operations);
+        var result = new Dictionary<ILocalSymbol, IOperation>(SymbolEqualityComparer.Default);
+        foreach (var pair in collected)
+        {
+            if (TryGetSourceStableLocalRenderFragmentInitializer(compilation, pair.Key, out var initializer) &&
+                initializer is not null)
+            {
+                result[pair.Key] = initializer;
+            }
+        }
+
+        return result;
+    }
+
+    public static bool TryGetSourceStableLocalRenderFragmentInitializer(
+        Compilation compilation,
+        ILocalSymbol local,
+        out IOperation? initializer)
+    {
+        initializer = null;
+        foreach (var syntaxReference in local.DeclaringSyntaxReferences)
+        {
+            if (syntaxReference.GetSyntax() is not VariableDeclaratorSyntax declarator)
+                continue;
+
+            var semanticModel = compilation.GetSemanticModel(declarator.SyntaxTree);
+            if (!TryGetSourceStableLocalRenderFragmentInitializer(
+                    compilation,
+                    local,
+                    declarator,
+                    semanticModel,
+                    out initializer))
+            {
+                continue;
+            }
+
+            return initializer is not null;
+        }
+
+        return false;
+    }
+
+    public static bool TryGetAnonymousFunction(IOperation? operation, out IAnonymousFunctionOperation anonymousFunction)
+    {
+        anonymousFunction = default!;
+        var current = UnwrapDelegateCarrier(operation);
+        switch (current)
+        {
+            case IAnonymousFunctionOperation directAnonymousFunction:
+                anonymousFunction = directAnonymousFunction;
+                return true;
+            case IDelegateCreationOperation delegateCreation when UnwrapDelegateCarrier(delegateCreation.Target) is IAnonymousFunctionOperation targetAnonymousFunction:
+                anonymousFunction = targetAnonymousFunction;
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public static bool TryGetSingleBuilderParameter(
+        IAnonymousFunctionOperation anonymousFunction,
+        out IParameterSymbol builderParameter)
+    {
+        builderParameter = anonymousFunction.Symbol.Parameters.FirstOrDefault(
+            static parameter => IsRenderTreeBuilderType(parameter.Type))!;
+        return builderParameter is not null && anonymousFunction.Symbol.Parameters.Length == 1;
+    }
+
+    public static bool TryGetTypedBuilderTemplate(
+        IOperation? operation,
+        out IAnonymousFunctionOperation outerAnonymousFunction,
+        out IAnonymousFunctionOperation builderAnonymousFunction)
+    {
+        outerAnonymousFunction = default!;
+        builderAnonymousFunction = default!;
+        if (!TryGetAnonymousFunction(operation, out outerAnonymousFunction) ||
+            outerAnonymousFunction.Symbol.Parameters.Length != 1)
+        {
+            return false;
+        }
+
+        if (!TryGetReturnedAnonymousFunction(outerAnonymousFunction.Body, out builderAnonymousFunction))
+            return false;
+
+        return TryGetSingleBuilderParameter(builderAnonymousFunction, out _);
+    }
+
+    public static bool TryGetSingleReturnedValue(IBlockOperation block, out IOperation? returnedValue)
+    {
+        returnedValue = null;
+        if (block.Operations.Length != 1 ||
+            block.Operations[0] is not IReturnOperation returnOperation)
+        {
+            return false;
+        }
+
+        returnedValue = RazorVueOperationNormalizer.Unwrap(returnOperation.ReturnedValue);
+        return returnedValue is not null;
+    }
+
+    public static bool TryGetCurrentComponentRenderFragmentMemberInitializer(
+        Compilation compilation,
+        INamedTypeSymbol componentSymbol,
+        ISymbol member,
+        Func<IOperation?, IOperation?> unwrap,
+        Func<Compilation, ISymbol, bool> isSourceStableMutableCarrierMember,
+        out IOperation? initializer)
+    {
+        initializer = null;
+        if (!RazorVueSymbolIdentity.IsCurrentComponentMember(componentSymbol, member, instance: null, unwrap))
+            return false;
+
+        if (!IsSupportedCurrentComponentRenderFragmentCarrierMember(compilation, member, isSourceStableMutableCarrierMember))
+            return false;
+
+        initializer = member switch
+        {
+            IPropertySymbol property => TryGetPropertyRenderFragmentInitializer(compilation, property),
+            IFieldSymbol field => TryGetFieldRenderFragmentInitializer(compilation, field),
+            _ => null
+        };
+
+        return initializer is not null;
+    }
+
+    public static bool TryGetRenderFragmentFactoryReturnedValue(
+        Compilation compilation,
+        IInvocationOperation invocation,
+        out IOperation returnedValue)
+    {
+        returnedValue = default!;
+        foreach (var syntaxReference in RazorVueMethodSymbolNormalizer.GetCanonicalMethod(invocation.TargetMethod).DeclaringSyntaxReferences)
+        {
+            var syntax = syntaxReference.GetSyntax();
+            var semanticModel = compilation.GetSemanticModel(syntax.SyntaxTree);
+            switch (syntax)
+            {
+                case MethodDeclarationSyntax methodDeclaration:
+                    if (methodDeclaration.ExpressionBody?.Expression is { } methodExpressionBody &&
+                        RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
+                            semanticModel,
+                            methodExpressionBody,
+                            out var methodExpressionBodyOperation) &&
+                        methodExpressionBodyOperation is not null)
+                    {
+                        returnedValue = methodExpressionBodyOperation;
+                        return true;
+                    }
+
+                    if (methodDeclaration.Body is not null &&
+                        semanticModel.GetOperation(methodDeclaration.Body) is IBlockOperation methodBlock &&
+                        TryGetSingleReturnedValue(methodBlock, out var methodReturnValue) &&
+                        methodReturnValue is not null)
+                    {
+                        returnedValue = methodReturnValue;
+                        return true;
+                    }
+
+                    break;
+
+                case LocalFunctionStatementSyntax localFunction:
+                    if (localFunction.ExpressionBody?.Expression is { } localExpressionBody &&
+                        RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
+                            semanticModel,
+                            localExpressionBody,
+                            out var localExpressionBodyOperation) &&
+                        localExpressionBodyOperation is not null)
+                    {
+                        returnedValue = localExpressionBodyOperation;
+                        return true;
+                    }
+
+                    if (localFunction.Body is not null &&
+                        semanticModel.GetOperation(localFunction.Body) is IBlockOperation localBlock &&
+                        TryGetSingleReturnedValue(localBlock, out var localReturnValue) &&
+                        localReturnValue is not null)
+                    {
+                        returnedValue = localReturnValue;
+                        return true;
+                    }
+
+                    break;
+            }
+        }
+
+        return false;
+    }
+
+    public static bool TryEnumerateNestedImperativeRenderFragmentBodies(
+        Compilation compilation,
+        INamedTypeSymbol componentSymbol,
+        IOperation? operation,
+        Func<IOperation?, IOperation?> unwrap,
+        Func<Compilation, ISymbol, bool> isSourceStableMutableCarrierMember,
+        out ImmutableArray<IOperation> nestedBodies)
+    {
+        var builder = ImmutableArray.CreateBuilder<IOperation>();
+        var visitedLocals = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
+        var visitedMembers = new HashSet<ISymbol>(SymbolEqualityComparer.Default);
+        var visitedMethods = new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default);
+        CollectNestedBodies(
+            compilation,
+            componentSymbol,
+            unwrap(operation),
+            unwrap,
+            isSourceStableMutableCarrierMember,
+            visitedLocals,
+            visitedMembers,
+            visitedMethods,
+            builder);
+        nestedBodies = builder.ToImmutable();
+        return nestedBodies.Length > 0;
+    }
+
+    private static void CollectNestedBodies(
+        Compilation compilation,
+        INamedTypeSymbol componentSymbol,
+        IOperation? operation,
+        Func<IOperation?, IOperation?> unwrap,
+        Func<Compilation, ISymbol, bool> isSourceStableMutableCarrierMember,
+        HashSet<ILocalSymbol> visitedLocals,
+        HashSet<ISymbol> visitedMembers,
+        HashSet<IMethodSymbol> visitedMethods,
+        ImmutableArray<IOperation>.Builder bodies)
+    {
+        var current = unwrap(operation);
+        if (current is null)
+            return;
+
+        if (TryGetAnonymousFunction(current, out var anonymousFunction) &&
+            TryGetSingleBuilderParameter(anonymousFunction, out _))
+        {
+            bodies.Add(anonymousFunction.Body);
+            return;
+        }
+
+        if (TryGetTypedBuilderTemplate(current, out _, out var builderAnonymousFunction) &&
+            TryGetSingleBuilderParameter(builderAnonymousFunction, out _))
+        {
+            bodies.Add(builderAnonymousFunction.Body);
+            return;
+        }
+
+        switch (current)
+        {
+            case ILocalReferenceOperation localReference:
+                if (!visitedLocals.Add(localReference.Local))
+                    return;
+
+                CollectNestedBodies(
+                    compilation,
+                    componentSymbol,
+                    TryGetLocalRenderFragmentInitializer(compilation, localReference.Local),
+                    unwrap,
+                    isSourceStableMutableCarrierMember,
+                    visitedLocals,
+                    visitedMembers,
+                    visitedMethods,
+                    bodies);
+                return;
+
+            case IPropertyReferenceOperation propertyReference
+                when visitedMembers.Add(propertyReference.Property):
+                if (TryGetCurrentComponentRenderFragmentMemberInitializer(
+                        compilation,
+                        componentSymbol,
+                        propertyReference.Property,
+                        unwrap,
+                        isSourceStableMutableCarrierMember,
+                        out var propertyInitializer))
+                {
+                    CollectNestedBodies(
+                        compilation,
+                        componentSymbol,
+                        propertyInitializer,
+                        unwrap,
+                        isSourceStableMutableCarrierMember,
+                        visitedLocals,
+                        visitedMembers,
+                        visitedMethods,
+                        bodies);
+                }
+
+                return;
+
+            case IFieldReferenceOperation fieldReference
+                when visitedMembers.Add(fieldReference.Field):
+                if (TryGetCurrentComponentRenderFragmentMemberInitializer(
+                        compilation,
+                        componentSymbol,
+                        fieldReference.Field,
+                        unwrap,
+                        isSourceStableMutableCarrierMember,
+                        out var fieldInitializer))
+                {
+                    CollectNestedBodies(
+                        compilation,
+                        componentSymbol,
+                        fieldInitializer,
+                        unwrap,
+                        isSourceStableMutableCarrierMember,
+                        visitedLocals,
+                        visitedMembers,
+                        visitedMethods,
+                        bodies);
+                }
+
+                return;
+
+            case IInvocationOperation invocation
+                when RazorVueSymbolIdentity.IsCurrentComponentMember(componentSymbol, invocation.TargetMethod, invocation.Instance, unwrap) &&
+                     IsRenderFragmentCarrierType(invocation.TargetMethod.ReturnType):
+                var canonicalMethod = RazorVueMethodSymbolNormalizer.GetCanonicalMethod(invocation.TargetMethod);
+                if (!visitedMethods.Add(canonicalMethod))
+                    return;
+
+                if (TryGetRenderFragmentFactoryReturnedValue(compilation, invocation, out var returnedValue))
+                {
+                    CollectNestedBodies(
+                        compilation,
+                        componentSymbol,
+                        returnedValue,
+                        unwrap,
+                        isSourceStableMutableCarrierMember,
+                        visitedLocals,
+                        visitedMembers,
+                        visitedMethods,
+                        bodies);
+                }
+
+                return;
+        }
+
+        foreach (var child in current.ChildOperations)
+        {
+            if (child is null)
+                continue;
+
+            CollectNestedBodies(
+                compilation,
+                componentSymbol,
+                child,
+                unwrap,
+                isSourceStableMutableCarrierMember,
+                visitedLocals,
+                visitedMembers,
+                visitedMethods,
+                bodies);
+        }
+    }
+
+    private static bool IsSupportedCurrentComponentRenderFragmentCarrierMember(
+        Compilation compilation,
+        ISymbol member,
+        Func<Compilation, ISymbol, bool> isSourceStableMutableCarrierMember)
+    {
+        switch (member)
+        {
+            case IPropertySymbol propertySymbol:
+                if (!IsRenderFragmentCarrierType(propertySymbol.Type))
+                    return false;
+
+                if (propertySymbol.SetMethod is null)
+                    return true;
+
+                return isSourceStableMutableCarrierMember(compilation, propertySymbol);
+
+            case IFieldSymbol fieldSymbol:
+                if (!IsRenderFragmentCarrierType(fieldSymbol.Type))
+                    return false;
+
+                if (fieldSymbol.IsReadOnly)
+                    return true;
+
+                return isSourceStableMutableCarrierMember(compilation, fieldSymbol);
+
+            default:
+                return false;
+        }
+    }
+
+    private static IOperation? TryGetLocalRenderFragmentInitializer(Compilation compilation, ILocalSymbol local)
+        => TryGetSourceStableLocalRenderFragmentInitializer(compilation, local, out var initializer)
+            ? initializer
+            : null;
+
+    private static bool TryGetSourceStableLocalRenderFragmentInitializer(
+        Compilation compilation,
+        ILocalSymbol local,
+        VariableDeclaratorSyntax declarator,
+        SemanticModel semanticModel,
+        out IOperation? initializer)
+    {
+        initializer = null;
+        if (declarator.Initializer?.Value is not null)
+        {
+            if (HasMutableLocalWrites(local, declarator, semanticModel))
+                return false;
+
+            if (!RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
+                    semanticModel,
+                    declarator.Initializer.Value,
+                    out var initializerOperation))
+            {
+                return false;
+            }
+
+            initializer = initializerOperation;
+            return true;
+        }
+
+        if (declarator.Parent?.Parent?.Parent is not BlockSyntax rootBlock ||
+            semanticModel.GetOperation(rootBlock) is not IBlockOperation rootOperation)
+        {
+            return false;
+        }
+
+        var collected = CollectSourceStableLocalRenderFragmentInitializerStates(rootOperation.Operations);
+        if (!collected.TryGetValue(local, out var resolved))
+            return false;
+
+        if (HasMutableLocalWrites(local, declarator, semanticModel, resolved.AllowedAssignmentSyntax))
+            return false;
+
+        initializer = resolved.Initializer;
+        return true;
+    }
+
+    private static IOperation? TryGetPropertyRenderFragmentInitializer(Compilation compilation, IPropertySymbol property)
+    {
+        foreach (var syntaxReference in property.DeclaringSyntaxReferences)
+        {
+            if (syntaxReference.GetSyntax() is not PropertyDeclarationSyntax declaration)
+                continue;
+
+            var semanticModel = compilation.GetSemanticModel(declaration.SyntaxTree);
+            if (RazorVuePropertyInitializerHelper.TryGetPropertyValueOperation(
+                    semanticModel,
+                    declaration,
+                    out var propertyOperation))
+            {
+                return propertyOperation;
+            }
+        }
+
+        return null;
+    }
+
+    private static IOperation? TryGetFieldRenderFragmentInitializer(Compilation compilation, IFieldSymbol field)
+    {
+        foreach (var syntaxReference in field.DeclaringSyntaxReferences)
+        {
+            if (syntaxReference.GetSyntax() is not VariableDeclaratorSyntax declarator ||
+                declarator.Initializer?.Value is null)
+            {
+                continue;
+            }
+
+            var semanticModel = compilation.GetSemanticModel(declarator.SyntaxTree);
+            if (RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
+                    semanticModel,
+                    declarator.Initializer.Value,
+                    out var initializerOperation))
+            {
+                return initializerOperation;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool HasMutableLocalWrites(
+        ILocalSymbol local,
+        VariableDeclaratorSyntax declarator,
+        SemanticModel semanticModel,
+        SyntaxNode? allowedImmediateAssignmentSyntax = null)
+    {
+        var rootBlock = declarator.Ancestors().OfType<BlockSyntax>().FirstOrDefault();
+        if (rootBlock is null)
+            return true;
+
+        if (semanticModel.GetOperation(rootBlock) is not IOperation rootOperation)
+            return true;
+
+        foreach (var operation in EnumerateOperations(rootOperation))
+        {
+            switch (operation)
+            {
+                case IAssignmentOperation assignment
+                    when IsAllowedInitializerAssignment(assignment, declarator, allowedImmediateAssignmentSyntax):
+                    continue;
+                case IAssignmentOperation assignment
+                    when ReferencesLocalSymbol(assignment.Target, local):
+                    return true;
+                case IIncrementOrDecrementOperation incrementOrDecrement
+                    when ReferencesLocalSymbol(incrementOrDecrement.Target, local):
+                    return true;
+                case IArgumentOperation argument
+                    when argument.Parameter?.RefKind is RefKind.Ref or RefKind.Out &&
+                         ReferencesLocalSymbol(argument.Value, local):
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static Dictionary<ILocalSymbol, SourceStableLocalRenderFragmentInitializer> CollectSourceStableLocalRenderFragmentInitializerStates(
+        IReadOnlyList<IOperation> operations)
+    {
+        var result = new Dictionary<ILocalSymbol, SourceStableLocalRenderFragmentInitializer>(SymbolEqualityComparer.Default);
+        var pendingAssignments = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
+
+        foreach (var operation in operations)
+        {
+            var current = RazorVueOperationNormalizer.Unwrap(operation);
+            if (pendingAssignments.Count > 0)
+            {
+                if (TryExtractImmediateAssignedRenderFragmentLocal(
+                        current,
+                        pendingAssignments,
+                        out var local,
+                        out var initializer,
+                        out var assignmentSyntax))
+                {
+                    result[local] = new SourceStableLocalRenderFragmentInitializer(
+                        ResolveInitializerAlias(initializer, result),
+                        assignmentSyntax);
+                    continue;
+                }
+
+                pendingAssignments.Clear();
+            }
+
+            switch (current)
+            {
+                case IVariableDeclarationGroupOperation declarationGroup:
+                    RegisterSourceStableRenderFragmentDeclarators(
+                        declarationGroup.Declarations,
+                        result,
+                        pendingAssignments);
+                    break;
+                case IVariableDeclarationOperation declarationOperation:
+                    RegisterSourceStableRenderFragmentDeclarators(
+                        [declarationOperation],
+                        result,
+                        pendingAssignments);
+                    break;
+            }
+        }
+
+        return result;
+    }
+
+    private static void RegisterSourceStableRenderFragmentDeclarators(
+        IEnumerable<IVariableDeclarationOperation> declarations,
+        Dictionary<ILocalSymbol, SourceStableLocalRenderFragmentInitializer> result,
+        HashSet<ILocalSymbol> pendingAssignments)
+    {
+        foreach (var declaration in declarations)
+        {
+            foreach (var declarator in declaration.Declarators)
+            {
+                if (!IsRenderFragmentCarrierType(declarator.Symbol.Type))
+                    continue;
+
+                if (declarator.Initializer?.Value is not { } initializer)
+                {
+                    pendingAssignments.Add(declarator.Symbol);
+                    continue;
+                }
+
+                result[declarator.Symbol] = new SourceStableLocalRenderFragmentInitializer(
+                    RazorVueOperationNormalizer.Unwrap(initializer) ?? initializer,
+                    null);
+            }
+        }
+    }
+
+    private static bool TryExtractImmediateAssignedRenderFragmentLocal(
+        IOperation? operation,
+        HashSet<ILocalSymbol> pendingAssignments,
+        out ILocalSymbol localSymbol,
+        out IOperation initializer,
+        out SyntaxNode? assignmentSyntax)
+    {
+        localSymbol = default!;
+        initializer = default!;
+        assignmentSyntax = null;
+        switch (operation)
+        {
+            case ISimpleAssignmentOperation assignment
+                when assignment.Target is ILocalReferenceOperation localReference &&
+                     pendingAssignments.Remove(localReference.Local):
+                localSymbol = localReference.Local;
+                initializer = RazorVueOperationNormalizer.Unwrap(assignment.Value) ?? assignment.Value;
+                assignmentSyntax = assignment.Syntax;
+                return true;
+            case IExpressionStatementOperation expressionStatement:
+                return TryExtractImmediateAssignedRenderFragmentLocal(
+                    expressionStatement.Operation,
+                    pendingAssignments,
+                    out localSymbol,
+                    out initializer,
+                    out assignmentSyntax);
+            case IBlockOperation block when block.Operations.Length == 1:
+                return TryExtractImmediateAssignedRenderFragmentLocal(
+                    block.Operations[0],
+                    pendingAssignments,
+                    out localSymbol,
+                    out initializer,
+                    out assignmentSyntax);
+            default:
+                return false;
+        }
+    }
+
+    private static IOperation ResolveInitializerAlias(
+        IOperation initializer,
+        IReadOnlyDictionary<ILocalSymbol, SourceStableLocalRenderFragmentInitializer> result)
+    {
+        var current = RazorVueOperationNormalizer.Unwrap(initializer) ?? initializer;
+        var visitedLocals = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
+        while (current is ILocalReferenceOperation localReference &&
+               visitedLocals.Add(localReference.Local) &&
+               result.TryGetValue(localReference.Local, out var resolved))
+        {
+            current = resolved.Initializer;
+        }
+
+        return current;
+    }
+
+    private static bool IsAllowedInitializerAssignment(
+        IAssignmentOperation assignment,
+        VariableDeclaratorSyntax declarator,
+        SyntaxNode? allowedImmediateAssignmentSyntax)
+        => IsDeclaratorInitializerAssignment(assignment, declarator) ||
+           (allowedImmediateAssignmentSyntax is not null &&
+            assignment.Syntax is not null &&
+            ReferenceEquals(assignment.Syntax.SyntaxTree, allowedImmediateAssignmentSyntax.SyntaxTree) &&
+            assignment.Syntax.Span.Equals(allowedImmediateAssignmentSyntax.Span));
+
+    private static bool IsDeclaratorInitializerAssignment(
+        IAssignmentOperation assignment,
+        VariableDeclaratorSyntax declarator)
+        => assignment.Syntax is not null &&
+           assignment.Syntax.Span == declarator.Span;
+
+    private static bool ReferencesLocalSymbol(IOperation? operation, ILocalSymbol local)
+    {
+        var current = RazorVueOperationNormalizer.Unwrap(operation);
+        if (current is null)
+            return false;
+
+        if (current is ILocalReferenceOperation localReference &&
+            SymbolEqualityComparer.Default.Equals(localReference.Local, local))
+        {
+            return true;
+        }
+
+        foreach (var child in current.ChildOperations)
+        {
+            if (child is not null && ReferencesLocalSymbol(child, local))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static IEnumerable<IOperation> EnumerateOperations(IOperation root)
+    {
+        yield return root;
+
+        foreach (var child in root.ChildOperations)
+        {
+            if (child is null)
+                continue;
+
+            foreach (var nested in EnumerateOperations(child))
+                yield return nested;
+        }
+    }
+
+    private static bool TryGetReturnedAnonymousFunction(
+        IOperation? body,
+        out IAnonymousFunctionOperation anonymousFunction)
+    {
+        anonymousFunction = default!;
+        switch (RazorVueOperationNormalizer.Unwrap(body))
+        {
+            case IAnonymousFunctionOperation direct:
+                anonymousFunction = direct;
+                return true;
+            case IDelegateCreationOperation delegateCreation:
+                return TryGetAnonymousFunction(delegateCreation.Target, out anonymousFunction);
+            case IBlockOperation block when TryGetSingleReturnedValue(block, out var returnValue):
+                return TryGetAnonymousFunction(returnValue, out anonymousFunction);
+            case IReturnOperation returnOperation when returnOperation.ReturnedValue is not null:
+                return TryGetAnonymousFunction(returnOperation.ReturnedValue, out anonymousFunction);
+            default:
+                return false;
+        }
+    }
+
+    private static IOperation? UnwrapDelegateCarrier(IOperation? operation)
+    {
+        var current = RazorVueOperationNormalizer.Unwrap(operation);
+        while (true)
+        {
+            switch (current)
+            {
+                case IConversionOperation conversion:
+                    current = RazorVueOperationNormalizer.Unwrap(conversion.Operand);
+                    continue;
+                case IDelegateCreationOperation delegateCreation:
+                    current = RazorVueOperationNormalizer.Unwrap(delegateCreation.Target);
+                    continue;
+                default:
+                    return current;
+            }
+        }
+    }
+
+    private static bool IsRenderTreeBuilderType(ITypeSymbol? typeSymbol)
+        => string.Equals(
+            typeSymbol?.ToDisplayString(),
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder",
+            StringComparison.Ordinal);
+}

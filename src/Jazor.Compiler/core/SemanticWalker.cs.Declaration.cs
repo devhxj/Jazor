@@ -88,6 +88,9 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitVariableDeclarator(IVariableDeclaratorOperation operation, SenseArgument argument)
 	{
+		if (Host?.RewriteVariableDeclaratorPreorder(operation, argument) is VariableDeclarator preorderHostDeclarator)
+			return WithOriginIfMissing(preorderHostDeclarator, operation);
+
 		var identifier = new Identifier(operation.Symbol.Name);
 		var init = operation.Initializer?.Value is IOperation value
 			? TranslateTupleForTarget(value, operation.Symbol.Type, argument)

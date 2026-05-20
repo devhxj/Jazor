@@ -1734,6 +1734,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             if (!_resolver.TryResolveConditional(sourceSpan, out var resolvedConditional))
                 return false;
 
+            if (RazorVueImperativeRenderPromotionAnalyzer.ShouldPromoteBody([resolvedConditional.Operation]))
+                return false;
+
             var isElseIfHeader = IsElseIfBoundaryCodeNode(normalizedCodeText);
             var bodyEnd = isElseIfHeader
                 ? nodes.Count
@@ -1819,6 +1822,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             if (!_resolver.TryResolveForEach(sourceSpan, out var resolvedLoop))
                 return false;
 
+            if (RazorVueImperativeRenderPromotionAnalyzer.ShouldPromoteBody([resolvedLoop.Operation]))
+                return false;
+
             var bodyEnd = FindControlStatementEndIndex(
                 nodes,
                 index,
@@ -1867,6 +1873,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
             var sourceSpan = GetRequiredControlSourceSpan(codeNode, "for");
             if (!_resolver.TryResolveFor(sourceSpan, out var resolvedLoop))
+                return false;
+
+            if (RazorVueImperativeRenderPromotionAnalyzer.ShouldPromoteBody([resolvedLoop.Operation]))
                 return false;
 
             var analysis = RazorVueForLoopAnalyzer.AnalyzeRequired(
@@ -2231,6 +2240,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 IBlockOperation blockOperation when
                     TryGetStandaloneTemplateImperativeStartOperation(blockOperation, out var blockStartOperation) &&
                     TryCreatePendingTemplateImperativeNode(codeNode, blockOperation.Operations, blockStartOperation, out pendingControlNode) => true,
+                IConditionalOperation or
+                IForEachLoopOperation or
+                IForLoopOperation or
                 IWhileLoopOperation or
                 ISwitchOperation or
                 ITryOperation or

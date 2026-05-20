@@ -2005,6 +2005,65 @@ public sealed class RazorVueCanonicalSfcSemanticTests
     }
 
     [TestMethod]
+    public void RazorVue_CanonicalModelFactory_MapsParameterizedLocalRenderFragmentCarrierAssignedImmediatelyFromFactoryMethod_PreservingCapturedScopeOrder()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private RenderFragment<int> CreateTemplate(string? title)
+                        => item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, title);
+                            itemBuilder.AddContent(3, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderFragment<int> template;
+                        template = CreateTemplate(Title);
+                        builder.AddContent(0, template, 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+
+        var titleScope = AssertNode<RazorVueCanonicalTemplateScopeNode>(canonical.Template.Children.Single());
+        Assert.AreEqual("title", titleScope.ScopeName);
+        Assert.AreEqual("props.title", titleScope.InitializerExpressionText);
+
+        var itemScope = AssertNode<RazorVueCanonicalTemplateScopeNode>(titleScope.Children.Children.Single());
+        Assert.AreEqual("item", itemScope.ScopeName);
+        Assert.AreEqual("42", itemScope.InitializerExpressionText);
+    }
+
+    [TestMethod]
     public void RazorVue_CanonicalModelFactory_MapsParameterizedCurrentComponentRenderFragmentPropertyCarrierInitializedFromFactoryMethod_ToNestedTemplateScopeNodes()
     {
         var context = CreateContext(

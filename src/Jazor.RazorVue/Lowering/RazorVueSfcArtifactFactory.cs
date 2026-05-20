@@ -186,7 +186,12 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
     {
         var descriptor = snapshot.Descriptor;
-        var descriptorShape = RazorVueDescriptorIdentityShapeBuilder.BuildForRenderTree(descriptor, renderTree, resolvedComponents);
+        var descriptorShape = RazorVueDescriptorIdentityShapeBuilder.BuildForRenderTree(
+            descriptor,
+            snapshot.ComponentSymbol,
+            snapshot.Compilation,
+            renderTree,
+            resolvedComponents);
         var templateShape = expressionEmitter.DescribeFragment(renderTree);
         var logicShape = RazorVueImperativeSfcModuleBuilder.BuildLogicShape(snapshot, renderTree, expressionEmitter);
         var boundaryKind = RazorVueImperativeSfcModuleBuilder.ClassifyHmrBoundary(renderTree, snapshot);

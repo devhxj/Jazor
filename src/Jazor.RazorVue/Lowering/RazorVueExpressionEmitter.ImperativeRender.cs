@@ -19,6 +19,7 @@ internal sealed partial class RazorVueExpressionEmitter
 {
     private string? _imperativeBuilderAlias;
     private Dictionary<IParameterSymbol, string>? _imperativeBuilderParameterTargets;
+    private Dictionary<ILocalSymbol, IOperation>? _imperativeRenderFragmentLocalInitializers;
 
     private string EmitImperativeBlockBody(
         RazorVueImperativeBlockNode imperative,
@@ -38,24 +39,31 @@ internal sealed partial class RazorVueExpressionEmitter
                 imperativeBuilderTargets[parameter] = builderAlias;
         }
 
+        var imperativeRenderFragmentLocalInitializers =
+            RazorVueImperativeRenderFragmentCarrierHelper.CollectSourceStableLocalRenderFragmentInitializers(
+                _snapshot.Compilation,
+                imperative.Operations);
+
         return WithImperativeBuilderAlias(
             builderAlias,
             () => WithImperativeBuilderParameterTargets(
                 imperativeBuilderTargets,
-                () => WithScopedLocalAliases(
-                    visibleLocalAliases,
-                    () => WithScopedParameterAliases(
-                        imperative.VisibleParameters,
-                        imperative.VisibleParameters.Select(static parameter => parameter.Name).ToArray(),
-                        () =>
-                        {
-                            var statements = _semanticWalker.TranslateStatementSequence(imperative.Operations, bodyArgument);
-                            var functionBody = NormalizeImperativeFunctionBody(
-                                new FunctionBody(NodeList.From(statements), strict: true),
-                                builderAlias,
-                                appendTerminalReturn: false);
-                            return NormalizeImperativeFunctionText(functionBody.ToKnRECMAScript());
-                        }))));
+                () => WithImperativeRenderFragmentLocalInitializers(
+                    imperativeRenderFragmentLocalInitializers,
+                    () => WithScopedLocalAliases(
+                        visibleLocalAliases,
+                        () => WithScopedParameterAliases(
+                            imperative.VisibleParameters,
+                            imperative.VisibleParameters.Select(static parameter => parameter.Name).ToArray(),
+                            () =>
+                            {
+                                var statements = _semanticWalker.TranslateStatementSequence(imperative.Operations, bodyArgument);
+                                var functionBody = NormalizeImperativeFunctionBody(
+                                    new FunctionBody(NodeList.From(statements), strict: true),
+                                    builderAlias,
+                                    appendTerminalReturn: false);
+                                return NormalizeImperativeFunctionText(functionBody.ToKnRECMAScript());
+                            })))));
     }
 
     private T WithImperativeBuilderAlias<T>(string builderAlias, Func<T> action)
@@ -69,6 +77,29 @@ internal sealed partial class RazorVueExpressionEmitter
         finally
         {
             _imperativeBuilderAlias = previous;
+        }
+    }
+
+    private T WithImperativeRenderFragmentLocalInitializers<T>(
+        IReadOnlyDictionary<ILocalSymbol, IOperation> initializers,
+        Func<T> action)
+    {
+        var previous = _imperativeRenderFragmentLocalInitializers;
+        var current = previous is null
+            ? new Dictionary<ILocalSymbol, IOperation>(SymbolEqualityComparer.Default)
+            : new Dictionary<ILocalSymbol, IOperation>(previous, SymbolEqualityComparer.Default);
+
+        foreach (var pair in initializers)
+            current[pair.Key] = pair.Value;
+
+        _imperativeRenderFragmentLocalInitializers = current;
+        try
+        {
+            return action();
+        }
+        finally
+        {
+            _imperativeRenderFragmentLocalInitializers = previous;
         }
     }
 
@@ -332,7 +363,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 expression = builderTarget + ".append(" + EmitStaticMarkupExpression(markup) + ")";
                 return true;
             case "AddAttribute":
-                expression = builderTarget + ".setAttribute(" + EmitImperativeArgument(invocation, argument, 1) + ", " + EmitImperativeArgument(invocation, argument, 2) + ")";
+                expression = builderTarget + ".setAttribute(" + EmitImperativeArgument(invocation, argument, 1) + ", " + EmitImperativeComponentParameterValue(invocation, argument, builderTarget, 2) + ")";
                 return true;
             case "AddComponentParameter":
                 expression = builderTarget + ".setComponentParameter(" + EmitImperativeArgument(invocation, argument, 1) + ", " + EmitImperativeComponentParameterValue(invocation, argument, builderTarget, 2) + ")";
@@ -433,6 +464,9 @@ internal sealed partial class RazorVueExpressionEmitter
             switch (operation)
             {
                 case IAssignmentOperation assignment
+                    when IsDeclaratorInitializerAssignment(assignment, declarator):
+                    continue;
+                case IAssignmentOperation assignment
                     when ReferencesLocalSymbol(assignment.Target, local):
                     return true;
                 case IIncrementOrDecrementOperation incrementOrDecrement
@@ -447,6 +481,12 @@ internal sealed partial class RazorVueExpressionEmitter
 
         return false;
     }
+
+    private static bool IsDeclaratorInitializerAssignment(
+        IAssignmentOperation assignment,
+        VariableDeclaratorSyntax declarator)
+        => assignment.Syntax is not null &&
+           assignment.Syntax.Span == declarator.Span;
 
     private static IEnumerable<IOperation> EnumerateLocalMutationScanOperations(IOperation root)
     {
@@ -590,14 +630,172 @@ internal sealed partial class RazorVueExpressionEmitter
                    (currentSlot.Parameters.IsDefaultOrEmpty ? "false" : "true") + ")";
         }
 
+        if (TryEmitImperativeStoredLocalRenderSlotValue(value, argument, out var storedLocalRenderSlotValue))
+            return storedLocalRenderSlotValue;
+
         if (TryEmitImperativeRenderSlotFactory(value, out var renderSlotFactory))
-            return "__jazorCreateRenderSlot(" + renderSlotFactory + ")";
+            return renderSlotFactory;
 
         if (TryEmitImperativeContextualRenderSlotFactory(value, out var contextualRenderSlotFactory))
-            return "__jazorCreateContextualRenderSlot(" + contextualRenderSlotFactory + ")";
+            return contextualRenderSlotFactory;
+
+        if (IsImperativeUntypedRenderFragmentValue(value))
+            return EmitSetupExpression(value, argument);
+
+        if (IsImperativeTypedRenderFragmentValue(value))
+            return EmitSetupExpression(value, argument);
 
         return EmitSetupExpression(value, argument);
     }
+
+    private bool TryEmitImperativeStoredLocalRenderSlotValue(
+        IOperation operation,
+        SenseArgument argument,
+        out string expression)
+    {
+        expression = string.Empty;
+        if (!TryGetImperativeRenderFragmentCarrierInitializer(operation, out var initializer))
+            return false;
+
+        if (initializer is null)
+            return false;
+
+        if (TryEmitImperativeRenderSlotFactory(initializer, out var renderSlotFactory))
+        {
+            expression = renderSlotFactory;
+            return true;
+        }
+
+        if (TryEmitImperativeContextualRenderSlotFactory(initializer, out var contextualRenderSlotFactory))
+        {
+            expression = contextualRenderSlotFactory;
+            return true;
+        }
+
+        if (TryEmitImperativeRenderFragmentFactoryInvocation(initializer, out var factoryBackedRenderSlotFactory))
+        {
+            expression = factoryBackedRenderSlotFactory;
+            return true;
+        }
+
+        if (IsImperativeUntypedRenderFragmentValue(initializer))
+        {
+            expression = EmitSetupExpression(initializer, argument);
+            return true;
+        }
+
+        if (IsImperativeTypedRenderFragmentValue(initializer))
+        {
+            expression = EmitSetupExpression(initializer, argument);
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool TryGetImperativeRenderFragmentCarrierInitializer(
+        IOperation operation,
+        out IOperation? initializer)
+    {
+        initializer = null;
+        var current = Unwrap(operation);
+        switch (current)
+        {
+            case ILocalReferenceOperation localReference:
+                if (_imperativeRenderFragmentLocalInitializers is not null &&
+                    _imperativeRenderFragmentLocalInitializers.TryGetValue(localReference.Local, out var collectedInitializer))
+                {
+                    initializer = collectedInitializer;
+                    return true;
+                }
+
+                initializer = TryGetImperativeLocalRenderFragmentInitializer(localReference.Local);
+                return initializer is not null;
+
+            case IPropertyReferenceOperation propertyReference
+                when IsCurrentComponentMember(propertyReference.Property, propertyReference.Instance):
+                initializer = TryGetImperativeCurrentComponentRenderFragmentMemberInitializer(propertyReference.Property);
+                return initializer is not null;
+
+            case IFieldReferenceOperation fieldReference
+                when IsCurrentComponentMember(fieldReference.Field, fieldReference.Instance):
+                initializer = TryGetImperativeCurrentComponentRenderFragmentMemberInitializer(fieldReference.Field);
+                return initializer is not null;
+
+            default:
+                return false;
+        }
+    }
+
+    internal bool TryRewriteVariableDeclarator(
+        IVariableDeclaratorOperation operation,
+        SenseArgument argument,
+        out string expression)
+    {
+        expression = string.Empty;
+        if (_imperativeBuilderAlias is null ||
+            !IsImperativeRenderFragmentCarrierType(operation.Symbol.Type))
+        {
+            return false;
+        }
+
+        var current = TryGetNormalizedImperativeVariableInitializer(operation) ??
+                      operation.Initializer?.Value;
+        if (current is null)
+            return false;
+
+        current = Unwrap(current) ?? current;
+        if (TryEmitImperativeRenderSlotFactory(current, out var renderSlotFactory))
+        {
+            expression = renderSlotFactory;
+            return true;
+        }
+
+        if (TryEmitImperativeContextualRenderSlotFactory(current, out var contextualRenderSlotFactory))
+        {
+            expression = contextualRenderSlotFactory;
+            return true;
+        }
+
+        if (TryEmitImperativeRenderFragmentFactoryInvocation(current, out var factoryBackedRenderSlotFactory))
+        {
+            expression = factoryBackedRenderSlotFactory;
+            return true;
+        }
+
+        return false;
+    }
+
+    private IOperation? TryGetNormalizedImperativeVariableInitializer(IVariableDeclaratorOperation operation)
+    {
+        foreach (var syntaxReference in operation.Symbol.DeclaringSyntaxReferences)
+        {
+            if (syntaxReference.GetSyntax() is not VariableDeclaratorSyntax declarator ||
+                declarator.Initializer?.Value is null)
+            {
+                continue;
+            }
+
+            var semanticModel = _snapshot.Compilation.GetSemanticModel(declarator.SyntaxTree);
+            if (RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
+                    semanticModel,
+                    declarator.Initializer.Value,
+                    out var initializerOperation))
+            {
+                return initializerOperation;
+            }
+        }
+
+        return null;
+    }
+
+    private IOperation? TryGetImperativeLocalRenderFragmentInitializer(ILocalSymbol local)
+        => RazorVueImperativeRenderFragmentCarrierHelper.TryGetSourceStableLocalRenderFragmentInitializer(
+            _snapshot.Compilation,
+            local,
+            out var initializer)
+            ? initializer
+            : null;
 
     private bool TryEmitImperativeRenderSlotFactory(IOperation operation, out string expression)
     {
@@ -611,7 +809,8 @@ internal sealed partial class RazorVueExpressionEmitter
         expression = EmitImperativeBuilderLambdaFactory(
             anonymousFunction,
             builderParameter,
-            prefixParameterNames: null);
+            prefixParameterNames: null,
+            capturedParameterAliases: null);
         return true;
     }
 
@@ -630,14 +829,83 @@ internal sealed partial class RazorVueExpressionEmitter
         expression = EmitImperativeBuilderLambdaFactory(
             builderAnonymousFunction,
             builderParameter,
-            templateParameterNames);
+            templateParameterNames,
+            capturedParameterAliases: null);
         return true;
+    }
+
+    private bool TryEmitImperativeRenderFragmentFactoryInvocation(IOperation operation, out string expression)
+    {
+        expression = string.Empty;
+        if (Unwrap(operation) is not IInvocationOperation invocation ||
+            !IsCurrentComponentMember(invocation.TargetMethod, invocation.Instance) ||
+            !IsImperativeRenderFragmentCarrierType(invocation.TargetMethod.ReturnType))
+        {
+            return false;
+        }
+
+        if (!TryGetImperativeRenderFragmentFactoryReturnedValue(invocation, out var returnedValue))
+            return false;
+
+        var capturedParameterAliases = CreateImperativeFactoryCapturedParameterAliases(invocation);
+        if (TryEmitImperativeContextualRenderSlotFactory(returnedValue, out var directContextualRenderSlotFactory))
+        {
+            if (!TryGetTypedBuilderTemplate(returnedValue, out var outerAnonymousFunction, out var builderAnonymousFunction) ||
+                !TryGetSingleBuilderParameter(builderAnonymousFunction, out var builderParameter))
+            {
+                return false;
+            }
+
+            expression = EmitImperativeBuilderLambdaFactory(
+                builderAnonymousFunction,
+                builderParameter,
+                prefixParameterNames: outerAnonymousFunction.Symbol.Parameters
+                    .Select(static parameter => parameter.Name)
+                    .ToImmutableArray(),
+                capturedParameterAliases);
+            return true;
+        }
+
+        if (TryEmitImperativeRenderSlotFactory(returnedValue, out var directRenderSlotFactory))
+        {
+            if (!TryGetAnonymousFunction(returnedValue, out var anonymousFunction) ||
+                !TryGetSingleBuilderParameter(anonymousFunction, out var builderParameter))
+            {
+                return false;
+            }
+
+            expression = EmitImperativeBuilderLambdaFactory(
+                anonymousFunction,
+                builderParameter,
+                prefixParameterNames: null,
+                capturedParameterAliases);
+            return true;
+        }
+
+        return false;
+    }
+
+    private string? TryEmitImperativeRenderFragmentLocalDeclarationInitializer(
+        IOperation initializer,
+        ImmutableHashSet<IParameterSymbol> currentParameterScope)
+    {
+        var current = Unwrap(initializer) ?? initializer;
+
+        if (TryEmitImperativeRenderSlotFactory(current, out var renderSlotFactory))
+            return renderSlotFactory;
+
+        if (TryEmitImperativeContextualRenderSlotFactory(current, out var contextualRenderSlotFactory))
+            return contextualRenderSlotFactory;
+
+        _ = currentParameterScope;
+        return null;
     }
 
     private string EmitImperativeBuilderLambdaFactory(
         IAnonymousFunctionOperation builderAnonymousFunction,
         IParameterSymbol builderParameter,
-        ImmutableArray<string>? prefixParameterNames)
+        ImmutableArray<string>? prefixParameterNames,
+        IReadOnlyDictionary<IParameterSymbol, string>? capturedParameterAliases)
     {
         var renderContextParameterAlias = AllocateImperativeScratchBuilderAlias();
         var builderArgument = new SenseArgument(Sense.FunctionBody, UseImportAliases: true);
@@ -645,50 +913,87 @@ internal sealed partial class RazorVueExpressionEmitter
         {
             [builderParameter] = renderContextParameterAlias
         };
+        if (capturedParameterAliases is not null)
+        {
+            foreach (var pair in capturedParameterAliases)
+                parameterAliases[pair.Key] = pair.Value;
+        }
 
-        var body = WithImperativeBuilderAlias(
+        var functionBody = WithImperativeBuilderAlias(
             renderContextParameterAlias,
             () => WithImperativeBuilderParameterTargets(
                 parameterAliases,
                 () => WithScopedParameterAliases(
-                    builderAnonymousFunction.Symbol.Parameters,
-                    [renderContextParameterAlias],
-                    () =>
-                    {
-                        var walker = new SemanticWalker(
-                            _snapshot.ComponentSymbol,
-                            moduleDeclaredNames: new Dictionary<ISymbol, string>(SymbolEqualityComparer.Default))
+                    parameterAliases,
+                    () => WithScopedParameterAliases(
+                        builderAnonymousFunction.Symbol.Parameters,
+                        builderAnonymousFunction.Symbol.Parameters
+                            .Select(parameter => parameterAliases.TryGetValue(parameter, out var alias) ? alias : parameter.Name)
+                            .ToArray(),
+                        () =>
                         {
-                            Host = new RazorVueCompilerHost(this)
-                        };
-                        var statements = walker.TranslateStatementSequence(
-                            builderAnonymousFunction.Body.Operations,
-                            builderArgument);
-                        var functionBody = NormalizeImperativeFunctionBody(
-                            new FunctionBody(NodeList.From(statements), strict: true),
-                            renderContextParameterAlias,
-                            appendTerminalReturn: false);
-                        return NormalizeImperativeFunctionText(functionBody.ToKnRECMAScript());
-                    })));
+                            var walker = new SemanticWalker(
+                                _snapshot.ComponentSymbol,
+                                moduleDeclaredNames: new Dictionary<ISymbol, string>(SymbolEqualityComparer.Default))
+                            {
+                                Host = new RazorVueCompilerHost(this)
+                            };
+                            var statements = walker.TranslateStatementSequence(
+                                builderAnonymousFunction.Body.Operations,
+                                builderArgument);
+                            return NormalizeImperativeFunctionBody(
+                                new FunctionBody(NodeList.From(statements), strict: true),
+                                renderContextParameterAlias,
+                                appendTerminalReturn: false);
+                        }))));
+        var body = NormalizeImperativeFunctionText(functionBody.ToKnRECMAScript());
+        var endsWithTopLevelReturn = functionBody.Body.LastOrDefault() is ReturnStatement;
 
         var builder = new System.Text.StringBuilder();
         if (prefixParameterNames.HasValue)
         {
             builder.Append("(")
                 .Append(string.Join(", ", prefixParameterNames.Value))
-                .Append(") => ");
+                .Append(") => {\n");
+        }
+        else
+        {
+            builder.Append("() => {\n");
         }
 
-        builder.Append("(")
+        builder.Append("const ")
             .Append(renderContextParameterAlias)
-            .Append(") => {\n")
+            .Append(" = __jazorCreateRenderContext(h);\n")
             .Append(body);
 
         if (body.Length > 0 && !body.EndsWith("\n", System.StringComparison.Ordinal))
             builder.Append('\n');
 
-        builder.Append("}");
+        if (!endsWithTopLevelReturn)
+        {
+            builder.Append("return ")
+                .Append(renderContextParameterAlias)
+                .Append(".finish();\n");
+        }
+
+        builder.Append('}');
         return builder.ToString();
+    }
+
+    private Dictionary<IParameterSymbol, string> CreateImperativeFactoryCapturedParameterAliases(
+        IInvocationOperation invocation)
+    {
+        var aliases = new Dictionary<IParameterSymbol, string>(SymbolEqualityComparer.Default);
+        foreach (var argument in invocation.Arguments)
+        {
+            if (argument.Parameter is null)
+                continue;
+
+            var parameter = RazorVueMethodSymbolNormalizer.NormalizeParameter(invocation.TargetMethod, argument.Parameter);
+            aliases[parameter] = EmitSetupExpression(argument.Value);
+        }
+
+        return aliases;
     }
 
     private static Expression CreateImperativeFinishCall(string builderAlias)
@@ -716,26 +1021,124 @@ internal sealed partial class RazorVueExpressionEmitter
     }
 
     private string AllocateImperativeScratchBuilderAlias()
-        => AllocateImperativeScratchName("RenderContext");
+        => "__jazorImperativeRenderContext0";
+
+    private IOperation? TryGetImperativeCurrentComponentRenderFragmentMemberInitializer(ISymbol member)
+        => RazorVueImperativeRenderFragmentCarrierHelper.TryGetCurrentComponentRenderFragmentMemberInitializer(
+            _snapshot.Compilation,
+            _snapshot.ComponentSymbol,
+            member,
+            Unwrap,
+            IsSourceStableMutableCarrierMember,
+            out var initializer)
+            ? initializer
+            : null;
+
+    private bool IsSupportedImperativeCurrentComponentRenderFragmentCarrierMember(ISymbol member)
+    {
+        switch (member)
+        {
+            case IPropertySymbol propertySymbol:
+                if (!IsImperativeRenderFragmentCarrierType(propertySymbol.Type))
+                    return false;
+
+                if (propertySymbol.SetMethod is null)
+                    return true;
+
+                if (!RazorVueMemberWriteAnalysis.CanUseSourceStableMutableCarrierMember(propertySymbol))
+                    return false;
+
+                return !RazorVueMemberWriteAnalysis.HasObservableWritesOutsideDeclarationInitializer(
+                    _snapshot.Compilation,
+                    propertySymbol);
+
+            case IFieldSymbol fieldSymbol:
+                if (!IsImperativeRenderFragmentCarrierType(fieldSymbol.Type))
+                    return false;
+
+                if (fieldSymbol.IsReadOnly)
+                    return true;
+
+                if (!RazorVueMemberWriteAnalysis.CanUseSourceStableMutableCarrierMember(fieldSymbol))
+                    return false;
+
+                return !RazorVueMemberWriteAnalysis.HasObservableWritesOutsideDeclarationInitializer(
+                    _snapshot.Compilation,
+                    fieldSymbol);
+
+            default:
+                return false;
+        }
+    }
+
+    private bool IsSourceStableMutableCarrierMember(Compilation compilation, ISymbol member)
+        => RazorVueMemberWriteAnalysis.CanUseSourceStableMutableCarrierMember(member) &&
+           !RazorVueMemberWriteAnalysis.HasObservableWritesOutsideDeclarationInitializer(compilation, member);
+
+    private IOperation? TryGetImperativePropertyRenderFragmentInitializer(IPropertySymbol property)
+    {
+        foreach (var syntaxReference in property.DeclaringSyntaxReferences)
+        {
+            if (syntaxReference.GetSyntax() is not PropertyDeclarationSyntax declaration)
+                continue;
+
+            var semanticModel = _snapshot.Compilation.GetSemanticModel(declaration.SyntaxTree);
+            if (RazorVuePropertyInitializerHelper.TryGetPropertyValueOperation(
+                    semanticModel,
+                    declaration,
+                    out var propertyOperation))
+            {
+                return propertyOperation;
+            }
+        }
+
+        return null;
+    }
+
+    private IOperation? TryGetImperativeFieldRenderFragmentInitializer(IFieldSymbol field)
+    {
+        foreach (var syntaxReference in field.DeclaringSyntaxReferences)
+        {
+            if (syntaxReference.GetSyntax() is not VariableDeclaratorSyntax declarator ||
+                declarator.Initializer?.Value is null)
+            {
+                continue;
+            }
+
+            var semanticModel = _snapshot.Compilation.GetSemanticModel(declarator.SyntaxTree);
+            if (RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
+                    semanticModel,
+                    declarator.Initializer.Value,
+                    out var initializerOperation))
+            {
+                return initializerOperation;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool IsImperativeRenderFragmentCarrierType(ITypeSymbol? typeSymbol)
+        => RazorVueImperativeRenderFragmentCarrierHelper.IsRenderFragmentCarrierType(typeSymbol);
+
+    private static bool IsRenderFragmentDelegateType(INamedTypeSymbol namedType)
+        => string.Equals(
+            namedType.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat),
+            RazorVueRenderFragmentTypeHelper.RenderFragmentMetadataName,
+            StringComparison.Ordinal) ||
+           string.Equals(
+            namedType.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat),
+            RazorVueRenderFragmentTypeHelper.ParameterizedRenderFragmentMetadataName,
+            StringComparison.Ordinal);
 
     private static bool TryGetTypedBuilderTemplate(
         IOperation? operation,
         out IAnonymousFunctionOperation outerAnonymousFunction,
         out IAnonymousFunctionOperation builderAnonymousFunction)
-    {
-        outerAnonymousFunction = default!;
-        builderAnonymousFunction = default!;
-        if (!TryGetAnonymousFunction(operation, out outerAnonymousFunction) ||
-            outerAnonymousFunction.Symbol.Parameters.Length != 1)
-        {
-            return false;
-        }
-
-        if (!TryGetReturnedAnonymousFunction(outerAnonymousFunction.Body, out builderAnonymousFunction))
-            return false;
-
-        return TryGetSingleBuilderParameter(builderAnonymousFunction, out _);
-    }
+        => RazorVueImperativeRenderFragmentCarrierHelper.TryGetTypedBuilderTemplate(
+            operation,
+            out outerAnonymousFunction,
+            out builderAnonymousFunction);
 
     private static bool TryGetReturnedAnonymousFunction(
         IOperation? body,
@@ -747,6 +1150,8 @@ internal sealed partial class RazorVueExpressionEmitter
             case IAnonymousFunctionOperation direct:
                 anonymousFunction = direct;
                 return true;
+            case IDelegateCreationOperation delegateCreation:
+                return TryGetAnonymousFunction(delegateCreation.Target, out anonymousFunction);
             case IBlockOperation block when TryGetSingleReturnedValue(block, out var returnValue):
                 return TryGetAnonymousFunction(returnValue, out anonymousFunction);
             case IReturnOperation returnOperation when returnOperation.ReturnedValue is not null:
@@ -970,13 +1375,7 @@ internal sealed partial class RazorVueExpressionEmitter
         if (TryGetAnonymousFunction(operation, out var anonymousFunction))
             return TryGetSingleBuilderParameter(anonymousFunction, out _);
 
-        if (Unwrap(operation)?.Type is not INamedTypeSymbol namedType)
-            return false;
-
-        return string.Equals(
-            namedType.OriginalDefinition.ToDisplayString(),
-            "Microsoft.AspNetCore.Components.RenderFragment",
-            System.StringComparison.Ordinal);
+        return RazorVueRenderFragmentTypeHelper.IsUntypedRenderFragmentType(Unwrap(operation)?.Type);
     }
 
     private static bool IsImperativeTypedRenderFragmentValue(IOperation operation)
@@ -984,23 +1383,15 @@ internal sealed partial class RazorVueExpressionEmitter
         if (TryGetAnonymousFunction(operation, out var anonymousFunction))
             return TryGetTypedBuilderTemplateSignature(anonymousFunction);
 
-        if (Unwrap(operation)?.Type is not INamedTypeSymbol namedType)
-            return false;
-
-        return string.Equals(
-            namedType.OriginalDefinition.ToDisplayString(),
-            "Microsoft.AspNetCore.Components.RenderFragment<T>",
-            System.StringComparison.Ordinal);
+        return RazorVueRenderFragmentTypeHelper.IsParameterizedRenderFragmentType(Unwrap(operation)?.Type);
     }
 
     private static bool TryGetSingleBuilderParameter(
         IAnonymousFunctionOperation anonymousFunction,
         out IParameterSymbol builderParameter)
-    {
-        builderParameter = anonymousFunction.Symbol.Parameters.FirstOrDefault(
-            static parameter => IsRenderTreeBuilderType(parameter.Type))!;
-        return builderParameter is not null && anonymousFunction.Symbol.Parameters.Length == 1;
-    }
+        => RazorVueImperativeRenderFragmentCarrierHelper.TryGetSingleBuilderParameter(
+            anonymousFunction,
+            out builderParameter);
 
     private static bool TryGetTypedBuilderTemplateSignature(IAnonymousFunctionOperation anonymousFunction)
     {
@@ -1033,15 +1424,13 @@ internal sealed partial class RazorVueExpressionEmitter
     }
 
     private static bool TryGetSingleReturnedValue(IBlockOperation block, out IOperation? returnedValue)
-    {
-        returnedValue = null;
-        if (block.Operations.Length != 1 ||
-            block.Operations[0] is not IReturnOperation returnOperation)
-        {
-            return false;
-        }
+        => RazorVueImperativeRenderFragmentCarrierHelper.TryGetSingleReturnedValue(block, out returnedValue);
 
-        returnedValue = Unwrap(returnOperation.ReturnedValue);
-        return returnedValue is not null;
-    }
+    private bool TryGetImperativeRenderFragmentFactoryReturnedValue(
+        IInvocationOperation invocation,
+        out IOperation returnedValue)
+        => RazorVueImperativeRenderFragmentCarrierHelper.TryGetRenderFragmentFactoryReturnedValue(
+            _snapshot.Compilation,
+            invocation,
+            out returnedValue);
 }

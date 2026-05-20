@@ -22268,6 +22268,57 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersParameterizedLocalRenderFragmentCarrierAssignedImmediatelyFromFactoryMethod_PreservingCapturedScopeOrder()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/typed-fragment-card")]
+                public class TypedFragmentCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private RenderFragment<int> CreateTemplate(string? title)
+                        => item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, title);
+                            itemBuilder.AddContent(3, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderFragment<int> template;
+                        template = CreateTemplate(Title);
+                        builder.AddContent(0, template, 42);
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => ((title) => ((item) => h(\"span\", null, [title, item]))(42))(props.title);");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersParameterizedCurrentComponentRenderFragmentPropertyCarrierInitializedFromFactoryMethod()
     {
         var context = CreateContext(
@@ -24797,13 +24848,387 @@ public sealed class RazorVuePipelineTests
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ImperativeSlotHost");
 
         StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
-        StringAssert.Contains(artifact.ModuleCode, "function __jazorInvokeRenderFragment(fragment)");
         StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterComponent(ListCardComponent, __jazorImperativeComponentMetadata_ListCard);");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.setComponentParameter(\"ItemTemplate\", __jazorCreateContextualRenderSlot(");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.setComponentParameter(\"ItemTemplate\", item => {");
         StringAssert.Contains(artifact.ModuleCode, "__jazorImperativeRenderContext0.enterComponent(ItemEditorComponent, __jazorImperativeComponentMetadata_ItemEditor);");
         StringAssert.Contains(artifact.ModuleCode, "return __jazorImperativeRenderContext0.finish();");
         Assert.IsFalse(
+            artifact.ModuleCode.Contains("__jazorCreateContextualRenderSlot", StringComparison.Ordinal),
+            artifact.ModuleCode);
+        Assert.IsFalse(
+            artifact.ModuleCode.Contains("return __builder", StringComparison.Ordinal),
+            artifact.ModuleCode);
+        Assert.IsFalse(
             artifact.ModuleCode.Contains("__jazorRenderContext.enterComponent(ItemEditorComponent", StringComparison.Ordinal),
+            artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersTypedComponentSlotTemplateInsideImperativeBuildRenderTree_FromFactoryBackedLocalCarrier()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.CompilerServices;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/item-editor")]
+                public class ItemEditor : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Prefix { get; set; }
+
+                    [Parameter]
+                    public int ModelValue { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/list-card")]
+                public class ListCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/imperative-slot-host")]
+                public class ImperativeSlotHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowEditor { get; set; }
+
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private RenderFragment<int> CreateTemplate(string? title)
+                        => item => slotBuilder =>
+                        {
+                            slotBuilder.OpenComponent<ItemEditor>(4);
+                            slotBuilder.AddComponentParameter(5, nameof(ItemEditor.Prefix), RuntimeHelpers.TypeCheck<string?>(title));
+                            slotBuilder.AddComponentParameter(6, nameof(ItemEditor.ModelValue), RuntimeHelpers.TypeCheck<int>(item));
+                            slotBuilder.CloseComponent();
+                        };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (!ShowEditor)
+                        {
+                            builder.OpenElement(0, "p");
+                            builder.AddContent(1, "fallback");
+                            builder.CloseElement();
+                            return;
+                        }
+
+                        RenderFragment<int> template = CreateTemplate(Title);
+                        builder.OpenComponent<ListCard>(2);
+                        builder.AddComponentParameter(3, nameof(ListCard.ItemTemplate), RuntimeHelpers.TypeCheck<RenderFragment<int>>(template));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ImperativeSlotHost");
+
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.setComponentParameter(\"ItemTemplate\", item => {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorImperativeRenderContext0.enterComponent(ItemEditorComponent, __jazorImperativeComponentMetadata_ItemEditor);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorImperativeRenderContext0.setComponentParameter(\"Prefix\", props.title);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorImperativeRenderContext0.setComponentParameter(\"ModelValue\", item);");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorImperativeRenderContext0.finish();");
+        Assert.IsFalse(
+            artifact.ModuleCode.Contains("__jazorCreateContextualRenderSlot", StringComparison.Ordinal),
+            artifact.ModuleCode);
+        Assert.IsFalse(
+            artifact.ModuleCode.Contains("CreateTemplate(props.title)", StringComparison.Ordinal),
+            artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersTypedComponentSlotTemplateInsideMixedImperativeBuildRenderTree_FromImmediatelyAssignedFactoryBackedLocalCarrier()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.CompilerServices;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/item-editor")]
+                public class ItemEditor : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Prefix { get; set; }
+
+                    [Parameter]
+                    public int ModelValue { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/list-card")]
+                public class ListCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/imperative-slot-host")]
+                public class ImperativeSlotHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowEditor { get; set; }
+
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private RenderFragment<int> CreateTemplate(string? title)
+                        => item => slotBuilder =>
+                        {
+                            slotBuilder.OpenComponent<ItemEditor>(4);
+                            slotBuilder.AddComponentParameter(5, nameof(ItemEditor.Prefix), RuntimeHelpers.TypeCheck<string?>(title));
+                            slotBuilder.AddComponentParameter(6, nameof(ItemEditor.ModelValue), RuntimeHelpers.TypeCheck<int>(item));
+                            slotBuilder.CloseComponent();
+                        };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderFragment<int> template;
+                        template = CreateTemplate(Title);
+
+                        if (!ShowEditor)
+                        {
+                            builder.OpenElement(0, "p");
+                            builder.AddContent(1, "fallback");
+                            builder.CloseElement();
+                            return;
+                        }
+
+                        builder.OpenComponent<ListCard>(2);
+                        builder.AddComponentParameter(3, nameof(ListCard.ItemTemplate), RuntimeHelpers.TypeCheck<RenderFragment<int>>(template));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ImperativeSlotHost");
+
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.setComponentParameter(\"ItemTemplate\", item => {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorImperativeRenderContext0.enterComponent(ItemEditorComponent, __jazorImperativeComponentMetadata_ItemEditor);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorImperativeRenderContext0.setComponentParameter(\"Prefix\", props.title);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorImperativeRenderContext0.setComponentParameter(\"ModelValue\", item);");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorImperativeRenderContext0.finish();");
+        Assert.IsFalse(
+            artifact.ModuleCode.Contains("__jazorCreateContextualRenderSlot", StringComparison.Ordinal),
+            artifact.ModuleCode);
+        Assert.IsFalse(
+            artifact.ModuleCode.Contains("CreateTemplate(props.title)", StringComparison.Ordinal),
+            artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersTypedComponentSlotTemplateInsideImperativeBuildRenderTree_FromFactoryBackedLocalCarrierViaAddAttribute()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/item-editor")]
+                public class ItemEditor : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Prefix { get; set; }
+
+                    [Parameter]
+                    public int ModelValue { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/list-card")]
+                public class ListCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/imperative-slot-host")]
+                public class ImperativeSlotHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowEditor { get; set; }
+
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private RenderFragment<int> CreateTemplate(string? title)
+                        => item => slotBuilder =>
+                        {
+                            slotBuilder.OpenComponent<ItemEditor>(4);
+                            slotBuilder.AddAttribute(5, nameof(ItemEditor.Prefix), title);
+                            slotBuilder.AddAttribute(6, nameof(ItemEditor.ModelValue), item);
+                            slotBuilder.CloseComponent();
+                        };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (!ShowEditor)
+                        {
+                            builder.OpenElement(0, "p");
+                            builder.AddContent(1, "fallback");
+                            builder.CloseElement();
+                            return;
+                        }
+
+                        RenderFragment<int> template = CreateTemplate(Title);
+                        builder.OpenComponent<ListCard>(2);
+                        builder.AddAttribute(3, nameof(ListCard.ItemTemplate), template);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ImperativeSlotHost");
+
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.setAttribute(\"ItemTemplate\", item => {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorImperativeRenderContext0.enterComponent(ItemEditorComponent, __jazorImperativeComponentMetadata_ItemEditor);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorImperativeRenderContext0.setAttribute(\"Prefix\", props.title);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorImperativeRenderContext0.setAttribute(\"ModelValue\", item);");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorImperativeRenderContext0.finish();");
+        Assert.IsFalse(
+            artifact.ModuleCode.Contains("__jazorCreateContextualRenderSlot", StringComparison.Ordinal),
+            artifact.ModuleCode);
+        Assert.IsFalse(
+            artifact.ModuleCode.Contains("createTemplate(props.title)", StringComparison.Ordinal),
+            artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersTypedComponentSlotTemplateInsideImperativeBuildRenderTree_FromMemberCarrierBackedByFactory()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/item-editor")]
+                public class ItemEditor : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Prefix { get; set; }
+
+                    [Parameter]
+                    public int ModelValue { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/list-card")]
+                public class ListCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/imperative-slot-host")]
+                public class ImperativeSlotHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowEditor { get; set; }
+
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private RenderFragment<int> Template => CreateTemplate(Title);
+
+                    private RenderFragment<int> CreateTemplate(string? title)
+                        => item => slotBuilder =>
+                        {
+                            slotBuilder.OpenComponent<ItemEditor>(4);
+                            slotBuilder.AddAttribute(5, nameof(ItemEditor.Prefix), title);
+                            slotBuilder.AddAttribute(6, nameof(ItemEditor.ModelValue), item);
+                            slotBuilder.CloseComponent();
+                        };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (!ShowEditor)
+                        {
+                            builder.OpenElement(0, "p");
+                            builder.AddContent(1, "fallback");
+                            builder.CloseElement();
+                            return;
+                        }
+
+                        builder.OpenComponent<ListCard>(2);
+                        builder.AddAttribute(3, nameof(ListCard.ItemTemplate), Template);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ImperativeSlotHost");
+
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.setAttribute(\"ItemTemplate\", item => {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorImperativeRenderContext0.enterComponent(ItemEditorComponent, __jazorImperativeComponentMetadata_ItemEditor);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorImperativeRenderContext0.setAttribute(\"Prefix\", props.title);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorImperativeRenderContext0.setAttribute(\"ModelValue\", item);");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorImperativeRenderContext0.finish();");
+        Assert.IsFalse(
+            artifact.ModuleCode.Contains("__jazorCreateContextualRenderSlot", StringComparison.Ordinal),
+            artifact.ModuleCode);
+        Assert.IsFalse(
+            artifact.ModuleCode.Contains("createTemplate(props.title)", StringComparison.Ordinal),
             artifact.ModuleCode);
     }
 

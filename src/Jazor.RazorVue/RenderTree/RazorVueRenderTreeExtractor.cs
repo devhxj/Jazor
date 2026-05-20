@@ -310,6 +310,8 @@ internal sealed class RazorVueRenderTreeExtractor
         private readonly HashSet<IParameterSymbol> _accessibleTemplateParameters = accessibleTemplateParameters is null
                 ? [with(SymbolEqualityComparer.Default)]
                 : new HashSet<IParameterSymbol>(accessibleTemplateParameters, SymbolEqualityComparer.Default);
+        private readonly Dictionary<ILocalSymbol, PendingRenderFragmentLocalCarrierDeclaration> _pendingRenderFragmentLocalCarriers =
+            new(SymbolEqualityComparer.Default);
         private readonly Dictionary<ILocalSymbol, PendingTemplateScopedDeclaration> _pendingTemplateScopedDeclarations =
             new(SymbolEqualityComparer.Default);
         private readonly Dictionary<string, IOperation> _literalStringOperationCache = new(StringComparer.Ordinal);
@@ -322,7 +324,7 @@ internal sealed class RazorVueRenderTreeExtractor
             foreach (var operation in operations)
                 ParseOperation(operation);
 
-            EnsureNoPendingTemplateScopedDeclarations();
+            EnsureNoPendingImmediateAssignmentDeclarations();
 
             if (_openFrames.Count > 0)
                 throw CreateStructuralIssueForUnclosedFrames();
@@ -347,7 +349,7 @@ internal sealed class RazorVueRenderTreeExtractor
             for (; nextOperationIndex < operations.Count; nextOperationIndex++)
                 ParseOperation(operations[nextOperationIndex]);
 
-            EnsureNoPendingTemplateScopedDeclarations();
+            EnsureNoPendingImmediateAssignmentDeclarations();
 
             if (_openFrames.Count > 0)
                 throw CreateStructuralIssueForUnclosedFrames();
@@ -361,10 +363,10 @@ internal sealed class RazorVueRenderTreeExtractor
             if (current is null)
                 return;
 
-            if (_pendingTemplateScopedDeclarations.Count > 0 &&
-                !IsPendingTemplateScopedDeclarationAssignment(current))
+            if (HasPendingImmediateAssignmentDeclarations() &&
+                !IsPendingImmediateAssignment(current))
             {
-                ThrowPendingTemplateScopedDeclarationRequiresImmediateAssignment(current);
+                ThrowPendingImmediateAssignmentRequiresImmediateAssignment(current);
             }
 
             switch (current)
@@ -445,12 +447,15 @@ internal sealed class RazorVueRenderTreeExtractor
                 if (TryRegisterBuilderAliasAssignment(assignment))
                     return;
 
+                if (TryCompletePendingRenderFragmentLocalCarrier(assignment))
+                    return;
+
                 if (TryCompletePendingTemplateScopedDeclaration(assignment))
                     return;
 
                 throw CreateStructuralIssue(
                     assignment,
-                    $"BuildRenderTree does not support assignment statement '{GetOperationDisplay(assignment)}' in component '{_snapshot.Descriptor.FullName}'. Only direct RenderTreeBuilder local alias assignments are supported.");
+                    $"BuildRenderTree does not support assignment statement '{GetOperationDisplay(assignment)}' in component '{_snapshot.Descriptor.FullName}'. Only direct RenderTreeBuilder local alias assignments and the supported immediate-assignment local declaration patterns are allowed.");
             }
 
             if (statementOperation is not IInvocationOperation invocation)
@@ -1107,15 +1112,22 @@ internal sealed class RazorVueRenderTreeExtractor
 
             if (declarator.Initializer?.Value is not { } initializer)
             {
-                failureMessage =
-                    $"RazorVue RenderFragment local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' requires an analyzable initializer.";
-                return false;
+                if (!_allowTemplateScopedLocals)
+                {
+                    failureMessage =
+                        $"RazorVue RenderFragment local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' requires an analyzable initializer.";
+                    return false;
+                }
+
+                _pendingRenderFragmentLocalCarriers[declarator.Symbol] =
+                    new PendingRenderFragmentLocalCarrierDeclaration(declarator);
+                return true;
             }
 
             if (!TryParseSlotTemplate(initializer, out var slotTemplate))
             {
                 failureMessage =
-                    $"RazorVue RenderFragment local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be initialized from an analyzable inline template or a previously declared RenderFragment local carrier.";
+                    $"RazorVue RenderFragment local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be initialized from an analyzable inline template, current-component RenderFragment member, or supported fragment factory.";
                 return false;
             }
 
@@ -1191,6 +1203,26 @@ internal sealed class RazorVueRenderTreeExtractor
 
             _pendingTemplateScopedDeclarations.Remove(localReference.Local);
             CommitTemplateScopedDeclaration(pendingDeclaration.Declarator, assignment.Value);
+            return true;
+        }
+
+        private bool TryCompletePendingRenderFragmentLocalCarrier(ISimpleAssignmentOperation assignment)
+        {
+            if (assignment.Target is not ILocalReferenceOperation localReference)
+                return false;
+
+            if (!_pendingRenderFragmentLocalCarriers.TryGetValue(localReference.Local, out var pendingDeclaration))
+                return false;
+
+            _pendingRenderFragmentLocalCarriers.Remove(localReference.Local);
+            if (!TryParseSlotTemplate(assignment.Value, out var slotTemplate))
+            {
+                throw CreateStructuralIssue(
+                    assignment,
+                    $"RazorVue RenderFragment local '{pendingDeclaration.Declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be initialized from an analyzable inline template, current-component RenderFragment member, or supported fragment factory.");
+            }
+
+            _localRenderFragmentCarriers[pendingDeclaration.Declarator.Symbol] = slotTemplate;
             return true;
         }
 
@@ -1855,15 +1887,7 @@ internal sealed class RazorVueRenderTreeExtractor
         }
 
         private static bool IsRenderFragmentLikeValue(IOperation operation)
-        {
-            var current = Unwrap(operation);
-            if (current?.Type is not INamedTypeSymbol namedType)
-                return false;
-
-            var typeName = namedType.OriginalDefinition.ToDisplayString();
-            return string.Equals(typeName, "Microsoft.AspNetCore.Components.RenderFragment", StringComparison.Ordinal) ||
-                   string.Equals(typeName, "Microsoft.AspNetCore.Components.RenderFragment<T>", StringComparison.Ordinal);
-        }
+            => RazorVueRenderFragmentTypeHelper.IsRenderFragmentType(Unwrap(operation)?.Type);
 
         private bool TryCreateCurrentComponentForwardedSlotAttribute(
             INamedTypeSymbol componentType,
@@ -2955,7 +2979,10 @@ internal sealed class RazorVueRenderTreeExtractor
             return char.ToLowerInvariant(value[0]) + value.Substring(1);
         }
 
-        private bool IsPendingTemplateScopedDeclarationAssignment(IOperation operation)
+        private bool HasPendingImmediateAssignmentDeclarations()
+            => _pendingRenderFragmentLocalCarriers.Count > 0 || _pendingTemplateScopedDeclarations.Count > 0;
+
+        private bool IsPendingImmediateAssignment(IOperation operation)
         {
             if (Unwrap(operation) is not IExpressionStatementOperation expressionStatement ||
                 Unwrap(expressionStatement.Operation) is not ISimpleAssignmentOperation assignment ||
@@ -2964,27 +2991,44 @@ internal sealed class RazorVueRenderTreeExtractor
                 return false;
             }
 
-            return _pendingTemplateScopedDeclarations.ContainsKey(localReference.Local);
+            return _pendingRenderFragmentLocalCarriers.ContainsKey(localReference.Local) ||
+                   _pendingTemplateScopedDeclarations.ContainsKey(localReference.Local);
         }
 
-        private void EnsureNoPendingTemplateScopedDeclarations()
+        private void EnsureNoPendingImmediateAssignmentDeclarations()
         {
-            if (_pendingTemplateScopedDeclarations.Count == 0)
+            if (!HasPendingImmediateAssignmentDeclarations())
                 return;
 
-            ThrowPendingTemplateScopedDeclarationRequiresImmediateAssignment(null);
+            ThrowPendingImmediateAssignmentRequiresImmediateAssignment(null);
         }
 
-        private void ThrowPendingTemplateScopedDeclarationRequiresImmediateAssignment(IOperation? currentOperation)
+        private void ThrowPendingImmediateAssignmentRequiresImmediateAssignment(IOperation? currentOperation)
         {
-            var pendingDeclaration = _pendingTemplateScopedDeclarations.Values.First();
-            var message =
-                $"RazorVue template-scoped local '{pendingDeclaration.Declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once by the immediately following simple assignment statement.";
+            string message;
+            IOperation originOperation;
+            if (_pendingRenderFragmentLocalCarriers.Count > 0)
+            {
+                var pendingDeclaration = _pendingRenderFragmentLocalCarriers.Values.First();
+                originOperation = pendingDeclaration.Declarator;
+                message =
+                    $"RazorVue RenderFragment local '{pendingDeclaration.Declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once by the immediately following simple assignment statement.";
+            }
+            else
+            {
+                var pendingDeclaration = _pendingTemplateScopedDeclarations.Values.First();
+                originOperation = pendingDeclaration.Declarator;
+                message =
+                    $"RazorVue template-scoped local '{pendingDeclaration.Declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once by the immediately following simple assignment statement.";
+            }
 
             throw CreateStructuralIssue(
-                currentOperation ?? pendingDeclaration.Declarator,
+                currentOperation ?? originOperation,
                 message);
         }
+
+        private readonly record struct PendingRenderFragmentLocalCarrierDeclaration(
+            IVariableDeclaratorOperation Declarator);
 
         private readonly record struct PendingTemplateScopedDeclaration(
             IVariableDeclaratorOperation Declarator);

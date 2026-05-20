@@ -36,7 +36,7 @@ internal static class RazorVueImperativeRenderSegmentationPlanner
                 continue;
             }
 
-            if (IsImmediateTemplateScopedDeclarationAssignment(operations, index))
+            if (IsImmediateSupportedLocalDeclarationAssignment(operations, index))
             {
                 pendingSupportStart = -1;
                 continue;
@@ -88,7 +88,7 @@ internal static class RazorVueImperativeRenderSegmentationPlanner
         return segments[segments.Length - 1].EndExclusive < operationCount;
     }
 
-    private static bool IsImmediateTemplateScopedDeclarationAssignment(
+    private static bool IsImmediateSupportedLocalDeclarationAssignment(
         IReadOnlyList<IOperation> operations,
         int currentIndex)
     {
@@ -109,13 +109,13 @@ internal static class RazorVueImperativeRenderSegmentationPlanner
             if (previous is null or IEmptyOperation)
                 continue;
 
-            return ContainsPendingTemplateScopedDeclarator(previous, localReference.Local);
+            return ContainsPendingSupportedLocalDeclarator(previous, localReference.Local);
         }
 
         return false;
     }
 
-    private static bool ContainsPendingTemplateScopedDeclarator(IOperation operation, ILocalSymbol localSymbol)
+    private static bool ContainsPendingSupportedLocalDeclarator(IOperation operation, ILocalSymbol localSymbol)
     {
         return RazorVueOperationNormalizer.Unwrap(operation) switch
         {
@@ -123,13 +123,11 @@ internal static class RazorVueImperativeRenderSegmentationPlanner
                 declaration.Declarators.Any(declarator =>
                     SymbolEqualityComparer.Default.Equals(declarator.Symbol, localSymbol) &&
                     declarator.Initializer?.Value is null &&
-                    !IsRenderTreeBuilderType(declarator.Symbol.Type) &&
-                    !IsRenderFragmentType(declarator.Symbol.Type))),
+                    !IsRenderTreeBuilderType(declarator.Symbol.Type))),
             IVariableDeclarationOperation declarationOperation => declarationOperation.Declarators.Any(declarator =>
                 SymbolEqualityComparer.Default.Equals(declarator.Symbol, localSymbol) &&
                 declarator.Initializer?.Value is null &&
-                !IsRenderTreeBuilderType(declarator.Symbol.Type) &&
-                !IsRenderFragmentType(declarator.Symbol.Type)),
+                !IsRenderTreeBuilderType(declarator.Symbol.Type)),
             _ => false
         };
     }
@@ -157,8 +155,6 @@ internal static class RazorVueImperativeRenderSegmentationPlanner
                 if (declarator.Initializer?.Value is not null)
                     continue;
 
-                if (IsRenderFragmentType(declarator.Symbol.Type))
-                    return false;
             }
         }
 
@@ -353,19 +349,5 @@ internal static class RazorVueImperativeRenderSegmentationPlanner
             StringComparison.Ordinal);
 
     private static bool IsRenderFragmentType(ITypeSymbol? typeSymbol)
-    {
-        if (typeSymbol is null)
-            return false;
-
-        if (typeSymbol is INamedTypeSymbol namedType &&
-            namedType.IsGenericType &&
-            namedType.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
-        {
-            typeSymbol = namedType.TypeArguments[0];
-        }
-
-        var displayName = typeSymbol.ToDisplayString();
-        return string.Equals(displayName, "Microsoft.AspNetCore.Components.RenderFragment", StringComparison.Ordinal) ||
-               displayName.StartsWith("Microsoft.AspNetCore.Components.RenderFragment<", StringComparison.Ordinal);
-    }
+        => RazorVueRenderFragmentTypeHelper.IsRenderFragmentType(typeSymbol);
 }

@@ -20,7 +20,7 @@ internal sealed partial class RazorVueArtifactFactory
         RazorVueSemanticSnapshot snapshot,
         RazorVueRenderFragment renderTree)
     {
-        var components = CollectComponents(renderTree);
+        var components = CollectComponents(snapshot, renderTree);
         if (components.Count == 0)
             return ImmutableDictionary<string, VueComponentDescriptor>.Empty;
 
@@ -159,18 +159,23 @@ internal sealed partial class RazorVueArtifactFactory
     }
 
 
-    private static HashSet<RazorVueComponentNode> CollectComponents(RazorVueRenderFragment fragment)
+    private static HashSet<RazorVueComponentNode> CollectComponents(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueRenderFragment fragment)
     {
         var result = new HashSet<RazorVueComponentNode>();
         if (!fragment.Children.IsDefaultOrEmpty)
         {
             foreach (var child in fragment.Children)
-                CollectComponents(child, result);
+                CollectComponents(snapshot, child, result);
         }
         return result;
     }
 
-    private static void CollectComponents(RazorVueRenderNode node, HashSet<RazorVueComponentNode> components)
+    private static void CollectComponents(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueRenderNode node,
+        HashSet<RazorVueComponentNode> components)
     {
         switch (node)
         {
@@ -179,36 +184,36 @@ internal sealed partial class RazorVueArtifactFactory
                 foreach (var slotTemplate in component.SlotTemplates)
                 {
                     foreach (var child in slotTemplate.Children.Children)
-                        CollectComponents(child, components);
+                        CollectComponents(snapshot, child, components);
                 }
                 foreach (var child in component.Children.Children)
-                    CollectComponents(child, components);
+                    CollectComponents(snapshot, child, components);
                 break;
             case RazorVueElementNode element:
                 foreach (var child in element.Children.Children)
-                    CollectComponents(child, components);
+                    CollectComponents(snapshot, child, components);
                 break;
             case RazorVueConditionalNode conditional:
                 foreach (var child in conditional.WhenTrue.Children)
-                    CollectComponents(child, components);
+                    CollectComponents(snapshot, child, components);
                 foreach (var child in conditional.WhenFalse.Children)
-                    CollectComponents(child, components);
+                    CollectComponents(snapshot, child, components);
                 break;
             case RazorVueTemplateScopeNode templateScope:
                 foreach (var child in templateScope.Children.Children)
-                    CollectComponents(child, components);
+                    CollectComponents(snapshot, child, components);
                 break;
             case RazorVueForEachNode loop:
                 foreach (var child in loop.Body.Children)
-                    CollectComponents(child, components);
+                    CollectComponents(snapshot, child, components);
                 break;
             case RazorVueForNode loop:
                 foreach (var child in loop.Body.Children)
-                    CollectComponents(child, components);
+                    CollectComponents(snapshot, child, components);
                 break;
             case RazorVueImperativeBlockNode imperative:
                 foreach (var operation in imperative.Operations)
-                    CollectComponents(operation, imperative.Origins, components);
+                    CollectComponents(operation, snapshot.Compilation, snapshot.ComponentSymbol, imperative.Origins, components);
                 break;
             case RazorVueLocalDeclarationNode:
                 break;
@@ -217,9 +222,42 @@ internal sealed partial class RazorVueArtifactFactory
 
     private static void CollectComponents(
         IOperation operation,
+        Compilation compilation,
+        INamedTypeSymbol componentSymbol,
         ImmutableArray<RazorVueSourceOrigin> origins,
         HashSet<RazorVueComponentNode> components)
     {
+        if (RazorVueImperativeRenderFragmentCarrierHelper.TryEnumerateNestedImperativeRenderFragmentBodies(
+                compilation,
+                componentSymbol,
+                operation,
+                RazorVueOperationNormalizer.Unwrap,
+                IsSourceStableMutableCarrierMember,
+                out var nestedBodies))
+        {
+            foreach (var body in nestedBodies)
+            {
+                foreach (var nestedOperation in EnumerateOperationAndDescendants(body))
+                {
+                    if (nestedOperation is IInvocationOperation nestedInvocation &&
+                        IsOpenComponentInvocation(nestedInvocation, out var nestedComponentType, out var nestedResolutionName))
+                    {
+                        components.Add(new RazorVueComponentNode(
+                            nestedComponentType.Name,
+                            nestedComponentType.ToDisplayString(),
+                            nestedResolutionName,
+                            Key: null,
+                            Attributes: ImmutableArray<RazorVueAttributeEntry>.Empty,
+                            SlotTemplates: ImmutableArray<RazorVueComponentSlotTemplateNode>.Empty,
+                            ImplicitDefaultSlotAssignments: ImmutableArray<RazorVueImplicitDefaultSlotAssignmentNode>.Empty,
+                            AmbientDefaultSlotChildren: RazorVueRenderFragment.Empty,
+                            Children: RazorVueRenderFragment.Empty,
+                            Origins: origins));
+                    }
+                }
+            }
+        }
+
         foreach (var current in EnumerateOperationAndDescendants(operation))
         {
             if (current is not IInvocationOperation invocation)
@@ -241,6 +279,10 @@ internal sealed partial class RazorVueArtifactFactory
                 Origins: origins));
         }
     }
+
+    private static bool IsSourceStableMutableCarrierMember(Compilation compilation, ISymbol member)
+        => RazorVueMemberWriteAnalysis.CanUseSourceStableMutableCarrierMember(member) &&
+           !RazorVueMemberWriteAnalysis.HasObservableWritesOutsideDeclarationInitializer(compilation, member);
 
     private static bool IsOpenComponentInvocation(
         IInvocationOperation invocation,

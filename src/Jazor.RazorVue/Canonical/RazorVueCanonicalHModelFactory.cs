@@ -1732,15 +1732,7 @@ internal sealed class RazorVueCanonicalHModelFactory
             Unwrap);
 
     private static bool IsRenderFragmentLike(IOperation operation)
-    {
-        var type = Unwrap(operation)?.Type as INamedTypeSymbol;
-        if (type is null)
-            return false;
-
-        var metadataName = type.OriginalDefinition.ToDisplayString();
-        return string.Equals(metadataName, "Microsoft.AspNetCore.Components.RenderFragment", StringComparison.Ordinal) ||
-               string.Equals(metadataName, "Microsoft.AspNetCore.Components.RenderFragment<T>", StringComparison.Ordinal);
-    }
+        => RazorVueRenderFragmentTypeHelper.IsRenderFragmentType(Unwrap(operation)?.Type);
 
     private static bool TryGetBindTargetName(string attributeName, out string parameterName)
     {

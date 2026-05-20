@@ -948,15 +948,7 @@ internal sealed partial class RazorVueExpressionEmitter
     }
 
     private static bool IsRenderFragmentLike(IOperation operation)
-    {
-        if (Unwrap(operation)?.Type is not INamedTypeSymbol namedType)
-            return false;
-
-        var definition = namedType.OriginalDefinition;
-        var metadataName = definition.ToDisplayString();
-        return string.Equals(metadataName, "Microsoft.AspNetCore.Components.RenderFragment", StringComparison.Ordinal) ||
-               string.Equals(metadataName, "Microsoft.AspNetCore.Components.RenderFragment<T>", StringComparison.Ordinal);
-    }
+        => RazorVueRenderFragmentTypeHelper.IsRenderFragmentType(Unwrap(operation)?.Type);
 
     private string ResolveComponentReference(RazorVueComponentNode component)
     {

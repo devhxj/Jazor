@@ -4104,6 +4104,67 @@ public sealed class BuildRenderTreeTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_WithParameterizedLocalRenderFragmentCarrierAssignedImmediatelyFromFactoryMethod_PreservesCapturedScopeOutsideTypedFragmentScope()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private RenderFragment<int> CreateTemplate(string? title)
+                        => item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, title);
+                            itemBuilder.AddContent(3, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderFragment<int> template;
+                        template = CreateTemplate(Title);
+                        builder.AddContent(0, template, 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+
+        var outerScope = renderTree.Children.Single() as RazorVueTemplateScopeNode;
+        Assert.IsNotNull(outerScope);
+        Assert.AreEqual("title", outerScope.ScopeName);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(outerScope.Initializer);
+
+        var itemScope = outerScope.Children.Children.Single() as RazorVueTemplateScopeNode;
+        Assert.IsNotNull(itemScope);
+        Assert.AreEqual("item", itemScope.ScopeName);
+        Assert.IsInstanceOfType<ILiteralOperation>(itemScope.Initializer);
+    }
+
+    [TestMethod]
     public void CreateRenderTree_WithParameterizedCurrentComponentRenderFragmentPropertyCarrierInitializedFromFactoryMethod_ProducesNestedTemplateScopeNodes()
     {
         var context = CreateContext(
@@ -4233,6 +4294,128 @@ public sealed class BuildRenderTreeTemplateFrontendTests
         Assert.IsNotNull(titleScope);
         Assert.AreEqual("title", titleScope.ScopeName);
         Assert.IsInstanceOfType<IPropertyReferenceOperation>(titleScope.Initializer);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithParameterizedLocalRenderFragmentCarrierAssignedImmediatelyFromFactoryMethodForTypedSlotTemplate_ProducesStructuredSlotTemplate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private RenderFragment<int> CreateTemplate(string? title)
+                        => item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, title);
+                            itemBuilder.AddContent(3, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderFragment<int> template;
+                        template = CreateTemplate(Title);
+                        builder.OpenComponent<ChildCard>(0);
+                        builder.AddAttribute(1, "ItemTemplate", template);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+
+        var component = renderTree.Children.Single() as RazorVueComponentNode;
+        Assert.IsNotNull(component);
+        var itemTemplateSlot = component.SlotTemplates.Single(static slot => slot.PublicName == "ItemTemplate");
+        Assert.AreEqual("itemTemplate", itemTemplateSlot.SlotName);
+        Assert.AreEqual("item", itemTemplateSlot.ParameterName);
+
+        var titleScope = itemTemplateSlot.Children.Children.Single() as RazorVueTemplateScopeNode;
+        Assert.IsNotNull(titleScope);
+        Assert.AreEqual("title", titleScope.ScopeName);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(titleScope.Initializer);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithRenderFragmentLocalCarrierAssignedNonImmediately_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderFragment<int> template;
+                        builder.OpenElement(0, "section");
+                        builder.CloseElement();
+                        template = item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, item);
+                            itemBuilder.CloseElement();
+                        };
+                        builder.AddContent(3, template, 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "RenderFragment local 'template'");
+        StringAssert.Contains(exception.Issue.Message, "immediately following simple assignment statement");
     }
 
     [TestMethod]
