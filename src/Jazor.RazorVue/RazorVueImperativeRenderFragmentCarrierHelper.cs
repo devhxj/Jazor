@@ -7,58 +7,34 @@ namespace Jazor.RazorVue;
 
 internal static class RazorVueImperativeRenderFragmentCarrierHelper
 {
-    private readonly record struct SourceStableLocalRenderFragmentInitializer(
-        IOperation Initializer,
-        SyntaxNode? AllowedAssignmentSyntax);
-
     public static bool IsRenderFragmentCarrierType(ITypeSymbol? typeSymbol)
         => RazorVueRenderFragmentTypeHelper.IsRenderFragmentType(typeSymbol);
 
     public static Dictionary<ILocalSymbol, IOperation> CollectSourceStableLocalRenderFragmentInitializers(
         Compilation compilation,
         IReadOnlyList<IOperation> operations)
-    {
-        var collected = CollectSourceStableLocalRenderFragmentInitializerStates(operations);
-        var result = new Dictionary<ILocalSymbol, IOperation>(SymbolEqualityComparer.Default);
-        foreach (var pair in collected)
-        {
-            if (TryGetSourceStableLocalRenderFragmentInitializer(compilation, pair.Key, out var initializer) &&
-                initializer is not null)
-            {
-                result[pair.Key] = initializer;
-            }
-        }
-
-        return result;
-    }
+        => RazorVueSourceStableLocalInitializerHelper.CollectSourceStableLocalInitializers(
+            compilation,
+            operations,
+            IsRenderFragmentCarrierType);
 
     public static bool TryGetSourceStableLocalRenderFragmentInitializer(
         Compilation compilation,
         ILocalSymbol local,
         out IOperation? initializer)
-    {
-        initializer = null;
-        foreach (var syntaxReference in local.DeclaringSyntaxReferences)
-        {
-            if (syntaxReference.GetSyntax() is not VariableDeclaratorSyntax declarator)
-                continue;
+        => RazorVueSourceStableLocalInitializerHelper.TryGetSourceStableLocalInitializer(
+            compilation,
+            local,
+            IsRenderFragmentCarrierType,
+            out initializer);
 
-            var semanticModel = compilation.GetSemanticModel(declarator.SyntaxTree);
-            if (!TryGetSourceStableLocalRenderFragmentInitializer(
-                    compilation,
-                    local,
-                    declarator,
-                    semanticModel,
-                    out initializer))
-            {
-                continue;
-            }
-
-            return initializer is not null;
-        }
-
-        return false;
-    }
+    public static bool IsSourceStableLocalRenderFragmentInitializerInvalidatedByLaterWrites(
+        Compilation compilation,
+        ILocalSymbol local)
+        => RazorVueSourceStableLocalInitializerHelper.IsSourceStableLocalInitializerInvalidatedByLaterWrites(
+            compilation,
+            local,
+            IsRenderFragmentCarrierType);
 
     public static bool TryGetAnonymousFunction(IOperation? operation, out IAnonymousFunctionOperation anonymousFunction)
     {
@@ -404,48 +380,6 @@ internal static class RazorVueImperativeRenderFragmentCarrierHelper
             ? initializer
             : null;
 
-    private static bool TryGetSourceStableLocalRenderFragmentInitializer(
-        Compilation compilation,
-        ILocalSymbol local,
-        VariableDeclaratorSyntax declarator,
-        SemanticModel semanticModel,
-        out IOperation? initializer)
-    {
-        initializer = null;
-        if (declarator.Initializer?.Value is not null)
-        {
-            if (HasMutableLocalWrites(local, declarator, semanticModel))
-                return false;
-
-            if (!RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
-                    semanticModel,
-                    declarator.Initializer.Value,
-                    out var initializerOperation))
-            {
-                return false;
-            }
-
-            initializer = initializerOperation;
-            return true;
-        }
-
-        if (declarator.Parent?.Parent?.Parent is not BlockSyntax rootBlock ||
-            semanticModel.GetOperation(rootBlock) is not IBlockOperation rootOperation)
-        {
-            return false;
-        }
-
-        var collected = CollectSourceStableLocalRenderFragmentInitializerStates(rootOperation.Operations);
-        if (!collected.TryGetValue(local, out var resolved))
-            return false;
-
-        if (HasMutableLocalWrites(local, declarator, semanticModel, resolved.AllowedAssignmentSyntax))
-            return false;
-
-        initializer = resolved.Initializer;
-        return true;
-    }
-
     private static IOperation? TryGetPropertyRenderFragmentInitializer(Compilation compilation, IPropertySymbol property)
     {
         foreach (var syntaxReference in property.DeclaringSyntaxReferences)
@@ -487,205 +421,6 @@ internal static class RazorVueImperativeRenderFragmentCarrierHelper
         }
 
         return null;
-    }
-
-    private static bool HasMutableLocalWrites(
-        ILocalSymbol local,
-        VariableDeclaratorSyntax declarator,
-        SemanticModel semanticModel,
-        SyntaxNode? allowedImmediateAssignmentSyntax = null)
-    {
-        var rootBlock = declarator.Ancestors().OfType<BlockSyntax>().FirstOrDefault();
-        if (rootBlock is null)
-            return true;
-
-        if (semanticModel.GetOperation(rootBlock) is not IOperation rootOperation)
-            return true;
-
-        foreach (var operation in EnumerateOperations(rootOperation))
-        {
-            switch (operation)
-            {
-                case IAssignmentOperation assignment
-                    when IsAllowedInitializerAssignment(assignment, declarator, allowedImmediateAssignmentSyntax):
-                    continue;
-                case IAssignmentOperation assignment
-                    when ReferencesLocalSymbol(assignment.Target, local):
-                    return true;
-                case IIncrementOrDecrementOperation incrementOrDecrement
-                    when ReferencesLocalSymbol(incrementOrDecrement.Target, local):
-                    return true;
-                case IArgumentOperation argument
-                    when argument.Parameter?.RefKind is RefKind.Ref or RefKind.Out &&
-                         ReferencesLocalSymbol(argument.Value, local):
-                    return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static Dictionary<ILocalSymbol, SourceStableLocalRenderFragmentInitializer> CollectSourceStableLocalRenderFragmentInitializerStates(
-        IReadOnlyList<IOperation> operations)
-    {
-        var result = new Dictionary<ILocalSymbol, SourceStableLocalRenderFragmentInitializer>(SymbolEqualityComparer.Default);
-        var pendingAssignments = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
-
-        foreach (var operation in operations)
-        {
-            var current = RazorVueOperationNormalizer.Unwrap(operation);
-            if (pendingAssignments.Count > 0)
-            {
-                if (TryExtractImmediateAssignedRenderFragmentLocal(
-                        current,
-                        pendingAssignments,
-                        out var local,
-                        out var initializer,
-                        out var assignmentSyntax))
-                {
-                    result[local] = new SourceStableLocalRenderFragmentInitializer(
-                        ResolveInitializerAlias(initializer, result),
-                        assignmentSyntax);
-                    continue;
-                }
-
-                pendingAssignments.Clear();
-            }
-
-            switch (current)
-            {
-                case IVariableDeclarationGroupOperation declarationGroup:
-                    RegisterSourceStableRenderFragmentDeclarators(
-                        declarationGroup.Declarations,
-                        result,
-                        pendingAssignments);
-                    break;
-                case IVariableDeclarationOperation declarationOperation:
-                    RegisterSourceStableRenderFragmentDeclarators(
-                        [declarationOperation],
-                        result,
-                        pendingAssignments);
-                    break;
-            }
-        }
-
-        return result;
-    }
-
-    private static void RegisterSourceStableRenderFragmentDeclarators(
-        IEnumerable<IVariableDeclarationOperation> declarations,
-        Dictionary<ILocalSymbol, SourceStableLocalRenderFragmentInitializer> result,
-        HashSet<ILocalSymbol> pendingAssignments)
-    {
-        foreach (var declaration in declarations)
-        {
-            foreach (var declarator in declaration.Declarators)
-            {
-                if (!IsRenderFragmentCarrierType(declarator.Symbol.Type))
-                    continue;
-
-                if (declarator.Initializer?.Value is not { } initializer)
-                {
-                    pendingAssignments.Add(declarator.Symbol);
-                    continue;
-                }
-
-                result[declarator.Symbol] = new SourceStableLocalRenderFragmentInitializer(
-                    RazorVueOperationNormalizer.Unwrap(initializer) ?? initializer,
-                    null);
-            }
-        }
-    }
-
-    private static bool TryExtractImmediateAssignedRenderFragmentLocal(
-        IOperation? operation,
-        HashSet<ILocalSymbol> pendingAssignments,
-        out ILocalSymbol localSymbol,
-        out IOperation initializer,
-        out SyntaxNode? assignmentSyntax)
-    {
-        localSymbol = default!;
-        initializer = default!;
-        assignmentSyntax = null;
-        switch (operation)
-        {
-            case ISimpleAssignmentOperation assignment
-                when assignment.Target is ILocalReferenceOperation localReference &&
-                     pendingAssignments.Remove(localReference.Local):
-                localSymbol = localReference.Local;
-                initializer = RazorVueOperationNormalizer.Unwrap(assignment.Value) ?? assignment.Value;
-                assignmentSyntax = assignment.Syntax;
-                return true;
-            case IExpressionStatementOperation expressionStatement:
-                return TryExtractImmediateAssignedRenderFragmentLocal(
-                    expressionStatement.Operation,
-                    pendingAssignments,
-                    out localSymbol,
-                    out initializer,
-                    out assignmentSyntax);
-            case IBlockOperation block when block.Operations.Length == 1:
-                return TryExtractImmediateAssignedRenderFragmentLocal(
-                    block.Operations[0],
-                    pendingAssignments,
-                    out localSymbol,
-                    out initializer,
-                    out assignmentSyntax);
-            default:
-                return false;
-        }
-    }
-
-    private static IOperation ResolveInitializerAlias(
-        IOperation initializer,
-        IReadOnlyDictionary<ILocalSymbol, SourceStableLocalRenderFragmentInitializer> result)
-    {
-        var current = RazorVueOperationNormalizer.Unwrap(initializer) ?? initializer;
-        var visitedLocals = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
-        while (current is ILocalReferenceOperation localReference &&
-               visitedLocals.Add(localReference.Local) &&
-               result.TryGetValue(localReference.Local, out var resolved))
-        {
-            current = resolved.Initializer;
-        }
-
-        return current;
-    }
-
-    private static bool IsAllowedInitializerAssignment(
-        IAssignmentOperation assignment,
-        VariableDeclaratorSyntax declarator,
-        SyntaxNode? allowedImmediateAssignmentSyntax)
-        => IsDeclaratorInitializerAssignment(assignment, declarator) ||
-           (allowedImmediateAssignmentSyntax is not null &&
-            assignment.Syntax is not null &&
-            ReferenceEquals(assignment.Syntax.SyntaxTree, allowedImmediateAssignmentSyntax.SyntaxTree) &&
-            assignment.Syntax.Span.Equals(allowedImmediateAssignmentSyntax.Span));
-
-    private static bool IsDeclaratorInitializerAssignment(
-        IAssignmentOperation assignment,
-        VariableDeclaratorSyntax declarator)
-        => assignment.Syntax is not null &&
-           assignment.Syntax.Span == declarator.Span;
-
-    private static bool ReferencesLocalSymbol(IOperation? operation, ILocalSymbol local)
-    {
-        var current = RazorVueOperationNormalizer.Unwrap(operation);
-        if (current is null)
-            return false;
-
-        if (current is ILocalReferenceOperation localReference &&
-            SymbolEqualityComparer.Default.Equals(localReference.Local, local))
-        {
-            return true;
-        }
-
-        foreach (var child in current.ChildOperations)
-        {
-            if (child is not null && ReferencesLocalSymbol(child, local))
-                return true;
-        }
-
-        return false;
     }
 
     private static IEnumerable<IOperation> EnumerateOperations(IOperation root)

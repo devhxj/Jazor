@@ -4233,6 +4233,31 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_ForImmediatelyAssignedLocalMarkupStringCarrierExpression_ProducesStaticMarkupNodes()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @{
+                MarkupString markup;
+                markup = (MarkupString)"<section class='hero'><span>safe</span><p>ok</p></section>";
+            }
+
+            @markup
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ImmediatelyAssignedLocalMarkupStringCarrier.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+
+        Assert.AreEqual(1, renderTree.Children.Length, RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot));
+        Assert.AreEqual("section", Assert.IsInstanceOfType<RazorVueElementNode>(renderTree.Children[0]).TagName);
+    }
+
+    [TestMethod]
     public void CreateRenderTree_ForReadonlyMarkupStringPropertyExpression_ProducesStaticMarkupNodes()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -4381,6 +4406,33 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_CanLowerImmediatelyAssignedLocalMarkupStringCarrierExpression()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @{
+                MarkupString markup;
+                markup = (MarkupString)"<section class='hero'><span>safe</span><p>ok</p></section>";
+            }
+
+            @markup
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ImmediatelyAssignedLocalMarkupStringCarrier.Pipeline.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var artifact = RazorVueRazorIrTestContextFactory.CreateSgPipeline(snapshot)
+            .Execute(context)
+            .Artifacts
+            .Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "h(\"section\", { \"class\": \"hero\" }, [h(\"span\", null, \"safe\"), h(\"p\", null, \"ok\")])");
+    }
+
+    [TestMethod]
     public void RazorVuePipeline_WithRazorIrTemplateFrontend_CanLowerUnwrittenSettableMarkupStringPropertyExpression()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -4454,6 +4506,34 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithRazorIrTemplateFrontend_LowersImmediatelyAssignedLocalMarkupStringCarrierExpression()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @{
+                MarkupString markup;
+                markup = (MarkupString)"<section class='hero'><span>safe</span><p>ok</p></section>";
+            }
+
+            @markup
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ImmediatelyAssignedLocalMarkupStringCarrier.Sfc.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var artifact = new RazorVueSfcArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<section class=\"hero\">");
+        StringAssert.Contains(artifact.TemplateText, "<span>");
+        StringAssert.Contains(artifact.TemplateText, "safe");
+        StringAssert.Contains(artifact.TemplateText, "<p>");
+        StringAssert.Contains(artifact.TemplateText, "ok");
+    }
+
+    [TestMethod]
     public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForDynamicMarkupStringExpression_ThrowsCanonicalizationFailed()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -4471,6 +4551,35 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
         Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "MarkupString");
         StringAssert.Contains(exception.Issue.Message, "compile-time provable static");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForReassignedLocalMarkupStringCarrier_ThrowsCanonicalizationFailed()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @{
+                MarkupString markup;
+                markup = (MarkupString)"<section class='hero'><span>safe</span><p>ok</p></section>";
+                markup = (MarkupString)"<section class='hero'><span>changed</span></section>";
+            }
+
+            @markup
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ReassignedLocalMarkupStringCarrier.Pipeline.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => RazorVueRazorIrTestContextFactory.CreateSgPipeline(snapshot)
+                .Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "MarkupString local 'markup'");
+        StringAssert.Contains(exception.Issue.Message, "later writes");
     }
 
     [TestMethod]

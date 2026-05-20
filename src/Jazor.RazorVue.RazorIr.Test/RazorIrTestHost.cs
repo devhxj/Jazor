@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Immutable;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -15,6 +16,8 @@ namespace Jazor.RazorVue.RazorIr.Test;
 
 internal static class RazorIrTestHost
 {
+    private static readonly ConcurrentDictionary<string, PortableExecutableReference> MetadataReferenceCache =
+        new(StringComparer.OrdinalIgnoreCase);
     private static readonly string[] DefaultProducerFactoryTypeNames =
     [
         "Microsoft.AspNetCore.Razor.Language.TagHelpers.Producers.DefaultTagHelperProducer+Factory, Microsoft.CodeAnalysis.Razor.Compiler",
@@ -560,9 +563,16 @@ internal static class RazorIrTestHost
         AddAssemblyLocation(referencePaths, typeof(Microsoft.CodeAnalysis.Compilation));
         AddAssemblyLocation(referencePaths, typeof(Microsoft.CodeAnalysis.CSharp.CSharpCompilation));
 
-        return referencePaths
-            .Select(static path => MetadataReference.CreateFromFile(path))
-            .ToArray();
+        var references = new List<MetadataReference>(referencePaths.Count);
+        foreach (var path in referencePaths)
+        {
+            if (TryCreateCachedPortableExecutableReference(path, out var reference))
+            {
+                references.Add(reference);
+            }
+        }
+
+        return [.. references];
     }
 
     private static void AddAssemblyLocation(HashSet<string> referencePaths, Type markerType)
@@ -572,5 +582,39 @@ internal static class RazorIrTestHost
         {
             referencePaths.Add(location);
         }
+    }
+
+    private static bool TryCreateCachedPortableExecutableReference(
+        string path,
+        out PortableExecutableReference reference)
+    {
+        reference = null!;
+        if (!TryNormalizeMetadataReferencePath(path, out var normalizedPath))
+        {
+            return false;
+        }
+
+        reference = MetadataReferenceCache.GetOrAdd(
+            normalizedPath,
+            static candidatePath => MetadataReference.CreateFromFile(candidatePath));
+        return true;
+    }
+
+    private static bool TryNormalizeMetadataReferencePath(string? path, out string normalizedPath)
+    {
+        normalizedPath = string.Empty;
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return false;
+        }
+
+        var candidatePath = Path.GetFullPath(path);
+        if (!File.Exists(candidatePath))
+        {
+            return false;
+        }
+
+        normalizedPath = candidatePath;
+        return true;
     }
 }

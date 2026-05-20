@@ -296,6 +296,10 @@ internal sealed class RazorVueRenderTreeExtractor
         private readonly Dictionary<ILocalSymbol, ParsedSlotTemplate> _localRenderFragmentCarriers = localRenderFragmentCarriers is null
                 ? new Dictionary<ILocalSymbol, ParsedSlotTemplate>(SymbolEqualityComparer.Default)
                 : CreateLocalRenderFragmentCarrierDictionary(localRenderFragmentCarriers);
+        private readonly Dictionary<ILocalSymbol, IOperation> _sourceStableLocalRenderFragmentInitializers =
+            new(SymbolEqualityComparer.Default);
+        private readonly Dictionary<ILocalSymbol, IOperation> _sourceStableLocalStaticMarkupInitializers =
+            new(SymbolEqualityComparer.Default);
         private readonly Dictionary<ILocalSymbol, IOperation> _localStaticMarkupCarriers =
             new(SymbolEqualityComparer.Default);
         private readonly Dictionary<ISymbol, ParsedSlotTemplate> _memberRenderFragmentCarriers = memberRenderFragmentCarriers is null
@@ -312,6 +316,8 @@ internal sealed class RazorVueRenderTreeExtractor
                 : new HashSet<IParameterSymbol>(accessibleTemplateParameters, SymbolEqualityComparer.Default);
         private readonly Dictionary<ILocalSymbol, PendingRenderFragmentLocalCarrierDeclaration> _pendingRenderFragmentLocalCarriers =
             new(SymbolEqualityComparer.Default);
+        private readonly Dictionary<ILocalSymbol, PendingStaticMarkupLocalCarrierDeclaration> _pendingStaticMarkupLocalCarriers =
+            new(SymbolEqualityComparer.Default);
         private readonly Dictionary<ILocalSymbol, PendingTemplateScopedDeclaration> _pendingTemplateScopedDeclarations =
             new(SymbolEqualityComparer.Default);
         private readonly Dictionary<string, IOperation> _literalStringOperationCache = new(StringComparer.Ordinal);
@@ -321,6 +327,8 @@ internal sealed class RazorVueRenderTreeExtractor
 
         public RazorVueRenderFragment Parse(IEnumerable<IOperation> operations)
         {
+            PrimeSourceStableLocalRenderFragmentInitializers(operations);
+            PrimeSourceStableLocalStaticMarkupInitializers(operations);
             foreach (var operation in operations)
                 ParseOperation(operation);
 
@@ -336,6 +344,8 @@ internal sealed class RazorVueRenderTreeExtractor
             IReadOnlyList<IOperation> operations,
             ImmutableArray<RazorVueImperativeRenderSegmentationPlanner.PlannedSegment> segments)
         {
+            PrimeSourceStableLocalRenderFragmentInitializers(operations);
+            PrimeSourceStableLocalStaticMarkupInitializers(operations);
             var nextOperationIndex = 0;
             foreach (var segment in segments)
             {
@@ -448,6 +458,9 @@ internal sealed class RazorVueRenderTreeExtractor
                     return;
 
                 if (TryCompletePendingRenderFragmentLocalCarrier(assignment))
+                    return;
+
+                if (TryCompletePendingStaticMarkupLocalCarrier(assignment))
                     return;
 
                 if (TryCompletePendingTemplateScopedDeclaration(assignment))
@@ -1047,8 +1060,15 @@ internal sealed class RazorVueRenderTreeExtractor
                     if (TryRegisterBuilderAliasDeclaration(declarator, out var failureMessage))
                         continue;
 
-                    if (TryRegisterRenderFragmentLocalCarrier(declarator, out failureMessage))
-                        continue;
+                    if (IsRenderFragmentType(declarator.Symbol.Type))
+                    {
+                        if (TryRegisterRenderFragmentLocalCarrier(declarator, out failureMessage))
+                            continue;
+
+                        throw CreateStructuralIssue(
+                            declarator,
+                            failureMessage);
+                    }
 
                     if (TryRegisterStaticMarkupLocalCarrier(declarator, out failureMessage))
                         continue;
@@ -1124,6 +1144,20 @@ internal sealed class RazorVueRenderTreeExtractor
                 return true;
             }
 
+            var sourceStableInitializer = TryGetSourceStableRenderFragmentInitializer(declarator.Symbol);
+            if (sourceStableInitializer is null &&
+                RazorVueImperativeRenderFragmentCarrierHelper.IsSourceStableLocalRenderFragmentInitializerInvalidatedByLaterWrites(
+                    _compilation,
+                    declarator.Symbol))
+            {
+                failureMessage =
+                    $"RazorVue RenderFragment local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Declaration-initialized local carriers must remain source-stable.";
+                return false;
+            }
+
+            if (sourceStableInitializer is not null)
+                initializer = sourceStableInitializer;
+
             if (!TryParseSlotTemplate(initializer, out var slotTemplate))
             {
                 failureMessage =
@@ -1145,10 +1179,23 @@ internal sealed class RazorVueRenderTreeExtractor
             if (!RazorVueStaticMarkupValueHelper.IsMarkupStringType(declarator.Symbol.Type))
                 return false;
 
-            if (declarator.Initializer?.Value is not { } initializer)
+            if (declarator.Initializer?.Value is null && _allowTemplateScopedLocals)
+            {
+                _pendingStaticMarkupLocalCarriers[declarator.Symbol] =
+                    new PendingStaticMarkupLocalCarrierDeclaration(declarator);
+                return true;
+            }
+
+            var initializer = TryGetSourceStableStaticMarkupInitializer(declarator.Symbol);
+            if (initializer is null)
             {
                 failureMessage =
-                    $"RazorVue MarkupString local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' requires a compile-time provable static markup initializer.";
+                    RazorVueSourceStableLocalInitializerHelper.IsSourceStableLocalInitializerInvalidatedByLaterWrites(
+                        _compilation,
+                        declarator.Symbol,
+                        RazorVueStaticMarkupValueHelper.IsMarkupStringType)
+                        ? $"RazorVue MarkupString local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Declaration-initialized local carriers must remain source-stable."
+                        : $"RazorVue MarkupString local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' requires a compile-time provable static markup initializer.";
                 return true;
             }
 
@@ -1160,6 +1207,34 @@ internal sealed class RazorVueRenderTreeExtractor
             }
 
             _localStaticMarkupCarriers[declarator.Symbol] = initializer;
+            return true;
+        }
+
+        private bool TryCompletePendingStaticMarkupLocalCarrier(ISimpleAssignmentOperation assignment)
+        {
+            if (assignment.Target is not ILocalReferenceOperation localReference)
+                return false;
+
+            if (!_pendingStaticMarkupLocalCarriers.TryGetValue(localReference.Local, out var pendingDeclaration))
+                return false;
+
+            _pendingStaticMarkupLocalCarriers.Remove(localReference.Local);
+            var initializer = TryGetSourceStableStaticMarkupInitializer(pendingDeclaration.Declarator.Symbol);
+            if (initializer is null)
+            {
+                throw CreateStructuralIssue(
+                    assignment,
+                    $"RazorVue MarkupString local '{pendingDeclaration.Declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once by the immediately following simple assignment statement and cannot be observed through later writes.");
+            }
+
+            if (TryGetStaticMarkupString(initializer) is null)
+            {
+                throw CreateStructuralIssue(
+                    assignment,
+                    $"RazorVue MarkupString local '{pendingDeclaration.Declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be initialized from compile-time provable static markup or a previously analyzable static MarkupString carrier.");
+            }
+
+            _localStaticMarkupCarriers[pendingDeclaration.Declarator.Symbol] = initializer;
             return true;
         }
 
@@ -1215,7 +1290,16 @@ internal sealed class RazorVueRenderTreeExtractor
                 return false;
 
             _pendingRenderFragmentLocalCarriers.Remove(localReference.Local);
-            if (!TryParseSlotTemplate(assignment.Value, out var slotTemplate))
+            var sourceStableInitializer = TryGetSourceStableRenderFragmentInitializer(pendingDeclaration.Declarator.Symbol);
+            if (sourceStableInitializer is null)
+            {
+                throw CreateStructuralIssue(
+                    assignment,
+                    $"RazorVue RenderFragment local '{pendingDeclaration.Declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once by the immediately following simple assignment statement and cannot be observed through later writes.");
+            }
+
+            var initializer = sourceStableInitializer;
+            if (!TryParseSlotTemplate(initializer, out var slotTemplate))
             {
                 throw CreateStructuralIssue(
                     assignment,
@@ -1711,27 +1795,7 @@ internal sealed class RazorVueRenderTreeExtractor
                 : TryGetLocalStaticMarkupInitializer(local);
 
         private IOperation? TryGetLocalStaticMarkupInitializer(ILocalSymbol local)
-        {
-            foreach (var reference in local.DeclaringSyntaxReferences)
-            {
-                if (reference.GetSyntax() is not VariableDeclaratorSyntax declarator ||
-                    declarator.Initializer?.Value is null)
-                {
-                    continue;
-                }
-
-                var semanticModel = _compilation.GetSemanticModel(declarator.SyntaxTree);
-                if (RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
-                        semanticModel,
-                        declarator.Initializer.Value,
-                        out var initializerOperation))
-                {
-                    return initializerOperation;
-                }
-            }
-
-            return null;
-        }
+            => TryGetSourceStableStaticMarkupInitializer(local);
 
         private IOperation? TryGetPropertyMarkupStringInitializer(IPropertySymbol property)
         {
@@ -2211,8 +2275,52 @@ internal sealed class RazorVueRenderTreeExtractor
             if (Unwrap(operation) is not ILocalReferenceOperation localReference)
                 return false;
 
-            return _localRenderFragmentCarriers.TryGetValue(localReference.Local, out slotTemplate);
+            if (_localRenderFragmentCarriers.TryGetValue(localReference.Local, out slotTemplate))
+                return true;
+
+            var initializer = TryGetSourceStableRenderFragmentInitializer(localReference.Local);
+            return initializer is not null && TryParseSlotTemplate(initializer, out slotTemplate);
         }
+
+        private void PrimeSourceStableLocalRenderFragmentInitializers(IEnumerable<IOperation> operations)
+        {
+            _sourceStableLocalRenderFragmentInitializers.Clear();
+            var buffered = operations as IReadOnlyList<IOperation> ?? operations.ToArray();
+            if (buffered.Count == 0)
+                return;
+
+            foreach (var pair in RazorVueImperativeRenderFragmentCarrierHelper
+                         .CollectSourceStableLocalRenderFragmentInitializers(_compilation, buffered))
+            {
+                _sourceStableLocalRenderFragmentInitializers[pair.Key] = pair.Value;
+            }
+        }
+
+        private void PrimeSourceStableLocalStaticMarkupInitializers(IEnumerable<IOperation> operations)
+        {
+            _sourceStableLocalStaticMarkupInitializers.Clear();
+            var buffered = operations as IReadOnlyList<IOperation> ?? operations.ToArray();
+            if (buffered.Count == 0)
+                return;
+
+            foreach (var pair in RazorVueSourceStableLocalInitializerHelper.CollectSourceStableLocalInitializers(
+                         _compilation,
+                         buffered,
+                         RazorVueStaticMarkupValueHelper.IsMarkupStringType))
+            {
+                _sourceStableLocalStaticMarkupInitializers[pair.Key] = pair.Value;
+            }
+        }
+
+        private IOperation? TryGetSourceStableRenderFragmentInitializer(ILocalSymbol local)
+            => _sourceStableLocalRenderFragmentInitializers.TryGetValue(local, out var initializer)
+                ? initializer
+                : null;
+
+        private IOperation? TryGetSourceStableStaticMarkupInitializer(ILocalSymbol local)
+            => _sourceStableLocalStaticMarkupInitializers.TryGetValue(local, out var initializer)
+                ? initializer
+                : null;
 
         private bool TryResolveCurrentComponentMemberSlotTemplate(IOperation? operation, out ParsedSlotTemplate slotTemplate)
         {
@@ -2980,7 +3088,9 @@ internal sealed class RazorVueRenderTreeExtractor
         }
 
         private bool HasPendingImmediateAssignmentDeclarations()
-            => _pendingRenderFragmentLocalCarriers.Count > 0 || _pendingTemplateScopedDeclarations.Count > 0;
+            => _pendingRenderFragmentLocalCarriers.Count > 0 ||
+               _pendingStaticMarkupLocalCarriers.Count > 0 ||
+               _pendingTemplateScopedDeclarations.Count > 0;
 
         private bool IsPendingImmediateAssignment(IOperation operation)
         {
@@ -2992,6 +3102,7 @@ internal sealed class RazorVueRenderTreeExtractor
             }
 
             return _pendingRenderFragmentLocalCarriers.ContainsKey(localReference.Local) ||
+                   _pendingStaticMarkupLocalCarriers.ContainsKey(localReference.Local) ||
                    _pendingTemplateScopedDeclarations.ContainsKey(localReference.Local);
         }
 
@@ -3014,6 +3125,13 @@ internal sealed class RazorVueRenderTreeExtractor
                 message =
                     $"RazorVue RenderFragment local '{pendingDeclaration.Declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once by the immediately following simple assignment statement.";
             }
+            else if (_pendingStaticMarkupLocalCarriers.Count > 0)
+            {
+                var pendingDeclaration = _pendingStaticMarkupLocalCarriers.Values.First();
+                originOperation = pendingDeclaration.Declarator;
+                message =
+                    $"RazorVue MarkupString local '{pendingDeclaration.Declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once by the immediately following simple assignment statement.";
+            }
             else
             {
                 var pendingDeclaration = _pendingTemplateScopedDeclarations.Values.First();
@@ -3028,6 +3146,9 @@ internal sealed class RazorVueRenderTreeExtractor
         }
 
         private readonly record struct PendingRenderFragmentLocalCarrierDeclaration(
+            IVariableDeclaratorOperation Declarator);
+
+        private readonly record struct PendingStaticMarkupLocalCarrierDeclaration(
             IVariableDeclaratorOperation Declarator);
 
         private readonly record struct PendingTemplateScopedDeclaration(

@@ -1034,6 +1034,7 @@ builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span
   - `@(new MarkupString("<section ...>...</section>"))`
 - 当前已继续覆盖受控 carrier：
   - `MarkupString markup = (MarkupString)"<section ...>...</section>"; builder.AddContent(..., markup);`
+  - `MarkupString markup; markup = (MarkupString)"<section ...>...</section>"; builder.AddContent(..., markup);`
   - 只读 expression-bodied property / getter-only property / `readonly` field 承载同类静态 `MarkupString`，再由 `AddContent(...)` 消费
   - private settable property / private 非 `readonly` field 承载同类静态 `MarkupString`，只要源码中可证明不存在后续写入，也可由 `AddContent(...)` 消费
   - Razor authored template 中局部 / 受控成员 carrier 的 `@markup` / `@HeroMarkup` / `@_heroMarkup`
@@ -1045,10 +1046,13 @@ builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span
 - 支持：`builder.AddContent(0, (MarkupString)"<section class=\"hero\"><span>safe</span></section>");`
 - 支持：`builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span></section>"));`
 - 支持：`MarkupString markup = (MarkupString)"<section class=\"hero\"><span>safe</span></section>"; builder.AddContent(0, markup);`
+- 支持：`MarkupString markup; markup = (MarkupString)"<section class=\"hero\"><span>safe</span></section>"; builder.AddContent(0, markup);`
 - 支持：只读 property / `readonly` field 承载静态 `MarkupString`，再由 `AddContent(...)` 消费
 - 支持：private settable property / private 非 `readonly` field 承载静态 `MarkupString`，只要源码中不存在后续重赋值、`ref/out` 写入或其他可观察写入，再由 `AddContent(...)` 消费
 - 支持：Razor authored template expression 中等价的静态 `MarkupString` direct/local/受控-member carrier authoring，直接 canonicalize 为静态 subtree
 - 支持：imperative body 内同样的静态 `MarkupString` direct/local/受控-member carrier authoring，直接 lower 为 `h(...)` subtree
+- 支持：handwritten `BuildRenderTree` 中 `MarkupString` local 的“先声明、再紧邻一次简单赋值”窄模式；若后续再次出现可观察写入，则沿同一 source-stable 合同 fail-fast
+- 支持：Razor IR authored template `@{ MarkupString markup; markup = ...; } @markup` 这类 local carrier 也按同一 source-stable 合同接受，并贯通 render tree / `.mjs` pipeline / SFC artifact
 - 不支持：imperative local `MarkupString` carrier 在声明后发生重赋值、`ref/out` 写入或其他不可静态证明变异
 - 不支持：运行时拼接字符串后再转 `MarkupString`
 - 不支持：来自变量/调用结果/条件分支汇总的动态 `MarkupString`
@@ -1071,7 +1075,9 @@ builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span
 - declarative `BuildRenderTree` 中 `(MarkupString)"..."`
 - declarative `BuildRenderTree` 中 `new MarkupString("...")`
 - declarative `BuildRenderTree` 中局部 `MarkupString` carrier
+- declarative `BuildRenderTree` 中 `MarkupString` local 的“先声明、再紧邻一次简单赋值”窄模式
 - declarative `BuildRenderTree` 中只读 property / `readonly` field `MarkupString` carrier
+- declarative / pipeline 中上述 local carrier 的后续重赋值 fail-fast
 - Razor authored template expression 中静态 `MarkupString` direct/new/local/readonly-member carrier
 - Razor authored template expression 中动态 `MarkupString` fail-fast
 - imperative render bridge 中静态 `MarkupString` direct/local/readonly-member carrier

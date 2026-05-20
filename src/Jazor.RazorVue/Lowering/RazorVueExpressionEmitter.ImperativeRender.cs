@@ -20,6 +20,7 @@ internal sealed partial class RazorVueExpressionEmitter
     private string? _imperativeBuilderAlias;
     private Dictionary<IParameterSymbol, string>? _imperativeBuilderParameterTargets;
     private Dictionary<ILocalSymbol, IOperation>? _imperativeRenderFragmentLocalInitializers;
+    private Dictionary<ILocalSymbol, IOperation>? _imperativeStaticMarkupLocalInitializers;
 
     private string EmitImperativeBlockBody(
         RazorVueImperativeBlockNode imperative,
@@ -43,6 +44,11 @@ internal sealed partial class RazorVueExpressionEmitter
             RazorVueImperativeRenderFragmentCarrierHelper.CollectSourceStableLocalRenderFragmentInitializers(
                 _snapshot.Compilation,
                 imperative.Operations);
+        var imperativeStaticMarkupLocalInitializers =
+            RazorVueSourceStableLocalInitializerHelper.CollectSourceStableLocalInitializers(
+                _snapshot.Compilation,
+                imperative.Operations,
+                RazorVueStaticMarkupValueHelper.IsMarkupStringType);
 
         return WithImperativeBuilderAlias(
             builderAlias,
@@ -50,20 +56,22 @@ internal sealed partial class RazorVueExpressionEmitter
                 imperativeBuilderTargets,
                 () => WithImperativeRenderFragmentLocalInitializers(
                     imperativeRenderFragmentLocalInitializers,
-                    () => WithScopedLocalAliases(
-                        visibleLocalAliases,
-                        () => WithScopedParameterAliases(
-                            imperative.VisibleParameters,
-                            imperative.VisibleParameters.Select(static parameter => parameter.Name).ToArray(),
-                            () =>
-                            {
-                                var statements = _semanticWalker.TranslateStatementSequence(imperative.Operations, bodyArgument);
-                                var functionBody = NormalizeImperativeFunctionBody(
-                                    new FunctionBody(NodeList.From(statements), strict: true),
-                                    builderAlias,
-                                    appendTerminalReturn: false);
-                                return NormalizeImperativeFunctionText(functionBody.ToKnRECMAScript());
-                            })))));
+                    () => WithImperativeStaticMarkupLocalInitializers(
+                        imperativeStaticMarkupLocalInitializers,
+                        () => WithScopedLocalAliases(
+                            visibleLocalAliases,
+                            () => WithScopedParameterAliases(
+                                imperative.VisibleParameters,
+                                imperative.VisibleParameters.Select(static parameter => parameter.Name).ToArray(),
+                                () =>
+                                {
+                                    var statements = _semanticWalker.TranslateStatementSequence(imperative.Operations, bodyArgument);
+                                    var functionBody = NormalizeImperativeFunctionBody(
+                                        new FunctionBody(NodeList.From(statements), strict: true),
+                                        builderAlias,
+                                        appendTerminalReturn: false);
+                                    return NormalizeImperativeFunctionText(functionBody.ToKnRECMAScript());
+                                }))))));
     }
 
     private T WithImperativeBuilderAlias<T>(string builderAlias, Func<T> action)
@@ -100,6 +108,29 @@ internal sealed partial class RazorVueExpressionEmitter
         finally
         {
             _imperativeRenderFragmentLocalInitializers = previous;
+        }
+    }
+
+    private T WithImperativeStaticMarkupLocalInitializers<T>(
+        IReadOnlyDictionary<ILocalSymbol, IOperation> initializers,
+        Func<T> action)
+    {
+        var previous = _imperativeStaticMarkupLocalInitializers;
+        var current = previous is null
+            ? new Dictionary<ILocalSymbol, IOperation>(SymbolEqualityComparer.Default)
+            : new Dictionary<ILocalSymbol, IOperation>(previous, SymbolEqualityComparer.Default);
+
+        foreach (var pair in initializers)
+            current[pair.Key] = pair.Value;
+
+        _imperativeStaticMarkupLocalInitializers = current;
+        try
+        {
+            return action();
+        }
+        finally
+        {
+            _imperativeStaticMarkupLocalInitializers = previous;
         }
     }
 
@@ -397,131 +428,23 @@ internal sealed partial class RazorVueExpressionEmitter
 
     private IOperation? TryGetImperativeLocalMarkupStringInitializer(ILocalSymbol local)
     {
-        foreach (var syntaxReference in local.DeclaringSyntaxReferences)
+        if (_imperativeStaticMarkupLocalInitializers is not null &&
+            _imperativeStaticMarkupLocalInitializers.TryGetValue(local, out var initializer))
         {
-            if (syntaxReference.GetSyntax() is not VariableDeclaratorSyntax declarator ||
-                declarator.Initializer?.Value is null)
-            {
-                continue;
-            }
-
-            var semanticModel = _snapshot.Compilation.GetSemanticModel(declarator.SyntaxTree);
-            if (HasImperativeMutableLocalWrites(local, declarator, semanticModel))
-                return null;
-
-            if (RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
-                    semanticModel,
-                    declarator.Initializer.Value,
-                    out var initializerOperation))
-            {
-                return initializerOperation;
-            }
+            return initializer;
         }
 
-        return null;
+        return RazorVueSourceStableLocalInitializerHelper.TryGetSourceStableLocalInitializer(
+            _snapshot.Compilation,
+            local,
+            RazorVueStaticMarkupValueHelper.IsMarkupStringType,
+            out initializer)
+            ? initializer
+            : null;
     }
 
     private IOperation? TryGetImperativeLocalStaticMarkupInitializer(ILocalSymbol local)
-    {
-        foreach (var syntaxReference in local.DeclaringSyntaxReferences)
-        {
-            if (syntaxReference.GetSyntax() is not VariableDeclaratorSyntax declarator ||
-                declarator.Initializer?.Value is null)
-            {
-                continue;
-            }
-
-            var semanticModel = _snapshot.Compilation.GetSemanticModel(declarator.SyntaxTree);
-            if (HasImperativeMutableLocalWrites(local, declarator, semanticModel))
-                return null;
-
-            if (RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
-                    semanticModel,
-                    declarator.Initializer.Value,
-                    out var initializerOperation))
-            {
-                return initializerOperation;
-            }
-        }
-
-        return null;
-    }
-
-    private static bool HasImperativeMutableLocalWrites(
-        ILocalSymbol local,
-        VariableDeclaratorSyntax declarator,
-        SemanticModel semanticModel)
-    {
-        var rootBlock = declarator.Ancestors().OfType<BlockSyntax>().FirstOrDefault();
-        if (rootBlock is null)
-            return true;
-
-        if (semanticModel.GetOperation(rootBlock) is not IOperation rootOperation)
-            return true;
-
-        foreach (var operation in EnumerateLocalMutationScanOperations(rootOperation))
-        {
-            switch (operation)
-            {
-                case IAssignmentOperation assignment
-                    when IsDeclaratorInitializerAssignment(assignment, declarator):
-                    continue;
-                case IAssignmentOperation assignment
-                    when ReferencesLocalSymbol(assignment.Target, local):
-                    return true;
-                case IIncrementOrDecrementOperation incrementOrDecrement
-                    when ReferencesLocalSymbol(incrementOrDecrement.Target, local):
-                    return true;
-                case IArgumentOperation argument
-                    when argument.Parameter?.RefKind is RefKind.Ref or RefKind.Out &&
-                         ReferencesLocalSymbol(argument.Value, local):
-                    return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static bool IsDeclaratorInitializerAssignment(
-        IAssignmentOperation assignment,
-        VariableDeclaratorSyntax declarator)
-        => assignment.Syntax is not null &&
-           assignment.Syntax.Span == declarator.Span;
-
-    private static IEnumerable<IOperation> EnumerateLocalMutationScanOperations(IOperation root)
-    {
-        yield return root;
-
-        foreach (var child in root.ChildOperations)
-        {
-            if (child is null)
-                continue;
-
-            foreach (var nested in EnumerateLocalMutationScanOperations(child))
-                yield return nested;
-        }
-    }
-
-    private static bool ReferencesLocalSymbol(IOperation? operation, ILocalSymbol local)
-    {
-        var current = RazorVueOperationNormalizer.Unwrap(operation);
-        if (current is null)
-            return false;
-
-        if (current is ILocalReferenceOperation localReference &&
-            SymbolEqualityComparer.Default.Equals(localReference.Local, local))
-        {
-            return true;
-        }
-
-        foreach (var child in current.ChildOperations)
-        {
-            if (child is not null && ReferencesLocalSymbol(child, local))
-                return true;
-        }
-
-        return false;
-    }
+        => TryGetImperativeLocalMarkupStringInitializer(local);
 
     private IOperation? TryGetImperativePropertyMarkupStringInitializer(IPropertySymbol property)
     {
@@ -739,6 +662,13 @@ internal sealed partial class RazorVueExpressionEmitter
             return false;
         }
 
+        if (RazorVueImperativeRenderFragmentCarrierHelper.IsSourceStableLocalRenderFragmentInitializerInvalidatedByLaterWrites(
+                _snapshot.Compilation,
+                operation.Symbol))
+        {
+            throw CreateImperativeRenderFragmentLocalCarrierInvalidatedException(operation);
+        }
+
         var current = TryGetNormalizedImperativeVariableInitializer(operation) ??
                       operation.Initializer?.Value;
         if (current is null)
@@ -796,6 +726,20 @@ internal sealed partial class RazorVueExpressionEmitter
             out var initializer)
             ? initializer
             : null;
+
+    private RazorVueCompilationIssueException CreateImperativeRenderFragmentLocalCarrierInvalidatedException(
+        IVariableDeclaratorOperation operation)
+    {
+        var origin = operation.Syntax is null
+            ? _snapshot.Origins.FirstOrDefault()
+            : RazorVueSourceOrigin.FromLocation(operation.Syntax.GetLocation(), RazorVueOriginKind.Template);
+        var issue = new RazorVueCompilationIssue(
+            RazorVueIssueCode.CanonicalizationFailed,
+            RazorVueIssueSeverity.Error,
+            $"RazorVue RenderFragment local '{operation.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Declaration-initialized local carriers must remain source-stable.",
+            ImmutableArray<string>.Empty);
+        return new RazorVueCompilationIssueException(issue, _snapshot.Descriptor.FullName, origin);
+    }
 
     private bool TryEmitImperativeRenderSlotFactory(IOperation operation, out string expression)
     {

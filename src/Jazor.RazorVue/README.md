@@ -11,6 +11,7 @@
 - 提供 `RazorCodeDocument` / Razor IR 获取、文档定位与 template frontend 选择。
 - 提供 legacy render artifact 与 design-time SFC artifact 的共享模型。
 - 提供 `Documents/` 与 `Protocol/` 下的 RazorVue/Jolt 宿主协议 DTO。
+- 产出目标是最终 `.vue` / render-function artifact；RazorVue 不是中间 wrapper JS 管线。
 
 ## Boundaries
 
@@ -66,6 +67,7 @@
   - `builder.AddContent(0, (MarkupString)"<section class=\"hero\"><span>safe</span><p>ok</p></section>");`
   - `builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span><p>ok</p></section>"));`
   - `MarkupString markup = (MarkupString)"<section class=\"hero\"><span>safe</span><p>ok</p></section>"; builder.AddContent(0, markup);`
+  - `MarkupString markup; markup = (MarkupString)"<section class=\"hero\"><span>safe</span><p>ok</p></section>"; builder.AddContent(0, markup);`
   - 只读 expression-bodied property / getter-only property / `readonly` field 承载同类静态 `MarkupString`，再由 `AddContent(...)` 消费
   - private settable property / private 非 `readonly` field 承载同类静态 `MarkupString`，只要源码中可证明不存在后续写入，也可由 `AddContent(...)` 消费
   - Razor authored 模板表达式中的同类静态 `MarkupString`：`@((MarkupString)"<section ...>...</section>")`、`@(new MarkupString("<section ...>...</section>"))`、以及局部/受控成员 carrier `@markup` / `@HeroMarkup`
@@ -73,7 +75,7 @@
   - imperative body 内与上述等价的静态 `AddMarkupContent(...)` string direct/carrier 形态，也会直接 lower 为静态 `h(...)` subtree，而不是残留 raw markup helper 语义
   - 含标准静态 attribute、嵌套 element、void element、自闭合 element、普通文本与 HTML comment 的同类静态片段
 - 该能力在 `BuildRenderTree` frontend 与 Razor IR frontend 之间复用了同一个静态标记解析器，因此两条路径对静态 HTML 片段的 element/text/attribute 还原语义保持一致。
-- `AddMarkupContent(...)`、`AddContent(..., MarkupString)` 与 Razor 模板中的 `@MarkupStringExpression` 仍刻意收窄为“编译期可证明为静态 HTML”的子集；允许的 string/`MarkupString` carrier 只限源码可分析、静态可追溯的局部，以及只读成员或“private mutable + 可证明无后续写入”的受控成员形态。imperative 路径中的 local carrier 一旦存在后续重赋值、`ref/out` 写入或其他不可静态证明的变异，就会显式拒绝，而不是偷读声明初始化器。动态 markup、运行时拼接 markup、运行时构造的 `MarkupString` 或需要执行脚本语义的 raw HTML 当前仍不支持。
+- `AddMarkupContent(...)`、`AddContent(..., MarkupString)` 与 Razor 模板中的 `@MarkupStringExpression` 仍刻意收窄为“编译期可证明为静态 HTML”的子集；允许的 string/`MarkupString` carrier 只限源码可分析、静态可追溯的局部，以及只读成员或“private mutable + 可证明无后续写入”的受控成员形态。handwritten `BuildRenderTree` 与 Razor IR authored template 两条路径上的 `MarkupString` local 现都支持“先声明、再紧邻一次简单赋值”的 source-stable 窄模式；一旦该 local 后续再出现重赋值、`ref/out` 写入或其他不可静态证明的变异，就会显式拒绝，而不是沿第一次赋值静默恢复旧静态 subtree。动态 markup、运行时拼接 markup、运行时构造的 `MarkupString` 或需要执行脚本语义的 raw HTML 当前仍不支持。
 
 ## Razor IR Template Locals
 
@@ -223,6 +225,7 @@
 - 对于 imperative bridge 中这类局部 typed `RenderFragment<T>` carrier，RazorVue 会直接把 carrier declarator 改写成最终 slot 函数：slot 函数自身创建独立 `__jazorCreateRenderContext(h)`、经 `Jazor.Compiler` / `SemanticWalker` 翻译其 builder body、最后返回 `.finish()`；不会再引入 `__jazorCreateContextualRenderSlot`、wrapper marker JS，或把 inner builder body 继续保留为 `item => __builder => ...` 形状。
 - 对于 imperative bridge 中这类由当前组件 fragment factory 返回、再落入 local/member carrier 的 typed `RenderFragment<T>`，RazorVue 现在也直接 lower 为最终 slot callback：factory 的普通 captured 参数会以内联 alias 形式带入最终 callback body（例如 `Title -> props.title`），不会先生成外层 wrapper JS 再调用。
 - 对于 handwritten `BuildRenderTree` 中这类局部 typed `RenderFragment<T>` carrier，如果它采用“先声明、再紧邻一次简单赋值”的窄模式，当前 contract 也会继续跨过 mixed imperative segmentation 生效；即 declarative 前缀里完成 `template = CreateTemplate(Title);` 后，后续 imperative block 中再消费 `template` 仍会沿同一静态 carrier 链追到最终 slot callback lowering，而不会退回动态 delegate 值或丢失 nested component import / metadata。
+- 这条“先声明、再紧邻一次简单赋值”的局部 carrier 合同现在也在 BuildRenderTree frontend / mixed imperative / pipeline 三条线上统一做了 fail-fast：一旦该 local 在后续再次出现可观察写入（重新赋值、递增/递减、`ref/out` 暴露等），RazorVue 会把它判定为不再 source-stable，而不是继续沿第一次赋值静默恢复旧模板。
 - 这类 `RenderFragment` / `RenderFragment<T>` carrier 的类型识别使用 `OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)` 的精确 delegate signature 合同；在该格式下，canonical 名称分别是 `Microsoft.AspNetCore.Components.RenderFragment(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder)` 与 `Microsoft.AspNetCore.Components.RenderFragment<TValue>(TValue)`，不是裸类型名。
 - 在 current-component member 层，当前还支持一个更窄的 carrier 子集：只读 expression-bodied property、声明点 initializer 的 getter-only auto-property、单返回 getter property、或 `readonly` field，只要其 `RenderFragment` / `RenderFragment<T>` 初始化器本身仍是源码可分析匿名模板，就可被 `AddContent` 与组件 typed slot/template 参数消费。
 - 该子集现已继续扩到“声明点 initializer 的 private settable property / private 非 `readonly` field，但源码中不存在后续写入”的受控形态；只有在可证明未发生后续重赋值、`ref/out` 写入或其他可观察写入时，才会被视为稳定 member carrier。
@@ -267,9 +270,14 @@
 
 ```powershell
 dotnet build src/Jazor.RazorVue/Jazor.RazorVue.csproj
-dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj
-dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj
+dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj -p:UseSharedCompilation=false
+dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj -p:UseSharedCompilation=false
 ```
+
+当前基线：
+
+- `src/Jazor.RazorVue.Test`: `1072 / 1072` 通过
+- `src/Jazor.RazorVue.RazorIr.Test`: `371 / 371` 通过
 
 ## Read Next
 

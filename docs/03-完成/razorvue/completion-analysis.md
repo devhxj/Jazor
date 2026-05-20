@@ -18,8 +18,8 @@ RazorVue 不能继续按历史文档里的“100% 完成”口径描述。当前
 | 维度 | 状态 | 说明 |
 |------|------|------|
 | 核心库编译 | 通过 | `Jazor.RazorVue` 可构建 |
-| RazorVue 单元测试 | 通过 | 1063 通过 |
-| Razor IR 前端测试 | 通过 | 370 通过 |
+| RazorVue 单元测试 | 通过 | 1072 通过 |
+| Razor IR 前端测试 | 通过 | 371 通过 |
 | Jolt 关联过滤测试 | 通过 | 35 通过 |
 | solution 构建 | 通过但有警告 | 1 个 Razor IR 测试项目 nullable 警告 |
 | emit/SDK RazorVue 集成 | 通过 | RazorVue 过滤切片 45/45 通过 |
@@ -81,6 +81,9 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedNam
 7. factory captured 参数不再通过额外 JS wrapper 传递，而是通过 canonical parameter alias 直接内联进最终 callback body；例如 `CreateTemplate(Title)` 中的 `title` 会直接 lower 为 `props.title`。
 8. 当前组件 property/field carrier、局部 carrier、fragment factory 返回值三条线现在共用一条静态 carrier 解析链；component resolution、imperative runtime-usage / descriptor identity 收集，以及最终 imperative slot callback lowering 都会沿这条链继续追踪 nested builder body，因此 factory-backed typed slot 内部的 `OpenComponent<T>` 会稳定产出组件 import、imperative metadata 和 `enterComponent(...)` lowering。
 9. handwritten `BuildRenderTree` 中局部 typed `RenderFragment<T>` carrier 的“先声明、再紧邻一次简单赋值”窄模式，现已补齐 mixed imperative 路径：即使声明/赋值出现在 declarative 前缀，而真正消费出现在后续 imperative segment，这条 carrier 仍会按同一静态合同被恢复，不会因为 segmentation 把初始化来源丢失。
+10. 同一条局部 carrier 合同现在已在 BuildRenderTree template frontend / mixed imperative segmentation / pipeline lowering 三条线上统一收口：若“先声明、再紧邻一次简单赋值”的 local `RenderFragment` / `RenderFragment<T>` 在后续再次出现可观察写入，RazorVue 会显式 fail-fast，而不会继续静默沿第一次赋值恢复旧模板。
+11. RazorVue 两套高频测试宿主现已补上 metadata reference 进程级缓存；fresh full `dotnet test -p:UseSharedCompilation=false` 不再因每个测试重复 `MetadataReference.CreateFromFile(...)` 而在 Roslyn metadata 装载阶段触发 OOM，验证基线回到可重复状态。
+12. 静态 `MarkupString` local carrier 现已与 `RenderFragment` carrier 的 source-stable 窄模式进一步收敛：handwritten `BuildRenderTree` 与 Razor IR authored template / pipeline / SFC 路线都支持“先声明、再紧邻一次简单赋值”的 `MarkupString` local，再由 `AddContent(...)` 或 `@markup` 消费；若后续再次出现可观察写入，则统一 fail-fast，而不是回退成通用 assignment unsupported。
 
 ## 已完成能力
 
@@ -220,13 +223,13 @@ dotnet build src/Jazor.RazorVue/Jazor.RazorVue.csproj -v minimal
 dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj -v minimal -p:UseSharedCompilation=false
 ```
 
-最新结果：1063 通过，0 失败，0 跳过。
+最新结果：1072 通过，0 失败，0 跳过。
 
 ```powershell
 dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj -v minimal -p:UseSharedCompilation=false
 ```
 
-最新结果：370 通过，0 失败，0 跳过。
+最新结果：371 通过，0 失败，0 跳过。
 
 ```powershell
 dotnet test src/Jolt.Test/Jolt.Test.csproj --filter "FullyQualifiedName~Volar|FullyQualifiedName~VueAnalysis|FullyQualifiedName~VirtualArtifact|FullyQualifiedName~JazorVue" -v minimal

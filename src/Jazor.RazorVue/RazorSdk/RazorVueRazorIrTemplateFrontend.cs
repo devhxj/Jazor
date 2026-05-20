@@ -2180,7 +2180,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
                 if (RazorVueStaticMarkupValueHelper.IsMarkupStringType(declarator.Symbol.Type))
                 {
-                    RegisterStaticMarkupLocalCarrier(declarator, immediateAssignedInitializers);
+                    RegisterStaticMarkupLocalCarrier(declarator);
                     encounteredStaticMarkupCarrier = true;
                     continue;
                 }
@@ -2281,21 +2281,28 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return false;
         }
 
-        private void RegisterStaticMarkupLocalCarrier(
-            IVariableDeclaratorOperation declarator,
-            IReadOnlyDictionary<ILocalSymbol, IOperation> immediateAssignedInitializers)
+        private void RegisterStaticMarkupLocalCarrier(IVariableDeclaratorOperation declarator)
         {
-            IOperation? initializer = declarator.Initializer?.Value;
-            if (initializer is null)
-            {
-                immediateAssignedInitializers.TryGetValue(declarator.Symbol, out initializer);
-            }
+            var initializer = TryGetSourceStableLocalMarkupStringInitializer(declarator.Symbol);
 
             if (initializer is null)
             {
+                var hasLaterWrites = IsSourceStableLocalMarkupStringInitializerInvalidatedByLaterWrites(declarator.Symbol);
+                var failureMessage =
+                    declarator.Initializer?.Value is null
+                        ? $"RazorVue MarkupString local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once by the immediately following simple assignment statement and cannot be observed through later writes."
+                        : $"RazorVue MarkupString local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' requires a compile-time provable static markup initializer.";
+                if (hasLaterWrites)
+                {
+                    failureMessage =
+                        declarator.Initializer?.Value is null
+                            ? $"RazorVue MarkupString local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once by the immediately following simple assignment statement and cannot be observed through later writes."
+                            : $"RazorVue MarkupString local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Declaration-initialized local carriers must remain source-stable.";
+                }
+
                 throw CreateUnsupportedAttributeException(
                     CreateSourceSpanFromSyntax(declarator.Syntax),
-                    $"RazorVue MarkupString local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' requires a compile-time provable static markup initializer.");
+                    failureMessage);
             }
 
             if (TryGetStaticMarkupValue(initializer) is null)
@@ -4331,26 +4338,23 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             if (_localStaticMarkupCarriers.TryGetValue(local, out var initializer))
                 return initializer;
 
-            foreach (var reference in local.DeclaringSyntaxReferences)
-            {
-                if (reference.GetSyntax() is not VariableDeclaratorSyntax declarator ||
-                    declarator.Initializer?.Value is null)
-                {
-                    continue;
-                }
-
-                var semanticModel = _context.Compilation.GetSemanticModel(declarator.SyntaxTree);
-                if (RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
-                        semanticModel,
-                        declarator.Initializer.Value,
-                        out var initializerOperation))
-                {
-                    return initializerOperation;
-                }
-            }
-
-            return null;
+            return TryGetSourceStableLocalMarkupStringInitializer(local);
         }
+
+        private IOperation? TryGetSourceStableLocalMarkupStringInitializer(ILocalSymbol local)
+            => RazorVueSourceStableLocalInitializerHelper.TryGetSourceStableLocalInitializer(
+                _context.Compilation,
+                local,
+                RazorVueStaticMarkupValueHelper.IsMarkupStringType,
+                out var initializer)
+                ? initializer
+                : null;
+
+        private bool IsSourceStableLocalMarkupStringInitializerInvalidatedByLaterWrites(ILocalSymbol local)
+            => RazorVueSourceStableLocalInitializerHelper.IsSourceStableLocalInitializerInvalidatedByLaterWrites(
+                _context.Compilation,
+                local,
+                RazorVueStaticMarkupValueHelper.IsMarkupStringType);
 
         private IOperation? TryGetPropertyMarkupStringInitializer(IPropertySymbol property)
         {

@@ -7,6 +7,10 @@ using ECMAScript.Vuetify;
 using Microsoft.AspNetCore.Components;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using System.Collections.Concurrent;
+using System.Collections.Immutable;
+using System.IO;
+using System.Threading;
 
 namespace Jazor.RazorVue.Test;
 
@@ -18,34 +22,15 @@ internal static class RazorVueMetadataReferences
         global using ECMAScript.VueContract.Descriptor;
         global using Microsoft.AspNetCore.Components;
         """;
+    private static readonly ConcurrentDictionary<string, PortableExecutableReference> MetadataReferenceCache =
+        new(StringComparer.OrdinalIgnoreCase);
+    private static readonly Lazy<ImmutableArray<MetadataReference>> BaseReferences =
+        new(CreateBaseReferences, LazyThreadSafetyMode.ExecutionAndPublication);
 
     public static List<MetadataReference> Create(params MetadataReference[] extraReferences)
     {
-        var references = Net110.References.All
-            .Cast<MetadataReference>()
-            .ToList();
-        var seenPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var reference in references.OfType<PortableExecutableReference>())
-        {
-            if (!string.IsNullOrWhiteSpace(reference.FilePath))
-            {
-                seenPaths.Add(reference.FilePath);
-            }
-        }
-
-        AddAssemblyReference(references, seenPaths, typeof(ComponentBase));
-        AddAssemblyReference(references, seenPaths, typeof(ECMAScript.Contract.IUIComponent));
-        AddAssemblyReference(references, seenPaths, typeof(SpreadAttribute));
-        AddAssemblyReference(references, seenPaths, typeof(ECMAScript.Vue3.IVueComponent));
-        AddAssemblyReference(references, seenPaths, typeof(VueRoute));
-        AddAssemblyReference(references, seenPaths, typeof(Pinia));
-        AddAssemblyReference(references, seenPaths, typeof(ECMAScript.VueContract.VueLibraryComponentAttribute));
-        AddAssemblyReference(references, seenPaths, typeof(TButton));
-        AddAssemblyReference(references, seenPaths, typeof(VbenNavItem));
-        AddAssemblyReference(references, seenPaths, typeof(VbenAdminLayout));
-        AddAssemblyReference(references, seenPaths, typeof(VBtn));
-        AddAssemblyReference(references, seenPaths, typeof(Jazor.RazorVue.JazorVueCompiler));
+        var references = BaseReferences.Value.ToList();
+        var seenPaths = CreateSeenPaths(references);
 
         foreach (var extraReference in extraReferences)
         {
@@ -65,15 +50,38 @@ internal static class RazorVueMetadataReferences
 
     private static readonly CSharpParseOptions PreviewParseOptions = new(LanguageVersion.Preview);
 
+    private static ImmutableArray<MetadataReference> CreateBaseReferences()
+    {
+        var references = Net110.References.All
+            .Cast<MetadataReference>()
+            .ToList();
+        var seenPaths = CreateSeenPaths(references);
+
+        AddAssemblyReference(references, seenPaths, typeof(ComponentBase));
+        AddAssemblyReference(references, seenPaths, typeof(ECMAScript.Contract.IUIComponent));
+        AddAssemblyReference(references, seenPaths, typeof(SpreadAttribute));
+        AddAssemblyReference(references, seenPaths, typeof(ECMAScript.Vue3.IVueComponent));
+        AddAssemblyReference(references, seenPaths, typeof(VueRoute));
+        AddAssemblyReference(references, seenPaths, typeof(Pinia));
+        AddAssemblyReference(references, seenPaths, typeof(ECMAScript.VueContract.VueLibraryComponentAttribute));
+        AddAssemblyReference(references, seenPaths, typeof(TButton));
+        AddAssemblyReference(references, seenPaths, typeof(VbenNavItem));
+        AddAssemblyReference(references, seenPaths, typeof(VbenAdminLayout));
+        AddAssemblyReference(references, seenPaths, typeof(VBtn));
+        AddAssemblyReference(references, seenPaths, typeof(Jazor.RazorVue.JazorVueCompiler));
+
+        return references.ToImmutableArray();
+    }
+
     private static void AddAssemblyReference(
         List<MetadataReference> references,
         HashSet<string> seenPaths,
         Type markerType)
     {
-        AddReference(
-            references,
-            seenPaths,
-            MetadataReference.CreateFromFile(markerType.Assembly.Location));
+        if (TryCreateCachedPortableExecutableReference(markerType.Assembly.Location, out var reference))
+        {
+            AddReference(references, seenPaths, reference);
+        }
     }
 
     private static void AddReference(
@@ -82,12 +90,68 @@ internal static class RazorVueMetadataReferences
         MetadataReference reference)
     {
         if (reference is PortableExecutableReference portableReference
-            && !string.IsNullOrWhiteSpace(portableReference.FilePath)
-            && !seenPaths.Add(portableReference.FilePath))
+            && TryNormalizeMetadataReferencePath(portableReference.FilePath, out var normalizedPath))
         {
+            if (!seenPaths.Add(normalizedPath))
+            {
+                return;
+            }
+
+            references.Add(GetOrCreatePortableExecutableReference(normalizedPath));
             return;
         }
 
         references.Add(reference);
+    }
+
+    private static HashSet<string> CreateSeenPaths(IEnumerable<MetadataReference> references)
+    {
+        var seenPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var reference in references.OfType<PortableExecutableReference>())
+        {
+            if (TryNormalizeMetadataReferencePath(reference.FilePath, out var normalizedPath))
+            {
+                seenPaths.Add(normalizedPath);
+            }
+        }
+
+        return seenPaths;
+    }
+
+    private static bool TryCreateCachedPortableExecutableReference(
+        string path,
+        out PortableExecutableReference reference)
+    {
+        reference = null!;
+        if (!TryNormalizeMetadataReferencePath(path, out var normalizedPath))
+        {
+            return false;
+        }
+
+        reference = GetOrCreatePortableExecutableReference(normalizedPath);
+        return true;
+    }
+
+    private static PortableExecutableReference GetOrCreatePortableExecutableReference(string normalizedPath)
+        => MetadataReferenceCache.GetOrAdd(
+            normalizedPath,
+            static path => MetadataReference.CreateFromFile(path));
+
+    private static bool TryNormalizeMetadataReferencePath(string? path, out string normalizedPath)
+    {
+        normalizedPath = string.Empty;
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return false;
+        }
+
+        var candidatePath = Path.GetFullPath(path);
+        if (!System.IO.File.Exists(candidatePath))
+        {
+            return false;
+        }
+
+        normalizedPath = candidatePath;
+        return true;
     }
 }
