@@ -13,6 +13,27 @@ namespace Jazor.RazorVue.RenderTree;
 /// </summary>
 internal sealed class RazorVueRenderTreeExtractor
 {
+    internal sealed record ParsedTemplateCarrier(
+        string? ParameterName,
+        IParameterSymbol? ParameterSymbol,
+        RazorVueRenderFragment Children,
+        ImmutableArray<CapturedValueBinding> CapturedBindings)
+    {
+        public static ParsedTemplateCarrier Create(
+            string? parameterName,
+            IParameterSymbol? parameterSymbol,
+            RazorVueRenderFragment children)
+            => new(
+                parameterName,
+                parameterSymbol,
+                children,
+                ImmutableArray<CapturedValueBinding>.Empty);
+    }
+
+    internal readonly record struct CapturedValueBinding(
+        IParameterSymbol ParameterSymbol,
+        IOperation Initializer);
+
     /// <summary>
     /// Converts BuildRenderTree syntax/operations into a <see cref="RazorVueRenderFragment"/>.
     /// </summary>
@@ -78,6 +99,33 @@ internal sealed class RazorVueRenderTreeExtractor
         }
 
         return RazorVueRenderFragment.Empty;
+    }
+
+    internal static bool TryParseTemplateCarrier(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        IOperation initializer,
+        IEnumerable<KeyValuePair<ILocalSymbol, ParsedTemplateCarrier>>? localRenderFragmentCarriers,
+        IEnumerable<KeyValuePair<ISymbol, ParsedTemplateCarrier>>? memberRenderFragmentCarriers,
+        IEnumerable<KeyValuePair<IMethodSymbol, ParsedTemplateCarrier>>? factoryRenderFragmentCarriers,
+        IEnumerable<ISymbol>? activeRenderFragmentMembers,
+        IEnumerable<IMethodSymbol>? activeRenderFragmentFactories,
+        IEnumerable<ILocalSymbol>? accessibleTemplateLocals,
+        IEnumerable<IParameterSymbol>? accessibleTemplateParameters,
+        out ParsedTemplateCarrier slotTemplate)
+    {
+        var adapter = ParserAdapter.Create(
+            context,
+            snapshot,
+            localRenderFragmentCarriers,
+            memberRenderFragmentCarriers,
+            factoryRenderFragmentCarriers,
+            activeRenderFragmentMembers,
+            activeRenderFragmentFactories,
+            accessibleTemplateLocals,
+            accessibleTemplateParameters);
+
+        return adapter.TryParseTemplateCarrier(initializer, out slotTemplate);
     }
 
     private static RazorVueRenderFragment CreateImperativeBodyFragment(
@@ -243,6 +291,109 @@ internal sealed class RazorVueRenderTreeExtractor
             builder.AddRange(CapturedBindings);
             return new ParsedSlotTemplate(ParameterName, ParameterSymbol, Children, builder.MoveToImmutable());
         }
+    }
+
+    private sealed class ParserAdapter(Parser parser)
+    {
+        public static ParserAdapter Create(
+            RazorVueCompilationContext context,
+            RazorVueSemanticSnapshot snapshot,
+            IEnumerable<KeyValuePair<ILocalSymbol, ParsedTemplateCarrier>>? localRenderFragmentCarriers,
+            IEnumerable<KeyValuePair<ISymbol, ParsedTemplateCarrier>>? memberRenderFragmentCarriers,
+            IEnumerable<KeyValuePair<IMethodSymbol, ParsedTemplateCarrier>>? factoryRenderFragmentCarriers,
+            IEnumerable<ISymbol>? activeRenderFragmentMembers,
+            IEnumerable<IMethodSymbol>? activeRenderFragmentFactories,
+            IEnumerable<ILocalSymbol>? accessibleTemplateLocals,
+            IEnumerable<IParameterSymbol>? accessibleTemplateParameters)
+        {
+            var localDictionary = CreateLocalRenderFragmentCarrierDictionary(localRenderFragmentCarriers);
+            var memberDictionary = CreateMemberRenderFragmentCarrierDictionary(memberRenderFragmentCarriers);
+            var factoryDictionary = CreateFactoryRenderFragmentCarrierDictionary(factoryRenderFragmentCarriers);
+
+            return new ParserAdapter(
+                new Parser(
+                    snapshot,
+                    context.Compilation,
+                    context.Symbols,
+                    ImmutableHashSet<IParameterSymbol>.Empty.WithComparer(SymbolEqualityComparer.Default),
+                    activeRenderFragmentMembers: activeRenderFragmentMembers,
+                    activeRenderFragmentFactories: activeRenderFragmentFactories,
+                    localRenderFragmentCarriers: localDictionary.Select(static pair => new RenderFragmentLocalCarrier(pair.Key, pair.Value)),
+                    memberRenderFragmentCarriers: memberDictionary.Select(static pair => new RenderFragmentMemberCarrier(pair.Key, pair.Value)),
+                    factoryRenderFragmentCarriers: factoryDictionary.Select(static pair => new RenderFragmentFactoryCarrier(pair.Key, pair.Value)),
+                    accessibleTemplateLocals: accessibleTemplateLocals,
+                    accessibleTemplateParameters: accessibleTemplateParameters,
+                    allowTemplateScopedLocals: true));
+        }
+
+        public bool TryParseTemplateCarrier(IOperation initializer, out ParsedTemplateCarrier slotTemplate)
+        {
+            if (!parser.TryParseSlotTemplateForExternalConsumption(initializer, out var internalTemplate))
+            {
+                slotTemplate = default!;
+                return false;
+            }
+
+            slotTemplate = ToExternal(internalTemplate);
+            return true;
+        }
+
+        private ParsedTemplateCarrier ToExternal(ParsedSlotTemplate template)
+            => new(
+                template.ParameterName,
+                template.ParameterSymbol,
+                template.Children,
+                template.CapturedBindings
+                    .Select(static binding => new CapturedValueBinding(binding.ParameterSymbol, binding.Initializer))
+                    .ToImmutableArray());
+
+        private static Dictionary<ILocalSymbol, ParsedSlotTemplate> CreateLocalRenderFragmentCarrierDictionary(
+            IEnumerable<KeyValuePair<ILocalSymbol, ParsedTemplateCarrier>>? carriers)
+        {
+            var dictionary = new Dictionary<ILocalSymbol, ParsedSlotTemplate>(SymbolEqualityComparer.Default);
+            if (carriers is null)
+                return dictionary;
+
+            foreach (var carrier in carriers)
+                dictionary[carrier.Key] = ToInternal(carrier.Value);
+
+            return dictionary;
+        }
+
+        private static Dictionary<ISymbol, ParsedSlotTemplate> CreateMemberRenderFragmentCarrierDictionary(
+            IEnumerable<KeyValuePair<ISymbol, ParsedTemplateCarrier>>? carriers)
+        {
+            var dictionary = new Dictionary<ISymbol, ParsedSlotTemplate>(SymbolEqualityComparer.Default);
+            if (carriers is null)
+                return dictionary;
+
+            foreach (var carrier in carriers)
+                dictionary[carrier.Key] = ToInternal(carrier.Value);
+
+            return dictionary;
+        }
+
+        private static Dictionary<IMethodSymbol, ParsedSlotTemplate> CreateFactoryRenderFragmentCarrierDictionary(
+            IEnumerable<KeyValuePair<IMethodSymbol, ParsedTemplateCarrier>>? carriers)
+        {
+            var dictionary = new Dictionary<IMethodSymbol, ParsedSlotTemplate>(SymbolEqualityComparer.Default);
+            if (carriers is null)
+                return dictionary;
+
+            foreach (var carrier in carriers)
+                dictionary[carrier.Key] = ToInternal(carrier.Value);
+
+            return dictionary;
+        }
+
+        private static ParsedSlotTemplate ToInternal(ParsedTemplateCarrier template)
+            => new(
+                template.ParameterName,
+                template.ParameterSymbol,
+                template.Children,
+                template.CapturedBindings
+                    .Select(static binding => new RenderHelperValueBinding(binding.ParameterSymbol, binding.Initializer))
+                    .ToImmutableArray());
     }
 
     private readonly record struct RenderFragmentLocalCarrier(
@@ -2241,6 +2392,9 @@ internal sealed class RazorVueRenderTreeExtractor
 
             return false;
         }
+
+        internal bool TryParseSlotTemplateForExternalConsumption(IOperation? operation, out ParsedSlotTemplate slotTemplate)
+            => TryParseSlotTemplate(operation, out slotTemplate);
 
         private bool TryParseCurrentComponentSlotSource(IOperation? operation, out ParsedSlotTemplate slotTemplate)
         {

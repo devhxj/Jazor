@@ -198,7 +198,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
             foreach (var node in nodes)
             {
-                if (IsConsumedTemplateExtensionNode(node))
+                if (IsConsumedTemplateExtensionNode(node) || IsTemplateIntermediateNode(node))
                     continue;
 
                 switch (node.Kind)
@@ -219,7 +219,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                             break;
                         }
 
-                        builder.Add(ConvertExpressionOrSlotOutlet(node));
+                        builder.AddRange(ConvertExpressionOrSlotOutlet(node).Children);
                         break;
                     case RazorVueRazorIrNodeKind.Document:
                         builder.AddRange(ConvertLooseNodes(node.Children, insideTemplate, allowImperativePromotion, allowedLocalSymbols, allowedParameterSymbols).Children);
@@ -379,7 +379,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                             break;
                         }
 
-                        builder.Add(ConvertExpressionOrSlotOutlet(node));
+                        builder.AddRange(ConvertExpressionOrSlotOutlet(node).Children);
                         index++;
                         break;
                     case RazorVueRazorIrNodeKind.MarkupBlock:
@@ -1681,6 +1681,13 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             if (!IsRenderFragment(propertyReference.Property.Type))
                 return false;
 
+            if (_context.Symbols.ParameterAttribute is null ||
+                !propertyReference.Property.GetAttributes().Any(attribute =>
+                    SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, _context.Symbols.ParameterAttribute)))
+            {
+                return false;
+            }
+
             slotName = string.Equals(propertyReference.Property.Name, "ChildContent", StringComparison.Ordinal)
                 ? "default"
                 : ToLowerCamelCase(propertyReference.Property.Name);
@@ -1701,14 +1708,166 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 instance,
                 Jazor.RazorVue.RazorVueOperationNormalizer.Unwrap);
 
-        private RazorVueRenderNode ConvertExpressionOrSlotOutlet(RazorVueRazorIrNode node)
+        private RazorVueRenderFragment ConvertExpressionOrSlotOutlet(RazorVueRazorIrNode node)
         {
             var expression = ConvertExpression(node);
             if (TryResolveSlotOutlet(expression.Expression, out var slotName))
-                return new RazorVueSlotOutletNode(slotName, null, expression.Origins);
+            {
+                return new RazorVueRenderFragment(
+                [
+                    new RazorVueSlotOutletNode(slotName, null, expression.Origins)
+                ]);
+            }
 
-            return expression;
+            if (TryConvertSlotOutletInvocationExpression(expression.Expression, expression.Origins, out var slotOutletInvocationFragment))
+                return slotOutletInvocationFragment;
+
+            if (TryConvertRenderFragmentExpression(node, expression.Expression, expression.Origins, out var renderFragment))
+                return renderFragment;
+
+            return new RazorVueRenderFragment([expression]);
         }
+
+        private bool TryConvertRenderFragmentExpression(
+            RazorVueRazorIrNode node,
+            IOperation operation,
+            ImmutableArray<RazorVueSourceOrigin> origins,
+            out RazorVueRenderFragment fragment)
+        {
+            fragment = RazorVueRenderFragment.Empty;
+            if (Unwrap(operation) is IInvocationOperation invocation &&
+                TryConvertTypedRenderFragmentInvocation(invocation, origins, out fragment))
+            {
+                return true;
+            }
+
+            if (!TryResolveStoredSlotTemplate(operation, out var slotTemplate) ||
+                !string.IsNullOrWhiteSpace(slotTemplate.ParameterName))
+            {
+                return false;
+            }
+
+            if (TryGetBestSourceSpan(node) is null)
+                return false;
+
+            fragment = MaterializeCapturedTemplateChildren(slotTemplate, origins);
+            return true;
+        }
+
+        private bool TryConvertSlotOutletInvocationExpression(
+            IOperation operation,
+            ImmutableArray<RazorVueSourceOrigin> origins,
+            out RazorVueRenderFragment fragment)
+        {
+            fragment = RazorVueRenderFragment.Empty;
+            if (Unwrap(operation) is not IInvocationOperation invocation ||
+                invocation.Arguments.Length != 1)
+            {
+                return false;
+            }
+
+            if (!TryResolveTypedSlotOutletInvocation(invocation, out var slotName, out var argument))
+                return false;
+
+            fragment = new RazorVueRenderFragment(
+            [
+                new RazorVueSlotOutletNode(
+                    slotName,
+                    argument,
+                    origins)
+            ]);
+            return true;
+        }
+
+        private bool TryResolveTypedSlotOutletInvocation(
+            IInvocationOperation invocation,
+            out string slotName,
+            out IOperation argument)
+        {
+            slotName = string.Empty;
+            argument = default!;
+
+            if (Unwrap(invocation.Instance) is not IPropertyReferenceOperation propertyReference)
+                return false;
+
+            if (!IsCurrentComponentMember(propertyReference.Property, propertyReference.Instance))
+                return false;
+
+            if (!IsTypedRenderFragment(propertyReference.Property.Type))
+                return false;
+
+            if (_context.Symbols.ParameterAttribute is null ||
+                !propertyReference.Property.GetAttributes().Any(attribute =>
+                    SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, _context.Symbols.ParameterAttribute)))
+            {
+                return false;
+            }
+
+            var invocationArgument = Unwrap(invocation.Arguments[0].Value);
+            if (invocationArgument is null || IsConstantNull(invocationArgument))
+                return false;
+
+            slotName = string.Equals(propertyReference.Property.Name, "ChildContent", StringComparison.Ordinal)
+                ? "default"
+                : ToLowerCamelCase(propertyReference.Property.Name);
+            argument = invocationArgument;
+            return true;
+        }
+
+        private bool TryConvertTypedRenderFragmentInvocation(
+            IInvocationOperation invocation,
+            ImmutableArray<RazorVueSourceOrigin> origins,
+            out RazorVueRenderFragment fragment)
+        {
+            fragment = RazorVueRenderFragment.Empty;
+            if (!TryResolveStoredSlotTemplate(invocation.Instance, out var slotTemplate) ||
+                string.IsNullOrWhiteSpace(slotTemplate.ParameterName) ||
+                slotTemplate.ParameterSymbol is null ||
+                invocation.Arguments.Length != 1)
+            {
+                return false;
+            }
+
+            var initializer = Unwrap(invocation.Arguments[0].Value);
+            if (initializer is null || IsConstantNull(initializer))
+                return false;
+
+            fragment = CreateTypedFragmentScope(slotTemplate, initializer, origins);
+            return true;
+        }
+
+        private RazorVueRenderFragment CreateTypedFragmentScope(
+            ParsedSlotTemplate slotTemplate,
+            IOperation initializer,
+            ImmutableArray<RazorVueSourceOrigin> origins)
+        {
+            var fragment = new RazorVueRenderFragment(
+            [
+                new RazorVueTemplateScopeNode(
+                    ScopeName: slotTemplate.ParameterName!,
+                    ScopeParameterSymbol: slotTemplate.ParameterSymbol,
+                    Initializer: initializer,
+                    Children: slotTemplate.Children,
+                    Origins: origins)
+            ]);
+
+            return WrapCapturedTemplateScopes(fragment, slotTemplate.CapturedBindings, origins);
+        }
+
+        private bool IsTypedRenderFragment(ITypeSymbol typeSymbol)
+            => typeSymbol is INamedTypeSymbol namedType &&
+               _context.Symbols.RenderFragmentOfT is not null &&
+               SymbolEqualityComparer.Default.Equals(namedType.OriginalDefinition, _context.Symbols.RenderFragmentOfT);
+
+        private static bool IsConstantNull(IOperation? operation)
+        {
+            var current = Unwrap(operation);
+            return current?.ConstantValue.HasValue == true &&
+                   current.ConstantValue.Value is null;
+        }
+
+        private static IOperation? Unwrap(IOperation? operation)
+            => RazorVueOperationNormalizer.Unwrap(operation);
 
         private bool TryConvertConditional(
             IReadOnlyList<RazorVueRazorIrNode> nodes,
@@ -2160,8 +2319,8 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                         declarator,
                         currentLocalScope,
                         allowedParameterSymbols,
-                        out var inlineTemplateNode);
-                    if (inlineTemplateNode is not null)
+                        out var consumeFollowingTemplateNode);
+                    if (consumeFollowingTemplateNode)
                     {
                         _ = ConsumeRequiredRenderFragmentCarrierTemplateNode(
                             nodes,
@@ -2515,7 +2674,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     if (declarator.Initializer?.Value is not null)
                         continue;
 
-                    if (IsRenderTreeBuilderType(declarator.Symbol.Type) || IsRenderFragment(declarator.Symbol.Type))
+                    if (IsRenderTreeBuilderType(declarator.Symbol.Type))
                         continue;
 
                     pendingDeclarators.Add(declarator.Symbol);
@@ -2611,6 +2770,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 return false;
 
             var tailOperations = siblingOperations.Skip(startIndex).ToImmutableArray();
+            if (tailOperations.All(operation => IsIgnorableGeneratedTemplateTailOperation(codeNode, operation)))
+                return false;
+
             if (!RazorVueImperativeRenderPromotionAnalyzer.ShouldPromoteBody(tailOperations))
                 return false;
 
@@ -2619,6 +2781,21 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 tailOperations,
                 RazorVueImperativeRenderPromotionAnalyzer.ClassifyBodyKind(tailOperations));
             return true;
+        }
+
+        private bool IsIgnorableGeneratedTemplateTailOperation(
+            RazorVueRazorIrNode codeNode,
+            IOperation operation)
+        {
+            var current = Unwrap(operation);
+            return current switch
+            {
+                null => true,
+                IExpressionStatementOperation expressionStatement => IsGeneratedTemplateBuilderStatement(codeNode, expressionStatement),
+                IReturnOperation returnOperation => IsGeneratedTemplateBuilderReturn(codeNode, returnOperation),
+                IBlockOperation block => block.Operations.All(child => IsIgnorableGeneratedTemplateTailOperation(codeNode, child)),
+                _ => false
+            };
         }
 
         private static void CollectDeclarators(
@@ -2783,14 +2960,31 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             IVariableDeclaratorOperation declarator,
             ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
             ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
-            out RazorVueRazorIrNode? inlineTemplateNode)
+            out bool consumeFollowingTemplateNode)
         {
-            inlineTemplateNode = null;
-            if (declarator.Initializer?.Value is not { } initializer)
+            consumeFollowingTemplateNode = false;
+            var initializer = TryGetSourceStableRenderFragmentInitializer(declarator.Symbol);
+            if (initializer is null)
             {
+                var hasLaterWrites =
+                    RazorVueImperativeRenderFragmentCarrierHelper.IsSourceStableLocalRenderFragmentInitializerInvalidatedByLaterWrites(
+                        _context.Compilation,
+                        declarator.Symbol);
+                var failureMessage =
+                    declarator.Initializer?.Value is null
+                        ? $"RazorVue RenderFragment local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once by the immediately following simple assignment statement and cannot be observed through later writes."
+                        : $"RazorVue RenderFragment local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' requires an analyzable initializer.";
+                if (hasLaterWrites)
+                {
+                    failureMessage =
+                        declarator.Initializer?.Value is null
+                            ? $"RazorVue RenderFragment local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once by the immediately following simple assignment statement and cannot be observed through later writes."
+                            : $"RazorVue RenderFragment local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Declaration-initialized local carriers must remain source-stable.";
+                }
+
                 throw CreateUnsupportedAttributeException(
                     CreateSourceSpanFromSyntax(declarator.Syntax),
-                    $"RazorVue RenderFragment local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' requires an analyzable initializer.");
+                    failureMessage);
             }
 
             if (!TryResolveRenderFragmentLocalCarrierTemplate(
@@ -2799,7 +2993,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     allowedLocalSymbols,
                     allowedParameterSymbols,
                     out var slotTemplate,
-                    out inlineTemplateNode))
+                    out consumeFollowingTemplateNode))
             {
                 throw CreateUnsupportedAttributeException(
                     CreateSourceSpanFromSyntax(declarator.Syntax),
@@ -2834,17 +3028,17 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
             ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
             out ParsedSlotTemplate slotTemplate,
-            out RazorVueRazorIrNode? inlineTemplateNode)
+            out bool consumeFollowingTemplateNode)
         {
             slotTemplate = default;
-            inlineTemplateNode = null;
+            consumeFollowingTemplateNode = false;
             return TryResolveRenderFragmentCarrierInitializerTemplate(
                 declarator,
                 initializer,
                 allowedLocalSymbols,
                 allowedParameterSymbols,
                 out slotTemplate,
-                out inlineTemplateNode);
+                out consumeFollowingTemplateNode);
         }
 
         private bool TryResolveRenderFragmentCarrierInitializerTemplate(
@@ -2853,13 +3047,23 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
             ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
             out ParsedSlotTemplate slotTemplate,
-            out RazorVueRazorIrNode? inlineTemplateNode)
+            out bool consumeFollowingTemplateNode)
         {
             slotTemplate = default;
-            inlineTemplateNode = null;
+            consumeFollowingTemplateNode = false;
 
             if (TryResolveRenderFragmentCarrierTemplateFromOperation(initializer, out slotTemplate))
                 return true;
+
+            if (TryResolveRenderFragmentCarrierTemplateFromBuilderOperations(
+                    initializer,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols,
+                    out slotTemplate))
+            {
+                consumeFollowingTemplateNode = declarator is not null;
+                return true;
+            }
 
             return TryResolveInlineRenderFragmentCarrierTemplate(
                 declarator,
@@ -2867,7 +3071,67 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 allowedLocalSymbols,
                 allowedParameterSymbols,
                 out slotTemplate,
-                out inlineTemplateNode);
+                out consumeFollowingTemplateNode);
+        }
+
+        private bool TryResolveRenderFragmentCarrierTemplateFromBuilderOperations(
+            IOperation initializer,
+            ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+            ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
+            out ParsedSlotTemplate slotTemplate)
+        {
+            slotTemplate = default;
+            if (!RazorVueRenderTreeExtractor.TryParseTemplateCarrier(
+                    _context,
+                    _snapshot,
+                    initializer,
+                    _localRenderFragmentCarriers.Select(static pair =>
+                        new KeyValuePair<ILocalSymbol, RazorVueRenderTreeExtractor.ParsedTemplateCarrier>(
+                            pair.Key,
+                            new RazorVueRenderTreeExtractor.ParsedTemplateCarrier(
+                                pair.Value.ParameterName,
+                                pair.Value.ParameterSymbol,
+                                pair.Value.Children,
+                                pair.Value.CapturedBindings
+                                    .Select(static binding => new RazorVueRenderTreeExtractor.CapturedValueBinding(binding.ParameterSymbol, binding.Initializer))
+                                    .ToImmutableArray()))),
+                    _memberRenderFragmentCarriers.Select(static pair =>
+                        new KeyValuePair<ISymbol, RazorVueRenderTreeExtractor.ParsedTemplateCarrier>(
+                            pair.Key,
+                            new RazorVueRenderTreeExtractor.ParsedTemplateCarrier(
+                                pair.Value.ParameterName,
+                                pair.Value.ParameterSymbol,
+                                pair.Value.Children,
+                                pair.Value.CapturedBindings
+                                    .Select(static binding => new RazorVueRenderTreeExtractor.CapturedValueBinding(binding.ParameterSymbol, binding.Initializer))
+                                    .ToImmutableArray()))),
+                    _factoryRenderFragmentCarriers.Select(static pair =>
+                        new KeyValuePair<IMethodSymbol, RazorVueRenderTreeExtractor.ParsedTemplateCarrier>(
+                            pair.Key,
+                            new RazorVueRenderTreeExtractor.ParsedTemplateCarrier(
+                                pair.Value.ParameterName,
+                                pair.Value.ParameterSymbol,
+                                pair.Value.Children,
+                                pair.Value.CapturedBindings
+                                    .Select(static binding => new RazorVueRenderTreeExtractor.CapturedValueBinding(binding.ParameterSymbol, binding.Initializer))
+                                    .ToImmutableArray()))),
+                    _activeRenderFragmentMembers,
+                    _activeRenderFragmentFactories,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols,
+                    out var parsedTemplate))
+            {
+                return false;
+            }
+
+            slotTemplate = new ParsedSlotTemplate(
+                parsedTemplate.ParameterName,
+                parsedTemplate.ParameterSymbol,
+                parsedTemplate.Children,
+                parsedTemplate.CapturedBindings
+                    .Select(static binding => new RenderHelperValueBinding(binding.ParameterSymbol, binding.Initializer))
+                    .ToImmutableArray());
+            return true;
         }
 
         private bool TryResolveInlineRenderFragmentCarrierTemplate(
@@ -2876,10 +3140,10 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
             ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
             out ParsedSlotTemplate slotTemplate,
-            out RazorVueRazorIrNode? inlineTemplateNode)
+            out bool consumeFollowingTemplateNode)
         {
             slotTemplate = default;
-            inlineTemplateNode = null;
+            consumeFollowingTemplateNode = false;
             if (!TryParseRenderFragmentCarrierSignature(
                     initializer,
                     out var parameterName,
@@ -2891,7 +3155,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             if (!TryFindTemplateNodeForOperation(initializer, out var templateNode))
                 return false;
 
-            inlineTemplateNode = templateNode;
+            consumeFollowingTemplateNode = true;
             MarkConsumedTemplateNode(templateNode);
             var templateParameterScope = parameterSymbol is null
                 ? allowedParameterSymbols
@@ -2914,7 +3178,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             if (_documentRoot is null)
                 return false;
 
-            if (!_resolver.TryMapGeneratedOperationToOriginalSourceSpan(operation, out var sourceSpan))
+            if (!TryGetTemplateAnchorRange(operation, out var anchorRange))
                 return false;
 
             var candidates = EnumerateNodes(_documentRoot)
@@ -2925,15 +3189,160 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     Range = TryGetNodeSourceRange(node)
                 })
                 .Where(item => item.Range is not null &&
-                               PathsEqual(item.Range.Value.FilePath, sourceSpan.FilePath) &&
-                               item.Range.Value.Start >= sourceSpan.AbsoluteIndex)
-                .OrderBy(item => item.Range!.Value.Start - sourceSpan.AbsoluteIndex)
-                .ThenBy(item => item.Range!.Value.Length)
+                               PathsEqual(item.Range.Value.FilePath, anchorRange.FilePath) &&
+                               item.Range.Value.Start <= anchorRange.Start &&
+                               item.Range.Value.End >= anchorRange.End)
+                .OrderBy(item => item.Range!.Value.Length)
+                .ThenBy(item => Math.Abs(item.Range!.Value.Start - anchorRange.Start))
                 .ToArray();
+            if (candidates.Length == 0)
+            {
+                candidates = EnumerateNodes(_documentRoot)
+                    .Where(IsTemplateIntermediateNode)
+                    .Select(node => new
+                    {
+                        Node = node,
+                        Range = TryGetNodeSourceRange(node)
+                    })
+                    .Where(item => item.Range is not null &&
+                                   PathsEqual(item.Range.Value.FilePath, anchorRange.FilePath) &&
+                                   RangesOverlap(item.Range.Value, anchorRange))
+                    .OrderBy(item => item.Range!.Value.Length)
+                    .ThenBy(item => Math.Abs(item.Range!.Value.Start - anchorRange.Start))
+                    .ToArray();
+            }
+
+            if (candidates.Length == 0)
+            {
+                candidates = EnumerateNodes(_documentRoot)
+                    .Where(IsTemplateIntermediateNode)
+                    .Select(node => new
+                    {
+                        Node = node,
+                        Range = TryGetNodeSourceRange(node)
+                    })
+                    .Where(item => item.Range is not null &&
+                                   PathsEqual(item.Range.Value.FilePath, anchorRange.FilePath) &&
+                                   item.Range.Value.Start >= anchorRange.Start)
+                    .OrderBy(item => item.Range!.Value.Start - anchorRange.Start)
+                    .ThenBy(item => item.Range!.Value.Length)
+                    .ToArray();
+            }
+
             if (candidates.Length == 0)
                 return false;
 
             templateNode = candidates[0].Node;
+            return true;
+        }
+
+        private void MarkNearestTemplateNodeForOperation(IOperation operation)
+        {
+            if (_documentRoot is null)
+                return;
+
+            if (!TryGetTemplateAnchorRange(operation, out var anchorRange) &&
+                !TryCreateSourceRangeFromSyntax(operation.Syntax, out anchorRange))
+            {
+                return;
+            }
+
+            var candidate = EnumerateNodes(_documentRoot)
+                .Where(IsTemplateIntermediateNode)
+                .Select(node => new
+                {
+                    Node = node,
+                    Range = TryGetNodeSourceRange(node)
+                })
+                .Where(item => item.Range is not null &&
+                               PathsEqual(item.Range.Value.FilePath, anchorRange.FilePath))
+                .OrderBy(item =>
+                {
+                    var range = item.Range!.Value;
+                    if (range.Start <= anchorRange.Start && range.End >= anchorRange.End)
+                        return 0;
+
+                    if (RangesOverlap(range, anchorRange))
+                        return 1;
+
+                    return 2;
+                })
+                .ThenBy(item =>
+                {
+                    var range = item.Range!.Value;
+                    var distanceToStart = Math.Abs(range.Start - anchorRange.Start);
+                    var distanceToEnd = Math.Abs(range.End - anchorRange.End);
+                    return Math.Min(distanceToStart, distanceToEnd);
+                })
+                .ThenBy(item => item.Range!.Value.Length)
+                .FirstOrDefault();
+
+            if (candidate is not null)
+                MarkConsumedTemplateNode(candidate.Node);
+        }
+
+        private static bool TryCreateSourceRangeFromSyntax(
+            SyntaxNode? syntax,
+            out RazorVueRazorIrOperationResolver.SourceRange sourceRange)
+        {
+            sourceRange = default;
+            if (syntax is null)
+                return false;
+
+            if (CreateSourceSpanFromSyntax(syntax) is not { } sourceSpan ||
+                string.IsNullOrWhiteSpace(sourceSpan.FilePath))
+            {
+                return false;
+            }
+
+            sourceRange = new RazorVueRazorIrOperationResolver.SourceRange(
+                NormalizeComparablePath(sourceSpan.FilePath),
+                sourceSpan.AbsoluteIndex,
+                sourceSpan.AbsoluteIndex + sourceSpan.Length);
+            return true;
+        }
+
+        private bool TryGetTemplateAnchorRange(
+            IOperation operation,
+            out RazorVueRazorIrOperationResolver.SourceRange anchorRange)
+        {
+            anchorRange = default;
+            if (_resolver.TryMapGeneratedOperationToOriginalSourceSpan(operation, out var directSourceSpan) &&
+                !string.IsNullOrWhiteSpace(directSourceSpan.FilePath))
+            {
+                anchorRange = new RazorVueRazorIrOperationResolver.SourceRange(
+                    NormalizeComparablePath(directSourceSpan.FilePath),
+                    directSourceSpan.AbsoluteIndex,
+                    directSourceSpan.AbsoluteIndex + directSourceSpan.Length);
+                return true;
+            }
+
+            var descendantRanges = EnumerateSelfAndDescendants(operation)
+                .Select(current =>
+                    _resolver.TryMapGeneratedOperationToOriginalSourceSpan(current, out var sourceSpan) &&
+                    !string.IsNullOrWhiteSpace(sourceSpan.FilePath)
+                        ? new RazorVueRazorIrOperationResolver.SourceRange(
+                            NormalizeComparablePath(sourceSpan.FilePath),
+                            sourceSpan.AbsoluteIndex,
+                            sourceSpan.AbsoluteIndex + sourceSpan.Length)
+                        : (RazorVueRazorIrOperationResolver.SourceRange?)null)
+                .Where(static range => range is not null)
+                .Select(static range => range!.Value)
+                .ToArray();
+            if (descendantRanges.Length == 0)
+                return false;
+
+            var filePath = descendantRanges[0].FilePath;
+            var sameFileRanges = descendantRanges
+                .Where(range => PathsEqual(range.FilePath, filePath))
+                .ToArray();
+            if (sameFileRanges.Length == 0)
+                return false;
+
+            anchorRange = new RazorVueRazorIrOperationResolver.SourceRange(
+                filePath,
+                sameFileRanges.Min(static range => range.Start),
+                sameFileRanges.Max(static range => range.End));
             return true;
         }
 
@@ -3404,6 +3813,14 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
             return null;
         }
+
+        private IOperation? TryGetSourceStableRenderFragmentInitializer(ILocalSymbol local)
+            => RazorVueImperativeRenderFragmentCarrierHelper.TryGetSourceStableLocalRenderFragmentInitializer(
+                _context.Compilation,
+                local,
+                out var initializer)
+                ? initializer
+                : null;
 
         private IOperation? TryGetFieldRenderFragmentInitializer(IFieldSymbol field)
         {

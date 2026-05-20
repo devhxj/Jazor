@@ -1,6 +1,7 @@
 using Jazor.RazorVue.Lowering;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Jazor.RazorVue.RazorIr.Test;
@@ -464,6 +465,102 @@ public sealed class RazorVueRazorIrCompilerExpressionBridgeTests
 
         Assert.IsTrue(resolved);
         Assert.AreEqual("Show", conditional.Operation.Condition.Syntax.ToString());
+    }
+
+    [TestMethod]
+    public void RazorVueRazorIrOperationResolver_ForRenderFragmentPropertyInitializer_RemainsUnmappedAtGeneratedBuilderLambdaBoundary()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @using Microsoft.AspNetCore.Components
+
+            @Template
+
+            @code {
+                private RenderFragment Template => @<section><span>safe</span><p>ok</p></section>;
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.OperationResolver.RenderFragmentProperty.Expression.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var property = snapshot.ComponentSymbol.GetMembers("Template").OfType<IPropertySymbol>().Single();
+        var declaration = (PropertyDeclarationSyntax)property.DeclaringSyntaxReferences.Single().GetSyntax();
+        var semanticModel = context.Compilation.GetSemanticModel(declaration.SyntaxTree);
+
+        Assert.IsTrue(
+            RazorVuePropertyInitializerHelper.TryGetPropertyValueOperation(semanticModel, declaration, out var initializer) &&
+            initializer is not null,
+            "Property initializer operation could not be resolved.");
+
+        var resolver = new RazorVueRazorIrOperationResolver(
+            context,
+            snapshot,
+            snapshot.RazorSourceGeneratorDocument!);
+
+        Assert.IsFalse(
+            resolver.TryMapGeneratedOperationToOriginalSourceSpan(initializer, out _),
+            "Generated builder-lambda property carrier should not be assumed to carry direct Razor source mapping.");
+    }
+
+    [TestMethod]
+    public void RazorVueImperativeRenderFragmentCarrierHelper_ForImmediatelyAssignedUntypedRenderFragment_FindsAnonymousFunctionInitializer()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @using Microsoft.AspNetCore.Components
+
+            @{
+                RenderFragment template;
+                template = @<section><span>safe</span><p>ok</p></section>;
+            }
+
+            @template
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.OperationResolver.RenderFragmentLocalCarrier.Expression.ImmediateAssignment.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var buildRenderTree = snapshot.BuildRenderTreeMethod!;
+        var methodDeclaration = (MethodDeclarationSyntax)buildRenderTree.DeclaringSyntaxReferences.Single().GetSyntax();
+        var semanticModel = context.Compilation.GetSemanticModel(methodDeclaration.SyntaxTree);
+        var rootOperation = (IBlockOperation)semanticModel.GetOperation(methodDeclaration.Body!)!;
+
+        static IEnumerable<IOperation> EnumerateOperations(IOperation root)
+        {
+            yield return root;
+            foreach (var child in root.ChildOperations)
+            {
+                if (child is null)
+                    continue;
+
+                foreach (var nested in EnumerateOperations(child))
+                    yield return nested;
+            }
+        }
+
+        var local = EnumerateOperations(rootOperation)
+            .OfType<IVariableDeclaratorOperation>()
+            .Single(operation => string.Equals(operation.Symbol.Name, "template", StringComparison.Ordinal))
+            .Symbol;
+
+        Assert.IsTrue(
+            RazorVueImperativeRenderFragmentCarrierHelper.TryGetSourceStableLocalRenderFragmentInitializer(
+                context.Compilation,
+                local,
+                out var initializer) &&
+            initializer is not null,
+            "Source-stable RenderFragment initializer could not be resolved.");
+
+        Assert.IsTrue(
+            RazorVueImperativeRenderFragmentCarrierHelper.TryGetAnonymousFunction(initializer, out _),
+            $"Expected immediate-assignment initializer to normalize to an anonymous function, but got '{initializer.Kind}' with syntax '{initializer.Syntax}'.");
     }
 
 }

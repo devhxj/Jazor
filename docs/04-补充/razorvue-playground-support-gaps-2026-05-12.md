@@ -367,6 +367,8 @@ for (var i = Start; i >= Count; i = i - Step)
 - current-component 只读 property / `readonly` field 直接承载匿名 `RenderFragment` / `RenderFragment<T>` 初始化器
 - 只读 member 转发链
 - 受支持 fragment factory 返回值先落入 local/member carrier 再消费
+- local `RenderFragment` / `RenderFragment<T>` 的“先声明、再紧邻一次简单赋值” source-stable 窄模式
+  - 上述 immediate-assignment 右侧现已回归锁定：inline Razor template、本组件受支持 member carrier、以及受支持 fragment factory 返回值三类都会继续进入结构化 slot/template carrier，而不会误退回 imperative tail
 - 自引用 / 环引用 fail-fast
 
 同时语义边界也已锁定：
@@ -374,6 +376,7 @@ for (var i = Start; i >= Count; i = i - Step)
 - typed slot/template 的 context 参数保留在 slot/template 自身的 `ParameterName` / `ParameterSymbol`
 - 只有存在额外 captured 普通值参数或当前组件值时，才会在 children 外再包一层 `TemplateScopeNode`
 - 如果 carrier 本身只是 `item => ...` 这类直接 typed template，则 slot/template children 直接是结构化 element/expression 节点，不会额外生成 scope wrapper
+- 若 local carrier 不是紧邻一次简单赋值，或在初始化后再次出现可观察写入，则继续沿 source-stable 合同显式 fail-fast
 
 ### 补充：implicit default slot assignment 与参数名策略
 
@@ -1141,7 +1144,8 @@ builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span
 - 支持：initializer 捕获当前可见 template local、loop local 与 typed slot/scoped slot context parameter
 - 支持：局部声明后进入 `if` / `if-else` / `foreach` / count-style `for`
 - 支持：Razor IR 把 `}` 与下一个 `if` / `foreach` / `for` header 合并进同一 boundary code node 时，frontend 会继续恢复后续控制语句
-- 支持：声明点初始化的局部 `RenderFragment` / `RenderFragment<T>` carrier；初始化器可以是 inline Razor template、当前组件只读 `RenderFragment` member carrier，或受支持 fragment factory 调用结果。只要最终模板体可稳定追到 Razor SDK 物化的 `TemplateIntermediateNode`，当前就可用于后续组件 slot/template 参数消费，并允许在同一 code-block 中继续恢复 trailing `if` / `foreach` / `for`
+- 支持：声明点初始化的局部 `RenderFragment` / `RenderFragment<T>` carrier；初始化器可以是 inline Razor template、当前组件受支持 `RenderFragment` member carrier，或受支持 fragment factory 调用结果。typed / inline template 仍优先走 Razor SDK `TemplateIntermediateNode` 结构恢复；untyped current-component member / source-stable local direct expression consumption 则允许走 shared builder-lambda parser fallback，因此不再要求 property initializer 自身必须直接带可映回 Razor 的 source mapping，且这两条路径都可继续进入后续组件 slot/template 参数或 direct `@expr` 消费
+- 支持：Razor authored direct typed invocation consumption；受控 current-component member / source-stable local `RenderFragment<T>` carrier 可以直接写成 `@Template(42)` / `@template(42)`，直接调用当前组件 fragment factory 返回值也可以写成 `@CreateTemplate(Title)(42)` / `@CreateTemplate()(42)`，当前组件 `[Parameter] RenderFragment<T>?` slot source 也可以直接写成 `@Header(Count + 1)`，并分别落到 typed fragment scope / typed slot outlet 语义
 - 不支持：不是“声明后紧邻一次简单赋值”的其他先声明后赋值形态
 - 当前这一“声明式模板 code-block 结构化恢复”通道不支持：局部声明后进入更一般的语句执行模型
 - 当前这一“声明式模板 code-block 结构化恢复”通道不支持：赋值语句、递增/递减、delegate/callable template state
@@ -1179,6 +1183,10 @@ builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span
 - 对于局部 `RenderFragment` / `RenderFragment<T>` carrier，frontend 会按 handwritten `BuildRenderTree` 既有契约直接吸收为结构化 slot template carrier，而不是保留为根级 `RazorVueLocalDeclarationNode`
 - 对于局部 `RenderFragment` / `RenderFragment<T>` carrier，如果它来自当前组件只读 member 或受支持 fragment factory，frontend 同样会保留“外层 captured-value scope + 内层 typed fragment scope”的结构化语义，而不是退化成动态 delegate 执行
 - 对于局部 `RenderFragment` / `RenderFragment<T>` carrier 后继续出现的 trailing `if` / `foreach` / `for`，frontend 会恢复为同一模板片段中的顺序控制节点，而不会把 control body 错误裸露为根节点
+- direct `@Template` / `@template` 这类 untyped `RenderFragment` member/local expression 现已回归锁定：frontend 会直接还原结构化 subtree，而不会重复输出同一 template body、把普通 member 误判成 slot outlet，或把 immediate-assignment local 错误退回 imperative tail
+- direct `@Template(42)` / `@template(42)` 这类 typed `RenderFragment<T>` member/local invocation，以及 direct `@CreateTemplate(Title)(42)` / `@CreateTemplate()(42)` 这类当前组件 fragment factory 返回值的立即消费，现也已回归锁定：frontend 会直接还原为 typed fragment scope，并保留外层 captured-value scope，而不会退化成普通 invocation 表达式、错误进入 compiler expression bridge，或在 canonical/SFC 阶段触发 member/property unsupported
+- direct `@Header(Count + 1)` 这类 typed slot outlet invocation 现也已锁定：当前组件 `[Parameter] RenderFragment<T>?` slot source 会直接还原为带 argument 的 slot outlet，最终 lower 为 `<slot name="header" :value="(props.count + 1)" />`，而不会再变成普通插值表达式
+- property initializer 若在 Razor SG 生成后落成 builder lambda 且整段 operation 本身没有直接 source mapping，当前实现会明确依赖 shared builder parser fallback；不会再把“direct source-map 缺失”误当成功能不支持
 - frontend 对 `"}"` + 下一个 control header 共处同一 `CSharpCodeIntermediateNode` 的 boundary 形态具备稳定恢复能力
 - H lowering 输出局部 `const`
 - H lowering 对 `if` / `if-else` / `foreach` / count-style `for` 的后续节点保持与 handwritten `BuildRenderTree` 一致的作用域顺序
