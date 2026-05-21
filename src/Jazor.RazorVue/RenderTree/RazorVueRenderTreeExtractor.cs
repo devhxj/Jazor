@@ -937,7 +937,7 @@ internal sealed class RazorVueRenderTreeExtractor
 
             if (IsMarkupStringAddContent(invocation))
             {
-                if (TryGetStaticMarkupString(value) is string staticMarkup)
+                if (TryResolveStaticMarkup(value) is { } staticMarkup)
                 {
                     AddStaticMarkupContent(invocation, staticMarkup);
                     return;
@@ -977,7 +977,7 @@ internal sealed class RazorVueRenderTreeExtractor
             if (value is null || IsConstantNull(value))
                 return;
 
-            if (TryGetStaticMarkupString(value) is not string markup)
+            if (TryResolveStaticMarkup(value) is not { } staticMarkup)
             {
                 TryThrowInvalidatedStaticMarkupLocalCarrier(value);
                 throw CreateUnsupportedBuilderCall(
@@ -985,27 +985,62 @@ internal sealed class RazorVueRenderTreeExtractor
                     $"BuildRenderTree call '{GetBuilderCallDisplayName(invocation)}' uses AddMarkupContent(...) content that is not compile-time provable static markup in component '{_snapshot.Descriptor.FullName}'. RazorVue only supports static markup literals/carriers that can be canonicalized into a safe render subtree.");
             }
 
-            if (string.IsNullOrEmpty(markup))
-                return;
-
-            AddStaticMarkupContent(invocation, markup);
+            AddStaticMarkupContent(invocation, staticMarkup);
         }
 
-        private void AddStaticMarkupContent(IInvocationOperation invocation, string markup)
+        private void AddStaticMarkupContent(
+            IInvocationOperation invocation,
+            RazorVueStaticMarkupValueHelper.StaticMarkupResolution resolution)
+        {
+            var fragment = CreateStaticMarkupFragment(invocation, resolution);
+            foreach (var child in fragment.Children)
+                AddNode(child);
+        }
+
+        private RazorVueRenderFragment CreateStaticMarkupFragment(
+            IInvocationOperation invocation,
+            RazorVueStaticMarkupValueHelper.StaticMarkupResolution resolution)
+        {
+            var origins = CreateOrigins(invocation, RazorVueOriginKind.Template);
+            var fragment = ParseStaticMarkupFragment(
+                resolution.Markup,
+                origins,
+                invocation);
+
+            for (var index = resolution.CapturedBindings.Length - 1; index >= 0; index--)
+            {
+                var binding = resolution.CapturedBindings[index];
+                fragment = new RazorVueRenderFragment(
+                [
+                    new RazorVueTemplateScopeNode(
+                        ScopeName: binding.ParameterSymbol.Name,
+                        ScopeParameterSymbol: binding.ParameterSymbol,
+                        Initializer: binding.Initializer,
+                        Children: fragment,
+                        Origins: origins)
+                ]);
+            }
+
+            return fragment;
+        }
+
+        private RazorVueRenderFragment ParseStaticMarkupFragment(
+            string markup,
+            ImmutableArray<RazorVueSourceOrigin> origins,
+            IInvocationOperation invocation)
         {
             if (string.IsNullOrEmpty(markup))
-                return;
+                return RazorVueRenderFragment.Empty;
 
             var nodes = RazorVueStaticMarkupParser.Parse(
                 markup,
-                CreateOrigins(invocation, RazorVueOriginKind.Template),
+                origins,
                 new RazorVueStaticMarkupParser.Dependencies(
                     CreateLiteralStringOperation,
                     detail => CreateUnsupportedBuilderCall(
                         invocation,
                         $"BuildRenderTree call '{GetBuilderCallDisplayName(invocation)}' {detail} in component '{_snapshot.Descriptor.FullName}'.")));
-            foreach (var node in nodes)
-                AddNode(node);
+            return new RazorVueRenderFragment(nodes);
         }
 
         private string? TryGetStaticMarkupString(IOperation? operation)
@@ -1014,7 +1049,19 @@ internal sealed class RazorVueRenderTreeExtractor
                 _compilation,
                 TryGetLocalMarkupStringInitializer,
                 TryGetPropertyMarkupStringInitializer,
-                TryGetFieldMarkupStringInitializer);
+                TryGetFieldMarkupStringInitializer,
+                TryGetStaticMarkupFactoryReturnedValue,
+                IsSupportedStaticMarkupFactoryInvocation);
+
+        private RazorVueStaticMarkupValueHelper.StaticMarkupResolution? TryResolveStaticMarkup(IOperation? operation)
+            => RazorVueStaticMarkupValueHelper.TryResolveStaticMarkup(
+                operation,
+                _compilation,
+                TryGetLocalMarkupStringInitializer,
+                TryGetPropertyMarkupStringInitializer,
+                TryGetFieldMarkupStringInitializer,
+                TryGetStaticMarkupFactoryReturnedValue,
+                IsSupportedStaticMarkupFactoryInvocation);
 
         private void TryThrowInvalidatedStaticMarkupLocalCarrier(IOperation? operation)
         {
@@ -2021,6 +2068,14 @@ internal sealed class RazorVueRenderTreeExtractor
 
             return null;
         }
+
+        private bool IsSupportedStaticMarkupFactoryInvocation(IInvocationOperation invocation)
+            => IsCurrentComponentMethod(invocation.TargetMethod, invocation.Instance);
+
+        private IOperation? TryGetStaticMarkupFactoryReturnedValue(IInvocationOperation invocation)
+            => TryGetRenderFragmentFactoryReturnedValue(invocation, out var returnedValue)
+                ? returnedValue
+                : null;
 
         private IOperation CreateLiteralStringOperation(string value)
         {

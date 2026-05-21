@@ -1,11 +1,40 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
+using System.Collections.Immutable;
 
 namespace Jazor.RazorVue;
 
 internal static class RazorVueStaticMarkupValueHelper
 {
+    internal readonly record struct StaticMarkupCapturedBinding(
+        IParameterSymbol ParameterSymbol,
+        IOperation Initializer);
+
+    internal readonly record struct StaticMarkupResolution(
+        string Markup,
+        ImmutableArray<StaticMarkupCapturedBinding> CapturedBindings)
+    {
+        public static StaticMarkupResolution Create(string markup)
+            => new(markup, ImmutableArray<StaticMarkupCapturedBinding>.Empty);
+
+        public StaticMarkupResolution PrependCapturedBindings(
+            ImmutableArray<StaticMarkupCapturedBinding> capturedBindings)
+        {
+            if (capturedBindings.IsDefaultOrEmpty)
+                return this;
+
+            if (CapturedBindings.IsDefaultOrEmpty)
+                return new StaticMarkupResolution(Markup, capturedBindings);
+
+            var builder = ImmutableArray.CreateBuilder<StaticMarkupCapturedBinding>(
+                capturedBindings.Length + CapturedBindings.Length);
+            builder.AddRange(capturedBindings);
+            builder.AddRange(CapturedBindings);
+            return new StaticMarkupResolution(Markup, builder.MoveToImmutable());
+        }
+    }
+
     public static bool IsStaticMarkupCarrierType(ITypeSymbol? typeSymbol)
         => IsStringType(typeSymbol) || IsMarkupStringType(typeSymbol);
 
@@ -26,18 +55,23 @@ internal static class RazorVueStaticMarkupValueHelper
 
     public static string? TryGetStaticMarkupValue(IOperation? operation)
     {
+        return TryResolveStaticMarkup(operation)?.Markup;
+    }
+
+    public static StaticMarkupResolution? TryResolveStaticMarkup(IOperation? operation)
+    {
         var current = RazorVueOperationNormalizer.Unwrap(operation);
         if (current is null)
             return null;
 
         if (TryGetConstantString(current) is string directConstant)
-            return directConstant;
+            return StaticMarkupResolution.Create(directConstant);
 
         if (TryGetMarkupStringCtorLiteral(current) is string constructorLiteral)
-            return constructorLiteral;
+            return StaticMarkupResolution.Create(constructorLiteral);
 
         if (TryGetMarkupStringExplicitCastLiteral(current) is string explicitCastLiteral)
-            return explicitCastLiteral;
+            return StaticMarkupResolution.Create(explicitCastLiteral);
 
         return null;
     }
@@ -49,14 +83,83 @@ internal static class RazorVueStaticMarkupValueHelper
         Func<IPropertySymbol, IOperation?>? propertyInitializerResolver,
         Func<IFieldSymbol, IOperation?>? fieldInitializerResolver)
     {
-        return TryGetStaticMarkupValue(
+        return TryResolveStaticMarkup(
             operation,
             compilation,
             localInitializerResolver,
             propertyInitializerResolver,
             fieldInitializerResolver,
+            methodReturnedValueResolver: null,
+            isSupportedMethodInvocation: null,
             visitedLocals: new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default),
-            visitedMembers: new HashSet<ISymbol>(SymbolEqualityComparer.Default));
+            visitedMembers: new HashSet<ISymbol>(SymbolEqualityComparer.Default),
+            visitedMethods: new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default))
+            ?.Markup;
+    }
+
+    public static string? TryGetStaticMarkupValue(
+        IOperation? operation,
+        Compilation compilation,
+        Func<ILocalSymbol, IOperation?>? localInitializerResolver,
+        Func<IPropertySymbol, IOperation?>? propertyInitializerResolver,
+        Func<IFieldSymbol, IOperation?>? fieldInitializerResolver,
+        Func<IInvocationOperation, IOperation?>? methodReturnedValueResolver,
+        Func<IInvocationOperation, bool>? isSupportedMethodInvocation)
+    {
+        return TryResolveStaticMarkup(
+            operation,
+            compilation,
+            localInitializerResolver,
+            propertyInitializerResolver,
+            fieldInitializerResolver,
+            methodReturnedValueResolver,
+            isSupportedMethodInvocation,
+            visitedLocals: new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default),
+            visitedMembers: new HashSet<ISymbol>(SymbolEqualityComparer.Default),
+            visitedMethods: new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default))
+            ?.Markup;
+    }
+
+    public static StaticMarkupResolution? TryResolveStaticMarkup(
+        IOperation? operation,
+        Compilation compilation,
+        Func<ILocalSymbol, IOperation?>? localInitializerResolver,
+        Func<IPropertySymbol, IOperation?>? propertyInitializerResolver,
+        Func<IFieldSymbol, IOperation?>? fieldInitializerResolver)
+    {
+        return TryResolveStaticMarkup(
+            operation,
+            compilation,
+            localInitializerResolver,
+            propertyInitializerResolver,
+            fieldInitializerResolver,
+            methodReturnedValueResolver: null,
+            isSupportedMethodInvocation: null,
+            visitedLocals: new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default),
+            visitedMembers: new HashSet<ISymbol>(SymbolEqualityComparer.Default),
+            visitedMethods: new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default));
+    }
+
+    public static StaticMarkupResolution? TryResolveStaticMarkup(
+        IOperation? operation,
+        Compilation compilation,
+        Func<ILocalSymbol, IOperation?>? localInitializerResolver,
+        Func<IPropertySymbol, IOperation?>? propertyInitializerResolver,
+        Func<IFieldSymbol, IOperation?>? fieldInitializerResolver,
+        Func<IInvocationOperation, IOperation?>? methodReturnedValueResolver,
+        Func<IInvocationOperation, bool>? isSupportedMethodInvocation)
+    {
+        return TryResolveStaticMarkup(
+            operation,
+            compilation,
+            localInitializerResolver,
+            propertyInitializerResolver,
+            fieldInitializerResolver,
+            methodReturnedValueResolver,
+            isSupportedMethodInvocation,
+            visitedLocals: new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default),
+            visitedMembers: new HashSet<ISymbol>(SymbolEqualityComparer.Default),
+            visitedMethods: new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default));
     }
 
     public static bool IsMarkupStringType(ITypeSymbol? typeSymbol)
@@ -113,7 +216,7 @@ internal static class RazorVueStaticMarkupValueHelper
         return null;
     }
 
-    private static string? TryGetStaticMarkupValue(
+    private static StaticMarkupResolution? TryResolveStaticMarkup(
         IOperation? operation,
         Compilation compilation,
         Func<ILocalSymbol, IOperation?>? localInitializerResolver,
@@ -121,13 +224,36 @@ internal static class RazorVueStaticMarkupValueHelper
         Func<IFieldSymbol, IOperation?>? fieldInitializerResolver,
         HashSet<ILocalSymbol> visitedLocals,
         HashSet<ISymbol> visitedMembers)
+        => TryResolveStaticMarkup(
+            operation,
+            compilation,
+            localInitializerResolver,
+            propertyInitializerResolver,
+            fieldInitializerResolver,
+            methodReturnedValueResolver: null,
+            isSupportedMethodInvocation: null,
+            visitedLocals,
+            visitedMembers,
+            visitedMethods: new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default));
+
+    private static StaticMarkupResolution? TryResolveStaticMarkup(
+        IOperation? operation,
+        Compilation compilation,
+        Func<ILocalSymbol, IOperation?>? localInitializerResolver,
+        Func<IPropertySymbol, IOperation?>? propertyInitializerResolver,
+        Func<IFieldSymbol, IOperation?>? fieldInitializerResolver,
+        Func<IInvocationOperation, IOperation?>? methodReturnedValueResolver,
+        Func<IInvocationOperation, bool>? isSupportedMethodInvocation,
+        HashSet<ILocalSymbol> visitedLocals,
+        HashSet<ISymbol> visitedMembers,
+        HashSet<IMethodSymbol> visitedMethods)
     {
         var current = RazorVueOperationNormalizer.Unwrap(operation);
         if (current is null)
             return null;
 
-        if (TryGetStaticMarkupValue(current) is string directMarkup)
-            return directMarkup;
+        if (TryResolveStaticMarkup(current) is { } directResolution)
+            return directResolution;
 
         switch (current)
         {
@@ -135,14 +261,17 @@ internal static class RazorVueStaticMarkupValueHelper
                 if (localInitializerResolver is null || !visitedLocals.Add(localReference.Local))
                     return null;
 
-                return TryGetStaticMarkupValue(
+                return TryResolveStaticMarkup(
                     localInitializerResolver(localReference.Local),
                     compilation,
                     localInitializerResolver,
                     propertyInitializerResolver,
                     fieldInitializerResolver,
+                    methodReturnedValueResolver,
+                    isSupportedMethodInvocation,
                     visitedLocals,
-                    visitedMembers);
+                    visitedMembers,
+                    visitedMethods);
 
             case IPropertyReferenceOperation propertyReference:
                 if (propertyInitializerResolver is null ||
@@ -152,14 +281,17 @@ internal static class RazorVueStaticMarkupValueHelper
                     return null;
                 }
 
-                return TryGetStaticMarkupValue(
+                return TryResolveStaticMarkup(
                     propertyInitializerResolver(propertyReference.Property),
                     compilation,
                     localInitializerResolver,
                     propertyInitializerResolver,
                     fieldInitializerResolver,
+                    methodReturnedValueResolver,
+                    isSupportedMethodInvocation,
                     visitedLocals,
-                    visitedMembers);
+                    visitedMembers,
+                    visitedMethods);
 
             case IFieldReferenceOperation fieldReference:
                 if (fieldInitializerResolver is null ||
@@ -169,18 +301,90 @@ internal static class RazorVueStaticMarkupValueHelper
                     return null;
                 }
 
-                return TryGetStaticMarkupValue(
+                return TryResolveStaticMarkup(
                     fieldInitializerResolver(fieldReference.Field),
                     compilation,
                     localInitializerResolver,
                     propertyInitializerResolver,
                     fieldInitializerResolver,
+                    methodReturnedValueResolver,
+                    isSupportedMethodInvocation,
                     visitedLocals,
-                    visitedMembers);
+                    visitedMembers,
+                    visitedMethods);
+
+            case IInvocationOperation invocation:
+                if (methodReturnedValueResolver is null ||
+                    isSupportedMethodInvocation is null ||
+                    !isSupportedMethodInvocation(invocation) ||
+                    !TryGetInvocationCapturedBindings(invocation, out var capturedBindings))
+                {
+                    return null;
+                }
+
+                var canonicalMethod = RazorVueMethodSymbolNormalizer.GetCanonicalMethod(invocation.TargetMethod);
+                if (!visitedMethods.Add(canonicalMethod))
+                    return null;
+
+                var returnedResolution = TryResolveStaticMarkup(
+                    methodReturnedValueResolver(invocation),
+                    compilation,
+                    localInitializerResolver,
+                    propertyInitializerResolver,
+                    fieldInitializerResolver,
+                    methodReturnedValueResolver,
+                    isSupportedMethodInvocation,
+                    visitedLocals,
+                    visitedMembers,
+                    visitedMethods);
+                if (returnedResolution is null)
+                    return null;
+
+                return returnedResolution.Value.PrependCapturedBindings(capturedBindings);
 
             default:
                 return null;
         }
+    }
+
+    private static bool TryGetInvocationCapturedBindings(
+        IInvocationOperation invocation,
+        out ImmutableArray<StaticMarkupCapturedBinding> capturedBindings)
+    {
+        capturedBindings = ImmutableArray<StaticMarkupCapturedBinding>.Empty;
+
+        if (invocation.Arguments.Length != invocation.TargetMethod.Parameters.Length)
+            return false;
+
+        foreach (var parameter in invocation.TargetMethod.Parameters)
+        {
+            if (parameter.RefKind != RefKind.None || parameter.IsParams)
+                return false;
+        }
+
+        var boundParameters = new HashSet<IParameterSymbol>(SymbolEqualityComparer.Default);
+        var builder = ImmutableArray.CreateBuilder<StaticMarkupCapturedBinding>(invocation.Arguments.Length);
+        foreach (var argument in invocation.Arguments)
+        {
+            if (argument.Parameter is not { } rawParameter)
+                return false;
+
+            var parameter = RazorVueMethodSymbolNormalizer.NormalizeParameter(invocation.TargetMethod, rawParameter);
+            if (!boundParameters.Add(parameter))
+                return false;
+
+            var initializer = RazorVueOperationNormalizer.Unwrap(argument.Value);
+            if (initializer is null)
+                return false;
+
+            builder.Add(new StaticMarkupCapturedBinding(parameter, initializer));
+        }
+
+        if (boundParameters.Count != invocation.TargetMethod.Parameters.Length)
+            return false;
+
+        capturedBindings = builder.MoveToImmutable();
+        return true;
     }
 
     private static bool IsSupportedStaticMarkupCarrierMember(Compilation compilation, ISymbol member)

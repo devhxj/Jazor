@@ -984,9 +984,11 @@ builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span><p>ok</p><
   - `const string markup = "<section ...>...</section>"; builder.AddMarkupContent(..., markup);`
   - `string markup = "<section ...>...</section>"; builder.AddMarkupContent(..., markup);`
   - `string markup; markup = "<section ...>...</section>"; builder.AddMarkupContent(..., markup);`
+  - current-component / local function factory 返回同类静态 string markup，再由 `AddMarkupContent(...)` 直接消费，例如 `builder.AddMarkupContent(..., CreateMarkup());`、`builder.AddMarkupContent(..., CreateMarkup(Title));`
+  - 受控 member/local carrier 再转发同类 static-markup factory 返回值，例如 `private string HeroMarkup => CreateMarkup(); builder.AddMarkupContent(..., HeroMarkup);`
   - 只读 expression-bodied property / getter-only property / `readonly` field 承载同类静态 string markup，再由 `AddMarkupContent(...)` 消费
   - private settable property / private 非 `readonly` field 承载同类静态 string markup，只要源码中可证明不存在后续写入，也可由 `AddMarkupContent(...)` 消费
-- imperative body 内同样的静态 string direct/local/readonly-member carrier authoring，也会直接 lower 为 `h(...)` subtree
+- imperative body 内同样的静态 string direct/local/readonly-member carrier authoring，以及源码可分析 static-markup factory 返回值，也会直接 lower 为 `h(...)` subtree；若 factory 带普通按值参数，则会保留调用点实参求值顺序并通过 captured scope/IIFE 包裹最终静态 subtree
 - 共享静态标记解析器同时被 Razor IR frontend 复用，保证静态 HTML 片段在两条 frontend 路径上的 element/text/attribute 还原语义一致
 - 还原出的 subtree 继续走现有 canonical / H / SFC lowering 链路，不额外引入 raw-html 特判分支
 - 若 `AddMarkupContent(...)` 内容不是编译期可证明静态 markup，则 declarative 路径显式报 `CanonicalizationFailed`，imperative 路径显式报 `UnsupportedImperativeRenderLowering`；不会再静默当成普通 string text 或 raw helper 调用放行
@@ -1002,11 +1004,14 @@ builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span><p>ok</p><
 
 - 支持：`builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span></section>");`
 - 支持：local `const` string、普通 declaration-initialized string、以及“先声明、再紧邻一次简单赋值”的 source-stable string local，再由 `AddMarkupContent(...)` 消费
+- 支持：current-component / local function factory 返回编译期可证明静态 string markup，再由 `AddMarkupContent(...)` 直接消费；普通按值参数也支持，只要实参与形参一一绑定且返回 markup 仍可静态证明
+- 支持：受控 property/field/local carrier 再转发上述 static-markup factory 返回值，只要中间 carrier 仍满足同一 source-stable / controlled-member 合同
 - 支持：只读 property / `readonly` field 承载的编译期可证明静态 markup
 - 支持：private settable property / private 非 `readonly` field 承载的编译期可证明静态 markup，只要源码中不存在后续重赋值、`ref/out` 写入或其他可观察写入
-- 支持：imperative body 内同样的静态 string direct/local/readonly-member carrier authoring
+- 支持：imperative body 内同样的静态 string direct/local/readonly-member carrier authoring，以及源码可分析 static-markup factory 返回值；带普通按值参数时保留调用点 captured-binding 求值顺序
 - 不支持：上述 string local / member carrier 在初始化后再次出现可观察写入；这类场景继续按 source-stable 合同显式 fail-fast，而不是静默沿第一次赋值恢复旧静态 subtree
 - 不支持：运行时拼接/动态 markup
+- 不支持：`ref/out/in`、`params`、实参与形参无法一一绑定、或返回值本身已不再可静态证明的 static-markup factory
 - 不支持：需要当作任意 raw HTML script 语义执行的内容
 - 不支持：结构非法、闭合不匹配或无法解析的静态 markup；这类输入仍显式失败，而不是静默降级成字符串注入
 
@@ -1024,10 +1029,12 @@ builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span><p>ok</p><
 - declarative `BuildRenderTree` 中常量 `AddMarkupContent(...)`
 - declarative `BuildRenderTree` 中 local/readonly-member `AddMarkupContent(...)` carrier
 - declarative `BuildRenderTree` 中 declaration-initialized / immediate-assignment string local `AddMarkupContent(...)` carrier
+- declarative `BuildRenderTree` 中 current-component static-markup factory（含普通按值参数 captured-binding 保真）
 - declarative / imperative 中“private mutable + 无后续写入”的 static markup member carrier
 - declarative `BuildRenderTree` 中动态 `AddMarkupContent(...)` carrier fail-fast
 - declarative `BuildRenderTree` 中 immediate-assignment string local 后续再次写入的 source-stable fail-fast
 - imperative render bridge 中静态 `AddMarkupContent(...)` direct/local/readonly-member carrier
+- imperative render bridge 中 current-component static-markup factory（含普通按值参数 captured-binding / IIFE 保真）
 - imperative render bridge 中 declaration-initialized / immediate-assignment string local `AddMarkupContent(...)` carrier
 - imperative render bridge 中动态 `AddMarkupContent(...)` carrier fail-fast
 
@@ -1058,6 +1065,8 @@ builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span
 - 当前已继续覆盖受控 carrier：
   - `MarkupString markup = (MarkupString)"<section ...>...</section>"; builder.AddContent(..., markup);`
   - `MarkupString markup; markup = (MarkupString)"<section ...>...</section>"; builder.AddContent(..., markup);`
+  - current-component / local function factory 返回同类静态 `MarkupString`，再由 `AddContent(...)` 直接消费，例如 `builder.AddContent(..., CreateMarkup());`、`builder.AddContent(..., CreateMarkup(Title));`
+  - 受控 member/local carrier 再转发同类 static-markup factory 返回值，例如 `MarkupString markup; markup = CreateMarkup(); builder.AddContent(..., markup);`
   - 只读 expression-bodied property / getter-only property / `readonly` field 承载同类静态 `MarkupString`，再由 `AddContent(...)` 消费
   - private settable property / private 非 `readonly` field 承载同类静态 `MarkupString`，只要源码中可证明不存在后续写入，也可由 `AddContent(...)` 消费
   - Razor authored template 中局部 / 受控成员 carrier 的 `@markup` / `@HeroMarkup` / `@_heroMarkup`
@@ -1070,14 +1079,17 @@ builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span
 - 支持：`builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span></section>"));`
 - 支持：`MarkupString markup = (MarkupString)"<section class=\"hero\"><span>safe</span></section>"; builder.AddContent(0, markup);`
 - 支持：`MarkupString markup; markup = (MarkupString)"<section class=\"hero\"><span>safe</span></section>"; builder.AddContent(0, markup);`
+- 支持：current-component / local function factory 返回静态 `MarkupString`，再由 `AddContent(...)` 直接消费；普通按值参数也支持，只要实参与形参一一绑定且返回 markup 仍可静态证明
+- 支持：受控 property/field/local carrier 再转发上述静态 `MarkupString` factory 返回值，只要中间 carrier 仍满足同一 source-stable / controlled-member 合同
 - 支持：只读 property / `readonly` field 承载静态 `MarkupString`，再由 `AddContent(...)` 消费
 - 支持：private settable property / private 非 `readonly` field 承载静态 `MarkupString`，只要源码中不存在后续重赋值、`ref/out` 写入或其他可观察写入，再由 `AddContent(...)` 消费
 - 支持：Razor authored template expression 中等价的静态 `MarkupString` direct/local/受控-member carrier authoring，直接 canonicalize 为静态 subtree
-- 支持：imperative body 内同样的静态 `MarkupString` direct/local/受控-member carrier authoring，直接 lower 为 `h(...)` subtree
+- 支持：imperative body 内同样的静态 `MarkupString` direct/local/受控-member carrier authoring，以及源码可分析 factory 返回值，直接 lower 为 `h(...)` subtree；带普通按值参数时保留调用点 captured-binding 求值顺序
 - 支持：handwritten `BuildRenderTree` 中 `MarkupString` local 的“先声明、再紧邻一次简单赋值”窄模式；若后续再次出现可观察写入，则沿同一 source-stable 合同 fail-fast
 - 支持：Razor IR authored template `@{ MarkupString markup; markup = ...; } @markup` 这类 local carrier 也按同一 source-stable 合同接受，并贯通 render tree / `.mjs` pipeline / SFC artifact
 - 不支持：imperative local `MarkupString` carrier 在声明后发生重赋值、`ref/out` 写入或其他不可静态证明变异
 - 不支持：运行时拼接字符串后再转 `MarkupString`
+- 不支持：`ref/out/in`、`params`、实参与形参无法一一绑定、或返回值本身已不再可静态证明的 static-markup `MarkupString` factory
 - 不支持：来自变量/调用结果/条件分支汇总的动态 `MarkupString`
 - 不支持：任何需要保留任意 raw HTML/script 注入语义的场景
 
@@ -1098,6 +1110,7 @@ builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span
 - declarative `BuildRenderTree` 中 `(MarkupString)"..."`
 - declarative `BuildRenderTree` 中 `new MarkupString("...")`
 - declarative `BuildRenderTree` 中局部 `MarkupString` carrier
+- declarative `BuildRenderTree` 中 current-component `MarkupString` factory（含普通按值参数 captured-binding 保真）
 - declarative `BuildRenderTree` 中 `MarkupString` local 的“先声明、再紧邻一次简单赋值”窄模式
 - declarative `BuildRenderTree` 中只读 property / `readonly` field `MarkupString` carrier
 - declarative / pipeline 中上述 local carrier 的后续重赋值 fail-fast

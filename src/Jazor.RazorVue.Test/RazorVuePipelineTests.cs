@@ -22946,6 +22946,254 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersCurrentComponentStaticMarkupFactoryMethod()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-card")]
+                public class MarkupCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddMarkupContent(0, CreateMarkup());
+                    }
+
+                    private string CreateMarkup()
+                        => "<section class=\"hero\"><span>safe</span><p>ok</p></section>";
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", { \"class\": \"hero\" }, [h(\"span\", null, \"safe\"), h(\"p\", null, \"ok\")]);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersLocalFunctionStaticMarkupFactoryMethod()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-card")]
+                public class MarkupCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddMarkupContent(0, CreateMarkup());
+
+                        string CreateMarkup()
+                            => "<section class=\"hero\"><span>safe</span><p>ok</p></section>";
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", { \"class\": \"hero\" }, [h(\"span\", null, \"safe\"), h(\"p\", null, \"ok\")]);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersFactoryBackedAddMarkupContentPropertyCarrier()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-card")]
+                public class MarkupCard : ComponentBase, IVueComponent
+                {
+                    private string HeroMarkup => CreateMarkup();
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddMarkupContent(0, HeroMarkup);
+                    }
+
+                    private string CreateMarkup()
+                        => "<section class=\"hero\"><span>safe</span><p>ok</p></section>";
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", { \"class\": \"hero\" }, [h(\"span\", null, \"safe\"), h(\"p\", null, \"ok\")]);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersParameterIndependentStaticMarkupFactoryMethod()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-card")]
+                public class MarkupCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddMarkupContent(0, CreateMarkup(Title));
+                    }
+
+                    private string CreateMarkup(string? ignored)
+                        => "<section class=\"hero\"><span>safe</span><p>ok</p></section>";
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => ((ignored) => h(\"section\", { \"class\": \"hero\" }, [h(\"span\", null, \"safe\"), h(\"p\", null, \"ok\")]))(props.title);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersStaticMarkupFactoryMethodWithOmittedOptionalParameter()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-card")]
+                public class MarkupCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddMarkupContent(0, CreateMarkup());
+                    }
+
+                    private string CreateMarkup(string? ignored = "fallback-title")
+                        => "<section class=\"hero\"><span>safe</span><p>ok</p></section>";
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => ((ignored) => h(\"section\", { \"class\": \"hero\" }, [h(\"span\", null, \"safe\"), h(\"p\", null, \"ok\")]))(\"fallback-title\");");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersStaticMarkupFactoryMethodWithParamsParameter()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-card")]
+                public class MarkupCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddMarkupContent(0, CreateMarkup(Title, "suffix"));
+                    }
+
+                    private string CreateMarkup(params string?[] values)
+                        => "<section class=\"hero\"><span>safe</span><p>ok</p></section>";
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => ((values) => h(\"section\", { \"class\": \"hero\" }, [h(\"span\", null, \"safe\"), h(\"p\", null, \"ok\")]))([props.title, \"suffix\"]);");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_WithDynamicAddMarkupContentCarrier_ThrowsCanonicalizationFailed()
     {
         var context = CreateContext(
@@ -23380,6 +23628,254 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", { \"class\": \"hero\" }, [h(\"span\", null, \"safe\"), h(\"p\", null, \"ok\")]);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersCurrentComponentMarkupStringFactoryMethod()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-string-card")]
+                public class MarkupStringCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, CreateMarkup());
+                    }
+
+                    private MarkupString CreateMarkup()
+                        => (MarkupString)"<section class=\"hero\"><span>safe</span><p>ok</p></section>";
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", { \"class\": \"hero\" }, [h(\"span\", null, \"safe\"), h(\"p\", null, \"ok\")]);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersLocalFunctionMarkupStringFactoryMethod()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-string-card")]
+                public class MarkupStringCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, CreateMarkup());
+
+                        MarkupString CreateMarkup()
+                            => (MarkupString)"<section class=\"hero\"><span>safe</span><p>ok</p></section>";
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", { \"class\": \"hero\" }, [h(\"span\", null, \"safe\"), h(\"p\", null, \"ok\")]);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersFactoryBackedImmediateMarkupStringLocalCarrier()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-string-card")]
+                public class MarkupStringCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        MarkupString markup;
+                        markup = CreateMarkup();
+                        builder.AddContent(0, markup);
+                    }
+
+                    private MarkupString CreateMarkup()
+                        => (MarkupString)"<section class=\"hero\"><span>safe</span><p>ok</p></section>";
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", { \"class\": \"hero\" }, [h(\"span\", null, \"safe\"), h(\"p\", null, \"ok\")]);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersParameterIndependentMarkupStringFactoryMethod()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-string-card")]
+                public class MarkupStringCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, CreateMarkup(Title));
+                    }
+
+                    private MarkupString CreateMarkup(string? ignored)
+                        => (MarkupString)"<section class=\"hero\"><span>safe</span><p>ok</p></section>";
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => ((ignored) => h(\"section\", { \"class\": \"hero\" }, [h(\"span\", null, \"safe\"), h(\"p\", null, \"ok\")]))(props.title);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersMarkupStringFactoryMethodWithOmittedOptionalParameter()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-string-card")]
+                public class MarkupStringCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, CreateMarkup());
+                    }
+
+                    private MarkupString CreateMarkup(string? ignored = "fallback-title")
+                        => (MarkupString)"<section class=\"hero\"><span>safe</span><p>ok</p></section>";
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => ((ignored) => h(\"section\", { \"class\": \"hero\" }, [h(\"span\", null, \"safe\"), h(\"p\", null, \"ok\")]))(\"fallback-title\");");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersMarkupStringFactoryMethodWithParamsParameter()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-string-card")]
+                public class MarkupStringCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, CreateMarkup(Title, "suffix"));
+                    }
+
+                    private MarkupString CreateMarkup(params string?[] values)
+                        => (MarkupString)"<section class=\"hero\"><span>safe</span><p>ok</p></section>";
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => ((values) => h(\"section\", { \"class\": \"hero\" }, [h(\"span\", null, \"safe\"), h(\"p\", null, \"ok\")]))([props.title, \"suffix\"]);");
     }
 
     [TestMethod]
@@ -24508,6 +25004,344 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersCurrentComponentStaticMarkupFactoryMethodInsideImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-markup-card")]
+                public class ImperativeMarkupCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowMarkup { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (ShowMarkup)
+                        {
+                            builder.AddMarkupContent(0, CreateMarkup());
+                            return;
+                        }
+
+                        builder.OpenElement(1, "p");
+                        builder.AddContent(2, "fallback");
+                        builder.CloseElement();
+                    }
+
+                    private string CreateMarkup()
+                        => "<section class=\"hero\"><span>safe</span></section>";
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "if (props.showMarkup) {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")));");
+        Assert.IsFalse(
+            artifact.ModuleCode.Contains("AddMarkupContent(", StringComparison.Ordinal),
+            artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersLocalFunctionStaticMarkupFactoryMethodInsideImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-markup-card")]
+                public class ImperativeMarkupCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowMarkup { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (ShowMarkup)
+                        {
+                            builder.AddMarkupContent(0, CreateMarkup());
+                            return;
+                        }
+
+                        builder.OpenElement(1, "p");
+                        builder.AddContent(2, "fallback");
+                        builder.CloseElement();
+
+                        string CreateMarkup()
+                            => "<section class=\"hero\"><span>safe</span></section>";
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "if (props.showMarkup) {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")));");
+        Assert.IsFalse(
+            artifact.ModuleCode.Contains("AddMarkupContent(", StringComparison.Ordinal),
+            artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersFactoryBackedAddMarkupContentPropertyCarrierInsideImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-markup-card")]
+                public class ImperativeMarkupCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowMarkup { get; set; }
+
+                    private string HeroMarkup => CreateMarkup();
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (ShowMarkup)
+                        {
+                            builder.AddMarkupContent(0, HeroMarkup);
+                            return;
+                        }
+
+                        builder.OpenElement(1, "p");
+                        builder.AddContent(2, "fallback");
+                        builder.CloseElement();
+                    }
+
+                    private string CreateMarkup()
+                        => "<section class=\"hero\"><span>safe</span></section>";
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "if (props.showMarkup) {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")));");
+        Assert.IsFalse(
+            artifact.ModuleCode.Contains("AddMarkupContent(", StringComparison.Ordinal),
+            artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersParameterIndependentStaticMarkupFactoryMethodInsideImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-markup-card")]
+                public class ImperativeMarkupCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowMarkup { get; set; }
+
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (ShowMarkup)
+                        {
+                            builder.AddMarkupContent(0, CreateMarkup(Title));
+                            return;
+                        }
+
+                        builder.OpenElement(1, "p");
+                        builder.AddContent(2, "fallback");
+                        builder.CloseElement();
+                    }
+
+                    private string CreateMarkup(string? ignored)
+                        => "<section class=\"hero\"><span>safe</span></section>";
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "if (props.showMarkup) {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append((ignored => h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")))(props.title));");
+        Assert.IsFalse(
+            artifact.ModuleCode.Contains("AddMarkupContent(", StringComparison.Ordinal),
+            artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersStaticMarkupFactoryMethodWithOmittedOptionalParameterInsideImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-markup-card")]
+                public class ImperativeMarkupCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowMarkup { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (ShowMarkup)
+                        {
+                            builder.AddMarkupContent(0, CreateMarkup());
+                            return;
+                        }
+
+                        builder.OpenElement(1, "p");
+                        builder.AddContent(2, "fallback");
+                        builder.CloseElement();
+                    }
+
+                    private string CreateMarkup(string? ignored = "fallback-title")
+                        => "<section class=\"hero\"><span>safe</span></section>";
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "if (props.showMarkup) {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(((ignored) => h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")))(\"fallback-title\"));");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersStaticMarkupFactoryMethodWithParamsParameterInsideImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-markup-card")]
+                public class ImperativeMarkupCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowMarkup { get; set; }
+
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (ShowMarkup)
+                        {
+                            builder.AddMarkupContent(0, CreateMarkup(Title, "suffix"));
+                            return;
+                        }
+
+                        builder.OpenElement(1, "p");
+                        builder.AddContent(2, "fallback");
+                        builder.CloseElement();
+                    }
+
+                    private string CreateMarkup(params string?[] values)
+                        => "<section class=\"hero\"><span>safe</span></section>";
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "if (props.showMarkup) {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(((values) => h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")))([props.title, \"suffix\"]));");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersReadonlyAddMarkupContentFieldCarrierInsideImperativeRenderBridge()
     {
         var context = CreateContext(
@@ -24940,6 +25774,352 @@ public sealed class RazorVuePipelineTests
             artifact.ModuleCode.Contains("new MarkupString", StringComparison.Ordinal) ||
             artifact.ModuleCode.Contains("Microsoft.AspNetCore.Components.MarkupString", StringComparison.Ordinal),
             artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersCurrentComponentMarkupStringFactoryMethodInsideImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-property-markup-string-card")]
+                public class ImperativePropertyMarkupStringCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowMarkup { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (ShowMarkup)
+                        {
+                            builder.AddContent(0, CreateMarkup());
+                            return;
+                        }
+
+                        builder.OpenElement(1, "p");
+                        builder.AddContent(2, "fallback");
+                        builder.CloseElement();
+                    }
+
+                    private MarkupString CreateMarkup()
+                        => (MarkupString)"<section class=\"hero\"><span>safe</span></section>";
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "if (props.showMarkup) {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")));");
+        Assert.IsFalse(
+            artifact.ModuleCode.Contains("(MarkupString)", StringComparison.Ordinal) ||
+            artifact.ModuleCode.Contains("new MarkupString", StringComparison.Ordinal) ||
+            artifact.ModuleCode.Contains("Microsoft.AspNetCore.Components.MarkupString", StringComparison.Ordinal),
+            artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersLocalFunctionMarkupStringFactoryMethodInsideImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-property-markup-string-card")]
+                public class ImperativePropertyMarkupStringCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowMarkup { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (ShowMarkup)
+                        {
+                            builder.AddContent(0, CreateMarkup());
+                            return;
+                        }
+
+                        builder.OpenElement(1, "p");
+                        builder.AddContent(2, "fallback");
+                        builder.CloseElement();
+
+                        MarkupString CreateMarkup()
+                            => (MarkupString)"<section class=\"hero\"><span>safe</span></section>";
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "if (props.showMarkup) {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")));");
+        Assert.IsFalse(
+            artifact.ModuleCode.Contains("(MarkupString)", StringComparison.Ordinal) ||
+            artifact.ModuleCode.Contains("new MarkupString", StringComparison.Ordinal) ||
+            artifact.ModuleCode.Contains("Microsoft.AspNetCore.Components.MarkupString", StringComparison.Ordinal),
+            artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersFactoryBackedImmediateMarkupStringLocalCarrierInsideImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-property-markup-string-card")]
+                public class ImperativePropertyMarkupStringCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowMarkup { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (ShowMarkup)
+                        {
+                            MarkupString markup;
+                            markup = CreateMarkup();
+                            builder.AddContent(0, markup);
+                            return;
+                        }
+
+                        builder.OpenElement(1, "p");
+                        builder.AddContent(2, "fallback");
+                        builder.CloseElement();
+                    }
+
+                    private MarkupString CreateMarkup()
+                        => (MarkupString)"<section class=\"hero\"><span>safe</span></section>";
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "if (props.showMarkup) {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")));");
+        Assert.IsFalse(
+            artifact.ModuleCode.Contains("(MarkupString)", StringComparison.Ordinal) ||
+            artifact.ModuleCode.Contains("new MarkupString", StringComparison.Ordinal) ||
+            artifact.ModuleCode.Contains("Microsoft.AspNetCore.Components.MarkupString", StringComparison.Ordinal),
+            artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersParameterIndependentMarkupStringFactoryMethodInsideImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-property-markup-string-card")]
+                public class ImperativePropertyMarkupStringCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowMarkup { get; set; }
+
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (ShowMarkup)
+                        {
+                            builder.AddContent(0, CreateMarkup(Title));
+                            return;
+                        }
+
+                        builder.OpenElement(1, "p");
+                        builder.AddContent(2, "fallback");
+                        builder.CloseElement();
+                    }
+
+                    private MarkupString CreateMarkup(string? ignored)
+                        => (MarkupString)"<section class=\"hero\"><span>safe</span></section>";
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "if (props.showMarkup) {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append((ignored => h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")))(props.title));");
+        Assert.IsFalse(
+            artifact.ModuleCode.Contains("(MarkupString)", StringComparison.Ordinal) ||
+            artifact.ModuleCode.Contains("new MarkupString", StringComparison.Ordinal) ||
+            artifact.ModuleCode.Contains("Microsoft.AspNetCore.Components.MarkupString", StringComparison.Ordinal),
+            artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersMarkupStringFactoryMethodWithOmittedOptionalParameterInsideImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-property-markup-string-card")]
+                public class ImperativePropertyMarkupStringCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowMarkup { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (ShowMarkup)
+                        {
+                            builder.AddContent(0, CreateMarkup());
+                            return;
+                        }
+
+                        builder.OpenElement(1, "p");
+                        builder.AddContent(2, "fallback");
+                        builder.CloseElement();
+                    }
+
+                    private MarkupString CreateMarkup(string? ignored = "fallback-title")
+                        => (MarkupString)"<section class=\"hero\"><span>safe</span></section>";
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "if (props.showMarkup) {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(((ignored) => h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")))(\"fallback-title\"));");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersMarkupStringFactoryMethodWithParamsParameterInsideImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-property-markup-string-card")]
+                public class ImperativePropertyMarkupStringCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowMarkup { get; set; }
+
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (ShowMarkup)
+                        {
+                            builder.AddContent(0, CreateMarkup(Title, "suffix"));
+                            return;
+                        }
+
+                        builder.OpenElement(1, "p");
+                        builder.AddContent(2, "fallback");
+                        builder.CloseElement();
+                    }
+
+                    private MarkupString CreateMarkup(params string?[] values)
+                        => (MarkupString)"<section class=\"hero\"><span>safe</span></section>";
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "if (props.showMarkup) {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(((values) => h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")))([props.title, \"suffix\"]));");
     }
 
     [TestMethod]

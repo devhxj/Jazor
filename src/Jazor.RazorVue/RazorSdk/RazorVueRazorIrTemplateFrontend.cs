@@ -924,9 +924,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             nodes = ImmutableArray<RazorVueRenderNode>.Empty;
             var sourceSpan = GetRequiredSourceSpan(node, "CSharpExpressionIntermediateNode");
             var operation = _resolver.ResolveRequiredOperation(sourceSpan, "Razor IR body expression");
-            if (TryGetStaticMarkupValue(operation) is string staticMarkup)
+            if (TryResolveStaticMarkup(operation) is { } staticMarkup)
             {
-                nodes = ParseStaticMarkupFragment(staticMarkup, CreateOrigins(sourceSpan));
+                nodes = MaterializeStaticMarkupFragment(staticMarkup, CreateOrigins(sourceSpan));
                 return true;
             }
 
@@ -4846,13 +4846,47 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                         null,
                         $"RazorVue Razor IR frontend {detail} in component '{_snapshot.Descriptor.FullName}'.")));
 
+        private ImmutableArray<RazorVueRenderNode> MaterializeStaticMarkupFragment(
+            RazorVueStaticMarkupValueHelper.StaticMarkupResolution resolution,
+            ImmutableArray<RazorVueSourceOrigin> origins)
+        {
+            var fragment = new RazorVueRenderFragment(ParseStaticMarkupFragment(resolution.Markup, origins));
+            for (var index = resolution.CapturedBindings.Length - 1; index >= 0; index--)
+            {
+                var binding = resolution.CapturedBindings[index];
+                fragment = new RazorVueRenderFragment(
+                [
+                    new RazorVueTemplateScopeNode(
+                        ScopeName: binding.ParameterSymbol.Name,
+                        ScopeParameterSymbol: binding.ParameterSymbol,
+                        Initializer: binding.Initializer,
+                        Children: fragment,
+                        Origins: origins)
+                ]);
+            }
+
+            return fragment.Children;
+        }
+
         private string? TryGetStaticMarkupValue(IOperation? operation)
             => RazorVueStaticMarkupValueHelper.TryGetStaticMarkupValue(
                 operation,
                 _context.Compilation,
                 TryGetLocalMarkupStringInitializer,
                 TryGetPropertyMarkupStringInitializer,
-                TryGetFieldMarkupStringInitializer);
+                TryGetFieldMarkupStringInitializer,
+                TryGetStaticMarkupFactoryReturnedValue,
+                IsSupportedStaticMarkupFactoryInvocation);
+
+        private RazorVueStaticMarkupValueHelper.StaticMarkupResolution? TryResolveStaticMarkup(IOperation? operation)
+            => RazorVueStaticMarkupValueHelper.TryResolveStaticMarkup(
+                operation,
+                _context.Compilation,
+                TryGetLocalMarkupStringInitializer,
+                TryGetPropertyMarkupStringInitializer,
+                TryGetFieldMarkupStringInitializer,
+                TryGetStaticMarkupFactoryReturnedValue,
+                IsSupportedStaticMarkupFactoryInvocation);
 
         private IOperation? TryGetLocalMarkupStringInitializer(ILocalSymbol local)
         {
@@ -4914,6 +4948,14 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
             return null;
         }
+
+        private bool IsSupportedStaticMarkupFactoryInvocation(IInvocationOperation invocation)
+            => IsCurrentComponentMethod(invocation.TargetMethod, invocation.Instance);
+
+        private IOperation? TryGetStaticMarkupFactoryReturnedValue(IInvocationOperation invocation)
+            => TryGetRenderFragmentFactoryReturnedValue(invocation, out var returnedValue)
+                ? returnedValue
+                : null;
 
         private IOperation CreateLiteralStringOperation(string value)
         {
