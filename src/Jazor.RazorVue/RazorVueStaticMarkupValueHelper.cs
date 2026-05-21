@@ -317,7 +317,7 @@ internal static class RazorVueStaticMarkupValueHelper
                 if (methodReturnedValueResolver is null ||
                     isSupportedMethodInvocation is null ||
                     !isSupportedMethodInvocation(invocation) ||
-                    !TryGetInvocationCapturedBindings(invocation, out var capturedBindings))
+                    !TryGetInvocationCapturedBindings(invocation, compilation, out var capturedBindings))
                 {
                     return null;
                 }
@@ -349,21 +349,19 @@ internal static class RazorVueStaticMarkupValueHelper
 
     private static bool TryGetInvocationCapturedBindings(
         IInvocationOperation invocation,
+        Compilation compilation,
         out ImmutableArray<StaticMarkupCapturedBinding> capturedBindings)
     {
         capturedBindings = ImmutableArray<StaticMarkupCapturedBinding>.Empty;
 
-        if (invocation.Arguments.Length != invocation.TargetMethod.Parameters.Length)
-            return false;
-
         foreach (var parameter in invocation.TargetMethod.Parameters)
         {
-            if (parameter.RefKind != RefKind.None || parameter.IsParams)
+            if (parameter.RefKind != RefKind.None)
                 return false;
         }
 
         var boundParameters = new HashSet<IParameterSymbol>(SymbolEqualityComparer.Default);
-        var builder = ImmutableArray.CreateBuilder<StaticMarkupCapturedBinding>(invocation.Arguments.Length);
+        var builder = ImmutableArray.CreateBuilder<StaticMarkupCapturedBinding>(invocation.TargetMethod.Parameters.Length);
         foreach (var argument in invocation.Arguments)
         {
             if (argument.Parameter is not { } rawParameter)
@@ -380,11 +378,56 @@ internal static class RazorVueStaticMarkupValueHelper
             builder.Add(new StaticMarkupCapturedBinding(parameter, initializer));
         }
 
+        foreach (var rawParameter in invocation.TargetMethod.Parameters)
+        {
+            var parameter = RazorVueMethodSymbolNormalizer.NormalizeParameter(invocation.TargetMethod, rawParameter);
+            if (boundParameters.Contains(parameter))
+                continue;
+
+            if (parameter.IsParams ||
+                !parameter.HasExplicitDefaultValue)
+            {
+                return false;
+            }
+
+            var initializer = TryGetParameterDefaultValueOperation(parameter, compilation);
+            if (initializer is null || !boundParameters.Add(parameter))
+                return false;
+
+            builder.Add(new StaticMarkupCapturedBinding(parameter, initializer));
+        }
+
         if (boundParameters.Count != invocation.TargetMethod.Parameters.Length)
             return false;
 
         capturedBindings = builder.MoveToImmutable();
         return true;
+    }
+
+    private static IOperation? TryGetParameterDefaultValueOperation(
+        IParameterSymbol parameter,
+        Compilation compilation)
+    {
+        foreach (var syntaxReference in parameter.DeclaringSyntaxReferences)
+        {
+            if (syntaxReference.GetSyntax() is not ParameterSyntax parameterSyntax ||
+                parameterSyntax.Default?.Value is null)
+            {
+                continue;
+            }
+
+            var semanticModel = compilation.GetSemanticModel(parameterSyntax.SyntaxTree);
+            if (RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
+                    semanticModel,
+                    parameterSyntax.Default.Value,
+                    out var defaultValueOperation) &&
+                RazorVueOperationNormalizer.Unwrap(defaultValueOperation) is { } initializer)
+            {
+                return initializer;
+            }
+        }
+
+        return null;
     }
 
     private static bool IsSupportedStaticMarkupCarrierMember(Compilation compilation, ISymbol member)

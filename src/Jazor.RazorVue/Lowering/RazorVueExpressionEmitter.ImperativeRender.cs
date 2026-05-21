@@ -375,7 +375,7 @@ internal sealed partial class RazorVueExpressionEmitter
                             $"RazorVue imperative render lowering only supports compile-time provable static MarkupString AddContent(...) in component '{_snapshot.Descriptor.FullName}'.");
                     }
 
-                    expression = builderTarget + ".append(" + EmitStaticMarkupExpression(staticMarkup) + ")";
+                    expression = builderTarget + ".append(" + EmitStaticMarkupExpression(staticMarkup, argument) + ")";
                     return true;
                 }
 
@@ -391,7 +391,7 @@ internal sealed partial class RazorVueExpressionEmitter
                         $"RazorVue imperative render lowering only supports compile-time provable static AddMarkupContent(...) in component '{_snapshot.Descriptor.FullName}'.");
                 }
 
-                expression = builderTarget + ".append(" + EmitStaticMarkupExpression(markup) + ")";
+                expression = builderTarget + ".append(" + EmitStaticMarkupExpression(markup, argument) + ")";
                 return true;
             case "AddAttribute":
                 expression = builderTarget + ".setAttribute(" + EmitImperativeArgument(invocation, argument, 1) + ", " + EmitImperativeComponentParameterValue(invocation, argument, builderTarget, 2) + ")";
@@ -1156,10 +1156,12 @@ internal sealed partial class RazorVueExpressionEmitter
 
     private string EmitStaticMarkupExpression(string markup)
         => EmitStaticMarkupExpression(
-            RazorVueStaticMarkupValueHelper.StaticMarkupResolution.Create(markup));
+            RazorVueStaticMarkupValueHelper.StaticMarkupResolution.Create(markup),
+            _compilerArgument);
 
     private string EmitStaticMarkupExpression(
-        RazorVueStaticMarkupValueHelper.StaticMarkupResolution resolution)
+        RazorVueStaticMarkupValueHelper.StaticMarkupResolution resolution,
+        SenseArgument compilerArgument)
     {
         var nodes = RazorVueStaticMarkupParser.Parse(
             resolution.Markup,
@@ -1179,10 +1181,24 @@ internal sealed partial class RazorVueExpressionEmitter
             currentExpression =
                 "((" + binding.ParameterSymbol.Name + ") => " +
                 currentExpression +
-                ")(" + EmitExpression(binding.Initializer) + ")";
+                ")(" + EmitStaticMarkupCapturedBindingInitializer(binding.Initializer, compilerArgument) + ")";
         }
 
         return currentExpression;
+    }
+
+    private string EmitStaticMarkupCapturedBindingInitializer(IOperation initializer, SenseArgument compilerArgument)
+    {
+        var current = RazorVueOperationNormalizer.Unwrap(initializer);
+        if (current is null)
+            return "undefined";
+
+        return current switch
+        {
+            ILiteralOperation literal => EmitLiteral(literal),
+            IDefaultValueOperation defaultValue when IsNullDefaultValue(defaultValue) => "null",
+            _ => EmitExpression(current, compilerArgument)
+        };
     }
 
     private string EmitStaticMarkupFragment(ImmutableArray<RazorVueRenderNode> nodes)

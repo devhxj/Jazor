@@ -1004,14 +1004,14 @@ builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span><p>ok</p><
 
 - 支持：`builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span></section>");`
 - 支持：local `const` string、普通 declaration-initialized string、以及“先声明、再紧邻一次简单赋值”的 source-stable string local，再由 `AddMarkupContent(...)` 消费
-- 支持：current-component / local function factory 返回编译期可证明静态 string markup，再由 `AddMarkupContent(...)` 直接消费；普通按值参数也支持，只要实参与形参一一绑定且返回 markup 仍可静态证明
+- 支持：current-component / local function factory 返回编译期可证明静态 string markup，再由 `AddMarkupContent(...)` 直接消费；普通按值参数、omitted optional default，以及按 Roslyn 绑定为单数组形参的 `params` 调用都支持，只要返回 markup 仍可静态证明
 - 支持：受控 property/field/local carrier 再转发上述 static-markup factory 返回值，只要中间 carrier 仍满足同一 source-stable / controlled-member 合同
 - 支持：只读 property / `readonly` field 承载的编译期可证明静态 markup
 - 支持：private settable property / private 非 `readonly` field 承载的编译期可证明静态 markup，只要源码中不存在后续重赋值、`ref/out` 写入或其他可观察写入
-- 支持：imperative body 内同样的静态 string direct/local/readonly-member carrier authoring，以及源码可分析 static-markup factory 返回值；带普通按值参数时保留调用点 captured-binding 求值顺序
+- 支持：imperative body 内同样的静态 string direct/local/readonly-member carrier authoring，以及源码可分析 static-markup factory 返回值；带普通按值参数、omitted optional default 或 `params` 单数组绑定时都保留调用点 captured-binding 求值顺序
 - 不支持：上述 string local / member carrier 在初始化后再次出现可观察写入；这类场景继续按 source-stable 合同显式 fail-fast，而不是静默沿第一次赋值恢复旧静态 subtree
 - 不支持：运行时拼接/动态 markup
-- 不支持：`ref/out/in`、`params`、实参与形参无法一一绑定、或返回值本身已不再可静态证明的 static-markup factory
+- 不支持：`ref/out/in`、实参与形参无法按当前合同绑定、或返回值本身已不再可静态证明的 static-markup factory
 - 不支持：需要当作任意 raw HTML script 语义执行的内容
 - 不支持：结构非法、闭合不匹配或无法解析的静态 markup；这类输入仍显式失败，而不是静默降级成字符串注入
 
@@ -1079,17 +1079,17 @@ builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span
 - 支持：`builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span></section>"));`
 - 支持：`MarkupString markup = (MarkupString)"<section class=\"hero\"><span>safe</span></section>"; builder.AddContent(0, markup);`
 - 支持：`MarkupString markup; markup = (MarkupString)"<section class=\"hero\"><span>safe</span></section>"; builder.AddContent(0, markup);`
-- 支持：current-component / local function factory 返回静态 `MarkupString`，再由 `AddContent(...)` 直接消费；普通按值参数也支持，只要实参与形参一一绑定且返回 markup 仍可静态证明
+- 支持：current-component / local function factory 返回静态 `MarkupString`，再由 `AddContent(...)` 直接消费；普通按值参数、omitted optional default，以及按 Roslyn 绑定为单数组形参的 `params` 调用都支持，只要返回 markup 仍可静态证明
 - 支持：受控 property/field/local carrier 再转发上述静态 `MarkupString` factory 返回值，只要中间 carrier 仍满足同一 source-stable / controlled-member 合同
 - 支持：只读 property / `readonly` field 承载静态 `MarkupString`，再由 `AddContent(...)` 消费
 - 支持：private settable property / private 非 `readonly` field 承载静态 `MarkupString`，只要源码中不存在后续重赋值、`ref/out` 写入或其他可观察写入，再由 `AddContent(...)` 消费
 - 支持：Razor authored template expression 中等价的静态 `MarkupString` direct/local/受控-member carrier authoring，直接 canonicalize 为静态 subtree
-- 支持：imperative body 内同样的静态 `MarkupString` direct/local/受控-member carrier authoring，以及源码可分析 factory 返回值，直接 lower 为 `h(...)` subtree；带普通按值参数时保留调用点 captured-binding 求值顺序
+- 支持：imperative body 内同样的静态 `MarkupString` direct/local/受控-member carrier authoring，以及源码可分析 factory 返回值，直接 lower 为 `h(...)` subtree；带普通按值参数、omitted optional default 或 `params` 单数组绑定时保留调用点 captured-binding 求值顺序
 - 支持：handwritten `BuildRenderTree` 中 `MarkupString` local 的“先声明、再紧邻一次简单赋值”窄模式；若后续再次出现可观察写入，则沿同一 source-stable 合同 fail-fast
 - 支持：Razor IR authored template `@{ MarkupString markup; markup = ...; } @markup` 这类 local carrier 也按同一 source-stable 合同接受，并贯通 render tree / `.mjs` pipeline / SFC artifact
 - 不支持：imperative local `MarkupString` carrier 在声明后发生重赋值、`ref/out` 写入或其他不可静态证明变异
 - 不支持：运行时拼接字符串后再转 `MarkupString`
-- 不支持：`ref/out/in`、`params`、实参与形参无法一一绑定、或返回值本身已不再可静态证明的 static-markup `MarkupString` factory
+- 不支持：`ref/out/in`、实参与形参无法按当前合同绑定、或返回值本身已不再可静态证明的 static-markup `MarkupString` factory
 - 不支持：来自变量/调用结果/条件分支汇总的动态 `MarkupString`
 - 不支持：任何需要保留任意 raw HTML/script 注入语义的场景
 

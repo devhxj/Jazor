@@ -25282,7 +25282,7 @@ public sealed class RazorVuePipelineTests
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "if (props.showMarkup) {");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(((ignored) => h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")))(\"fallback-title\"));");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append((ignored => h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")))(\"fallback-title\"));");
     }
 
     [TestMethod]
@@ -25338,7 +25338,7 @@ public sealed class RazorVuePipelineTests
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "if (props.showMarkup) {");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(((values) => h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")))([props.title, \"suffix\"]));");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append((values => h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")))([props.title, \"suffix\"]));");
     }
 
     [TestMethod]
@@ -26063,7 +26063,7 @@ public sealed class RazorVuePipelineTests
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "if (props.showMarkup) {");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(((ignored) => h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")))(\"fallback-title\"));");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append((ignored => h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")))(\"fallback-title\"));");
     }
 
     [TestMethod]
@@ -26119,7 +26119,7 @@ public sealed class RazorVuePipelineTests
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "if (props.showMarkup) {");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(((values) => h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")))([props.title, \"suffix\"]));");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append((values => h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")))([props.title, \"suffix\"]));");
     }
 
     [TestMethod]
