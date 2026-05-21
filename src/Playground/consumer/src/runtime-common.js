@@ -1,3 +1,5 @@
+import { createRouterMatcher } from "vue-router";
+
 export function assertHostRequirements(hostRequirements) {
   if (hostRequirements === null || typeof hostRequirements !== "object") {
     throw new Error("RazorVue host requirements were not provided to the Playground consumer runtime.");
@@ -94,7 +96,15 @@ export function installShellNavigationInterception(router, routeDefinitions) {
 }
 
 function shouldHandleClientRoute(pathname, routeDefinitions) {
-  return routeDefinitions.some((route) => matchRoutePath(route.path, pathname));
+  return routeDefinitions.some((route) => doesRouteMatchPath(route, pathname));
+}
+
+export function doesRouteMatchPath(routeDefinition, pathname) {
+  const resolved = getRouteMatcher(routeDefinition).resolve(
+    { path: pathname },
+    createMatcherCurrentLocation()
+  );
+  return Array.isArray(resolved.matched) && resolved.matched.length > 0;
 }
 
 function normalizeRoute(route, index) {
@@ -114,6 +124,7 @@ function normalizeRoute(route, index) {
   const parameterNames = Array.isArray(route.parameterNames)
     ? route.parameterNames.filter((item) => typeof item === "string" && item.length > 0)
     : [];
+  const defaultParameterValues = normalizeDefaultParameterValues(route.defaultParameterValues, parameterNames);
 
   if (!name || !alias || !path) {
     throw new Error(`Playground consumer route at index ${index} is missing required metadata.`);
@@ -127,47 +138,84 @@ function normalizeRoute(route, index) {
     componentModel: typeof route.componentModel === "string" ? route.componentModel : "",
     routeTemplate: typeof route.routeTemplate === "string" ? route.routeTemplate : path,
     path,
-    parameterNames: Object.freeze(parameterNames)
+    parameterNames: Object.freeze(parameterNames),
+    defaultParameterValues: Object.freeze(defaultParameterValues)
   });
 }
 
-function matchRoutePath(routePath, pathname) {
-  if (routePath === "/") {
-    return pathname === "/";
+function normalizeDefaultParameterValues(values, parameterNames) {
+  if (values === null || typeof values !== "object" || Array.isArray(values)) {
+    return {};
   }
 
-  const routeSegments = splitPath(routePath);
-  const pathSegments = splitPath(pathname);
-  const requiredRouteSegmentCount = routeSegments.filter((segment) => !isOptionalRouteParameterSegment(segment)).length;
-  if (pathSegments.length < requiredRouteSegmentCount || pathSegments.length > routeSegments.length) {
-    return false;
-  }
-
-  for (let index = 0; index < routeSegments.length; index += 1) {
-    const routeSegment = routeSegments[index];
-    const pathSegment = pathSegments[index];
-    if (routeSegment.startsWith(":")) {
-      if (!pathSegment && !isOptionalRouteParameterSegment(routeSegment)) {
-        return false;
-      }
-
+  const allowedNames = new Set(parameterNames);
+  const normalized = {};
+  for (const [key, value] of Object.entries(values)) {
+    if (!allowedNames.has(key) || typeof value !== "string") {
       continue;
     }
 
-    if (routeSegment !== pathSegment) {
-      return false;
+    normalized[key] = value;
+  }
+
+  return normalized;
+}
+
+export function applyRouteDefaultParameterValues(routeDefinition, routeParameters = {}) {
+  const normalized = routeParameters !== null && typeof routeParameters === "object"
+    ? { ...routeParameters }
+    : {};
+
+  const defaultValues = routeDefinition?.defaultParameterValues;
+  if (defaultValues === null || typeof defaultValues !== "object") {
+    return normalized;
+  }
+
+  for (const [key, defaultValue] of Object.entries(defaultValues)) {
+    if (!Object.prototype.hasOwnProperty.call(normalized, key)) {
+      normalized[key] = defaultValue;
+      continue;
+    }
+
+    const currentValue = normalized[key];
+    if (currentValue === "" || currentValue === null || typeof currentValue === "undefined") {
+      normalized[key] = defaultValue;
     }
   }
 
-  return true;
+  return normalized;
 }
 
-function splitPath(path) {
-  return path
-    .split("/")
-    .filter((segment) => segment.length > 0);
+const routeMatcherCache = new WeakMap();
+
+function getRouteMatcher(routeDefinition) {
+  let matcher = routeMatcherCache.get(routeDefinition);
+  if (matcher) {
+    return matcher;
+  }
+
+  matcher = createRouterMatcher(
+    [
+      {
+        path: routeDefinition.path,
+        name: routeDefinition.name,
+        component: {}
+      }
+    ],
+    {}
+  );
+  routeMatcherCache.set(routeDefinition, matcher);
+  return matcher;
 }
 
-function isOptionalRouteParameterSegment(segment) {
-  return segment.startsWith(":") && segment.endsWith("?");
+function createMatcherCurrentLocation() {
+  return {
+    path: "/",
+    fullPath: "/",
+    params: {},
+    query: {},
+    hash: "",
+    matched: [],
+    meta: {}
+  };
 }

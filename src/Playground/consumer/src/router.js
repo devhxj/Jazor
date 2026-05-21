@@ -2,6 +2,7 @@ import { defineComponent, h, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { usePlaygroundStore } from "./stores/playground-store.js";
 import { createCatalogViewModel, createDetailViewModel } from "./view-models.js";
+import { applyRouteDefaultParameterValues } from "./runtime-common.js";
 
 export function createPlaygroundRoutes(routeDefinitions) {
   const catalogRoutes = resolveRoutes(routeDefinitions, "CatalogPage");
@@ -136,7 +137,8 @@ function resolveSingleRouteParameter(routeParameters, routeDefinition) {
     throw new Error(`Playground route '${routeDefinition.alias}' does not declare a supported route parameter.`);
   }
 
-  const value = routeParameters?.[parameterName];
+  const normalizedRouteParameters = applyRouteDefaultParameterValues(routeDefinition, routeParameters);
+  const value = normalizedRouteParameters?.[parameterName];
   if (Array.isArray(value)) {
     return typeof value[0] === "string" ? value[0] : "";
   }

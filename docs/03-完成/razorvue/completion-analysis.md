@@ -68,6 +68,27 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedNam
 6. `Build_LocalPackages_WithExternalRazorSgSfcConsumer_PureDenoPipeline_PassesInIsolatedWorkspace` 已覆盖独立临时 `.NET + Razor SG + SFC` consumer，再用独立纯 Deno consumer 执行 `test` task，包含 SSR smoke、`Deno.bundle()` smoke、browser build 和 browser smoke。
 7. `Build_LocalPackages_RazorVueTodoListSample_PureDenoPipeline_PassesInIsolatedWorkspace` 已覆盖仓库 TodoList sample 的本地 package build、纯 Deno SSR、`Deno.bundle()`、browser build、browser smoke。
 
+## 2026-05-21 状态更新
+
+本轮继续把 RazorVue consumer 接入链路从“能跑基本 demo”收紧到更真实的生产契约，重点落在 route template 与 consumer runtime 的一致性上：
+
+1. `Jazor.Emit/RazorVueConsumerEntryCompiler` 的 route template -> Vue Router path 转换不再依赖手写 `{...}` 字符串拆分，而是正式切到 ASP.NET Core 官方 `Microsoft.AspNetCore.Routing.Template.TemplateParser`。这样 route grammar 的合法性与 segment/part 边界首先由 ASP.NET Core 官方 parser 决定，RazorVue 只负责“是否能诚实映射到 Vue Router path regex”这一步。
+2. consumer route 支持面现已从原先的 pure literal / pure `{parameter}` / `{parameter?}` 扩到：受控 constraint（例如 `{id:int}`）、不含 optional separator 的 mixed/composite segment（例如 `post-{id}` / `post-{id:int}`），以及 catch-all（例如 `{*path}`）。
+3. constraint 不再做“看起来像 constraint 就全吞掉”的弱支持，而是只对能稳定映射到 Vue Router regex path 的受控子集开放。当前已锁定的典型子集包括：`int`、`long`、`alpha`、`bool`、`required`、`length(...)` / `minlength(...)` / `maxlength(...)`、`regex(...)`。超出这一子集的 constraint 组合仍显式 fail-fast，而不是静默丢失 ASP.NET Core 约束语义。
+4. whole-segment default value（如 `{id=42}`、`{id:int=42}`）现也已正式进入支持面。`RazorVueConsumerEntryCompiler` 不仅会把这类模板转换成 Vue Router optional path，还会把默认值写入 route metadata 的 `defaultParameterValues`；consumer runtime 在 route match 读取与 href 生成时会统一应用这份默认值合同，因此 `/examples` 与 `/examples/42` 都能落到 `id = "42"` 语义，而显式传入默认值时 href 仍会折叠为 `/examples`。
+5. 当前继续显式拒绝的是：
+   - default value 出现在 composite/mixed segment 内部，例如 `post-{id=42}`
+   - 带 optional separator 的 composite/mixed segment，例如 `/files/{filename}.{ext?}`
+   这里不是 parser 不会读，而是经真实 `vue-router` matcher / href-generation probe 校准后确认：这两类路径在当前 consumer/runtime 契约下不能诚实承载 ASP.NET Core 的参数提取与 URL 生成语义；继续 fail-fast 比“表面支持”更符合生产标准。
+6. Playground consumer runtime 已去掉独立的简化 path matcher 和手写 `:id` 路径拼接规则。anchor interception 的 client-route 判定与 `resolveRouteHref(...)` 的 href 生成现在统一复用 `vue-router` matcher 语义，并在其外层叠加 generated route metadata 的 default-parameter contract，避免 generated `razorVueConsumerRoutes` 与真实 router 在 constrained/composite/catch-all/default-valued path 上发生语义漂移。
+7. 新增 focused 回归已同时覆盖：
+   - `Jazor.EmitTest` 中的 constrained / catch-all / composite / composite+constraint / optional composite separator
+   - `Jazor.EmitTest` 中的 whole-segment default value / constrained default value / composite default-value rejection
+   - `src/Playground/consumer/src/runtime-common.test.js` 中的 route metadata 归一化、复杂 path 匹配、default-parameter contract 与 href 生成
+8. 当前 focused 验证已通过：
+   - `dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter FullyQualifiedName~RazorVueConsumerEntryCompilerTests -v minimal`
+   - `dotnet run --file src/Playground/consumer/scripts/run-deno.cs -- task test`
+
 ## 2026-05-20 状态更新
 
 本轮继续收紧 typed `RenderFragment<T>` / typed slot 的正式合同，重点不是再加一层 bridge，而是把已有 lowering 主线做实：

@@ -1,20 +1,32 @@
+import { createRouterMatcher } from "vue-router";
+import { applyRouteDefaultParameterValues } from "./runtime-common.js";
+
 export function createCatalogViewModel(store, detailRouteDefinition) {
   const visibleExamples = store.filteredExamples;
   const detailQuerySuffix = deriveCatalogQuerySuffix(store);
   return {
-    Query: store.query,
-    ActiveCategory: store.activeCategory,
-    TotalExamples: store.examples.length,
-    FeaturedCount: store.featuredCount,
-    FavoritesCount: store.favoriteCount,
-    VisibleCount: visibleExamples.length,
-    Categories: store.categories,
-    Examples: visibleExamples.map((example) => ({
-      ...example,
-      DetailHref: `${resolveRouteHref(detailRouteDefinition, { id: example.Id })}${detailQuerySuffix}`
+    query: store.query,
+    activeCategory: store.activeCategory,
+    totalExamples: store.examples.length,
+    featuredCount: store.featuredCount,
+    favoritesCount: store.favoriteCount,
+    visibleCount: visibleExamples.length,
+    categories: store.categories,
+    examples: visibleExamples.map((example) => ({
+      id: example.Id,
+      title: example.Title,
+      category: example.Category,
+      difficulty: example.Difficulty,
+      runtime: example.Runtime,
+      summary: example.Summary,
+      featured: example.Featured,
+      estimatedMinutes: example.EstimatedMinutes,
+      tags: example.Tags ?? [],
+      isFavorite: Boolean(example.IsFavorite),
+      detailHref: `${resolveRouteHref(detailRouteDefinition, { id: example.Id })}${detailQuerySuffix}`
     })),
-    EmptyStateTitle: store.hasError ? "目录暂不可用" : "当前没有匹配项",
-    EmptyStateBody: store.hasError
+    emptyStateTitle: store.hasError ? "目录暂不可用" : "当前没有匹配项",
+    emptyStateBody: store.hasError
       ? store.errorMessage
       : "可以调整搜索关键词或分类筛选，扩大当前 Playground 目录范围。"
   };
@@ -24,11 +36,28 @@ export function createDetailViewModel(store, catalogRouteDefinition) {
   const detail = store.selectedDetail;
   const isFavorite = detail ? store.isFavorite(detail.Id) : false;
   return {
-    Example: detail,
-    IsFavorite: isFavorite,
-    BackHref: deriveCatalogHref(catalogRouteDefinition, store),
-    BackText: "返回目录",
-    FavoriteText: isFavorite ? "取消收藏" : "加入收藏"
+    example: detail === null
+      ? null
+      : {
+        id: detail.Id,
+        title: detail.Title,
+        category: detail.Category,
+        difficulty: detail.Difficulty,
+        runtime: detail.Runtime,
+        summary: detail.Summary,
+        whyItMatters: detail.WhyItMatters,
+        highlights: detail.Highlights ?? [],
+        steps: detail.Steps ?? [],
+        files: detail.Files ?? [],
+        estimatedMinutes: detail.EstimatedMinutes,
+        updatedAtUtc: detail.UpdatedAtUtc,
+        featured: detail.Featured,
+        tags: detail.Tags ?? []
+      },
+    isFavorite,
+    backHref: deriveCatalogHref(catalogRouteDefinition, store),
+    backText: "返回目录",
+    favoriteText: isFavorite ? "取消收藏" : "加入收藏"
   };
 }
 
@@ -65,32 +94,65 @@ export function resolveRouteHref(routeDefinition, routeParameters = {}) {
     throw new Error("Playground route definition path must be an absolute route path.");
   }
 
-  const parameters = routeParameters ?? {};
-  const segments = routeDefinition.path.split("/");
-  const resolvedSegments = segments.map((segment) => resolveRouteSegment(segment, parameters, routeDefinition.alias));
-  const resolvedPath = resolvedSegments.join("/");
-  return resolvedPath.length === 0 ? "/" : resolvedPath;
+  const matcher = getRouteHrefMatcher(routeDefinition);
+  const normalizedParameters = normalizeRouteHrefParameters(routeDefinition, routeParameters);
+  const resolved = matcher.resolve(
+    {
+      name: routeDefinition.name,
+      params: normalizedParameters
+    },
+    createMatcherCurrentLocation()
+  );
+  return resolved.path || "/";
 }
 
-function resolveRouteSegment(segment, parameters, alias) {
-  if (!segment.startsWith(":")) {
-    return segment;
+function normalizeRouteHrefParameters(routeDefinition, routeParameters) {
+  const parametersWithDefaults = applyRouteDefaultParameterValues(routeDefinition, routeParameters);
+  const normalized = { ...parametersWithDefaults };
+  const defaultValues = routeDefinition?.defaultParameterValues;
+  if (defaultValues === null || typeof defaultValues !== "object") {
+    return normalized;
   }
 
-  const isOptional = segment.endsWith("?");
-  const parameterName = segment.slice(1, isOptional ? -1 : undefined);
-  if (parameterName.length === 0) {
-    throw new Error(`Playground route '${alias}' contains an invalid parameter segment '${segment}'.`);
+  for (const [key, defaultValue] of Object.entries(defaultValues)) {
+    if (normalized[key] === defaultValue) {
+      delete normalized[key];
+    }
   }
 
-  const value = parameters[parameterName];
-  if (typeof value === "string" && value.length > 0) {
-    return encodeURIComponent(value);
+  return normalized;
+}
+
+const routeHrefMatcherCache = new WeakMap();
+
+function getRouteHrefMatcher(routeDefinition) {
+  let matcher = routeHrefMatcherCache.get(routeDefinition);
+  if (matcher) {
+    return matcher;
   }
 
-  if (isOptional) {
-    return "";
-  }
+  matcher = createRouterMatcher(
+    [
+      {
+        path: routeDefinition.path,
+        name: routeDefinition.name,
+        component: {}
+      }
+    ],
+    {}
+  );
+  routeHrefMatcherCache.set(routeDefinition, matcher);
+  return matcher;
+}
 
-  throw new Error(`Playground route '${alias}' requires route parameter '${parameterName}'.`);
+function createMatcherCurrentLocation() {
+  return {
+    path: "/",
+    fullPath: "/",
+    params: {},
+    query: {},
+    hash: "",
+    matched: [],
+    meta: {}
+  };
 }

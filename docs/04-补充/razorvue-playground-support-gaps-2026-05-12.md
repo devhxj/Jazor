@@ -614,7 +614,13 @@ jazor-manifest-razorvue.json
 - Deno bridge 读取统一 manifest shape，并只处理 `kind = "vue"` 且 `component.model = "sfc"` 的 module。
 - consumer entry 组件选择逻辑只在 component entries 中匹配，普通 `mjs` module 不参与 `id:` / `name:` / `path:` component selector。
 - consumer entry 生成 `razorVueConsumerRoutes`，其数据源是 selected component 的 `routeTemplates`；Playground 这类 consumer runtime 不再把 `router.js` 中的手写 path table 作为路由真相源。
-- 当前 route template 到 Vue Router path 的官方支持边界已收窄并显式化：支持纯 literal segment、纯 `{parameter}` segment 和 `{parameter?}`；constraint、catch-all、default value、mixed segment 会在 consumer entry 生成阶段直接失败。
+- 已完成（2026-05-21 本轮）：`razorvue-consumer-entry` 的 route template -> Vue Router path 转换现已从“只支持 pure literal / pure parameter segment”的窄子集，扩到一条更真实的生产契约：支持 pure literal、`{parameter}`、`{parameter?}`、whole-segment default value（如 `{id=42}` / `{id:int=42}`）、受控 constraint（如 `{id:int}` / `{slug:alpha}` / `length(...)` / `regex(...)`）、不含 optional separator 的 mixed/composite segment（如 `post-{id}`、`post-{id:int}`），以及 catch-all（如 `{*path}`）。实现不再手写 Razor route token 字符串拆分，而是复用 ASP.NET Core 官方 `TemplateParser` 解析 route template，再转换到 Vue Router path regex 形状。
+- 当前仍显式拒绝两类 route 形态：
+  - default value 出现在 composite/mixed segment 内部，例如 `post-{id=42}`
+  - 带 optional separator 的 composite/mixed segment，例如 `/files/{filename}.{ext?}`
+  原因不是 parser 不会读，而是经真实 `vue-router` matcher / href-generation probe 校准后确认：这两类形态在当前 consumer/runtime 契约下无法诚实承载 ASP.NET Core 的参数提取与 URL 生成语义；继续 fail-fast 比“看起来能跑”的假支持更符合生产标准。
+- 已完成（2026-05-21 本轮）：Playground consumer runtime 已不再维护独立的简化 path matcher / 手写 `:id` href 拼接规则；anchor interception 的 client-route 判定与 route href 生成现在统一复用 `vue-router` matcher 语义，并在其外层叠加 generated route metadata 中的 default-parameter contract。这样 generated `razorVueConsumerRoutes` 一旦使用 constrained/composite/catch-all/default-valued path，就不会出现“consumer entry 已支持、Playground 点击导航/生成 href 仍按旧窄规则误判”的生产漂移。
+- 已完成（2026-05-21 本轮）：Playground consumer view-model 形状也已与当前 RazorVue 生成组件实际读取的 prop casing 对齐。consumer `view-models.js` 不再把 SSR/browser runtime 继续暴露 PascalCase DTO 样式对象，而是显式投影为生成产物当前消费的 camelCase shape，避免 `props.model.TotalExamples` / `DetailHref` 与生成组件实际读取的 `props.model.totalExamples` / `detailHref` 再次漂移。
 - 错误信息应继续明确区分“manifest 不存在”“manifest 没有组件”“selector 无匹配”“selector 匹配多个组件”，不能因为统一 manifest 降低诊断质量。
 - Playground colocated `consumer` 目录继续保留；它是单 .NET 项目中的前端消费构建层，不是第二个运行时 host。命名上使用 `consumer`，不再使用 `playground-consumer` 这类项目特化名称。
 - 已完成（2026-05-13 本轮）：`razorvue-consumer-entry` 在 mixed H/SFC 场景下按 `component.model` 分流，H 组件直接 default import host `.mjs`，SFC 组件才进入 bridge。

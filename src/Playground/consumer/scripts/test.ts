@@ -8,7 +8,7 @@ async function runUnitTests(): Promise<void> {
   const consumerRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
   const output = await new Deno.Command(Deno.execPath(), {
     cwd: consumerRoot,
-    args: ["test", "./src/runtime-common.test.js"],
+    args: ["test", "--allow-env", "./src/runtime-common.test.js"],
     stdin: "null",
     stdout: "piped",
     stderr: "piped"

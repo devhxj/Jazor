@@ -99,13 +99,30 @@ runRazorVueConsumerSsr(razorVueConsumerComponents, razorVueHostRequirements, raz
 - 字面量路径，例如 `/`、`/catalog`
 - 纯参数 segment，例如 `/examples/{id}`
 - 可选参数 segment，例如 `/examples/{id?}`
+- whole-segment default value，例如 `/examples/{id=42}`、`/examples/{id:int=42}`
+- 带受控 constraint 的参数 segment，例如 `/examples/{id:int}`
+- 不含 optional separator 的 mixed/composite segment，例如 `/examples/post-{id}`、`/examples/post-{id:int}`
+- catch-all segment，例如 `/examples/{*path}`
 
 当前会显式拒绝：
 
-- route constraint，例如 `{id:int}`
-- catch-all，例如 `{*path}`
-- default value，例如 `{id=42}`
-- 混合 segment，例如 `post-{id}`
+- default value 出现在 composite/mixed segment 内部，例如 `post-{id=42}`
+- 含 optional separator 的 composite/mixed segment，例如 `/files/{filename}.{ext?}`
+- 无法诚实映射到 Vue Router regex path 的 route constraint 组合
+
+对于 whole-segment default value，consumer entry 现在不仅会把它转换成 Vue Router 可接受的 optional path（例如 `:id?` / `:id(<regex>)?`），还会把默认值同时写入 `defaultParameterValues` metadata。consumer runtime 会在 route match 读取与 href 生成时统一应用这份 metadata，从而保持“省略 segment 时仍有默认参数值、显式传默认值时 URL generation 尽量折叠”的 ASP.NET Core 风格契约。
+
+当前 route constraint 只对“可稳定映射到 Vue Router path regex”的受控子集开放。现已覆盖的典型约束包括：
+
+- `int`
+- `long`
+- `alpha`
+- `bool`
+- `required`
+- `length(...)` / `minlength(...)` / `maxlength(...)`
+- `regex(...)`
+
+consumer runtime 侧也已同步对齐：Playground 这类 consumer 不再维护独立的简化 path matcher / href 拼接规则，而是复用 `vue-router` matcher 语义处理 anchor interception 与 route href 生成，并在其外层叠加 generated route metadata 中的 default parameter contract，避免 generated route metadata 与真实 router 语义漂移。
 
 ## Verification
 

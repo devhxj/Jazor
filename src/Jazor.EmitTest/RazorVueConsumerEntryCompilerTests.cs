@@ -261,10 +261,11 @@ public sealed class RazorVueConsumerEntryCompilerTests
         var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
             new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
 
-        Assert.IsFalse(result.IsSuccess);
-        Assert.AreEqual(15, result.ExitCode);
-        StringAssert.Contains(result.Error, "route constraints are not supported yet");
-        Assert.IsFalse(File.Exists(workspace.ClientEntryPath));
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("path: \"/examples/:id(-?\\\\d{1,})\"", clientEntry);
+        Assert.Contains("parameterNames: Object.freeze([\"id\"])", clientEntry);
     }
 
     [TestMethod]
@@ -304,14 +305,15 @@ public sealed class RazorVueConsumerEntryCompilerTests
         var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
             new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
 
-        Assert.IsFalse(result.IsSuccess);
-        Assert.AreEqual(15, result.ExitCode);
-        StringAssert.Contains(result.Error, "catch-all route parameters are not supported yet");
-        Assert.IsFalse(File.Exists(workspace.ClientEntryPath));
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("path: \"/examples/:path(.*)*\"", clientEntry);
+        Assert.Contains("parameterNames: Object.freeze([\"path\"])", clientEntry);
     }
 
     [TestMethod]
-    public async Task GenerateAsync_WhenRouteTemplateUsesDefaultValue_FailsWithActionableError()
+    public async Task GenerateAsync_WhenRouteTemplateUsesWholeSegmentDefaultValue_EmitsOptionalVueRouteAndDefaultParameterMetadata()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteManifest(
@@ -325,10 +327,40 @@ public sealed class RazorVueConsumerEntryCompilerTests
         var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
             new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
 
-        Assert.IsFalse(result.IsSuccess);
-        Assert.AreEqual(15, result.ExitCode);
-        StringAssert.Contains(result.Error, "route default values are not supported yet");
-        Assert.IsFalse(File.Exists(workspace.ClientEntryPath));
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("path: \"/examples/:id?\"", clientEntry);
+        Assert.Contains("parameterNames: Object.freeze([\"id\"])", clientEntry);
+        Assert.Contains("defaultParameterValues: Object.freeze({\"id\":\"42\"})", clientEntry);
+
+        using var resultDocument = JsonDocument.Parse(await File.ReadAllTextAsync(workspace.ResultPath, TestContext.CancellationTokenSource.Token));
+        var route = resultDocument.RootElement.GetProperty("Routes").EnumerateArray().Single();
+        Assert.AreEqual("/examples/{id=42}", route.GetProperty("RouteTemplate").GetString());
+        Assert.AreEqual("/examples/:id?", route.GetProperty("Path").GetString());
+        Assert.AreEqual("42", route.GetProperty("DefaultParameterValues").GetProperty("id").GetString());
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenRouteTemplateUsesConstrainedWholeSegmentDefaultValue_EmitsOptionalConstrainedVueRouteAndDefaultParameterMetadata()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue") with
+            {
+                RouteTemplates = ["/examples/{id:int=42}"]
+            });
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("path: \"/examples/:id(-?\\\\d{1,})?\"", clientEntry);
+        Assert.Contains("defaultParameterValues: Object.freeze({\"id\":\"42\"})", clientEntry);
     }
 
     [TestMethod]
@@ -346,9 +378,74 @@ public sealed class RazorVueConsumerEntryCompilerTests
         var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
             new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
 
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("path: \"/examples/post-:id\"", clientEntry);
+        Assert.Contains("parameterNames: Object.freeze([\"id\"])", clientEntry);
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenRouteTemplateUsesCompositeSegmentWithConstraint_EmitsVueRouteRegexSegment()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue") with
+            {
+                RouteTemplates = ["/examples/post-{id:int}"]
+            });
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("path: \"/examples/post-:id(-?\\\\d{1,})\"", clientEntry);
+        Assert.Contains("parameterNames: Object.freeze([\"id\"])", clientEntry);
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenRouteTemplateUsesOptionalCompositeSeparator_FailsWithActionableError()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue") with
+            {
+                RouteTemplates = ["/files/{filename}.{ext?}"]
+            });
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
         Assert.IsFalse(result.IsSuccess);
         Assert.AreEqual(15, result.ExitCode);
-        StringAssert.Contains(result.Error, "composite route segments are not supported");
+        StringAssert.Contains(result.Error, "optional separators inside composite route segments are not supported yet");
+        Assert.IsFalse(File.Exists(workspace.ClientEntryPath));
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenRouteTemplateUsesCompositeDefaultValue_FailsWithActionableError()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue") with
+            {
+                RouteTemplates = ["/examples/post-{id=42}"]
+            });
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(15, result.ExitCode);
+        StringAssert.Contains(result.Error, "route default values inside composite route segments are not currently supported");
         Assert.IsFalse(File.Exists(workspace.ClientEntryPath));
     }
 
