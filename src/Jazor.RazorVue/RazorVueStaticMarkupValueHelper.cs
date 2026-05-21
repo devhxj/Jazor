@@ -6,6 +6,24 @@ namespace Jazor.RazorVue;
 
 internal static class RazorVueStaticMarkupValueHelper
 {
+    public static bool IsStaticMarkupCarrierType(ITypeSymbol? typeSymbol)
+        => IsStringType(typeSymbol) || IsMarkupStringType(typeSymbol);
+
+    public static bool IsStringType(ITypeSymbol? typeSymbol)
+    {
+        if (typeSymbol is null)
+            return false;
+
+        if (typeSymbol is INamedTypeSymbol namedType &&
+            namedType.IsGenericType &&
+            namedType.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
+        {
+            typeSymbol = namedType.TypeArguments[0];
+        }
+
+        return typeSymbol.SpecialType == SpecialType.System_String;
+    }
+
     public static string? TryGetStaticMarkupValue(IOperation? operation)
     {
         var current = RazorVueOperationNormalizer.Unwrap(operation);

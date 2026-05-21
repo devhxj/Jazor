@@ -979,6 +979,7 @@ internal sealed class RazorVueRenderTreeExtractor
 
             if (TryGetStaticMarkupString(value) is not string markup)
             {
+                TryThrowInvalidatedStaticMarkupLocalCarrier(value);
                 throw CreateUnsupportedBuilderCall(
                     invocation,
                     $"BuildRenderTree call '{GetBuilderCallDisplayName(invocation)}' uses AddMarkupContent(...) content that is not compile-time provable static markup in component '{_snapshot.Descriptor.FullName}'. RazorVue only supports static markup literals/carriers that can be canonicalized into a safe render subtree.");
@@ -1014,6 +1015,30 @@ internal sealed class RazorVueRenderTreeExtractor
                 TryGetLocalMarkupStringInitializer,
                 TryGetPropertyMarkupStringInitializer,
                 TryGetFieldMarkupStringInitializer);
+
+        private void TryThrowInvalidatedStaticMarkupLocalCarrier(IOperation? operation)
+        {
+            if (Unwrap(operation) is not ILocalReferenceOperation localReference ||
+                !RazorVueStaticMarkupValueHelper.IsStaticMarkupCarrierType(localReference.Local.Type))
+            {
+                return;
+            }
+
+            if (!RazorVueSourceStableLocalInitializerHelper.IsSourceStableLocalInitializerInvalidatedByLaterWrites(
+                    _compilation,
+                    localReference.Local,
+                    RazorVueStaticMarkupValueHelper.IsStaticMarkupCarrierType))
+            {
+                return;
+            }
+
+            var carrierKind = RazorVueStaticMarkupValueHelper.IsMarkupStringType(localReference.Local.Type)
+                ? "MarkupString"
+                : "string";
+            throw CreateStructuralIssue(
+                localReference,
+                $"RazorVue {carrierKind} local '{localReference.Local.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Declaration-initialized local carriers must remain source-stable.");
+        }
 
         private RazorVueRenderFragment ParseNestedBranch(IOperation? operation)
         {
@@ -1946,7 +1971,18 @@ internal sealed class RazorVueRenderTreeExtractor
                 : TryGetLocalStaticMarkupInitializer(local);
 
         private IOperation? TryGetLocalStaticMarkupInitializer(ILocalSymbol local)
-            => TryGetSourceStableStaticMarkupInitializer(local);
+        {
+            if (TryGetSourceStableStaticMarkupInitializer(local) is { } sourceStableInitializer)
+                return sourceStableInitializer;
+
+            return RazorVueSourceStableLocalInitializerHelper.TryGetSourceStableLocalInitializer(
+                _compilation,
+                local,
+                RazorVueStaticMarkupValueHelper.IsStaticMarkupCarrierType,
+                out var initializer)
+                ? initializer
+                : null;
+        }
 
         private IOperation? TryGetPropertyMarkupStringInitializer(IPropertySymbol property)
         {

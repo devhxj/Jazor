@@ -48,7 +48,7 @@ internal sealed partial class RazorVueExpressionEmitter
             RazorVueSourceStableLocalInitializerHelper.CollectSourceStableLocalInitializers(
                 _snapshot.Compilation,
                 imperative.Operations,
-                RazorVueStaticMarkupValueHelper.IsMarkupStringType);
+                RazorVueStaticMarkupValueHelper.IsStaticMarkupCarrierType);
 
         return WithImperativeBuilderAlias(
             builderAlias,
@@ -444,7 +444,21 @@ internal sealed partial class RazorVueExpressionEmitter
     }
 
     private IOperation? TryGetImperativeLocalStaticMarkupInitializer(ILocalSymbol local)
-        => TryGetImperativeLocalMarkupStringInitializer(local);
+    {
+        if (_imperativeStaticMarkupLocalInitializers is not null &&
+            _imperativeStaticMarkupLocalInitializers.TryGetValue(local, out var initializer))
+        {
+            return initializer;
+        }
+
+        return RazorVueSourceStableLocalInitializerHelper.TryGetSourceStableLocalInitializer(
+            _snapshot.Compilation,
+            local,
+            RazorVueStaticMarkupValueHelper.IsStaticMarkupCarrierType,
+            out initializer)
+            ? initializer
+            : null;
+    }
 
     private IOperation? TryGetImperativePropertyMarkupStringInitializer(IPropertySymbol property)
     {
