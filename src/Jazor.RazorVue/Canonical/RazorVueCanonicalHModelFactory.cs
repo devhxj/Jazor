@@ -81,8 +81,10 @@ internal sealed class RazorVueCanonicalHModelFactory
             Template: template,
             ImperativeRootProgram: imperativeRootProgram,
             Setup: new RazorVueCanonicalSetupModel(
+                snapshot.Logic.Properties,
                 snapshot.Logic.Fields,
                 snapshot.Logic.Methods,
+                expressionEmitter.GetRequiredSetupProperties(),
                 expressionEmitter.GetRequiredSetupFields(),
                 expressionEmitter.GetRequiredSetupMethods(),
                 snapshot.Lifecycle));

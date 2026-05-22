@@ -19,7 +19,12 @@ internal sealed partial class RazorVueExpressionEmitter
 {
     internal const string ImperativeRenderContextAlias = "__jazorRenderContext";
 
-    internal readonly record struct LifecyclePayloadEmission(string Expression, bool UsesFirstRender);
+    internal readonly record struct LifecyclePayloadLocalBinding(string Alias, string Expression);
+
+    internal readonly record struct LifecyclePayloadEmission(
+        string Expression,
+        bool UsesFirstRender,
+        ImmutableArray<LifecyclePayloadLocalBinding> PreludeLocals = default);
     // Structural omission must stay distinct from an explicit JS "null" value,
     // otherwise minimal-arity lowering would drop user-authored null expressions.
     private readonly record struct OptionalJsArgument(string Expression, bool HasValue)
@@ -39,10 +44,17 @@ internal sealed partial class RazorVueExpressionEmitter
     private readonly ImmutableDictionary<string, string> _componentReferences;
     private readonly ImmutableDictionary<string, ImmutableDictionary<string, string>> _componentEmitsByRazorAlias;
 
+    private readonly ImmutableDictionary<string, VueLogicPropertyDescriptor> _logicPropertiesByName;
     private readonly ImmutableDictionary<string, VueLogicFieldDescriptor> _logicFieldsByName;
     private readonly ImmutableDictionary<string, ImmutableArray<VueLogicMethodDescriptor>> _logicMethodsByName;
+    private readonly HashSet<IPropertySymbol> _requiredSetupProperties;
     private readonly HashSet<IFieldSymbol> _requiredSetupFields;
     private readonly HashSet<IMethodSymbol> _requiredSetupMethods;
+    private bool _isSetupRewriteScopeActive;
+    private HashSet<IPropertySymbol>? _capturedSetupPropertyDependencies;
+    private HashSet<IFieldSymbol>? _capturedSetupFieldDependencies;
+    private HashSet<IMethodSymbol>? _capturedSetupMethodDependencies;
+    private Dictionary<ILocalSymbol, IOperation>? _sourceStableLocalInitializers;
     private Dictionary<ILocalSymbol, string>? _scopedLocalAliases;
     private Dictionary<IParameterSymbol, string>? _scopedParameterAliases;
     private readonly SenseArgument _compilerArgument;
@@ -77,6 +89,10 @@ internal sealed partial class RazorVueExpressionEmitter
         _componentSlotsByPublicName = BuildComponentSlotsByPublicName(_resolvedComponents);
         _componentEmitDescriptorsByRazorAlias = BuildComponentEmitDescriptorsByRazorAlias(_resolvedComponents);
         _componentEmitsByRazorAlias = componentEmitsByRazorAlias ?? ImmutableDictionary<string, ImmutableDictionary<string, string>>.Empty;
+        _logicPropertiesByName = snapshot.Logic.Properties.ToImmutableDictionary(
+            static property => property.Name,
+            static property => property,
+            StringComparer.Ordinal);
         _logicFieldsByName = snapshot.Logic.Fields.ToImmutableDictionary(
             static field => field.Name,
             static field => field,
@@ -87,6 +103,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 static group => group.Key,
                 static group => group.ToImmutableArray(),
                 StringComparer.Ordinal);
+        _requiredSetupProperties = new HashSet<IPropertySymbol>(SymbolEqualityComparer.Default);
         _requiredSetupFields = new HashSet<IFieldSymbol>(SymbolEqualityComparer.Default);
         _requiredSetupMethods = new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default);
         _compilerArgument = new SenseArgument(Sense.Any, UseImportAliases: true);
@@ -97,7 +114,19 @@ internal sealed partial class RazorVueExpressionEmitter
         _compilerImports = new List<RazorVueCompilerImportBinding>();
     }
 
-    internal static LifecyclePayloadEmission EmitLifecyclePayload(IMethodSymbol method, IOperation operation, bool allowFirstRenderPayload)
+    internal static LifecyclePayloadEmission EmitLifecyclePayload(
+        RazorVueSemanticSnapshot snapshot,
+        IMethodSymbol method,
+        IOperation operation,
+        bool allowFirstRenderPayload)
+    {
+        if (snapshot is null)
+            throw new ArgumentNullException(nameof(snapshot));
+
+        return new RazorVueExpressionEmitter(snapshot).EmitLifecyclePayload(method, operation, allowFirstRenderPayload);
+    }
+
+    internal LifecyclePayloadEmission EmitLifecyclePayload(IMethodSymbol method, IOperation operation, bool allowFirstRenderPayload)
     {
         if (method is null)
             throw new ArgumentNullException(nameof(method));
@@ -284,6 +313,112 @@ internal sealed partial class RazorVueExpressionEmitter
         return NormalizeTopLevelExpressionText(operation, MaterializeCompilerExpression(expression, argument));
     }
 
+    internal T WithSetupRewriteScope<T>(Func<T> action)
+    {
+        if (action is null)
+            throw new ArgumentNullException(nameof(action));
+
+        var previous = _isSetupRewriteScopeActive;
+        _isSetupRewriteScopeActive = true;
+        try
+        {
+            return action();
+        }
+        finally
+        {
+            _isSetupRewriteScopeActive = previous;
+        }
+    }
+
+    internal SetupDependencyCapture CaptureSetupDependencies(Func<string> emitExpression)
+    {
+        if (emitExpression is null)
+            throw new ArgumentNullException(nameof(emitExpression));
+
+        var previousProperties = _capturedSetupPropertyDependencies;
+        var previousFields = _capturedSetupFieldDependencies;
+        var previousMethods = _capturedSetupMethodDependencies;
+        var propertyDependencies = new HashSet<IPropertySymbol>(SymbolEqualityComparer.Default);
+        var fieldDependencies = new HashSet<IFieldSymbol>(SymbolEqualityComparer.Default);
+        var methodDependencies = new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default);
+        _capturedSetupPropertyDependencies = propertyDependencies;
+        _capturedSetupFieldDependencies = fieldDependencies;
+        _capturedSetupMethodDependencies = methodDependencies;
+        try
+        {
+            var expression = emitExpression();
+            return new SetupDependencyCapture(
+                expression,
+                propertyDependencies.ToImmutableArray(),
+                fieldDependencies.ToImmutableArray(),
+                methodDependencies.ToImmutableArray());
+        }
+        finally
+        {
+            _capturedSetupPropertyDependencies = previousProperties;
+            _capturedSetupFieldDependencies = previousFields;
+            _capturedSetupMethodDependencies = previousMethods;
+        }
+    }
+
+    internal SetupDependencyCapture CaptureSetupDependenciesWithParameterAliases(
+        ImmutableArray<IParameterSymbol> parameters,
+        IReadOnlyList<string> aliases,
+        Func<string> emitExpression)
+    {
+        if (emitExpression is null)
+            throw new ArgumentNullException(nameof(emitExpression));
+
+        return WithScopedParameterAliases(parameters, aliases, () => CaptureSetupDependencies(emitExpression));
+    }
+
+    private void RecordRequiredSetupProperty(IPropertySymbol property)
+    {
+        _requiredSetupProperties.Add(property);
+        _capturedSetupPropertyDependencies?.Add(property);
+    }
+
+    private void RecordRequiredSetupField(IFieldSymbol field)
+    {
+        _requiredSetupFields.Add(field);
+        _capturedSetupFieldDependencies?.Add(field);
+    }
+
+    private void RecordRequiredSetupMethod(IMethodSymbol method)
+    {
+        _requiredSetupMethods.Add(method);
+        _capturedSetupMethodDependencies?.Add(method);
+    }
+
+    internal T WithSourceStableLocalInitializers<T>(
+        IReadOnlyDictionary<ILocalSymbol, IOperation> initializers,
+        Func<T> action)
+    {
+        var previous = _sourceStableLocalInitializers;
+        var current = previous is null
+            ? new Dictionary<ILocalSymbol, IOperation>(SymbolEqualityComparer.Default)
+            : new Dictionary<ILocalSymbol, IOperation>(previous, SymbolEqualityComparer.Default);
+
+        foreach (var pair in initializers)
+            current[pair.Key] = pair.Value;
+
+        _sourceStableLocalInitializers = current;
+        try
+        {
+            return action();
+        }
+        finally
+        {
+            _sourceStableLocalInitializers = previous;
+        }
+    }
+
+    internal readonly record struct SetupDependencyCapture(
+        string Expression,
+        ImmutableArray<IPropertySymbol> PropertyDependencies,
+        ImmutableArray<IFieldSymbol> FieldDependencies,
+        ImmutableArray<IMethodSymbol> MethodDependencies);
+
     private string MaterializeCompilerExpression(Expression expression, SenseArgument argument)
     {
         if (!argument.HasVarDeclarator)
@@ -330,25 +465,25 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         if (current is IInvocationOperation invocationOperation &&
-            TryRewriteInvocation(invocationOperation, argument, out expression))
+            TryRewriteInvocation(invocationOperation, argument, useSetupEmitter: false, out expression))
         {
             return true;
         }
 
         if (current is IPropertyReferenceOperation property &&
-            TryRewritePropertyReference(property, argument, out expression))
+            TryRewritePropertyReference(property, argument, useSetupEmitter: false, out expression))
         {
             return true;
         }
 
         if (current is IFieldReferenceOperation field &&
-            TryRewriteFieldReference(field, argument, out expression))
+            TryRewriteFieldReference(field, argument, useSetupEmitter: false, out expression))
         {
             return true;
         }
 
         if (current is IMethodReferenceOperation methodReferenceOperation &&
-            TryRewriteMethodReference(methodReferenceOperation, argument, out expression))
+            TryRewriteMethodReference(methodReferenceOperation, argument, useSetupEmitter: false, out expression))
         {
             return true;
         }
@@ -473,7 +608,7 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         public override Expression? RewriteInvocationPreorder(IInvocationOperation operation, SenseArgument argument)
-            => _emitter.TryRewriteInvocation(operation, argument, out var expression)
+            => _emitter.TryRewriteInvocation(operation, argument, useSetupEmitter: _emitter._isSetupRewriteScopeActive, out var expression)
                 ? ParseJavaScriptExpression(expression)
                 : null;
 
@@ -496,7 +631,7 @@ internal sealed partial class RazorVueExpressionEmitter
             IFieldReferenceOperation operation,
             SenseArgument argument,
             Expression? instance)
-            => _emitter.TryRewriteFieldReference(operation, argument, out var expression)
+            => _emitter.TryRewriteFieldReference(operation, argument, useSetupEmitter: _emitter._isSetupRewriteScopeActive, out var expression)
                 ? ParseJavaScriptExpression(expression)
                 : null;
 
@@ -505,7 +640,7 @@ internal sealed partial class RazorVueExpressionEmitter
             SenseArgument argument,
             Expression? instance,
             IReadOnlyList<Expression> arguments)
-            => _emitter.TryRewritePropertyReference(operation, argument, out var expression)
+            => _emitter.TryRewritePropertyReference(operation, argument, useSetupEmitter: _emitter._isSetupRewriteScopeActive, out var expression)
                 ? ParseJavaScriptExpression(expression)
                 : null;
 
@@ -513,7 +648,7 @@ internal sealed partial class RazorVueExpressionEmitter
             IMethodReferenceOperation operation,
             SenseArgument argument,
             Expression? instance)
-            => _emitter.TryRewriteMethodReference(operation, argument, out var expression)
+            => _emitter.TryRewriteMethodReference(operation, argument, useSetupEmitter: _emitter._isSetupRewriteScopeActive, out var expression)
                 ? ParseJavaScriptExpression(expression)
                 : null;
 
@@ -532,7 +667,7 @@ internal sealed partial class RazorVueExpressionEmitter
             SenseArgument argument,
             Expression? instance,
             IReadOnlyList<Expression> arguments)
-            => _emitter.TryRewriteInvocation(operation, argument, out var expression)
+            => _emitter.TryRewriteInvocation(operation, argument, useSetupEmitter: _emitter._isSetupRewriteScopeActive, out var expression)
                 ? ParseJavaScriptExpression(expression)
                 : null;
 

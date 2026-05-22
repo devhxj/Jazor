@@ -68,6 +68,7 @@ internal sealed class RazorVueCompilationContext
                 RazorVueEntryClassifier.FindDisposeMethod(symbol),
                 RazorVueEntryClassifier.FindDisposeAsyncMethod(symbol),
                 RazorVueEntryClassifier.FindLogicMethods(symbol),
+                RazorVueEntryClassifier.FindLogicProperties(symbol),
                 RazorVueEntryClassifier.FindLogicFields(symbol),
                 RazorVueEntryKind.RazorVueComponent));
         }
@@ -110,13 +111,20 @@ internal sealed class RazorVueCompilationContext
         var logicMethods = candidate.LogicMethods
             .Select(static method => new VueLogicMethodDescriptor(method.Name, method.Parameters.Length, method.IsAsync, method))
             .ToImmutableArray();
+        var logicProperties = candidate.LogicProperties
+            .Select(property => new VueLogicPropertyDescriptor(
+                property.Name,
+                property.SetMethod is null,
+                DetermineLogicPropertyLoweringKind(Compilation, property),
+                property))
+            .ToImmutableArray();
         var logicFields = candidate.LogicFields
             // Preserve Roslyn field carriers for upcoming setup-side lowering.
             .Select(static field => new VueLogicFieldDescriptor(field.Name, field.IsReadOnly, field))
             .ToImmutableArray();
-        var logic = logicMethods.IsDefaultOrEmpty && logicFields.IsDefaultOrEmpty
+        var logic = logicMethods.IsDefaultOrEmpty && logicProperties.IsDefaultOrEmpty && logicFields.IsDefaultOrEmpty
             ? VueLogicDescriptor.Empty
-            : new VueLogicDescriptor(logicFields, logicMethods);
+            : new VueLogicDescriptor(logicProperties, logicFields, logicMethods);
         // Keep the first snapshot carrier tied to Roslyn locations so later
         // sourcemap/HMR work has a stable source identity anchor.
         var origins = candidate.ComponentSymbol.Locations
@@ -146,6 +154,15 @@ internal sealed class RazorVueCompilationContext
             candidate.OnAfterRenderAsyncMethod,
             candidate.DisposeMethod,
             candidate.DisposeAsyncMethod);
+    }
+
+    private static VueLogicPropertyLoweringKind DetermineLogicPropertyLoweringKind(
+        Compilation compilation,
+        IPropertySymbol property)
+    {
+        return RazorVueCurrentComponentValueMemberHelper.TryGetSupportedPropertyLoweringKind(compilation, property, out var loweringKind)
+            ? loweringKind
+            : VueLogicPropertyLoweringKind.Unsupported;
     }
 
     private VueComponentDescriptor ResolveDescriptor(

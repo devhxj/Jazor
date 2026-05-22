@@ -6,6 +6,8 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Jazor.RazorVue;
+using Jazor.RazorVue.Lowering;
 
 namespace Jazor.Analyzer;
 
@@ -15,7 +17,7 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
     [
         RazorVueDiagnosticDescriptors.StateHasChangedNotSupported,
-        RazorVueDiagnosticDescriptors.ShouldRenderNotSupported,
+        RazorVueDiagnosticDescriptors.RenderControlOrLifecycleNotSupported,
         RazorVueDiagnosticDescriptors.SetParametersAsyncNotSupported
     ];
 
@@ -70,7 +72,18 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
                 return;
 
             context.ReportDiagnostic(Diagnostic.Create(
-                RazorVueDiagnosticDescriptors.ShouldRenderNotSupported,
+                RazorVueDiagnosticDescriptors.RenderControlOrLifecycleNotSupported,
+                location));
+            return;
+        }
+
+        if (knownSymbols.IsSupportedLifecycleCandidate(method))
+        {
+            if (IsSupportedLifecycleMethod(context.Compilation, method))
+                return;
+
+            context.ReportDiagnostic(Diagnostic.Create(
+                RazorVueDiagnosticDescriptors.RenderControlOrLifecycleNotSupported,
                 location));
             return;
         }
@@ -87,15 +100,21 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
     }
 
     private static bool IsSupportedShouldRender(RazorVueKnownSymbols knownSymbols, IMethodSymbol method)
+        => IsSupportedShouldRender(knownSymbols, method, new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default));
+
+    private static bool IsSupportedShouldRender(
+        RazorVueKnownSymbols knownSymbols,
+        IMethodSymbol method,
+        HashSet<IMethodSymbol> visitedMethods)
     {
-        if (method.DeclaringSyntaxReferences.Length == 0)
+        if (!visitedMethods.Add(method) || method.DeclaringSyntaxReferences.Length == 0)
             return false;
 
         if (method.DeclaringSyntaxReferences[0].GetSyntax() is not MethodDeclarationSyntax methodSyntax)
             return false;
 
         if (methodSyntax.ExpressionBody is not null)
-            return IsSupportedShouldRenderExpression(knownSymbols, method, methodSyntax.ExpressionBody.Expression);
+            return IsSupportedShouldRenderExpression(knownSymbols, method, methodSyntax.ExpressionBody.Expression, visitedMethods);
 
         if (methodSyntax.Body?.Statements.Count != 1 ||
             methodSyntax.Body.Statements[0] is not ReturnStatementSyntax { Expression: not null } returnStatement)
@@ -103,7 +122,7 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
-        return IsSupportedShouldRenderExpression(knownSymbols, method, returnStatement.Expression);
+        return IsSupportedShouldRenderExpression(knownSymbols, method, returnStatement.Expression, visitedMethods);
     }
 
     private static bool IsSupportedSetParametersAsync(IMethodSymbol method)
@@ -124,6 +143,9 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
 
         if (methodSyntax.ExpressionBody is not null)
         {
+            if (IsNoOpTaskExpression(method, methodSyntax.ExpressionBody.Expression))
+                return new SetParametersAsyncAnalysis(true, false);
+
             return IsBaseSetParametersAsyncCall(method, methodSyntax.ExpressionBody.Expression)
                 ? AnalyzeBaseSetParametersAsync(method, visitedMethods)
                 : new SetParametersAsyncAnalysis(false, false);
@@ -154,7 +176,7 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
                 ? baseAnalysis!.Value
                 : new SetParametersAsyncAnalysis(true, false);
 
-        if (TryGetSetParametersAsyncNoOpOrEmit(statements[index], out var hasEmit))
+        if (TryGetSetParametersAsyncNoOpOrEmit(method, statements[index], out var hasEmit))
         {
             index++;
             if (index == statements.Count)
@@ -175,7 +197,7 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
             }
 
             if (index == statements.Count - 1 &&
-                IsNoOpSetParametersAsyncStatement(statements[index]))
+                IsNoOpSetParametersAsyncStatement(method, statements[index]))
             {
                 if (!hasEmit)
                     return sawBaseCall
@@ -201,8 +223,15 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
         HashSet<IMethodSymbol> visitedMethods)
     {
         var baseMethod = FindBaseSetParametersAsyncMethod(method);
-        if (baseMethod is null || baseMethod.DeclaringSyntaxReferences.Length == 0)
+        if (baseMethod is null)
             return new SetParametersAsyncAnalysis(true, false);
+
+        if (baseMethod.DeclaringSyntaxReferences.Length == 0)
+        {
+            return IsDefaultComponentBaseSetParametersAsyncMethod(baseMethod)
+                ? new SetParametersAsyncAnalysis(true, false)
+                : new SetParametersAsyncAnalysis(false, false);
+        }
 
         return AnalyzeSetParametersAsync(baseMethod, visitedMethods);
     }
@@ -212,7 +241,7 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
         expression = UnwrapExpression(expression);
         if (expression is AwaitExpressionSyntax awaitExpression)
             expression = UnwrapExpression(awaitExpression.Expression);
-        if (TryUnwrapValueTaskCreation(expression, out var wrappedExpression))
+        if (TryUnwrapValueTaskCreation(null, expression, out var wrappedExpression))
             expression = wrappedExpression;
 
         if (expression is not InvocationExpressionSyntax invocation ||
@@ -229,6 +258,104 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
                identifier.Identifier.ValueText == method.Parameters[0].Name;
     }
 
+    private static bool IsSupportedLifecycleMethod(Compilation compilation, IMethodSymbol method)
+    {
+        var razorVueContext = RazorVueCompilationContext.TryCreate(compilation);
+        if (razorVueContext is null)
+            return false;
+
+        var candidate = razorVueContext.DiscoverComponentCandidates()
+            .FirstOrDefault(candidate =>
+                SymbolEqualityComparer.Default.Equals(candidate.ComponentSymbol, method.ContainingType));
+        if (candidate is null)
+            return false;
+
+        var snapshot = razorVueContext.CreateSemanticSnapshot(candidate);
+        var supportShape = RazorVueSetupAndLifecycleLoweringSupport.DescribeLifecycleSupportShape(
+            snapshot,
+            method,
+            allowFirstRenderPayload: method.Name is "OnAfterRender" or "OnAfterRenderAsync");
+
+        return supportShape != "unsupported";
+    }
+
+    private static bool IsSupportedLifecycleMethod(IMethodSymbol method)
+        => IsSupportedLifecycleMethod(method, new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default));
+
+    private static bool IsSupportedLifecycleMethod(
+        IMethodSymbol method,
+        HashSet<IMethodSymbol> visitedMethods)
+    {
+        if (!visitedMethods.Add(method))
+            return false;
+
+        if (method.DeclaringSyntaxReferences.Length == 0)
+            return true;
+
+        if (method.DeclaringSyntaxReferences[0].GetSyntax() is not MethodDeclarationSyntax methodSyntax)
+            return false;
+
+        if (methodSyntax.ExpressionBody is not null)
+        {
+            if (TryAnalyzeBaseLifecyclePassThrough(method, methodSyntax.ExpressionBody.Expression, visitedMethods, out var isSupportedBasePassThrough))
+                return isSupportedBasePassThrough;
+
+            return IsSupportedLifecycleExpression(method, methodSyntax.ExpressionBody.Expression);
+        }
+
+        if (methodSyntax.Body is null)
+            return false;
+
+        if (methodSyntax.Body.Statements.Count == 0)
+            return true;
+
+        if (methodSyntax.Body.Statements.Count == 1 &&
+            TryAnalyzeBaseLifecyclePassThrough(method, methodSyntax.Body.Statements[0], visitedMethods, out var isSupportedSingleStatementPassThrough))
+        {
+            return isSupportedSingleStatementPassThrough;
+        }
+
+        if (methodSyntax.Body.Statements.Count == 2 &&
+            TryAnalyzeBaseLifecyclePassThrough(method, methodSyntax.Body.Statements[0], visitedMethods, out var isSupportedTrailingNoOpPassThrough) &&
+            methodSyntax.Body.Statements[1] is ReturnStatementSyntax trailingNoOpReturn &&
+            (trailingNoOpReturn.Expression is null || IsNoOpLifecycleExpression(method, trailingNoOpReturn.Expression)))
+        {
+            return isSupportedTrailingNoOpPassThrough;
+        }
+
+        if (methodSyntax.Body.Statements.Count == 2 &&
+            methodSyntax.Body.Statements[0] is ExpressionStatementSyntax leadingExpression &&
+            methodSyntax.Body.Statements[1] is ReturnStatementSyntax trailingReturn &&
+            (trailingReturn.Expression is null || IsNoOpLifecycleExpression(method, trailingReturn.Expression)))
+        {
+            return IsSupportedLifecycleEmitExpression(leadingExpression.Expression);
+        }
+
+        if (methodSyntax.Body.Statements.Count >= 2 &&
+            methodSyntax.Body.Statements.Take(methodSyntax.Body.Statements.Count - 1).All(static statement => statement is LocalDeclarationStatementSyntax))
+        {
+            return IsSupportedLifecycleExpression(
+                method,
+                methodSyntax.Body.Statements[methodSyntax.Body.Statements.Count - 1] switch
+                {
+                    ExpressionStatementSyntax expressionStatement => expressionStatement.Expression,
+                    ReturnStatementSyntax { Expression: not null } returnStatement => returnStatement.Expression,
+                    _ => null!
+                });
+        }
+
+        if (methodSyntax.Body.Statements.Count != 1)
+            return false;
+
+        return methodSyntax.Body.Statements[0] switch
+        {
+            ExpressionStatementSyntax expressionStatement => IsSupportedLifecycleEmitExpression(expressionStatement.Expression),
+            ReturnStatementSyntax returnStatement when returnStatement.Expression is null || IsNoOpLifecycleExpression(method, returnStatement.Expression) => true,
+            ReturnStatementSyntax returnStatement when returnStatement.Expression is not null => IsSupportedLifecycleExpression(method, returnStatement.Expression),
+            _ => false
+        };
+    }
+
     private static bool IsBaseSetParametersAsyncStatement(IMethodSymbol method, StatementSyntax statement)
         => statement switch
         {
@@ -238,33 +365,34 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
             _ => false
         };
 
-    private static bool IsNoOpTaskExpression(ExpressionSyntax expression)
+    private static bool IsNoOpTaskExpression(IMethodSymbol method, ExpressionSyntax expression)
     {
-        expression = UnwrapExpression(expression);
-        if (expression is AwaitExpressionSyntax awaitExpression)
-            expression = UnwrapExpression(awaitExpression.Expression);
-        if (TryUnwrapValueTaskCreation(expression, out var wrappedExpression))
-            expression = wrappedExpression;
-
-        var text = expression.ToString().Trim();
-        return text == "Task.CompletedTask" ||
-               text == "ValueTask.CompletedTask" ||
-               text == "default" ||
-               text == "default(ValueTask)" ||
-               text == "default(System.Threading.Tasks.ValueTask)";
+        return IsNoOpAwaitableExpression(
+            expression,
+            allowBareDefaultLiteral: IsNonGenericValueTaskType(method.ReturnType));
     }
 
-    private static bool IsNoOpSetParametersAsyncStatement(StatementSyntax statement)
+    private static bool IsNoOpLifecycleExpression(IMethodSymbol method, ExpressionSyntax expression)
+    {
+        return IsNoOpAwaitableExpression(
+            expression,
+            allowBareDefaultLiteral: IsNonGenericValueTaskType(method.ReturnType));
+    }
+
+    private static bool IsNoOpSetParametersAsyncStatement(IMethodSymbol method, StatementSyntax statement)
         => statement switch
         {
             ReturnStatementSyntax returnStatement when returnStatement.Expression is null => true,
             ReturnStatementSyntax returnStatement when returnStatement.Expression is not null =>
-                IsNoOpTaskExpression(returnStatement.Expression),
-            ExpressionStatementSyntax expressionStatement => IsNoOpTaskExpression(expressionStatement.Expression),
+                IsNoOpTaskExpression(method, returnStatement.Expression),
+            ExpressionStatementSyntax expressionStatement => IsNoOpTaskExpression(method, expressionStatement.Expression),
             _ => false
         };
 
-    private static bool TryGetSetParametersAsyncNoOpOrEmit(StatementSyntax statement, out bool hasEmit)
+    private static bool TryGetSetParametersAsyncNoOpOrEmit(
+        IMethodSymbol method,
+        StatementSyntax statement,
+        out bool hasEmit)
     {
         hasEmit = false;
         switch (statement)
@@ -272,13 +400,13 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
             case ReturnStatementSyntax returnStatement when returnStatement.Expression is null:
                 return true;
             case ReturnStatementSyntax returnStatement when returnStatement.Expression is not null:
-                if (IsNoOpTaskExpression(returnStatement.Expression))
+                if (IsNoOpTaskExpression(method, returnStatement.Expression))
                     return true;
 
                 hasEmit = IsSupportedInvokeAsyncExpression(returnStatement.Expression);
                 return hasEmit;
             case ExpressionStatementSyntax expressionStatement:
-                if (IsNoOpTaskExpression(expressionStatement.Expression))
+                if (IsNoOpTaskExpression(method, expressionStatement.Expression))
                     return true;
 
                 hasEmit = IsSupportedInvokeAsyncExpression(expressionStatement.Expression);
@@ -293,7 +421,7 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
         expression = UnwrapExpression(expression);
         if (expression is AwaitExpressionSyntax awaitExpression)
             expression = UnwrapExpression(awaitExpression.Expression);
-        if (TryUnwrapValueTaskCreation(expression, out var wrappedExpression))
+        if (TryUnwrapValueTaskCreation(null, expression, out var wrappedExpression))
             expression = wrappedExpression;
 
         return expression is InvocationExpressionSyntax invocation &&
@@ -301,6 +429,20 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
                memberAccess.Name.Identifier.ValueText == "InvokeAsync" &&
                invocation.ArgumentList.Arguments.Count <= 1;
     }
+
+    private static bool IsSupportedLifecycleExpression(IMethodSymbol method, ExpressionSyntax expression)
+    {
+        if (IsNoOpLifecycleExpression(method, expression))
+            return true;
+
+        if (TryAnalyzeBaseLifecyclePassThrough(method, expression, new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default), out var isSupportedBasePassThrough))
+            return isSupportedBasePassThrough;
+
+        return IsSupportedLifecycleEmitExpression(expression);
+    }
+
+    private static bool IsSupportedLifecycleEmitExpression(ExpressionSyntax expression)
+        => IsSupportedInvokeAsyncExpression(expression);
 
     private static IMethodSymbol? FindBaseSetParametersAsyncMethod(IMethodSymbol method)
     {
@@ -321,6 +463,16 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
         return null;
     }
 
+    private static bool IsDefaultComponentBaseSetParametersAsyncMethod(IMethodSymbol method)
+        => method.Name == "SetParametersAsync" &&
+           method.Parameters.Length == 1 &&
+           method.ContainingType is
+           {
+               Name: "ComponentBase",
+               ContainingNamespace: { } ns
+           } &&
+           ns.ToDisplayString() == "Microsoft.AspNetCore.Components";
+
     private static bool IsConstantTrueShouldRenderExpression(ExpressionSyntax expression)
     {
         expression = UnwrapExpression(expression);
@@ -330,7 +482,8 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
     private static bool IsSupportedShouldRenderExpression(
         RazorVueKnownSymbols knownSymbols,
         IMethodSymbol method,
-        ExpressionSyntax expression)
+        ExpressionSyntax expression,
+        HashSet<IMethodSymbol> visitedMethods)
     {
         expression = UnwrapExpression(expression);
         if (IsConstantTrueShouldRenderExpression(expression))
@@ -360,13 +513,55 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
             if (candidate is null)
                 continue;
 
-            return SymbolEqualityComparer.Default.Equals(candidate.ContainingType.OriginalDefinition, knownSymbols.Symbols.ComponentBase);
+            if (SymbolEqualityComparer.Default.Equals(candidate.ContainingType.OriginalDefinition, knownSymbols.Symbols.ComponentBase))
+                return true;
+
+            return IsSupportedShouldRender(knownSymbols, candidate, visitedMethods);
         }
 
         return false;
     }
 
-    private static bool TryUnwrapValueTaskCreation(ExpressionSyntax expression, out ExpressionSyntax innerExpression)
+    private static bool TryAnalyzeBaseLifecyclePassThrough(
+        IMethodSymbol method,
+        StatementSyntax statement,
+        HashSet<IMethodSymbol> visitedMethods,
+        out bool isSupported)
+        => statement switch
+        {
+            ExpressionStatementSyntax expressionStatement =>
+                TryAnalyzeBaseLifecyclePassThrough(method, expressionStatement.Expression, visitedMethods, out isSupported),
+            ReturnStatementSyntax returnStatement when returnStatement.Expression is not null =>
+                TryAnalyzeBaseLifecyclePassThrough(method, returnStatement.Expression, visitedMethods, out isSupported),
+            _ =>
+                ReturnNoBaseLifecycleAnalysis(out isSupported)
+        };
+
+    private static bool TryAnalyzeBaseLifecyclePassThrough(
+        IMethodSymbol method,
+        ExpressionSyntax expression,
+        HashSet<IMethodSymbol> visitedMethods,
+        out bool isSupported)
+    {
+        isSupported = false;
+        if (!IsBaseLifecyclePassThroughCall(method, expression))
+            return false;
+
+        var baseMethod = FindBaseLifecycleMethod(method);
+        if (baseMethod is null)
+            return false;
+
+        if (baseMethod.DeclaringSyntaxReferences.Length == 0)
+        {
+            isSupported = IsDefaultComponentBaseLifecycleMethod(baseMethod);
+            return true;
+        }
+
+        isSupported = IsSupportedLifecycleMethod(baseMethod, visitedMethods);
+        return true;
+    }
+
+    private static bool TryUnwrapValueTaskCreation(Compilation? compilation, ExpressionSyntax expression, out ExpressionSyntax innerExpression)
     {
         innerExpression = expression;
         expression = UnwrapExpression(expression);
@@ -385,6 +580,131 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
 
         innerExpression = UnwrapExpression(creation.ArgumentList.Arguments[0].Expression);
         return true;
+    }
+
+    private static bool IsNoOpAwaitableExpression(ExpressionSyntax expression, bool allowBareDefaultLiteral)
+    {
+        expression = UnwrapExpression(expression);
+        if (expression is AwaitExpressionSyntax awaitExpression)
+            return IsNoOpAwaitableExpression(awaitExpression.Expression, allowBareDefaultLiteral);
+
+        if (TryUnwrapValueTaskCreation(null, expression, out var wrappedExpression))
+            return IsNoOpAwaitableExpression(wrappedExpression, allowBareDefaultLiteral: true);
+
+        if (expression.IsKind(SyntaxKind.DefaultLiteralExpression))
+            return allowBareDefaultLiteral;
+
+        if (expression is DefaultExpressionSyntax defaultExpression)
+            return IsNonGenericValueTaskType(defaultExpression.Type.ToString());
+
+        return IsKnownCompletedTaskExpression(expression);
+    }
+
+    private static bool IsKnownCompletedTaskExpression(ExpressionSyntax expression)
+    {
+        var text = expression.ToString().Trim();
+        return text == "Task.CompletedTask" ||
+               text == "System.Threading.Tasks.Task.CompletedTask" ||
+               text == "ValueTask.CompletedTask" ||
+               text == "System.Threading.Tasks.ValueTask.CompletedTask";
+    }
+
+    private static bool IsNonGenericTaskType(Compilation compilation, ITypeSymbol? type)
+    {
+        var taskType = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task");
+        return taskType is not null &&
+               type is not null &&
+               SymbolEqualityComparer.Default.Equals(type.OriginalDefinition, taskType);
+    }
+
+    private static bool IsNonGenericValueTaskType(ITypeSymbol? type)
+        => type is INamedTypeSymbol
+        {
+            Name: "ValueTask",
+            Arity: 0,
+            ContainingNamespace: { }
+        } namedType &&
+           namedType.ContainingNamespace.ToDisplayString() == "System.Threading.Tasks";
+
+    private static bool IsNonGenericValueTaskType(string typeName)
+        => typeName == "ValueTask" ||
+           typeName == "System.Threading.Tasks.ValueTask";
+
+    private static bool IsBaseLifecyclePassThroughCall(IMethodSymbol method, ExpressionSyntax expression)
+    {
+        expression = UnwrapExpression(expression);
+        if (expression is AwaitExpressionSyntax awaitExpression)
+            expression = UnwrapExpression(awaitExpression.Expression);
+        if (TryUnwrapValueTaskCreation(null, expression, out var wrappedExpression))
+            expression = wrappedExpression;
+
+        if (expression is not InvocationExpressionSyntax invocation ||
+            invocation.Expression is not MemberAccessExpressionSyntax memberAccess ||
+            memberAccess.Expression is not BaseExpressionSyntax ||
+            !string.Equals(memberAccess.Name.Identifier.ValueText, method.Name, System.StringComparison.Ordinal) ||
+            invocation.ArgumentList.Arguments.Count != method.Parameters.Length)
+        {
+            return false;
+        }
+
+        for (var index = 0; index < method.Parameters.Length; index++)
+        {
+            var argument = UnwrapExpression(invocation.ArgumentList.Arguments[index].Expression);
+            if (argument is not IdentifierNameSyntax identifier ||
+                !string.Equals(identifier.Identifier.ValueText, method.Parameters[index].Name, System.StringComparison.Ordinal))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static IMethodSymbol? FindBaseLifecycleMethod(IMethodSymbol method)
+    {
+        for (var current = method.ContainingType.BaseType; current is not null; current = current.BaseType)
+        {
+            var candidate = current.GetMembers(method.Name)
+                .OfType<IMethodSymbol>()
+                .FirstOrDefault(member =>
+                    !member.IsStatic &&
+                    member.Parameters.Length == method.Parameters.Length &&
+                    ParametersMatch(member, method));
+            if (candidate is not null)
+                return candidate;
+        }
+
+        return null;
+    }
+
+    private static bool ParametersMatch(IMethodSymbol candidate, IMethodSymbol method)
+    {
+        for (var index = 0; index < method.Parameters.Length; index++)
+        {
+            if (!SymbolEqualityComparer.Default.Equals(
+                    candidate.Parameters[index].Type.OriginalDefinition,
+                    method.Parameters[index].Type.OriginalDefinition))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsDefaultComponentBaseLifecycleMethod(IMethodSymbol method)
+        => method.Name is "OnInitialized" or "OnInitializedAsync" or "OnParametersSet" or "OnParametersSetAsync" or "OnAfterRender" or "OnAfterRenderAsync" &&
+           method.ContainingType is
+           {
+               Name: "ComponentBase",
+               ContainingNamespace: { } ns
+           } &&
+           ns.ToDisplayString() == "Microsoft.AspNetCore.Components";
+
+    private static bool ReturnNoBaseLifecycleAnalysis(out bool isSupported)
+    {
+        isSupported = false;
+        return false;
     }
 
     private static ExpressionSyntax UnwrapExpression(ExpressionSyntax expression)

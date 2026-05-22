@@ -142,6 +142,34 @@ internal static class RazorVueEntryClassifier
         return builder.ToImmutable();
     }
 
+    public static ImmutableArray<IPropertySymbol> FindLogicProperties(INamedTypeSymbol symbol)
+    {
+        var builder = ImmutableArray.CreateBuilder<IPropertySymbol>();
+        var seenNames = new HashSet<string>(StringComparer.Ordinal);
+
+        for (var current = symbol; current is not null; current = current.BaseType)
+        {
+            foreach (var property in current.GetMembers().OfType<IPropertySymbol>())
+            {
+                if (property.IsStatic || property.IsIndexer || property.IsImplicitlyDeclared)
+                    continue;
+
+                if (!property.Locations.Any(static location => location.IsInSource))
+                    continue;
+
+                if (IsComponentParameterProperty(property))
+                    continue;
+
+                if (!seenNames.Add(property.Name))
+                    continue;
+
+                builder.Add(property);
+            }
+        }
+
+        return builder.ToImmutable();
+    }
+
     public static ImmutableArray<IFieldSymbol> FindLogicFields(INamedTypeSymbol symbol)
     {
         var builder = ImmutableArray.CreateBuilder<IFieldSymbol>();
@@ -217,4 +245,11 @@ internal static class RazorVueEntryClassifier
 
     private static bool Implements(INamedTypeSymbol symbol, INamedTypeSymbol interfaceType)
         => symbol.AllInterfaces.Any(candidate => Comparer.Equals(candidate.OriginalDefinition, interfaceType));
+
+    private static bool IsComponentParameterProperty(IPropertySymbol property)
+        => property.GetAttributes().Any(static attribute =>
+            string.Equals(
+                attribute.AttributeClass?.ToDisplayString(),
+                "Microsoft.AspNetCore.Components.ParameterAttribute",
+                StringComparison.Ordinal));
 }

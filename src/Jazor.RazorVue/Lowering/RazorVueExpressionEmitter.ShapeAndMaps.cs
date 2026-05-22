@@ -9,6 +9,15 @@ namespace Jazor.RazorVue.Lowering;
 
 internal sealed partial class RazorVueExpressionEmitter
 {
+    internal ImmutableArray<VueLogicPropertyDescriptor> GetRequiredSetupProperties()
+        => _requiredSetupProperties
+            .SelectMany(property => _logicPropertiesByName.TryGetValue(property.Name, out var candidate) &&
+                                    RazorVueSymbolIdentity.SameMember(candidate.PropertySymbol, property)
+                ? [candidate]
+                : ImmutableArray<VueLogicPropertyDescriptor>.Empty)
+            .Distinct()
+            .ToImmutableArray();
+
     internal ImmutableArray<VueLogicFieldDescriptor> GetRequiredSetupFields()
         => _requiredSetupFields
             .SelectMany(field => _logicFieldsByName.TryGetValue(field.Name, out var candidate) &&

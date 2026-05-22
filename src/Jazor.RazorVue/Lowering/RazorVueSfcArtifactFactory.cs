@@ -212,6 +212,7 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
             return HmrBoundaryKind.Unknown;
 
         if (!semantic.ScriptSetupBlock.LiftedBindings.IsDefaultOrEmpty ||
+            !semantic.ScriptSetupBlock.Setup.RequiredProperties.IsDefaultOrEmpty ||
             !semantic.ScriptSetupBlock.Setup.RequiredFields.IsDefaultOrEmpty ||
             !semantic.ScriptSetupBlock.Setup.RequiredMethods.IsDefaultOrEmpty ||
             semantic.ScriptSetupBlock.Setup.Lifecycle.HasAnyHook)
@@ -980,15 +981,16 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
             RazorVueForLoopLoweringSupport.AppendForRangeHelper(builder, string.Empty);
         if (requiresAttributeMergeHelper)
             RazorVueAttributeMergeHelper.AppendHelper(builder, string.Empty);
-
-        RazorVueSetupAndLifecycleLoweringSupport.AppendLifecycleLowering(builder, snapshot, string.Empty);
+        var lifecyclePlan = RazorVueSetupAndLifecycleLoweringSupport.CreateLifecyclePlan(snapshot, expressionEmitter);
         RazorVueSetupAndLifecycleLoweringSupport.AppendSetupLogicLowering(
             builder,
             snapshot,
             expressionEmitter,
-            semantic.ScriptSetupBlock.Setup.RequiredFields,
-            semantic.ScriptSetupBlock.Setup.RequiredMethods,
+            semantic.ScriptSetupBlock.Setup.RequiredProperties.AddRange(lifecyclePlan.RequiredProperties).Distinct().ToImmutableArray(),
+            semantic.ScriptSetupBlock.Setup.RequiredFields.AddRange(lifecyclePlan.RequiredFields).Distinct().ToImmutableArray(),
+            semantic.ScriptSetupBlock.Setup.RequiredMethods.AddRange(lifecyclePlan.RequiredMethods).Distinct().ToImmutableArray(),
             string.Empty);
+        RazorVueSetupAndLifecycleLoweringSupport.AppendLifecyclePlan(builder, lifecyclePlan, string.Empty);
 
         foreach (var binding in semantic.ScriptSetupBlock.LiftedBindings)
         {

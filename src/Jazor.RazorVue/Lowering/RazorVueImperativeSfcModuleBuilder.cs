@@ -24,8 +24,16 @@ internal static class RazorVueImperativeSfcModuleBuilder
             RazorVueForLoopLoweringSupport.AppendForRangeHelper(setupBodyBuilder, "    ");
         AppendImperativeComponentMetadataBindings(setupBodyBuilder, resolvedComponents, "    ");
         AppendImperativeRenderBridgeHelper(setupBodyBuilder, "    ");
-        AppendLifecycleLowering(setupBodyBuilder, snapshot);
-        AppendSetupLogicLowering(setupBodyBuilder, snapshot, expressionEmitter);
+        var lifecyclePlan = RazorVueSetupAndLifecycleLoweringSupport.CreateLifecyclePlan(snapshot, expressionEmitter);
+        RazorVueSetupAndLifecycleLoweringSupport.AppendSetupLogicLowering(
+            setupBodyBuilder,
+            snapshot,
+            expressionEmitter,
+            lifecyclePlan.RequiredProperties,
+            lifecyclePlan.RequiredFields,
+            lifecyclePlan.RequiredMethods,
+            "    ");
+        RazorVueSetupAndLifecycleLoweringSupport.AppendLifecyclePlan(setupBodyBuilder, lifecyclePlan, "    ");
         setupBodyBuilder.AppendLine("    const __jazorComponent = { props, emit, slots, expose, attrs };");
         setupBodyBuilder.AppendLine("    return () => {");
         setupBodyBuilder.Append("      const ").Append(RazorVueExpressionEmitter.ImperativeRenderContextAlias).AppendLine(" = __jazorCreateRenderContext(h);");

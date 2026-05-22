@@ -28,10 +28,10 @@ internal static class RazorVueDiagnosticDescriptors
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
-    public static readonly DiagnosticDescriptor ShouldRenderNotSupported = new(
+    public static readonly DiagnosticDescriptor RenderControlOrLifecycleNotSupported = new(
         id: "JAZORVUE005",
-        title: "ShouldRender is not part of RazorVue semantics",
-        messageFormat: "ShouldRender is not part of RazorVue semantics",
+        title: "RazorVue render-control or lifecycle contract is unsupported",
+        messageFormat: "RazorVue render-control or lifecycle contract is unsupported",
         category: "RazorVue",
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);

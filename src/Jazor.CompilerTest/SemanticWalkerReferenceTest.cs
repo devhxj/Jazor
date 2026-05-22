@@ -4203,6 +4203,28 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_Reference_ObjectStaticEquals_Bool_UsesWhiteListShape()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(bool left)
+                {
+                    var same = object.Equals(left, true);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let same = left === true;
+}", script);
+	}
+
+	[TestMethod]
 	public void Visit_RecordEqualityComparerEquals_WithoutECMAScriptMarker_Throws()
 	{
 		var block = GetBlockOperation(@"

@@ -24,11 +24,26 @@ internal static class RazorVueSymbolIdentity
         for (var current = componentSymbol; current is not null; current = current.BaseType)
         {
             if (SameType(symbol.ContainingType, current))
+            {
+                if (IsStaticMember(symbol))
+                    return symbol.ContainingType?.Locations.Any(static location => location.IsInSource) == true;
+
                 return instance is null || unwrap(instance) is IInstanceReferenceOperation;
+            }
         }
 
         return false;
     }
+
+    private static bool IsStaticMember(ISymbol symbol)
+        => symbol switch
+        {
+            IMethodSymbol method => method.IsStatic,
+            IPropertySymbol property => property.IsStatic,
+            IFieldSymbol field => field.IsStatic,
+            IEventSymbol @event => @event.IsStatic,
+            _ => false
+        };
 
     public static bool SameMember(ISymbol left, ISymbol right)
     {

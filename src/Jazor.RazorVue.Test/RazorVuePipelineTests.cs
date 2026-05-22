@@ -11103,6 +11103,100 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForComponentBaseOnInitializedAsyncPassThroughWithTrailingNoOp()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/init-card")]
+                public class InitCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override async Task OnInitializedAsync()
+                    {
+                        await base.OnInitializedAsync();
+                        return;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(async () => {", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForDefaultTaskOnInitializedAsyncLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/init-card")]
+                public class InitCard : ComponentBase, IVueComponent
+                {
+                    protected override Task OnInitializedAsync()
+                        => default;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "init");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitializedAsync");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForComponentBaseOnParametersSetAsyncPassThrough()
     {
         var context = CreateContext(
@@ -13746,6 +13840,288 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersDeclarationInitializedPropertyOnParametersSetLifecyclePayload_AndEmitsSetupBeforeWatch()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string> ValueChanged { get; set; }
+
+                    private string Prefix { get; } = "Count: ";
+
+                    protected override void OnParametersSet()
+                    {
+                        ValueChanged.InvokeAsync(Prefix);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const prefix = \"Count: \";");
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], () => {");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"update:value\", prefix);");
+        var setupIndex = artifact.ModuleCode.IndexOf("const prefix = \"Count: \";", StringComparison.Ordinal);
+        var watchIndex = artifact.ModuleCode.IndexOf("watch(() => [props.value], () => {", StringComparison.Ordinal);
+        Assert.IsTrue(setupIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(watchIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(setupIndex < watchIndex, artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersDeclarationInitializedFieldOnAfterRenderAsyncLifecyclePayload()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public EventCallback<int> ReadyChanged { get; set; }
+
+                    private readonly int _readyCode = 7;
+
+                    protected override Task OnAfterRenderAsync(bool firstRender)
+                    {
+                        return ReadyChanged.InvokeAsync(_readyCode);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const _readyCode = 7;");
+        StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", _readyCode);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersGetterBodiedPropertyOnInitializedLifecyclePayload()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public EventCallback<string> ReadyChanged { get; set; }
+
+                    private string ReadyLabel => "ready";
+
+                    protected override void OnInitialized()
+                    {
+                        ReadyChanged.InvokeAsync(ReadyLabel);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "function readyLabel()");
+        StringAssert.Contains(artifact.ModuleCode, "return \"ready\";");
+        StringAssert.Contains(artifact.ModuleCode, "onMounted(() => {");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"readyChanged\", readyLabel());");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersHelperCallOnParametersSetLifecyclePayload_AndEmitsSetupBeforeWatch()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string> ValueChanged { get; set; }
+
+                    private string Prefix { get; } = "Count: ";
+
+                    private string FormatLabel()
+                        => Prefix + Value;
+
+                    protected override void OnParametersSet()
+                    {
+                        ValueChanged.InvokeAsync(FormatLabel());
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const prefix = \"Count: \";");
+        StringAssert.Contains(artifact.ModuleCode, "function formatLabel()");
+        StringAssert.Contains(artifact.ModuleCode, "return (prefix + props.value);");
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], () => {");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"update:value\", formatLabel());");
+        var prefixIndex = artifact.ModuleCode.IndexOf("const prefix = \"Count: \";", StringComparison.Ordinal);
+        var helperIndex = artifact.ModuleCode.IndexOf("function formatLabel()", StringComparison.Ordinal);
+        var watchIndex = artifact.ModuleCode.IndexOf("watch(() => [props.value], () => {", StringComparison.Ordinal);
+        Assert.IsTrue(prefixIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(helperIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(watchIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(prefixIndex < helperIndex, artifact.ModuleCode);
+        Assert.IsTrue(helperIndex < watchIndex, artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForAsyncHelperCallLifecyclePayloadOnInitialized()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public EventCallback<string> ValueChanged { get; set; }
+
+                    private async Task<string> FormatLabelAsync()
+                    {
+                        await Task.Yield();
+                        return "Count: ";
+                    }
+
+                    protected override void OnInitialized()
+                    {
+                        ValueChanged.InvokeAsync(FormatLabelAsync().Result);
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_ThrowsCompilationIssueForNonParameterOnInitializedLifecyclePayload()
     {
         var context = CreateContext(
@@ -14117,10 +14493,10 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", currentFirstRender);");
     }
 
     [TestMethod]
@@ -14238,7 +14614,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForCastFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersCastFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -14281,10 +14657,13 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", currentFirstRender);");
     }
 
     [TestMethod]
@@ -14437,10 +14816,10 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", currentFirstRender);");
     }
 
     [TestMethod]
@@ -14497,7 +14876,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForCoalescedFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersCoalescedFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -14541,14 +14920,14 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", currentFirstRender ?? false);");
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForHelperCallFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersHelperCallFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -14593,14 +14972,17 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", normalize(currentFirstRender));");
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForEqualsFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersStaticEqualsFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -14643,10 +15025,13 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", currentFirstRender === true);");
     }
 
     [TestMethod]
@@ -14713,14 +15098,14 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", currentFirstRender);");
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForInstanceEqualsFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersInstanceEqualsFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -14763,10 +15148,13 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", currentFirstRender === true);");
     }
 
     [TestMethod]
@@ -15101,7 +15489,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForSwitchExpressionFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersSwitchExpressionFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -15148,14 +15536,17 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", (() => {");
+        StringAssert.Contains(artifact.ModuleCode, "const __swexpr$");
+        StringAssert.Contains(artifact.ModuleCode, "=== true");
+        StringAssert.Contains(artifact.ModuleCode, "=== false");
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForPatternVarFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersDeclarationPatternFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -15185,8 +15576,7 @@ public sealed class RazorVuePipelineTests
 
                     protected override Task OnAfterRenderAsync(bool firstRender)
                     {
-                        object boxed = firstRender;
-                        return ReadyChanged.InvokeAsync(boxed is bool ready && ready);
+                        return ReadyChanged.InvokeAsync(firstRender is bool ready && ready);
                     }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -15199,10 +15589,14 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "let ready;");
+        StringAssert.Contains(artifact.ModuleCode, "typeof currentFirstRender === \"boolean\"");
+        StringAssert.Contains(artifact.ModuleCode, "(ready = currentFirstRender, true)");
+        StringAssert.Contains(artifact.ModuleCode, "&& ready");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", ((() => {");
     }
 
     [TestMethod]
@@ -15406,7 +15800,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForIsPatternTrueFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersIsPatternTrueFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -15449,14 +15843,14 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", currentFirstRender === true);");
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForIsPatternFalseFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersIsPatternFalseFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -15499,14 +15893,14 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", currentFirstRender === false);");
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForIsPatternNotFalseFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersIsPatternNotFalseFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -15549,14 +15943,14 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", !(currentFirstRender === false));");
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForIsPatternNotTrueFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersIsPatternNotTrueFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -15599,14 +15993,14 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", !(currentFirstRender === true));");
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForIsPatternOrFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersIsPatternOrFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -15649,14 +16043,14 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", currentFirstRender === true || currentFirstRender === false);");
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForTypePatternFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersTypePatternFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -15699,14 +16093,14 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", typeof currentFirstRender === \"boolean\");");
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForObjectTypePatternFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersObjectTypePatternFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -15749,14 +16143,14 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", currentFirstRender != null && typeof currentFirstRender === \"object\");");
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForPatternCombinatorFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersPatternCombinatorFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -15799,10 +16193,10 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", currentFirstRender === true && !(currentFirstRender === false));");
     }
 
     [TestMethod]
@@ -15854,6 +16248,59 @@ public sealed class RazorVuePipelineTests
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersCastAndStaticEqualsFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    protected override Task OnAfterRenderAsync(bool firstRender)
+                    {
+                        return ReadyChanged.InvokeAsync(object.Equals((bool)firstRender, true));
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", currentFirstRender === true);");
     }
 
     [TestMethod]
@@ -16037,7 +16484,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForLocalAliasFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersLocalAliasFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -16081,10 +16528,10 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", currentFirstRender);");
     }
 
     [TestMethod]
@@ -16454,7 +16901,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForArrayIndexerFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersArrayIndexerFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -16498,10 +16945,12 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorLifecycleLocal");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", __jazorLifecycleLocal");
+        StringAssert.Contains(artifact.ModuleCode, "[1]");
     }
 
     [TestMethod]
@@ -16581,7 +17030,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForArrayPatternCapturedFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersArrayPatternCapturedFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -16626,10 +17075,13 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorLifecycleLocal");
+        StringAssert.Contains(artifact.ModuleCode, "Array.isArray(__jazorLifecycleLocal");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorLifecycleLocal");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", __jazorLifecycleLocal");
     }
 
     [TestMethod]
@@ -17844,6 +18296,362 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersSupportedSetupPropertyAndHelperIntoSetupScope()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/property-helper-card")]
+                public class PropertyHelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    private string Prefix => "Count: ";
+
+                    public string FormatTitle()
+                        => Prefix + Value;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, FormatTitle());
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "function prefix()");
+        StringAssert.Contains(artifact.ModuleCode, "return \"Count: \";");
+        StringAssert.Contains(artifact.ModuleCode, "function formatTitle()");
+        StringAssert.Contains(artifact.ModuleCode, "return (prefix() + props.value);");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", null, formatTitle());");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersDeclarationInitializedSetupPropertyAndHelperIntoSetupScope()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/value-property-helper-card")]
+                public class ValuePropertyHelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    private string Prefix { get; } = "Count: ";
+
+                    public string FormatTitle()
+                        => Prefix + Value;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, FormatTitle());
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const prefix = \"Count: \";");
+        StringAssert.Contains(artifact.ModuleCode, "function formatTitle()");
+        StringAssert.Contains(artifact.ModuleCode, "return (prefix + props.value);");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", null, formatTitle());");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersDeclarationInitializedSetupPropertyUsedDirectlyInTemplateExpression()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/value-property-card")]
+                public class ValuePropertyCard : ComponentBase, IVueComponent
+                {
+                    private string Prefix { get; } = "Count: ";
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Prefix);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const prefix = \"Count: \";");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", null, prefix);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForDeclarationInitializedSetupPropertyWithLaterWrites()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/mutable-value-property-card")]
+                public class MutableValuePropertyCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    private string Prefix { get; set; } = "Count: ";
+
+                    public string FormatTitle()
+                        => Prefix + Value;
+
+                    private void Mutate()
+                    {
+                        Prefix = "Changed: ";
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, FormatTitle());
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedSetupLogicLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "Prefix");
+        StringAssert.Contains(exception.Message, "later writes");
+        Assert.AreEqual("Demo.Components.MutableValuePropertyCard", exception.OwnerComponentFullName);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForDeclarationInitializedSetupFieldWithLaterWrites()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/mutable-field-card")]
+                public class MutableFieldCard : ComponentBase, IVueComponent
+                {
+                    private int _count = 1;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, _count);
+                        builder.CloseElement();
+                    }
+
+                    private void Mutate()
+                    {
+                        _count++;
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedSetupLogicLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "_count");
+        StringAssert.Contains(exception.Message, "later writes");
+        Assert.AreEqual("Demo.Components.MutableFieldCard", exception.OwnerComponentFullName);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersChainedSupportedSetupPropertiesIntoSetupScope()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/chained-property-helper-card")]
+                public class ChainedPropertyHelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    private string Prefix => BasePrefix;
+
+                    private string BasePrefix => "Count: ";
+
+                    public string FormatTitle()
+                        => Prefix + Value;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, FormatTitle());
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "function basePrefix()");
+        StringAssert.Contains(artifact.ModuleCode, "return \"Count: \";");
+        StringAssert.Contains(artifact.ModuleCode, "function prefix()");
+        StringAssert.Contains(artifact.ModuleCode, "return basePrefix();");
+        StringAssert.Contains(artifact.ModuleCode, "function formatTitle()");
+        StringAssert.Contains(artifact.ModuleCode, "return (prefix() + props.value);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForCyclicSetupProperties()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/cyclic-property-helper-card")]
+                public class CyclicPropertyHelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    private string Prefix => BasePrefix;
+
+                    private string BasePrefix => Prefix;
+
+                    public string FormatTitle()
+                        => Prefix + Value;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, FormatTitle());
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedSetupLogicLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "Prefix");
+        Assert.AreEqual("Demo.Components.CyclicPropertyHelperCard", exception.OwnerComponentFullName);
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersTwoLevelHelperCompositionIntoSetupScope()
     {
         var context = CreateContext(
@@ -18007,7 +18815,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForThreeLevelHelperComposition()
+    public void RazorVue_Pipeline_LowersThreeLevelHelperComposition()
     {
         var context = CreateContext(
             """
@@ -18053,10 +18861,15 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedSetupLogicLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "FormatInner");
-        Assert.AreEqual("Demo.Components.ThreeLevelCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "function formatOuter(value)");
+        StringAssert.Contains(artifact.ModuleCode, "function formatMiddle(value)");
+        StringAssert.Contains(artifact.ModuleCode, "function formatInner(value)");
+        StringAssert.Contains(artifact.ModuleCode, "return (\"Value: \" + formatMiddle(value));");
+        StringAssert.Contains(artifact.ModuleCode, "return (\"Middle: \" + formatInner(value));");
+        StringAssert.Contains(artifact.ModuleCode, "return ((value * 3)).toString();");
+        StringAssert.Contains(artifact.ModuleCode, "formatOuter(props.value)");
     }
 
     [TestMethod]
@@ -20440,6 +21253,53 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForExpressionBodiedNoOpSetParametersAsyncLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-noop-expression")]
+                public class SetParametersAsyncNoOpCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    public override Task SetParametersAsync(ParameterView parameters)
+                        => Task.CompletedTask;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        Assert.IsFalse(artifact.ModuleCode.Contains("watch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersBaseThenEmitSetParametersAsyncIntoWatchLifecycle()
     {
         var context = CreateContext(
@@ -20880,6 +21740,82 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForSetParametersAsyncPassThroughToExternalOverrideWithoutSource()
+    {
+        var libraryCompilation = CSharpCompilation.Create(
+            assemblyName: "External.SetParametersAsync.Base",
+            syntaxTrees: RazorVueMetadataReferences.CreateSyntaxTrees(
+                """
+                using System.Threading.Tasks;
+                using ECMAScript.VueContract;
+                using Microsoft.AspNetCore.Components;
+
+                public abstract class ExternalSetParametersAsyncBase : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        Value++;
+                    }
+                }
+                """),
+            references: RazorVueMetadataReferences.Create(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        using var referencedImage = new MemoryStream();
+        var referencedEmit = libraryCompilation.Emit(referencedImage);
+        Assert.IsTrue(referencedEmit.Success, string.Join(Environment.NewLine, referencedEmit.Diagnostics.Select(static diagnostic => diagnostic.ToString())));
+
+        var compilation = CSharpCompilation.Create(
+            assemblyName: "RazorVue.Pipeline.Tests.ExternalSetParametersAsync",
+            syntaxTrees: RazorVueMetadataReferences.CreateSyntaxTrees(
+                """
+                using System;
+                using System.Threading.Tasks;
+                using ECMAScript.VueContract;
+                using Microsoft.AspNetCore.Components;
+                using Microsoft.AspNetCore.Components.Rendering;
+
+                namespace ECMAScript
+                {
+                    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                    public sealed class ECMAScriptModuleAttribute : Attribute
+                    {
+                        public ECMAScriptModuleAttribute() { }
+                        public ECMAScriptModuleAttribute(string import) { }
+                    }
+                }
+
+                namespace Demo.Components
+                {
+                    [ECMAScript.ECMAScriptModule("./components/external-set-parameters-async")]
+                    public class SetParametersAsyncCard : ExternalSetParametersAsyncBase
+                    {
+                        public override Task SetParametersAsync(ParameterView parameters)
+                        {
+                            return base.SetParametersAsync(parameters);
+                        }
+
+                        protected override void BuildRenderTree(RenderTreeBuilder builder)
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, Value);
+                            builder.CloseElement();
+                        }
+                    }
+                }
+                """),
+            references: RazorVueMetadataReferences.Create(MetadataReference.CreateFromImage(referencedImage.ToArray())),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(CreateContext(compilation)).Artifacts.Single();
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("watch(() => [props.value], async () => {", StringComparison.Ordinal), artifact.ModuleCode);
     }
 
     [TestMethod]

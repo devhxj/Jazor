@@ -20,14 +20,14 @@ export default defineComponent({
   props: ["value", "onClick"],
   emits: ["update:value"],
   setup(props, { emit, slots, expose, attrs }) {
+    // 用户逻辑降级
+    const count = 0;
+    const handleClick = () => { ... };
+
     // 生命周期降级
     onMounted(() => { ... });
     onUpdated(() => { ... });
     onUnmounted(() => { ... });
-
-    // 用户逻辑降级
-    const count = 0;
-    const handleClick = () => { ... };
 
     // 渲染函数
     return () => h("div", { class: "container" }, [...]);
@@ -63,13 +63,22 @@ private static string BuildModuleCode(
     // 4. Setup 函数
     builder.AppendLine("  setup(props, { emit, slots, expose, attrs }) {");
 
-    // 5. 生命周期降级
-    AppendLifecycleLowering(builder, snapshot);
+    // 5. 先规划 lifecycle，并在规划阶段收集 payload 触发的 setup 依赖
+    var lifecyclePlan = CreateLifecyclePlan(snapshot, expressionEmitter);
 
-    // 6. 用户逻辑降级
-    AppendSetupLogicLowering(builder, snapshot, expressionEmitter);
+    // 6. 先发射 setup 逻辑，确保 immediate watch/hook 引用的 binding 已经声明
+    AppendSetupLogicLowering(
+        builder,
+        snapshot,
+        expressionEmitter,
+        lifecyclePlan.RequiredProperties,
+        lifecyclePlan.RequiredFields,
+        lifecyclePlan.RequiredMethods);
 
-    // 7. 返回渲染函数
+    // 7. 再发射 lifecycle hook / watch
+    AppendLifecycleLowering(builder, lifecyclePlan);
+
+    // 8. 返回渲染函数
     builder.Append("    return () => ").Append(renderExpression).AppendLine(";");
     builder.AppendLine("  }");
     builder.AppendLine("});");
@@ -140,59 +149,30 @@ private static void AppendVueImports(
 | `OnAfterRenderAsync` | `onMounted` + `onUpdated` | `firstRender` 参数 | ✅ |
 | `Dispose` | `onUnmounted` | 无 | ❌ |
 | `DisposeAsync` | `onUnmounted` | 无 | ✅ |
-| `ShouldRender` | （不支持） | N/A | N/A |
+| `ShouldRender` | 不生成 Vue hook，仅参与 HMR/边界分析 | N/A | 受控子集支持 |
 
 ### AppendLifecycleLowering 方法
 
 ```csharp
-private static void AppendLifecycleLowering(
-    StringBuilder builder,
-    RazorVueSemanticSnapshot snapshot)
-{
-    // 1. 初始化阶段
-    AppendLifecycleHook(builder, snapshot, "onMounted", snapshot.OnInitializedMethod, awaitResult: false);
-    AppendLifecycleHook(builder, snapshot, "onMounted", snapshot.OnInitializedAsyncMethod, awaitResult: true);
-
-    // 2. 参数设置阶段
-    AppendParametersSetHook(builder, snapshot, snapshot.OnParametersSetMethod, awaitResult: false);
-    AppendParametersSetHook(builder, snapshot, snapshot.OnParametersSetAsyncMethod, awaitResult: true);
-    AppendSetParametersAsyncHook(builder, snapshot);
-
-    // 3. 渲染后阶段
-    var onAfterRenderEmitCall = snapshot.OnAfterRenderMethod is null
-        ? null
-        : ExtractSupportedEmitCall(snapshot, snapshot.OnAfterRenderMethod, allowFirstRenderPayload: true);
-    var onAfterRenderAsyncEmitCall = snapshot.OnAfterRenderAsyncMethod is null
-        ? null
-        : ExtractSupportedEmitCall(snapshot, snapshot.OnAfterRenderAsyncMethod, allowFirstRenderPayload: true);
-
-    if (onAfterRenderEmitCall is not null)
-    {
-        if (onAfterRenderEmitCall.UsesFirstRender)
-            builder.AppendLine("    {");
-        if (onAfterRenderEmitCall.UsesFirstRender)
-            builder.AppendLine("      let firstRender = true;");
-        AppendAfterRenderHook(builder, onAfterRenderEmitCall, awaitResult: false);
-        if (onAfterRenderEmitCall.UsesFirstRender)
-            builder.AppendLine("    }");
-    }
-
-    if (onAfterRenderAsyncEmitCall is not null)
-    {
-        if (onAfterRenderAsyncEmitCall.UsesFirstRender)
-            builder.AppendLine("    {");
-        if (onAfterRenderAsyncEmitCall.UsesFirstRender)
-            builder.AppendLine("      let firstRender = true;");
-        AppendAfterRenderHook(builder, onAfterRenderAsyncEmitCall, awaitResult: true);
-        if (onAfterRenderAsyncEmitCall.UsesFirstRender)
-            builder.AppendLine("    }");
-    }
-
-    // 4. 销毁阶段
-    AppendLifecycleHook(builder, snapshot, "onUnmounted", snapshot.DisposeMethod, awaitResult: false);
-    AppendLifecycleHook(builder, snapshot, "onUnmounted", snapshot.DisposeAsyncMethod, awaitResult: true);
-}
+var lifecyclePlan = RazorVueSetupAndLifecycleLoweringSupport.CreateLifecyclePlan(snapshot, expressionEmitter);
+AppendSetupLogicLowering(
+    setupBodyBuilder,
+    snapshot,
+    expressionEmitter,
+    lifecyclePlan.RequiredProperties,
+    lifecyclePlan.RequiredFields,
+    lifecyclePlan.RequiredMethods);
+AppendLifecycleLowering(setupBodyBuilder, lifecyclePlan, "    ");
 ```
+
+**当前 contract**:
+
+1. 先创建 lifecycle plan
+2. plan 创建阶段会先探测 lifecycle payload lowering，并顺带收集它触发的 setup property/field/method 依赖
+3. 先发射这些 setup bindings/functions
+4. 再注册 `watch(..., { immediate: true })`、`onMounted`、`onUpdated`、`onUnmounted`
+
+这条顺序是生产级语义要求，不是简单重构：`OnParametersSet*` / `SetParametersAsync` 会 lower 到 `watch(..., { immediate: true })`；若 watch 先于 setup binding 发射，就可能在第一次 immediate 执行时触发 TDZ / 初始化顺序问题。
 
 ### 简单生命周期钩子
 
@@ -282,6 +262,8 @@ private static void AppendSetParametersAsyncHook(
 
 **特殊之处**: `SetParametersAsync` 总是异步的，且允许在 base 调用前执行逻辑。
 
+**顺序要求**: 若 `SetParametersAsync` / `OnParametersSet*` payload 依赖当前组件 setup member，这些 binding 必须先于 `watch(..., { immediate: true })` 注册发射；当前 module builder 已通过 lifecycle planning 固定这一顺序。
+
 ### AfterRender 双钩子模式
 
 ```csharp
@@ -355,58 +337,23 @@ private static void AppendSetupLogicLowering(
     RazorVueSemanticSnapshot snapshot,
     RazorVueExpressionEmitter expressionEmitter)
 {
-    var emittedFields = new HashSet<IFieldSymbol>(SymbolEqualityComparer.Default);
-    var emittedMethods = new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default);
-    var fieldBlocks = new List<string>();
-    var methodBlocks = new List<string>();
-    var helperDepth = 1;
-
-    // 迭代直到所有依赖解析完成
-    while (true)
-    {
-        var nextFields = expressionEmitter.GetRequiredSetupFields()
-            .Where(field => !emittedFields.Contains(field.FieldSymbol))
-            .OrderBy(field => field.Name, StringComparer.Ordinal)
-            .ToArray();
-        var nextMethods = expressionEmitter.GetRequiredSetupMethods()
-            .Where(method => !emittedMethods.Contains(method.MethodSymbol))
-            .OrderBy(method => method.Name, StringComparer.Ordinal)
-            .ThenBy(method => method.Arity)
-            .ToArray();
-
-        if (nextFields.Length == 0 && nextMethods.Length == 0)
-            break;
-
-        if (helperDepth > 2 && nextMethods.Length > 0)
-            throw CreateUnsupportedSetupLoweringException(nextMethods[0].MethodSymbol);
-
-        foreach (var field in nextFields)
-        {
-            emittedFields.Add(field.FieldSymbol);
-            fieldBlocks.Add(BuildSetupFieldLowering(snapshot, expressionEmitter, field));
-        }
-
-        foreach (var method in nextMethods)
-        {
-            emittedMethods.Add(method.MethodSymbol);
-            methodBlocks.Add(BuildSetupMethodLowering(snapshot, expressionEmitter, method));
-        }
-
-        helperDepth++;
-    }
-
-    foreach (var fieldBlock in fieldBlocks)
-        builder.Append(fieldBlock);
-
-    foreach (var methodBlock in methodBlocks)
-        builder.Append(methodBlock);
+    // 当前实现按 symbol identity 递归展开 property / field / method 依赖，
+    // 直到没有新依赖为止；循环依赖会显式 fail-fast。
 }
 ```
 
 **依赖解析策略**:
 1. 收集所有被渲染树引用的字段和方法
-2. 迭代解析，处理依赖链（方法 A 调用方法 B）
-3. 防止循环依赖（helperDepth > 2 时抛出异常）
+2. 同时把 lifecycle payload 触发的 setup property/field/method 依赖并入同一依赖图
+3. 递归解析依赖链（property -> field -> helper、helper -> helper、lifecycle payload -> setup binding）
+4. 若成员之间形成循环依赖，显式 fail-fast
+
+**当前 contract**:
+
+- 旧的“helper 最多两层组合”人工深度上限已经移除
+- 当前支持的是“源码可分析、同步、单表达式 / 单返回”的 helper/property 链递归展开
+- lifecycle payload 命中同一受控 helper/property/field 子集时，会把这些依赖并入同一 setup 依赖图，并保证 setup binding / function 仍先于 watch/hook 发射
+- `async` helper、`Task` / `ValueTask` 返回 helper、或超出当前受控 body 形状的方法体，仍显式 unsupported
 
 ### 字段降级
 
@@ -899,9 +846,12 @@ private static bool IsSupportedShouldRenderExpression(Compilation compilation, E
 }
 ```
 
-**仅支持两种形式**:
+**当前支持的受控子集**:
 1. `return true;`
-2. `return base.ShouldRender();`
+2. `return base.ShouldRender();`，且最终解析到 `ComponentBase.ShouldRender()`
+3. `return base.ShouldRender();`，且最终递归解析到另一个同样受支持的 base `ShouldRender` 实现
+
+若 base 链最终落到动态条件、源码缺失或形成环引用，则继续按 unsupported 处理。
 
 ## 辅助方法
 
@@ -990,5 +940,5 @@ private sealed record ShouldRenderAnalysis(bool IsSupported);
 ---
 
 **维护者**: developerhan
-**最后更新**: 2026-04-21
+**最后更新**: 2026-05-21
 **版本**: v1.0

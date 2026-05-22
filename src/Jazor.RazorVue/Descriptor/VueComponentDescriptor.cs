@@ -103,16 +103,31 @@ internal sealed record VueLogicMethodDescriptor(
     bool IsAsync,
     IMethodSymbol MethodSymbol);
 
+internal enum VueLogicPropertyLoweringKind
+{
+    Unsupported = 0,
+    ValueBinding = 1,
+    GetterFunction = 2
+}
+
+internal sealed record VueLogicPropertyDescriptor(
+    string Name,
+    bool IsReadOnly,
+    VueLogicPropertyLoweringKind LoweringKind,
+    IPropertySymbol PropertySymbol);
+
 internal sealed record VueLogicFieldDescriptor(
     string Name,
     bool IsReadOnly,
     IFieldSymbol FieldSymbol);
 
 internal sealed record VueLogicDescriptor(
+    ImmutableArray<VueLogicPropertyDescriptor> Properties,
     ImmutableArray<VueLogicFieldDescriptor> Fields,
     ImmutableArray<VueLogicMethodDescriptor> Methods)
 {
     public static VueLogicDescriptor Empty { get; } = new(
+        ImmutableArray<VueLogicPropertyDescriptor>.Empty,
         ImmutableArray<VueLogicFieldDescriptor>.Empty,
         ImmutableArray<VueLogicMethodDescriptor>.Empty);
 }

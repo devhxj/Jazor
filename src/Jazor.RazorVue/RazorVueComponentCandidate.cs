@@ -20,6 +20,7 @@ internal sealed record RazorVueComponentCandidate
         IMethodSymbol? disposeMethod,
         IMethodSymbol? disposeAsyncMethod,
         ImmutableArray<IMethodSymbol> logicMethods,
+        ImmutableArray<IPropertySymbol> logicProperties,
         ImmutableArray<IFieldSymbol> logicFields,
         RazorVueEntryKind entryKind)
     {
@@ -36,6 +37,7 @@ internal sealed record RazorVueComponentCandidate
         DisposeMethod = disposeMethod;
         DisposeAsyncMethod = disposeAsyncMethod;
         LogicMethods = logicMethods.IsDefault ? ImmutableArray<IMethodSymbol>.Empty : logicMethods;
+        LogicProperties = logicProperties.IsDefault ? ImmutableArray<IPropertySymbol>.Empty : logicProperties;
         LogicFields = logicFields.IsDefault ? ImmutableArray<IFieldSymbol>.Empty : logicFields;
         EntryKind = entryKind;
     }
@@ -65,6 +67,8 @@ internal sealed record RazorVueComponentCandidate
     public IMethodSymbol? DisposeAsyncMethod { get; }
 
     public ImmutableArray<IMethodSymbol> LogicMethods { get; }
+
+    public ImmutableArray<IPropertySymbol> LogicProperties { get; }
 
     public ImmutableArray<IFieldSymbol> LogicFields { get; }
 

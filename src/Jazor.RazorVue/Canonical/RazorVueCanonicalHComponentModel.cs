@@ -22,8 +22,10 @@ internal sealed record RazorVueCanonicalHComponentModel(
     RazorVueCanonicalSetupModel Setup);
 
 internal sealed record RazorVueCanonicalSetupModel(
+    ImmutableArray<VueLogicPropertyDescriptor> Properties,
     ImmutableArray<VueLogicFieldDescriptor> Fields,
     ImmutableArray<VueLogicMethodDescriptor> Methods,
+    ImmutableArray<VueLogicPropertyDescriptor> RequiredProperties,
     ImmutableArray<VueLogicFieldDescriptor> RequiredFields,
     ImmutableArray<VueLogicMethodDescriptor> RequiredMethods,
     VueLifecycleDescriptor Lifecycle);

@@ -36,8 +36,15 @@ internal sealed partial class RazorVueArtifactFactory
             AppendImperativeComponentMetadataBindings(setupBodyBuilder, resolvedComponents, "    ");
         if (usesImperativeRenderBody)
             AppendImperativeRenderBridgeHelper(setupBodyBuilder, "    ");
-        AppendLifecycleLowering(setupBodyBuilder, snapshot);
-        AppendSetupLogicLowering(setupBodyBuilder, snapshot, expressionEmitter);
+        var lifecyclePlan = RazorVueSetupAndLifecycleLoweringSupport.CreateLifecyclePlan(snapshot, expressionEmitter);
+        AppendSetupLogicLowering(
+            setupBodyBuilder,
+            snapshot,
+            expressionEmitter,
+            lifecyclePlan.RequiredProperties,
+            lifecyclePlan.RequiredFields,
+            lifecyclePlan.RequiredMethods);
+        AppendLifecycleLowering(setupBodyBuilder, lifecyclePlan, "    ");
         if (usesImperativeRenderBody)
         {
             setupBodyBuilder.AppendLine("    const __jazorComponent = { props, emit, slots, expose, attrs };");
@@ -244,12 +251,13 @@ internal sealed partial class RazorVueArtifactFactory
     internal static void AppendLifecycleLoweringForSfc(
         StringBuilder builder,
         RazorVueSemanticSnapshot snapshot)
-        => AppendLifecycleLowering(builder, snapshot);
+        => AppendLifecycleLowering(builder, RazorVueSetupAndLifecycleLoweringSupport.CreateLifecyclePlan(snapshot, expressionEmitter: null), "    ");
 
     private static void AppendLifecycleLowering(
         StringBuilder builder,
-        RazorVueSemanticSnapshot snapshot)
-        => RazorVueSetupAndLifecycleLoweringSupport.AppendLifecycleLowering(builder, snapshot, "    ");
+        RazorVueSetupAndLifecycleLoweringSupport.LifecycleLoweringPlan plan,
+        string indent)
+        => RazorVueSetupAndLifecycleLoweringSupport.AppendLifecyclePlan(builder, plan, indent);
 
     internal static void AppendSetupLogicLoweringForSfc(
         StringBuilder builder,
@@ -265,8 +273,25 @@ internal sealed partial class RazorVueArtifactFactory
             builder,
             snapshot,
             expressionEmitter,
+            ImmutableArray<VueLogicPropertyDescriptor>.Empty,
             ImmutableArray<VueLogicFieldDescriptor>.Empty,
             ImmutableArray<VueLogicMethodDescriptor>.Empty,
+            "    ");
+
+    private static void AppendSetupLogicLowering(
+        StringBuilder builder,
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter expressionEmitter,
+        ImmutableArray<VueLogicPropertyDescriptor> initialRequiredProperties,
+        ImmutableArray<VueLogicFieldDescriptor> initialRequiredFields,
+        ImmutableArray<VueLogicMethodDescriptor> initialRequiredMethods)
+        => RazorVueSetupAndLifecycleLoweringSupport.AppendSetupLogicLowering(
+            builder,
+            snapshot,
+            expressionEmitter,
+            initialRequiredProperties,
+            initialRequiredFields,
+            initialRequiredMethods,
             "    ");
 
     internal static ImmutableArray<PropDefaultBinding> CollectPropDefaultBindingsForSfc(
@@ -399,6 +424,34 @@ internal sealed partial class RazorVueArtifactFactory
             return "unsupported";
 
         return declarator.Initializer.Value.ToString();
+    }
+
+    private static string DescribeSetupPropertyShape(IPropertySymbol property)
+    {
+        foreach (var syntaxReference in property.DeclaringSyntaxReferences)
+        {
+            if (syntaxReference.GetSyntax() is not PropertyDeclarationSyntax propertySyntax)
+                continue;
+
+            if (propertySyntax.Initializer?.Value is not null)
+                return propertySyntax.Initializer.Value.ToString();
+
+            if (propertySyntax.ExpressionBody is not null)
+                return propertySyntax.ExpressionBody.Expression.ToString();
+
+            var getter = propertySyntax.AccessorList?.Accessors
+                .FirstOrDefault(static accessor => accessor.IsKind(SyntaxKind.GetAccessorDeclaration));
+            if (getter?.ExpressionBody?.Expression is not null)
+                return getter.ExpressionBody.Expression.ToString();
+
+            if (getter?.Body?.Statements.Count == 1 &&
+                getter.Body.Statements[0] is ReturnStatementSyntax { Expression: not null } returnStatement)
+            {
+                return returnStatement.Expression.ToString();
+            }
+        }
+
+        return "unsupported";
     }
 
     private static string DescribeSetupMethodShape(IMethodSymbol method)

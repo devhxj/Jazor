@@ -639,8 +639,10 @@ public sealed class RazorVueCanonicalSfcSemanticTests
                         SourceOrigins: ImmutableArray<RazorVueSourceOrigin>.Empty))),
             ImperativeRootProgram: null,
             Setup: new RazorVueCanonicalSetupModel(
+                ImmutableArray<VueLogicPropertyDescriptor>.Empty,
                 ImmutableArray<VueLogicFieldDescriptor>.Empty,
                 ImmutableArray<VueLogicMethodDescriptor>.Empty,
+                ImmutableArray<VueLogicPropertyDescriptor>.Empty,
                 ImmutableArray<VueLogicFieldDescriptor>.Empty,
                 ImmutableArray<VueLogicMethodDescriptor>.Empty,
                 new VueLifecycleDescriptor(false, false, false, false, false, false, false, false, false, false)));
@@ -3270,6 +3272,58 @@ public sealed class RazorVueCanonicalSfcSemanticTests
         Assert.AreEqual(RazorVueTemplateEncodability.DirectTemplate, attribute.TemplateEncodability);
         Assert.AreEqual(RazorVueTemplateExpressionSafety.DirectTemplateSafe, attribute.TemplateExpressionSafety);
         Assert.AreEqual(RazorVueSideEffectClassification.None, attribute.SideEffectClassification);
+        Assert.IsTrue(sfc.ScriptSetupBlock.LiftedBindings.IsDefaultOrEmpty);
+        Assert.IsTrue(sfc.TemplateBlock.BindingSites.IsDefaultOrEmpty);
+    }
+
+    [TestMethod]
+    public void RazorVue_CanonicalModelFactory_TracksDeclarationInitializedSetupPropertyAsRequiredSetupBinding()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/value-property-card")]
+                public class ValuePropertyCard : ComponentBase, IVueComponent
+                {
+                    private string Prefix { get; } = "Count: ";
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Prefix);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+        var root = AssertNode<RazorVueCanonicalElementNode>(canonical.Template.Children.Single());
+        var interpolation = AssertNode<RazorVueCanonicalInterpolationNode>(root.Children.Children.Single());
+        var sfc = new RazorVueSfcSemanticModelFactory().Create(canonical);
+
+        Assert.AreEqual("prefix", interpolation.ExpressionText);
+        Assert.AreEqual(VueLogicPropertyLoweringKind.ValueBinding, canonical.Setup.RequiredProperties.Single().LoweringKind);
+        Assert.AreEqual("Prefix", canonical.Setup.RequiredProperties.Single().Name);
+        Assert.AreEqual(VueLogicPropertyLoweringKind.ValueBinding, sfc.ScriptSetupBlock.Setup.RequiredProperties.Single().LoweringKind);
+        Assert.AreEqual("Prefix", sfc.ScriptSetupBlock.Setup.RequiredProperties.Single().Name);
         Assert.IsTrue(sfc.ScriptSetupBlock.LiftedBindings.IsDefaultOrEmpty);
         Assert.IsTrue(sfc.TemplateBlock.BindingSites.IsDefaultOrEmpty);
     }

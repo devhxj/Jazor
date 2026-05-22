@@ -458,3 +458,4 @@ jazor/
 !samples/ECMAScript.Vben.ElementPlusInject/Vben.ElementPlusInject.Host/wwwroot/jazor/
 !samples/ECMAScript.Vben.ElementPlusInject/Vben.ElementPlusInject.Host/wwwroot/jazor/**
 src/vben/
+.golutra

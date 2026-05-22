@@ -126,6 +126,71 @@
 - 当前这一声明式结构化通道不支持局部声明后进入更一般的语句执行模型；除“声明后紧邻一次简单赋值”外，其他赋值语句、递增/递减、delegate/callable template state、`switch` / `while` / `do-while` / `try-catch` / `using` / `lock` 仍不走此通道
 - 上述更一般的 block code 不再被视为长期只能 fail-fast 的永久边界；其中 `while` / `do-while` / `switch` / `lock` / `try-catch/finally` / `using` / `using declaration` 已进入正式命令式渲染通道，其余语句族将继续沿这条通道扩面，而不是继续把它们塞回 `RazorVueConditionalNode` / `RazorVueForEachNode` / `RazorVueForNode`
 
+## Lifecycle Support
+
+- RazorVue 的 lifecycle/setup lowering 仍是受控子集，但当前已正式支持一条更完整的 `ShouldRender` 透传链契约。
+- `ShouldRender` 当前接受的安全形态包括：
+  - `return true;`
+  - `return base.ShouldRender();`，当该 `base` 最终解析到 `ComponentBase.ShouldRender()` 时
+  - `return base.ShouldRender();`，当该 `base` 最终递归解析到另一个同样受支持的 base `ShouldRender` 实现时，例如“派生类透传 -> 抽象基类 `return true;`”
+- 这条支持是递归受控的，而不是“只要写了 `base.ShouldRender()` 就接受”：
+  - 如果 base 链上的最终实现仍是动态条件（例如 `return Value > 0;`），RazorVue 仍会把整条链判为 unsupported，并继续落到 `FullReloadRequired`
+  - 若 base 链形成循环、缺少源码、或方法体形状超出上述受控子集，也会继续显式失败
+- 普通 lifecycle 的 base-pass-through 现在也对齐接受一个更窄的尾随 no-op 形态：例如 `await base.OnInitializedAsync(); return;` 这类“base 透传后只跟空返回”的方法体，会与纯 pass-through 一样被视为没有新增运行时行为，不再误退回 unsupported。
+- lifecycle / no-op contract 本轮进一步按真实返回类型收紧并对齐：
+  - `Task` 返回的 lifecycle 只接受真实 completed-task no-op，例如 `Task.CompletedTask`
+  - non-generic `ValueTask` 返回的 lifecycle 额外接受 `default` / `default(ValueTask)` / `new ValueTask(...)` 包裹后的等价 no-op
+  - `protected override Task OnInitializedAsync() => default;` 现在会在 analyzer / lowering / generator 三层一致视为 unsupported，因为 `default(Task)` 实际是 `null`，不是 no-op
+- lifecycle payload 当前也已补齐一条更真实但仍受控的 setup 依赖路径：
+  - `[Parameter]` property 仍可直接进入 payload lowering
+  - source-stable current-component value member 现在也可作为 payload 原子参与 lowering，包括 declaration-initialized value-like property、declaration-initialized field，以及 getter-bodied property
+  - 这些 member 仍不是在 lifecycle lowering 内手拼 JS；RazorVue 会把它们先纳入同一 setup/property/field lowering 主线，再在 payload 里引用最终 setup binding / setup function
+- 这条 lifecycle payload 扩面当前刻意只开放受控 current-component member 子集：
+  - getter-bodied property 只接受 expression-bodied property、getter accessor 中单个 `return` 的 property，以及同一受控子集内的 getter 链
+  - declaration-initialized property / field 只接受 source-stable member；private mutable member 只有在“声明点初始化 + 可证明无后续写入”时才接受
+  - payload 表达式本身仍只接受当前既有安全组合：literal / `null` / `firstRender` / unary / binary / conditional / interpolated string，以及由这些受支持原子拼成的表达式
+- lifecycle payload 当前也已补齐一条受控 current-component helper/method-call 路径：
+  - 仅限当前组件内 helper/method
+  - 调用点参数个数必须与 helper 签名完全一致
+  - helper 本身必须继续满足 setup helper lowering 合同：同步、非 `Task`/`ValueTask` 返回、源码可分析、body 可收敛到单表达式 / 单返回
+  - helper body 中对 declaration-initialized property / field、getter-bodied property、以及其他同步 helper 的依赖，继续沿同一 setup/property/field/method lowering 主线递归展开
+- `OnAfterRender*` 的 `firstRender` payload 现还补齐了一条 compiler-owned fallback：
+  - 当 payload 实际引用 lifecycle `firstRender` 参数、且表达式形状仍落在当前受控子集内时，RazorVue 会把 `firstRender` 通过 `currentFirstRender` 别名交回 `EmitSetupExpression -> SemanticWalker -> Jazor.Compiler`
+  - 这里不是在 RazorVue 内部继续手拼 CLR/成员/调用语义；RazorVue 只负责 after-render snapshot 协议与参数别名，具体表达式翻译仍归 `Jazor.Compiler`
+  - 当前已锁定进入这条 fallback 的真实形态包括 `(bool)firstRender`、`object.Equals(firstRender, true)`、`object.Equals((bool)firstRender, true)`、`firstRender.Equals(true)`、`firstRender == true`、`bool? alias = firstRender; alias ?? false` 这一类 source-stable nullable-bool local carrier、`firstRender is true/false`、`firstRender is not true/false`、`firstRender is true or false`、`firstRender is true and not false`、`firstRender is bool`、`firstRender is object`、直接 against `firstRender` 的 declaration-pattern（例如 `firstRender is bool ready && ready`）、`firstRender switch { ... }`，以及继续满足 setup helper 合同的受控 helper-call payload（例如 `Normalize(firstRender)`）
+  - 当前已锁定的典型发射结果包括：`object.Equals(firstRender, true)` / `object.Equals((bool)firstRender, true)` / `firstRender.Equals(true)` -> `currentFirstRender === true`，`firstRender == true` -> `(currentFirstRender === true)`，`alias ?? false` -> `currentFirstRender ?? false`，`firstRender is true` -> `currentFirstRender === true`，`firstRender is false` -> `currentFirstRender === false`，`firstRender is bool` -> `typeof currentFirstRender === "boolean"`，`firstRender is bool ready && ready` -> compiler-owned declaration-pattern lowering（包含 pattern local `ready` 的绑定与复用）
+- 这条 helper payload 扩面依然不是“任意执行模型放开”：
+  - `async` helper、`Task` / `ValueTask` 返回 helper、非精确 arity helper 调用、越出当前 setup lowering 合同的 helper body、以及更宽的动态 member/dataflow 仍显式报 `UnsupportedLifecycleLowering` / analyzer `JAZORVUE005`
+  - 一般外部 invocation、未知实例 method-call payload，也没有因为这轮扩面而被放宽
+  - deeper object-construction/member-chain、local lambda / local-function 参与的 payload、property-pattern、依赖额外 source-stable object boxing/local carrier 的 declaration-pattern / pattern-var、null-conditional + coalesced 组合，以及更宽 dataflow 形状当前仍显式 fail-fast；这里开放的是“能被现有 compiler-owned lowering 诚实承载的 firstRender 表达式”，不是把 lifecycle payload 放宽成任意执行模型
+- module builder / SFC builder 现在也已对 lifecycle 发射顺序做了正式收口：
+  - 先创建 lifecycle plan
+  - 在 plan 创建阶段就预收集 lifecycle payload 触发的 setup property/field/method 依赖
+  - 先发射这些 setup bindings/functions
+  - 最后再发射 `watch(..., { immediate: true })`、`onMounted`、`onUpdated`、`onUnmounted` 等 lifecycle hooks
+- 这条顺序不是代码风格调整，而是生产级语义要求：`OnParametersSet*` / `SetParametersAsync` 会 lower 到 `watch(..., { immediate: true })`，若 setup binding 晚于 watch 注册发射，会直接形成 TDZ / 初始化顺序风险。当前 pipeline / SFC artifact 都已锁定“setup 先于 immediate watch”这一合同。
+- analyzer / lowering / generator 现也已对齐到同一 lifecycle 支持矩阵：analyzer 不再用旧的语法级近似规则猜测 lifecycle payload 是否可支持，而是基于同一 semantic snapshot 复用 lowering 侧的 support-shape 判定；因此 declaration-initialized property/field lifecycle payload 不会再出现“pipeline 接受但 analyzer 仍报 `JAZORVUE005`”的漂移。
+- setup helper lowering 目前也已补齐“同步多级 helper 组合”的真实支持面：只要 helper 仍是当前组件内、源码可分析、同步、且每一层都满足现有 setup lowering 合同，就不再受旧的 2 层深度人工限制；例如 `FormatOuter -> FormatMiddle -> FormatInner` 这类三层及以上同步 helper 链会继续递归收集并 lower 到同一 setup scope。
+- setup-side logic 当前还正式补齐了一条 getter property 支持面：当前组件内、源码可分析、getter body 可收敛到“单表达式 / 单返回”的 property，现在可以像同步 helper 一样进入同一 setup scope；helper body 引用这类 property 时，RazorVue 会先把 property 发射为 setup function，再让后续表达式继续通过 `Jazor.Compiler` / `SemanticWalker` 完成 CLR-aware lowering，而不是在 RazorVue 内部手拼 JS 语义。
+- setup-side logic 现也补齐了 declaration-initialized value-like property 的受控支持面：当前组件内、声明点初始化、且源码可证明保持 source-stable 的 property，现在会直接发射为 setup value binding；helper body 或模板表达式对这类 property 的引用会继续通过 `RazorVueExpressionEmitter` / `SemanticWalker` / `Jazor.Compiler` 保持 CLR-aware lowering，而不是在 RazorVue 内部另写一套值替换逻辑。
+- 这条 property 支持当前刻意只开放 getter-bodied 受控子集：
+  - expression-bodied property
+  - getter accessor 里单个 `return` 的 property
+  - getter 间链式依赖，只要整条链最终仍落在同一受控子集内
+- declaration-initialized value-like property 当前也只开放 source-stable 受控子集：
+  - getter-only auto-property 或 declaration initializer property
+  - private mutable property 仅在“声明点初始化 + 可证明无后续写入”时接受
+  - direct template expression 与 setup helper 引用走同一 setup binding 合同，不分裂成两套语义
+- 这条扩面同样保持 fail-fast：
+  - property 链一旦出现循环依赖，会在编译期直接报 `UnsupportedSetupLogicLowering`
+  - declaration-initialized value-like property / field 一旦后续再次出现可观察写入，也会直接报 `UnsupportedSetupLogicLowering`；这条路径只接受 source-stable member，不会静默沿首次初始化继续 hoist
+  - 仍不支持依赖构造/写入时序语义的 property、`async` getter 语义模拟、以及超出当前单表达式 / 单返回受控子集的 getter
+- 这条扩面仍然刻意保持 fail-fast：`async` helper、`Task` / `ValueTask` 返回值、或 helper body 超出当前单表达式 / 单返回受控子集时，RazorVue 仍会显式报 `UnsupportedSetupLogicLowering`，而不会因为外层 helper 可分析就静默放行。
+- `SetParametersAsync` 也仍是受控子集：支持 no-op（含 expression-bodied `=> Task.CompletedTask` 一类空实现）、直达 `ComponentBase.SetParametersAsync(...)` 的 base pass-through，以及“base 后接单个受支持 `InvokeAsync` emit”这类可稳定映射到一个 Vue `watch` 的形态；重复 emit、额外 mutation 或更一般的方法体仍显式 unsupported。
+- `SetParametersAsync` 的 no-op 也遵循同一条返回类型语义边界：`Task.CompletedTask` 仍接受，但 `=> default` 不再被误判成空实现。
+- `SetParametersAsync` 的 base-chain 也保持保守边界：如果 pass-through 目标落到另一个源码可分析且同样受支持的 base 实现，会继续递归接受；但若最终落到外部无源码的 override（不是 `ComponentBase` 默认实现），RazorVue 会显式按 unsupported / `FullReloadRequired` 处理，而不会把未知参数赋值语义乐观当成 no-op。
+- 上述 `SetParametersAsync` contract 现在已在 analyzer / lowering / generator 三层对齐；expression-bodied no-op（例如 `=> Task.CompletedTask`）不会再出现“pipeline 接受但 analyzer 仍报 `JAZORVUE006`”的漂移。
+
 ## Count-Style `for` Support
 
 - RazorVue 的声明式 count-style `for` 当前仍刻意收窄为“单一声明局部 + 直接比较条件 + 结构可识别的步进表达式”的子集。

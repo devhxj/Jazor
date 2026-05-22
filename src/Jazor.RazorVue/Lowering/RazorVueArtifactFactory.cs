@@ -175,6 +175,12 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             logicShape.AppendLine("field:" + field.Name + "|" + field.IsReadOnly + "|" + DescribeSetupFieldShape(field.FieldSymbol));
         }
 
+        foreach (var property in snapshot.Logic.Properties
+                     .OrderBy(static property => property.Name, StringComparer.Ordinal))
+        {
+            logicShape.AppendLine("property:" + property.Name + "|" + property.IsReadOnly + "|" + property.LoweringKind + "|" + DescribeSetupPropertyShape(property.PropertySymbol));
+        }
+
         foreach (var method in snapshot.Logic.Methods
                      .OrderBy(static method => method.Name, StringComparer.Ordinal)
                      .ThenBy(static method => method.Arity))
@@ -225,7 +231,7 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
                                            RazorVueSetupAndLifecycleLoweringSupport.HasSupportedLifecycleLowering(snapshot, snapshot.DisposeAsyncMethod, false);
         // HMR should only escalate to LogicSafe when lifecycle methods actually lower
         // into runtime hooks; no-op methods should behave like pure template changes.
-        if (hasSupportedLifecycleLowering || snapshot.Logic.Fields.Length > 0 || snapshot.Logic.Methods.Length > 0)
+        if (hasSupportedLifecycleLowering || snapshot.Logic.Properties.Length > 0 || snapshot.Logic.Fields.Length > 0 || snapshot.Logic.Methods.Length > 0)
             return HmrBoundaryKind.LogicSafe;
 
         if (HasTemplateShape(renderTree))

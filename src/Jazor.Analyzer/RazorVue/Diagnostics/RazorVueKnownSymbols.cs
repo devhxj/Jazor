@@ -48,6 +48,10 @@ internal sealed class RazorVueKnownSymbols
            method.ReturnType.SpecialType == SpecialType.System_Boolean &&
            DerivesFrom(method.ContainingType, Symbols.ComponentBase);
 
+    public bool IsSupportedLifecycleCandidate(IMethodSymbol method)
+        => method.Name is "OnInitialized" or "OnInitializedAsync" or "OnParametersSet" or "OnParametersSetAsync" or "OnAfterRender" or "OnAfterRenderAsync" or "Dispose" or "DisposeAsync" &&
+           DerivesFrom(method.ContainingType, Symbols.ComponentBase);
+
     public bool IsSetParametersAsync(IMethodSymbol method)
     {
         if (method.Name != "SetParametersAsync" || method.Parameters.Length != 1)
@@ -73,4 +77,3 @@ internal sealed class RazorVueKnownSymbols
         return false;
     }
 }
-

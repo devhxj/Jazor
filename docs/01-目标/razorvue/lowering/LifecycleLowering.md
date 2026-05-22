@@ -21,7 +21,7 @@ RazorVue 的生命周期降级系统负责将 Blazor 的生命周期方法转换
 | `OnAfterRenderAsync` | `onMounted` + `onUpdated` | 首次和每次渲染后 | ✅ | `firstRender` | LogicSafe |
 | `Dispose` | `onUnmounted` | 组件卸载前 | ❌ | 无 | LogicSafe |
 | `DisposeAsync` | `onUnmounted` | 组件卸载前 | ✅ | 无 | LogicSafe |
-| `ShouldRender` | （不支持） | N/A | N/A | N/A | FullReloadRequired |
+| `ShouldRender` | 不生成 Vue hook，仅参与 HMR/边界分析 | N/A | N/A | 受控子集支持 | `TemplateOnly` 或 `FullReloadRequired` |
 
 ## 核心概念
 
@@ -361,7 +361,7 @@ watch(() => [props.value], async () => {
 
 ### ShouldRender 分析
 
-**限制**: 仅支持两种形式，其他情况强制完全重载。
+**限制**: 当前只接受受控显式响应式渲染路径；不生成 Vue hook，但会参与 HMR 边界分类。
 
 ```csharp
 private static ShouldRenderAnalysis AnalyzeShouldRender(Compilation compilation, IMethodSymbol? method)
@@ -391,9 +391,14 @@ private static ShouldRenderAnalysis AnalyzeShouldRender(Compilation compilation,
 // 形式 1: 常量 true
 protected override bool ShouldRender() => true;
 
-// 形式 2: base.ShouldRender()
+// 形式 2: 直接透传到 ComponentBase
+protected override bool ShouldRender() => base.ShouldRender();
+
+// 形式 3: 递归安全 base-pass-through 链
 protected override bool ShouldRender() => base.ShouldRender();
 ```
+
+其中形式 3 的前提是：`base.ShouldRender()` 最终递归解析到另一个同样受支持的 `ShouldRender` 实现，例如抽象基类里的 `return true;`。如果 base 链最终落到动态条件、源码缺失、或出现环引用，仍按 unsupported 处理并要求 `FullReloadRequired`。
 
 ## 载荷表达式翻译
 
@@ -428,6 +433,7 @@ internal static LifecyclePayloadEmission EmitLifecyclePayload(IMethodSymbol meth
 - **null**: `null`
 - **firstRender 参数**: `__jazorVueLifecycleFirstRender__`（占位符）
 - **组件参数**: `props.propName`
+- **source-stable current-component value member**: 受控 declaration-initialized property / field，或受控 getter-bodied property
 - **一元运算**: `!value`, `-count`
 - **二元运算**: `value + 1`, `isActive && isVisible`
 - **条件表达式**: `condition ? whenTrue : whenFalse`
@@ -446,12 +452,100 @@ private static LifecyclePayloadEmission EmitLifecyclePayloadPropertyReference(
         return new LifecyclePayloadEmission("props." + ToLifecyclePropName(property.Property.Name), false);
     }
 
+    if (IsCurrentComponentMember(method.ContainingType, property.Property, property.Instance) &&
+        TryEmitLifecycleCurrentComponentPropertyReference(property.Property, out var lifecyclePropertyExpression))
+    {
+        return new LifecyclePayloadEmission(lifecyclePropertyExpression, false);
+    }
+
     throw new NotSupportedException(
-        $"RazorVue lifecycle payload only supports component [Parameter] properties. Unsupported member: '{property.Property.Name}'.");
+        $"RazorVue lifecycle payload only supports component [Parameter] properties or source-stable current-component value members. Unsupported member: '{property.Property.Name}'.");
 }
 ```
 
-**限制**: 仅支持 `[Parameter]` 属性引用。
+**当前支持的 property 引用合同**:
+
+- `[Parameter]` property 继续直接 lower 为 `props.xxx`
+- current-component property 若已进入 logic/setup 主线，也可作为 lifecycle payload 原子
+
+其中 current-component property 当前只开放受控子集：
+
+- declaration-initialized value-like property，且源码可证明 source-stable
+- expression-bodied property
+- getter accessor 中单个 `return` 的 property
+- 上述 getter property 的受控链式依赖
+
+这些 current-component property 不会在 lifecycle lowering 内单独手拼 JS；它们会先沿 setup/property lowering 主线发射为 setup value binding 或 setup function，再在 payload 中以 `prefix` / `readyLabel()` 之类的最终 binding 形式被引用。
+
+### 字段引用处理
+
+current-component field 现也支持一个更窄的受控子集：
+
+- `readonly` declaration-initialized field
+- private mutable declaration-initialized field，但必须源码可证明无后续写入
+
+一旦 field/property 后续出现可观察写入、需要更宽 dataflow 推理、或 payload 需要越出当前受控 helper lowering 合同，仍显式回到 unsupported。
+
+### 当前仍不支持
+
+- `async` helper-call payload
+- `Task` / `ValueTask` 返回 helper-call payload
+- 非精确 arity 的 current-component helper-call payload
+- 越出当前 setup helper lowering 合同的一般 current-component method-call payload
+- mutable/later-written property / field
+- 超出 literal / parameter / source-stable member / unary / binary / conditional / interpolated string 组合的更宽动态 payload
+- deeper object-construction/member-chain firstRender payload
+- local / lambda / local-function 参与的 firstRender payload
+- null-conditional / coalesced firstRender payload
+
+### 当前已支持的 helper payload 子集
+
+- 当前组件内 helper / method 调用
+- 调用点参数个数与 helper 签名完全一致
+- helper 本身继续满足 setup helper lowering 合同：同步、源码可分析、非 `Task` / `ValueTask` 返回、body 可收敛到单表达式 / 单返回
+- helper 体内部对 declaration-initialized property / field、getter-bodied property、以及其他同步 helper 的依赖，继续沿同一 setup/property/field/method lowering 主线递归展开
+
+### `firstRender` 的 compiler-owned fallback
+
+当 lifecycle payload 实际引用 `OnAfterRender*` 的 `firstRender` 参数、且表达式形状仍落在当前受控子集内时，RazorVue 现在会在专用 payload 分支之外，再尝试一条 compiler-owned fallback：
+
+- 先把 lifecycle `firstRender` 通过 scoped parameter alias 改写为 `currentFirstRender`
+- 再把表达式交回 `EmitSetupExpression(...) -> SemanticWalker -> Jazor.Compiler`
+- after-render hook 本身继续保留 `const currentFirstRender = firstRender; firstRender = false;` 的 snapshot 协议
+
+这条 fallback 当前已锁定的典型形态包括：
+
+- `(bool)firstRender`
+- `object.Equals(firstRender, true)`
+- `object.Equals((bool)firstRender, true)`
+- `firstRender.Equals(true)`
+- `firstRender == true`
+- `bool? alias = firstRender; alias ?? false`
+- `firstRender is true`
+- `firstRender is false`
+- `firstRender is not true`
+- `firstRender is not false`
+- `firstRender is true or false`
+- `firstRender is true and not false`
+- `firstRender is bool`
+- `firstRender is object`
+- `firstRender is bool ready && ready`
+- `firstRender switch { ... }`
+- 继续满足 setup helper lowering 合同的受控 helper-call payload，例如 `Normalize(firstRender)`
+
+这里不是在 RazorVue 内继续扩手写 CLR/调用拼接；RazorVue 只提供 lifecycle snapshot 与参数别名，具体表达式 lowering 仍以现有 `Jazor.Compiler` / whitelist / CLR 模块能力为准。
+
+当前已锁定的典型发射结果包括：
+
+- `object.Equals(firstRender, true)` -> `currentFirstRender === true`
+- `object.Equals((bool)firstRender, true)` -> `currentFirstRender === true`
+- `firstRender.Equals(true)` -> `currentFirstRender === true`
+- `firstRender == true` -> `(currentFirstRender === true)`
+- `alias ?? false` -> `currentFirstRender ?? false`
+- `firstRender is true` -> `currentFirstRender === true`
+- `firstRender is false` -> `currentFirstRender === false`
+- `firstRender is bool` -> `typeof currentFirstRender === "boolean"`
+- `firstRender is bool ready && ready` -> compiler-owned declaration-pattern lowering with pattern local binding
 
 ### 占位符替换
 
@@ -685,11 +779,40 @@ protected override void OnInitialized()
 
 ### 3. ShouldRender 限制
 
-仅支持 `return true;` 或 `return base.ShouldRender();`，其他形式强制完全重载。
+当前只支持以下受控子集：
+
+- `return true;`
+- `return base.ShouldRender();`，且最终解析到 `ComponentBase.ShouldRender()`
+- `return base.ShouldRender();`，且最终递归解析到另一个同样受支持的 base `ShouldRender` 实现
+
+以下情况仍显式 unsupported：
+
+- 动态条件，例如 `return Value > 0;`
+- base 链形成环
+- base 实现缺少可分析源码
+- 超出单返回表达式受控子集的 body 形状
 
 ### 4. SetParametersAsync 限制
 
-不支持在 base 调用和 emit 调用之间插入其他逻辑。
+当前仅支持受控子集：
+
+- no-op
+- expression-bodied 或 statement-bodied 的 `base.SetParametersAsync(parameters)` pass-through
+- expression-bodied no-op，例如 `=> Task.CompletedTask`
+- `base.SetParametersAsync(parameters)` 后接单个受支持 `InvokeAsync` emit
+
+并且 no-op 会按真实返回类型判定：
+
+- `Task` 返回方法只接受 `Task.CompletedTask` 这类真实 completed-task 形态
+- non-generic `ValueTask` 返回方法可接受 `default` / `default(ValueTask)` / `new ValueTask(...)` 的等价 no-op
+- `Task` 返回的 `=> default` 不再被视为 no-op
+
+当前仍不支持：
+
+- pass-through 最终落到外部无源码 override（`ComponentBase.SetParametersAsync(...)` 默认实现除外）
+- 在 base 调用和 emit 调用之间插入额外 mutation/控制流
+- 重复 emit
+- 更一般的方法体执行模型
 
 ## 错误处理
 
@@ -722,5 +845,6 @@ private static RazorVueCompilationIssueException CreateUnsupportedLifecycleLower
 ---
 
 **维护者**: developerhan
-**最后更新**: 2026-04-21
+**最后更新**: 2026-05-21
 **版本**: v1.0
+

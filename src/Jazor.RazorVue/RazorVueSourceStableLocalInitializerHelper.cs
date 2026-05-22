@@ -10,6 +10,25 @@ internal static class RazorVueSourceStableLocalInitializerHelper
         IOperation Initializer,
         SyntaxNode? AllowedAssignmentSyntax);
 
+    public static bool IsSupportedLifecycleFirstRenderCarrierType(ITypeSymbol? type)
+    {
+        if (type is null)
+            return false;
+
+        if (type.SpecialType == SpecialType.System_Boolean)
+            return true;
+
+        return type is INamedTypeSymbol
+        {
+            OriginalDefinition.SpecialType: SpecialType.System_Nullable_T,
+            TypeArguments.Length: 1
+        } namedType &&
+               namedType.TypeArguments[0].SpecialType == SpecialType.System_Boolean;
+    }
+
+    public static bool CanParticipateInLifecycleCompilerFallback(ITypeSymbol? type)
+        => type is not null && type.TypeKind != TypeKind.Error;
+
     public static Dictionary<ILocalSymbol, IOperation> CollectSourceStableLocalInitializers(
         Compilation compilation,
         IReadOnlyList<IOperation> operations,

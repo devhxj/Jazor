@@ -3004,6 +3004,90 @@ public sealed class RazorVueDescriptorExtractionTests
     }
 
     [TestMethod]
+    public void RazorVue_Snapshot_ContainsSupportedLogicProperties()
+    {
+        var snapshot = CreateSingleSnapshot(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/helper-card")]
+                public class HelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    private string Prefix => "Count: ";
+
+                    public string FormatTitle()
+                        => Prefix + Value;
+                }
+            }
+            """);
+
+        Assert.AreEqual(0, snapshot.Logic.Fields.Length);
+        Assert.AreEqual(1, snapshot.Logic.Properties.Length);
+        Assert.AreEqual("Prefix", snapshot.Logic.Properties[0].Name);
+        Assert.IsTrue(snapshot.Logic.Properties[0].IsReadOnly);
+        Assert.AreEqual(VueLogicPropertyLoweringKind.GetterFunction, snapshot.Logic.Properties[0].LoweringKind);
+        Assert.AreEqual("FormatTitle", snapshot.Logic.Methods.Single().Name);
+    }
+
+    [TestMethod]
+    public void RazorVue_Snapshot_ClassifiesDeclarationInitializedSetupPropertyAsValueBinding()
+    {
+        var snapshot = CreateSingleSnapshot(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/value-property-card")]
+                public class ValuePropertyCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    private string Prefix { get; } = "Count: ";
+
+                    public string FormatTitle()
+                        => Prefix + Value;
+                }
+            }
+            """);
+
+        Assert.AreEqual(1, snapshot.Logic.Properties.Length);
+        Assert.AreEqual("Prefix", snapshot.Logic.Properties[0].Name);
+        Assert.IsTrue(snapshot.Logic.Properties[0].IsReadOnly);
+        Assert.AreEqual(VueLogicPropertyLoweringKind.ValueBinding, snapshot.Logic.Properties[0].LoweringKind);
+    }
+
+    [TestMethod]
     public void RazorVue_Snapshot_ResolvesPrimaryRazorDocumentAndImports_FromRazorGeneratedBuildRenderTree()
     {
         const string importsPath = @"D:\repo\Demo\_Imports.razor";

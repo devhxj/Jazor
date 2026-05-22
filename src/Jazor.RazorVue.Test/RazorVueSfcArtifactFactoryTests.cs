@@ -236,6 +236,120 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersDeclarationPatternFirstRenderLifecyclePayload_ThroughCompilerFallback()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    protected override Task OnAfterRenderAsync(bool firstRender)
+                    {
+                        return ReadyChanged.InvokeAsync(firstRender is bool ready && ready);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ScriptSetupText, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ScriptSetupText, "firstRender = false;");
+        StringAssert.Contains(artifact.ScriptSetupText, "let ready;");
+        StringAssert.Contains(artifact.ScriptSetupText, "typeof currentFirstRender === \"boolean\"");
+        StringAssert.Contains(artifact.ScriptSetupText, "(ready = currentFirstRender, true)");
+        StringAssert.Contains(artifact.ScriptSetupText, "&& ready");
+        StringAssert.Contains(artifact.ScriptSetupText, "await emit(\"readyChanged\", ((() => {");
+        StringAssert.Contains(artifact.SfcText, "await emit(\"readyChanged\", ((() => {");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersArrayPatternFirstRenderLifecyclePayload_ThroughCompilerFallback()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    protected override Task OnAfterRenderAsync(bool firstRender)
+                    {
+                        var readyStates = new[] { false, firstRender };
+                        var payload = readyStates is [_, var ready] ? ready : false;
+                        return ReadyChanged.InvokeAsync(payload);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ScriptSetupText, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ScriptSetupText, "firstRender = false;");
+        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorLifecycleLocal");
+        StringAssert.Contains(artifact.ScriptSetupText, "Array.isArray(__jazorLifecycleLocal");
+        StringAssert.Contains(artifact.ScriptSetupText, "await emit(\"readyChanged\", __jazorLifecycleLocal");
+        StringAssert.Contains(artifact.SfcText, "await emit(\"readyChanged\", __jazorLifecycleLocal");
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_LowersElementSplat_ToOrderedVBind()
     {
         var context = CreateContext(
@@ -7407,6 +7521,182 @@ public sealed class RazorVueSfcArtifactFactoryTests
         StringAssert.Contains(artifact.TemplateText, "<template #header>");
         StringAssert.Contains(artifact.TemplateText, "<h1>");
         StringAssert.Contains(artifact.TemplateText, "{{ props.title }}");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersDeclarationInitializedSetupProperty_IntoScriptSetupConstBinding()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/value-property-card")]
+                public class ValuePropertyCard : ComponentBase, IVueComponent
+                {
+                    private string Prefix { get; } = "Count: ";
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Prefix);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "ValuePropertyCard");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "{{ prefix }}");
+        StringAssert.Contains(artifact.ScriptSetupText, "const prefix = \"Count: \";");
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("function prefix()", StringComparison.Ordinal), artifact.ScriptSetupText);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_EmitsLifecycleSetupBindingsBeforeImmediateWatchRegistration()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string> ValueChanged { get; set; }
+
+                    private string Prefix { get; } = "Count: ";
+
+                    protected override void OnParametersSet()
+                    {
+                        ValueChanged.InvokeAsync(Prefix);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "LifecycleCard");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ScriptSetupText, "const prefix = \"Count: \";");
+        StringAssert.Contains(artifact.ScriptSetupText, "watch(() => [props.value], () => {");
+        StringAssert.Contains(artifact.ScriptSetupText, "emit(\"update:value\", prefix);");
+        var setupIndex = artifact.ScriptSetupText.IndexOf("const prefix = \"Count: \";", StringComparison.Ordinal);
+        var watchIndex = artifact.ScriptSetupText.IndexOf("watch(() => [props.value], () => {", StringComparison.Ordinal);
+        Assert.IsTrue(setupIndex >= 0, artifact.ScriptSetupText);
+        Assert.IsTrue(watchIndex >= 0, artifact.ScriptSetupText);
+        Assert.IsTrue(setupIndex < watchIndex, artifact.ScriptSetupText);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_EmitsLifecycleHelperSetupBindingsBeforeImmediateWatchRegistration()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string> ValueChanged { get; set; }
+
+                    private string Prefix { get; } = "Count: ";
+
+                    private string FormatLabel()
+                        => Prefix + Value;
+
+                    protected override void OnParametersSet()
+                    {
+                        ValueChanged.InvokeAsync(FormatLabel());
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "LifecycleCard");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ScriptSetupText, "const prefix = \"Count: \";");
+        StringAssert.Contains(artifact.ScriptSetupText, "function formatLabel()");
+        StringAssert.Contains(artifact.ScriptSetupText, "return (prefix + props.value);");
+        StringAssert.Contains(artifact.ScriptSetupText, "watch(() => [props.value], () => {");
+        StringAssert.Contains(artifact.ScriptSetupText, "emit(\"update:value\", formatLabel());");
+        var prefixIndex = artifact.ScriptSetupText.IndexOf("const prefix = \"Count: \";", StringComparison.Ordinal);
+        var helperIndex = artifact.ScriptSetupText.IndexOf("function formatLabel()", StringComparison.Ordinal);
+        var watchIndex = artifact.ScriptSetupText.IndexOf("watch(() => [props.value], () => {", StringComparison.Ordinal);
+        Assert.IsTrue(prefixIndex >= 0, artifact.ScriptSetupText);
+        Assert.IsTrue(helperIndex >= 0, artifact.ScriptSetupText);
+        Assert.IsTrue(watchIndex >= 0, artifact.ScriptSetupText);
+        Assert.IsTrue(prefixIndex < helperIndex, artifact.ScriptSetupText);
+        Assert.IsTrue(helperIndex < watchIndex, artifact.ScriptSetupText);
     }
 
     [TestMethod]
