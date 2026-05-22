@@ -358,12 +358,14 @@ internal sealed partial class RazorVueExpressionEmitter
             switch (attributeEntry)
             {
                 case RazorVueAttributeNode attribute:
-                    objectEntries.Add(ToJavaScriptString(attribute.Name) + ": " + (attribute.Value is null ? "true" : EmitScopedExpression(attribute.Value!, allowedLocalSymbols, allowedParameterSymbols)));
+                    objectEntries.Add(ToJavaScriptString(attribute.Name) + ": " + (attribute.Value is null
+                        ? "true"
+                        : EmitCapturedScopedExpression(attribute.Value!, attribute.CapturedBindings, allowedLocalSymbols, allowedParameterSymbols)));
                     break;
                 case RazorVueAttributeSpreadNode spread:
                     containsSpread = true;
                     FlushObjectEntries(segments, objectEntries);
-                    segments.Add(EmitScopedExpression(spread.Expression, allowedLocalSymbols, allowedParameterSymbols));
+                    segments.Add(EmitCapturedScopedExpression(spread.Expression, spread.CapturedBindings, allowedLocalSymbols, allowedParameterSymbols));
                     break;
             }
         }
@@ -397,7 +399,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 containsSpread = true;
                 FlushObjectEntries(segments, objectEntries);
                 ValidateComponentSpreadTarget(component, resolvedDescriptor, spread);
-                segments.Add(EmitScopedExpression(spread.Expression, allowedLocalSymbols, allowedParameterSymbols));
+                segments.Add(EmitCapturedScopedExpression(spread.Expression, spread.CapturedBindings, allowedLocalSymbols, allowedParameterSymbols));
                 continue;
             }
 
@@ -429,7 +431,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 }
                 else
                 {
-                    var slotExpression = EmitScopedExpression(attribute.Value!, allowedLocalSymbols, allowedParameterSymbols);
+                    var slotExpression = EmitCapturedScopedExpression(attribute.Value!, attribute.CapturedBindings, allowedLocalSymbols, allowedParameterSymbols);
                     if (!slotDescriptor.Parameters.IsDefaultOrEmpty &&
                         !IsCallableSlotValue(attribute.Value!))
                     {
@@ -462,7 +464,9 @@ internal sealed partial class RazorVueExpressionEmitter
                      VuePropResolver.TryResolve(resolvedDescriptor.Props, name, out var prop))
                 name = prop.PropName;
 
-            objectEntries.Add(ToJavaScriptString(name) + ": " + (attribute.Value is null ? "true" : EmitScopedExpression(attribute.Value!, allowedLocalSymbols, allowedParameterSymbols)));
+            objectEntries.Add(ToJavaScriptString(name) + ": " + (attribute.Value is null
+                ? "true"
+                : EmitCapturedScopedExpression(attribute.Value!, attribute.CapturedBindings, allowedLocalSymbols, allowedParameterSymbols)));
         }
 
         FlushObjectEntries(segments, objectEntries);
@@ -478,7 +482,7 @@ internal sealed partial class RazorVueExpressionEmitter
         if (key is null)
             return props;
 
-        var keyEntry = "{ \"key\": " + EmitScopedExpression(key.Expression, allowedLocalSymbols, allowedParameterSymbols) + " }";
+        var keyEntry = "{ \"key\": " + EmitCapturedScopedExpression(key.Expression, key.CapturedBindings, allowedLocalSymbols, allowedParameterSymbols) + " }";
         if (!props.HasValue)
             return new OptionalJsArgument(keyEntry, true);
 
@@ -872,6 +876,64 @@ internal sealed partial class RazorVueExpressionEmitter
         RazorVueTemplateExpressionScopeValidator.Validate(_snapshot, operation, allowedLocalSymbols, allowedParameterSymbols);
         return EmitExpression(operation);
     }
+
+    private string EmitCapturedScopedExpression(
+        IOperation operation,
+        ImmutableArray<RazorVueCapturedValueBinding> capturedBindings,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+    {
+        if (capturedBindings.IsDefaultOrEmpty)
+            return EmitScopedExpression(operation, allowedLocalSymbols, allowedParameterSymbols);
+
+        if (TryEmitDirectCapturedInitializer(operation, capturedBindings, allowedLocalSymbols, allowedParameterSymbols, out var directExpression))
+            return directExpression;
+
+        var aliasMap = new Dictionary<IParameterSymbol, string>(SymbolEqualityComparer.Default);
+        foreach (var binding in capturedBindings)
+            aliasMap[binding.ParameterSymbol] = binding.ParameterSymbol.Name;
+        var capturedParameterScope = allowedParameterSymbols;
+        foreach (var binding in capturedBindings)
+            capturedParameterScope = RazorVueTemplateExpressionScopeValidator.AddIfPresent(capturedParameterScope, binding.ParameterSymbol);
+        var expression = WithScopedParameterAliases(
+            aliasMap,
+            () => EmitScopedExpression(operation, allowedLocalSymbols, capturedParameterScope));
+
+        for (var index = capturedBindings.Length - 1; index >= 0; index--)
+        {
+            var binding = capturedBindings[index];
+            var initializer = EmitScopedExpression(binding.Initializer, allowedLocalSymbols, allowedParameterSymbols);
+            expression = "((" + aliasMap[binding.ParameterSymbol] + ") => " + expression + ")(" + initializer + ")";
+        }
+
+        return expression;
+    }
+
+    private bool TryEmitDirectCapturedInitializer(
+        IOperation operation,
+        ImmutableArray<RazorVueCapturedValueBinding> capturedBindings,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
+        out string expression)
+    {
+        expression = string.Empty;
+        if (capturedBindings.Length != 1 ||
+            Unwrap(operation) is not IParameterReferenceOperation parameterReference ||
+            !SymbolEqualityComparer.Default.Equals(parameterReference.Parameter, capturedBindings[0].ParameterSymbol))
+        {
+            return false;
+        }
+
+        expression = EmitScopedExpression(capturedBindings[0].Initializer, allowedLocalSymbols, allowedParameterSymbols);
+        return true;
+    }
+
+    internal string EmitCapturedTemplateExpression(
+        IOperation operation,
+        ImmutableArray<RazorVueCapturedValueBinding> capturedBindings,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+        => EmitCapturedScopedExpression(operation, capturedBindings, allowedLocalSymbols, allowedParameterSymbols);
 
     private string EmitFragmentWithTemplateLocals(
         RazorVueRenderFragment fragment,

@@ -470,11 +470,21 @@ internal sealed class RazorVueCanonicalHModelFactory
             return null;
 
         return new RazorVueCanonicalNodeKey(
-            ExpressionText: EmitTemplateExpression(snapshot, expressionEmitter, key.Expression, allowedLocalSymbols, allowedParameterSymbols),
-            BindingKind: ClassifyBindingKind(snapshot, key.Expression),
-            TemplateEncodability: ClassifyTemplateEncodability(key.Expression),
-            TemplateExpressionSafety: ClassifyTemplateExpressionSafety(snapshot, key.Expression),
-            SideEffectClassification: ClassifySideEffects(key.Expression),
+            ExpressionText: key.CapturedBindings.IsDefaultOrEmpty
+                ? EmitTemplateExpression(snapshot, expressionEmitter, key.Expression, allowedLocalSymbols, allowedParameterSymbols)
+                : expressionEmitter.EmitCapturedTemplateExpression(key.Expression, key.CapturedBindings, allowedLocalSymbols, allowedParameterSymbols),
+            BindingKind: key.CapturedBindings.IsDefaultOrEmpty
+                ? ClassifyBindingKind(snapshot, key.Expression)
+                : RazorVueExpressionBindingKind.RuntimeExpression,
+            TemplateEncodability: key.CapturedBindings.IsDefaultOrEmpty
+                ? ClassifyTemplateEncodability(key.Expression)
+                : RazorVueTemplateEncodability.TemplateViaSetupBinding,
+            TemplateExpressionSafety: key.CapturedBindings.IsDefaultOrEmpty
+                ? ClassifyTemplateExpressionSafety(snapshot, key.Expression)
+                : RazorVueTemplateExpressionSafety.RequiresSetupBinding,
+            SideEffectClassification: key.CapturedBindings.IsDefaultOrEmpty
+                ? ClassifySideEffects(key.Expression)
+                : RazorVueSideEffectClassification.SingleEvaluationRequired,
             SourceOrigins: key.Origins);
     }
 
@@ -669,27 +679,47 @@ internal sealed class RazorVueCanonicalHModelFactory
                         Name: attribute.Name,
                         ExpressionText: attribute.Value is null
                             ? null
-                            : EmitTemplateExpression(snapshot, expressionEmitter, attribute.Value, allowedLocalSymbols, allowedParameterSymbols),
+                            : attribute.CapturedBindings.IsDefaultOrEmpty
+                                ? EmitTemplateExpression(snapshot, expressionEmitter, attribute.Value, allowedLocalSymbols, allowedParameterSymbols)
+                                : expressionEmitter.EmitCapturedTemplateExpression(attribute.Value, attribute.CapturedBindings, allowedLocalSymbols, allowedParameterSymbols),
                         LiteralValueKind: ClassifyLiteralValueKind(attribute.Value),
                         AttributeKind: RazorVueCanonicalAttributeKind.HtmlAttribute,
-                        BindingKind: ClassifyBindingKind(snapshot, attribute.Value),
-                        TemplateEncodability: ClassifyTemplateEncodability(attribute.Value),
-                        TemplateExpressionSafety: ClassifyTemplateExpressionSafety(snapshot, attribute.Value),
-                        SideEffectClassification: ClassifySideEffects(attribute.Value),
+                        BindingKind: attribute.CapturedBindings.IsDefaultOrEmpty
+                            ? ClassifyBindingKind(snapshot, attribute.Value)
+                            : RazorVueExpressionBindingKind.RuntimeExpression,
+                        TemplateEncodability: attribute.CapturedBindings.IsDefaultOrEmpty
+                            ? ClassifyTemplateEncodability(attribute.Value)
+                            : RazorVueTemplateEncodability.TemplateViaSetupBinding,
+                        TemplateExpressionSafety: attribute.CapturedBindings.IsDefaultOrEmpty
+                            ? ClassifyTemplateExpressionSafety(snapshot, attribute.Value)
+                            : RazorVueTemplateExpressionSafety.RequiresSetupBinding,
+                        SideEffectClassification: attribute.CapturedBindings.IsDefaultOrEmpty
+                            ? ClassifySideEffects(attribute.Value)
+                            : RazorVueSideEffectClassification.SingleEvaluationRequired,
                         SourceOrigins: attribute.Origins));
                     break;
                 case RazorVueAttributeSpreadNode spread:
                     builder.Add(new RazorVueCanonicalAttributeSpreadBinding(
-                        ExpressionText: EmitTemplateExpression(
-                            snapshot,
-                            expressionEmitter,
-                            spread.Expression,
-                            allowedLocalSymbols,
-                            allowedParameterSymbols),
-                        BindingKind: ClassifyBindingKind(snapshot, spread.Expression),
-                        TemplateEncodability: ClassifyTemplateEncodability(spread.Expression),
-                        TemplateExpressionSafety: ClassifyTemplateExpressionSafety(snapshot, spread.Expression),
-                        SideEffectClassification: ClassifySideEffects(spread.Expression),
+                        ExpressionText: spread.CapturedBindings.IsDefaultOrEmpty
+                            ? EmitTemplateExpression(
+                                snapshot,
+                                expressionEmitter,
+                                spread.Expression,
+                                allowedLocalSymbols,
+                                allowedParameterSymbols)
+                            : expressionEmitter.EmitCapturedTemplateExpression(spread.Expression, spread.CapturedBindings, allowedLocalSymbols, allowedParameterSymbols),
+                        BindingKind: spread.CapturedBindings.IsDefaultOrEmpty
+                            ? ClassifyBindingKind(snapshot, spread.Expression)
+                            : RazorVueExpressionBindingKind.RuntimeExpression,
+                        TemplateEncodability: spread.CapturedBindings.IsDefaultOrEmpty
+                            ? ClassifyTemplateEncodability(spread.Expression)
+                            : RazorVueTemplateEncodability.TemplateViaSetupBinding,
+                        TemplateExpressionSafety: spread.CapturedBindings.IsDefaultOrEmpty
+                            ? ClassifyTemplateExpressionSafety(snapshot, spread.Expression)
+                            : RazorVueTemplateExpressionSafety.RequiresSetupBinding,
+                        SideEffectClassification: spread.CapturedBindings.IsDefaultOrEmpty
+                            ? ClassifySideEffects(spread.Expression)
+                            : RazorVueSideEffectClassification.SingleEvaluationRequired,
                         SourceOrigins: spread.Origins));
                     break;
                 default:
@@ -725,16 +755,26 @@ internal sealed class RazorVueCanonicalHModelFactory
                     throw CreateUnsupportedComponentSpreadException(snapshot, descriptor, spread);
 
                 builder.Add(new RazorVueCanonicalAttributeSpreadBinding(
-                    ExpressionText: EmitTemplateExpression(
-                        snapshot,
-                        expressionEmitter,
-                        spread.Expression,
-                        allowedLocalSymbols,
-                        allowedParameterSymbols),
-                    BindingKind: ClassifyBindingKind(snapshot, spread.Expression),
-                    TemplateEncodability: ClassifyTemplateEncodability(spread.Expression),
-                    TemplateExpressionSafety: ClassifyTemplateExpressionSafety(snapshot, spread.Expression),
-                    SideEffectClassification: ClassifySideEffects(spread.Expression),
+                    ExpressionText: spread.CapturedBindings.IsDefaultOrEmpty
+                        ? EmitTemplateExpression(
+                            snapshot,
+                            expressionEmitter,
+                            spread.Expression,
+                            allowedLocalSymbols,
+                            allowedParameterSymbols)
+                        : expressionEmitter.EmitCapturedTemplateExpression(spread.Expression, spread.CapturedBindings, allowedLocalSymbols, allowedParameterSymbols),
+                    BindingKind: spread.CapturedBindings.IsDefaultOrEmpty
+                        ? ClassifyBindingKind(snapshot, spread.Expression)
+                        : RazorVueExpressionBindingKind.RuntimeExpression,
+                    TemplateEncodability: spread.CapturedBindings.IsDefaultOrEmpty
+                        ? ClassifyTemplateEncodability(spread.Expression)
+                        : RazorVueTemplateEncodability.TemplateViaSetupBinding,
+                    TemplateExpressionSafety: spread.CapturedBindings.IsDefaultOrEmpty
+                        ? ClassifyTemplateExpressionSafety(snapshot, spread.Expression)
+                        : RazorVueTemplateExpressionSafety.RequiresSetupBinding,
+                    SideEffectClassification: spread.CapturedBindings.IsDefaultOrEmpty
+                        ? ClassifySideEffects(spread.Expression)
+                        : RazorVueSideEffectClassification.SingleEvaluationRequired,
                     SourceOrigins: spread.Origins));
                 continue;
             }
@@ -751,13 +791,23 @@ internal sealed class RazorVueCanonicalHModelFactory
                     Name: emitDescriptor.Name,
                     ExpressionText: attribute.Value is null
                         ? null
-                        : EmitTemplateExpression(snapshot, expressionEmitter, attribute.Value, allowedLocalSymbols, allowedParameterSymbols),
+                        : attribute.CapturedBindings.IsDefaultOrEmpty
+                            ? EmitTemplateExpression(snapshot, expressionEmitter, attribute.Value, allowedLocalSymbols, allowedParameterSymbols)
+                            : expressionEmitter.EmitCapturedTemplateExpression(attribute.Value, attribute.CapturedBindings, allowedLocalSymbols, allowedParameterSymbols),
                     LiteralValueKind: ClassifyLiteralValueKind(attribute.Value),
                     AttributeKind: RazorVueCanonicalAttributeKind.ComponentEvent,
-                    BindingKind: ClassifyBindingKind(snapshot, attribute.Value),
-                    TemplateEncodability: ClassifyTemplateEncodability(attribute.Value),
-                    TemplateExpressionSafety: ClassifyTemplateExpressionSafety(snapshot, attribute.Value),
-                    SideEffectClassification: ClassifySideEffects(attribute.Value),
+                    BindingKind: attribute.CapturedBindings.IsDefaultOrEmpty
+                        ? ClassifyBindingKind(snapshot, attribute.Value)
+                        : RazorVueExpressionBindingKind.RuntimeExpression,
+                    TemplateEncodability: attribute.CapturedBindings.IsDefaultOrEmpty
+                        ? ClassifyTemplateEncodability(attribute.Value)
+                        : RazorVueTemplateEncodability.TemplateViaSetupBinding,
+                    TemplateExpressionSafety: attribute.CapturedBindings.IsDefaultOrEmpty
+                        ? ClassifyTemplateExpressionSafety(snapshot, attribute.Value)
+                        : RazorVueTemplateExpressionSafety.RequiresSetupBinding,
+                    SideEffectClassification: attribute.CapturedBindings.IsDefaultOrEmpty
+                        ? ClassifySideEffects(attribute.Value)
+                        : RazorVueSideEffectClassification.SingleEvaluationRequired,
                     SourceOrigins: attribute.Origins));
                 continue;
             }
@@ -768,13 +818,23 @@ internal sealed class RazorVueCanonicalHModelFactory
                     Name: prop.PropName,
                     ExpressionText: attribute.Value is null
                         ? null
-                        : EmitTemplateExpression(snapshot, expressionEmitter, attribute.Value, allowedLocalSymbols, allowedParameterSymbols),
+                        : attribute.CapturedBindings.IsDefaultOrEmpty
+                            ? EmitTemplateExpression(snapshot, expressionEmitter, attribute.Value, allowedLocalSymbols, allowedParameterSymbols)
+                            : expressionEmitter.EmitCapturedTemplateExpression(attribute.Value, attribute.CapturedBindings, allowedLocalSymbols, allowedParameterSymbols),
                     LiteralValueKind: ClassifyLiteralValueKind(attribute.Value),
                     AttributeKind: RazorVueCanonicalAttributeKind.ComponentProp,
-                    BindingKind: ClassifyBindingKind(snapshot, attribute.Value),
-                    TemplateEncodability: ClassifyTemplateEncodability(attribute.Value),
-                    TemplateExpressionSafety: ClassifyTemplateExpressionSafety(snapshot, attribute.Value),
-                    SideEffectClassification: ClassifySideEffects(attribute.Value),
+                    BindingKind: attribute.CapturedBindings.IsDefaultOrEmpty
+                        ? ClassifyBindingKind(snapshot, attribute.Value)
+                        : RazorVueExpressionBindingKind.RuntimeExpression,
+                    TemplateEncodability: attribute.CapturedBindings.IsDefaultOrEmpty
+                        ? ClassifyTemplateEncodability(attribute.Value)
+                        : RazorVueTemplateEncodability.TemplateViaSetupBinding,
+                    TemplateExpressionSafety: attribute.CapturedBindings.IsDefaultOrEmpty
+                        ? ClassifyTemplateExpressionSafety(snapshot, attribute.Value)
+                        : RazorVueTemplateExpressionSafety.RequiresSetupBinding,
+                    SideEffectClassification: attribute.CapturedBindings.IsDefaultOrEmpty
+                        ? ClassifySideEffects(attribute.Value)
+                        : RazorVueSideEffectClassification.SingleEvaluationRequired,
                     SourceOrigins: attribute.Origins));
                 continue;
             }
@@ -786,13 +846,23 @@ internal sealed class RazorVueCanonicalHModelFactory
                     Name: attribute.Name,
                     ExpressionText: attribute.Value is null
                         ? null
-                        : EmitTemplateExpression(snapshot, expressionEmitter, attribute.Value, allowedLocalSymbols, allowedParameterSymbols),
+                        : attribute.CapturedBindings.IsDefaultOrEmpty
+                            ? EmitTemplateExpression(snapshot, expressionEmitter, attribute.Value, allowedLocalSymbols, allowedParameterSymbols)
+                            : expressionEmitter.EmitCapturedTemplateExpression(attribute.Value, attribute.CapturedBindings, allowedLocalSymbols, allowedParameterSymbols),
                     LiteralValueKind: ClassifyLiteralValueKind(attribute.Value),
                     AttributeKind: RazorVueCanonicalAttributeKind.ComponentFallthroughAttribute,
-                    BindingKind: ClassifyBindingKind(snapshot, attribute.Value),
-                    TemplateEncodability: ClassifyTemplateEncodability(attribute.Value),
-                    TemplateExpressionSafety: ClassifyTemplateExpressionSafety(snapshot, attribute.Value),
-                    SideEffectClassification: ClassifySideEffects(attribute.Value),
+                    BindingKind: attribute.CapturedBindings.IsDefaultOrEmpty
+                        ? ClassifyBindingKind(snapshot, attribute.Value)
+                        : RazorVueExpressionBindingKind.RuntimeExpression,
+                    TemplateEncodability: attribute.CapturedBindings.IsDefaultOrEmpty
+                        ? ClassifyTemplateEncodability(attribute.Value)
+                        : RazorVueTemplateEncodability.TemplateViaSetupBinding,
+                    TemplateExpressionSafety: attribute.CapturedBindings.IsDefaultOrEmpty
+                        ? ClassifyTemplateExpressionSafety(snapshot, attribute.Value)
+                        : RazorVueTemplateExpressionSafety.RequiresSetupBinding,
+                    SideEffectClassification: attribute.CapturedBindings.IsDefaultOrEmpty
+                        ? ClassifySideEffects(attribute.Value)
+                        : RazorVueSideEffectClassification.SingleEvaluationRequired,
                     SourceOrigins: attribute.Origins));
                 continue;
             }
@@ -999,7 +1069,11 @@ internal sealed class RazorVueCanonicalHModelFactory
                     throw CreateSlotContextMisuseException(
                         snapshot,
                         slotDescriptor,
-                        new RazorVueAttributeNode(slotTemplate.PublicName, null, slotTemplate.Origins));
+                        new RazorVueAttributeNode(
+                            slotTemplate.PublicName,
+                            null,
+                            ImmutableArray<RazorVueCapturedValueBinding>.Empty,
+                            slotTemplate.Origins));
                 }
             }
             else if (string.IsNullOrWhiteSpace(slotTemplate.ParameterName))
@@ -1007,7 +1081,11 @@ internal sealed class RazorVueCanonicalHModelFactory
                 throw CreateSlotContextMisuseException(
                     snapshot,
                     slotDescriptor,
-                    new RazorVueAttributeNode(slotTemplate.PublicName, null, slotTemplate.Origins));
+                    new RazorVueAttributeNode(
+                        slotTemplate.PublicName,
+                        null,
+                        ImmutableArray<RazorVueCapturedValueBinding>.Empty,
+                        slotTemplate.Origins));
             }
 
             var slotParameterScope = string.IsNullOrWhiteSpace(slotTemplate.ParameterName)

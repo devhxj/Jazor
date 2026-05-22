@@ -16,6 +16,7 @@ internal abstract record RazorVueRenderNode(
 
 internal sealed record RazorVueNodeKey(
     IOperation Expression,
+    ImmutableArray<RazorVueCapturedValueBinding> CapturedBindings,
     ImmutableArray<RazorVueSourceOrigin> Origins);
 
 internal sealed record RazorVueElementNode(
@@ -115,11 +116,17 @@ internal abstract record RazorVueAttributeEntry(
 internal sealed record RazorVueAttributeNode(
     string Name,
     IOperation? Value,
+    ImmutableArray<RazorVueCapturedValueBinding> CapturedBindings,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueAttributeEntry(Origins);
 
 internal sealed record RazorVueAttributeSpreadNode(
     IOperation Expression,
+    ImmutableArray<RazorVueCapturedValueBinding> CapturedBindings,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueAttributeEntry(Origins);
+
+internal sealed record RazorVueCapturedValueBinding(
+    IParameterSymbol ParameterSymbol,
+    IOperation Initializer);
 
 internal enum RazorVueForConditionKind
 {

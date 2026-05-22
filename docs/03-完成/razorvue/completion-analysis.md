@@ -182,6 +182,31 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedNam
 25. 同一条静态-markup 解析链现也补齐并锁定了“factory-backed member/local carrier 再消费”的组合形态：`private string HeroMarkup => CreateMarkup(); builder.AddMarkupContent(..., HeroMarkup);`、`MarkupString markup; markup = CreateMarkup(); builder.AddContent(..., markup);`、`builder.AddMarkupContent(..., CreateMarkup(Title));`、`builder.AddContent(..., CreateMarkup(Title));`，以及 imperative bridge 中的等价 property/local 组合，都会继续沿 source-stable local / controlled member / static-factory 的同一递归链还原最终静态 subtree，并在需要时保留调用点 captured-binding scope，而不会在 property/local 这一层丢失 factory-return 解析上下文并误报 unsupported。这次修复是 shared helper 的递归上下文补全与 captured-binding 传播，不是新增独立 lowering 分支。
 26. Razor authored root template code-block 与 typed child-content/template-body 在“local declaration + imperative tail”上的真实语义差异本轮也已校准并锁定：typed child-content/template body 仍保留“声明式 local 前缀 + imperative tail”分裂结构，而 root template 里像 `@{ var localTitle = Title; _count++; } <section>@localTitle @_count</section>`、`@{ var localTitle = Title; if (Hide) { return; } } <section>@localTitle</section>`、以及 `@{ var localTitle = Title; var index = 0; while (index < Count) { <section>@localTitle @index</section>; index++; } } <footer>@localTitle @index</footer>` 这类 authored form 当前都会整体提升为单个 imperative render block，并贯通 render tree / parity / `.mjs` / render-function `.vue`。这不是功能缺口，而是 root 级求值顺序与 local 可见性保留的既有实现选择，文档此前只是没有把该差异说清楚。
 
+## 2026-05-22 状态更新
+
+本轮继续收紧 handwritten `BuildRenderTree` render-helper 的真实支持边界，重点不是“放开任意 caller frame 协议”，而是把 compiler-owned/canonicalizable 子集做成可验证的生产合同：
+
+1. current-component / local render helper 在“恰好一个 `RenderTreeBuilder` 参数 + 额外普通按值参数”场景下，除既有 self-contained fragment 外，现已正式支持 caller-owned open node 的受控 mutation 子集：
+   - `AddAttribute(...)`
+   - `SetKey(...)`
+   - `AddMultipleAttributes(...)`
+2. 这条扩面没有退回 ad hoc JS 拼接，也没有把 helper 参数直接在 frontend 阶段粗暴改写成调用点表达式。render tree 仍保留“helper 形参引用 + 节点级 captured binding”合同，再由 canonical / H / SFC 统一承接单次求值、作用域与 setup-binding 语义。
+3. self-contained extra-parameter helper 的主路径同时回到统一的外层 template-scope 包裹语义；没有为了支持 caller-owned mutation 而把整段 helper body 打散成节点级替换，避免普通子节点 / 局部模板作用域 / loop-scope 的 helper 参数语义发生漂移。
+4. caller-owned mutation helper 当前是显式受控子集，而不是完整 caller frame 协议：
+   - 允许只读/只写当前 caller-owned node props surface 的 mutation
+   - 仍显式拒绝 `OpenElement` / `OpenComponent` / `CloseElement` / `CloseComponent` / `OpenRegion` / `CloseRegion`
+   - helper 结束后若 frame depth 或 active open node 与进入时不一致，会直接 fail-fast
+5. H lowering 对这条 captured-binding 合同也补齐了稳定规约：
+   - 当节点表达式只是单个 helper 形参 identity 引用时，会折叠回直接调用点实参，例如 `"class": props.title`、`"key": props.title`
+   - `AddMultipleAttributes(...)` 仍沿既有 Blazor-style `__jazorVueMergeAttributes(...)` 主线 lower，而不是为了“看起来更短”绕开 merge 合同
+6. 当前 focused 回归已补齐并通过：
+   - render tree frontend: current-component / local helper 的 caller-owned `AddAttribute`、`SetKey`、`AddMultipleAttributes`
+   - pipeline/H output: current-component / local helper 的 caller-owned `AddAttribute`
+   - pipeline/H output: current-component helper 的 caller-owned `SetKey`、`AddMultipleAttributes`
+   - 与既有 extra-parameter helper 主路径回归一起验证，确保 self-contained helper 参数作用域未被这次修复回归破坏
+7. 当前 focused 验证已通过：
+   - `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~CreateRenderTree_WithBuildRenderTreeLocalFunctionHelperRequiringExtraParametersAndCallerOwnedAttributeMutation_PreservesOpenElementAttributes|FullyQualifiedName~CreateRenderTree_WithCurrentComponentRenderHelperMethodRequiringExtraParametersAndCallerOwnedAttributeMutation_PreservesOpenElementAttributes|FullyQualifiedName~CreateRenderTree_WithCurrentComponentRenderHelperMethodRequiringExtraParametersAndCallerOwnedSetKey_PreservesOpenElementKey|FullyQualifiedName~CreateRenderTree_WithCurrentComponentRenderHelperMethodRequiringExtraParametersAndCallerOwnedAddMultipleAttributes_PreservesOpenElementSpread|FullyQualifiedName~RazorVue_Pipeline_LowersCurrentComponentRenderHelperWithExtraParameterAndCallerOwnedAttributeMutation|FullyQualifiedName~RazorVue_Pipeline_LowersBuildRenderTreeLocalFunctionHelperWithExtraParameterAndCallerOwnedAttributeMutation|FullyQualifiedName~RazorVue_Pipeline_LowersCurrentComponentRenderHelperWithExtraParameterAndCallerOwnedSetKey|FullyQualifiedName~RazorVue_Pipeline_LowersCurrentComponentRenderHelperWithExtraParameterAndCallerOwnedAddMultipleAttributes|FullyQualifiedName~CreateRenderTree_WithBuildRenderTreeLocalFunctionHelperRequiringExtraParameters_ProducesStructuredNodes|FullyQualifiedName~CreateRenderTree_WithCurrentComponentRenderHelperMethodRequiringExtraParameters_ProducesStructuredNodes|FullyQualifiedName~RazorVue_Pipeline_LowersCurrentComponentRenderHelperMethodWithExtraParameters|FullyQualifiedName~RazorVue_Pipeline_LowersBuildRenderTreeLocalFunctionHelperWithExtraParameters' -v minimal`
+
 ## 已完成能力
 
 1. RazorVue 核心语义层已经从早期“只靠 BuildRenderTree 逆推模板”的方向明显前进到 IR 优先路线。

@@ -13552,6 +13552,197 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersCurrentComponentRenderHelperWithExtraParameterAndCallerOwnedAttributeMutation()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/render-helper-card")]
+                public class RenderHelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        RenderBody(builder, Title);
+                        builder.CloseElement();
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder, string? title)
+                    {
+                        builder.AddAttribute(1, "class", title);
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", { \"class\": props.title });");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersBuildRenderTreeLocalFunctionHelperWithExtraParameterAndCallerOwnedAttributeMutation()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/render-helper-card")]
+                public class RenderHelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        void RenderBody(RenderTreeBuilder localBuilder, string? title)
+                        {
+                            localBuilder.AddAttribute(1, "class", title);
+                        }
+
+                        builder.OpenElement(0, "section");
+                        RenderBody(builder, Title);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", { \"class\": props.title });");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersCurrentComponentRenderHelperWithExtraParameterAndCallerOwnedSetKey()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/render-helper-card")]
+                public class RenderHelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        RenderBody(builder, Title);
+                        builder.CloseElement();
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder, string? title)
+                    {
+                        builder.SetKey(title);
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", { \"key\": props.title });");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersCurrentComponentRenderHelperWithExtraParameterAndCallerOwnedAddMultipleAttributes()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/render-helper-card")]
+                public class RenderHelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        RenderBody(builder, AdditionalAttributes);
+                        builder.CloseElement();
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder, IReadOnlyDictionary<string, object?>? attributes)
+                    {
+                        builder.AddMultipleAttributes(1, attributes);
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "function __jazorVueMergeAttributes(...sources) {");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", __jazorVueMergeAttributes(props.additionalAttributes));");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersLoopInvokedCurrentComponentRenderHelperMethodWithExtraParameterBackedTemplateLocal()
     {
         var context = CreateContext(

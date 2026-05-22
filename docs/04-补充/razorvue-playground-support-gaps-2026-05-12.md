@@ -842,10 +842,15 @@ protected override void BuildRenderTree(RenderTreeBuilder builder)
 - helper body 中“额外参数 -> 模板局部缓存/别名 -> 后续节点引用”这类组合 authoring
 - `for` / `foreach` body 中“loop 变量 -> helper 额外参数 -> helper 内模板局部缓存/别名 -> 后续节点引用”这类组合 authoring
 - canonical / H / SFC 三条 lowering 链路对 helper 参数作用域的一致保留
+- helper body 在“调用方已打开 element/component frame”场景下，对 caller-owned node 的受控 mutation：
+  - `AddAttribute(...)`
+  - `SetKey(...)`
+  - `AddMultipleAttributes(...)`
+- 上述 caller-owned mutation 不会把 helper 形参提前改写成调用点表达式，而是保留“helper 形参引用 + 节点级 captured binding”合同，再由 canonical / H / SFC 统一保证单次求值与正确作用域
 
 ### 当前支持边界
 
-支持边界仍然刻意收窄为“源码可分析、按值参数、helper 自身可独立 canonicalize”的 render helper：
+支持边界仍然刻意收窄为“源码可分析、按值参数、要么 helper 自身可独立 canonicalize，要么 helper 只在 caller-owned open node 上执行受控 mutation 协议”的 render helper：
 
 - 支持：`private void RenderBody(RenderTreeBuilder builder, string? title) { ... }`
 - 支持：`void RenderBody(RenderTreeBuilder localBuilder, string? title) { ... }`
@@ -856,8 +861,18 @@ protected override void BuildRenderTree(RenderTreeBuilder builder)
 - 支持：多个额外值参数按调用点实参求值顺序形成嵌套 template scope / 嵌套 IIFE，同时保持 helper 形参与实参的正确绑定；named argument 打乱声明顺序时不会退化成错误重排
 - 支持：`params` 数组实参在 canonical/H 路径保留为数组表达式；SFC 路径若模板侧不能直接内联该数组初始化，会提升为 setup binding（例如 `__jazor$0 = computed(() => [props.title, "suffix"])`）后再进入局部 `<template v-for>` scope wrapper
 - 支持：`for` / `foreach` body 中使用 loop 变量调用 helper 时，loop 变量可作为 helper 实参稳定进入后续 helper parameter scope；不会因为 loop/template scope 叠加而丢失绑定或错误提升
+- 支持：调用方已打开 element/component frame 时，extra-parameter helper 只做 caller-owned node mutation 的窄子集：
+  - `AddAttribute(...)`
+  - `SetKey(...)`
+  - `AddMultipleAttributes(...)`
+- 支持：上述 caller-owned mutation 在 render tree 中保留 helper 形参与 captured binding，H 路径会在安全的 identity case 直接折叠回调用点实参（例如 `"class": props.title`、`"key": props.title`），而 spread 继续走既有 `__jazorVueMergeAttributes(...)` 路径
 - 不支持：`ref` / `out` / `in`
-- 不支持：helper body 依赖调用方已打开 element/component frame 的 `AddAttribute` / `SetKey` / `CloseElement` / `CloseComponent` 等协议
+- 不支持：caller-owned open node 协议中的 open/close/region/frame-shape 变更：
+  - `OpenElement` / `OpenComponent`
+  - `CloseElement` / `CloseComponent`
+  - `OpenRegion` / `CloseRegion`
+- 不支持：在 caller-owned mutation helper 中混入额外 declarative output、child emission 或其他会改变调用方 frame 语义的 builder 协议
+- 不支持：caller-owned mutation helper 结束后 frame depth 或 active open node 与进入时不一致；这类情况会显式 fail-fast，而不是静默猜测调用方协议
 - 不支持：递归 render helper
 
 ### 当前保护
@@ -874,12 +889,13 @@ protected override void BuildRenderTree(RenderTreeBuilder builder)
 - frontend / canonical / H / SFC 对 multiple extra parameter 的嵌套作用域与调用点实参求值顺序保持一致
 - frontend / canonical / H / SFC 对“helper 参数作用域 + helper body 内模板局部声明”组合语义保持一致
 - frontend / canonical / H / SFC 对“loop scope + helper 参数作用域 + helper body 内模板局部声明”组合语义保持一致
+- frontend / pipeline 对 caller-owned `AddAttribute` / `SetKey` / `AddMultipleAttributes` helper mutation 保持一致
 - canonical model 保留 `title <- props.title` 绑定
 - named argument 绑定稳定工作
 - omitted optional default value 绑定稳定工作
 - H lowering 输出 helper 立即调用作用域
 - SFC lowering 输出局部 template scope wrapper，且不再重复闭合 `</template>`
-- “helper 依赖调用方 open frame 做 attribute mutation” 仍明确失败
+- caller-owned mutation helper 若试图 close/open caller frame 或留下不平衡 frame，会继续明确失败
 
 ## 13. handwritten `AddContent(RenderFragment<T>, value)` 的 typed fragment carrier 需要稳定边界
 

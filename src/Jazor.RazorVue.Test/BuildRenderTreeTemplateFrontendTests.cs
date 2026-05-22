@@ -1154,7 +1154,7 @@ public sealed class BuildRenderTreeTemplateFrontendTests
     }
 
     [TestMethod]
-    public void CreateRenderTree_WithBuildRenderTreeLocalFunctionHelperRequiringExtraParametersAndCallerOwnedAttributeMutation_ThrowsCanonicalizationFailed()
+    public void CreateRenderTree_WithBuildRenderTreeLocalFunctionHelperRequiringExtraParametersAndCallerOwnedAttributeMutation_PreservesOpenElementAttributes()
     {
         var context = CreateContext(
             """
@@ -1197,12 +1197,19 @@ public sealed class BuildRenderTreeTemplateFrontendTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
-            () => BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+        var section = renderTree.Children.Single() as RazorVueElementNode;
+        Assert.IsNotNull(section);
+        Assert.AreEqual("section", section.TagName);
+        Assert.AreEqual(1, section.Attributes.Length);
 
-        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "self-contained fragment");
-        StringAssert.Contains(exception.Issue.Message, "RenderBody");
+        var attribute = section.Attributes[0] as RazorVueAttributeNode;
+        Assert.IsNotNull(attribute);
+        Assert.AreEqual("class", attribute.Name);
+        Assert.IsInstanceOfType<IParameterReferenceOperation>(attribute.Value);
+        Assert.AreEqual(1, attribute.CapturedBindings.Length);
+        Assert.AreEqual("title", attribute.CapturedBindings[0].ParameterSymbol.Name);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(attribute.CapturedBindings[0].Initializer);
     }
 
     [TestMethod]
@@ -1977,7 +1984,7 @@ public sealed class BuildRenderTreeTemplateFrontendTests
     }
 
     [TestMethod]
-    public void CreateRenderTree_WithCurrentComponentRenderHelperMethodRequiringExtraParametersAndCallerOwnedAttributeMutation_ThrowsCanonicalizationFailed()
+    public void CreateRenderTree_WithCurrentComponentRenderHelperMethodRequiringExtraParametersAndCallerOwnedAttributeMutation_PreservesOpenElementAttributes()
     {
         var context = CreateContext(
             """
@@ -2020,12 +2027,130 @@ public sealed class BuildRenderTreeTemplateFrontendTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
-            () => BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+        var section = renderTree.Children.Single() as RazorVueElementNode;
+        Assert.IsNotNull(section);
+        Assert.AreEqual("section", section.TagName);
+        Assert.AreEqual(1, section.Attributes.Length);
 
-        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "self-contained fragment");
-        StringAssert.Contains(exception.Issue.Message, "RenderBody");
+        var attribute = section.Attributes[0] as RazorVueAttributeNode;
+        Assert.IsNotNull(attribute);
+        Assert.AreEqual("class", attribute.Name);
+        Assert.IsInstanceOfType<IParameterReferenceOperation>(attribute.Value);
+        Assert.AreEqual(1, attribute.CapturedBindings.Length);
+        Assert.AreEqual("title", attribute.CapturedBindings[0].ParameterSymbol.Name);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(attribute.CapturedBindings[0].Initializer);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithCurrentComponentRenderHelperMethodRequiringExtraParametersAndCallerOwnedSetKey_PreservesOpenElementKey()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        RenderBody(builder, Title);
+                        builder.CloseElement();
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder, string? title)
+                    {
+                        builder.SetKey(title);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+        var section = renderTree.Children.Single() as RazorVueElementNode;
+        Assert.IsNotNull(section);
+        Assert.IsNotNull(section.Key);
+        Assert.IsInstanceOfType<IParameterReferenceOperation>(section.Key.Expression);
+        Assert.AreEqual(1, section.Key.CapturedBindings.Length);
+        Assert.AreEqual("title", section.Key.CapturedBindings[0].ParameterSymbol.Name);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(section.Key.CapturedBindings[0].Initializer);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithCurrentComponentRenderHelperMethodRequiringExtraParametersAndCallerOwnedAddMultipleAttributes_PreservesOpenElementSpread()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        RenderBody(builder, AdditionalAttributes);
+                        builder.CloseElement();
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder, IReadOnlyDictionary<string, object?>? attributes)
+                    {
+                        builder.AddMultipleAttributes(1, attributes);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+        var section = renderTree.Children.Single() as RazorVueElementNode;
+        Assert.IsNotNull(section);
+        Assert.AreEqual(1, section.Attributes.Length);
+        var spread = section.Attributes[0] as RazorVueAttributeSpreadNode;
+        Assert.IsNotNull(spread);
+        Assert.IsInstanceOfType<IParameterReferenceOperation>(spread.Expression);
+        Assert.AreEqual(1, spread.CapturedBindings.Length);
+        Assert.AreEqual("attributes", spread.CapturedBindings[0].ParameterSymbol.Name);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(spread.CapturedBindings[0].Initializer);
     }
 
     [TestMethod]

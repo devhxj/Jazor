@@ -104,7 +104,11 @@ internal static class RazorVueStaticMarkupParser
                         attributeValue = dependencies.CreateLiteralStringOperation(ReadAttributeValue(markup, ref index));
                     }
 
-                    attributes.Add(new RazorVueAttributeNode(attributeName, attributeValue, origins));
+                    attributes.Add(new RazorVueAttributeNode(
+                        attributeName,
+                        attributeValue,
+                        ImmutableArray<RazorVueCapturedValueBinding>.Empty,
+                        origins));
                 }
 
                 var builder = new StaticElementBuilder(startTagName, attributes.ToImmutable(), origins);

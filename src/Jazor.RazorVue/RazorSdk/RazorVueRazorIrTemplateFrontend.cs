@@ -868,6 +868,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 attributes.Add(new RazorVueAttributeNode(
                     attributeName,
                     attributeValue,
+                    ImmutableArray<RazorVueCapturedValueBinding>.Empty,
                     attributeOrigins));
             }
             foreach (var splat in node.SplatsOrEmpty)
@@ -988,6 +989,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return new RazorVueAttributeNode(
                 attributeName,
                 value,
+                ImmutableArray<RazorVueCapturedValueBinding>.Empty,
                 CreateOrigins(node.Source));
         }
 
@@ -1002,6 +1004,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                         $"RazorVue Razor IR frontend requires an expression value for '@attributes' in component '{_snapshot.Descriptor.FullName}'.");
                 return new RazorVueAttributeSpreadNode(
                     value,
+                    ImmutableArray<RazorVueCapturedValueBinding>.Empty,
                     CreateOrigins(node.Source));
             }
 
@@ -1021,6 +1024,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return new RazorVueAttributeNode(
                 attributeName,
                 value,
+                ImmutableArray<RazorVueCapturedValueBinding>.Empty,
                 CreateOrigins(node.Source));
         }
 
@@ -1030,6 +1034,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             var operation = _resolver.ResolveRequiredOperation(sourceSpan, "Razor IR splat attribute");
             return new RazorVueAttributeSpreadNode(
                 operation,
+                ImmutableArray<RazorVueCapturedValueBinding>.Empty,
                 CreateOrigins(node.Source));
         }
 
@@ -1468,11 +1473,13 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
                 return new RazorVueNodeKey(
                     expression,
+                    ImmutableArray<RazorVueCapturedValueBinding>.Empty,
                     CreateOrigins(GetBestSourceSpan(child) ?? sourceSpan));
             }
 
             return new RazorVueNodeKey(
                     _resolver.ResolveRequiredOperation(sourceSpan, "Razor IR @key expression"),
+                    ImmutableArray<RazorVueCapturedValueBinding>.Empty,
                     CreateOrigins(sourceSpan));
         }
 
@@ -1512,6 +1519,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
             return new RazorVueNodeKey(
                 value,
+                ImmutableArray<RazorVueCapturedValueBinding>.Empty,
                 CreateOrigins(sourceSpan));
         }
 
