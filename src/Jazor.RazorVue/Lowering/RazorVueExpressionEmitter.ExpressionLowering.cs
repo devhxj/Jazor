@@ -615,6 +615,9 @@ internal sealed partial class RazorVueExpressionEmitter
                 case ILocalReferenceOperation localReference:
                     if (sourceStableLocals.TryGetValue(localReference.Local, out var initializer))
                     {
+                        if (localReference.Local.Type?.TypeKind == TypeKind.Delegate)
+                            continue;
+
                         if (!visitedLocals.Add(localReference.Local))
                             return false;
 

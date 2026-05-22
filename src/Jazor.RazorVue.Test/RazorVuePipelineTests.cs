@@ -16263,11 +16263,11 @@ public sealed class RazorVuePipelineTests
             """);
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
-        StringAssert.Contains(artifact.ModuleCode, "const __jazorLifecycleCallable");
-        StringAssert.Contains(artifact.ModuleCode, "value => value");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorLifecycleLocal");
+        StringAssert.Contains(artifact.ModuleCode, "return value;");
         StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
         StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
-        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", __jazorLifecycleCallable");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", __jazorLifecycleLocal");
         StringAssert.Contains(artifact.ModuleCode, "(currentFirstRender));");
     }
 

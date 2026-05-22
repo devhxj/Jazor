@@ -8878,9 +8878,9 @@ public sealed class ESGeneratorTests
         Assert.AreEqual(0, fallbackDiagnostics.Length);
         CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
         var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
-        StringAssert.Contains(generatedSource, "const __jazorLifecycleCallable");
-        StringAssert.Contains(generatedSource, "value => value");
-        StringAssert.Contains(generatedSource, "await emit(\\\"readyChanged\\\", __jazorLifecycleCallable");
+        StringAssert.Contains(generatedSource, "const __jazorLifecycleLocal");
+        StringAssert.Contains(generatedSource, "return value;");
+        StringAssert.Contains(generatedSource, "await emit(\\\"readyChanged\\\", __jazorLifecycleLocal");
         StringAssert.Contains(generatedSource, "(currentFirstRender));");
     }
 

@@ -227,7 +227,7 @@ private static SupportedEmitCall? ExtractSupportedEmitCall(
 
     var emitName = ToLifecycleEmitName(method, callbackName);
     if (invocation.ArgumentList.Arguments.Count == 0)
-        return new SupportedEmitCall(emitName, null, false);
+        return new SupportedEmitCall(emitName, null, false, ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>.Empty);
 
     if (invocation.ArgumentList.Arguments.Count != 1)
         throw CreateUnsupportedLifecycleLoweringException(method);
@@ -241,7 +241,7 @@ private static SupportedEmitCall? ExtractSupportedEmitCall(
     try
     {
         var payload = RazorVueExpressionEmitter.EmitLifecyclePayload(method, payloadOperation, allowFirstRenderPayload);
-        return new SupportedEmitCall(emitName, payload.Expression, payload.UsesFirstRender);
+        return new SupportedEmitCall(emitName, payload.Expression, payload.UsesFirstRender, payload.PreludeBindings);
     }
     catch (NotSupportedException)
     {
@@ -493,9 +493,7 @@ current-component field 现也支持一个更窄的受控子集：
 - 非精确 arity 的 current-component helper-call payload
 - 越出当前 setup helper lowering 合同的一般 current-component method-call payload
 - mutable/later-written property / field
-- 超出 literal / parameter / source-stable member / unary / binary / conditional / interpolated string 组合的更宽动态 payload
-- local / lambda / local-function 参与的 firstRender payload
-- tuple deconstruction firstRender payload
+- 超出当前 source-stable lifecycle prelude + compiler-owned lowering 合同的更宽动态 payload
 
 ### 当前已支持的 helper payload 子集
 
@@ -531,6 +529,9 @@ current-component field 现也支持一个更窄的受控子集：
 - `firstRender is bool ready && ready`
 - `firstRender switch { ... }`
 - 继续满足 setup helper lowering 合同的受控 helper-call payload，例如 `Normalize(firstRender)`
+- source-stable tuple deconstruction payload，例如 `var pair = (firstRender, new ReadyState(firstRender)); var (_, readyState) = pair; readyState.Value`
+- source-stable local function payload，例如 `bool NormalizeReady(bool value) => value; NormalizeReady(firstRender)`
+- source-stable local lambda / delegate payload，例如 `Func<bool, bool> normalizeReady = static value => value; normalizeReady(firstRender)`
 - direct structural source-data-carrier member payload，例如 `new ReadyState(firstRender).Value`
 - 受控 structural source-data-carrier 深链 payload，例如 `new ReadyEnvelope(new ReadyState(firstRender)).State.Value`
 - object-initializer structural source-data-carrier 深链 payload，例如 `new ReadyEnvelope { State = new ReadyState(firstRender) }.State.Value`
@@ -543,7 +544,7 @@ current-component field 现也支持一个更窄的受控子集：
 - helper-returned equals payload，例如 `BuildReady(firstRender).Value.Equals(true)`
 - null-conditional + coalesced structural payload，例如 `(new ReadyEnvelope { State = new ReadyState(firstRender) }.State?.Value) ?? false`
 
-这里不是在 RazorVue 内继续扩手写 CLR/调用拼接；RazorVue 只提供 lifecycle snapshot 与参数别名，具体表达式 lowering 仍以现有 `Jazor.Compiler` / whitelist / CLR 模块能力为准。
+这里不是在 RazorVue 内继续扩手写 CLR/调用拼接；RazorVue 只提供 lifecycle snapshot、source-stable prelude alias，以及参数别名，具体表达式 lowering 仍以现有 `Jazor.Compiler` / whitelist / CLR 模块能力为准。
 
 当前已锁定的典型发射结果包括：
 
@@ -556,6 +557,9 @@ current-component field 现也支持一个更窄的受控子集：
 - `firstRender is false` -> `currentFirstRender === false`
 - `firstRender is bool` -> `typeof currentFirstRender === "boolean"`
 - `firstRender is bool ready && ready` -> compiler-owned declaration-pattern lowering with pattern local binding
+- `var pair = (firstRender, new ReadyState(firstRender)); var (_, readyState) = pair; readyState.Value` -> source-stable tuple deconstruction prelude + compiler-owned tuple/local lowering
+- `bool NormalizeReady(bool value) => value; NormalizeReady(firstRender)` -> prelude local-function alias + compiler-lowered invocation
+- `Func<bool, bool> normalizeReady = static value => value; normalizeReady(firstRender)` -> prelude delegate alias + compiler-lowered invocation
 - `new ReadyState(firstRender).Value` -> `{ value: currentFirstRender }.value`
 - `new ReadyEnvelope(new ReadyState(firstRender)).State.Value` -> `{ state: { value: currentFirstRender } }.state.value`
 - `new ReadyEnvelope { State = new ReadyState(firstRender) }.State.Value` -> `{ state: { value: currentFirstRender } }.state.value`
@@ -571,6 +575,13 @@ current-component field 现也支持一个更窄的受控子集：
 - 这里只开放可诚实擦除为 structural value 的 source-data-carrier；不是重新引入 nominal/runtime type 语义
 - tuple payload 仍遵循当前编译器的 tuple runtime-shape 合同，字段名取当前静态视图而不是强行重写成另一套 RazorVue 私有命名
 - bare nominal type pattern、runtime type token、以及超出当前 structural carrier 合同的更宽 runtime type 路径仍显式 unsupported
+
+对 source-stable lifecycle prelude 这条线，同样保持受控合同：
+
+- local function 不会被误判成 current-component helper；它们会在 lifecycle prelude 中以稳定 alias 发射真实 compiler-lowered function declaration
+- local lambda / delegate local 只接受源码可恢复初始化器的 source-stable callable local，并在 prelude 中发射 compiler-lowered `const` alias
+- tuple deconstruction 不是 RazorVue 私造投影协议；它继续复用编译器现有 tuple / deconstruction lowering 语义
+- 一旦 local function / lambda / tuple local 的依赖越出 source-stable + compiler-owned lowering 合同，仍显式回到 unsupported
 
 ### 占位符替换
 
@@ -591,13 +602,18 @@ var payloadOverride = snapshotsFirstRender
 ### SupportedEmitCall
 
 ```csharp
-private sealed record SupportedEmitCall(string EmitName, string? PayloadExpression, bool UsesFirstRender);
+private sealed record SupportedEmitCall(
+    string EmitName,
+    string? PayloadExpression,
+    bool UsesFirstRender,
+    ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding> PreludeBindings);
 ```
 
 **字段说明**:
 - `EmitName`: Vue 事件名称（如 "onInitialized", "update:value"）
 - `PayloadExpression`: JavaScript 载荷表达式
 - `UsesFirstRender`: 是否使用 `firstRender` 参数
+- `PreludeBindings`: 需要在 emit 前先发射的 source-stable lifecycle prelude 绑定（例如 local function / delegate alias / deconstruction local）
 
 ### SetParametersAsyncAnalysis
 
