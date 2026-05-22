@@ -1,7 +1,7 @@
 # RazorVue 完成度与生产就绪评审
 
 > 评审日期：2026-05-07  
-> 最新更新：2026-05-21
+> 最新更新：2026-05-22
 > 评审范围：`src/Jazor.RazorVue/`、`src/Jazor.Analyzer/RazorVue/`、`src/Jazor.Emit` 的 RazorVue 路径、`src/Jazor.RazorVue.Test/`、`src/Jazor.RazorVue.RazorIr.Test/`、`src/Jazor.EmitTest/` 的 RazorVue 切片、`src/Jolt.Test` 的 Volar/VueAnalysis/JazorVue 切片、`samples/RazorVue.TodoList/`  
 > 基线说明：本评审基于当前工作区状态。当前工作区存在多处 RazorVue/emit/VueRoute 相关未提交修改，因此结论不等同于已发布包基线。
 
@@ -131,6 +131,18 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedNam
 38. lifecycle payload 在 `OnAfterRender*` 的 `firstRender` 参数上，这轮又补齐了一条 compiler-owned fallback。当前如果 payload 实际引用 `firstRender`，且表达式形状仍落在受控子集内，RazorVue 会把该参数别名到 `currentFirstRender` 后，继续交由 `EmitSetupExpression -> SemanticWalker -> Jazor.Compiler` 完成 CLR-aware lowering，而不是在 RazorVue 内部继续堆新的手写 payload 分支。
 39. 这条 fallback 当前已经锁定的真实支持形态又继续扩到：`(bool)firstRender`、`object.Equals(firstRender, true)`、`object.Equals((bool)firstRender, true)`、`firstRender.Equals(true)`、`firstRender == true`、`bool? alias = firstRender; alias ?? false` 这一类 source-stable nullable-bool local carrier、`firstRender is true/false`、`firstRender is not true/false`、`firstRender is true or false`、`firstRender is true and not false`、`firstRender is bool`、`firstRender is object`、直接 against `firstRender` 的 declaration-pattern（例如 `firstRender is bool ready && ready`）、`firstRender switch { ... }`，以及继续满足 setup helper lowering 合同的受控 helper-call payload，例如 `Normalize(firstRender)`。
 40. after-render hook 自身仍保持原有 snapshot 协议：先 `const currentFirstRender = firstRender`，再翻转 `firstRender = false`；其中 `object.Equals(firstRender, true)` / `object.Equals((bool)firstRender, true)` / `firstRender.Equals(true)` 当前都会稳定 lower 为 `currentFirstRender === true`，`firstRender == true` 会稳定 lower 为 `(currentFirstRender === true)`，`alias ?? false` 会稳定 lower 为 `currentFirstRender ?? false`，`firstRender is bool ready && ready` 这一类 declaration-pattern 也会继续沿 `Jazor.Compiler` 主链 lower，保留 pattern local 绑定与复用，而 `firstRender is true/false` / `is bool` 这类 pattern 仍会落到对应 JS predicate。
+
+## 2026-05-22 状态更新
+
+本轮继续把 RazorVue 里仍残留的手写调用拼接收回到更一致的调用语义主线，重点是 lifecycle/setup/render 共用的 helper-call 参数绑定：
+
+1. `RazorVueExpressionEmitter` 中 lifecycle payload、current-component helper、lifecycle local function，以及 rewrite 路径里原先基于 `string.Join(invocation.Arguments...)` 的手写调用重写，现已统一切到 shared invocation binder。
+2. 这条 binder 不再假设 “`invocation.Arguments` 已按形参顺序排好”。它会显式区分“调用点源码求值顺序”和“最终 helper 调用形参落位顺序”，因此 named argument out-of-order 现在会稳定保留左到右求值顺序，再按声明顺序把值落到真正的调用槽位。
+3. 同一条 shared binder 现也正式覆盖 omitted optional default 与按 Roslyn 绑定成单数组形参的 `params` 调用；这里没有再额外私造 RazorVue 参数协议，而是直接复用 Roslyn `IInvocationOperation.Arguments` 的已绑定结果。
+4. `OnAfterRender*` / `firstRender` payload 下，这组 helper-call 现在也能与 after-render snapshot 协议稳定叠加：发射结果会继续 against `currentFirstRender`，而不是把 named/optional/params 包装层错误地退回到未快照的 `firstRender` 或错误的实参落位。
+5. 这次修复还顺手补齐了 lifecycle 参数子表达式的 `PreludeBindings` / `UsesFirstRender` 聚合，因此子参数若触发 compiler-owned lifecycle fallback，也不会再在 helper-call 包装层把 prelude alias 或 `currentFirstRender` 使用标记丢掉。
+6. 当前 focused 回归已通过：
+   - `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~HelperCallWithOmittedOptionalFirstRenderPayloadOnAfterRenderAsyncLifecycle|FullyQualifiedName~HelperCallWithParamsFirstRenderPayloadOnAfterRenderAsyncLifecycle|FullyQualifiedName~HelperCallWithNamedArgumentsOutOfDeclarationOrderFirstRenderPayloadOnAfterRenderAsyncLifecycle|FullyQualifiedName~GenerateCatalog_WithHelperCallOmittedOptionalFirstRenderPayloadOnAfterRenderAsyncLifecycle_LowersWithoutJAZORVGA005|FullyQualifiedName~GenerateCatalog_WithHelperCallParamsFirstRenderPayloadOnAfterRenderAsyncLifecycle_LowersWithoutJAZORVGA005|FullyQualifiedName~GenerateCatalog_WithHelperCallNamedArgumentsOutOfDeclarationOrderFirstRenderPayloadOnAfterRenderAsyncLifecycle_LowersWithoutJAZORVGA005|FullyQualifiedName~RazorVue_Pipeline_LowersCurrentComponentRenderHelperMethodWithNamedArgumentsOutOfDeclarationOrder_PreservingCallSiteEvaluationOrder|FullyQualifiedName~RazorVue_Pipeline_LowersBuildRenderTreeLocalFunctionHelperWithNamedArgumentsOutOfDeclarationOrder_PreservingCallSiteEvaluationOrder' -v minimal`
 41. 这轮又继续补上了一段以前明确缺失的 after-render 深链场景，但路线仍然是 compiler-owned，而不是 RazorVue 继续手写拼装：`new ReadyEnvelope(new ReadyState(firstRender)).State.Value` 这一类直接 structural source-data-carrier 深链、以及 `var readyEnvelopes = new List<ReadyEnvelope> { ... }; readyEnvelopes[1].State.Value` 这一类 source-stable structural local/list carrier，现在会通过 `SemanticWalker.AllowStructuralSourceDataCarrierLowering` 进入受控 structural lowering，发成普通 object literal shape，并在需要时继续保留既有 CLR helper（例如 `List<T>.this[int].get`）语义。
 42. 这里的边界依旧是生产级保守边界，不是“允许任意源码类型 new 出来再靠 RazorVue 拼 JS class”。新增支持只覆盖可证明为 pure-data carrier 的 source-declared class/struct：它们没有 nominal runtime identity，`typeof` / bare `is Type` / 依赖运行时类型对象的路径仍然不开放；开放的是 object creation、member-chain、结构属性访问与对应 pattern/deconstruction 可以诚实擦除成结构值的那一段。
 43. 这条 compiler-owned `firstRender` fallback 随后又继续补齐了三格此前测试仍按“应报错”记录的真实能力：helper-returned deep member-chain（例如 `BuildEnvelope(firstRender).State.Value`）、direct structural property-pattern（例如 `new ReadyEnvelope(new ReadyState(firstRender)) is { State.Value: true }`）、以及 helper-returned structural property-pattern（例如 `BuildEnvelope(firstRender) is { State.Value: true }`）现在也已正式支持。它们都不是 RazorVue 手拼语义，而是继续沿 `EmitSetupExpression -> SemanticWalker` 主线完成 structural helper/property-pattern lowering，其中 pattern 场景会保留 compiler-owned 单次求值 temp，避免 helper 或 object-creation 被重复求值。

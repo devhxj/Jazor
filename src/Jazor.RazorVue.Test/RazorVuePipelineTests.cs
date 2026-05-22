@@ -14982,6 +14982,174 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersHelperCallWithOmittedOptionalFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public EventCallback<string> ReadyChanged { get; set; }
+
+                    private static string Normalize(bool value, string prefix = "ready:")
+                        => prefix + value;
+
+                    protected override Task OnAfterRenderAsync(bool firstRender)
+                    {
+                        return ReadyChanged.InvokeAsync(Normalize(firstRender));
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", normalize(currentFirstRender, \"ready:\"));");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersHelperCallWithParamsFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public EventCallback<int> ReadyChanged { get; set; }
+
+                    private static int Normalize(params bool[] values)
+                        => values.Length;
+
+                    protected override Task OnAfterRenderAsync(bool firstRender)
+                    {
+                        return ReadyChanged.InvokeAsync(Normalize(firstRender, false));
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", normalize([currentFirstRender, false]));");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersHelperCallWithNamedArgumentsOutOfDeclarationOrderFirstRenderPayloadOnAfterRenderAsyncLifecycle_PreservingCallSiteEvaluationOrder()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public EventCallback<string> ReadyChanged { get; set; }
+
+                    private static string Normalize(bool value, string prefix, string suffix)
+                        => prefix + value + suffix;
+
+                    protected override Task OnAfterRenderAsync(bool firstRender)
+                    {
+                        return ReadyChanged.InvokeAsync(Normalize(suffix: "!", value: firstRender, prefix: "ready:"));
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", ((suffix) => ((value) => ((prefix) => normalize(value, prefix, suffix))(\"ready:\"))(currentFirstRender))(\"!\"));");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersStaticEqualsFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(

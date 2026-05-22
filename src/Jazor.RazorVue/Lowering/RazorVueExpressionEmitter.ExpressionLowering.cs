@@ -814,19 +814,25 @@ internal sealed partial class RazorVueExpressionEmitter
             _scopedLifecycleLocalFunctionAliases is not null &&
             _scopedLifecycleLocalFunctionAliases.TryGetValue(invocation.TargetMethod, out var localFunctionAlias))
         {
-            var invocationArguments = EmitLifecyclePayloadArguments(lifecycleMethod, invocation.Arguments, allowFirstRenderPayload, out var invocationUsesFirstRender);
-            return new LifecyclePayloadEmission(
-                localFunctionAlias + "(" + string.Join(", ", invocationArguments) + ")",
-                invocationUsesFirstRender);
+            return EmitLifecyclePayloadBoundInvocation(
+                invocation.TargetMethod,
+                invocation.Arguments,
+                operation => EmitLifecyclePayloadCore(lifecycleMethod, operation, allowFirstRenderPayload),
+                _ => localFunctionAlias,
+                () => new NotSupportedException(
+                    $"RazorVue lifecycle payload does not support local function invocation '{invocation.TargetMethod.Name}' in component '{lifecycleMethod.ContainingType.ToDisplayString()}'."));
         }
 
         if (invocation.Instance is not null && invocation.TargetMethod.Name == "Invoke")
         {
-            var invocationArguments = EmitLifecyclePayloadArguments(lifecycleMethod, invocation.Arguments, allowFirstRenderPayload, out var invocationUsesFirstRender);
-            return new LifecyclePayloadEmission(
-                EmitLifecyclePayloadInvocationTarget(lifecycleMethod, invocation.Instance, allowFirstRenderPayload) +
-                "(" + string.Join(", ", invocationArguments) + ")",
-                invocationUsesFirstRender);
+            var targetExpression = EmitLifecyclePayloadInvocationTarget(lifecycleMethod, invocation.Instance, allowFirstRenderPayload);
+            return EmitLifecyclePayloadBoundInvocation(
+                invocation.TargetMethod,
+                invocation.Arguments,
+                operation => EmitLifecyclePayloadCore(lifecycleMethod, operation, allowFirstRenderPayload),
+                _ => targetExpression,
+                () => new NotSupportedException(
+                    $"RazorVue lifecycle payload does not support delegate invocation '{invocation.TargetMethod.Name}' in component '{lifecycleMethod.ContainingType.ToDisplayString()}'."));
         }
 
         if (IsCurrentComponentMember(invocation.TargetMethod, invocation.Instance))
@@ -843,12 +849,6 @@ internal sealed partial class RazorVueExpressionEmitter
         IInvocationOperation invocation,
         bool allowFirstRenderPayload)
     {
-        if (invocation.Arguments.Length != invocation.TargetMethod.Parameters.Length)
-        {
-            throw new NotSupportedException(
-                $"RazorVue lifecycle payload only supports exact-arity current-component helper calls. Unsupported helper: '{invocation.TargetMethod.Name}'.");
-        }
-
         if (IsUnsupportedSetupHelperMethod(invocation.TargetMethod))
         {
             throw new NotSupportedException(
@@ -856,28 +856,13 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         RecordRequiredSetupMethod(invocation.TargetMethod);
-        var argumentExpressions = EmitLifecyclePayloadArguments(lifecycleMethod, invocation.Arguments, allowFirstRenderPayload, out var argumentUsesFirstRender);
-        return new LifecyclePayloadEmission(
-            ToLowerCamelCase(invocation.TargetMethod.Name) + "(" + string.Join(", ", argumentExpressions) + ")",
-            argumentUsesFirstRender);
-    }
-
-    private ImmutableArray<string> EmitLifecyclePayloadArguments(
-        IMethodSymbol lifecycleMethod,
-        ImmutableArray<IArgumentOperation> arguments,
-        bool allowFirstRenderPayload,
-        out bool usesFirstRender)
-    {
-        usesFirstRender = false;
-        var builder = ImmutableArray.CreateBuilder<string>(arguments.Length);
-        foreach (var argument in arguments)
-        {
-            var expression = EmitLifecyclePayloadCore(lifecycleMethod, argument.Value, allowFirstRenderPayload);
-            builder.Add(expression.Expression);
-            usesFirstRender |= expression.UsesFirstRender;
-        }
-
-        return builder.ToImmutable();
+        return EmitLifecyclePayloadBoundInvocation(
+            invocation.TargetMethod,
+            invocation.Arguments,
+            operation => EmitLifecyclePayloadCore(lifecycleMethod, operation, allowFirstRenderPayload),
+            target => ToLowerCamelCase(target.Name),
+            () => new NotSupportedException(
+                $"RazorVue lifecycle payload does not support current-component helper '{invocation.TargetMethod.Name}' in component '{lifecycleMethod.ContainingType.ToDisplayString()}'."));
     }
 
     private string EmitLifecyclePayloadInvocationTarget(
@@ -1425,24 +1410,25 @@ internal sealed partial class RazorVueExpressionEmitter
 
         if (invocation.Instance is not null && invocation.TargetMethod.Name == "Invoke")
         {
-            return EmitExpression(invocation.Instance) + "(" +
-                   string.Join(", ", invocation.Arguments.Select(argument => EmitExpression(argument.Value))) + ")";
+            return EmitBoundInvocation(
+                invocation.TargetMethod,
+                invocation.Arguments,
+                operation => EmitExpression(operation),
+                EmitExpression(invocation.Instance));
         }
 
         if (IsCurrentComponentMember(invocation.TargetMethod, invocation.Instance))
         {
-            // Keep render-side helper lowering conservative by requiring the call-site
-            // arity to match the helper signature exactly; unsupported method shapes still
-            // fail later in setup lowering.
-            if (invocation.Arguments.Length != invocation.TargetMethod.Parameters.Length)
-                throw CreateUnsupportedSetupLogicException(invocation.TargetMethod);
-
             if (IsUnsupportedSetupHelperMethod(invocation.TargetMethod))
                 throw CreateUnsupportedSetupLogicException(invocation.TargetMethod);
 
             RecordRequiredSetupMethod(invocation.TargetMethod);
-            return ToLowerCamelCase(invocation.TargetMethod.Name) + "(" +
-                   string.Join(", ", invocation.Arguments.Select(argument => EmitExpression(argument.Value))) + ")";
+            return EmitBoundInvocation(
+                invocation.TargetMethod,
+                invocation.Arguments,
+                operation => EmitExpression(operation),
+                target => ToLowerCamelCase(target.Name) + "(",
+                allowTargetEvaluationCapture: false);
         }
 
         var targetMethodName = GetEmittedMethodName(invocation.TargetMethod);
@@ -1450,7 +1436,12 @@ internal sealed partial class RazorVueExpressionEmitter
             ? EmitMemberInvocationTarget(invocation.Instance, targetMethodName, compilerArgument: null)
             : targetMethodName;
 
-        return target + "(" + string.Join(", ", invocation.Arguments.Select(argument => EmitExpression(argument.Value))) + ")";
+        return EmitBoundInvocation(
+            invocation.TargetMethod,
+            invocation.Arguments,
+            operation => EmitExpression(operation),
+            _ => target + "(",
+            allowTargetEvaluationCapture: false);
     }
 
     internal bool TryRewriteInvocation(
@@ -1489,22 +1480,26 @@ internal sealed partial class RazorVueExpressionEmitter
 
         if (invocation.Instance is not null && invocation.TargetMethod.Name == "Invoke")
         {
-            expression = EmitExpression(invocation.Instance, argument) + "(" +
-                         string.Join(", ", invocation.Arguments.Select(item => EmitExpression(item.Value, argument))) + ")";
+            expression = EmitBoundInvocation(
+                invocation.TargetMethod,
+                invocation.Arguments,
+                operation => EmitExpression(operation, argument),
+                EmitExpression(invocation.Instance, argument));
             return true;
         }
 
         if (IsCurrentComponentMember(invocation.TargetMethod, invocation.Instance))
         {
-            if (invocation.Arguments.Length != invocation.TargetMethod.Parameters.Length)
-                throw CreateUnsupportedSetupLogicException(invocation.TargetMethod);
-
             if (IsUnsupportedSetupHelperMethod(invocation.TargetMethod))
                 throw CreateUnsupportedSetupLogicException(invocation.TargetMethod);
 
             RecordRequiredSetupMethod(invocation.TargetMethod);
-            expression = ToLowerCamelCase(invocation.TargetMethod.Name) + "(" +
-                         string.Join(", ", invocation.Arguments.Select(item => EmitExpression(item.Value, argument))) + ")";
+            expression = EmitBoundInvocation(
+                invocation.TargetMethod,
+                invocation.Arguments,
+                operation => EmitExpression(operation, argument),
+                target => ToLowerCamelCase(target.Name) + "(",
+                allowTargetEvaluationCapture: false);
             return true;
         }
 
@@ -1539,22 +1534,26 @@ internal sealed partial class RazorVueExpressionEmitter
 
         if (invocation.Instance is not null && invocation.TargetMethod.Name == "Invoke")
         {
-            expression = EmitSetupExpression(invocation.Instance, compilerArgument) + "(" +
-                         string.Join(", ", invocation.Arguments.Select(argument => EmitSetupExpression(argument.Value, compilerArgument))) + ")";
+            expression = EmitBoundInvocation(
+                invocation.TargetMethod,
+                invocation.Arguments,
+                operation => EmitSetupExpression(operation, compilerArgument),
+                EmitSetupExpression(invocation.Instance, compilerArgument));
             return true;
         }
 
         if (IsCurrentComponentMember(invocation.TargetMethod, invocation.Instance))
         {
-            if (invocation.Arguments.Length != invocation.TargetMethod.Parameters.Length)
-                throw CreateUnsupportedSetupLogicException(invocation.TargetMethod);
-
             if (IsUnsupportedSetupHelperMethod(invocation.TargetMethod))
                 throw CreateUnsupportedSetupLogicException(invocation.TargetMethod);
 
             RecordRequiredSetupMethod(invocation.TargetMethod);
-            expression = ToLowerCamelCase(invocation.TargetMethod.Name) + "(" +
-                         string.Join(", ", invocation.Arguments.Select(argument => EmitSetupExpression(argument.Value, compilerArgument))) + ")";
+            expression = EmitBoundInvocation(
+                invocation.TargetMethod,
+                invocation.Arguments,
+                operation => EmitSetupExpression(operation, compilerArgument),
+                target => ToLowerCamelCase(target.Name) + "(",
+                allowTargetEvaluationCapture: false);
             return true;
         }
 
@@ -1636,15 +1635,242 @@ internal sealed partial class RazorVueExpressionEmitter
             _scopedLifecycleLocalFunctionAliases is not null &&
             _scopedLifecycleLocalFunctionAliases.TryGetValue(invocation.TargetMethod, out var localFunctionAlias))
         {
-            expression = localFunctionAlias + "(" +
-                         string.Join(", ", invocation.Arguments.Select(item => useSetupEmitter
-                             ? EmitSetupExpression(item.Value, argument)
-                             : EmitExpression(item.Value, argument))) + ")";
+            expression = EmitBoundInvocation(
+                invocation.TargetMethod,
+                invocation.Arguments,
+                operation => useSetupEmitter
+                    ? EmitSetupExpression(operation, argument)
+                    : EmitExpression(operation, argument),
+                _ => localFunctionAlias + "(",
+                allowTargetEvaluationCapture: false);
             return true;
         }
 
         return false;
     }
+
+    private string EmitBoundInvocation(
+        IMethodSymbol targetMethod,
+        ImmutableArray<IArgumentOperation> arguments,
+        Func<IOperation, string> emitArgument,
+        Func<IMethodSymbol, string> emitTargetPrefix,
+        bool allowTargetEvaluationCapture)
+    {
+        var binding = BindInvocationArguments(targetMethod, arguments, emitArgument, CreateUnsupportedSetupLogicException(targetMethod));
+        var targetPrefix = emitTargetPrefix(targetMethod);
+        return allowTargetEvaluationCapture
+            ? ComposeEvaluationOrderedInvocation(targetPrefix, binding)
+            : ComposeParameterBindingInvocation(targetPrefix, binding);
+    }
+
+    private string EmitBoundInvocation(
+        IMethodSymbol targetMethod,
+        ImmutableArray<IArgumentOperation> arguments,
+        Func<IOperation, string> emitArgument,
+        string targetExpression)
+    {
+        var binding = BindInvocationArguments(targetMethod, arguments, emitArgument, CreateUnsupportedSetupLogicException(targetMethod));
+        if (!RequiresTargetCapture(binding))
+            return ComposeParameterBindingInvocation(targetExpression + "(", binding);
+
+        return ComposeTargetAndParameterBindingInvocation(targetExpression, binding);
+    }
+
+    private LifecyclePayloadEmission EmitLifecyclePayloadBoundInvocation(
+        IMethodSymbol targetMethod,
+        ImmutableArray<IArgumentOperation> arguments,
+        Func<IOperation, LifecyclePayloadEmission> emitArgument,
+        Func<IMethodSymbol, string> emitTarget,
+        Func<Exception> createFailure)
+    {
+        var binding = BindInvocationArguments(targetMethod, arguments, emitArgument, createFailure());
+        var expression = ComposeParameterBindingInvocation(emitTarget(targetMethod) + "(", binding);
+        return new LifecyclePayloadEmission(
+            expression,
+            binding.UsesFirstRender,
+            binding.PreludeBindings);
+    }
+
+    private BoundInvocationArguments<string> BindInvocationArguments(
+        IMethodSymbol targetMethod,
+        ImmutableArray<IArgumentOperation> arguments,
+        Func<IOperation, string> emitArgument,
+        Exception failure)
+    {
+        var canonicalMethod = RazorVueMethodSymbolNormalizer.GetCanonicalMethod(targetMethod);
+        var emittedByParameterOrdinal = new string[canonicalMethod.Parameters.Length];
+        var emittedInSourceOrder = new List<BoundInvocationArgument<string>>(arguments.Length);
+        var boundParameters = new HashSet<IParameterSymbol>(SymbolEqualityComparer.Default);
+
+        foreach (var argument in arguments)
+        {
+            if (argument.Parameter is not { } rawParameter)
+                throw failure;
+
+            var parameter = RazorVueMethodSymbolNormalizer.NormalizeParameter(targetMethod, rawParameter);
+            if (parameter.RefKind != RefKind.None || parameter.Ordinal < 0 || parameter.Ordinal >= emittedByParameterOrdinal.Length)
+                throw failure;
+
+            if (!boundParameters.Add(parameter))
+                throw failure;
+
+            var emitted = emitArgument(argument.Value);
+            emittedByParameterOrdinal[parameter.Ordinal] = emitted;
+            emittedInSourceOrder.Add(new BoundInvocationArgument<string>(parameter, emitted));
+        }
+
+        if (boundParameters.Count != emittedByParameterOrdinal.Length ||
+            emittedByParameterOrdinal.Any(static item => item is null))
+        {
+            throw failure;
+        }
+
+        return new BoundInvocationArguments<string>(
+            canonicalMethod.Parameters.ToArray(),
+            emittedByParameterOrdinal!,
+            emittedInSourceOrder.ToImmutableArray());
+    }
+
+    private BoundInvocationArguments<LifecyclePayloadEmission> BindInvocationArguments(
+        IMethodSymbol targetMethod,
+        ImmutableArray<IArgumentOperation> arguments,
+        Func<IOperation, LifecyclePayloadEmission> emitArgument,
+        Exception failure)
+    {
+        var canonicalMethod = RazorVueMethodSymbolNormalizer.GetCanonicalMethod(targetMethod);
+        var emittedByParameterOrdinal = new LifecyclePayloadEmission[canonicalMethod.Parameters.Length];
+        var emittedInSourceOrder = new List<BoundInvocationArgument<LifecyclePayloadEmission>>(arguments.Length);
+        var boundParameters = new HashSet<IParameterSymbol>(SymbolEqualityComparer.Default);
+        var usesFirstRender = false;
+        var preludeBuilder = ImmutableArray.CreateBuilder<LifecyclePayloadPreludeBinding>();
+
+        foreach (var argument in arguments)
+        {
+            if (argument.Parameter is not { } rawParameter)
+                throw failure;
+
+            var parameter = RazorVueMethodSymbolNormalizer.NormalizeParameter(targetMethod, rawParameter);
+            if (parameter.RefKind != RefKind.None || parameter.Ordinal < 0 || parameter.Ordinal >= emittedByParameterOrdinal.Length)
+                throw failure;
+
+            if (!boundParameters.Add(parameter))
+                throw failure;
+
+            var emitted = emitArgument(argument.Value);
+            emittedByParameterOrdinal[parameter.Ordinal] = emitted;
+            emittedInSourceOrder.Add(new BoundInvocationArgument<LifecyclePayloadEmission>(parameter, emitted));
+            usesFirstRender |= emitted.UsesFirstRender;
+            if (!emitted.PreludeBindings.IsDefaultOrEmpty)
+                preludeBuilder.AddRange(emitted.PreludeBindings);
+        }
+
+        if (boundParameters.Count != emittedByParameterOrdinal.Length ||
+            emittedByParameterOrdinal.Any(static item => item.Expression is null))
+        {
+            throw failure;
+        }
+
+        return new BoundInvocationArguments<LifecyclePayloadEmission>(
+            canonicalMethod.Parameters.ToArray(),
+            emittedByParameterOrdinal!,
+            emittedInSourceOrder.ToImmutableArray(),
+            usesFirstRender,
+            preludeBuilder.ToImmutable());
+    }
+
+    private readonly record struct BoundInvocationArgument<T>(IParameterSymbol Parameter, T Emitted);
+
+    private readonly record struct BoundInvocationArguments<T>(
+        IParameterSymbol[] ParametersByOrdinal,
+        T[] ArgumentsByParameterOrdinal,
+        ImmutableArray<BoundInvocationArgument<T>> ArgumentsInSourceOrder,
+        bool UsesFirstRender = false,
+        ImmutableArray<LifecyclePayloadPreludeBinding> PreludeBindings = default);
+
+    private static string ComposeParameterBindingInvocation(
+        string targetPrefix,
+        BoundInvocationArguments<string> binding)
+    {
+        var declarationOrderArguments = string.Join(", ", binding.ArgumentsByParameterOrdinal);
+        if (ArgumentsAreAlreadyInDeclarationOrder(binding))
+            return targetPrefix + declarationOrderArguments + ")";
+
+        return ComposeEvaluationOrderedInvocation(
+            targetPrefix + string.Join(", ", binding.ParametersByOrdinal.Select(static parameter => parameter.Name)) + ")",
+            binding);
+    }
+
+    private static string ComposeParameterBindingInvocation(
+        string targetPrefix,
+        BoundInvocationArguments<LifecyclePayloadEmission> binding)
+    {
+        var declarationOrderArguments = string.Join(", ", binding.ArgumentsByParameterOrdinal.Select(static item => item.Expression));
+        if (ArgumentsAreAlreadyInDeclarationOrder(binding))
+            return targetPrefix + declarationOrderArguments + ")";
+
+        var call = targetPrefix + string.Join(", ", binding.ParametersByOrdinal.Select(static parameter => parameter.Name)) + ")";
+        for (var index = binding.ArgumentsInSourceOrder.Length - 1; index >= 0; index--)
+        {
+            var argument = binding.ArgumentsInSourceOrder[index];
+            call = "((" + argument.Parameter.Name + ") => " + call + ")(" + argument.Emitted.Expression + ")";
+        }
+
+        return call;
+    }
+
+    private static string ComposeEvaluationOrderedInvocation(
+        string targetPrefix,
+        BoundInvocationArguments<string> binding)
+    {
+        var declarationOrderArguments = string.Join(", ", binding.ArgumentsByParameterOrdinal);
+        var call = targetPrefix + declarationOrderArguments + ")";
+        for (var index = binding.ArgumentsInSourceOrder.Length - 1; index >= 0; index--)
+        {
+            var argument = binding.ArgumentsInSourceOrder[index];
+            call = "((" + argument.Parameter.Name + ") => " + call + ")(" + argument.Emitted + ")";
+        }
+
+        return call;
+    }
+
+    private static string ComposeTargetAndParameterBindingInvocation(
+        string targetExpression,
+        BoundInvocationArguments<string> binding)
+    {
+        var call = "__jazorTarget(" + string.Join(", ", binding.ParametersByOrdinal.Select(static parameter => parameter.Name)) + ")";
+        for (var index = binding.ArgumentsInSourceOrder.Length - 1; index >= 0; index--)
+        {
+            var argument = binding.ArgumentsInSourceOrder[index];
+            call = "((" + argument.Parameter.Name + ") => " + call + ")(" + argument.Emitted + ")";
+        }
+
+        return "((__jazorTarget) => " + call + ")(" + targetExpression + ")";
+    }
+
+    private static bool ArgumentsAreAlreadyInDeclarationOrder(BoundInvocationArguments<string> binding)
+    {
+        for (var index = 0; index < binding.ArgumentsInSourceOrder.Length; index++)
+        {
+            if (binding.ArgumentsInSourceOrder[index].Parameter.Ordinal != index)
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool ArgumentsAreAlreadyInDeclarationOrder(BoundInvocationArguments<LifecyclePayloadEmission> binding)
+    {
+        for (var index = 0; index < binding.ArgumentsInSourceOrder.Length; index++)
+        {
+            if (binding.ArgumentsInSourceOrder[index].Parameter.Ordinal != index)
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool RequiresTargetCapture(BoundInvocationArguments<string> binding)
+        => !ArgumentsAreAlreadyInDeclarationOrder(binding);
 
     private string EmitMemberInvocationTarget(
         IOperation instance,

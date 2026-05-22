@@ -490,7 +490,6 @@ current-component field 现也支持一个更窄的受控子集：
 
 - `async` helper-call payload
 - `Task` / `ValueTask` 返回 helper-call payload
-- 非精确 arity 的 current-component helper-call payload
 - 越出当前 setup helper lowering 合同的一般 current-component method-call payload
 - mutable/later-written property / field
 - 超出当前 source-stable lifecycle prelude + compiler-owned lowering 合同的更宽动态 payload
@@ -498,9 +497,12 @@ current-component field 现也支持一个更窄的受控子集：
 ### 当前已支持的 helper payload 子集
 
 - 当前组件内 helper / method 调用
-- 调用点参数个数与 helper 签名完全一致
 - helper 本身继续满足 setup helper lowering 合同：同步、源码可分析、非 `Task` / `ValueTask` 返回、body 可收敛到单表达式 / 单返回
+- 调用参数绑定继续沿 Roslyn `IInvocationOperation.Arguments` 语义走，不额外私造 RazorVue 参数协议
+- ordinary / named argument 都支持；named argument 即使乱序，也会保持“按调用点源码顺序求值、按形参声明顺序落位”
+- omitted optional default 与按 Roslyn 绑定成单数组形参的 `params` 调用都支持
 - helper 体内部对 declaration-initialized property / field、getter-bodied property、以及其他同步 helper 的依赖，继续沿同一 setup/property/field/method lowering 主线递归展开
+- `firstRender` payload 下这组 helper-call 仍会保留 `const currentFirstRender = firstRender; firstRender = false;` 的 snapshot 语义；RazorVue 只负责参数别名和调用 framing，具体 CLR/type/member lowering 仍交给 `EmitSetupExpression(...) -> SemanticWalker -> Jazor.Compiler`
 
 ### `firstRender` 的 compiler-owned fallback
 
@@ -528,7 +530,7 @@ current-component field 现也支持一个更窄的受控子集：
 - `firstRender is object`
 - `firstRender is bool ready && ready`
 - `firstRender switch { ... }`
-- 继续满足 setup helper lowering 合同的受控 helper-call payload，例如 `Normalize(firstRender)`
+- 继续满足 setup helper lowering 合同的受控 helper-call payload，例如 `Normalize(firstRender)`、`Normalize(firstRender, prefix: "ready:")`、`Normalize(suffix: "!", value: firstRender, prefix: "ready:")`
 - source-stable tuple deconstruction payload，例如 `var pair = (firstRender, new ReadyState(firstRender)); var (_, readyState) = pair; readyState.Value`
 - source-stable local function payload，例如 `bool NormalizeReady(bool value) => value; NormalizeReady(firstRender)`
 - source-stable local lambda / delegate payload，例如 `Func<bool, bool> normalizeReady = static value => value; normalizeReady(firstRender)`
