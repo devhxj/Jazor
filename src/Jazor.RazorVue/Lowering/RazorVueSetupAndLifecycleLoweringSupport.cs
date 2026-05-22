@@ -641,11 +641,11 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         SupportedEmitCall emitCall,
         string indent)
     {
-        if (emitCall.PreludeLocals.IsDefaultOrEmpty)
+        if (emitCall.PreludeBindings.IsDefaultOrEmpty)
             return;
 
-        foreach (var local in emitCall.PreludeLocals)
-            builder.Append(indent).Append("const ").Append(local.Alias).Append(" = ").Append(local.Expression).AppendLine(";");
+        foreach (var binding in emitCall.PreludeBindings)
+            builder.Append(indent).AppendLine(binding.Code);
     }
 
     private static LifecycleHookPlan? TryPlanLifecycleHook(
@@ -927,12 +927,6 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         if (statements.Count < 2)
             return false;
 
-        for (var index = 0; index < statements.Count - 1; index++)
-        {
-            if (statements[index] is not LocalDeclarationStatementSyntax)
-                return false;
-        }
-
         var lastStatement = statements[statements.Count - 1];
         ExpressionSyntax? emitExpression = lastStatement switch
         {
@@ -952,20 +946,58 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             methodBodyOperation.BlockBody?.Operations ?? ImmutableArray<IOperation>.Empty,
             RazorVueSourceStableLocalInitializerHelper.CanParticipateInLifecycleCompilerFallback);
 
-        foreach (var declaration in statements.Take(statements.Count - 1).OfType<LocalDeclarationStatementSyntax>())
+        foreach (var statement in statements.Take(statements.Count - 1))
         {
-            foreach (var variable in declaration.Declaration.Variables)
-            {
-                if (semanticModel.GetDeclaredSymbol(variable) is not ILocalSymbol local ||
-                    !localInitializers.ContainsKey(local))
-                {
-                    return false;
-                }
-            }
+            if (!TryValidateLifecyclePrefixDeclarations(statement, semanticModel, localInitializers))
+                return false;
         }
 
         emitCall = ExtractSupportedEmitCall(snapshot, expressionEmitter, method, emitExpression, allowFirstRenderPayload);
         return true;
+    }
+
+    private static bool TryValidateLifecyclePrefixDeclarations(
+        StatementSyntax statement,
+        SemanticModel semanticModel,
+        IReadOnlyDictionary<ILocalSymbol, IOperation> localInitializers)
+    {
+        switch (semanticModel.GetOperation(statement))
+        {
+            case IVariableDeclarationGroupOperation declarationGroup:
+                var hasDeclarator = false;
+                foreach (var declaration in declarationGroup.Declarations)
+                {
+                    foreach (var declarator in declaration.Declarators)
+                    {
+                        hasDeclarator = true;
+                        if (!localInitializers.ContainsKey(declarator.Symbol))
+                            return false;
+                    }
+                }
+
+                return hasDeclarator;
+            case ILocalFunctionOperation:
+                return true;
+            case IExpressionStatementOperation { Operation: IDeconstructionAssignmentOperation }:
+                var declaredLocals = statement
+                    .DescendantNodes()
+                    .OfType<SingleVariableDesignationSyntax>()
+                    .Select(designation => semanticModel.GetDeclaredSymbol(designation))
+                    .OfType<ILocalSymbol>()
+                    .ToImmutableArray();
+                if (declaredLocals.IsDefaultOrEmpty)
+                    return false;
+
+                foreach (var local in declaredLocals)
+                {
+                    if (!localInitializers.ContainsKey(local))
+                        return false;
+                }
+
+                return true;
+            default:
+                return false;
+        }
     }
 
     private static SupportedEmitCall? ExtractSupportedEmitCall(
@@ -994,7 +1026,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
         var emitName = ToLifecycleEmitName(method, callbackName);
         if (invocation.ArgumentList.Arguments.Count == 0)
-            return new SupportedEmitCall(emitName, null, false, ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadLocalBinding>.Empty);
+            return new SupportedEmitCall(emitName, null, false, ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>.Empty);
 
         if (invocation.ArgumentList.Arguments.Count != 1)
             throw CreateUnsupportedLifecycleLoweringException(method);
@@ -1010,7 +1042,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             var payload = expressionEmitter is null
                 ? RazorVueExpressionEmitter.EmitLifecyclePayload(snapshot, method, payloadOperation, allowFirstRenderPayload)
                 : expressionEmitter.EmitLifecyclePayload(method, payloadOperation, allowFirstRenderPayload);
-            return new SupportedEmitCall(emitName, payload.Expression, payload.UsesFirstRender, payload.PreludeLocals);
+            return new SupportedEmitCall(emitName, payload.Expression, payload.UsesFirstRender, payload.PreludeBindings);
         }
         catch (NotSupportedException)
         {
@@ -1594,12 +1626,12 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
     private static string DescribeEmitCallShape(SupportedEmitCall emitCall)
     {
         var payload = emitCall.PayloadExpression ?? string.Empty;
-        if (emitCall.PreludeLocals.IsDefaultOrEmpty)
+        if (emitCall.PreludeBindings.IsDefaultOrEmpty)
             return emitCall.EmitName + "|" + payload;
 
         var prelude = string.Join(
             ";",
-            emitCall.PreludeLocals.Select(static local => local.Alias + "=" + local.Expression));
+            emitCall.PreludeBindings.Select(static binding => binding.Code));
         return emitCall.EmitName + "|" + payload + "|locals:" + prelude;
     }
 
@@ -1831,7 +1863,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         string EmitName,
         string? PayloadExpression,
         bool UsesFirstRender,
-        ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadLocalBinding> PreludeLocals);
+        ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding> PreludeBindings);
     private sealed record SetParametersAsyncAnalysis(bool IsSupported, SupportedEmitCall? EmitCall);
     private sealed record ShouldRenderAnalysis(bool IsSupported);
 }

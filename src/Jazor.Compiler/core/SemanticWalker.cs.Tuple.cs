@@ -13,28 +13,40 @@ public partial class SemanticWalker
 	private static string GetTupleRuntimeFieldName(IFieldSymbol field)
 		=> Util.GetConfigOrSymbolName(field);
 
-	private static bool ShouldLowerRecordStructurally(INamedTypeSymbol? namedType)
-		=> StructuralRecordSupport.IsStructuralRecordType(namedType);
+	private bool ShouldLowerStructurally(INamedTypeSymbol? namedType)
+		=> IsStructuralType(namedType);
 
-	private static bool TryGetRecordRuntimePropertyName(INamedTypeSymbol recordType, int index, out string propertyName)
+	private bool TryGetStructuralRuntimePropertyName(INamedTypeSymbol structuralType, int index, out string propertyName)
 	{
 		propertyName = null!;
 
-		var constructor = recordType.Constructors
-			.FirstOrDefault(ctor => !ctor.IsStatic && ctor.Parameters.Length > index);
-		if (constructor is null)
+		if (StructuralRecordSupport.IsStructuralRecordType(structuralType))
+		{
+			var constructor = structuralType.Constructors
+				.FirstOrDefault(ctor => !ctor.IsStatic && ctor.Parameters.Length > index);
+			if (constructor is null)
+				return false;
+
+			var parameter = constructor.Parameters[index];
+			var property = EnumerateNamedTypeHierarchyBaseFirst(structuralType)
+				.SelectMany(static current => current.GetMembers().OfType<IPropertySymbol>())
+				.FirstOrDefault(member =>
+					!member.IsStatic &&
+					string.Equals(member.Name, parameter.Name, System.StringComparison.OrdinalIgnoreCase));
+
+			propertyName = property is null
+				? parameter.Name
+				: Util.GetConfigOrSymbolName(property);
+			return true;
+		}
+
+		if (!TryGetStructuralSourceDataCarrierMemberOrder(structuralType, out var members) ||
+			index >= members.Length)
+		{
 			return false;
+		}
 
-		var parameter = constructor.Parameters[index];
-		var property = EnumerateNamedTypeHierarchyBaseFirst(recordType)
-			.SelectMany(static current => current.GetMembers().OfType<IPropertySymbol>())
-			.FirstOrDefault(member =>
-				!member.IsStatic &&
-				string.Equals(member.Name, parameter.Name, System.StringComparison.OrdinalIgnoreCase));
-
-		propertyName = property is null
-			? parameter.Name
-			: Util.GetConfigOrSymbolName(property);
+		propertyName = Util.GetConfigOrSymbolName(members[index]);
 		return true;
 	}
 
@@ -625,7 +637,7 @@ public partial class SemanticWalker
 				}
 			}
 			else if (valueType is INamedTypeSymbol recordType &&
-					 ShouldLowerRecordStructurally(recordType) &&
+					 ShouldLowerStructurally(recordType) &&
 					 value is IOperation recordExpr)
 			{
 				ITupleOperation tupleResult;
@@ -663,9 +675,9 @@ public partial class SemanticWalker
 					if (element is IDiscardOperation)
 						continue;
 
-					if (!TryGetRecordRuntimePropertyName(recordType, index, out var propertyName))
+					if (!TryGetStructuralRuntimePropertyName(recordType, index, out var propertyName))
 					{
-						HandleTransformationFailure<Node>(target, $"Record type '{recordType.ToDisplayString(Jazor.Common.Format.NameFormat)}' could not resolve positional member {index} for deconstruction.");
+						HandleTransformationFailure<Node>(target, $"Structural type '{recordType.ToDisplayString(Jazor.Common.Format.NameFormat)}' could not resolve positional member {index} for deconstruction.");
 						return;
 					}
 

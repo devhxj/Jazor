@@ -5,27 +5,45 @@ namespace Jazor.Common;
 
 public static class StructuralRecordSupport
 {
+	public delegate bool SourceDataCarrierTypePredicate(INamedTypeSymbol typeSymbol);
+
 	public static bool IsStructuralRecordType(ITypeSymbol? typeSymbol)
 		=> typeSymbol is INamedTypeSymbol { IsRecord: true };
 
+	public static bool IsStructuralType(
+		ITypeSymbol? typeSymbol,
+		SourceDataCarrierTypePredicate? sourceDataCarrierPredicate = null)
+		=> typeSymbol is INamedTypeSymbol namedType &&
+		   (namedType.IsRecord || sourceDataCarrierPredicate?.Invoke(namedType) == true);
+
 	public static bool IsStructuralRecordMember(ISymbol? symbol)
+		=> IsStructuralMember(symbol);
+
+	public static bool IsStructuralMember(
+		ISymbol? symbol,
+		SourceDataCarrierTypePredicate? sourceDataCarrierPredicate = null)
 		=> symbol switch
 		{
-			IPropertySymbol property => IsStructuralRecordProperty(property),
+			IPropertySymbol property => IsStructuralProperty(property, sourceDataCarrierPredicate),
 			IFieldSymbol { IsStatic: false, ContainingType: { } containingType } =>
-				IsStructuralRecordType(containingType),
+				IsStructuralType(containingType, sourceDataCarrierPredicate),
 			IMethodSymbol
 			{
 				MethodKind: MethodKind.PropertyGet or MethodKind.PropertySet,
 				AssociatedSymbol: IPropertySymbol property
-			} => IsStructuralRecordMember(property),
+			} => IsStructuralMember(property, sourceDataCarrierPredicate),
 			_ => false
 		};
 
 	private static bool IsStructuralRecordProperty(IPropertySymbol property)
+		=> IsStructuralProperty(property);
+
+	private static bool IsStructuralProperty(
+		IPropertySymbol property,
+		SourceDataCarrierTypePredicate? sourceDataCarrierPredicate = null)
 	{
 		if (property is not { IsStatic: false, Parameters.Length: 0, ContainingType: { } containingType } ||
-			!IsStructuralRecordType(containingType))
+			!IsStructuralType(containingType, sourceDataCarrierPredicate))
 		{
 			return false;
 		}
@@ -54,6 +72,26 @@ public static class StructuralRecordSupport
 	private static bool IsSourceDeclaredProperty(IPropertySymbol property)
 		=> property.Locations.Any(static location => location.IsInSource);
 
+	public static bool IsSourceDeclaredAutoPropertyCandidate(IPropertySymbol property)
+	{
+		if (property is not { IsStatic: false, Parameters.Length: 0, ContainingType: { } } ||
+			!IsSourceDeclaredProperty(property))
+		{
+			return false;
+		}
+
+		foreach (var member in property.ContainingType.GetMembers())
+		{
+			if (member is IFieldSymbol { IsStatic: false } field &&
+				IsBackingFieldForProperty(field, property))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	private static bool IsMetadataStructuralSettableProperty(IPropertySymbol property)
 	{
 		var setMethod = property.SetMethod;
@@ -76,24 +114,35 @@ public static class StructuralRecordSupport
 	}
 
 	public static bool IsNonStructuralRecordRuntimeMember(ISymbol? symbol, ITypeSymbol? hostType = null)
+		=> IsNonStructuralRuntimeMember(symbol, hostType);
+
+	public static bool IsNonStructuralRuntimeMember(
+		ISymbol? symbol,
+		ITypeSymbol? hostType = null,
+		SourceDataCarrierTypePredicate? sourceDataCarrierPredicate = null)
 	{
 		if (symbol is null ||
-			IsStructuralRecordMember(symbol) ||
+			IsStructuralMember(symbol, sourceDataCarrierPredicate) ||
 			IsExtensionMethod(symbol))
 		{
 			return false;
 		}
 
-		if (IsStructuralRecordType(symbol.ContainingType) ||
-			IsStructuralRecordType(symbol.OriginalDefinition.ContainingType))
+		if (IsStructuralType(symbol.ContainingType, sourceDataCarrierPredicate) ||
+			IsStructuralType(symbol.OriginalDefinition.ContainingType, sourceDataCarrierPredicate))
 		{
 			return true;
 		}
 
-		return IsStructuralRecordType(hostType);
+		return IsStructuralType(hostType, sourceDataCarrierPredicate);
 	}
 
 	public static bool IsStructuralRecordRuntimeSemanticInvocation(IInvocationOperation? invocation)
+		=> IsStructuralRuntimeSemanticInvocation(invocation);
+
+	public static bool IsStructuralRuntimeSemanticInvocation(
+		IInvocationOperation? invocation,
+		SourceDataCarrierTypePredicate? sourceDataCarrierPredicate = null)
 	{
 		if (invocation is null ||
 			!IsRecordRuntimeSemanticMember(invocation.TargetMethod))
@@ -101,12 +150,12 @@ public static class StructuralRecordSupport
 			return false;
 		}
 
-		if (IsStructuralRecordOperand(invocation.Instance))
+		if (IsStructuralOperand(invocation.Instance, sourceDataCarrierPredicate))
 			return true;
 
 		foreach (var argument in invocation.Arguments)
 		{
-			if (IsStructuralRecordOperand(argument.Value))
+			if (IsStructuralOperand(argument.Value, sourceDataCarrierPredicate))
 				return true;
 		}
 
@@ -129,10 +178,15 @@ public static class StructuralRecordSupport
 	}
 
 	private static bool IsStructuralRecordOperand(IOperation? operation)
+		=> IsStructuralOperand(operation);
+
+	private static bool IsStructuralOperand(
+		IOperation? operation,
+		SourceDataCarrierTypePredicate? sourceDataCarrierPredicate = null)
 	{
 		for (var current = operation; current is not null;)
 		{
-			if (IsStructuralRecordType(current.Type))
+			if (IsStructuralType(current.Type, sourceDataCarrierPredicate))
 				return true;
 
 			current = current switch

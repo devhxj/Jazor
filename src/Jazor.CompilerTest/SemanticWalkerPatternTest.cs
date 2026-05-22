@@ -7116,6 +7116,58 @@ line2"";
   }
 
   [TestMethod]
+  public void Visit_PropertyPattern_SourceDataCarrierWithOptIn_UsesStructuralSingleEvaluationMatch()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                public readonly struct ReadyState
+                {
+                    public ReadyState(bool value)
+                    {
+                        Value = value;
+                    }
+
+                    public bool Value { get; }
+                }
+
+                public sealed class ReadyEnvelope
+                {
+                    public ReadyEnvelope(ReadyState state)
+                    {
+                        State = state;
+                    }
+
+                    public ReadyState State { get; }
+                }
+
+                void TestMethod(bool firstRender)
+                {
+                    if (new ReadyEnvelope(new ReadyState(firstRender)) is { State.Value: true })
+                    {
+                        Console.WriteLine(""match"");
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true)
+    {
+      AllowStructuralSourceDataCarrierLowering = true
+    };
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    StringAssert.Contains(script, "let v$0;");
+    StringAssert.Contains(script, "v$0 = { state: { value: firstRender } }");
+    StringAssert.Contains(script, "v$0 != null");
+    StringAssert.Contains(script, "\"state\" in v$0");
+    StringAssert.Contains(script, "v$0.state != null");
+    StringAssert.Contains(script, "\"value\" in v$0.state && v$0.state.value === true");
+    StringAssert.Contains(script, "console.log(\"match\");");
+  }
+
+  [TestMethod]
   public void Visit_TypePattern_Record_BareType_Throws()
   {
     var block = GetBlockOperation(@"

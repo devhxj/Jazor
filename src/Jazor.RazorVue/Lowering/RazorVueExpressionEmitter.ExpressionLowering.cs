@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using Acornima.Ast;
 using Jazor.Compiler;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
@@ -93,7 +94,6 @@ internal sealed partial class RazorVueExpressionEmitter
             _snapshot.Compilation,
             GetLifecycleMethodOperations(lifecycleMethod),
             RazorVueSourceStableLocalInitializerHelper.CanParticipateInLifecycleCompilerFallback);
-
         if (!MayContainLifecycleFirstRenderReference(lifecycleMethod, operation, sourceStableLocals))
             return false;
 
@@ -102,18 +102,34 @@ internal sealed partial class RazorVueExpressionEmitter
 
         try
         {
-            var orderedLocals = OrderLifecycleSourceStableLocals(sourceStableLocals);
+            var dependencies = CollectLifecycleCompilerFallbackDependencies(operation, sourceStableLocals);
+            var requiredLocals = dependencies.SourceStableLocals;
+            var orderedLocals = OrderLifecycleSourceStableLocals(requiredLocals);
             var localAliases = CreateLifecycleSourceStableLocalAliases(orderedLocals);
-            var localBindings = EmitLifecycleSourceStableLocalBindings(orderedLocals, localAliases, firstRenderParameter);
+            var localFunctions = dependencies.LocalFunctions;
+            var localFunctionAliases = CreateLifecycleLocalFunctionAliases(localFunctions);
+            var callableLocals = dependencies.CallableLocals;
+            var callableLocalAliases = CreateLifecycleCallableLocalAliases(callableLocals);
+            var preludeBindings = EmitLifecyclePreludeBindings(
+                orderedLocals,
+                localAliases,
+                localFunctions,
+                localFunctionAliases,
+                callableLocals,
+                callableLocalAliases,
+                firstRenderParameter);
             var expression = WithSourceStableLocalInitializers(
-                sourceStableLocals,
-                () => WithScopedLocalAliases(
-                    localAliases,
-                    () => WithScopedParameterAliases(
-                        ImmutableDictionary.Create<IParameterSymbol, string>(SymbolEqualityComparer.Default)
-                            .Add(firstRenderParameter, "currentFirstRender"),
-                        () => EmitSetupExpression(operation))));
-            emission = new LifecyclePayloadEmission(expression, true, localBindings);
+                requiredLocals,
+                () => WithScopedLifecycleCallableAliases(
+                    callableLocalAliases,
+                    localFunctionAliases,
+                    () => WithScopedLocalAliases(
+                        localAliases,
+                        () => WithScopedParameterAliases(
+                            ImmutableDictionary.Create<IParameterSymbol, string>(SymbolEqualityComparer.Default)
+                                .Add(firstRenderParameter, "currentFirstRender"),
+                            () => EmitSetupExpression(operation)))));
+            emission = new LifecyclePayloadEmission(expression, true, preludeBindings);
             return true;
         }
         catch (RazorVueCompilationIssueException)
@@ -123,6 +139,152 @@ internal sealed partial class RazorVueExpressionEmitter
         catch (Exception ex) when (ex is NotSupportedException or OperationTransformationException)
         {
             return false;
+        }
+    }
+
+    private static Dictionary<ILocalSymbol, IOperation> CollectLifecycleReferencedSourceStableLocals(
+        IOperation operation,
+        IReadOnlyDictionary<ILocalSymbol, IOperation> sourceStableLocals)
+    {
+        var result = new Dictionary<ILocalSymbol, IOperation>(SymbolEqualityComparer.Default);
+        if (sourceStableLocals.Count == 0)
+            return result;
+
+        var visiting = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
+
+        collect(operation);
+        return result;
+
+        void collect(IOperation currentOperation)
+        {
+            foreach (var descendant in currentOperation.DescendantsAndSelf())
+            {
+                if (descendant is not ILocalReferenceOperation localReference ||
+                    !sourceStableLocals.TryGetValue(localReference.Local, out var initializer))
+                {
+                    continue;
+                }
+
+                result[localReference.Local] = initializer;
+                if (!visiting.Add(localReference.Local))
+                    continue;
+
+                try
+                {
+                    collect(initializer);
+                }
+                finally
+                {
+                    visiting.Remove(localReference.Local);
+                }
+            }
+        }
+    }
+
+    private LifecycleCompilerFallbackDependencies CollectLifecycleCompilerFallbackDependencies(
+        IOperation operation,
+        IReadOnlyDictionary<ILocalSymbol, IOperation> sourceStableLocals)
+    {
+        var requiredLocals = new Dictionary<ILocalSymbol, IOperation>(SymbolEqualityComparer.Default);
+        var localFunctions = new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default);
+        var callableLocals = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
+        var visitingLocals = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
+        var visitingLocalFunctions = new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default);
+        var visitingCallableLocals = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
+
+        collect(operation);
+
+        return new LifecycleCompilerFallbackDependencies(
+            requiredLocals,
+            localFunctions
+                .OrderBy(static method => method.Locations.FirstOrDefault(static location => location.IsInSource)?.SourceTree?.FilePath ?? string.Empty, StringComparer.Ordinal)
+                .ThenBy(static method => method.Locations.FirstOrDefault(static location => location.IsInSource)?.SourceSpan.Start ?? int.MaxValue)
+                .ThenBy(static method => method.ToDisplayString(), StringComparer.Ordinal)
+                .ToImmutableArray(),
+            callableLocals
+                .OrderBy(static local => local.Locations.FirstOrDefault(static location => location.IsInSource)?.SourceTree?.FilePath ?? string.Empty, StringComparer.Ordinal)
+                .ThenBy(static local => local.Locations.FirstOrDefault(static location => location.IsInSource)?.SourceSpan.Start ?? int.MaxValue)
+                .ThenBy(static local => local.Name, StringComparer.Ordinal)
+                .ToImmutableArray());
+
+        void collect(IOperation currentOperation)
+        {
+            foreach (var descendant in currentOperation.DescendantsAndSelf())
+            {
+                switch (descendant)
+                {
+                    case ILocalReferenceOperation localReference:
+                        if (sourceStableLocals.TryGetValue(localReference.Local, out var initializer))
+                        {
+                            requiredLocals[localReference.Local] = initializer;
+                            if (!visitingLocals.Add(localReference.Local))
+                                continue;
+
+                            try
+                            {
+                                collect(initializer);
+                            }
+                            finally
+                            {
+                                visitingLocals.Remove(localReference.Local);
+                            }
+
+                            continue;
+                        }
+
+                        if (localReference.Local.Type?.TypeKind == TypeKind.Delegate &&
+                            callableLocals.Add(localReference.Local) &&
+                            visitingCallableLocals.Add(localReference.Local))
+                        {
+                            try
+                            {
+                                collect(GetLifecycleCallableInitializer(localReference.Local));
+                            }
+                            finally
+                            {
+                                visitingCallableLocals.Remove(localReference.Local);
+                            }
+                        }
+
+                        continue;
+
+                    case IInvocationOperation invocation when invocation.TargetMethod.MethodKind == MethodKind.LocalFunction:
+                        if (!localFunctions.Add(invocation.TargetMethod) ||
+                            !visitingLocalFunctions.Add(invocation.TargetMethod))
+                        {
+                            continue;
+                        }
+
+                        try
+                        {
+                            collect(GetLifecycleLocalFunctionOperation(invocation.TargetMethod));
+                        }
+                        finally
+                        {
+                            visitingLocalFunctions.Remove(invocation.TargetMethod);
+                        }
+
+                        continue;
+
+                    case IMethodReferenceOperation methodReference when methodReference.Method.MethodKind == MethodKind.LocalFunction:
+                        if (!localFunctions.Add(methodReference.Method) ||
+                            !visitingLocalFunctions.Add(methodReference.Method))
+                        {
+                            continue;
+                        }
+
+                        try
+                        {
+                            collect(GetLifecycleLocalFunctionOperation(methodReference.Method));
+                        }
+                        finally
+                        {
+                            visitingLocalFunctions.Remove(methodReference.Method);
+                        }
+
+                        continue;
+                }
+            }
         }
     }
 
@@ -151,49 +313,255 @@ internal sealed partial class RazorVueExpressionEmitter
         return aliases;
     }
 
-    private ImmutableArray<LifecyclePayloadLocalBinding> EmitLifecycleSourceStableLocalBindings(
+    private static IReadOnlyDictionary<IMethodSymbol, string> CreateLifecycleLocalFunctionAliases(
+        ImmutableArray<IMethodSymbol> orderedLocalFunctions)
+    {
+        var aliases = new Dictionary<IMethodSymbol, string>(SymbolEqualityComparer.Default);
+        foreach (var method in orderedLocalFunctions)
+            aliases[method] = "__jazorLifecycleLocalFunction" + Jazor.Common.Format.HashName(method.ToDisplayString()).TrimStart('_');
+
+        return aliases;
+    }
+
+    private static IReadOnlyDictionary<ILocalSymbol, string> CreateLifecycleCallableLocalAliases(
+        ImmutableArray<ILocalSymbol> orderedCallableLocals)
+    {
+        var aliases = new Dictionary<ILocalSymbol, string>(SymbolEqualityComparer.Default);
+        foreach (var local in orderedCallableLocals)
+            aliases[local] = "__jazorLifecycleCallable" + Jazor.Common.Format.HashName(local.ToDisplayString()).TrimStart('_');
+
+        return aliases;
+    }
+
+    private ImmutableArray<LifecyclePayloadPreludeBinding> EmitLifecyclePreludeBindings(
         ImmutableArray<KeyValuePair<ILocalSymbol, IOperation>> orderedLocals,
         IReadOnlyDictionary<ILocalSymbol, string> localAliases,
+        ImmutableArray<IMethodSymbol> orderedLocalFunctions,
+        IReadOnlyDictionary<IMethodSymbol, string> localFunctionAliases,
+        ImmutableArray<ILocalSymbol> orderedCallableLocals,
+        IReadOnlyDictionary<ILocalSymbol, string> callableLocalAliases,
         IParameterSymbol firstRenderParameter)
     {
-        if (orderedLocals.IsDefaultOrEmpty)
-            return ImmutableArray<LifecyclePayloadLocalBinding>.Empty;
+        if (orderedLocals.IsDefaultOrEmpty &&
+            orderedLocalFunctions.IsDefaultOrEmpty &&
+            orderedCallableLocals.IsDefaultOrEmpty)
+        {
+            return ImmutableArray<LifecyclePayloadPreludeBinding>.Empty;
+        }
 
-        var builder = ImmutableArray.CreateBuilder<LifecyclePayloadLocalBinding>(orderedLocals.Length);
+        var builder = ImmutableArray.CreateBuilder<LifecyclePayloadPreludeBinding>();
         foreach (var pair in orderedLocals)
         {
             var alias = localAliases[pair.Key];
-            var remainingInitializers = new Dictionary<ILocalSymbol, IOperation>(SymbolEqualityComparer.Default);
-            foreach (var candidate in orderedLocals)
-            {
-                if (SymbolEqualityComparer.Default.Equals(candidate.Key, pair.Key))
-                    continue;
+            var expression = EmitLifecyclePreludeScopedExpression(
+                pair.Value,
+                orderedLocals,
+                localAliases,
+                localFunctionAliases,
+                callableLocalAliases,
+                firstRenderParameter,
+                excludedLocal: pair.Key,
+                excludedLocalFunction: null,
+                excludedCallableLocal: null);
+            builder.Add(LifecyclePayloadPreludeBinding.Const(alias, expression));
+        }
 
-                remainingInitializers[candidate.Key] = candidate.Value;
-            }
+        foreach (var localFunction in orderedLocalFunctions)
+        {
+            var alias = localFunctionAliases[localFunction];
+            var functionCode = EmitLifecycleLocalFunctionPrelude(
+                localFunction,
+                alias,
+                orderedLocals,
+                localAliases,
+                localFunctionAliases,
+                callableLocalAliases,
+                firstRenderParameter);
+            builder.Add(LifecyclePayloadPreludeBinding.Statement(functionCode));
+        }
 
-            var remainingAliases = new Dictionary<ILocalSymbol, string>(SymbolEqualityComparer.Default);
-            foreach (var candidate in localAliases)
-            {
-                if (SymbolEqualityComparer.Default.Equals(candidate.Key, pair.Key))
-                    continue;
+        foreach (var callableLocal in orderedCallableLocals)
+        {
+            var alias = callableLocalAliases[callableLocal];
+            var expression = EmitLifecyclePreludeScopedExpression(
+                GetLifecycleCallableInitializer(callableLocal),
+                orderedLocals,
+                localAliases,
+                localFunctionAliases,
+                callableLocalAliases,
+                firstRenderParameter,
+                excludedLocal: null,
+                excludedLocalFunction: null,
+                excludedCallableLocal: callableLocal);
+            builder.Add(LifecyclePayloadPreludeBinding.Const(alias, expression));
+        }
 
-                remainingAliases[candidate.Key] = candidate.Value;
-            }
+        return builder.ToImmutable();
+    }
 
-            var expression = WithSourceStableLocalInitializers(
-                remainingInitializers,
+    private string EmitLifecyclePreludeScopedExpression(
+        IOperation operation,
+        ImmutableArray<KeyValuePair<ILocalSymbol, IOperation>> orderedLocals,
+        IReadOnlyDictionary<ILocalSymbol, string> localAliases,
+        IReadOnlyDictionary<IMethodSymbol, string> localFunctionAliases,
+        IReadOnlyDictionary<ILocalSymbol, string> callableLocalAliases,
+        IParameterSymbol firstRenderParameter,
+        ILocalSymbol? excludedLocal,
+        IMethodSymbol? excludedLocalFunction,
+        ILocalSymbol? excludedCallableLocal)
+    {
+        var remainingInitializers = new Dictionary<ILocalSymbol, IOperation>(SymbolEqualityComparer.Default);
+        foreach (var candidate in orderedLocals)
+        {
+            if (excludedLocal is not null && SymbolEqualityComparer.Default.Equals(candidate.Key, excludedLocal))
+                continue;
+
+            remainingInitializers[candidate.Key] = candidate.Value;
+        }
+
+        var remainingAliases = new Dictionary<ILocalSymbol, string>(SymbolEqualityComparer.Default);
+        foreach (var candidate in localAliases)
+        {
+            if (excludedLocal is not null && SymbolEqualityComparer.Default.Equals(candidate.Key, excludedLocal))
+                continue;
+
+            remainingAliases[candidate.Key] = candidate.Value;
+        }
+
+        var remainingFunctionAliases = new Dictionary<IMethodSymbol, string>(SymbolEqualityComparer.Default);
+        foreach (var candidate in localFunctionAliases)
+        {
+            if (excludedLocalFunction is not null && SymbolEqualityComparer.Default.Equals(candidate.Key, excludedLocalFunction))
+                continue;
+
+            remainingFunctionAliases[candidate.Key] = candidate.Value;
+        }
+
+        var remainingCallableAliases = new Dictionary<ILocalSymbol, string>(SymbolEqualityComparer.Default);
+        foreach (var candidate in callableLocalAliases)
+        {
+            if (excludedCallableLocal is not null && SymbolEqualityComparer.Default.Equals(candidate.Key, excludedCallableLocal))
+                continue;
+
+            remainingCallableAliases[candidate.Key] = candidate.Value;
+        }
+
+        return WithSourceStableLocalInitializers(
+            remainingInitializers,
+            () => WithScopedLifecycleCallableAliases(
+                remainingCallableAliases,
+                remainingFunctionAliases,
                 () => WithScopedLocalAliases(
                     remainingAliases,
                     () => WithScopedParameterAliases(
                         ImmutableDictionary.Create<IParameterSymbol, string>(SymbolEqualityComparer.Default)
                             .Add(firstRenderParameter, "currentFirstRender"),
-                        () => EmitSetupExpression(pair.Value))));
-            builder.Add(new LifecyclePayloadLocalBinding(alias, expression));
+                        () => EmitSetupExpression(operation)))));
+    }
+
+    private string EmitLifecycleLocalFunctionPrelude(
+        IMethodSymbol localFunction,
+        string alias,
+        ImmutableArray<KeyValuePair<ILocalSymbol, IOperation>> orderedLocals,
+        IReadOnlyDictionary<ILocalSymbol, string> localAliases,
+        IReadOnlyDictionary<IMethodSymbol, string> localFunctionAliases,
+        IReadOnlyDictionary<ILocalSymbol, string> callableLocalAliases,
+        IParameterSymbol firstRenderParameter)
+    {
+        var syntaxReference = localFunction.DeclaringSyntaxReferences.FirstOrDefault();
+        if (syntaxReference?.GetSyntax() is not LocalFunctionStatementSyntax localFunctionSyntax)
+        {
+            throw new NotSupportedException(
+                $"RazorVue lifecycle payload does not support local function '{localFunction.Name}' without source syntax.");
         }
 
-        return builder.ToImmutable();
+        var semanticModel = _snapshot.Compilation.GetSemanticModel(localFunctionSyntax.SyntaxTree);
+        if (semanticModel.GetOperation(localFunctionSyntax) is not ILocalFunctionOperation localFunctionOperation)
+        {
+            throw new NotSupportedException(
+                $"RazorVue lifecycle payload could not resolve local function operation for '{localFunction.Name}'.");
+        }
+
+        var parameterAliases = ImmutableDictionary.CreateBuilder<IParameterSymbol, string>(SymbolEqualityComparer.Default);
+        foreach (var parameter in localFunction.Parameters)
+            parameterAliases[parameter] = parameter.Name;
+        parameterAliases[firstRenderParameter] = "currentFirstRender";
+
+        var functionNode = WithSourceStableLocalInitializers(
+            BuildOrderedLocalInitializerDictionary(orderedLocals),
+            () => WithScopedLifecycleCallableAliases(
+                callableLocalAliases,
+                localFunctionAliases,
+                () => WithScopedLocalAliases(
+                    localAliases,
+                    () => WithScopedParameterAliases(
+                        parameterAliases.ToImmutable(),
+                        () => _semanticWalker.Visit(localFunctionOperation, _compilerArgument)))));
+
+        if (functionNode is not FunctionDeclaration functionDeclaration)
+        {
+            throw new NotSupportedException(
+                $"RazorVue lifecycle payload expected local function '{localFunction.Name}' to lower as a function declaration.");
+        }
+
+        var aliasDeclaration = new FunctionDeclaration(
+            new Identifier(alias),
+            functionDeclaration.Params,
+            functionDeclaration.Body,
+            functionDeclaration.Generator,
+            functionDeclaration.Async);
+        return MaterializeCompilerStatement(aliasDeclaration, _compilerArgument);
     }
+
+    private IOperation GetLifecycleCallableInitializer(ILocalSymbol local)
+    {
+        if (!RazorVueSourceStableLocalInitializerHelper.TryGetSourceStableLocalInitializer(
+                _snapshot.Compilation,
+                local,
+                static type => type is not null && type.TypeKind != TypeKind.Error,
+                out var initializer) ||
+            initializer is null)
+        {
+            throw new NotSupportedException(
+                $"RazorVue lifecycle payload could not resolve callable local initializer for '{local.Name}'.");
+        }
+
+        return initializer;
+    }
+
+    private IOperation GetLifecycleLocalFunctionOperation(IMethodSymbol localFunction)
+    {
+        var syntaxReference = localFunction.DeclaringSyntaxReferences.FirstOrDefault();
+        if (syntaxReference?.GetSyntax() is not LocalFunctionStatementSyntax localFunctionSyntax)
+        {
+            throw new NotSupportedException(
+                $"RazorVue lifecycle payload does not support local function '{localFunction.Name}' without source syntax.");
+        }
+
+        var semanticModel = _snapshot.Compilation.GetSemanticModel(localFunctionSyntax.SyntaxTree);
+        if (semanticModel.GetOperation(localFunctionSyntax) is not ILocalFunctionOperation localFunctionOperation)
+        {
+            throw new NotSupportedException(
+                $"RazorVue lifecycle payload could not resolve local function operation for '{localFunction.Name}'.");
+        }
+
+        return localFunctionOperation;
+    }
+
+    private static IReadOnlyDictionary<ILocalSymbol, IOperation> BuildOrderedLocalInitializerDictionary(
+        ImmutableArray<KeyValuePair<ILocalSymbol, IOperation>> orderedLocals)
+    {
+        var dictionary = new Dictionary<ILocalSymbol, IOperation>(SymbolEqualityComparer.Default);
+        foreach (var pair in orderedLocals)
+            dictionary[pair.Key] = pair.Value;
+
+        return dictionary;
+    }
+
+    private readonly record struct LifecycleCompilerFallbackDependencies(
+        IReadOnlyDictionary<ILocalSymbol, IOperation> SourceStableLocals,
+        ImmutableArray<IMethodSymbol> LocalFunctions,
+        ImmutableArray<ILocalSymbol> CallableLocals);
 
     private bool MayContainLifecycleFirstRenderReference(
         IMethodSymbol lifecycleMethod,
@@ -228,6 +596,7 @@ internal sealed partial class RazorVueExpressionEmitter
                     visitedLocals.Remove(localReference.Local);
                 }
             }
+
         }
 
         return false;
@@ -261,16 +630,15 @@ internal sealed partial class RazorVueExpressionEmitter
 
                         continue;
                     }
-
+                    if (localReference.Local.Type?.TypeKind == TypeKind.Delegate)
+                        continue;
                     if (patternDeclaredLocals.Contains(localReference.Local))
                         continue;
 
                     return false;
                 case IAnonymousFunctionOperation:
-                case ILocalFunctionOperation:
                 case IDeclarationExpressionOperation:
                 case IVariableDeclaratorOperation:
-                case ITupleOperation:
                     return false;
             }
 
@@ -302,6 +670,7 @@ internal sealed partial class RazorVueExpressionEmitter
 
         return result;
     }
+
 
     private IReadOnlyList<IOperation> GetLifecycleMethodOperations(IMethodSymbol method)
     {
@@ -437,6 +806,17 @@ internal sealed partial class RazorVueExpressionEmitter
         if (TryNormalizeCurrentComponentCallbackInvokeAsync(invocation, useSetupEmitter: true, compilerArgument: null, out var normalizedCallbackInvoke))
             return new LifecyclePayloadEmission(normalizedCallbackInvoke, false);
 
+        if (invocation.Instance is null &&
+            invocation.TargetMethod.MethodKind == MethodKind.LocalFunction &&
+            _scopedLifecycleLocalFunctionAliases is not null &&
+            _scopedLifecycleLocalFunctionAliases.TryGetValue(invocation.TargetMethod, out var localFunctionAlias))
+        {
+            var invocationArguments = EmitLifecyclePayloadArguments(lifecycleMethod, invocation.Arguments, allowFirstRenderPayload, out var invocationUsesFirstRender);
+            return new LifecyclePayloadEmission(
+                localFunctionAlias + "(" + string.Join(", ", invocationArguments) + ")",
+                invocationUsesFirstRender);
+        }
+
         if (invocation.Instance is not null && invocation.TargetMethod.Name == "Invoke")
         {
             var invocationArguments = EmitLifecyclePayloadArguments(lifecycleMethod, invocation.Arguments, allowFirstRenderPayload, out var invocationUsesFirstRender);
@@ -525,6 +905,12 @@ internal sealed partial class RazorVueExpressionEmitter
             case IParameterReferenceOperation parameter when IsFirstRenderPayloadParameter(lifecycleMethod, parameter, allowFirstRenderPayload):
                 expression = LifecycleFirstRenderPlaceholder;
                 return true;
+            case ILocalReferenceOperation localReference when _scopedLifecycleCallableAliases is not null &&
+                                                             _scopedLifecycleCallableAliases.TryGetValue(localReference.Local, out expression):
+                return true;
+            case ILocalReferenceOperation localReference when _scopedLocalAliases is not null &&
+                                                             _scopedLocalAliases.TryGetValue(localReference.Local, out expression):
+                return true;
             case IPropertyReferenceOperation property:
                 if (!TryEmitLifecyclePayloadTargetPropertyReference(lifecycleMethod, property, allowFirstRenderPayload, out expression))
                     return false;
@@ -534,6 +920,10 @@ internal sealed partial class RazorVueExpressionEmitter
                 if (!TryEmitLifecyclePayloadTargetFieldReference(lifecycleMethod, field, allowFirstRenderPayload, out expression))
                     return false;
 
+                return true;
+            case IMethodReferenceOperation methodReference when methodReference.Instance is null &&
+                                                               _scopedLifecycleLocalFunctionAliases is not null &&
+                                                               _scopedLifecycleLocalFunctionAliases.TryGetValue(methodReference.Method, out expression):
                 return true;
             case IInvocationOperation invocation:
                 var invocationEmission = EmitLifecyclePayloadInvocation(lifecycleMethod, invocation, allowFirstRenderPayload);
@@ -1066,6 +1456,9 @@ internal sealed partial class RazorVueExpressionEmitter
         bool useSetupEmitter,
         out string expression)
     {
+        if (TryRewriteLifecycleScopedCallableInvocation(invocation, argument, useSetupEmitter, out expression))
+            return true;
+
         if (useSetupEmitter)
             return TryRewriteSetupInvocation(invocation, argument, out expression);
 
@@ -1171,6 +1564,13 @@ internal sealed partial class RazorVueExpressionEmitter
         bool useSetupEmitter,
         out string expression)
     {
+        if (operation.Instance is null &&
+            _scopedLifecycleLocalFunctionAliases is not null &&
+            _scopedLifecycleLocalFunctionAliases.TryGetValue(operation.Method, out expression))
+        {
+            return true;
+        }
+
         if (IsCurrentComponentMember(operation.Method, operation.Instance))
         {
             RecordRequiredSetupMethod(operation.Method);
@@ -1196,6 +1596,12 @@ internal sealed partial class RazorVueExpressionEmitter
 
     internal bool TryRewriteLocalReference(ILocalReferenceOperation operation, SenseArgument argument, out string expression)
     {
+        if (_scopedLifecycleCallableAliases is not null &&
+            _scopedLifecycleCallableAliases.TryGetValue(operation.Local, out expression))
+        {
+            return true;
+        }
+
         if (_scopedLocalAliases is not null &&
             _scopedLocalAliases.TryGetValue(operation.Local, out expression))
         {
@@ -1210,6 +1616,30 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         expression = string.Empty;
+        return false;
+    }
+
+    private bool TryRewriteLifecycleScopedCallableInvocation(
+        IInvocationOperation invocation,
+        SenseArgument argument,
+        bool useSetupEmitter,
+        out string expression)
+    {
+        expression = string.Empty;
+        if (invocation.Instance is not null)
+            return false;
+
+        if (invocation.TargetMethod.MethodKind == MethodKind.LocalFunction &&
+            _scopedLifecycleLocalFunctionAliases is not null &&
+            _scopedLifecycleLocalFunctionAliases.TryGetValue(invocation.TargetMethod, out var localFunctionAlias))
+        {
+            expression = localFunctionAlias + "(" +
+                         string.Join(", ", invocation.Arguments.Select(item => useSetupEmitter
+                             ? EmitSetupExpression(item.Value, argument)
+                             : EmitExpression(item.Value, argument))) + ")";
+            return true;
+        }
+
         return false;
     }
 
@@ -1347,11 +1777,16 @@ internal sealed partial class RazorVueExpressionEmitter
     }
 
     private bool IsCurrentComponentMember(ISymbol symbol, IOperation? instance)
-        => RazorVueSymbolIdentity.IsCurrentComponentMember(
+    {
+        if (symbol is IMethodSymbol { MethodKind: MethodKind.LocalFunction })
+            return false;
+
+        return RazorVueSymbolIdentity.IsCurrentComponentMember(
             _snapshot.ComponentSymbol,
             symbol,
             instance,
             Unwrap);
+    }
 
     private string EmitMemberTarget(IOperation? instance)
     {

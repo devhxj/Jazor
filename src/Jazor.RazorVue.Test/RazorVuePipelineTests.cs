@@ -14773,7 +14773,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForChainedFirstRenderExpressionPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersChainedFirstRenderExpressionPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -14819,7 +14819,7 @@ public sealed class RazorVuePipelineTests
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
         StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
-        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", currentFirstRender);");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", ((currentFirstRender ? \"True\" : \"False\").length > 0));");
     }
 
     [TestMethod]
@@ -15035,7 +15035,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForDeepMemberChainFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersDeepMemberChainFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -15101,7 +15101,7 @@ public sealed class RazorVuePipelineTests
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
         StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
-        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", currentFirstRender);");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", { state: { value: currentFirstRender } }.state.value);");
     }
 
     [TestMethod]
@@ -15158,7 +15158,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForLocalFunctionFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersLocalFunctionFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -15202,14 +15202,16 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "function __jazorLifecycleLocalFunction");
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", __jazorLifecycleLocalFunction");
+        StringAssert.Contains(artifact.ModuleCode, "(currentFirstRender));");
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForMethodReturnedDeepMemberChainFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersMethodReturnedDeepMemberChainFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -15277,14 +15279,16 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "function buildEnvelope(value) {");
+        StringAssert.Contains(artifact.ModuleCode, "return ({ state: { value: value } });");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", buildEnvelope(currentFirstRender).state.value);");
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForDeepMemberChainEqualsFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersDeepMemberChainEqualsFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -15347,14 +15351,14 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", { state: { value: currentFirstRender } }.state.value === true);");
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForHelperReturnedEqualsFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersHelperReturnedEqualsFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -15412,14 +15416,14 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", buildReady(currentFirstRender).value === true);");
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForPropertyPatternFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersPropertyPatternFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -15482,10 +15486,16 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", (() => {");
+        StringAssert.Contains(artifact.ModuleCode, "let __patin$");
+        StringAssert.Contains(artifact.ModuleCode, "__patin$");
+        StringAssert.Contains(artifact.ModuleCode, "= { state: { value: currentFirstRender } }");
+        StringAssert.Contains(artifact.ModuleCode, "\"state\" in __patin$");
+        StringAssert.Contains(artifact.ModuleCode, "\"value\" in __patin$");
+        StringAssert.Contains(artifact.ModuleCode, ".state.value === true");
     }
 
     [TestMethod]
@@ -15600,7 +15610,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForHelperReturnedPropertyPatternFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersHelperReturnedPropertyPatternFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -15668,14 +15678,22 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "function buildEnvelope(value) {");
+        StringAssert.Contains(artifact.ModuleCode, "return ({ state: { value: value } });");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", (() => {");
+        StringAssert.Contains(artifact.ModuleCode, "let __patin$");
+        StringAssert.Contains(artifact.ModuleCode, "__patin$");
+        StringAssert.Contains(artifact.ModuleCode, "= buildEnvelope(currentFirstRender)");
+        StringAssert.Contains(artifact.ModuleCode, "\"state\" in __patin$");
+        StringAssert.Contains(artifact.ModuleCode, "\"value\" in __patin$");
+        StringAssert.Contains(artifact.ModuleCode, ".state.value === true");
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForObjectInitializerMemberAccessFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersObjectInitializerMemberAccessFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -15733,14 +15751,14 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", { state: { value: currentFirstRender } }.state.value);");
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForTupleMemberAccessFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersTupleMemberAccessFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -15793,10 +15811,10 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", { firstRender: currentFirstRender, item2: { value: currentFirstRender } }.item2.value);");
     }
 
     [TestMethod]
@@ -16200,7 +16218,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForLocalLambdaFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersLocalLambdaFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -16244,10 +16262,13 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorLifecycleCallable");
+        StringAssert.Contains(artifact.ModuleCode, "value => value");
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", __jazorLifecycleCallable");
+        StringAssert.Contains(artifact.ModuleCode, "(currentFirstRender));");
     }
 
     [TestMethod]
@@ -16304,7 +16325,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForNullConditionalCoalescedFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersNullConditionalCoalescedFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -16362,14 +16383,15 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, ".state?.value");
+        StringAssert.Contains(artifact.ModuleCode, "?? false");
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForTupleDeconstructionFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersTupleDeconstructionFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -16424,10 +16446,11 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\",");
+        StringAssert.Contains(artifact.ModuleCode, "currentFirstRender");
     }
 
     [TestMethod]
@@ -16535,7 +16558,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForFirstRenderMemberAccessPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersFirstRenderMemberAccessPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -16588,10 +16611,10 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", { value: currentFirstRender }.value);");
     }
 
     [TestMethod]
@@ -16954,7 +16977,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForListIndexedMemberChainFirstRenderPayloadOnAfterRenderAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersListIndexedMemberChainFirstRenderPayloadOnAfterRenderAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -17023,10 +17046,13 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorLifecycleLocal");
+        StringAssert.Contains(artifact.ModuleCode, "[{ state: { value: false } }, { state: { value: currentFirstRender } }]");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", _d389c31d59037b42(__jazorLifecycleLocal");
+        StringAssert.Contains(artifact.ModuleCode, ").state.value");
     }
 
     [TestMethod]

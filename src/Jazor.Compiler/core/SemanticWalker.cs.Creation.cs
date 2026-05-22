@@ -26,8 +26,8 @@ public partial class SemanticWalker
 			return HandleTransformationFailure<Expression>(operation, "Object creation type could not be translated to JavaScript.");
 
 		if (operation.Type is INamedTypeSymbol namedType &&
-			ShouldLowerRecordStructurally(namedType))
-			return BuildRecordStructuralLiteral(assignObj, operation, argument);
+			ShouldLowerStructurally(namedType))
+			return BuildStructuralLiteral(assignObj, operation, argument);
 
 		RejectUnsupportedTypeFallback(operation, operation.Type, "object creation");
 		RejectUnsupportedNativeMapSetEqualityBoundaryIfNeeded(operation, operation.Type, "object creation");
@@ -171,7 +171,10 @@ public partial class SemanticWalker
 		return false;
 	}
 
-	private static bool ShouldLowerRecordStructurally(ITypeSymbol? typeSymbol)
+	private bool ShouldLowerStructurally(ITypeSymbol? typeSymbol)
+		=> IsStructuralType(typeSymbol);
+
+	private bool ShouldLowerRecordStructurally(ITypeSymbol? typeSymbol)
 		=> StructuralRecordSupport.IsStructuralRecordType(typeSymbol);
 
 	private static bool HasEcmascriptSupportMarkerBaseType(INamedTypeSymbol typeSymbol)
@@ -180,12 +183,13 @@ public partial class SemanticWalker
 	private static bool IsObjectLiteralHostType(ITypeSymbol? typeSymbol)
 		=> Util.IsObjectLiteralHostType(typeSymbol);
 
-	private Expression BuildRecordStructuralLiteral(Expression? assignObj, IObjectCreationOperation operation, SenseArgument argument)
+	private Expression BuildStructuralLiteral(Expression? assignObj, IObjectCreationOperation operation, SenseArgument argument)
 	{
 		if (operation.Type is not INamedTypeSymbol namedType)
-			return HandleTransformationFailure<Expression>(operation, "Record type could not be translated to JavaScript.");
+			return HandleTransformationFailure<Expression>(operation, "Structural type could not be translated to JavaScript.");
 
-		var memberOrder = BuildRecordStructuralMemberOrderMap(namedType);
+		var memberOrder = BuildStructuralMemberOrderMap(namedType);
+		var isStructuralRecord = StructuralRecordSupport.IsStructuralRecordType(namedType);
 		var members = new List<(Node Node, string Name, int Order)>();
 		for (var index = 0; index < operation.Arguments.Length; index++)
 		{
@@ -200,15 +204,28 @@ public partial class SemanticWalker
 			if (IsStaticallyKnownNull(arg.Value))
 				continue;
 
-			var keyName = ResolveEcmascriptRecordPropertyName(namedType, parameter, index);
-			var property = ResolveEcmascriptRecordProperty(namedType, parameter);
+			if (!TryResolveStructuralConstructorMember(
+				namedType,
+				operation.Constructor,
+				parameter,
+				index,
+				out var structuralMember,
+				out var keyName,
+				out var targetType))
+			{
+				return HandleTransformationFailure<Expression>(
+					operation,
+					$"Structural type '{namedType.ToDisplayString(Format.NameFormat)}' could not resolve constructor member for argument '{parameter?.Name ?? index.ToString(System.Globalization.CultureInfo.InvariantCulture)}'.");
+			}
+
+			var property = structuralMember as IPropertySymbol;
 			if (property is not null && TryGetSpreadAttribute(property, out _))
 			{
 				AppendExpandedRecordMembers(property, arg.Value, argument, members, memberOrder, operation);
 				continue;
 			}
 
-			var value = TranslateTupleForTarget(arg.Value, parameter?.Type, argument);
+			var value = TranslateTupleForTarget(arg.Value, targetType, argument);
 			members.Add((new ObjectProperty(
 				PropertyKind.Init,
 				key: CreateObjectPropertyKey(keyName),
@@ -228,11 +245,12 @@ public partial class SemanticWalker
 				members.Add((
 					initializerNodes[index].Node,
 					initializerNodes[index].Name,
-					GetRecordStructuralMemberOrder(memberOrder, initializerNodes[index].OrderSymbol)));
+				GetRecordStructuralMemberOrder(memberOrder, initializerNodes[index].OrderSymbol)));
 			}
 		}
 
-		AppendInferredRecordMembers(namedType, operation.Initializer, memberOrder, members, operation);
+		if (isStructuralRecord)
+			AppendInferredRecordMembers(namedType, operation.Initializer, memberOrder, members, operation);
 
 		Expression expr = new ObjectExpression(NodeList.From(members.Select(static member => member.Node)));
 		if (assignObj is not null)
@@ -241,27 +259,76 @@ public partial class SemanticWalker
 		return expr;
 	}
 
-	private static Dictionary<string, int> BuildRecordStructuralMemberOrderMap(INamedTypeSymbol type)
+	private Dictionary<string, int> BuildStructuralMemberOrderMap(INamedTypeSymbol type)
 	{
 		var order = new Dictionary<string, int>(System.StringComparer.Ordinal);
-		var index = 0;
-		foreach (var current in EnumerateNamedTypeHierarchyBaseFirst(type))
-		{
-			foreach (var property in current.GetMembers().OfType<IPropertySymbol>())
-			{
-				if (property.IsStatic)
-					continue;
+		IEnumerable<ISymbol> members = StructuralRecordSupport.IsStructuralRecordType(type)
+			? EnumerateNamedTypeHierarchyBaseFirst(type)
+				.SelectMany(static current => current.GetMembers().OfType<IPropertySymbol>())
+			: TryGetStructuralSourceDataCarrierMemberOrder(type, out var structuralMembers)
+				? structuralMembers
+				: [];
 
-				var memberName = Util.GetConfigOrSymbolName(property);
-				if (!order.ContainsKey(memberName))
-				{
-					order.Add(memberName, index);
-					index++;
-				}
+		var index = 0;
+		foreach (var member in members)
+		{
+			if (member is IPropertySymbol { IsStatic: true } ||
+				member is IFieldSymbol { IsStatic: true })
+				continue;
+
+			var memberName = Util.GetConfigOrSymbolName(member);
+			if (!order.ContainsKey(memberName))
+			{
+				order.Add(memberName, index);
+				index++;
 			}
 		}
 
 		return order;
+	}
+
+	private bool TryResolveStructuralConstructorMember(
+		INamedTypeSymbol type,
+		IMethodSymbol? constructor,
+		IParameterSymbol? parameter,
+		int index,
+		out ISymbol member,
+		out string memberName,
+		out ITypeSymbol? memberType)
+	{
+		member = null!;
+		memberName = string.Empty;
+		memberType = null;
+
+		if (StructuralRecordSupport.IsStructuralRecordType(type))
+		{
+			memberName = ResolveEcmascriptRecordPropertyName(type, parameter, index);
+			var property = ResolveEcmascriptRecordProperty(type, parameter);
+			member = property is not null
+				? property
+				: parameter is not null
+					? parameter
+					: type;
+			memberType = property?.Type ?? parameter?.Type;
+			return true;
+		}
+
+		if (constructor is null ||
+			!TryGetStructuralSourceDataCarrierConstructorMemberMap(constructor, out var memberMap) ||
+			index >= memberMap.Length)
+		{
+			return false;
+		}
+
+		member = memberMap[index];
+		memberName = Util.GetConfigOrSymbolName(member);
+		memberType = member switch
+		{
+			IPropertySymbol property => property.Type,
+			IFieldSymbol field => field.Type,
+			_ => parameter?.Type
+		};
+		return true;
 	}
 
 	private static int GetRecordStructuralMemberOrder(IReadOnlyDictionary<string, int> memberOrder, string memberName)
@@ -280,7 +347,7 @@ public partial class SemanticWalker
 		   operation.ConstantValue.HasValue &&
 		   operation.ConstantValue.Value is null;
 
-	private static bool ShouldOmitStaticNullObjectLiteralMember(
+	private bool ShouldOmitStaticNullObjectLiteralMember(
 		IOperation initializer,
 		ISymbol? orderSymbol,
 		ITypeSymbol? hostType)
@@ -292,7 +359,7 @@ public partial class SemanticWalker
 			(TryGetSpreadAttribute(propertySymbol, out _) ||
 			 propertySymbol.Parameters.Length == 0 &&
 			 propertySymbol.ContainingType is INamedTypeSymbol containingRecord &&
-			 ShouldLowerRecordStructurally(containingRecord)))
+			 ShouldLowerStructurally(containingRecord)))
 		{
 			return true;
 		}
@@ -1200,7 +1267,7 @@ public partial class SemanticWalker
 			!string.IsNullOrEmpty(entry.Value))
 			return entry.Value!;
 
-		if (!StructuralRecordSupport.IsStructuralRecordMember(symbol))
+		if (!IsStructuralMember(symbol))
 			RejectUnsupportedRuntimeFallback(operation, validationSymbol, usage, hostType);
 
 		return GetCurrentModuleDeclaredOrConfigName(symbol);
@@ -1219,7 +1286,7 @@ public partial class SemanticWalker
 			!string.IsNullOrEmpty(entry.Value))
 			return entry.Value!;
 
-		if (!StructuralRecordSupport.IsStructuralRecordMember(symbol))
+		if (!IsStructuralMember(symbol))
 			RejectUnsupportedRuntimeFallback(operation, validationSymbol, usage, hostType);
 
 		return GetCurrentModuleDeclaredOrConfigName(symbol);

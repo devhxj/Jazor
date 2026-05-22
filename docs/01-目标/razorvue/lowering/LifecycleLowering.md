@@ -494,9 +494,8 @@ current-component field 现也支持一个更窄的受控子集：
 - 越出当前 setup helper lowering 合同的一般 current-component method-call payload
 - mutable/later-written property / field
 - 超出 literal / parameter / source-stable member / unary / binary / conditional / interpolated string 组合的更宽动态 payload
-- deeper object-construction/member-chain firstRender payload
 - local / lambda / local-function 参与的 firstRender payload
-- null-conditional / coalesced firstRender payload
+- tuple deconstruction firstRender payload
 
 ### 当前已支持的 helper payload 子集
 
@@ -532,6 +531,17 @@ current-component field 现也支持一个更窄的受控子集：
 - `firstRender is bool ready && ready`
 - `firstRender switch { ... }`
 - 继续满足 setup helper lowering 合同的受控 helper-call payload，例如 `Normalize(firstRender)`
+- direct structural source-data-carrier member payload，例如 `new ReadyState(firstRender).Value`
+- 受控 structural source-data-carrier 深链 payload，例如 `new ReadyEnvelope(new ReadyState(firstRender)).State.Value`
+- object-initializer structural source-data-carrier 深链 payload，例如 `new ReadyEnvelope { State = new ReadyState(firstRender) }.State.Value`
+- source-stable structural source-data-carrier local/list carrier，例如 `readyEnvelopes[1].State.Value`
+- helper-returned structural source-data-carrier 深链 payload，例如 `BuildEnvelope(firstRender).State.Value`
+- tuple-carried structural source-data-carrier 深链 payload，例如 `(firstRender, new ReadyState(firstRender)).Item2.Value`
+- direct structural source-data-carrier property pattern，例如 `new ReadyEnvelope(new ReadyState(firstRender)) is { State.Value: true }`
+- helper-returned structural source-data-carrier property pattern，例如 `BuildEnvelope(firstRender) is { State.Value: true }`
+- structural deep-member equals payload，例如 `new ReadyEnvelope(new ReadyState(firstRender)).State.Value.Equals(true)`
+- helper-returned equals payload，例如 `BuildReady(firstRender).Value.Equals(true)`
+- null-conditional + coalesced structural payload，例如 `(new ReadyEnvelope { State = new ReadyState(firstRender) }.State?.Value) ?? false`
 
 这里不是在 RazorVue 内继续扩手写 CLR/调用拼接；RazorVue 只提供 lifecycle snapshot 与参数别名，具体表达式 lowering 仍以现有 `Jazor.Compiler` / whitelist / CLR 模块能力为准。
 
@@ -546,6 +556,21 @@ current-component field 现也支持一个更窄的受控子集：
 - `firstRender is false` -> `currentFirstRender === false`
 - `firstRender is bool` -> `typeof currentFirstRender === "boolean"`
 - `firstRender is bool ready && ready` -> compiler-owned declaration-pattern lowering with pattern local binding
+- `new ReadyState(firstRender).Value` -> `{ value: currentFirstRender }.value`
+- `new ReadyEnvelope(new ReadyState(firstRender)).State.Value` -> `{ state: { value: currentFirstRender } }.state.value`
+- `new ReadyEnvelope { State = new ReadyState(firstRender) }.State.Value` -> `{ state: { value: currentFirstRender } }.state.value`
+- `readyEnvelopes[1].State.Value` -> structural carrier literal + existing `List<T>.this[int].get` helper + `.state.value`
+- `BuildEnvelope(firstRender).State.Value` -> `buildEnvelope(currentFirstRender).state.value`
+- `(firstRender, new ReadyState(firstRender)).Item2.Value` -> tuple-view literal + `.item2.value` based on current static tuple element names
+- `new ReadyEnvelope(new ReadyState(firstRender)) is { State.Value: true }` -> compiler-owned single-evaluation structural property-pattern lowering with `__patin$...` temp
+- `BuildEnvelope(firstRender) is { State.Value: true }` -> compiler-owned single-evaluation structural property-pattern lowering against helper result temp
+
+这些 structural property-pattern 路径的合同仍然是保守的：
+
+- 单次求值和求值顺序由 compiler-owned temp 保证，helper 返回值不会被重复调用
+- 这里只开放可诚实擦除为 structural value 的 source-data-carrier；不是重新引入 nominal/runtime type 语义
+- tuple payload 仍遵循当前编译器的 tuple runtime-shape 合同，字段名取当前静态视图而不是强行重写成另一套 RazorVue 私有命名
+- bare nominal type pattern、runtime type token、以及超出当前 structural carrier 合同的更宽 runtime type 路径仍显式 unsupported
 
 ### 占位符替换
 

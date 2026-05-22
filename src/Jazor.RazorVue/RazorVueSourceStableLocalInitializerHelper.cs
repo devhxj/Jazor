@@ -1,6 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
+using System.Collections.Immutable;
 
 namespace Jazor.RazorVue;
 
@@ -33,6 +34,17 @@ internal static class RazorVueSourceStableLocalInitializerHelper
         Compilation compilation,
         IReadOnlyList<IOperation> operations,
         Func<ITypeSymbol?, bool> isSupportedCarrierType)
+        => CollectSourceStableLocalInitializersCore(
+            compilation,
+            operations,
+            isSupportedCarrierType,
+            includeDeconstructionLocals: true);
+
+    private static Dictionary<ILocalSymbol, IOperation> CollectSourceStableLocalInitializersCore(
+        Compilation compilation,
+        IReadOnlyList<IOperation> operations,
+        Func<ITypeSymbol?, bool> isSupportedCarrierType,
+        bool includeDeconstructionLocals)
     {
         var collected = CollectSourceStableLocalInitializerStates(operations, isSupportedCarrierType);
         var result = new Dictionary<ILocalSymbol, IOperation>(SymbolEqualityComparer.Default);
@@ -42,6 +54,21 @@ internal static class RazorVueSourceStableLocalInitializerHelper
                 initializer is not null)
             {
                 result[pair.Key] = initializer;
+            }
+        }
+
+        if (includeDeconstructionLocals)
+        {
+            foreach (var local in CollectDeconstructionDeclaredLocals(operations, isSupportedCarrierType))
+            {
+                if (result.ContainsKey(local))
+                    continue;
+
+                if (TryGetSourceStableLocalInitializer(compilation, local, isSupportedCarrierType, out var initializer) &&
+                    initializer is not null)
+                {
+                    result[local] = initializer;
+                }
             }
         }
 
@@ -77,6 +104,15 @@ internal static class RazorVueSourceStableLocalInitializerHelper
             return initializer is not null;
         }
 
+        if (TryGetSourceStableDeconstructionLocalInitializer(
+                compilation,
+                local,
+                isSupportedCarrierType,
+                out initializer))
+        {
+            return initializer is not null;
+        }
+
         return false;
     }
 
@@ -105,6 +141,15 @@ internal static class RazorVueSourceStableLocalInitializerHelper
             }
 
             return invalidated;
+        }
+
+        foreach (var syntaxReference in local.DeclaringSyntaxReferences)
+        {
+            if (syntaxReference.GetSyntax() is not SingleVariableDesignationSyntax designation)
+                continue;
+
+            var semanticModel = compilation.GetSemanticModel(designation.SyntaxTree);
+            return HasMutableLocalWrites(local, designation, semanticModel);
         }
 
         return false;
@@ -322,7 +367,16 @@ internal static class RazorVueSourceStableLocalInitializerHelper
         SemanticModel semanticModel,
         SyntaxNode? allowedImmediateAssignmentSyntax = null)
     {
-        var rootBlock = declarator.Ancestors().OfType<BlockSyntax>().FirstOrDefault();
+        return HasMutableLocalWrites(local, (SyntaxNode)declarator, semanticModel, allowedImmediateAssignmentSyntax);
+    }
+
+    private static bool HasMutableLocalWrites(
+        ILocalSymbol local,
+        SyntaxNode declarationSyntax,
+        SemanticModel semanticModel,
+        SyntaxNode? allowedImmediateAssignmentSyntax = null)
+    {
+        var rootBlock = declarationSyntax.Ancestors().OfType<BlockSyntax>().FirstOrDefault();
         if (rootBlock is null)
             return true;
 
@@ -334,7 +388,7 @@ internal static class RazorVueSourceStableLocalInitializerHelper
             switch (operation)
             {
                 case IAssignmentOperation assignment
-                    when IsAllowedInitializerAssignment(assignment, declarator, allowedImmediateAssignmentSyntax):
+                    when IsAllowedInitializerAssignment(assignment, declarationSyntax, allowedImmediateAssignmentSyntax):
                     continue;
                 case IAssignmentOperation assignment
                     when ReferencesLocalSymbol(assignment.Target, local):
@@ -367,9 +421,9 @@ internal static class RazorVueSourceStableLocalInitializerHelper
 
     private static bool IsAllowedInitializerAssignment(
         IAssignmentOperation assignment,
-        VariableDeclaratorSyntax declarator,
+        SyntaxNode declarationSyntax,
         SyntaxNode? allowedImmediateAssignmentSyntax)
-        => IsDeclaratorInitializerAssignment(assignment, declarator) ||
+        => IsDeclaratorInitializerAssignment(assignment, declarationSyntax) ||
            (allowedImmediateAssignmentSyntax is not null &&
             assignment.Syntax is not null &&
             ReferenceEquals(assignment.Syntax.SyntaxTree, allowedImmediateAssignmentSyntax.SyntaxTree) &&
@@ -377,8 +431,9 @@ internal static class RazorVueSourceStableLocalInitializerHelper
 
     private static bool IsDeclaratorInitializerAssignment(
         IAssignmentOperation assignment,
-        VariableDeclaratorSyntax declarator)
-        => assignment.Syntax is not null &&
+        SyntaxNode declarationSyntax)
+        => declarationSyntax is VariableDeclaratorSyntax declarator &&
+           assignment.Syntax is not null &&
            assignment.Syntax.Span == declarator.Span;
 
     private static bool ReferencesLocalSymbol(IOperation? operation, ILocalSymbol local)
@@ -397,6 +452,339 @@ internal static class RazorVueSourceStableLocalInitializerHelper
         {
             if (child is not null && ReferencesLocalSymbol(child, local))
                 return true;
+        }
+
+        return false;
+    }
+
+    private static IEnumerable<ILocalSymbol> CollectDeconstructionDeclaredLocals(
+        IReadOnlyList<IOperation> operations,
+        Func<ITypeSymbol?, bool> isSupportedCarrierType)
+    {
+        var seen = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
+        foreach (var operation in operations)
+        {
+            foreach (var current in EnumerateOperations(operation))
+            {
+                if (current is not IDeclarationExpressionOperation declarationExpression)
+                    continue;
+
+                foreach (var local in CollectDeconstructionDeclaredLocalsFromTarget(
+                             declarationExpression.Expression,
+                             isSupportedCarrierType,
+                             seen))
+                {
+                    yield return local;
+                }
+            }
+        }
+    }
+
+    private static IEnumerable<ILocalSymbol> CollectDeconstructionDeclaredLocalsFromTarget(
+        IOperation? operation,
+        Func<ITypeSymbol?, bool> isSupportedCarrierType,
+        HashSet<ILocalSymbol> seen)
+    {
+        var current = RazorVueOperationNormalizer.Unwrap(operation);
+        if (current is null)
+            yield break;
+
+        switch (current)
+        {
+            case ILocalReferenceOperation localReference
+                when isSupportedCarrierType(localReference.Local.Type) &&
+                     seen.Add(localReference.Local):
+                yield return localReference.Local;
+                yield break;
+            case IDeclarationExpressionOperation declarationExpression:
+                foreach (var local in CollectDeconstructionDeclaredLocalsFromTarget(
+                             declarationExpression.Expression,
+                             isSupportedCarrierType,
+                             seen))
+                {
+                    yield return local;
+                }
+
+                yield break;
+            case ITupleOperation tupleOperation:
+                foreach (var element in tupleOperation.Elements)
+                {
+                    foreach (var local in CollectDeconstructionDeclaredLocalsFromTarget(
+                                 element,
+                                 isSupportedCarrierType,
+                                 seen))
+                    {
+                        yield return local;
+                    }
+                }
+
+                yield break;
+            default:
+                yield break;
+        }
+    }
+
+    private static bool TryGetSourceStableDeconstructionLocalInitializer(
+        Compilation compilation,
+        ILocalSymbol local,
+        Func<ITypeSymbol?, bool> isSupportedCarrierType,
+        out IOperation? initializer)
+    {
+        initializer = null;
+        if (!isSupportedCarrierType(local.Type))
+            return false;
+
+        foreach (var syntaxReference in local.DeclaringSyntaxReferences)
+        {
+            var syntax = syntaxReference.GetSyntax();
+            if (syntax is not SingleVariableDesignationSyntax singleDesignation)
+                continue;
+
+            if (!TryGetSourceStableDeconstructionLocalInitializer(
+                    compilation,
+                    local,
+                    singleDesignation,
+                    isSupportedCarrierType,
+                    out initializer))
+            {
+                continue;
+            }
+
+            return initializer is not null;
+        }
+
+        return false;
+    }
+
+    private static bool TryGetSourceStableDeconstructionLocalInitializer(
+        Compilation compilation,
+        ILocalSymbol local,
+        SingleVariableDesignationSyntax designation,
+        Func<ITypeSymbol?, bool> isSupportedCarrierType,
+        out IOperation? initializer)
+    {
+        initializer = null;
+        if (designation.Parent is not ParenthesizedVariableDesignationSyntax parenthesizedDesignation)
+            return false;
+
+        var semanticModel = compilation.GetSemanticModel(designation.SyntaxTree);
+        var designationOperation = semanticModel.GetOperation(parenthesizedDesignation);
+        if (designationOperation is null &&
+            designation.Parent?.Parent is not null)
+        {
+            designationOperation = semanticModel.GetOperation(designation.Parent.Parent);
+        }
+
+        if (designationOperation is null)
+            return false;
+
+        var deconstructionTarget = TryUnwrapDeconstructionTarget(designationOperation);
+        if (deconstructionTarget is null)
+            return false;
+
+        if (!TryFindDeconstructionSlotForLocal(deconstructionTarget, local, out var slotPath))
+            return false;
+
+        if (!TryGetOwningDeconstructionOperation(parenthesizedDesignation, semanticModel, out var deconstruction))
+            return false;
+
+        if (HasMutableLocalWrites(local, designation, semanticModel, deconstruction.Syntax))
+            return false;
+
+        var sourceStableLocals = CollectSourceStableLocalInitializersCore(
+            compilation,
+            GetContainingBlockOperations(deconstruction),
+            isSupportedCarrierType,
+            includeDeconstructionLocals: false);
+
+        var resolvedInitializers = new Dictionary<ILocalSymbol, SourceStableLocalInitializer>(SymbolEqualityComparer.Default);
+        foreach (var pair in sourceStableLocals)
+            resolvedInitializers[pair.Key] = new SourceStableLocalInitializer(pair.Value, null);
+
+        var resolvedValue = ResolveInitializerAlias(
+            RazorVueOperationNormalizer.Unwrap(deconstruction.Value) ?? deconstruction.Value,
+            resolvedInitializers);
+
+        if (!TryProjectDeconstructionSlotValue(
+                resolvedValue,
+                slotPath,
+                out initializer))
+        {
+            return false;
+        }
+
+        return initializer is not null;
+    }
+
+    private static IOperation? TryUnwrapDeconstructionTarget(IOperation operation)
+    {
+        var current = RazorVueOperationNormalizer.Unwrap(operation) ?? operation;
+        return current switch
+        {
+            IDeclarationExpressionOperation declarationExpression => RazorVueOperationNormalizer.Unwrap(declarationExpression.Expression) ?? declarationExpression.Expression,
+            ITupleOperation tuple => tuple,
+            _ => null
+        };
+    }
+
+    private static bool TryFindDeconstructionSlotForLocal(
+        IOperation target,
+        ILocalSymbol local,
+        out ImmutableArray<int> slotPath)
+    {
+        var builder = ImmutableArray.CreateBuilder<int>();
+        if (TryFindDeconstructionSlotForLocalCore(target, local, builder))
+        {
+            slotPath = builder.ToImmutable();
+            return true;
+        }
+
+        slotPath = default;
+        return false;
+    }
+
+    private static bool TryFindDeconstructionSlotForLocalCore(
+        IOperation operation,
+        ILocalSymbol local,
+        ImmutableArray<int>.Builder path)
+    {
+        if (RazorVueOperationNormalizer.Unwrap(operation) is not ITupleOperation tupleOperation)
+            return false;
+
+        for (var index = 0; index < tupleOperation.Elements.Length; index++)
+        {
+            var element = RazorVueOperationNormalizer.Unwrap(tupleOperation.Elements[index]) ?? tupleOperation.Elements[index];
+            switch (element)
+            {
+                case IDeclarationExpressionOperation declarationExpression:
+                    if (TryIsLocalDeclarationExpression(declarationExpression, local))
+                    {
+                        path.Add(index);
+                        return true;
+                    }
+
+                    if (TryUnwrapDeconstructionTarget(declarationExpression) is { } nestedDeclarationTarget &&
+                        TryFindNestedDeconstructionSlot(index, nestedDeclarationTarget, local, path))
+                    {
+                        return true;
+                    }
+
+                    break;
+                case ILocalReferenceOperation localReference
+                    when SymbolEqualityComparer.Default.Equals(localReference.Local, local):
+                    path.Add(index);
+                    return true;
+                case ITupleOperation nestedTuple
+                    when TryFindNestedDeconstructionSlot(index, nestedTuple, local, path):
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TryFindNestedDeconstructionSlot(
+        int index,
+        IOperation nestedTarget,
+        ILocalSymbol local,
+        ImmutableArray<int>.Builder path)
+    {
+        var originalCount = path.Count;
+        path.Add(index);
+        if (TryFindDeconstructionSlotForLocalCore(nestedTarget, local, path))
+            return true;
+
+        path.RemoveAt(path.Count - 1);
+        while (path.Count > originalCount)
+            path.RemoveAt(path.Count - 1);
+        return false;
+    }
+
+    private static bool TryIsLocalDeclarationExpression(IDeclarationExpressionOperation declarationExpression, ILocalSymbol local)
+        => RazorVueOperationNormalizer.Unwrap(declarationExpression.Expression) is ILocalReferenceOperation localReference &&
+           SymbolEqualityComparer.Default.Equals(localReference.Local, local);
+
+    private static bool TryGetOwningDeconstructionOperation(
+        ParenthesizedVariableDesignationSyntax designation,
+        SemanticModel semanticModel,
+        out IDeconstructionAssignmentOperation deconstruction)
+    {
+        foreach (var ancestor in designation.Ancestors())
+        {
+            if (semanticModel.GetOperation(ancestor) is IDeconstructionAssignmentOperation deconstructionOperation)
+            {
+                deconstruction = deconstructionOperation;
+                return true;
+            }
+        }
+
+        deconstruction = default!;
+        return false;
+    }
+
+    private static IReadOnlyList<IOperation> GetContainingBlockOperations(IDeconstructionAssignmentOperation deconstruction)
+    {
+        foreach (var ancestor in deconstruction.Syntax.Ancestors())
+        {
+            if (ancestor is not BlockSyntax blockSyntax)
+                continue;
+
+            if (deconstruction.SemanticModel?.GetOperation(blockSyntax) is IBlockOperation blockOperation)
+                return blockOperation.Operations;
+        }
+
+        return [];
+    }
+
+    private static bool TryProjectDeconstructionSlotValue(
+        IOperation source,
+        ImmutableArray<int> slotPath,
+        out IOperation? initializer)
+    {
+        initializer = null;
+        if (slotPath.IsDefaultOrEmpty)
+            return false;
+
+        var currentOperation = RazorVueOperationNormalizer.Unwrap(source) ?? source;
+        foreach (var index in slotPath)
+        {
+            if (!TryProjectSingleDeconstructionSlot(
+                    currentOperation,
+                    index,
+                    out var nextOperation))
+            {
+                initializer = null;
+                return false;
+            }
+
+            currentOperation = nextOperation;
+        }
+
+        initializer = currentOperation;
+        return true;
+    }
+
+    private static bool TryProjectSingleDeconstructionSlot(
+        IOperation source,
+        int slotIndex,
+        out IOperation projected)
+    {
+        projected = default!;
+
+        source = RazorVueOperationNormalizer.Unwrap(source) ?? source;
+        if (source is IConversionOperation conversion &&
+            (RazorVueOperationNormalizer.Unwrap(conversion.Operand) ?? conversion.Operand) is ITupleOperation conversionTuple)
+        {
+            source = conversionTuple;
+        }
+
+        if (source is ITupleOperation tupleOperation)
+        {
+            if (slotIndex < 0 || slotIndex >= tupleOperation.Elements.Length)
+                return false;
+
+            projected = RazorVueOperationNormalizer.Unwrap(tupleOperation.Elements[slotIndex]) ?? tupleOperation.Elements[slotIndex];
+            return true;
         }
 
         return false;

@@ -241,11 +241,11 @@ public partial class SemanticWalker
 
 	private Expression BuildRuntimeTypeTokenExpression(IOperation operation, ITypeSymbol typeSymbol, SenseArgument argument)
 	{
-		if (typeSymbol is INamedTypeSymbol namedType && namedType.IsRecord)
+		if (typeSymbol is INamedTypeSymbol namedType && IsStructuralType(namedType))
 		{
 			return HandleTransformationFailure<Expression>(
 				operation,
-				$"Type '{typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat)}' does not expose a stable runtime type token because record lowering is structural. Use property/positional contracts instead of typeof(...).");
+				$"Type '{typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat)}' does not expose a stable runtime type token because structural lowering is in effect. Use property/positional contracts instead of typeof(...).");
 		}
 
 		if (typeSymbol.IsTupleType || typeSymbol.IsAnonymousType || typeSymbol.TypeKind == TypeKind.Interface)
@@ -2364,6 +2364,11 @@ private bool TryExpandEcmascriptParamsArgument(
 		if (mapperExpr is not null)
 			return WithOriginIfMissing(mapperExpr, operation);
 
+		if (string.IsNullOrEmpty(alias) && IsStructuralMember(operation.Field))
+		{
+			alias = GetCurrentModuleDeclaredOrConfigName(operation.Field);
+		}
+
 		if (string.IsNullOrEmpty(alias))
 			RejectUnsupportedRuntimeFallback(operation, operation.Field, "field access", operation.Instance?.Type ?? operation.Field.ContainingType);
 
@@ -2463,6 +2468,11 @@ private bool TryExpandEcmascriptParamsArgument(
 		var mapperExpr = GetWhiteListExpression(operation.Property.GetMethod!, argument, arguments, instance, out var alias, operation);
 		if (mapperExpr is not null)
 			return WithOriginIfMissing(mapperExpr, operation);
+
+		if (string.IsNullOrEmpty(alias) && IsStructuralMember(operation.Property))
+		{
+			alias = GetCurrentModuleDeclaredOrConfigName(operation.Property);
+		}
 
 		if (string.IsNullOrEmpty(alias))
 			RejectUnsupportedRuntimeFallback(operation, operation.Property.GetMethod!, "property access", operation.Instance?.Type ?? operation.Property.ContainingType);

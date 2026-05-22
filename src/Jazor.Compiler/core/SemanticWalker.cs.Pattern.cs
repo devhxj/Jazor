@@ -340,7 +340,7 @@ public partial class SemanticWalker
 		// 类型匹配条件（排除匿名类型、元组类型、object）
 		if (!operation.MatchedType.IsAnonymousType &&
 			!operation.MatchedType.IsTupleType &&
-			!(operation.MatchedType is INamedTypeSymbol matchedNamedType && matchedNamedType.IsRecord) &&
+			!(operation.MatchedType is INamedTypeSymbol matchedNamedType && IsStructuralType(matchedNamedType)) &&
 			operation.MatchedType.SpecialType != SpecialType.System_Object)
 		{
 			var typeCheck = CreateTypeMatchExpr(operation, operation.MatchedType, targetExpr, context: patternArgument);
@@ -1885,11 +1885,11 @@ public partial class SemanticWalker
 		string typeName,
 		SenseArgument? context)
 	{
-		if (typeSymbol is INamedTypeSymbol namedType && namedType.IsRecord)
+		if (typeSymbol is INamedTypeSymbol namedType && IsStructuralType(namedType))
 		{
 			return HandleTransformationFailure<Expression>(
 				operation,
-				$"Record type '{namedType.ToDisplayString(Format.NameFormat)}' uses structural lowering and does not support nominal runtime type checks. Use property/positional patterns instead of a bare record type pattern.");
+				$"Structural type '{namedType.ToDisplayString(Format.NameFormat)}' uses structural lowering and does not support nominal runtime type checks. Use property/positional patterns instead of a bare type pattern.");
 		}
 
 		RejectUnsupportedTypeFallback(operation, typeSymbol, "type checks");
@@ -1910,7 +1910,7 @@ public partial class SemanticWalker
 	{
 		Identifier? deconstructResultId = null;
 		if (!namedType.IsTupleType &&
-			!namedType.IsRecord &&
+			!IsStructuralType(namedType) &&
 			operation.DeconstructSymbol is IMethodSymbol deconstructMethod)
 		{
 			deconstructResultId = new Identifier(AllocateUniqueName(operation, argument, LoweringSite.DeconstructResult()));
@@ -1992,10 +1992,10 @@ public partial class SemanticWalker
 			// 元组类型同样遵循统一的 runtime naming 规则，而不是直接透传 CLR 成员名。
 			propertyName = Util.GetConfigOrSymbolName(namedType.TupleElements[index]);
 		}
-		else if (namedType.IsRecord)
+		else if (IsStructuralType(namedType))
 		{
-			// Record 统一走 structural lowering，位置模式直接绑定到其结构属性键。
-			propertyName = GetRecordPositionPropertyName(operation, namedType, index);
+			// Structural-lowered types bind positional patterns directly to their structural property keys.
+			propertyName = GetStructuralPositionPropertyName(operation, namedType, index);
 		}
 
 		if (propertyName is null)
@@ -2012,29 +2012,38 @@ public partial class SemanticWalker
 	/// <param name="index"></param>
 	/// <returns></returns>
 	/// <exception cref="OperationTransformationException"></exception>
-	private string? GetRecordPositionPropertyName(
+	private string? GetStructuralPositionPropertyName(
 		IRecursivePatternOperation operation,
 		INamedTypeSymbol namedType,
 		int index)
 	{
-		// Record 统一走 structural lowering，位置模式必须绑定到运行时结构属性键。
-		// 主构造函数参数名只用于定位对应属性，最终仍取属性的运行时名。
-		var constructor = FindMatchingConstructor(namedType, operation.DeconstructionSubpatterns.Length);
-		if (constructor is not null && constructor.Parameters.Length > index)
+		if (StructuralRecordSupport.IsStructuralRecordType(namedType))
 		{
-			var parameter = constructor.Parameters[index];
-			var property = EnumerateNamedTypeHierarchyBaseFirst(namedType)
-				.SelectMany(static current => current.GetMembers().OfType<IPropertySymbol>())
-				.FirstOrDefault(member =>
-					!member.IsStatic &&
-					string.Equals(member.Name, parameter.Name, StringComparison.OrdinalIgnoreCase));
-			return property is null
-				? parameter.Name
-				: Util.GetConfigOrSymbolName(property);
+			// Record 统一走 structural lowering，位置模式必须绑定到运行时结构属性键。
+			// 主构造函数参数名只用于定位对应属性，最终仍取属性的运行时名。
+			var constructor = FindMatchingConstructor(namedType, operation.DeconstructionSubpatterns.Length);
+			if (constructor is not null && constructor.Parameters.Length > index)
+			{
+				var parameter = constructor.Parameters[index];
+				var property = EnumerateNamedTypeHierarchyBaseFirst(namedType)
+					.SelectMany(static current => current.GetMembers().OfType<IPropertySymbol>())
+					.FirstOrDefault(member =>
+						!member.IsStatic &&
+						string.Equals(member.Name, parameter.Name, StringComparison.OrdinalIgnoreCase));
+				return property is null
+					? parameter.Name
+					: Util.GetConfigOrSymbolName(property);
+			}
 		}
 
-		var message = $"Cannot determine property name for record type '{namedType.Name}' at position {index}. " +
-			$"Ensure the record has a matching primary constructor/property shape.";
+		if (TryGetStructuralSourceDataCarrierMemberOrder(namedType, out var members) &&
+			index < members.Length)
+		{
+			return Util.GetConfigOrSymbolName(members[index]);
+		}
+
+		var message = $"Cannot determine property name for structural type '{namedType.Name}' at position {index}. " +
+			$"Ensure the type has a matching structural member shape.";
 		var location = operation.Syntax.GetLocation();
 		_report?.Invoke(location, message);
 		throw new OperationTransformationException(operation.Kind, message);

@@ -19,12 +19,19 @@ internal sealed partial class RazorVueExpressionEmitter
 {
     internal const string ImperativeRenderContextAlias = "__jazorRenderContext";
 
-    internal readonly record struct LifecyclePayloadLocalBinding(string Alias, string Expression);
+    internal readonly record struct LifecyclePayloadPreludeBinding(string Code)
+    {
+        public static LifecyclePayloadPreludeBinding Const(string alias, string expression)
+            => new("const " + alias + " = " + expression + ";");
+
+        public static LifecyclePayloadPreludeBinding Statement(string code)
+            => new(code);
+    }
 
     internal readonly record struct LifecyclePayloadEmission(
         string Expression,
         bool UsesFirstRender,
-        ImmutableArray<LifecyclePayloadLocalBinding> PreludeLocals = default);
+        ImmutableArray<LifecyclePayloadPreludeBinding> PreludeBindings = default);
     // Structural omission must stay distinct from an explicit JS "null" value,
     // otherwise minimal-arity lowering would drop user-authored null expressions.
     private readonly record struct OptionalJsArgument(string Expression, bool HasValue)
@@ -55,6 +62,8 @@ internal sealed partial class RazorVueExpressionEmitter
     private HashSet<IFieldSymbol>? _capturedSetupFieldDependencies;
     private HashSet<IMethodSymbol>? _capturedSetupMethodDependencies;
     private Dictionary<ILocalSymbol, IOperation>? _sourceStableLocalInitializers;
+    private Dictionary<ILocalSymbol, string>? _scopedLifecycleCallableAliases;
+    private Dictionary<IMethodSymbol, string>? _scopedLifecycleLocalFunctionAliases;
     private Dictionary<ILocalSymbol, string>? _scopedLocalAliases;
     private Dictionary<IParameterSymbol, string>? _scopedParameterAliases;
     private readonly SenseArgument _compilerArgument;
@@ -109,7 +118,8 @@ internal sealed partial class RazorVueExpressionEmitter
         _compilerArgument = new SenseArgument(Sense.Any, UseImportAliases: true);
         _semanticWalker = new SemanticWalker(snapshot.ComponentSymbol, moduleDeclaredNames: new Dictionary<ISymbol, string>(SymbolEqualityComparer.Default))
         {
-            Host = new RazorVueCompilerHost(this)
+            Host = new RazorVueCompilerHost(this),
+            AllowStructuralSourceDataCarrierLowering = true
         };
         _compilerImports = new List<RazorVueCompilerImportBinding>();
     }
@@ -413,6 +423,39 @@ internal sealed partial class RazorVueExpressionEmitter
         }
     }
 
+    internal T WithScopedLifecycleCallableAliases<T>(
+        IReadOnlyDictionary<ILocalSymbol, string> localAliases,
+        IReadOnlyDictionary<IMethodSymbol, string> localFunctionAliases,
+        Func<T> action)
+    {
+        var previousLocalAliases = _scopedLifecycleCallableAliases;
+        var previousFunctionAliases = _scopedLifecycleLocalFunctionAliases;
+
+        var currentLocalAliases = previousLocalAliases is null
+            ? new Dictionary<ILocalSymbol, string>(SymbolEqualityComparer.Default)
+            : new Dictionary<ILocalSymbol, string>(previousLocalAliases, SymbolEqualityComparer.Default);
+        foreach (var pair in localAliases)
+            currentLocalAliases[pair.Key] = pair.Value;
+
+        var currentFunctionAliases = previousFunctionAliases is null
+            ? new Dictionary<IMethodSymbol, string>(SymbolEqualityComparer.Default)
+            : new Dictionary<IMethodSymbol, string>(previousFunctionAliases, SymbolEqualityComparer.Default);
+        foreach (var pair in localFunctionAliases)
+            currentFunctionAliases[pair.Key] = pair.Value;
+
+        _scopedLifecycleCallableAliases = currentLocalAliases;
+        _scopedLifecycleLocalFunctionAliases = currentFunctionAliases;
+        try
+        {
+            return action();
+        }
+        finally
+        {
+            _scopedLifecycleCallableAliases = previousLocalAliases;
+            _scopedLifecycleLocalFunctionAliases = previousFunctionAliases;
+        }
+    }
+
     internal readonly record struct SetupDependencyCapture(
         string Expression,
         ImmutableArray<IPropertySymbol> PropertyDependencies,
@@ -437,6 +480,30 @@ internal sealed partial class RazorVueExpressionEmitter
             expression: false,
             async: false);
         return new CallExpression(arrowFunction, NodeList.Empty<Expression>(), optional: false).ToKnRECMAScript();
+    }
+
+    private string MaterializeCompilerStatement(Node node, SenseArgument argument)
+    {
+        if (node is not Statement statement)
+        {
+            throw new NotSupportedException(
+                $"RazorVue lifecycle callable lowering expected a statement but received '{node.Type}'.");
+        }
+
+        if (!argument.HasVarDeclarator)
+            return statement.ToKnRECMAScript();
+
+        var statements = new List<Statement>();
+        var declarators = argument.FlushVarDeclarator();
+        if (declarators.Count > 0)
+            statements.Add(new VariableDeclaration(VariableDeclarationKind.Let, declarators));
+
+        var builder = new StringBuilder();
+        foreach (var item in statements)
+            builder.AppendLine(item.ToKnRECMAScript());
+
+        builder.Append(statement.ToKnRECMAScript());
+        return builder.ToString().Trim();
     }
 
     private bool TryEmitCompilerOwnedExpression(IOperation operation, SenseArgument argument, out string expression)
