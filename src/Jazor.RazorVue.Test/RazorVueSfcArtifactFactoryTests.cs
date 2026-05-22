@@ -3878,6 +3878,60 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithCurrentComponentRenderHelperExtraParameterAndCallerOwnedAttributeMutationPlusChildEmission_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/render-helper-card")]
+                public class RenderHelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        RenderBody(builder, Title);
+                        builder.CloseElement();
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder, string? title)
+                    {
+                        builder.AddAttribute(1, "class", title);
+                        builder.OpenElement(2, "span");
+                        builder.AddContent(3, title);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_WithSwitchStatementInBuildRenderTree_LowersRenderFunctionVueSfc()
     {
         var context = CreateContext(

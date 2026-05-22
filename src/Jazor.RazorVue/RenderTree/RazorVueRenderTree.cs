@@ -24,7 +24,11 @@ internal sealed record RazorVueElementNode(
     RazorVueNodeKey? Key,
     ImmutableArray<RazorVueAttributeEntry> Attributes,
     RazorVueRenderFragment Children,
-    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins);
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins)
+{
+    public ImmutableArray<RazorVueOpenNodeReplayOperation> ReplayOperations { get; init; } =
+        ImmutableArray<RazorVueOpenNodeReplayOperation>.Empty;
+}
 
 internal sealed record RazorVueComponentNode(
     string ComponentName,
@@ -36,7 +40,11 @@ internal sealed record RazorVueComponentNode(
     ImmutableArray<RazorVueImplicitDefaultSlotAssignmentNode> ImplicitDefaultSlotAssignments,
     RazorVueRenderFragment AmbientDefaultSlotChildren,
     RazorVueRenderFragment Children,
-    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins);
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins)
+{
+    public ImmutableArray<RazorVueOpenNodeReplayOperation> ReplayOperations { get; init; } =
+        ImmutableArray<RazorVueOpenNodeReplayOperation>.Empty;
+}
 
 internal sealed record RazorVueImplicitDefaultSlotAssignmentNode(
     RazorVueRenderFragment Children,
@@ -123,6 +131,39 @@ internal sealed record RazorVueAttributeSpreadNode(
     IOperation Expression,
     ImmutableArray<RazorVueCapturedValueBinding> CapturedBindings,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueAttributeEntry(Origins);
+
+internal abstract record RazorVueOpenNodeReplayOperation(
+    ImmutableArray<RazorVueSourceOrigin> Origins);
+
+internal sealed record RazorVueOpenNodeAttributeReplayOperation(
+    RazorVueAttributeEntry Attribute,
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueOpenNodeReplayOperation(Origins);
+
+internal sealed record RazorVueOpenNodeKeyReplayOperation(
+    RazorVueNodeKey? Key,
+    bool KeyAssigned,
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueOpenNodeReplayOperation(Origins);
+
+internal sealed record RazorVueOpenNodeSlotTemplateReplayOperation(
+    RazorVueComponentSlotTemplateNode SlotTemplate,
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueOpenNodeReplayOperation(Origins);
+
+internal sealed record RazorVueOpenNodeImplicitDefaultSlotAssignmentReplayOperation(
+    RazorVueImplicitDefaultSlotAssignmentNode Assignment,
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueOpenNodeReplayOperation(Origins);
+
+internal sealed record RazorVueOpenNodeAmbientDefaultSlotChildReplayOperation(
+    RazorVueRenderNode Child,
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueOpenNodeReplayOperation(Origins);
+
+internal sealed record RazorVueOpenNodeChildReplayOperation(
+    RazorVueRenderNode Child,
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueOpenNodeReplayOperation(Origins);
+
+internal sealed record RazorVueOpenNodeScopedReplayOperation(
+    ImmutableArray<RazorVueCapturedValueBinding> CapturedBindings,
+    ImmutableArray<RazorVueOpenNodeReplayOperation> Operations,
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueOpenNodeReplayOperation(Origins);
 
 internal sealed record RazorVueCapturedValueBinding(
     IParameterSymbol ParameterSymbol,

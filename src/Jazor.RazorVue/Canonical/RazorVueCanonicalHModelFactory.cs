@@ -305,6 +305,15 @@ internal sealed class RazorVueCanonicalHModelFactory
         RazorVueRenderFragment renderTree)
     {
         _ = snapshot;
+        if (RazorVueOpenNodeReplayHelper.ContainsScopedReplay(renderTree))
+        {
+            return new RazorVueCanonicalImperativeRootProgram(
+                RazorVueImperativeBlockKind.MethodBody,
+                renderTree,
+                IsRootOnly: false,
+                renderTree.Children.SelectMany(static child => child.Origins).Distinct().ToImmutableArray());
+        }
+
         var imperativeNodes = EnumerateImperativeNodes(renderTree).ToImmutableArray();
         if (imperativeNodes.IsDefaultOrEmpty)
             return null;

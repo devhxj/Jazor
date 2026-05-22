@@ -60,6 +60,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 builder.Append("element(").Append(element.TagName).Append(')');
                 AppendKeyShape(builder, element.Key);
                 AppendAttributesShape(builder, element.Attributes);
+                AppendReplayOperationsShape(builder, element.ReplayOperations);
                 AppendFragmentShape(builder, element.Children);
                 break;
             case RazorVueComponentNode component:
@@ -68,6 +69,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 AppendAttributesShape(builder, component.Attributes);
                 AppendSlotTemplatesShape(builder, component.SlotTemplates);
                 AppendImplicitDefaultSlotAssignmentsShape(builder, component.ImplicitDefaultSlotAssignments);
+                AppendReplayOperationsShape(builder, component.ReplayOperations);
                 AppendFragmentShape(builder, component.Children);
                 break;
             case RazorVueTextNode text:
@@ -143,6 +145,75 @@ internal sealed partial class RazorVueExpressionEmitter
         foreach (var assignment in assignments)
             AppendFragmentShape(builder, assignment.Children);
         builder.Append(']');
+    }
+
+    private void AppendReplayOperationsShape(
+        StringBuilder builder,
+        ImmutableArray<RazorVueOpenNodeReplayOperation> operations)
+    {
+        if (operations.IsDefaultOrEmpty)
+            return;
+
+        builder.Append("[replay:");
+        for (var index = 0; index < operations.Length; index++)
+        {
+            if (index > 0)
+                builder.Append(',');
+
+            AppendReplayOperationShape(builder, operations[index]);
+        }
+
+        builder.Append(']');
+    }
+
+    private void AppendReplayOperationShape(
+        StringBuilder builder,
+        RazorVueOpenNodeReplayOperation operation)
+    {
+        switch (operation)
+        {
+            case RazorVueOpenNodeAttributeReplayOperation attributeOperation:
+                builder.Append("attr(");
+                AppendAttributesShape(builder, [attributeOperation.Attribute]);
+                builder.Append(')');
+                break;
+            case RazorVueOpenNodeKeyReplayOperation keyOperation:
+                builder.Append("keyop(").Append(keyOperation.KeyAssigned).Append(':');
+                if (keyOperation.Key is not null)
+                    builder.Append(keyOperation.Key.Expression.Syntax.ToString());
+                builder.Append(')');
+                break;
+            case RazorVueOpenNodeSlotTemplateReplayOperation slotOperation:
+                builder.Append("slot(").Append(slotOperation.SlotTemplate.PublicName).Append(')');
+                break;
+            case RazorVueOpenNodeImplicitDefaultSlotAssignmentReplayOperation:
+                builder.Append("implicit-default");
+                break;
+            case RazorVueOpenNodeAmbientDefaultSlotChildReplayOperation:
+                builder.Append("ambient-child");
+                break;
+            case RazorVueOpenNodeChildReplayOperation:
+                builder.Append("child");
+                break;
+            case RazorVueOpenNodeScopedReplayOperation scopedOperation:
+                builder.Append("scope(");
+                if (!scopedOperation.CapturedBindings.IsDefaultOrEmpty)
+                {
+                    builder.Append(string.Join(",", scopedOperation.CapturedBindings.Select(static binding => binding.ParameterSymbol.Name)));
+                }
+
+                builder.Append("){");
+                for (var index = 0; index < scopedOperation.Operations.Length; index++)
+                {
+                    if (index > 0)
+                        builder.Append(',');
+
+                    AppendReplayOperationShape(builder, scopedOperation.Operations[index]);
+                }
+
+                builder.Append("}");
+                break;
+        }
     }
 
     private static void AppendAttributesShape(StringBuilder builder, ImmutableArray<RazorVueAttributeEntry> attributes)

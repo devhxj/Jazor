@@ -13743,6 +13743,58 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersCurrentComponentRenderHelperWithExtraParameterAndCallerOwnedAttributeMutationPlusChildEmission_IntoRenderFunction()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/render-helper-card")]
+                public class RenderHelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        RenderBody(builder, Title);
+                        builder.CloseElement();
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder, string? title)
+                    {
+                        builder.AddAttribute(1, "class", title);
+                        builder.OpenElement(2, "span");
+                        builder.AddContent(3, title);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.leaveElement();");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersLoopInvokedCurrentComponentRenderHelperMethodWithExtraParameterBackedTemplateLocal()
     {
         var context = CreateContext(

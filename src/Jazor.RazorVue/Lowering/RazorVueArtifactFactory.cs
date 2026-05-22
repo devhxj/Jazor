@@ -288,6 +288,9 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
 
     private static bool HasUnsupportedTemplateNode(RazorVueRenderFragment fragment)
     {
+        if (RazorVueOpenNodeReplayHelper.ContainsScopedReplay(fragment))
+            return true;
+
         if (fragment.Children.IsDefaultOrEmpty)
             return false;
 

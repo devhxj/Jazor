@@ -865,13 +865,19 @@ protected override void BuildRenderTree(RenderTreeBuilder builder)
   - `AddAttribute(...)`
   - `SetKey(...)`
   - `AddMultipleAttributes(...)`
+- 支持：调用方已打开 element/component frame 时，extra-parameter helper 在保持同一 caller-owned open node/frame 的前提下，混合执行：
+  - 上述 caller-owned mutation
+  - 继续向同一 open node 追加 child emission，例如在 helper 内 `OpenElement(...) ... CloseElement()` 后回到原 caller-owned frame
+- 支持：这类 mixed mutation + child emission 走 invocation-scoped replay contract，先在 render tree 中保留“helper 形参引用 + captured binding + ordered replay operations”，再由 lowering 统一保证单次求值；不会把同一个 helper 实参在多个 attribute/child 位置重复内联求值
 - 支持：上述 caller-owned mutation 在 render tree 中保留 helper 形参与 captured binding，H 路径会在安全的 identity case 直接折叠回调用点实参（例如 `"class": props.title`、`"key": props.title`），而 spread 继续走既有 `__jazorVueMergeAttributes(...)` 路径
+- 支持：当 invocation-scoped replay 不能被 template/SFC template block 诚实表达时，canonical/H/SFC 会显式切到 render-function / imperative render path，而不是把 helper 参数作用域错误 hoist 到 template 外层
 - 不支持：`ref` / `out` / `in`
 - 不支持：caller-owned open node 协议中的 open/close/region/frame-shape 变更：
   - `OpenElement` / `OpenComponent`
   - `CloseElement` / `CloseComponent`
   - `OpenRegion` / `CloseRegion`
-- 不支持：在 caller-owned mutation helper 中混入额外 declarative output、child emission 或其他会改变调用方 frame 语义的 builder 协议
+- 不支持：helper 改变最终 active caller-owned open frame，或结束时没有回到进入时的同一 open node/frame
+- 不支持：超出当前 replay contract 的 caller-owned frame 协议变更，例如跨 helper 留下未闭合 frame、切换到其他 caller-owned open node 再返回、或需要 region/open-frame 结构推断的 shape rewrite
 - 不支持：caller-owned mutation helper 结束后 frame depth 或 active open node 与进入时不一致；这类情况会显式 fail-fast，而不是静默猜测调用方协议
 - 不支持：递归 render helper
 
@@ -890,6 +896,8 @@ protected override void BuildRenderTree(RenderTreeBuilder builder)
 - frontend / canonical / H / SFC 对“helper 参数作用域 + helper body 内模板局部声明”组合语义保持一致
 - frontend / canonical / H / SFC 对“loop scope + helper 参数作用域 + helper body 内模板局部声明”组合语义保持一致
 - frontend / pipeline 对 caller-owned `AddAttribute` / `SetKey` / `AddMultipleAttributes` helper mutation 保持一致
+- frontend / canonical / SFC / pipeline 对 caller-owned helper 的“attribute mutation + child emission”保持一致
+- invocation-scoped replay 命中时，canonical / SFC 会切到 render-function，而不是继续错误尝试 template lowering
 - canonical model 保留 `title <- props.title` 绑定
 - named argument 绑定稳定工作
 - omitted optional default value 绑定稳定工作

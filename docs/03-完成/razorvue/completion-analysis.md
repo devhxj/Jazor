@@ -194,18 +194,26 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedNam
 3. self-contained extra-parameter helper 的主路径同时回到统一的外层 template-scope 包裹语义；没有为了支持 caller-owned mutation 而把整段 helper body 打散成节点级替换，避免普通子节点 / 局部模板作用域 / loop-scope 的 helper 参数语义发生漂移。
 4. caller-owned mutation helper 当前是显式受控子集，而不是完整 caller frame 协议：
    - 允许只读/只写当前 caller-owned node props surface 的 mutation
+   - 允许在 helper 内临时进入子 frame 生成 child subtree，只要最终回到进入时的同一 caller-owned open node/frame
    - 仍显式拒绝 `OpenElement` / `OpenComponent` / `CloseElement` / `CloseComponent` / `OpenRegion` / `CloseRegion`
    - helper 结束后若 frame depth 或 active open node 与进入时不一致，会直接 fail-fast
 5. H lowering 对这条 captured-binding 合同也补齐了稳定规约：
    - 当节点表达式只是单个 helper 形参 identity 引用时，会折叠回直接调用点实参，例如 `"class": props.title`、`"key": props.title`
    - `AddMultipleAttributes(...)` 仍沿既有 Blazor-style `__jazorVueMergeAttributes(...)` 主线 lower，而不是为了“看起来更短”绕开 merge 合同
-6. 当前 focused 回归已补齐并通过：
+   - 当同一 helper 调用既修改 caller-owned node，又向该 node 追加 child emission 时，lowering 不会再对同一 helper 实参做多次节点级内联求值；render tree 会保留 invocation-scoped replay，再由 imperative render bridge 统一重放
+6. 这条 mixed mutation + child emission 路线当前是刻意走 render-function / imperative render contract，而不是继续强塞回 template：
+   - canonical model 会把 scoped replay 视为 imperative root program
+   - SFC artifact 会显式切到 `RenderMode = RenderFunction`
+   - imperative emitter 会按 ordered replay operations 重放 open node，而不是重新读取 declarative attrs/children 造成 helper 参数越界或重复求值
+7. 当前 focused 回归已补齐并通过：
    - render tree frontend: current-component / local helper 的 caller-owned `AddAttribute`、`SetKey`、`AddMultipleAttributes`
    - pipeline/H output: current-component / local helper 的 caller-owned `AddAttribute`
    - pipeline/H output: current-component helper 的 caller-owned `SetKey`、`AddMultipleAttributes`
+   - canonical / SFC / pipeline: current-component helper 的 caller-owned `AddAttribute + child emission`
    - 与既有 extra-parameter helper 主路径回归一起验证，确保 self-contained helper 参数作用域未被这次修复回归破坏
-7. 当前 focused 验证已通过：
+8. 当前 focused 验证已通过：
    - `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~CreateRenderTree_WithBuildRenderTreeLocalFunctionHelperRequiringExtraParametersAndCallerOwnedAttributeMutation_PreservesOpenElementAttributes|FullyQualifiedName~CreateRenderTree_WithCurrentComponentRenderHelperMethodRequiringExtraParametersAndCallerOwnedAttributeMutation_PreservesOpenElementAttributes|FullyQualifiedName~CreateRenderTree_WithCurrentComponentRenderHelperMethodRequiringExtraParametersAndCallerOwnedSetKey_PreservesOpenElementKey|FullyQualifiedName~CreateRenderTree_WithCurrentComponentRenderHelperMethodRequiringExtraParametersAndCallerOwnedAddMultipleAttributes_PreservesOpenElementSpread|FullyQualifiedName~RazorVue_Pipeline_LowersCurrentComponentRenderHelperWithExtraParameterAndCallerOwnedAttributeMutation|FullyQualifiedName~RazorVue_Pipeline_LowersBuildRenderTreeLocalFunctionHelperWithExtraParameterAndCallerOwnedAttributeMutation|FullyQualifiedName~RazorVue_Pipeline_LowersCurrentComponentRenderHelperWithExtraParameterAndCallerOwnedSetKey|FullyQualifiedName~RazorVue_Pipeline_LowersCurrentComponentRenderHelperWithExtraParameterAndCallerOwnedAddMultipleAttributes|FullyQualifiedName~CreateRenderTree_WithBuildRenderTreeLocalFunctionHelperRequiringExtraParameters_ProducesStructuredNodes|FullyQualifiedName~CreateRenderTree_WithCurrentComponentRenderHelperMethodRequiringExtraParameters_ProducesStructuredNodes|FullyQualifiedName~RazorVue_Pipeline_LowersCurrentComponentRenderHelperMethodWithExtraParameters|FullyQualifiedName~RazorVue_Pipeline_LowersBuildRenderTreeLocalFunctionHelperWithExtraParameters' -v minimal`
+   - `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~CreateRenderTree_WithCurrentComponentRenderHelperMethodRequiringExtraParametersAndCallerOwnedAttributeMutationPlusChildEmission_PreservesOpenElementShape|FullyQualifiedName~CreateRenderTree_WithBuildRenderTreeLocalFunctionHelperRequiringExtraParametersAndCallerOwnedAttributeMutationPlusChildEmission_PreservesOpenElementShape|FullyQualifiedName~RazorVue_CanonicalModelFactory_CreatesImperativeRootProgram_ForCurrentComponentRenderHelperWithExtraParameterAndCallerOwnedAttributeMutationPlusChildEmission|FullyQualifiedName~RazorVue_SfcArtifactFactory_WithCurrentComponentRenderHelperExtraParameterAndCallerOwnedAttributeMutationPlusChildEmission_LowersRenderFunctionVueSfc|FullyQualifiedName~RazorVue_Pipeline_LowersCurrentComponentRenderHelperWithExtraParameterAndCallerOwnedAttributeMutationPlusChildEmission_IntoRenderFunction' -v minimal`
 
 ## 已完成能力
 

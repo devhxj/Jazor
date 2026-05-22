@@ -1261,12 +1261,15 @@ internal sealed class RazorVueRenderTreeExtractor
                 return true;
             }
 
-            if (TryParseRenderHelperBodyWithCallerOwnedOpenNodeMutation(
+            if (_openFrames.Count > 0 &&
+                _openFrames.Peek() is OpenNodeBuilder originalOpenNode)
+            {
+                ParseRenderHelperBodyWithCallerOwnedOpenNodeMutation(
                     invocation,
                     builderParameter,
                     extraParameters,
-                    extraArgumentBindings))
-            {
+                    extraArgumentBindings,
+                    originalOpenNode);
                 return true;
             }
 
@@ -1783,58 +1786,62 @@ internal sealed class RazorVueRenderTreeExtractor
                 CreateOrigins(invocation, RazorVueOriginKind.Template));
         }
 
-        private bool TryParseRenderHelperBodyWithCallerOwnedOpenNodeMutation(
+        private void ParseRenderHelperBodyWithCallerOwnedOpenNodeMutation(
             IInvocationOperation invocation,
             IParameterSymbol builderParameter,
             ImmutableArray<IParameterSymbol> extraParameters,
-            ImmutableArray<RenderHelperValueBinding> extraArgumentBindings)
+            ImmutableArray<RenderHelperValueBinding> extraArgumentBindings,
+            OpenNodeBuilder originalOpenNode)
         {
             try
             {
-                return ExecuteRenderHelperBody(
+                ExecuteRenderHelperBody(
                     invocation,
                     operations =>
                     {
-                        if (_openFrames.Count == 0 ||
-                            _openFrames.Peek() is not OpenNodeBuilder originalOpenNode)
-                        {
-                            return false;
-                        }
+                        var helperParser = CreateRenderHelperBodyParser(builderParameter);
+                        var syntheticOpenNode = originalOpenNode.CreateEmptyClone();
+                        helperParser.PrimeSourceStableLocalRenderFragmentInitializers(operations);
+                        helperParser.PrimeSourceStableLocalStaticMarkupInitializers(operations);
+                        helperParser._openFrames.Push(syntheticOpenNode);
 
-                        if (!CanParseRenderHelperBodyAsCallerOwnedOpenNodeMutation(operations, builderParameter))
-                            return false;
-
-                        var originalFrameDepth = _openFrames.Count;
-                        var accessibleTemplateParameters = new HashSet<IParameterSymbol>(_accessibleTemplateParameters, SymbolEqualityComparer.Default);
+                        var helperAccessibleTemplateParameters = new HashSet<IParameterSymbol>(_accessibleTemplateParameters, SymbolEqualityComparer.Default);
                         foreach (var parameter in extraParameters)
-                            accessibleTemplateParameters.Add(parameter);
+                            helperAccessibleTemplateParameters.Add(parameter);
 
-                        ExecuteWithCapturedBindings(
+                        helperParser.ExecuteWithCapturedBindings(
                             extraArgumentBindings,
-                            () => ExecuteWithAccessibleTemplateParameters(
-                                accessibleTemplateParameters,
-                                () => ExecuteWithBuilderScope(
+                            () => helperParser.ExecuteWithAccessibleTemplateParameters(
+                                helperAccessibleTemplateParameters,
+                                () => helperParser.ExecuteWithBuilderScope(
                                     ImmutableHashSet.Create<IParameterSymbol>(SymbolEqualityComparer.Default, builderParameter),
                                     () =>
                                     {
                                         foreach (var operation in operations)
-                                            ParseOperation(operation);
+                                            helperParser.ParseOperation(operation);
                                     })));
 
-                        ValidateCallerOwnedOpenNodeMutationPostState(
+                        helperParser.EnsureNoPendingImmediateAssignmentDeclarations();
+                        helperParser.ValidateCallerOwnedOpenNodeMutationPostState(
                             invocation,
-                            originalFrameDepth,
-                            originalOpenNode);
+                            originalFrameDepth: 1,
+                            syntheticOpenNode);
 
-                        return true;
+                        MergeCallerOwnedOpenNodeDelta(
+                            originalOpenNode,
+                            syntheticOpenNode,
+                            extraArgumentBindings,
+                            CreateOrigins(invocation, RazorVueOriginKind.Template));
                     });
             }
             catch (RazorVueCompilationIssueException exception)
             {
-                if (IsCallerOwnedMutationStructuralFailure(exception, invocation))
-                    return false;
-
-                throw;
+                var message =
+                    $"BuildRenderTree helper method '{GetBuilderCallDisplayName(invocation)}' depends on caller-owned open frame semantics in component '{_snapshot.Descriptor.FullName}'. Inner helper body failure: {exception.Issue.Message}";
+                var origins = exception.Origin is { } origin
+                    ? ImmutableArray.Create(origin)
+                    : CreateOrigins(invocation, RazorVueOriginKind.Template);
+                throw CreateStructuralIssue(origins, message);
             }
         }
 
@@ -1990,151 +1997,6 @@ internal sealed class RazorVueRenderTreeExtractor
                 () => Parse(operations));
         }
 
-        private bool IsCallerOwnedMutationStructuralFailure(
-            RazorVueCompilationIssueException exception,
-            IInvocationOperation invocation)
-        {
-            var message = exception.Issue.Message;
-            return message.Contains("without an open element or component frame", StringComparison.Ordinal) ||
-                   message.Contains("without a matching open frame", StringComparison.Ordinal) ||
-                   message.Contains("without a matching open region", StringComparison.Ordinal) ||
-                   message.Contains("while the current open frame is", StringComparison.Ordinal) ||
-                   message.Contains("while the current open node is", StringComparison.Ordinal) ||
-                   message.Contains("ended with", StringComparison.Ordinal) ||
-                   message.Contains("unclosed frame", StringComparison.Ordinal) ||
-                   message.Contains("is recursive", StringComparison.Ordinal) ||
-                   message.Contains("cannot declare 'ref' parameter", StringComparison.Ordinal) ||
-                   message.Contains("cannot declare 'out' parameter", StringComparison.Ordinal) ||
-                   message.Contains("cannot declare 'in' parameter", StringComparison.Ordinal);
-        }
-
-        private bool CanParseRenderHelperBodyAsCallerOwnedOpenNodeMutation(
-            ImmutableArray<IOperation> operations,
-            IParameterSymbol builderParameter)
-        {
-            var builderAliases = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
-            foreach (var operation in operations)
-            {
-                if (!CanParseCallerOwnedMutationOperation(operation, builderParameter, builderAliases))
-                    return false;
-            }
-
-            return true;
-        }
-
-        private bool CanParseCallerOwnedMutationOperation(
-            IOperation? operation,
-            IParameterSymbol builderParameter,
-            HashSet<ILocalSymbol> builderAliases)
-        {
-            switch (Unwrap(operation))
-            {
-                case null:
-                    return true;
-                case IBlockOperation block:
-                    foreach (var child in block.Operations)
-                    {
-                        if (!CanParseCallerOwnedMutationOperation(child, builderParameter, builderAliases))
-                            return false;
-                    }
-
-                    return true;
-                case IVariableDeclarationGroupOperation declarationGroup:
-                    foreach (var declaration in declarationGroup.Declarations)
-                    {
-                        foreach (var declarator in declaration.Declarators)
-                        {
-                            if (!CanParseCallerOwnedBuilderAliasDeclaration(declarator, builderParameter, builderAliases))
-                                return false;
-                        }
-                    }
-
-                    return true;
-                case IExpressionStatementOperation expressionStatement:
-                    return CanParseCallerOwnedMutationStatement(expressionStatement.Operation, builderParameter, builderAliases);
-                case ILocalFunctionOperation:
-                case IEmptyOperation:
-                case IReturnOperation { IsImplicit: true }:
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        private bool CanParseCallerOwnedMutationStatement(
-            IOperation? statement,
-            IParameterSymbol builderParameter,
-            HashSet<ILocalSymbol> builderAliases)
-        {
-            switch (Unwrap(statement))
-            {
-                case IInvocationOperation invocation:
-                    return CanParseCallerOwnedMutationInvocation(invocation, builderParameter, builderAliases);
-                case ISimpleAssignmentOperation assignment:
-                    return CanParseCallerOwnedBuilderAliasAssignment(assignment, builderParameter, builderAliases);
-                default:
-                    return false;
-            }
-        }
-
-        private bool CanParseCallerOwnedMutationInvocation(
-            IInvocationOperation invocation,
-            IParameterSymbol builderParameter,
-            HashSet<ILocalSymbol> builderAliases)
-        {
-            if (!IsRenderTreeBuilderMethod(invocation.TargetMethod))
-                return false;
-
-            if (!IsKnownCallerOwnedMutationBuilderReference(invocation.Instance, builderParameter, builderAliases))
-                return false;
-
-            return invocation.TargetMethod.Name is "AddAttribute" or "AddMultipleAttributes" or "SetKey";
-        }
-
-        private bool CanParseCallerOwnedBuilderAliasDeclaration(
-            IVariableDeclaratorOperation declarator,
-            IParameterSymbol builderParameter,
-            HashSet<ILocalSymbol> builderAliases)
-        {
-            if (!IsRenderTreeBuilderType(declarator.Symbol.Type))
-                return false;
-
-            if (!IsKnownCallerOwnedMutationBuilderReference(declarator.Initializer?.Value, builderParameter, builderAliases))
-                return false;
-
-            builderAliases.Add(declarator.Symbol);
-            return true;
-        }
-
-        private bool CanParseCallerOwnedBuilderAliasAssignment(
-            ISimpleAssignmentOperation assignment,
-            IParameterSymbol builderParameter,
-            HashSet<ILocalSymbol> builderAliases)
-        {
-            if (assignment.Target is not ILocalReferenceOperation localReference ||
-                !IsRenderTreeBuilderType(localReference.Local.Type) ||
-                !IsKnownCallerOwnedMutationBuilderReference(assignment.Value, builderParameter, builderAliases))
-            {
-                return false;
-            }
-
-            builderAliases.Add(localReference.Local);
-            return true;
-        }
-
-        private static bool IsKnownCallerOwnedMutationBuilderReference(
-            IOperation? operation,
-            IParameterSymbol builderParameter,
-            HashSet<ILocalSymbol> builderAliases)
-        {
-            return Unwrap(operation) switch
-            {
-                IParameterReferenceOperation parameterReference => SymbolEqualityComparer.Default.Equals(parameterReference.Parameter, builderParameter),
-                ILocalReferenceOperation localReference => builderAliases.Contains(localReference.Local),
-                _ => false
-            };
-        }
-
         private void ValidateCallerOwnedOpenNodeMutationPostState(
             IInvocationOperation invocation,
             int originalFrameDepth,
@@ -2155,6 +2017,217 @@ internal sealed class RazorVueRenderTreeExtractor
                     $"BuildRenderTree helper method '{GetBuilderCallDisplayName(invocation)}' depends on caller-owned open frame mutation but changed the active caller-owned node in component '{_snapshot.Descriptor.FullName}'. Caller-owned helper mutation must return to the same open element/component frame.");
             }
         }
+
+        private Parser CreateRenderHelperBodyParser(IParameterSymbol builderParameter)
+            => new(
+                _snapshot,
+                _compilation,
+                _symbols,
+                ImmutableHashSet.Create<IParameterSymbol>(SymbolEqualityComparer.Default, builderParameter),
+                activeRenderHelperMethods: _activeRenderHelperMethods,
+                activeRenderFragmentMembers: _activeRenderFragmentMembers,
+                activeRenderFragmentFactories: _activeRenderFragmentFactories,
+                localRenderFragmentCarriers: GetLocalRenderFragmentCarrierSnapshot(),
+                memberRenderFragmentCarriers: GetMemberRenderFragmentCarrierSnapshot(),
+                factoryRenderFragmentCarriers: GetFactoryRenderFragmentCarrierSnapshot(),
+                accessibleTemplateLocals: _accessibleTemplateLocals,
+                accessibleTemplateParameters: _accessibleTemplateParameters,
+                allowTemplateScopedLocals: true);
+
+        private void MergeCallerOwnedOpenNodeDelta(
+            OpenNodeBuilder targetOpenNode,
+            OpenNodeBuilder deltaOpenNode,
+            ImmutableArray<RenderHelperValueBinding> extraArgumentBindings,
+            ImmutableArray<RazorVueSourceOrigin> invocationOrigins)
+        {
+            var snapshot = deltaOpenNode.CreateSnapshot();
+            if (snapshot.KeyAssigned)
+                targetOpenNode.SetKeyWithoutReplay(snapshot.Key, snapshot.KeyAssigned);
+
+            foreach (var attribute in snapshot.Attributes)
+                targetOpenNode.AddAttributeWithoutReplay(attribute);
+
+            foreach (var slotTemplate in snapshot.SlotTemplates)
+                targetOpenNode.AddSlotTemplateWithoutReplay(slotTemplate);
+
+            foreach (var assignment in snapshot.ImplicitDefaultSlotAssignments)
+                targetOpenNode.AddImplicitDefaultSlotAssignmentWithoutReplay(assignment);
+
+            foreach (var child in snapshot.AmbientDefaultSlotChildren.Children)
+                targetOpenNode.AddAmbientDefaultSlotChildWithoutReplay(child);
+
+            foreach (var child in snapshot.Children.Children)
+                targetOpenNode.AddChildWithoutReplay(child);
+
+            var replayOperations = snapshot.ReplayOperations;
+            if (!extraArgumentBindings.IsDefaultOrEmpty)
+            {
+                replayOperations =
+                [
+                    new RazorVueOpenNodeScopedReplayOperation(
+                        ToCapturedValueBindings(extraArgumentBindings),
+                        StripCapturedBindings(replayOperations, extraArgumentBindings),
+                        invocationOrigins)
+                ];
+            }
+
+            targetOpenNode.AddReplayOperations(replayOperations);
+        }
+
+        private static RazorVueRenderFragment StripCapturedBindings(
+            RazorVueRenderFragment fragment,
+            ImmutableArray<RenderHelperValueBinding> capturedBindings)
+        {
+            if (fragment.Children.IsDefaultOrEmpty || capturedBindings.IsDefaultOrEmpty)
+                return fragment;
+
+            return new RazorVueRenderFragment(
+            [
+                .. fragment.Children.Select(child => StripCapturedBindings(child, capturedBindings))
+            ]);
+        }
+
+        private static RazorVueRenderNode StripCapturedBindings(
+            RazorVueRenderNode node,
+            ImmutableArray<RenderHelperValueBinding> capturedBindings)
+            => node switch
+            {
+                RazorVueElementNode element => element with
+                {
+                    Key = StripCapturedBindings(element.Key, capturedBindings),
+                    Attributes = [.. element.Attributes.Select(attribute => StripCapturedBindings(attribute, capturedBindings))],
+                    Children = StripCapturedBindings(element.Children, capturedBindings)
+                },
+                RazorVueComponentNode component => component with
+                {
+                    Key = StripCapturedBindings(component.Key, capturedBindings),
+                    Attributes = [.. component.Attributes.Select(attribute => StripCapturedBindings(attribute, capturedBindings))],
+                    SlotTemplates = [.. component.SlotTemplates.Select(slotTemplate => slotTemplate with
+                    {
+                        Children = StripCapturedBindings(slotTemplate.Children, capturedBindings)
+                    })],
+                    ImplicitDefaultSlotAssignments = [.. component.ImplicitDefaultSlotAssignments.Select(assignment => assignment with
+                    {
+                        Children = StripCapturedBindings(assignment.Children, capturedBindings)
+                    })],
+                    AmbientDefaultSlotChildren = StripCapturedBindings(component.AmbientDefaultSlotChildren, capturedBindings),
+                    Children = StripCapturedBindings(component.Children, capturedBindings)
+                },
+                RazorVueConditionalNode conditional => conditional with
+                {
+                    WhenTrue = StripCapturedBindings(conditional.WhenTrue, capturedBindings),
+                    WhenFalse = StripCapturedBindings(conditional.WhenFalse, capturedBindings)
+                },
+                RazorVueForEachNode loop => loop with
+                {
+                    Body = StripCapturedBindings(loop.Body, capturedBindings)
+                },
+                RazorVueForNode loop => loop with
+                {
+                    Body = StripCapturedBindings(loop.Body, capturedBindings)
+                },
+                RazorVueTemplateScopeNode templateScope => templateScope with
+                {
+                    Children = StripCapturedBindings(templateScope.Children, capturedBindings)
+                },
+                _ => node
+            };
+
+        private static RazorVueAttributeEntry StripCapturedBindings(
+            RazorVueAttributeEntry attributeEntry,
+            ImmutableArray<RenderHelperValueBinding> capturedBindings)
+            => attributeEntry switch
+            {
+                RazorVueAttributeNode attribute => attribute with
+                {
+                    CapturedBindings = FilterCapturedBindings(attribute.CapturedBindings, capturedBindings)
+                },
+                RazorVueAttributeSpreadNode spread => spread with
+                {
+                    CapturedBindings = FilterCapturedBindings(spread.CapturedBindings, capturedBindings)
+                },
+                _ => attributeEntry
+            };
+
+        private static RazorVueNodeKey? StripCapturedBindings(
+            RazorVueNodeKey? key,
+            ImmutableArray<RenderHelperValueBinding> capturedBindings)
+        {
+            if (key is null || capturedBindings.IsDefaultOrEmpty)
+                return key;
+
+            return key with
+            {
+                CapturedBindings = FilterCapturedBindings(key.CapturedBindings, capturedBindings)
+            };
+        }
+
+        private static ImmutableArray<RazorVueOpenNodeReplayOperation> StripCapturedBindings(
+            ImmutableArray<RazorVueOpenNodeReplayOperation> operations,
+            ImmutableArray<RenderHelperValueBinding> capturedBindings)
+        {
+            if (operations.IsDefaultOrEmpty || capturedBindings.IsDefaultOrEmpty)
+                return operations;
+
+            return [.. operations.Select(operation => StripCapturedBindings(operation, capturedBindings))];
+        }
+
+        private static RazorVueOpenNodeReplayOperation StripCapturedBindings(
+            RazorVueOpenNodeReplayOperation operation,
+            ImmutableArray<RenderHelperValueBinding> capturedBindings)
+            => operation switch
+            {
+                RazorVueOpenNodeAttributeReplayOperation attributeOperation => attributeOperation with
+                {
+                    Attribute = StripCapturedBindings(attributeOperation.Attribute, capturedBindings)
+                },
+                RazorVueOpenNodeKeyReplayOperation keyOperation => keyOperation with
+                {
+                    Key = StripCapturedBindings(keyOperation.Key, capturedBindings)
+                },
+                RazorVueOpenNodeSlotTemplateReplayOperation slotTemplateOperation => slotTemplateOperation with
+                {
+                    SlotTemplate = slotTemplateOperation.SlotTemplate with
+                    {
+                        Children = StripCapturedBindings(slotTemplateOperation.SlotTemplate.Children, capturedBindings)
+                    }
+                },
+                RazorVueOpenNodeImplicitDefaultSlotAssignmentReplayOperation assignmentOperation => assignmentOperation with
+                {
+                    Assignment = assignmentOperation.Assignment with
+                    {
+                        Children = StripCapturedBindings(assignmentOperation.Assignment.Children, capturedBindings)
+                    }
+                },
+                RazorVueOpenNodeAmbientDefaultSlotChildReplayOperation ambientChildOperation => ambientChildOperation with
+                {
+                    Child = StripCapturedBindings(ambientChildOperation.Child, capturedBindings)
+                },
+                RazorVueOpenNodeChildReplayOperation childOperation => childOperation with
+                {
+                    Child = StripCapturedBindings(childOperation.Child, capturedBindings)
+                },
+                RazorVueOpenNodeScopedReplayOperation scopedOperation => scopedOperation with
+                {
+                    CapturedBindings = FilterCapturedBindings(scopedOperation.CapturedBindings, capturedBindings),
+                    Operations = StripCapturedBindings(scopedOperation.Operations, capturedBindings)
+                },
+                _ => operation
+            };
+
+        private static ImmutableArray<RazorVueCapturedValueBinding> FilterCapturedBindings(
+            ImmutableArray<RazorVueCapturedValueBinding> existingBindings,
+            ImmutableArray<RenderHelperValueBinding> bindingsToStrip)
+        {
+            if (existingBindings.IsDefaultOrEmpty || bindingsToStrip.IsDefaultOrEmpty)
+                return existingBindings;
+
+            var bindingParameters = bindingsToStrip
+                .Select(static binding => binding.ParameterSymbol)
+                .ToImmutableHashSet(SymbolEqualityComparer.Default);
+            return [.. existingBindings.Where(binding => !bindingParameters.Contains(binding.ParameterSymbol))];
+        }
+
 
         private static IEnumerable<IOperation> EnumerateSelfAndDescendants(IOperation root)
         {
@@ -3704,11 +3777,13 @@ internal sealed class RazorVueRenderTreeExtractor
     private abstract class OpenNodeBuilder : OpenFrame
     {
         private RazorVueNodeKey? _key;
+        private bool _keyAssigned;
         private readonly List<RazorVueAttributeEntry> _attributes = [];
         private readonly List<RazorVueComponentSlotTemplateNode> _slotTemplates = [];
         private readonly List<RazorVueImplicitDefaultSlotAssignmentNode> _implicitDefaultSlotAssignments = [];
         private readonly List<RazorVueRenderNode> _ambientDefaultSlotChildren = [];
         private readonly List<RazorVueRenderNode> _children = [];
+        private readonly List<RazorVueOpenNodeReplayOperation> _replayOperations = [];
 
         protected OpenNodeBuilder(ImmutableArray<RazorVueSourceOrigin> origins)
             : base(origins)
@@ -3716,25 +3791,52 @@ internal sealed class RazorVueRenderTreeExtractor
         }
 
         public void AddAttribute(RazorVueAttributeEntry attribute)
-            => _attributes.Add(attribute);
+        {
+            AddAttributeWithoutReplay(attribute);
+            _replayOperations.Add(new RazorVueOpenNodeAttributeReplayOperation(attribute, attribute.Origins));
+        }
 
         public void SetKey(
             IOperation? key,
             ImmutableArray<RazorVueCapturedValueBinding> capturedBindings,
             ImmutableArray<RazorVueSourceOrigin> origins)
-            => _key = key is null ? null : new RazorVueNodeKey(key, capturedBindings, origins);
+        {
+            _keyAssigned = true;
+            _key = key is null ? null : new RazorVueNodeKey(key, capturedBindings, origins);
+            _replayOperations.Add(new RazorVueOpenNodeKeyReplayOperation(_key, true, origins));
+        }
+
+        public void SetKey(
+            RazorVueNodeKey? key,
+            bool keyAssigned)
+        {
+            SetKeyWithoutReplay(key, keyAssigned);
+            _replayOperations.Add(new RazorVueOpenNodeKeyReplayOperation(key, keyAssigned, key?.Origins ?? ImmutableArray<RazorVueSourceOrigin>.Empty));
+        }
 
         public void AddSlotTemplate(RazorVueComponentSlotTemplateNode slotTemplate)
-            => _slotTemplates.Add(slotTemplate);
+        {
+            AddSlotTemplateWithoutReplay(slotTemplate);
+            _replayOperations.Add(new RazorVueOpenNodeSlotTemplateReplayOperation(slotTemplate, slotTemplate.Origins));
+        }
 
         public void AddImplicitDefaultSlotAssignment(RazorVueImplicitDefaultSlotAssignmentNode assignment)
-            => _implicitDefaultSlotAssignments.Add(assignment);
+            => AddImplicitDefaultSlotAssignmentWithoutReplay(assignment);
 
         public void AddAmbientDefaultSlotChild(RazorVueRenderNode child)
-            => _ambientDefaultSlotChildren.Add(child);
+            => AddAmbientDefaultSlotChildWithoutReplay(child);
 
         public void AddChild(RazorVueRenderNode child)
-            => _children.Add(child);
+        {
+            AddChildWithoutReplay(child);
+            _replayOperations.Add(new RazorVueOpenNodeChildReplayOperation(child, child.Origins));
+        }
+
+        public void AddReplayOperation(RazorVueOpenNodeReplayOperation operation)
+            => _replayOperations.Add(operation);
+
+        public void AddReplayOperations(IEnumerable<RazorVueOpenNodeReplayOperation> operations)
+            => _replayOperations.AddRange(operations);
 
         protected ImmutableArray<RazorVueAttributeEntry> BuildAttributes()
             => [.. _attributes];
@@ -3754,10 +3856,59 @@ internal sealed class RazorVueRenderTreeExtractor
         protected RazorVueRenderFragment BuildChildren()
             => new([.. _children]);
 
+        protected ImmutableArray<RazorVueOpenNodeReplayOperation> BuildReplayOperations()
+            => [.. _replayOperations];
+
+        public void AddAttributeWithoutReplay(RazorVueAttributeEntry attribute)
+            => _attributes.Add(attribute);
+
+        public void SetKeyWithoutReplay(
+            RazorVueNodeKey? key,
+            bool keyAssigned)
+        {
+            _keyAssigned = keyAssigned;
+            _key = key;
+        }
+
+        public void AddSlotTemplateWithoutReplay(RazorVueComponentSlotTemplateNode slotTemplate)
+            => _slotTemplates.Add(slotTemplate);
+
+        public void AddImplicitDefaultSlotAssignmentWithoutReplay(RazorVueImplicitDefaultSlotAssignmentNode assignment)
+            => _implicitDefaultSlotAssignments.Add(assignment);
+
+        public void AddAmbientDefaultSlotChildWithoutReplay(RazorVueRenderNode child)
+            => _ambientDefaultSlotChildren.Add(child);
+
+        public void AddChildWithoutReplay(RazorVueRenderNode child)
+            => _children.Add(child);
+
+        public OpenNodeSnapshot CreateSnapshot()
+            => new(
+                Key: _key,
+                KeyAssigned: _keyAssigned,
+                Attributes: BuildAttributes(),
+                SlotTemplates: BuildSlotTemplates(),
+                ImplicitDefaultSlotAssignments: BuildImplicitDefaultSlotAssignments(),
+                AmbientDefaultSlotChildren: BuildAmbientDefaultSlotChildren(),
+                Children: BuildChildren(),
+                ReplayOperations: BuildReplayOperations());
+
         public abstract override string Describe();
+
+        public abstract OpenNodeBuilder CreateEmptyClone();
 
         public abstract RazorVueRenderNode Build();
     }
+
+    private readonly record struct OpenNodeSnapshot(
+        RazorVueNodeKey? Key,
+        bool KeyAssigned,
+        ImmutableArray<RazorVueAttributeEntry> Attributes,
+        ImmutableArray<RazorVueComponentSlotTemplateNode> SlotTemplates,
+        ImmutableArray<RazorVueImplicitDefaultSlotAssignmentNode> ImplicitDefaultSlotAssignments,
+        RazorVueRenderFragment AmbientDefaultSlotChildren,
+        RazorVueRenderFragment Children,
+        ImmutableArray<RazorVueOpenNodeReplayOperation> ReplayOperations);
 
     private sealed class ElementBuilder(string tagName, ImmutableArray<RazorVueSourceOrigin> origins)
         : OpenNodeBuilder(origins)
@@ -3765,8 +3916,14 @@ internal sealed class RazorVueRenderTreeExtractor
         public override string Describe()
             => $"element <{tagName}>";
 
+        public override OpenNodeBuilder CreateEmptyClone()
+            => new ElementBuilder(tagName, Origins);
+
         public override RazorVueRenderNode Build()
-            => new RazorVueElementNode(tagName, BuildKey(), BuildAttributes(), BuildChildren(), Origins);
+            => new RazorVueElementNode(tagName, BuildKey(), BuildAttributes(), BuildChildren(), Origins)
+            {
+                ReplayOperations = BuildReplayOperations()
+            };
     }
 
     private sealed class ComponentBuilder(string componentName, string componentFullName, string resolutionName, INamedTypeSymbol componentType, ImmutableArray<RazorVueSourceOrigin> origins)
@@ -3779,7 +3936,13 @@ internal sealed class RazorVueRenderTreeExtractor
         public override string Describe()
             => $"component '{ComponentFullName}'";
 
+        public override OpenNodeBuilder CreateEmptyClone()
+            => new ComponentBuilder(componentName, ComponentFullName, resolutionName, ComponentType, Origins);
+
         public override RazorVueRenderNode Build()
-            => new RazorVueComponentNode(componentName, ComponentFullName, resolutionName, BuildKey(), BuildAttributes(), BuildSlotTemplates(), BuildImplicitDefaultSlotAssignments(), BuildAmbientDefaultSlotChildren(), BuildChildren(), Origins);
+            => new RazorVueComponentNode(componentName, ComponentFullName, resolutionName, BuildKey(), BuildAttributes(), BuildSlotTemplates(), BuildImplicitDefaultSlotAssignments(), BuildAmbientDefaultSlotChildren(), BuildChildren(), Origins)
+            {
+                ReplayOperations = BuildReplayOperations()
+            };
     }
 }

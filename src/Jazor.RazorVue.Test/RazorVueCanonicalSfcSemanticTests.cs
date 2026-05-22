@@ -759,6 +759,61 @@ public sealed class RazorVueCanonicalSfcSemanticTests
     }
 
     [TestMethod]
+    public void RazorVue_CanonicalModelFactory_CreatesImperativeRootProgram_ForCurrentComponentRenderHelperWithExtraParameterAndCallerOwnedAttributeMutationPlusChildEmission()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        RenderBody(builder, Title);
+                        builder.CloseElement();
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder, string? title)
+                    {
+                        builder.AddAttribute(1, "class", title);
+                        builder.OpenElement(2, "span");
+                        builder.AddContent(3, title);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+        var sfc = new RazorVueSfcSemanticModelFactory().Create(canonical);
+
+        Assert.IsTrue(canonical.ImperativeRootProgram is not null);
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, sfc.RenderMode);
+        Assert.IsTrue(canonical.Template.Children.IsDefaultOrEmpty);
+    }
+
+    [TestMethod]
     public void RazorVue_SfcSemanticModelFactory_PreservesTemplateMode_ForDeclarativeCanonicalModel()
     {
         var context = CreateContext(

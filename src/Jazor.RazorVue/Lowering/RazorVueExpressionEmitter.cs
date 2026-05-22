@@ -210,10 +210,17 @@ internal sealed partial class RazorVueExpressionEmitter
             {
                 case RazorVueImperativeBlockNode:
                     return true;
-                case RazorVueElementNode element when ContainsImperativeRenderBodyCore(element.Children):
-                    return true;
+                case RazorVueElementNode element:
+                    if (RazorVueOpenNodeReplayHelper.HasScopedReplayOperations(element.ReplayOperations) ||
+                        ContainsImperativeRenderBodyCore(element.Children))
+                    {
+                        return true;
+                    }
+
+                    break;
                 case RazorVueComponentNode component:
-                    if (ContainsImperativeRenderBodyCore(component.Children) ||
+                    if (RazorVueOpenNodeReplayHelper.HasScopedReplayOperations(component.ReplayOperations) ||
+                        ContainsImperativeRenderBodyCore(component.Children) ||
                         ContainsImperativeRenderBodyCore(component.AmbientDefaultSlotChildren))
                     {
                         return true;
