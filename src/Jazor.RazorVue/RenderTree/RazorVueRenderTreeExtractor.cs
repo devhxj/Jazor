@@ -2059,7 +2059,7 @@ internal sealed class RazorVueRenderTreeExtractor
             foreach (var child in snapshot.Children.Children)
                 targetOpenNode.AddChildWithoutReplay(child);
 
-            var replayOperations = snapshot.ReplayOperations;
+            var replayOperations = NormalizeReplayOperationsForCallerOwnedOpenNode(targetOpenNode, snapshot);
             if (!extraArgumentBindings.IsDefaultOrEmpty)
             {
                 replayOperations =
@@ -2072,6 +2072,81 @@ internal sealed class RazorVueRenderTreeExtractor
             }
 
             targetOpenNode.AddReplayOperations(replayOperations);
+        }
+
+        private static ImmutableArray<RazorVueOpenNodeReplayOperation> NormalizeReplayOperationsForCallerOwnedOpenNode(
+            OpenNodeBuilder targetOpenNode,
+            OpenNodeSnapshot snapshot)
+        {
+            var operations = snapshot.ReplayOperations;
+            if (operations.IsDefaultOrEmpty)
+                return operations;
+
+            if (targetOpenNode is not ComponentBuilder)
+                return operations;
+
+            var builder = ImmutableArray.CreateBuilder<RazorVueOpenNodeReplayOperation>(operations.Length + 1);
+            var ambientDefaultSlotChildren = ImmutableArray.CreateBuilder<RazorVueRenderNode>();
+
+            foreach (var operation in operations)
+            {
+                switch (operation)
+                {
+                    case RazorVueOpenNodeAmbientDefaultSlotChildReplayOperation ambientChildOperation:
+                        ambientDefaultSlotChildren.Add(ambientChildOperation.Child);
+                        break;
+                    case RazorVueOpenNodeChildReplayOperation childOperation
+                        when ContainsReferenceNode(snapshot.AmbientDefaultSlotChildren, childOperation.Child) ||
+                             ContainsReferenceNode(snapshot.ImplicitDefaultSlotAssignments, childOperation.Child):
+                        break;
+                    default:
+                        builder.Add(operation);
+                        break;
+                }
+            }
+
+            if (ambientDefaultSlotChildren.Count > 0)
+            {
+                builder.Add(new RazorVueOpenNodeAmbientDefaultSlotFragmentReplayOperation(
+                    new RazorVueRenderFragment([.. ambientDefaultSlotChildren]),
+                    ambientDefaultSlotChildren
+                        .SelectMany(static child => child.Origins)
+                        .ToImmutableArray()));
+            }
+
+            return builder.ToImmutable();
+        }
+
+        private static bool ContainsReferenceNode(
+            RazorVueRenderFragment fragment,
+            RazorVueRenderNode candidate)
+        {
+            if (fragment.Children.IsDefaultOrEmpty)
+                return false;
+
+            foreach (var child in fragment.Children)
+            {
+                if (ReferenceEquals(child, candidate))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static bool ContainsReferenceNode(
+            ImmutableArray<RazorVueImplicitDefaultSlotAssignmentNode> assignments,
+            RazorVueRenderNode candidate)
+        {
+            if (assignments.IsDefaultOrEmpty)
+                return false;
+
+            foreach (var assignment in assignments)
+            {
+                if (ContainsReferenceNode(assignment.Children, candidate))
+                    return true;
+            }
+
+            return false;
         }
 
         private static RazorVueRenderFragment StripCapturedBindings(
@@ -2202,6 +2277,10 @@ internal sealed class RazorVueRenderTreeExtractor
                 RazorVueOpenNodeAmbientDefaultSlotChildReplayOperation ambientChildOperation => ambientChildOperation with
                 {
                     Child = StripCapturedBindings(ambientChildOperation.Child, capturedBindings)
+                },
+                RazorVueOpenNodeAmbientDefaultSlotFragmentReplayOperation ambientFragmentOperation => ambientFragmentOperation with
+                {
+                    Children = StripCapturedBindings(ambientFragmentOperation.Children, capturedBindings)
                 },
                 RazorVueOpenNodeChildReplayOperation childOperation => childOperation with
                 {
@@ -3821,10 +3900,16 @@ internal sealed class RazorVueRenderTreeExtractor
         }
 
         public void AddImplicitDefaultSlotAssignment(RazorVueImplicitDefaultSlotAssignmentNode assignment)
-            => AddImplicitDefaultSlotAssignmentWithoutReplay(assignment);
+        {
+            AddImplicitDefaultSlotAssignmentWithoutReplay(assignment);
+            _replayOperations.Add(new RazorVueOpenNodeImplicitDefaultSlotAssignmentReplayOperation(assignment, assignment.Origins));
+        }
 
         public void AddAmbientDefaultSlotChild(RazorVueRenderNode child)
-            => AddAmbientDefaultSlotChildWithoutReplay(child);
+        {
+            AddAmbientDefaultSlotChildWithoutReplay(child);
+            _replayOperations.Add(new RazorVueOpenNodeAmbientDefaultSlotChildReplayOperation(child, child.Origins));
+        }
 
         public void AddChild(RazorVueRenderNode child)
         {

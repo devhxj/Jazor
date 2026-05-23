@@ -156,6 +156,10 @@ internal sealed record RazorVueOpenNodeAmbientDefaultSlotChildReplayOperation(
     RazorVueRenderNode Child,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueOpenNodeReplayOperation(Origins);
 
+internal sealed record RazorVueOpenNodeAmbientDefaultSlotFragmentReplayOperation(
+    RazorVueRenderFragment Children,
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueOpenNodeReplayOperation(Origins);
+
 internal sealed record RazorVueOpenNodeChildReplayOperation(
     RazorVueRenderNode Child,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueOpenNodeReplayOperation(Origins);

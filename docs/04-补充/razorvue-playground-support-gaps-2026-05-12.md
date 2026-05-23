@@ -869,6 +869,18 @@ protected override void BuildRenderTree(RenderTreeBuilder builder)
   - 上述 caller-owned mutation
   - 继续向同一 open node 追加 child emission，例如在 helper 内 `OpenElement(...) ... CloseElement()` 后回到原 caller-owned frame
 - 支持：这类 mixed mutation + child emission 走 invocation-scoped replay contract，先在 render tree 中保留“helper 形参引用 + captured binding + ordered replay operations”，再由 lowering 统一保证单次求值；不会把同一个 helper 实参在多个 attribute/child 位置重复内联求值
+- 支持：上述 caller-owned helper 若目标 frame 是 component，当前 replay contract 也已正式覆盖 default-slot 语义，而不是再把 default-slot subtree 错当成普通 `children`：
+  - `AddAttribute(..., "ChildContent", ...)` / `AddComponentParameter(..., "ChildContent", ...)` 形成的 implicit default-slot assignment，会在 replay 中保留为显式 default-slot assignment，再由 imperative render path 发射成 `setComponentParameter("ChildContent", () => ...)`
+  - helper 在 caller-owned component frame 上直接 `OpenElement(...)` / `AddContent(...)` 落下的 ambient default-slot child，也会在 replay 归一化阶段折叠为“一个 default-slot fragment”，而不是回放成普通 `append(...)`
+  - 因此 component caller-owned helper 的 default-slot 与 ambient child 现在都保留 RazorVue 自己的 slot contract；不会再出现 render tree 结构是 default slot，但最终 render-function 产物把它们误 materialize 到 component raw children 的语义漂移
+- 支持：上述 caller-owned helper 若目标 frame 是 component，当前 replay contract 也已正式覆盖命名 slot / typed slot 参数，而不是只覆盖 default slot：
+  - `AddAttribute(..., "Header", ...)` / `AddComponentParameter(..., "Header", ...)` 这类命名 slot 赋值，会保留为显式 slot template replay，并在 render-function path 发射成 `setComponentParameter("Header", () => ...)`
+  - `AddAttribute(..., "ItemTemplate", ...)` / `AddComponentParameter(..., "ItemTemplate", ...)` 这类 typed/scoped slot 赋值，会保留 slot context 参数与 helper captured-value scope，并在 render-function path 发射成 `setComponentParameter("ItemTemplate", (item) => ...)`
+  - 这条 contract 现在同时锁定 current-component helper 与 `BuildRenderTree` local function helper；不会再出现“default slot 正确 replay，但 named/typed slot 回退成普通 prop/children”的层间漂移
+- 支持：若 caller-owned component helper 做的不是 inline slot/template materialization，而是“当前组件 `[Parameter] RenderFragment...` -> 子组件 slot 参数”的 slot forwarding，且该 forwarding 仍可诚实 canonicalize，则 RazorVue 会继续保持声明式 forwarded-slot lowering，而不是无谓切到 replay/render-function：
+  - 例如 helper 内 `builder.AddAttribute(nameof(ListCard.ItemTemplate), ItemTemplate)` 仍会保持 typed forwarded-slot 语义，最终 lower 成 `itemTemplate: (context) => slots.itemTemplate ? slots.itemTemplate(context) : null`
+  - helper 内 `builder.AddComponentParameter(nameof(NavShell.Header), Header)` 这类命名/scoped slot forwarding 也同样保持声明式 slot binding，不会因为 helper 抽取而退化成 imperative bridge 或普通 prop 值
+  - 因此当前合同不是“component caller-owned helper 一旦碰到 slot 就统一走 render-function”，而是“只有 inline slot/template assignment 需要 replay 时才切 imperative；纯 forwarding 仍优先保持 canonical declarative path”
 - 支持：上述 caller-owned mutation 在 render tree 中保留 helper 形参与 captured binding，H 路径会在安全的 identity case 直接折叠回调用点实参（例如 `"class": props.title`、`"key": props.title`），而 spread 继续走既有 `__jazorVueMergeAttributes(...)` 路径
 - 支持：当 invocation-scoped replay 不能被 template/SFC template block 诚实表达时，canonical/H/SFC 会显式切到 render-function / imperative render path，而不是把 helper 参数作用域错误 hoist 到 template 外层
 - 不支持：`ref` / `out` / `in`
@@ -897,6 +909,10 @@ protected override void BuildRenderTree(RenderTreeBuilder builder)
 - frontend / canonical / H / SFC 对“loop scope + helper 参数作用域 + helper body 内模板局部声明”组合语义保持一致
 - frontend / pipeline 对 caller-owned `AddAttribute` / `SetKey` / `AddMultipleAttributes` helper mutation 保持一致
 - frontend / canonical / SFC / pipeline 对 caller-owned helper 的“attribute mutation + child emission”保持一致
+- frontend / canonical / SFC / pipeline 对 caller-owned component helper 的 implicit default-slot assignment 与 ambient default-slot child 保持一致，render-function path 会统一 materialize 成 `ChildContent` slot callback，而不是普通 component children
+- frontend / canonical / SFC / pipeline 对 caller-owned component helper 的 named slot / typed slot assignment 保持一致，render-function path 会统一 materialize 成对应 slot callback，并保留 scoped-slot context 参数
+- current-component helper 与 `BuildRenderTree` local function helper 在 caller-owned component named/typed slot assignment 上保持 parity；local-function 路径不会退回 prop 赋值或丢失 helper captured bindings
+- current-component helper 在 caller-owned component slot forwarding 上保持“能 declarative 就 declarative”的合同：typed/named slot forwarding 不会仅因 helper 抽取就被误提升为 imperative root program
 - invocation-scoped replay 命中时，canonical / SFC 会切到 render-function，而不是继续错误尝试 template lowering
 - canonical model 保留 `title <- props.title` 绑定
 - named argument 绑定稳定工作

@@ -522,6 +522,19 @@ internal sealed partial class RazorVueExpressionEmitter
                         .AppendLine(");");
                 }
                 break;
+            case RazorVueOpenNodeAmbientDefaultSlotFragmentReplayOperation ambientFragmentOperation:
+                if (component is null)
+                    throw new InvalidOperationException("Ambient default slot fragment replay requires an open component frame.");
+
+                builder.Append(EmitReplayComponentDefaultSlotStatement(
+                    builderAlias,
+                    component,
+                    descriptor,
+                    ambientFragmentOperation.Children,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols));
+                builder.Append('\n');
+                break;
             case RazorVueOpenNodeChildReplayOperation childOperation:
                 if (TryEmitImperativeCompatibleNodeStatements(
                         childOperation.Child,

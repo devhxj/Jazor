@@ -192,6 +192,9 @@ internal sealed partial class RazorVueExpressionEmitter
             case RazorVueOpenNodeAmbientDefaultSlotChildReplayOperation:
                 builder.Append("ambient-child");
                 break;
+            case RazorVueOpenNodeAmbientDefaultSlotFragmentReplayOperation:
+                builder.Append("ambient-default-fragment");
+                break;
             case RazorVueOpenNodeChildReplayOperation:
                 builder.Append("child");
                 break;
