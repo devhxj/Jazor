@@ -551,6 +551,172 @@ public sealed class RazorVueAnalyzerTests
     }
 
     [TestMethod]
+    public async Task RazorVue_Misuse_CallableLocalLifecyclePayload_IsAccepted()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class ValidComponent : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public int Value { get; set; }
+
+                [Parameter]
+                public EventCallback<int> ValueChanged { get; set; }
+
+                protected override void OnParametersSet()
+                {
+                    Func<int, int> increment = static value => value + 1;
+                    ValueChanged.InvokeAsync(increment(Value));
+                }
+            }
+            """);
+
+        AssertNoDiagnostic(diagnostics, "JAZORVUE005");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_LocalNamedFirstRenderOnInitializedPayload_IsAccepted()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class ValidInitializedComponent : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public EventCallback<int> ValueChanged { get; set; }
+
+                protected override void OnInitialized()
+                {
+                    var firstRender = 1;
+                    ValueChanged.InvokeAsync(firstRender);
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class ValidInitializedAsyncComponent : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public EventCallback<int> ValueChanged { get; set; }
+
+                protected override Task OnInitializedAsync()
+                {
+                    var firstRender = 1;
+                    return ValueChanged.InvokeAsync(firstRender);
+                }
+            }
+            """);
+
+        AssertNoDiagnostic(diagnostics, "JAZORVUE005");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_HelperCallWithOptionalParamsAndNamedLifecyclePayloads_AreAccepted()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class ValidOptionalComponent : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public int Value { get; set; }
+
+                [Parameter]
+                public EventCallback<string> LabelChanged { get; set; }
+
+                private static string FormatLabel(int value, string prefix = "Count: ")
+                    => prefix + value;
+
+                protected override void OnParametersSet()
+                {
+                    LabelChanged.InvokeAsync(FormatLabel(Value));
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class ValidParamsComponent : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public int Value { get; set; }
+
+                [Parameter]
+                public EventCallback<int> CountChanged { get; set; }
+
+                private static int CountValues(params int[] values)
+                    => values.Length;
+
+                protected override void OnParametersSet()
+                {
+                    CountChanged.InvokeAsync(CountValues(Value, 42));
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class ValidNamedComponent : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public int Value { get; set; }
+
+                [Parameter]
+                public EventCallback<string> LabelChanged { get; set; }
+
+                private static string FormatNamed(int value, string prefix, string suffix)
+                    => prefix + value + suffix;
+
+                protected override void OnParametersSet()
+                {
+                    LabelChanged.InvokeAsync(FormatNamed(suffix: "!", value: Value, prefix: "Count: "));
+                }
+            }
+            """);
+
+        AssertNoDiagnostic(diagnostics, "JAZORVUE005");
+    }
+
+    [TestMethod]
     public async Task RazorVue_Misuse_DeclarationInitializedFieldLifecyclePayload_IsAccepted()
     {
         var diagnostics = await GetAnalyzerDiagnosticsAsync(

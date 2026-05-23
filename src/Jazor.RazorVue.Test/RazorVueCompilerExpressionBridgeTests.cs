@@ -220,7 +220,9 @@ public sealed class RazorVueCompilerExpressionBridgeTests
 
         StringAssert.Contains(artifact.ScriptSetupText, "const currentFirstRender = firstRender;");
         StringAssert.Contains(artifact.ScriptSetupText, "firstRender = false;");
-        StringAssert.Contains(artifact.ScriptSetupText, "await emit(\"readyChanged\", currentFirstRender);");
+        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorLifecycleLocal");
+        StringAssert.Contains(artifact.ScriptSetupText, " = currentFirstRender;");
+        StringAssert.Contains(artifact.ScriptSetupText, "await emit(\"readyChanged\", __jazorLifecycleLocal");
     }
 
     [TestMethod]
@@ -275,7 +277,10 @@ public sealed class RazorVueCompilerExpressionBridgeTests
 
         StringAssert.Contains(artifact.ScriptSetupText, "const currentFirstRender = firstRender;");
         StringAssert.Contains(artifact.ScriptSetupText, "firstRender = false;");
-        StringAssert.Contains(artifact.ScriptSetupText, "await emit(\"readyChanged\", currentFirstRender ?? false);");
+        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorLifecycleLocal");
+        StringAssert.Contains(artifact.ScriptSetupText, " = currentFirstRender;");
+        StringAssert.Contains(artifact.ScriptSetupText, "await emit(\"readyChanged\", __jazorLifecycleLocal");
+        StringAssert.Contains(artifact.ScriptSetupText, " ?? false);");
     }
 
     [TestMethod]
@@ -333,7 +338,7 @@ public sealed class RazorVueCompilerExpressionBridgeTests
         StringAssert.Contains(artifact.ScriptSetupText, "typeof currentFirstRender === \"boolean\"");
         StringAssert.Contains(artifact.ScriptSetupText, "(ready = currentFirstRender, true)");
         StringAssert.Contains(artifact.ScriptSetupText, "&& ready");
-        StringAssert.Contains(artifact.ScriptSetupText, "await emit(\"readyChanged\", (() => {");
+        StringAssert.Contains(artifact.ScriptSetupText, "await emit(\"readyChanged\", ((() => {");
     }
 
     [TestMethod]

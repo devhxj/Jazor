@@ -15462,10 +15462,10 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
-        StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
-        StringAssert.Contains(artifact.ModuleCode, "firstRender = false;");
-        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", currentFirstRender);");
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
+        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
     }
 
     [TestMethod]
@@ -18661,7 +18661,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForLocalFirstRenderPayloadOnInitializedLifecycle()
+    public void RazorVue_Pipeline_LowersLocalNamedFirstRenderPayloadOnInitializedLifecycle()
     {
         var context = CreateContext(
             """
@@ -18696,14 +18696,18 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnInitialized");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "onMounted(() => {");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorLifecycleLocal");
+        StringAssert.Contains(artifact.ModuleCode, " = 1;");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"valueChanged\", __jazorLifecycleLocal");
+        Assert.IsFalse(artifact.ModuleCode.Contains("currentFirstRender", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForLocalFirstRenderPayloadOnInitializedAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersLocalNamedFirstRenderPayloadOnInitializedAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -18739,14 +18743,18 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnInitializedAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorLifecycleLocal");
+        StringAssert.Contains(artifact.ModuleCode, " = 1;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"valueChanged\", __jazorLifecycleLocal");
+        Assert.IsFalse(artifact.ModuleCode.Contains("currentFirstRender", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForLocalFirstRenderPayloadOnParametersSetLifecycle()
+    public void RazorVue_Pipeline_LowersLocalNamedFirstRenderPayloadOnParametersSetLifecycle()
     {
         var context = CreateContext(
             """
@@ -18789,14 +18797,18 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnParametersSet");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [], () => {");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorLifecycleLocal");
+        StringAssert.Contains(artifact.ModuleCode, " = 1;");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"valueChanged\", __jazorLifecycleLocal");
+        Assert.IsFalse(artifact.ModuleCode.Contains("currentFirstRender", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForLocalFirstRenderPayloadOnParametersSetAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersLocalNamedFirstRenderPayloadOnParametersSetAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -18840,10 +18852,14 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
-        StringAssert.Contains(exception.Message, "OnParametersSetAsync");
-        Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [], async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorLifecycleLocal");
+        StringAssert.Contains(artifact.ModuleCode, " = 1;");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"valueChanged\", __jazorLifecycleLocal");
+        Assert.IsFalse(artifact.ModuleCode.Contains("currentFirstRender", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]
