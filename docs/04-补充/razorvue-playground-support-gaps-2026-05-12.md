@@ -54,7 +54,7 @@ RazorVue 对复杂 block code 的路线已不再是“前端继续堆 statement 
 - imperative body 中真实使用到的 injected/resolved component prop / emit / slot runtime shape，现已进入 descriptor identity/runtime-usage 收集；descriptor hash / HMR 边界推导不再忽略 imperative `AddComponentParameter(...)`、slot forwarding 或 slot builder 内嵌套组件
 - Razor IR root template `@{ ... }` promotion 后的 imperative current-component slot forwarding 现已与 handwritten `BuildRenderTree` 对齐，不再在 SG/IR 路径退化成普通 `slots.xxx ?? null` 值传递
 - Razor IR typed child-content / typed slot template body 中，“局部 immutable cache + imperative statement” 现已进入正式支持：局部声明后接 `while` / `do-while` / 带 `break` / `continue` 的 `for` / `foreach` / `switch` / `try-catch-finally` / `using` / `using declaration` / `lock`，以及需要 method/local imperative tail 语义的 `return` / `throw` / mutation，都会稳定提升为 `RazorVueImperativeBlockNode`，并复用现有 imperative render bridge
-- Razor IR typed child-content / typed slot template body 中，“无初始化器声明 + 紧邻一次简单赋值”的窄模式也已正式锁定；例如 `string? decorated; decorated = item;` 会与声明点初始化等价地进入 template-scoped local 契约，而不会被误判成一般赋值语句执行模型
+- Razor IR typed child-content / typed slot template body 中，“无初始化器声明 + 同一线性局部声明前缀内一次简单赋值”的窄模式也已正式锁定；例如 `string? decorated; decorated = item;` 与 `string? decorated; var revision = 0; decorated = item;` 都会与声明点初始化等价地进入 template-scoped local 契约，而不会被误判成一般赋值语句执行模型
 - Razor IR typed child-content / typed slot template body 中，standalone imperative `@{ ... }` 语句块也已开始走正式 imperative render 主线；即使前面没有任何局部声明，像 `@{ while (Show) { <p>@item</p>; break; } }` 这类纯 imperative body 也不会再因为缺少 local 前缀而退回 `unbound template CSharpCodeIntermediateNode`
 - 其中 typed slot/template body 的一个关键语义已锁定：一旦局部声明后的后续片段命中 imperative tail，frontend 会把“命中点到同一 slot body 末尾”的剩余片段整体收进同一个 imperative tail，而不是在命令式片段后再恢复 declarative sibling；这样才能正确保留 `return` / `throw` / mutation 对后续模板节点的可见性/终止语义
 
@@ -379,7 +379,7 @@ for (var i = Start; i >= Count; i = i - Step)
 - current-component 只读 property / `readonly` field 直接承载匿名 `RenderFragment` / `RenderFragment<T>` 初始化器
 - 只读 member 转发链
 - 受支持 fragment factory 返回值先落入 local/member carrier 再消费
-- local `RenderFragment` / `RenderFragment<T>` 的“先声明、再紧邻一次简单赋值” source-stable 窄模式
+- local `RenderFragment` / `RenderFragment<T>` 的“先声明、再在同一线性局部声明前缀内完成一次简单赋值” source-stable 窄模式
   - 上述 immediate-assignment 右侧现已回归锁定：inline Razor template、本组件受支持 member carrier、以及受支持 fragment factory 返回值三类都会继续进入结构化 slot/template carrier，而不会误退回 imperative tail
 - 自引用 / 环引用 fail-fast
 
@@ -388,7 +388,7 @@ for (var i = Start; i >= Count; i = i - Step)
 - typed slot/template 的 context 参数保留在 slot/template 自身的 `ParameterName` / `ParameterSymbol`
 - 只有存在额外 captured 普通值参数或当前组件值时，才会在 children 外再包一层 `TemplateScopeNode`
 - 如果 carrier 本身只是 `item => ...` 这类直接 typed template，则 slot/template children 直接是结构化 element/expression 节点，不会额外生成 scope wrapper
-- 若 local carrier 不是紧邻一次简单赋值，或在初始化后再次出现可观察写入，则继续沿 source-stable 合同显式 fail-fast
+- 若 local carrier 不能在同一线性局部声明前缀内完成这一次简单赋值，或在初始化后再次出现可观察写入，则继续沿 source-stable 合同显式 fail-fast
 
 ### 补充：implicit default slot assignment 与参数名策略
 
@@ -751,9 +751,9 @@ builder.AddAttribute(1, nameof(ChildCard.ItemTemplate), (RenderFragment<int>)((i
 支持边界仍然刻意收窄为“带初始化器的不可变模板局部声明/局部模板作用域”：
 
 - 支持：`var decorated = item + "!";`
-- 支持：`string? localTitle; localTitle = Title;` 这种“声明后紧邻一次简单赋值”的窄模式；仍按不可变 template local 处理
+- 支持：`string? localTitle; localTitle = Title;`，以及 `string? localTitle; var revision = 0; localTitle = Title;` 这种“声明后在同一线性局部声明前缀内完成一次简单赋值”的窄模式；仍按不可变 template local 处理
 - 支持：`builder.AddContent(0, (RenderFragment<int>)(item => itemBuilder => { ... }), 42);`
-- 不支持：声明后不是“紧邻一次简单赋值”的其他变体
+- 不支持：声明后进入普通表达式语句、控制流、嵌套块、局部写入逃逸等，不再属于“同一线性局部声明前缀内一次简单赋值”的其他变体
 - 不支持：`++` / `--` / 其他写入型模板局部状态
 - 不支持：把模板局部声明当作匿名函数/委托状态载体继续扩散
 - 不支持：把任意 delegate 值、动态 callable、外部 fragment 变量都放宽成可立即模板执行的 `AddContent(RenderFragment<T>, value)` 形态；当前要求源码 inline 且可分析
@@ -772,7 +772,7 @@ builder.AddAttribute(1, nameof(ChildCard.ItemTemplate), (RenderFragment<int>)((i
 - loop body 局部声明成功
 - typed slot template 局部声明成功
 - typed `AddContent(RenderFragment<T>, value)` 模板作用域成功
-- “无初始化器但不是紧邻一次简单赋值”的变体仍明确失败
+- “无初始化器但不能在同一线性局部声明前缀内完成一次简单赋值”的变体仍明确失败
 
 在 Razor IR frontend 路线下，这一批 support gap 也继续向“复杂 code-block 的顺序控制恢复”扩展并已锁定：
 
@@ -1049,7 +1049,7 @@ builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span><p>ok</p><
 ### 当前支持边界
 
 - 支持：`builder.AddMarkupContent(0, "<section class=\"hero\"><span>safe</span></section>");`
-- 支持：local `const` string、普通 declaration-initialized string、以及“先声明、再紧邻一次简单赋值”的 source-stable string local，再由 `AddMarkupContent(...)` 消费
+- 支持：local `const` string、普通 declaration-initialized string、以及“先声明、再在同一线性局部声明前缀内完成一次简单赋值”的 source-stable string local，再由 `AddMarkupContent(...)` 消费
 - 支持：current-component / local function factory 返回编译期可证明静态 string markup，再由 `AddMarkupContent(...)` 直接消费；普通按值参数、omitted optional default，以及按 Roslyn 绑定为单数组形参的 `params` 调用都支持，只要返回 markup 仍可静态证明
 - 支持：受控 property/field/local carrier 再转发上述 static-markup factory 返回值，只要中间 carrier 仍满足同一 source-stable / controlled-member 合同
 - 支持：只读 property / `readonly` field 承载的编译期可证明静态 markup
@@ -1131,7 +1131,7 @@ builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span
 - 支持：private settable property / private 非 `readonly` field 承载静态 `MarkupString`，只要源码中不存在后续重赋值、`ref/out` 写入或其他可观察写入，再由 `AddContent(...)` 消费
 - 支持：Razor authored template expression 中等价的静态 `MarkupString` direct/local/受控-member carrier authoring，直接 canonicalize 为静态 subtree
 - 支持：imperative body 内同样的静态 `MarkupString` direct/local/受控-member carrier authoring，以及源码可分析 factory 返回值，直接 lower 为 `h(...)` subtree；带普通按值参数、omitted optional default 或 `params` 单数组绑定时保留调用点 captured-binding 求值顺序
-- 支持：handwritten `BuildRenderTree` 中 `MarkupString` local 的“先声明、再紧邻一次简单赋值”窄模式；若后续再次出现可观察写入，则沿同一 source-stable 合同 fail-fast
+- 支持：handwritten `BuildRenderTree` 中 `MarkupString` local 的“先声明、再在同一线性局部声明前缀内完成一次简单赋值”窄模式；例如 `MarkupString markup; var revision = 0; markup = ...;` 也已纳入支持。若后续再次出现可观察写入，则沿同一 source-stable 合同 fail-fast
 - 支持：Razor IR authored template `@{ MarkupString markup; markup = ...; } @markup` 这类 local carrier 也按同一 source-stable 合同接受，并贯通 render tree / `.mjs` pipeline / SFC artifact
 - 不支持：imperative local `MarkupString` carrier 在声明后发生重赋值、`ref/out` 写入或其他不可静态证明变异
 - 不支持：运行时拼接字符串后再转 `MarkupString`
@@ -1157,7 +1157,7 @@ builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span
 - declarative `BuildRenderTree` 中 `new MarkupString("...")`
 - declarative `BuildRenderTree` 中局部 `MarkupString` carrier
 - declarative `BuildRenderTree` 中 current-component `MarkupString` factory（含普通按值参数 captured-binding 保真）
-- declarative `BuildRenderTree` 中 `MarkupString` local 的“先声明、再紧邻一次简单赋值”窄模式
+- declarative `BuildRenderTree` 中 `MarkupString` local 的“先声明、再在同一线性局部声明前缀内完成一次简单赋值”窄模式
 - declarative `BuildRenderTree` 中只读 property / `readonly` field `MarkupString` carrier
 - declarative / pipeline 中上述 local carrier 的后续重赋值 fail-fast
 - Razor authored template expression 中静态 `MarkupString` direct/new/local/readonly-member carrier
@@ -1219,7 +1219,7 @@ builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span
 
 - 支持：`@{ var localTitle = Title; }`
 - 支持：一个 code-block 内多个连续局部声明，只要都带 initializer 且按声明顺序可作用域化
-- 支持：一个 code-block 内局部声明可省略 initializer，但仅限“声明后紧邻一次简单赋值”这一窄模式，且仍被还原为不可变 template local
+- 支持：一个 code-block 内局部声明可省略 initializer，但仅限“声明后在同一线性局部声明前缀内完成一次简单赋值”这一窄模式，且仍被还原为不可变 template local；允许在这次赋值前穿过 sibling local declarations
 - 支持：initializer 捕获当前可见 template local、loop local 与 typed slot/scoped slot context parameter
 - 支持：局部声明后进入 `if` / `if-else` / `foreach` / count-style `for`
 - 支持：Razor IR 把 `}` 与下一个 `if` / `foreach` / `for` header 合并进同一 boundary code node 时，frontend 会继续恢复后续控制语句
@@ -1228,7 +1228,7 @@ builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span
 - 支持：Razor authored direct untyped expression consumption；受支持 current-component member / source-stable local `RenderFragment` carrier 可以直接写成 `@Template` / `@template`，直接调用 fragment factory 返回值也可以写成 `@CreateTemplate(Title)` / `@CreateTemplate()` / `@CreateTemplate(subtitle: Subtitle, title: Title)`；这里既支持当前组件 `@code` / member method，也支持同一 template code-block 里的 local function factory，并保持 direct expression subtree 与 captured scope 语义，named argument out-of-order 也保留调用点求值顺序
 - 支持：上述 untyped direct `@expr` 还覆盖“member/local carrier 由 fragment factory 支撑再直接消费”的形态；例如 `private RenderFragment Template => CreateTemplate(Title); @Template` 与 `RenderFragment template; template = CreateTemplate(Title); @template` 都会继续保留 factory captured scope，再直接落到结构化 render subtree
 - 支持：Razor authored direct typed invocation consumption；受控 current-component member / source-stable local `RenderFragment<T>` carrier 可以直接写成 `@Template(42)` / `@template(42)`，直接调用 fragment factory 返回值也可以写成 `@CreateTemplate(Title)(42)` / `@CreateTemplate()(42)` / `@CreateTemplate(subtitle: Subtitle, title: Title)(42)`；这里既支持当前组件 `@code` / member method，也支持同一 template code-block 里的 local function factory。当前组件 `[Parameter] RenderFragment<T>?` slot source 也可以直接写成 `@Header(Count + 1)`，并分别落到 typed fragment scope / typed slot outlet 语义
-- 不支持：不是“声明后紧邻一次简单赋值”的其他先声明后赋值形态
+- 不支持：不是“声明后在同一线性局部声明前缀内完成一次简单赋值”的其他先声明后赋值形态，例如中间穿插普通表达式语句、条件/循环/try 等控制流、后续再次写入、或更宽 dataflow
 - 当前这一“声明式模板 code-block 结构化恢复”通道不支持：局部声明后进入更一般的语句执行模型
 - 当前这一“声明式模板 code-block 结构化恢复”通道不支持：赋值语句、递增/递减、delegate/callable template state
 - 当前这一“声明式模板 code-block 结构化恢复”通道本身仍不负责：`switch` / `while` / `do-while` / `try-catch` / `using` / `lock` 等一般语句执行模型；其中 typed child-content / slot template body 内“局部声明后接 `while` / `do-while` / `switch` / `try-catch-finally` / `using` / `using declaration` / `lock` / `return` / `throw` / mutation`”以及“无前置局部声明的 standalone imperative `@{ ... }` body”都已改走 imperative render 主线，不再属于未支持缺口

@@ -241,6 +241,9 @@ internal static class RazorVueSourceStableLocalInitializerHelper
         foreach (var operation in operations)
         {
             var current = RazorVueOperationNormalizer.Unwrap(operation);
+            if (current is null or IEmptyOperation)
+                continue;
+
             if (pendingAssignments.Count > 0)
             {
                 if (TryExtractImmediateAssignedLocal(
@@ -255,6 +258,9 @@ internal static class RazorVueSourceStableLocalInitializerHelper
                         assignmentSyntax);
                     continue;
                 }
+
+                if (TryRegisterSourceStableContinuationDeclarators(current, result, pendingAssignments, isSupportedCarrierType))
+                    continue;
 
                 pendingAssignments.Clear();
             }
@@ -279,6 +285,33 @@ internal static class RazorVueSourceStableLocalInitializerHelper
         }
 
         return result;
+    }
+
+    private static bool TryRegisterSourceStableContinuationDeclarators(
+        IOperation current,
+        Dictionary<ILocalSymbol, SourceStableLocalInitializer> result,
+        HashSet<ILocalSymbol> pendingAssignments,
+        Func<ITypeSymbol?, bool> isSupportedCarrierType)
+    {
+        switch (current)
+        {
+            case IVariableDeclarationGroupOperation declarationGroup:
+                RegisterSourceStableDeclarators(
+                    declarationGroup.Declarations,
+                    result,
+                    pendingAssignments,
+                    isSupportedCarrierType);
+                return true;
+            case IVariableDeclarationOperation declarationOperation:
+                RegisterSourceStableDeclarators(
+                    [declarationOperation],
+                    result,
+                    pendingAssignments,
+                    isSupportedCarrierType);
+                return true;
+            default:
+                return false;
+        }
     }
 
     private static void RegisterSourceStableDeclarators(

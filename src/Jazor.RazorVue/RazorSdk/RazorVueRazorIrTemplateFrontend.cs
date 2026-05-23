@@ -2460,13 +2460,13 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 var hasLaterWrites = IsSourceStableLocalMarkupStringInitializerInvalidatedByLaterWrites(declarator.Symbol);
                 var failureMessage =
                     declarator.Initializer?.Value is null
-                        ? $"RazorVue MarkupString local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once by the immediately following simple assignment statement and cannot be observed through later writes."
+                        ? $"RazorVue MarkupString local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once within the same linear local-declaration prefix by a simple assignment statement and cannot be observed through later writes."
                         : $"RazorVue MarkupString local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' requires a compile-time provable static markup initializer.";
                 if (hasLaterWrites)
                 {
                     failureMessage =
                         declarator.Initializer?.Value is null
-                            ? $"RazorVue MarkupString local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once by the immediately following simple assignment statement and cannot be observed through later writes."
+                            ? $"RazorVue MarkupString local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once within the same linear local-declaration prefix by a simple assignment statement and cannot be observed through later writes."
                             : $"RazorVue MarkupString local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Declaration-initialized local carriers must remain source-stable.";
                 }
 
@@ -3001,13 +3001,13 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                         declarator.Symbol);
                 var failureMessage =
                     declarator.Initializer?.Value is null
-                        ? $"RazorVue RenderFragment local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once by the immediately following simple assignment statement and cannot be observed through later writes."
+                        ? $"RazorVue RenderFragment local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once within the same linear local-declaration prefix by a simple assignment statement and cannot be observed through later writes."
                         : $"RazorVue RenderFragment local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' requires an analyzable initializer.";
                 if (hasLaterWrites)
                 {
                     failureMessage =
                         declarator.Initializer?.Value is null
-                            ? $"RazorVue RenderFragment local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once by the immediately following simple assignment statement and cannot be observed through later writes."
+                            ? $"RazorVue RenderFragment local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once within the same linear local-declaration prefix by a simple assignment statement and cannot be observed through later writes."
                             : $"RazorVue RenderFragment local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Declaration-initialized local carriers must remain source-stable.";
                 }
 

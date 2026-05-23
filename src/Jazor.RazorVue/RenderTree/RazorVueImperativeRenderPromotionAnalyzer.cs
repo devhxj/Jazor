@@ -156,11 +156,27 @@ internal static class RazorVueImperativeRenderPromotionAnalyzer
             if (previous is null or IEmptyOperation)
                 continue;
 
-            return ContainsPendingSupportedLocalDeclarator(previous, localReference.Local);
+            if (ContainsPendingSupportedLocalDeclarator(previous, localReference.Local))
+                return true;
+
+            if (IsSupportedLocalDeclarationContinuation(previous))
+                continue;
+
+            return false;
         }
 
         return false;
     }
+
+    private static bool IsSupportedLocalDeclarationContinuation(IOperation operation)
+        => RazorVueOperationNormalizer.Unwrap(operation) switch
+        {
+            IVariableDeclarationGroupOperation declarationGroup => declarationGroup.Declarations.All(static declaration =>
+                declaration.Declarators.All(static declarator => !IsRenderTreeBuilderType(declarator.Symbol.Type))),
+            IVariableDeclarationOperation declarationOperation => declarationOperation.Declarators.All(static declarator =>
+                !IsRenderTreeBuilderType(declarator.Symbol.Type)),
+            _ => false
+        };
 
     private static bool ContainsPendingSupportedLocalDeclarator(IOperation operation, ILocalSymbol localSymbol)
     {
@@ -185,6 +201,4 @@ internal static class RazorVueImperativeRenderPromotionAnalyzer
             "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder",
             StringComparison.Ordinal);
 
-    private static bool IsRenderFragmentType(ITypeSymbol? typeSymbol)
-        => RazorVueRenderFragmentTypeHelper.IsRenderFragmentType(typeSymbol);
 }

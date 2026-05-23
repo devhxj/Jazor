@@ -526,7 +526,8 @@ internal sealed class RazorVueRenderTreeExtractor
                 return;
 
             if (HasPendingImmediateAssignmentDeclarations() &&
-                !IsPendingImmediateAssignment(current))
+                !IsPendingImmediateAssignment(current) &&
+                !IsPendingImmediateAssignmentContinuation(current))
             {
                 ThrowPendingImmediateAssignmentRequiresImmediateAssignment(current);
             }
@@ -1463,7 +1464,7 @@ internal sealed class RazorVueRenderTreeExtractor
             {
                 throw CreateStructuralIssue(
                     assignment,
-                    $"RazorVue MarkupString local '{pendingDeclaration.Declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once by the immediately following simple assignment statement and cannot be observed through later writes.");
+                    $"RazorVue MarkupString local '{pendingDeclaration.Declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once within the same linear local-declaration prefix by a simple assignment statement and cannot be observed through later writes.");
             }
 
             if (TryGetStaticMarkupString(initializer) is null)
@@ -1534,7 +1535,7 @@ internal sealed class RazorVueRenderTreeExtractor
             {
                 throw CreateStructuralIssue(
                     assignment,
-                    $"RazorVue RenderFragment local '{pendingDeclaration.Declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once by the immediately following simple assignment statement and cannot be observed through later writes.");
+                    $"RazorVue RenderFragment local '{pendingDeclaration.Declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once within the same linear local-declaration prefix by a simple assignment statement and cannot be observed through later writes.");
             }
 
             var initializer = sourceStableInitializer;
@@ -3796,6 +3797,16 @@ internal sealed class RazorVueRenderTreeExtractor
                    _pendingTemplateScopedDeclarations.ContainsKey(localReference.Local);
         }
 
+        private bool IsPendingImmediateAssignmentContinuation(IOperation operation)
+            => Unwrap(operation) switch
+            {
+                IVariableDeclarationGroupOperation declarationGroup => declarationGroup.Declarations.All(static declaration =>
+                    declaration.Declarators.All(static declarator => !IsRenderTreeBuilderType(declarator.Symbol.Type))),
+                IVariableDeclarationOperation declarationOperation => declarationOperation.Declarators.All(static declarator =>
+                    !IsRenderTreeBuilderType(declarator.Symbol.Type)),
+                _ => false
+            };
+
         private void EnsureNoPendingImmediateAssignmentDeclarations()
         {
             if (!HasPendingImmediateAssignmentDeclarations())
@@ -3813,21 +3824,21 @@ internal sealed class RazorVueRenderTreeExtractor
                 var pendingDeclaration = _pendingRenderFragmentLocalCarriers.Values.First();
                 originOperation = pendingDeclaration.Declarator;
                 message =
-                    $"RazorVue RenderFragment local '{pendingDeclaration.Declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once by the immediately following simple assignment statement.";
+                    $"RazorVue RenderFragment local '{pendingDeclaration.Declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once within the same linear local-declaration prefix by a simple assignment statement.";
             }
             else if (_pendingStaticMarkupLocalCarriers.Count > 0)
             {
                 var pendingDeclaration = _pendingStaticMarkupLocalCarriers.Values.First();
                 originOperation = pendingDeclaration.Declarator;
                 message =
-                    $"RazorVue MarkupString local '{pendingDeclaration.Declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once by the immediately following simple assignment statement.";
+                    $"RazorVue MarkupString local '{pendingDeclaration.Declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once within the same linear local-declaration prefix by a simple assignment statement.";
             }
             else
             {
                 var pendingDeclaration = _pendingTemplateScopedDeclarations.Values.First();
                 originOperation = pendingDeclaration.Declarator;
                 message =
-                    $"RazorVue template-scoped local '{pendingDeclaration.Declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once by the immediately following simple assignment statement.";
+                    $"RazorVue template-scoped local '{pendingDeclaration.Declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once within the same linear local-declaration prefix by a simple assignment statement.";
             }
 
             throw CreateStructuralIssue(
