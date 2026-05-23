@@ -1883,7 +1883,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             ref int index,
             ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
             ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
-            out RazorVueConditionalNode conditionalNode)
+            out RazorVueRenderNode conditionalNode)
         {
             conditionalNode = default!;
             if (!IsTemplateCodeNode(nodes[index]))
@@ -1972,7 +1972,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             ref int index,
             ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
             ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
-            out RazorVueForEachNode loopNode)
+            out RazorVueRenderNode loopNode)
         {
             loopNode = default!;
             if (!IsTemplateCodeNode(nodes[index]))
@@ -1990,9 +1990,6 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             if (!_resolver.TryResolveForEach(sourceSpan, out var resolvedLoop))
                 return false;
 
-            if (RazorVueImperativeRenderPromotionAnalyzer.ShouldPromoteBody([resolvedLoop.Operation]))
-                return false;
-
             var bodyEnd = FindControlStatementEndIndex(
                 nodes,
                 index,
@@ -2000,6 +1997,19 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 sourceSpan,
                 "foreach");
             var coveredNodes = nodes.Skip(index + 1).Take(bodyEnd - index - 1).ToList();
+
+            if (RazorVueImperativeRenderPromotionAnalyzer.ShouldPromoteBody([resolvedLoop.Operation]))
+            {
+                var imperativeCoveredNodes = nodes.Skip(index).Take(bodyEnd - index).ToArray();
+                loopNode = CreateImperativeBlockNode(
+                    [resolvedLoop.Operation],
+                    RazorVueImperativeBlockKind.LoopBlock,
+                    CreateImperativeOrigins([resolvedLoop.Operation], imperativeCoveredNodes),
+                    allowedLocalSymbols);
+                index = bodyEnd;
+                return true;
+            }
+
             var bodyNodes = isBoundaryForEachHeader
                 ? BindCoveredControlBodyNodes(coveredNodes, sourceSpan, "foreach-body")
                 : SliceNodesByRange(coveredNodes, resolvedLoop.BodyRange, sourceSpan, "foreach-body", trimLeadingControlNode: false);
@@ -2025,7 +2035,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             ref int index,
             ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
             ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
-            out RazorVueForNode loopNode)
+            out RazorVueRenderNode loopNode)
         {
             loopNode = default!;
             if (!IsTemplateCodeNode(nodes[index]))
@@ -2043,13 +2053,6 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             if (!_resolver.TryResolveFor(sourceSpan, out var resolvedLoop))
                 return false;
 
-            if (RazorVueImperativeRenderPromotionAnalyzer.ShouldPromoteBody([resolvedLoop.Operation]))
-                return false;
-
-            var analysis = RazorVueForLoopAnalyzer.AnalyzeRequired(
-                resolvedLoop.Operation,
-                Jazor.RazorVue.RazorVueOperationNormalizer.Unwrap,
-                _snapshot.Descriptor.FullName);
             var bodyEnd = FindControlStatementEndIndex(
                 nodes,
                 index,
@@ -2057,6 +2060,29 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 sourceSpan,
                 "for");
             var coveredNodes = nodes.Skip(index + 1).Take(bodyEnd - index - 1).ToList();
+
+            if (RazorVueImperativeRenderPromotionAnalyzer.ShouldPromoteBody([resolvedLoop.Operation]) ||
+                !RazorVueForLoopAnalyzer.TryAnalyze(
+                    resolvedLoop.Operation,
+                    Jazor.RazorVue.RazorVueOperationNormalizer.Unwrap,
+                    out var analysis))
+            {
+                var imperativeCoveredNodes = nodes.Skip(index).Take(bodyEnd - index).ToArray();
+                loopNode = CreateImperativeBlockNode(
+                    [resolvedLoop.Operation],
+                    RazorVueImperativeBlockKind.LoopBlock,
+                    CreateImperativeOrigins([resolvedLoop.Operation], imperativeCoveredNodes),
+                    allowedLocalSymbols);
+                index = bodyEnd;
+                return true;
+            }
+
+            RazorVueForLoopAnalyzer.ValidateStaticLoopProgressIfProvable(
+                resolvedLoop.Operation,
+                analysis,
+                Jazor.RazorVue.RazorVueOperationNormalizer.Unwrap,
+                _snapshot.Descriptor.FullName);
+
             var bodyNodes = isBoundaryForHeader
                 ? BindCoveredControlBodyNodes(coveredNodes, sourceSpan, "for-body")
                 : SliceNodesByRange(coveredNodes, resolvedLoop.BodyRange, sourceSpan, "for-body", trimLeadingControlNode: false);
@@ -2221,10 +2247,6 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                             $"RazorVue Razor IR frontend could not map template code block for-loop back to source ranges in component '{_snapshot.Descriptor.FullName}'.");
                     }
 
-                    var analysis = RazorVueForLoopAnalyzer.AnalyzeRequired(
-                        resolvedLoop.Operation,
-                        Unwrap,
-                        _snapshot.Descriptor.FullName);
                     var bodyEnd = FindControlStatementEndIndex(
                         nodes,
                         index,
@@ -2232,6 +2254,27 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                         pending.SourceSpan,
                         "embedded for");
                     var coveredNodes = nodes.Skip(index).Take(bodyEnd - index).ToList();
+
+                    if (!RazorVueForLoopAnalyzer.TryAnalyze(
+                            resolvedLoop.Operation,
+                            Unwrap,
+                            out var analysis))
+                    {
+                        renderNode = CreateImperativeBlockNode(
+                            [resolvedLoop.Operation],
+                            RazorVueImperativeBlockKind.LoopBlock,
+                            CreateImperativeOrigins([resolvedLoop.Operation], coveredNodes),
+                            allowedLocalSymbols);
+                        index = bodyEnd;
+                        return true;
+                    }
+
+                    RazorVueForLoopAnalyzer.ValidateStaticLoopProgressIfProvable(
+                        resolvedLoop.Operation,
+                        analysis,
+                        Unwrap,
+                        _snapshot.Descriptor.FullName);
+
                     var bodyNodes = SliceNodesByRange(
                         coveredNodes,
                         resolvedLoop.BodyRange,

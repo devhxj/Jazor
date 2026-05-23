@@ -553,7 +553,19 @@ internal sealed class RazorVueRenderTreeExtractor
                         CreateOrigins(current, RazorVueOriginKind.Template)));
                     break;
                 case IForLoopOperation forLoop:
-                    AddNode(CreateForNode(forLoop));
+                    if (TryCreateForNode(forLoop, out var forNode))
+                    {
+                        AddNode(forNode);
+                    }
+                    else
+                    {
+                        AddNode(new RazorVueImperativeBlockNode(
+                            [forLoop],
+                            RazorVueImperativeBlockKind.LoopBlock,
+                            CollectVisibleLocals([forLoop]),
+                            CollectVisibleParameters([forLoop], _builderParameters),
+                            CreateOrigins(forLoop, RazorVueOriginKind.Template)));
+                    }
                     break;
                 case IBlockOperation block:
                     foreach (var child in block.Operations)
@@ -1180,14 +1192,19 @@ internal sealed class RazorVueRenderTreeExtractor
             };
         }
 
-        private RazorVueForNode CreateForNode(IForLoopOperation loop)
+        private bool TryCreateForNode(IForLoopOperation loop, out RazorVueForNode forNode)
         {
-            var analyzedLoop = RazorVueForLoopAnalyzer.AnalyzeRequired(
+            forNode = default!;
+            if (!RazorVueForLoopAnalyzer.TryAnalyze(loop, Unwrap, out var analyzedLoop))
+                return false;
+
+            RazorVueForLoopAnalyzer.ValidateStaticLoopProgressIfProvable(
                 loop,
+                analyzedLoop,
                 Unwrap,
                 _snapshot.Descriptor.FullName);
 
-            return new RazorVueForNode(
+            forNode = new RazorVueForNode(
                 analyzedLoop.VariableName,
                 loop.Locals.Length > 0 ? loop.Locals[0] : null,
                 analyzedLoop.InitialValue,
@@ -1197,6 +1214,7 @@ internal sealed class RazorVueRenderTreeExtractor
                 analyzedLoop.StepValue,
                 ParseNestedBranch(loop.Body, loop.Locals),
                 CreateOrigins(loop, RazorVueOriginKind.Template));
+            return true;
         }
 
         private void AddNode(RazorVueRenderNode node)

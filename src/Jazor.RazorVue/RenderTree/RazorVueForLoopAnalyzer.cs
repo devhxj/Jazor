@@ -224,7 +224,7 @@ internal static class RazorVueForLoopAnalyzer
                SymbolEqualityComparer.Default.Equals(localReference.Local, loopVariable);
     }
 
-    private static void ValidateStaticLoopProgressIfProvable(
+    internal static void ValidateStaticLoopProgressIfProvable(
         IForLoopOperation loop,
         AnalyzedForLoop analyzedLoop,
         Func<IOperation?, IOperation?> unwrap,

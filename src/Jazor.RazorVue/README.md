@@ -207,7 +207,9 @@
 - 其中 `i = i + step` / `i = step + i` / `i = i - step` 会被规范化到与 `+=` / `-=` 相同的 count-style loop 语义，再继续进入 canonical / H / SFC lowering；不会额外引入新的 runtime 协议。
 - `step` 不要求是编译期常量。只要 iterator 结构仍是当前受支持的 `++` / `--` / `+= expr` / `-= expr` / `i = i +/- expr` 子集，`expr` 可以是当前组件方法调用等运行时表达式；RazorVue 会保留“进入 range helper 前单次求值”的合同，并在 SFC 路径对需要单次求值保护的步进表达式提升 setup/computed binding。
 - 上述动态步进表达式路径现在也已被 Razor IR / parity / pipeline / canonical / SFC 回归正式锁定，不再只停留在 analyzer 或 runtime helper 实现层面的隐式支持。
-- 这条支持边界仍然不放宽到任意 iterator 表达式。多 iterator、非单变量协议、`i = i * step`、`i = Next(i)`、以及需要逐轮重新解释循环协议的形态，当前仍显式拒绝。
+- 这条声明式 count-style 支持边界仍然不放宽到任意 iterator 表达式。多 iterator、非单变量协议、`i = i * step`、`i = Next(i)`、以及需要逐轮重新解释循环协议的形态，当前仍不会被当作 `RazorVueForNode` / `__jazorVueForRange(...)` 这条声明式 count-style 合同接受。
+- 但这不再等同于“整体不支持 `for`”。对 handwritten `BuildRenderTree` 与 Razor IR root/template code-block 而言，只要这类 `for` 仍落在现有同步 imperative render artifact contract 内，它们现在会直接切到 `RazorVueImperativeBlockNode` / render-context imperative bridge / render-function `.vue` 主线。例如 `for (var index = 0; index < Count; index++, total++)` 这类多 iterator authored form，当前已不再因 count-style analyzer 失败而直接报 unsupported；它会按真实 JS `for (...)` 语义交给 `SemanticWalker` / imperative render lowering 承载。
+- `foreach` 也遵循同一条“双通道”边界：当 direct Razor IR `@foreach` body 仍可结构化时，继续保留 `RazorVueForEachNode` / declarative lowering；当 body 已经需要 imperative 语义（例如循环内 `break` / `continue`），则不再因为 frontend 结构化失败而掉回 unsupported，而是直接切到 `RazorVueImperativeBlockNode` / render-context imperative bridge / render-function `.vue` 主线。这里扩的是 frontend fallback，不是新增 `foreach` runtime 协议。
 
 ## Imperative Block Phase 1
 

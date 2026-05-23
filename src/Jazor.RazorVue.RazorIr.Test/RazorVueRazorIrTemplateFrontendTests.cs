@@ -11155,7 +11155,7 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
-    public void CreateRenderTree_ForLoop_WithMultipleIteratorExpressions_ThrowsExplicitFailure()
+    public void CreateRenderTree_ForLoop_WithMultipleIteratorExpressions_ProducesImperativeLoopBlock()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -11185,8 +11185,11 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
             """);
 
         var frontend = new RazorVueRazorIrTemplateFrontend();
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => frontend.CreateRenderTree(context, snapshot));
-        StringAssert.Contains(exception.Message, "only supports count-style for-loops");
+        var renderTree = frontend.CreateRenderTree(context, snapshot);
+        Assert.AreEqual(1, renderTree.Children.Length);
+        var imperative = Assert.IsInstanceOfType<RazorVueImperativeBlockNode>(renderTree.Children[0]);
+        Assert.AreEqual(RazorVueImperativeBlockKind.LoopBlock, imperative.Kind);
+        CollectionAssert.Contains(imperative.VisibleLocals.Select(static local => local.Name).ToArray(), "i");
     }
 
     [TestMethod]
@@ -11233,6 +11236,42 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
                 .OfType<IPropertyReferenceOperation>()
                 .First()
                 .Property.Name);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForDirectIfWithReturn_ProducesImperativeMethodBodyNode()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @if (Hide)
+            {
+                return;
+            }
+
+            <section>ready</section>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.Imperative.DirectIfReturn.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Hide { get; set; }
+                }
+            }
+            """);
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+
+        Assert.AreEqual(1, renderTree.Children.Length, RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot));
+        var imperative = Assert.IsInstanceOfType<RazorVueImperativeBlockNode>(renderTree.Children[0]);
+        Assert.AreEqual(RazorVueImperativeBlockKind.MethodBody, imperative.Kind);
     }
 
     [TestMethod]
@@ -11444,6 +11483,48 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
         Assert.AreEqual(1, renderTree.Children.Length, RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot));
         var imperative = renderTree.Children[0] as RazorVueImperativeBlockNode;
         Assert.IsNotNull(imperative);
+        Assert.AreEqual(RazorVueImperativeBlockKind.LoopBlock, imperative.Kind);
+        CollectionAssert.Contains(imperative.VisibleLocals.Select(static local => local.Name).ToArray(), "item");
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForDirectForeachWithBreak_ProducesImperativeLoopBlockNode()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @foreach (var item in Items!)
+            {
+                @if (item < 0)
+                {
+                    break;
+                }
+
+                <section>@item</section>
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.Imperative.DirectForeachBreak.Tests",
+            documentPath,
+            documentText,
+            """
+            using System.Collections.Generic;
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public IReadOnlyList<int>? Items { get; set; }
+                }
+            }
+            """);
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+
+        Assert.AreEqual(1, renderTree.Children.Length, RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot));
+        var imperative = Assert.IsInstanceOfType<RazorVueImperativeBlockNode>(renderTree.Children[0]);
         Assert.AreEqual(RazorVueImperativeBlockKind.LoopBlock, imperative.Kind);
         CollectionAssert.Contains(imperative.VisibleLocals.Select(static local => local.Name).ToArray(), "item");
     }
@@ -12097,6 +12178,45 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_ForDirectIfWithThrow_ProducesImperativeMethodBodyNode()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @if (Fail)
+            {
+                throw new InvalidOperationException("boom");
+            }
+
+            <section>ready</section>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.Imperative.DirectIfThrow.Tests",
+            documentPath,
+            documentText,
+            """
+            using System;
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Fail { get; set; }
+                }
+            }
+            """,
+            importsText: "@using System");
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+
+        Assert.AreEqual(1, renderTree.Children.Length, RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot));
+        var imperative = Assert.IsInstanceOfType<RazorVueImperativeBlockNode>(renderTree.Children[0]);
+        Assert.AreEqual(RazorVueImperativeBlockKind.MethodBody, imperative.Kind);
+    }
+
+    [TestMethod]
     public void RazorVuePipeline_WithRazorIrTemplateFrontend_LowersConditionalReturnTemplateCodeBlock_UsingImperativeRenderBridge()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -12113,6 +12233,43 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
 
         var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
             "RazorVue.RazorIr.TemplateFrontend.Imperative.ConditionalReturn.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Hide { get; set; }
+                }
+            }
+            """);
+
+        var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
+        StringAssert.Contains(artifact.ModuleCode, "if (props.hide) {");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorRenderContext.finish();");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(h(\"section\", null, \"ready\"));");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_LowersDirectIfWithReturn_UsingImperativeRenderBridge()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @if (Hide)
+            {
+                return;
+            }
+
+            <section>ready</section>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.Imperative.DirectIfReturn.Pipeline.Tests",
             documentPath,
             documentText,
             """
@@ -12175,6 +12332,127 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
         StringAssert.Contains(artifact.ModuleCode, "if (props.fail) {");
         StringAssert.Contains(artifact.ModuleCode, "throw new Error(\"boom\");");
         StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(h(\"section\", null, \"ready\"));");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_LowersDirectIfWithThrow_UsingImperativeRenderBridge()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @if (Fail)
+            {
+                throw new InvalidOperationException("boom");
+            }
+
+            <section>ready</section>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.Imperative.DirectIfThrow.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            using System;
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Fail { get; set; }
+                }
+            }
+            """,
+            importsText: "@using System");
+
+        var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
+        StringAssert.Contains(artifact.ModuleCode, "if (props.fail) {");
+        StringAssert.Contains(artifact.ModuleCode, "throw new Error(\"boom\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(h(\"section\", null, \"ready\"));");
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithRazorIrTemplateFrontend_LowersDirectIfWithReturn_ToRenderFunctionVueSfc()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @if (Hide)
+            {
+                return;
+            }
+
+            <section>ready</section>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.Imperative.DirectIfReturn.Sfc.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Hide { get; set; }
+                }
+            }
+            """);
+
+        var artifact = new RazorVueSfcArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "<script lang=\"ts\">");
+        StringAssert.Contains(artifact.SfcText, "if (props.hide) {");
+        StringAssert.Contains(artifact.SfcText, "return __jazorRenderContext.finish();");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(h(\"section\", null, \"ready\"));");
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithRazorIrTemplateFrontend_LowersDirectIfWithThrow_ToRenderFunctionVueSfc()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @if (Fail)
+            {
+                throw new InvalidOperationException("boom");
+            }
+
+            <section>ready</section>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.Imperative.DirectIfThrow.Sfc.Tests",
+            documentPath,
+            documentText,
+            """
+            using System;
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Fail { get; set; }
+                }
+            }
+            """,
+            importsText: "@using System");
+
+        var artifact = new RazorVueSfcArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "<script lang=\"ts\">");
+        StringAssert.Contains(artifact.SfcText, "if (props.fail) {");
+        StringAssert.Contains(artifact.SfcText, "throw new Error(\"boom\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(h(\"section\", null, \"ready\"));");
     }
 
     [TestMethod]
@@ -12439,6 +12717,93 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
         StringAssert.Contains(artifact.ModuleCode, "break;");
         StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
         StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(item);");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_LowersDirectForeachWithBreak_UsingImperativeRenderBridge()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @foreach (var item in Items!)
+            {
+                @if (item < 0)
+                {
+                    break;
+                }
+
+                <section>@item</section>
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.Imperative.DirectForeachBreak.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            using System.Collections.Generic;
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public IReadOnlyList<int>? Items { get; set; }
+                }
+            }
+            """);
+
+        var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ModuleCode, "for (let item of props.items)");
+        StringAssert.Contains(artifact.ModuleCode, "break;");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(item);");
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithRazorIrTemplateFrontend_LowersDirectForeachWithBreak_ToRenderFunctionVueSfc()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @foreach (var item in Items!)
+            {
+                @if (item < 0)
+                {
+                    break;
+                }
+
+                <section>@item</section>
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.Imperative.DirectForeachBreak.Sfc.Tests",
+            documentPath,
+            documentText,
+            """
+            using System.Collections.Generic;
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public IReadOnlyList<int>? Items { get; set; }
+                }
+            }
+            """);
+
+        var artifact = new RazorVueSfcArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "<script lang=\"ts\">");
+        StringAssert.Contains(artifact.SfcText, "for (let item of props.items)");
+        StringAssert.Contains(artifact.SfcText, "break;");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(item);");
     }
 
     [TestMethod]

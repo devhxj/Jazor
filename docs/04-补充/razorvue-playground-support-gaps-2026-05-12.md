@@ -334,9 +334,40 @@ for (var i = Start; i >= Count; i = i - Step)
 - 支持：`for (var i = Start; i <= Count; i = i + GetStep())`
 - 仍支持：`i++` / `i--` / `i += Step` / `i -= Step`
 - 支持边界不是“step 必须是常量/字段/参数”，而是“iterator 结构必须仍能归一到现有 count-style `++` / `--` / `+= expr` / `-= expr` / `i = i +/- expr` 契约”；其中 `expr` 可以是运行时方法调用，但仍按“进入 `__jazorVueForRange(...)` 前单次求值”处理，而不是逐轮重新求值
-- 不支持：多 iterator 表达式
-- 不支持：`i = i * Step`、`i = Next(i)` 这类更宽泛 iterator 协议解释
+- 不支持作为声明式 count-style `RazorVueForNode`：多 iterator 表达式
+- 不支持作为声明式 count-style `RazorVueForNode`：`i = i * Step`、`i = Next(i)` 这类更宽泛 iterator 协议解释
 - 不支持：需要改变现有 “start / limit / step 先求值，再进入 range helper” 契约的逐轮动态步进模型
+
+### 2026-05-23 补充校准
+
+本轮继续收紧了“count-style 不支持”与“整体不支持 `for`”之间的边界。此前像：
+
+```csharp
+for (var index = 0; index < Count; index++, total++)
+{
+    builder.OpenElement(0, "section");
+    builder.AddContent(1, index);
+    builder.AddContent(2, total);
+    builder.CloseElement();
+}
+```
+
+这类 authored form 会在 frontend 里过早触发 `RazorVueForLoopAnalyzer` 的 count-style failure，直接报 unsupported。当前实现已改为：
+
+- 若 `for` 能归一到现有 count-style 契约，仍优先走声明式 `RazorVueForNode` / `__jazorVueForRange(...)`
+- 若 `for` 不能归一到 count-style，但本身仍可由现有同步 imperative render artifact contract 诚实承载，则不再直接失败，而是切到 `RazorVueImperativeBlockNode` / render-context imperative bridge / render-function `.vue` 主线
+
+因此当前真正仍不支持的是：
+
+- 需要新的逐轮动态步进 runtime 协议的 `for`
+- 需要 async imperative render contract 的 `for`
+- 其他超出当前同步 imperative render 主线的循环执行模型
+
+同一类 frontend 过早拒绝缺口本轮也顺手收掉了一格 direct Razor IR `@foreach`：
+
+- 之前 direct `@foreach` 主要只在 body 仍可结构化时稳定走 `RazorVueForEachNode`
+- 一旦循环体里出现 `break` / `continue` 这类需要 imperative 语义的 authored form，就可能在 Razor IR frontend 结构化阶段过早掉回 unsupported
+- 当前已改为与非 count-style `for` 同一原则：若 `@foreach` body 仍可结构化，继续 declarative；若 body 需要 imperative 语义，则直接切到 `RazorVueImperativeBlockNode` / render-context imperative bridge / render-function `.vue` 主线，而不是继续把“声明式 frontend 失败”误当成“整体不支持 foreach”
 
 ### 当前保护
 
