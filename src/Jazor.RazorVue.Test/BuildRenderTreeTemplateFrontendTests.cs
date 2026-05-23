@@ -182,6 +182,164 @@ public sealed class BuildRenderTreeTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_ForElementDomEventWithPreventDefaultAndStopPropagation_ModifierMetadataStaysOnAttribute()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using Microsoft.AspNetCore.Components.Web;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public EventCallback OnClick { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "button");
+                        builder.AddAttribute(1, "onclick", EventCallback.Factory.Create(this, OnClick));
+                        WebRenderTreeBuilderExtensions.AddEventPreventDefaultAttribute(builder, 2, "onclick", true);
+                        WebRenderTreeBuilderExtensions.AddEventStopPropagationAttribute(builder, 3, "onclick", true);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+
+        var button = renderTree.Children.Single() as RazorVueElementNode;
+        Assert.IsNotNull(button);
+        var attribute = button.Attributes.Single() as RazorVueAttributeNode;
+        Assert.IsNotNull(attribute);
+        Assert.AreEqual("onclick", attribute.Name);
+        Assert.IsNotNull(attribute.EventModifiers.PreventDefault);
+        Assert.IsNotNull(attribute.EventModifiers.StopPropagation);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForFalseElementDomEventModifier_DoesNotApplyModifierMetadata()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using Microsoft.AspNetCore.Components.Web;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public EventCallback OnClick { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "button");
+                        WebRenderTreeBuilderExtensions.AddEventPreventDefaultAttribute(builder, 1, "onclick", false);
+                        builder.AddAttribute(2, "onclick", EventCallback.Factory.Create(this, OnClick));
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+
+        var button = renderTree.Children.Single() as RazorVueElementNode;
+        Assert.IsNotNull(button);
+        var attribute = button.Attributes.Single() as RazorVueAttributeNode;
+        Assert.IsNotNull(attribute);
+        Assert.AreEqual("onclick", attribute.Name);
+        Assert.IsNull(attribute.EventModifiers.PreventDefault);
+        Assert.IsNull(attribute.EventModifiers.StopPropagation);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForLaterFalseElementDomEventModifier_ClearsModifierMetadata()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using Microsoft.AspNetCore.Components.Web;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public EventCallback OnClick { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "button");
+                        builder.AddAttribute(1, "onclick", EventCallback.Factory.Create(this, OnClick));
+                        WebRenderTreeBuilderExtensions.AddEventPreventDefaultAttribute(builder, 2, "onclick", true);
+                        WebRenderTreeBuilderExtensions.AddEventPreventDefaultAttribute(builder, 3, "onclick", false);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+
+        var button = renderTree.Children.Single() as RazorVueElementNode;
+        Assert.IsNotNull(button);
+        var attribute = button.Attributes.Single() as RazorVueAttributeNode;
+        Assert.IsNotNull(attribute);
+        Assert.AreEqual("onclick", attribute.Name);
+        Assert.IsNull(attribute.EventModifiers.PreventDefault);
+        Assert.IsNull(attribute.EventModifiers.StopPropagation);
+    }
+
+    [TestMethod]
     public void CreateRenderTree_ForLocalCarrierTypedSlotTemplate_ProducesStructuredSlotTemplate()
     {
         var context = CreateContext(

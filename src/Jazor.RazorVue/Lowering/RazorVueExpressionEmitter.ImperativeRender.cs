@@ -329,11 +329,16 @@ internal sealed partial class RazorVueExpressionEmitter
     private bool TryRewriteImperativeBuilderInvocation(IInvocationOperation invocation, SenseArgument argument, out string expression)
     {
         expression = string.Empty;
-        if (_imperativeBuilderAlias is null ||
-            invocation.Instance is null)
+        if (_imperativeBuilderAlias is null)
         {
             return false;
         }
+
+        if (TryRewriteImperativeEventModifierInvocation(invocation, argument, out expression))
+            return true;
+
+        if (invocation.Instance is null)
+            return false;
 
         var builderTarget = ResolveImperativeBuilderTarget(invocation.Instance);
         if (builderTarget is null)
@@ -408,6 +413,42 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         return false;
+    }
+
+    private bool TryRewriteImperativeEventModifierInvocation(
+        IInvocationOperation invocation,
+        SenseArgument argument,
+        out string expression)
+    {
+        expression = string.Empty;
+        if (!IsEventModifierInvocation(invocation.TargetMethod) ||
+            invocation.Arguments.Length < 4)
+        {
+            return false;
+        }
+
+        var builderTarget = ResolveImperativeBuilderTarget(invocation.Arguments[0].Value);
+        if (builderTarget is null)
+            return false;
+
+        var modifierPropertyName = invocation.TargetMethod.Name switch
+        {
+            "AddEventPreventDefaultAttribute" => "preventDefault",
+            "AddEventStopPropagationAttribute" => "stopPropagation",
+            _ => null
+        };
+        if (modifierPropertyName is null)
+            return false;
+
+        expression = builderTarget +
+                     ".setEventModifier(" +
+                     EmitImperativeArgument(invocation, argument, 2) +
+                     ", " +
+                     ToJavaScriptString(modifierPropertyName) +
+                     ", " +
+                     EmitImperativeArgument(invocation, argument, 3) +
+                     ")";
+        return true;
     }
 
     private string? TryGetImperativeStaticMarkupString(IOperation? operation)
@@ -1445,6 +1486,14 @@ internal sealed partial class RazorVueExpressionEmitter
             typeSymbol?.ToDisplayString(),
             "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder",
             System.StringComparison.Ordinal);
+
+    private static bool IsEventModifierInvocation(IMethodSymbol method)
+        => (string.Equals(method.Name, "AddEventPreventDefaultAttribute", System.StringComparison.Ordinal) ||
+            string.Equals(method.Name, "AddEventStopPropagationAttribute", System.StringComparison.Ordinal)) &&
+           string.Equals(
+               method.ContainingType?.ToDisplayString(),
+               "Microsoft.AspNetCore.Components.Web.WebRenderTreeBuilderExtensions",
+               System.StringComparison.Ordinal);
 
     private static bool IsImperativeUntypedRenderFragmentValue(IOperation operation)
     {

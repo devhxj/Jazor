@@ -1410,3 +1410,70 @@ builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span
 - imperative body 内常量 `AddMarkupContent(...)` 直接发射 `h(...)` subtree，而不是残留 raw-html 占位
 - Razor authored root template code-block 中的提前 `return` / `while` / 局部 mutation 也走同一 imperative render bridge，而不是回退到另一条前端语义
 - root imperative body 经 canonical / SFC semantic 正式模型进入 render-function `.vue` 产物，不再要求 artifact factory 入口层先扫描 renderTree 决定是否走特殊旁路
+
+## 17. 已完成：HTML DOM event attribute 与 Blazor event modifier 支持
+
+### 现象
+
+此前 RazorVue 对 element 上的 Blazor DOM event attribute 仍存在两类裂缝：
+
+- `builder.AddAttribute(..., "onclick", EventCallback/delegate)` 容易被当成普通 HTML attribute，而不是 Vue DOM event
+- `AddEventPreventDefaultAttribute(...)` / `AddEventStopPropagationAttribute(...)` 没有进入 render tree / canonical / SFC / imperative bridge 的正式语义模型
+
+这会导致真实 Razor authoring 中常见的 `@onclick:preventDefault` / `@onclick:stopPropagation` 等价输出无法稳定落到 Vue `.prevent` / `.stop` 或 render-function wrapper。
+
+### 当前落地方式
+
+本轮已把 HTML DOM event 与 event modifier 收口为正式模型：
+
+- render tree `RazorVueAttributeNode` 携带 `RazorVueEventModifiers`
+- `BuildRenderTree` frontend 识别 `WebRenderTreeBuilderExtensions.AddEventPreventDefaultAttribute(...)` 与 `AddEventStopPropagationAttribute(...)`
+- Razor IR frontend 现在也覆盖 `.razor` authored HTML event directive：`@onclick` 会规范化为 element DOM event，`@onclick:preventDefault` / `@onclick:stopPropagation` 会合并进同一 `RazorVueEventModifiers`；当 Razor SDK 把这些 directive 暴露成 raw markup attribute 时，frontend 会回查生成的 `BuildRenderTree` 调用位次或在当前组件 partial probe 中重新绑定表达式，拿到真实 Roslyn `IOperation`
+- raw markup fallback 的 probe 结果不会被当成字符串 JS 使用。它携带自己的 `SemanticModel.Compilation`，后续 setup/member 支持性分析会使用该 operation 所属 compilation，避免 `Count++` / 当前组件 member 引用这类 handler 语义因 symbol / syntax tree 身份不一致而绕过 `Jazor.Compiler` / `SemanticWalker`
+- Blazor event key 统一经 `RazorVueDomEventName` 规范化，例如 `onclick` -> Vue template `@click` / H prop `onClick`
+- canonical model 增加 `HtmlEvent` attribute kind，并把 modifier 表达式纳入 template encodability / safety / side-effect 分类
+- SFC template 对静态 `true` modifier 输出 Vue 原生 `.prevent` / `.stop`
+- 动态 bool modifier 在事件 handler 触发时求值，不在 `script setup` 初始化时冻结；因此 `props.preventClick` 或 template-local `localPrevent` 后续变化仍会影响事件行为
+- H/render-function path 会生成稳定 handler wrapper，保留单次 handler 表达式求值与事件时 modifier 条件判断
+- imperative render bridge 增加 `setEventModifier(...)` / `setEventModifiers(...)`，会规范化 event key、包装 DOM handler、避免重复 wrapper，并在 modifier 被清除时恢复原始 handler
+
+### 当前支持边界
+
+- 支持：HTML element 上的 `EventCallback` / delegate-like `onclick` 等 Blazor DOM event attribute
+- 支持：Razor IR / `.razor` authored `<button @onclick="OnClick" @onclick:preventDefault="true" @onclick:stopPropagation="StopClick">`
+- 支持：Razor IR / `.razor` authored inline lambda handler，例如 `<button @onclick="() => Count++" @onclick:preventDefault="PreventClick">`
+- 支持：`AddEventPreventDefaultAttribute(builder, seq, "onclick", true/false/dynamicBool)`
+- 支持：`AddEventStopPropagationAttribute(builder, seq, "onclick", true/false/dynamicBool)`
+- 支持：静态 `true` 输出 SFC `.prevent` / `.stop`
+- 支持：静态 `false` 不输出 modifier，并且 handwritten `BuildRenderTree` 中后续 `false` 会清除之前同一 event 的 modifier
+- 支持：动态 bool modifier 在 SFC template event handler 内按事件触发时读取当前表达式，包含 root props 与 template-local scope
+- 支持：imperative render bridge 中 event modifier 设置、清除和 handler rewrap
+- 不支持把任意 `on*` 字符串属性都当成 event；当前需要 event callback/delegate-like value 或 modifier metadata
+- 不支持把 component emit modifier 与 HTML DOM event modifier 混为一条路径；组件 emits 仍按 descriptor-aware component event lowering 处理
+
+### 当前保护
+
+- `src/Jazor.RazorVue/RazorVueDomEventName.cs`
+- `src/Jazor.RazorVue/RenderTree/RazorVueRenderTree.cs`
+- `src/Jazor.RazorVue/RenderTree/RazorVueRenderTreeExtractor.cs`
+- `src/Jazor.RazorVue/Canonical/RazorVueCanonicalHModelFactory.cs`
+- `src/Jazor.RazorVue/Sfc/RazorVueSfcSemanticModelFactory.cs`
+- `src/Jazor.RazorVue/Lowering/RazorVueExpressionEmitter.ComponentAuthoring.cs`
+- `src/Jazor.RazorVue/Lowering/RazorVueExpressionEmitter.ImperativeRender.cs`
+- `src/Jazor.RazorVue/Lowering/RazorVueExpressionEmitter.ImperativeMixedRender.cs`
+- `src/Jazor.RazorVue/Lowering/RazorVueArtifactFactory.ModuleBuilder.cs`
+- `src/Jazor.RazorVue/Lowering/RazorVueSfcArtifactFactory.cs`
+- `src/Jazor.RazorVue/RazorSdk/RazorVueRazorIrTemplateFrontend.cs`
+- `src/Jazor.RazorVue/RazorSdk/RazorVueRazorIrOperationResolver.cs`
+- `src/Jazor.RazorVue.Test/BuildRenderTreeTemplateFrontendTests.cs`
+- `src/Jazor.RazorVue.Test/RazorVuePipelineTests.cs`
+- `src/Jazor.RazorVue.Test/RazorVueSfcArtifactFactoryTests.cs`
+- `src/Jazor.RazorVue.RazorIr.Test/RazorVueRazorIrCompilerExpressionBridgeTests.cs`
+- `src/Jazor.RazorVue.RazorIr.Test/RazorVueRazorIrTemplateFrontendTests.cs`
+
+当前 focused 回归已通过：
+
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~ElementDomEventWithModifiers|FullyQualifiedName~FalseElementDomEventModifier|FullyQualifiedName~LaterFalseElementDomEventModifier|FullyQualifiedName~DynamicModifier|FullyQualifiedName~ImperativeElementDomEventModifier' -v minimal -p:UseSharedCompilation=false`
+- `dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj --filter 'FullyQualifiedName~ElementDomEvent' -v minimal -p:UseSharedCompilation=false`
+
+最新结果：RazorVue DOM event focused 11 通过，0 失败，0 跳过；Razor IR DOM event focused 4 通过，0 失败，0 跳过。新增覆盖 Razor IR `.razor` authored `@onclick` / `@onclick:preventDefault` / `@onclick:stopPropagation` 到 render tree metadata 与 SFC `.vue` event handler lowering 的完整路径，并锁定 raw markup inline lambda handler 的 probe compilation ownership。

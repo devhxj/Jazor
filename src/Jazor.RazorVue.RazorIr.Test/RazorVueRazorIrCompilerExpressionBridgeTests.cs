@@ -12,6 +12,46 @@ public sealed class RazorVueRazorIrCompilerExpressionBridgeTests
     public TestContext TestContext { get; set; } = default!;
 
     [TestMethod]
+    public void RazorVueRazorIrOperationResolver_ForRawMarkupElementDomEventLambda_ResolvesCompilationOwnedProbeOperation()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<button @onclick="() => Count++">Go</button>""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.OperationResolver.ElementDomEventLambda.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    private int Count { get; set; }
+                }
+            }
+            """);
+
+        var resolver = new RazorVueRazorIrOperationResolver(
+            context,
+            snapshot,
+            snapshot.RazorSourceGeneratorDocument!);
+
+        Assert.IsFalse(
+            resolver.TryResolveBuilderAttributeValue("AddAttribute", "onclick", 0, out _),
+            "Razor SDK raw markup fallback currently keeps @onclick inside AddMarkupContent rather than generating AddAttribute.");
+        Assert.IsTrue(
+            resolver.TryResolveComponentExpression(
+                "Microsoft.AspNetCore.Components.EventCallback.Factory.Create(this, () => Count++)",
+                out var operation),
+            snapshot.RazorSourceGeneratorDocument!.CSharpText.ToString());
+        Assert.IsInstanceOfType<IInvocationOperation>(operation);
+        Assert.IsTrue(
+            operation.SemanticModel?.Compilation.ContainsSyntaxTree(operation.Syntax.SyntaxTree) == true,
+            "Resolved event handler operation must carry the compilation that owns its probe syntax tree.");
+    }
+
+    [TestMethod]
     public void RazorVuePipeline_WithRazorIrTemplateFrontend_LowersWhitelistedTemplateExpressions_UsingCompilerSemantics()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";

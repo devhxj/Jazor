@@ -258,6 +258,11 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedNam
 9. Razor SG semantic frontend 现在过滤到带 `RazorSourceGeneratorDocument` 的 snapshots，避免 helper component 或无 SG 文档 snapshot 遮蔽真实 Razor IR canonicalization 错误。
 10. 当前 focused 验证已通过：
    - `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~DeclarationInitializedPrivateMutableFieldWithLaterWritesAndHelperReference|FullyQualifiedName~DeclarationInitializedPrivateMutableFieldWithLaterWrites|FullyQualifiedName~DeclarationInitializedPrivateMutablePropertyWithLaterWrites|FullyQualifiedName~DeclarationInitializedPublicMutablePropertyWithLaterWrites|FullyQualifiedName~CustomGetterPrivateSetterSetupProperty' -v minimal`
+11. HTML DOM event attribute 与 Blazor event modifier 本轮已从缺口转入正式支持面。`builder.AddAttribute(..., "onclick", EventCallback/delegate)` 现在会 lower 为 Vue DOM event（H/render-function `onClick`，SFC template `@click`），`AddEventPreventDefaultAttribute(...)` / `AddEventStopPropagationAttribute(...)` 会进入 render tree / canonical / SFC / imperative bridge 的 event modifier 模型。
+12. 这条支持保持生产级边界：静态 `true` modifier 在 SFC template 中输出 `.prevent` / `.stop`，静态 `false` 不输出并可清除同一 event 上之前设置过的 modifier；动态 bool modifier 在事件 handler 触发时读取当前表达式，不在 `script setup` 初始化时冻结。组件 emits 仍沿 descriptor-aware component event lowering，不与 HTML DOM event modifier 混合。
+13. Razor IR raw markup fallback 现在也覆盖 `.razor` authored inline lambda handler，例如 `<button @onclick="() => Count++" @onclick:preventDefault="PreventClick">`。当 Razor SDK 把该 directive 保留在 `AddMarkupContent(...)` 中时，frontend 会通过当前组件 partial probe 绑定为 Roslyn `IOperation`，并在 downstream setup/member 分析中使用 operation 自带的 `SemanticModel.Compilation`，避免 CLR 类型引用和当前组件 member symbol 与原 snapshot compilation 身份不一致。
+14. 当前 focused event 回归已通过：
+   - `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~ElementDomEventWithModifiers|FullyQualifiedName~FalseElementDomEventModifier|FullyQualifiedName~LaterFalseElementDomEventModifier|FullyQualifiedName~DynamicModifier|FullyQualifiedName~ImperativeElementDomEventModifier' -v minimal -p:UseSharedCompilation=false`
 
 ## 已完成能力
 
@@ -440,6 +445,36 @@ dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter "FullyQu
 ```
 
 最新结果：31 通过，0 失败，0 跳过；新增覆盖 component literal 非字符串 props 输出为 Vue bound props。
+
+```powershell
+dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~ElementDomEventWithModifiers|FullyQualifiedName~FalseElementDomEventModifier|FullyQualifiedName~LaterFalseElementDomEventModifier|FullyQualifiedName~DynamicModifier|FullyQualifiedName~ImperativeElementDomEventModifier' -v minimal -p:UseSharedCompilation=false
+```
+
+最新结果：9 通过，0 失败，0 跳过；新增覆盖 HTML DOM event attribute、静态/动态 `preventDefault` / `stopPropagation` modifier、后续 `false` 清除 modifier、SFC 事件时动态求值，以及 imperative render bridge event modifier wrapper。
+
+```powershell
+dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj --filter 'FullyQualifiedName~ElementDomEventWithModifiers' -v minimal -p:UseSharedCompilation=false
+```
+
+最新结果：2 通过，0 失败，0 跳过；新增覆盖 Razor IR `.razor` authored `@onclick` / `@onclick:preventDefault` / `@onclick:stopPropagation` 到 render tree metadata 与 SFC `.vue` event handler lowering 的完整路径。
+
+```powershell
+dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj --filter 'FullyQualifiedName~RawMarkupElementDomEventLambda|FullyQualifiedName~ElementDomEventLambdaHandler' -v minimal -p:UseSharedCompilation=false
+```
+
+最新结果：2 通过，0 失败，0 跳过；新增锁定 raw markup `@onclick` inline lambda handler 的 probe compilation ownership，以及 `.vue` template `@click` + dynamic modifier + setup `computed` handler binding 输出。
+
+```powershell
+dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj --filter 'FullyQualifiedName~ElementDomEvent' -v minimal -p:UseSharedCompilation=false
+```
+
+最新结果：4 通过，0 失败，0 跳过；复验 Razor IR DOM event modifier 与 inline lambda handler 路径。
+
+```powershell
+dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~ElementDomEventWithModifiers|FullyQualifiedName~FalseElementDomEventModifier|FullyQualifiedName~LaterFalseElementDomEventModifier|FullyQualifiedName~DynamicModifier|FullyQualifiedName~ImperativeElementDomEventModifier|FullyQualifiedName~MergedElementDomEvent|FullyQualifiedName~CurrentComponentMethodGroupEventCallback' -v minimal -p:UseSharedCompilation=false
+```
+
+最新结果：11 通过，0 失败，0 跳过；复验 handwritten BuildRenderTree / SFC / imperative event modifier 路径，以及当前组件 method-group EventCallback 规范化未因 Razor IR handler fallback 发生回归。
 
 ```powershell
 dotnet run --file ./samples/RazorVue.TodoList/build-local.cs

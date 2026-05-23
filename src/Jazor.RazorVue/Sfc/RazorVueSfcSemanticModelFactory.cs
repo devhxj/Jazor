@@ -332,6 +332,44 @@ internal sealed class RazorVueSfcSemanticModelFactory
             switch (attributes[index])
             {
                 case RazorVueCanonicalAttributeBinding attribute:
+                    if (attribute.AttributeKind == RazorVueCanonicalAttributeKind.HtmlEvent &&
+                        attribute.ExpressionText is not null)
+                    {
+                        if (attribute.EventModifiers.HasAny)
+                        {
+                            CollectLiftedEventModifierBinding(
+                                ownerComponentFullName,
+                                attribute.EventModifiers.PreventDefaultExpressionText,
+                                attribute.EventModifiers,
+                                bindings,
+                                templateScopeDepth,
+                                pathPrefix + "/attr[" + index + "]/preventDefault",
+                                attribute.SourceOrigins);
+                            CollectLiftedEventModifierBinding(
+                                ownerComponentFullName,
+                                attribute.EventModifiers.StopPropagationExpressionText,
+                                attribute.EventModifiers,
+                                bindings,
+                                templateScopeDepth,
+                                pathPrefix + "/attr[" + index + "]/stopPropagation",
+                                attribute.SourceOrigins);
+                        }
+
+                        if (ShouldCreateBindingSite(attribute.TemplateEncodability, attribute.SideEffectClassification, templateScopeDepth))
+                        {
+                            bindings.Add(
+                                ownerComponentFullName,
+                                pathPrefix + "/attr[" + index + "]",
+                                attribute.ExpressionText,
+                                attribute.BindingKind,
+                                attribute.TemplateExpressionSafety,
+                                attribute.SideEffectClassification,
+                                attribute.SourceOrigins);
+                        }
+
+                        continue;
+                    }
+
                     if (attribute.ExpressionText is null ||
                         !ShouldCreateBindingSite(attribute.TemplateEncodability, attribute.SideEffectClassification, templateScopeDepth))
                     {
@@ -362,6 +400,43 @@ internal sealed class RazorVueSfcSemanticModelFactory
                     break;
             }
         }
+    }
+
+    private static bool CanUseStaticVueEventModifiers(RazorVueCanonicalEventModifiers modifiers)
+    {
+        if (!modifiers.HasAny)
+            return true;
+
+        return IsStaticTrueOrMissing(modifiers.PreventDefaultExpressionText) &&
+               IsStaticTrueOrMissing(modifiers.StopPropagationExpressionText);
+    }
+
+    private static bool IsStaticTrueOrMissing(string? expression)
+        => expression is null || string.Equals(expression, "true", StringComparison.Ordinal);
+
+    private static void CollectLiftedEventModifierBinding(
+        string ownerComponentFullName,
+        string? expressionText,
+        RazorVueCanonicalEventModifiers modifiers,
+        BindingCollection bindings,
+        int templateScopeDepth,
+        string path,
+        ImmutableArray<RazorVueSourceOrigin> sourceOrigins)
+    {
+        if (expressionText is null)
+            return;
+
+        if (!ShouldCreateBindingSite(modifiers.TemplateEncodability, modifiers.SideEffectClassification, templateScopeDepth))
+            return;
+
+        bindings.Add(
+            ownerComponentFullName,
+            path,
+            expressionText,
+            RazorVueExpressionBindingKind.RuntimeExpression,
+            modifiers.TemplateExpressionSafety,
+            modifiers.SideEffectClassification,
+            sourceOrigins);
     }
 
     private static void CollectLiftedBindings(

@@ -46,6 +46,20 @@
 - Razor SDK / Razor IR authoring 支持 Razor `@key`。
 - 对官方 Razor Source Generator 当前会把 component `@key="Id"` 编成 `AddComponentParameter(..., "@key", "Id")` 的形态，RazorVue 会基于原始 Razor 源片段与生成调用位次恢复 C# 表达式语义，确保 `<Child @key="Id" />` 仍然按属性访问降为 `props.id`，而不是错误地固定成字符串 `"Id"`。
 
+## DOM Event Attribute Support
+
+- HTML element 上的 Blazor DOM event attribute 现在作为一等 HTML event 处理，而不是退化成普通 `onclick` 字符串属性。
+- handwritten `BuildRenderTree` 支持 `builder.AddAttribute(..., "onclick", EventCallback/delegate)`，会 lower 为 Vue event prop/template event：
+  - H/render-function 输出使用 `onClick`
+  - SFC template 输出使用 `@click`
+- Razor IR / `.razor` authored template 也支持 HTML element DOM event directive，例如 `<button @onclick="OnClick" @onclick:preventDefault="true" @onclick:stopPropagation="StopClick">`；frontend 会从 Razor SDK 生成的 `AddAttribute(...)` / `AddEvent...Attribute(...)` 调用或 raw markup fallback 中恢复 Roslyn `IOperation`，再交给既有 EventCallback / method-reference lowering，而不是在 RazorVue 内拼接 handler JS。
+- 当 Razor SDK 把 `.razor` event directive 保留在 raw `AddMarkupContent(...)` 中时，RazorVue 会用当前组件 partial probe 重新绑定表达式，并且 downstream setup/member 分析使用该 `IOperation` 自带的 `SemanticModel.Compilation`；这保证 inline lambda handler 里的 CLR 类型、当前组件 member 引用、`Count++` 这类写入语义仍走 `Jazor.Compiler` / `SemanticWalker`，不会混用原 snapshot compilation 或手写 JS。
+- `WebRenderTreeBuilderExtensions.AddEventPreventDefaultAttribute(...)` 与 `AddEventStopPropagationAttribute(...)` 已在 declarative 和 imperative render path 中进入正式支持。
+- 静态 `true` 修饰符在 SFC template 中会优先输出 Vue 原生 modifier，例如 `@click.prevent.stop`；静态 `false` 不输出 modifier，并且在 handwritten `BuildRenderTree` 中遵循“最后一次调用胜出”，可清除前面设置过的 modifier。
+- 动态 bool modifier 不会在 `script setup` 初始化时冻结值；SFC 会在事件 handler 内读取当前表达式，例如 `props.preventClick` 或 template-local `localPrevent`，H/render-function 则通过稳定 wrapper 保留事件触发时的条件判断。
+- imperative render bridge 支持 `setEventModifier(...)` / `setEventModifiers(...)`，会规范化 Blazor event key（例如 `onclick` -> `onClick`），包装 handler，并在 modifier 被清除时还原到原始 handler，避免重复 wrapper 或残留旧 modifier。
+- 该能力只覆盖 HTML DOM event。组件 emits 仍沿 descriptor-aware component event 路线处理，不与 DOM event modifier 合并。
+
 ## Mixed Attribute Support
 
 - Razor IR frontend 现已支持 mixed HTML attribute content，不再只接受“单个 attribute value child”或“全部静态 literal child”。

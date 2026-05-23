@@ -684,27 +684,44 @@ internal sealed class RazorVueCanonicalHModelFactory
             switch (attributeEntry)
             {
                 case RazorVueAttributeNode attribute:
+                    var isHtmlEvent = IsElementDomEventAttribute(attribute, out var eventName);
+                    var eventModifiers = CreateCanonicalEventModifiers(
+                        snapshot,
+                        expressionEmitter,
+                        attribute.EventModifiers,
+                        allowedLocalSymbols,
+                        allowedParameterSymbols);
+                    var templateEncodability = attribute.CapturedBindings.IsDefaultOrEmpty
+                        ? ClassifyTemplateEncodability(attribute.Value)
+                        : RazorVueTemplateEncodability.TemplateViaSetupBinding;
+                    var templateExpressionSafety = attribute.CapturedBindings.IsDefaultOrEmpty
+                        ? ClassifyTemplateExpressionSafety(snapshot, attribute.Value)
+                        : RazorVueTemplateExpressionSafety.RequiresSetupBinding;
+                    var sideEffectClassification = attribute.CapturedBindings.IsDefaultOrEmpty
+                        ? ClassifySideEffects(attribute.Value)
+                        : RazorVueSideEffectClassification.SingleEvaluationRequired;
                     builder.Add(new RazorVueCanonicalAttributeBinding(
-                        Name: attribute.Name,
+                        Name: isHtmlEvent ? eventName : attribute.Name,
                         ExpressionText: attribute.Value is null
                             ? null
                             : attribute.CapturedBindings.IsDefaultOrEmpty
                                 ? EmitTemplateExpression(snapshot, expressionEmitter, attribute.Value, allowedLocalSymbols, allowedParameterSymbols)
                                 : expressionEmitter.EmitCapturedTemplateExpression(attribute.Value, attribute.CapturedBindings, allowedLocalSymbols, allowedParameterSymbols),
                         LiteralValueKind: ClassifyLiteralValueKind(attribute.Value),
-                        AttributeKind: RazorVueCanonicalAttributeKind.HtmlAttribute,
+                        AttributeKind: isHtmlEvent
+                            ? RazorVueCanonicalAttributeKind.HtmlEvent
+                            : RazorVueCanonicalAttributeKind.HtmlAttribute,
                         BindingKind: attribute.CapturedBindings.IsDefaultOrEmpty
                             ? ClassifyBindingKind(snapshot, attribute.Value)
                             : RazorVueExpressionBindingKind.RuntimeExpression,
-                        TemplateEncodability: attribute.CapturedBindings.IsDefaultOrEmpty
-                            ? ClassifyTemplateEncodability(attribute.Value)
-                            : RazorVueTemplateEncodability.TemplateViaSetupBinding,
-                        TemplateExpressionSafety: attribute.CapturedBindings.IsDefaultOrEmpty
-                            ? ClassifyTemplateExpressionSafety(snapshot, attribute.Value)
-                            : RazorVueTemplateExpressionSafety.RequiresSetupBinding,
-                        SideEffectClassification: attribute.CapturedBindings.IsDefaultOrEmpty
-                            ? ClassifySideEffects(attribute.Value)
-                            : RazorVueSideEffectClassification.SingleEvaluationRequired,
+                        TemplateEncodability: CombineTemplateEncodability(templateEncodability, eventModifiers.TemplateEncodability),
+                        TemplateExpressionSafety: CombineTemplateExpressionSafety(
+                            templateExpressionSafety,
+                            eventModifiers.TemplateExpressionSafety),
+                        SideEffectClassification: CombineSideEffectClassifications(
+                            sideEffectClassification,
+                            eventModifiers.SideEffectClassification),
+                        EventModifiers: eventModifiers,
                         SourceOrigins: attribute.Origins));
                     break;
                 case RazorVueAttributeSpreadNode spread:
@@ -817,6 +834,7 @@ internal sealed class RazorVueCanonicalHModelFactory
                     SideEffectClassification: attribute.CapturedBindings.IsDefaultOrEmpty
                         ? ClassifySideEffects(attribute.Value)
                         : RazorVueSideEffectClassification.SingleEvaluationRequired,
+                    EventModifiers: RazorVueCanonicalEventModifiers.Empty,
                     SourceOrigins: attribute.Origins));
                 continue;
             }
@@ -844,6 +862,7 @@ internal sealed class RazorVueCanonicalHModelFactory
                     SideEffectClassification: attribute.CapturedBindings.IsDefaultOrEmpty
                         ? ClassifySideEffects(attribute.Value)
                         : RazorVueSideEffectClassification.SingleEvaluationRequired,
+                    EventModifiers: RazorVueCanonicalEventModifiers.Empty,
                     SourceOrigins: attribute.Origins));
                 continue;
             }
@@ -872,6 +891,7 @@ internal sealed class RazorVueCanonicalHModelFactory
                     SideEffectClassification: attribute.CapturedBindings.IsDefaultOrEmpty
                         ? ClassifySideEffects(attribute.Value)
                         : RazorVueSideEffectClassification.SingleEvaluationRequired,
+                    EventModifiers: RazorVueCanonicalEventModifiers.Empty,
                     SourceOrigins: attribute.Origins));
                 continue;
             }
@@ -881,6 +901,113 @@ internal sealed class RazorVueCanonicalHModelFactory
 
         return builder.ToImmutable();
     }
+
+    private static bool IsElementDomEventAttribute(RazorVueAttributeNode attribute, out string eventName)
+    {
+        if (attribute.EventModifiers.HasAny)
+            return RazorVueDomEventName.TryNormalizeBlazorEventAttributeName(attribute.Name, out eventName);
+
+        if (attribute.Value is not null &&
+            IsEventCallbackLike(attribute.Value) &&
+            RazorVueDomEventName.TryNormalizeBlazorEventAttributeName(attribute.Name, out eventName))
+        {
+            return true;
+        }
+
+        eventName = string.Empty;
+        return false;
+    }
+
+    private static bool IsEventCallbackLike(IOperation operation)
+    {
+        var type = Unwrap(operation)?.Type;
+        if (type is INamedTypeSymbol namedType)
+        {
+            var originalDefinition = namedType.OriginalDefinition.ToDisplayString();
+            return string.Equals(
+                       originalDefinition,
+                       "Microsoft.AspNetCore.Components.EventCallback",
+                       StringComparison.Ordinal) ||
+                   string.Equals(
+                       originalDefinition,
+                       "Microsoft.AspNetCore.Components.EventCallback<TValue>",
+                       StringComparison.Ordinal);
+        }
+
+        return type?.TypeKind == TypeKind.Delegate;
+    }
+
+    private static RazorVueCanonicalEventModifiers CreateCanonicalEventModifiers(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter expressionEmitter,
+        RazorVueEventModifiers modifiers,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+    {
+        if (!modifiers.HasAny)
+            return RazorVueCanonicalEventModifiers.Empty;
+
+        return new RazorVueCanonicalEventModifiers(
+            PreventDefaultExpressionText: EmitEventModifierExpression(
+                snapshot,
+                expressionEmitter,
+                modifiers.PreventDefault,
+                allowedLocalSymbols,
+                allowedParameterSymbols),
+            StopPropagationExpressionText: EmitEventModifierExpression(
+                snapshot,
+                expressionEmitter,
+                modifiers.StopPropagation,
+                allowedLocalSymbols,
+                allowedParameterSymbols),
+            TemplateEncodability: CombineTemplateEncodability(
+                ClassifyEventModifierTemplateEncodability(modifiers.PreventDefault),
+                ClassifyEventModifierTemplateEncodability(modifiers.StopPropagation)),
+            TemplateExpressionSafety: CombineTemplateExpressionSafety(
+                ClassifyEventModifierTemplateExpressionSafety(snapshot, modifiers.PreventDefault),
+                ClassifyEventModifierTemplateExpressionSafety(snapshot, modifiers.StopPropagation)),
+            SideEffectClassification: CombineSideEffectClassifications(
+                ClassifyEventModifierSideEffects(modifiers.PreventDefault),
+                ClassifyEventModifierSideEffects(modifiers.StopPropagation)));
+    }
+
+    private static string? EmitEventModifierExpression(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter expressionEmitter,
+        RazorVueEventModifierBinding? binding,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+    {
+        if (binding is null)
+            return null;
+
+        return binding.CapturedBindings.IsDefaultOrEmpty
+            ? EmitTemplateExpression(snapshot, expressionEmitter, binding.Value, allowedLocalSymbols, allowedParameterSymbols)
+            : expressionEmitter.EmitCapturedTemplateExpression(binding.Value, binding.CapturedBindings, allowedLocalSymbols, allowedParameterSymbols);
+    }
+
+    private static RazorVueTemplateEncodability ClassifyEventModifierTemplateEncodability(RazorVueEventModifierBinding? binding)
+        => binding is null
+            ? RazorVueTemplateEncodability.DirectTemplate
+            : binding.CapturedBindings.IsDefaultOrEmpty
+                ? ClassifyTemplateEncodability(binding.Value)
+                : RazorVueTemplateEncodability.TemplateViaSetupBinding;
+
+    private static RazorVueTemplateExpressionSafety ClassifyEventModifierTemplateExpressionSafety(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueEventModifierBinding? binding)
+        => binding is null
+            ? RazorVueTemplateExpressionSafety.DirectTemplateSafe
+            : binding.CapturedBindings.IsDefaultOrEmpty
+                ? ClassifyTemplateExpressionSafety(snapshot, binding.Value)
+                : RazorVueTemplateExpressionSafety.RequiresSetupBinding;
+
+    private static RazorVueSideEffectClassification ClassifyEventModifierSideEffects(RazorVueEventModifierBinding? binding)
+        => binding is null
+            ? RazorVueSideEffectClassification.None
+            : binding.CapturedBindings.IsDefaultOrEmpty
+                ? ClassifySideEffects(binding.Value)
+                : RazorVueSideEffectClassification.SingleEvaluationRequired;
 
     private static void ValidateInvalidBindTargets(
         RazorVueSemanticSnapshot snapshot,
@@ -1515,6 +1642,18 @@ internal sealed class RazorVueCanonicalHModelFactory
             IConditionalOperation => RazorVueTemplateEncodability.TemplateViaSetupBinding,
             _ => RazorVueTemplateEncodability.NotTemplateEncodable
         };
+    }
+
+    private static RazorVueTemplateEncodability CombineTemplateEncodability(
+        params RazorVueTemplateEncodability[] classifications)
+    {
+        if (classifications.Any(static item => item == RazorVueTemplateEncodability.NotTemplateEncodable))
+            return RazorVueTemplateEncodability.NotTemplateEncodable;
+
+        if (classifications.Any(static item => item == RazorVueTemplateEncodability.TemplateViaSetupBinding))
+            return RazorVueTemplateEncodability.TemplateViaSetupBinding;
+
+        return RazorVueTemplateEncodability.DirectTemplate;
     }
 
     private static RazorVueTemplateExpressionSafety ClassifyTemplateExpressionSafety(

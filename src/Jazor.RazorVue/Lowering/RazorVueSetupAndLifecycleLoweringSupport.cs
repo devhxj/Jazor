@@ -658,7 +658,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         }
 
         operations = blockOperation.Operations;
-        return !operations.IsDefaultOrEmpty;
+        return !operations.IsDefault;
     }
 
     private static void AppendIndentedSetupMethodBody(

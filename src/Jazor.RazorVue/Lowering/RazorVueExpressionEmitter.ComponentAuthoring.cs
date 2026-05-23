@@ -358,9 +358,21 @@ internal sealed partial class RazorVueExpressionEmitter
             switch (attributeEntry)
             {
                 case RazorVueAttributeNode attribute:
-                    objectEntries.Add(ToJavaScriptString(attribute.Name) + ": " + (attribute.Value is null
+                    var name = GetElementAttributeRuntimeName(attribute);
+                    var value = attribute.Value is null
                         ? "true"
-                        : EmitCapturedScopedExpression(attribute.Value!, attribute.CapturedBindings, allowedLocalSymbols, allowedParameterSymbols)));
+                        : EmitCapturedScopedExpression(attribute.Value!, attribute.CapturedBindings, allowedLocalSymbols, allowedParameterSymbols);
+                    if (attribute.Value is not null)
+                    {
+                        value = WrapElementEventHandler(
+                            value,
+                            attribute.EventModifiers,
+                            allowedLocalSymbols,
+                            allowedParameterSymbols,
+                            preferIifeForStaticModifiers: false);
+                    }
+
+                    objectEntries.Add(ToJavaScriptString(name) + ": " + value);
                     break;
                 case RazorVueAttributeSpreadNode spread:
                     containsSpread = true;
@@ -509,6 +521,182 @@ internal sealed partial class RazorVueExpressionEmitter
 
         segments.Add("{ " + string.Join(", ", objectEntries) + " }");
         objectEntries.Clear();
+    }
+
+    private static string GetElementAttributeRuntimeName(RazorVueAttributeNode attribute)
+        => IsElementDomEventAttribute(attribute, out var eventName)
+            ? RazorVueDomEventName.ToVueHandlerPropName(eventName)
+            : attribute.Name;
+
+    private static bool IsElementDomEventAttribute(RazorVueAttributeNode attribute, out string eventName)
+    {
+        if (attribute.EventModifiers.HasAny)
+            return RazorVueDomEventName.TryNormalizeBlazorEventAttributeName(attribute.Name, out eventName);
+
+        if (attribute.Value is not null &&
+            IsEventCallbackLike(attribute.Value) &&
+            RazorVueDomEventName.TryNormalizeBlazorEventAttributeName(attribute.Name, out eventName))
+        {
+            return true;
+        }
+
+        eventName = string.Empty;
+        return false;
+    }
+
+    private static bool IsEventCallbackLike(IOperation operation)
+    {
+        var type = Unwrap(operation)?.Type;
+        if (type is INamedTypeSymbol namedType)
+        {
+            var originalDefinition = namedType.OriginalDefinition.ToDisplayString();
+            return string.Equals(
+                       originalDefinition,
+                       "Microsoft.AspNetCore.Components.EventCallback",
+                       StringComparison.Ordinal) ||
+                   string.Equals(
+                       originalDefinition,
+                       "Microsoft.AspNetCore.Components.EventCallback<TValue>",
+                       StringComparison.Ordinal);
+        }
+
+        return type?.TypeKind == TypeKind.Delegate;
+    }
+
+    private string WrapElementEventHandler(
+        string handlerExpression,
+        RazorVueEventModifiers modifiers,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
+        bool preferIifeForStaticModifiers)
+    {
+        if (!modifiers.HasAny)
+            return handlerExpression;
+
+        var preventDefaultExpression = EmitEventModifierValue(
+            modifiers.PreventDefault,
+            allowedLocalSymbols,
+            allowedParameterSymbols);
+        var stopPropagationExpression = EmitEventModifierValue(
+            modifiers.StopPropagation,
+            allowedLocalSymbols,
+            allowedParameterSymbols);
+
+        var requiresIife = preferIifeForStaticModifiers ||
+            RequiresEventModifierAlias(preventDefaultExpression) ||
+            RequiresEventModifierAlias(stopPropagationExpression);
+
+        if (!requiresIife)
+        {
+            var statements = new List<string>();
+            AppendEventModifierInvocationStatements(statements, preventDefaultExpression, stopPropagationExpression);
+            statements.Add("return (" + handlerExpression + ")(__event);");
+            return "(__event) => { " + string.Join(" ", statements) + " }";
+        }
+
+        var aliases = new List<string> { "const __jazorHandler = " + handlerExpression + ";" };
+        var invocations = new List<string>();
+        AppendEventModifierAlias(
+            aliases,
+            invocations,
+            "__jazorPreventDefault",
+            preventDefaultExpression,
+            "__event?.preventDefault?.();");
+        AppendEventModifierAlias(
+            aliases,
+            invocations,
+            "__jazorStopPropagation",
+            stopPropagationExpression,
+            "__event?.stopPropagation?.();");
+
+        return "(() => { " +
+               string.Join(" ", aliases) +
+               " return (__event) => { " +
+               string.Join(" ", invocations) +
+               " return __jazorHandler(__event); }; })()";
+    }
+
+    private string EmitEventModifierValue(
+        RazorVueEventModifierBinding? binding,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+        => binding is null
+            ? "false"
+            : EmitCapturedScopedExpression(
+                binding.Value,
+                binding.CapturedBindings,
+                allowedLocalSymbols,
+                allowedParameterSymbols);
+
+    private static bool RequiresEventModifierAlias(string expression)
+        => !string.Equals(expression, "true", StringComparison.Ordinal) &&
+           !string.Equals(expression, "false", StringComparison.Ordinal);
+
+    private static void AppendEventModifierInvocationStatements(
+        List<string> statements,
+        string preventDefaultExpression,
+        string stopPropagationExpression)
+    {
+        AppendEventModifierInvocationStatement(
+            statements,
+            preventDefaultExpression,
+            "__event?.preventDefault?.();");
+        AppendEventModifierInvocationStatement(
+            statements,
+            stopPropagationExpression,
+            "__event?.stopPropagation?.();");
+    }
+
+    private static void AppendEventModifierInvocationStatement(
+        List<string> statements,
+        string expression,
+        string invocation)
+    {
+        if (string.Equals(expression, "false", StringComparison.Ordinal))
+            return;
+
+        if (string.Equals(expression, "true", StringComparison.Ordinal))
+        {
+            statements.Add(invocation);
+            return;
+        }
+
+        statements.Add("if (" + expression + ") " + invocation);
+    }
+
+    private static void AppendEventModifierAlias(
+        List<string> aliases,
+        List<string> invocations,
+        string alias,
+        string expression,
+        string invocation)
+    {
+        if (string.Equals(expression, "false", StringComparison.Ordinal))
+            return;
+
+        if (string.Equals(expression, "true", StringComparison.Ordinal))
+        {
+            invocations.Add(invocation);
+            return;
+        }
+
+        aliases.Add("const " + alias + " = " + expression + ";");
+        invocations.Add("if (" + alias + ") " + invocation);
+    }
+
+    private string EmitEventModifiersObject(
+        RazorVueEventModifiers modifiers,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+    {
+        if (!modifiers.HasAny)
+            return "{ preventDefault: false, stopPropagation: false }";
+
+        return "{ preventDefault: " +
+               EmitEventModifierValue(modifiers.PreventDefault, allowedLocalSymbols, allowedParameterSymbols) +
+               ", stopPropagation: " +
+               EmitEventModifierValue(modifiers.StopPropagation, allowedLocalSymbols, allowedParameterSymbols) +
+               " }";
     }
 
     private void ValidateComponentAuthoringAttributes(

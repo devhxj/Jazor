@@ -134,6 +134,161 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersElementDomEventWithModifiers_ToVueTemplateEvent()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using Microsoft.AspNetCore.Components.Web;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public EventCallback OnClick { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "button");
+                        builder.AddAttribute(1, "onclick", EventCallback.Factory.Create(this, OnClick));
+                        WebRenderTreeBuilderExtensions.AddEventPreventDefaultAttribute(builder, 2, "onclick", true);
+                        WebRenderTreeBuilderExtensions.AddEventStopPropagationAttribute(builder, 3, "onclick", true);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<button @click.prevent.stop=\"__jazor$0\" />");
+        Assert.IsFalse(artifact.TemplateText.Contains(":onclick=", StringComparison.Ordinal), artifact.TemplateText);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersElementDomEventWithDynamicModifier_ToSetupBindingEvent()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using Microsoft.AspNetCore.Components.Web;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool PreventClick { get; set; }
+
+                    [Parameter]
+                    public EventCallback OnClick { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "button");
+                        builder.AddAttribute(1, "onclick", EventCallback.Factory.Create(this, OnClick));
+                        WebRenderTreeBuilderExtensions.AddEventPreventDefaultAttribute(builder, 2, "onclick", PreventClick);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<button @click=\"(__event) =&gt; { if (props.preventClick) __event?.preventDefault?.(); return (__jazor$0)(__event); }\" />");
+        StringAssert.Contains(artifact.ScriptSetupText, "const __jazor$0 = computed(() => () => emit(\"click\"));");
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("computed(() => props.preventClick)", StringComparison.Ordinal), artifact.ScriptSetupText);
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("__jazorPreventDefault", StringComparison.Ordinal), artifact.ScriptSetupText);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersElementDomEventWithDynamicModifierInTemplateScope_ToInlineScopedHandler()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using Microsoft.AspNetCore.Components.Web;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool PreventClick { get; set; }
+
+                    [Parameter]
+                    public EventCallback OnClick { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "div");
+                        var localPrevent = PreventClick;
+                        builder.OpenElement(1, "button");
+                        builder.AddAttribute(2, "onclick", EventCallback.Factory.Create(this, OnClick));
+                        WebRenderTreeBuilderExtensions.AddEventPreventDefaultAttribute(builder, 3, "onclick", localPrevent);
+                        builder.CloseElement();
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(localPrevent) in [props.preventClick]\">");
+        StringAssert.Contains(artifact.TemplateText, "<button @click=\"(__event) =&gt; { if (localPrevent) __event?.preventDefault?.(); return (() =&gt; emit(&quot;click&quot;))(__event); }\" />");
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("__jazor$", StringComparison.Ordinal), artifact.ScriptSetupText);
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("__jazorPreventDefault", StringComparison.Ordinal), artifact.ScriptSetupText);
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_LowersParameterInitializerDefaults_ThroughRuntimeProxy()
     {
         var context = CreateContext(
@@ -401,6 +556,63 @@ public sealed class RazorVueSfcArtifactFactoryTests
         StringAssert.Contains(
             artifact.TemplateText,
             "<section v-bind=\"__jazorVueMergeAttributes({ &quot;title&quot;: props.title, &quot;class&quot;: &quot;left&quot; }, props.additionalAttributes, { &quot;class&quot;: &quot;right&quot; })\" />");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersMergedElementDomEventWithDynamicModifier_ToWrappedEventProp()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using Microsoft.AspNetCore.Components.Web;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool PreventClick { get; set; }
+
+                    [Parameter]
+                    public EventCallback OnClick { get; set; }
+
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "button");
+                        builder.AddAttribute(1, "onclick", EventCallback.Factory.Create(this, OnClick));
+                        WebRenderTreeBuilderExtensions.AddEventPreventDefaultAttribute(builder, 2, "onclick", PreventClick);
+                        builder.AddMultipleAttributes(3, AdditionalAttributes);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ScriptSetupText, "function __jazorVueMergeAttributes(...sources) {");
+        StringAssert.Contains(artifact.TemplateText, "&quot;onClick&quot;: (__event) =&gt; { if (props.preventClick) __event?.preventDefault?.(); return (__jazor$0)(__event); }");
+        StringAssert.Contains(artifact.TemplateText, "props.additionalAttributes");
+        Assert.IsFalse(artifact.TemplateText.Contains("&quot;onclick&quot;", StringComparison.Ordinal), artifact.TemplateText);
     }
 
     [TestMethod]

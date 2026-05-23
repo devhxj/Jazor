@@ -5,6 +5,7 @@ using System.Linq;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.Text;
@@ -257,6 +258,90 @@ internal sealed class RazorVueRazorIrOperationResolver
 
         var replacementTarget = candidates[ordinal].ArgumentList.Arguments[2].Expression;
         return TryResolveOperationFromRewrittenExpression(expressionText, replacementTarget, out operation);
+    }
+
+    public bool TryResolveBuilderAttributeValue(
+        string methodName,
+        string attributeName,
+        int ordinal,
+        out IOperation operation)
+    {
+        operation = default!;
+        if (string.IsNullOrWhiteSpace(methodName) ||
+            string.IsNullOrWhiteSpace(attributeName) ||
+            ordinal < 0)
+        {
+            return false;
+        }
+
+        var candidates = EnumerateBuilderInvocations(methodName, attributeName);
+        if (ordinal >= candidates.Length)
+            return false;
+
+        var valueExpression = candidates[ordinal].ArgumentList.Arguments[2].Expression;
+        operation = GetBestOperation(valueExpression)!;
+        return operation is not null;
+    }
+
+    public bool TryResolveEventModifierValue(
+        string methodName,
+        string eventHandlerName,
+        int ordinal,
+        out IOperation operation)
+    {
+        operation = default!;
+        if (string.IsNullOrWhiteSpace(methodName) ||
+            string.IsNullOrWhiteSpace(eventHandlerName) ||
+            ordinal < 0)
+        {
+            return false;
+        }
+
+        var candidates = EnumerateBuilderInvocations(methodName, eventHandlerName)
+            .Where(static candidate => candidate.ArgumentList.Arguments.Count >= 4)
+            .ToArray();
+        if (ordinal >= candidates.Length)
+            return false;
+
+        var valueExpression = candidates[ordinal].ArgumentList.Arguments[3].Expression;
+        operation = GetBestOperation(valueExpression)!;
+        return operation is not null;
+    }
+
+    public bool TryResolveComponentExpression(string expressionText, out IOperation operation)
+    {
+        operation = default!;
+        if (string.IsNullOrWhiteSpace(expressionText))
+            return false;
+
+        var componentType = _snapshot.ComponentSymbol;
+        var parseOptions = _generatedTree.Options as CSharpParseOptions
+                           ?? _compilation.SyntaxTrees
+                               .Select(static tree => tree.Options)
+                               .OfType<CSharpParseOptions>()
+                               .FirstOrDefault()
+                           ?? CSharpParseOptions.Default;
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            CreateComponentExpressionProbeSource(componentType, expressionText),
+            options: parseOptions,
+            path: componentType.Name + ".RazorVueExpressionProbe.g.cs",
+            encoding: _generatedText.Encoding);
+        var compilation = _compilation.AddSyntaxTrees(syntaxTree);
+        if (compilation.GetDiagnostics()
+            .Any(diagnostic =>
+                diagnostic.Severity == DiagnosticSeverity.Error &&
+                diagnostic.Location.SourceTree == syntaxTree))
+        {
+            return false;
+        }
+
+        var expression = syntaxTree.GetRoot()
+            .DescendantNodes()
+            .OfType<ArrowExpressionClauseSyntax>()
+            .Single()
+            .Expression;
+        operation = GetBestOperation(compilation.GetSemanticModel(syntaxTree), expression)!;
+        return operation is not null;
     }
 
     public bool TryResolveConditional(RazorVueRazorSourceSpan? sourceSpan, out ResolvedConditional conditional)
@@ -617,6 +702,66 @@ internal sealed class RazorVueRazorIrOperationResolver
 
         operation = resolvedOperation;
         return true;
+    }
+
+    private InvocationExpressionSyntax[] EnumerateBuilderInvocations(string methodName, string attributeName)
+        => _generatedRoot.DescendantNodes()
+            .OfType<InvocationExpressionSyntax>()
+            .Where(candidate => string.Equals(GetInvocationMethodName(candidate), methodName, StringComparison.Ordinal))
+            .Where(candidate => candidate.ArgumentList.Arguments.Count >= 3)
+            .Where(candidate =>
+            {
+                var attributeArgument = candidate.ArgumentList.Arguments[1].Expression;
+                return attributeArgument is LiteralExpressionSyntax literal &&
+                       literal.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.StringLiteralExpression) &&
+                       string.Equals(literal.Token.ValueText, attributeName, StringComparison.Ordinal);
+            })
+            .OrderBy(static candidate => candidate.SpanStart)
+            .ToArray();
+
+    private static string CreateComponentExpressionProbeSource(INamedTypeSymbol componentType, string expressionText)
+    {
+        var containingTypes = new Stack<INamedTypeSymbol>();
+        for (var current = componentType; current is not null; current = current.ContainingType)
+            containingTypes.Push(current);
+
+        var builder = new System.Text.StringBuilder();
+        var namespaceName = componentType.ContainingNamespace?.IsGlobalNamespace == false
+            ? componentType.ContainingNamespace.ToDisplayString()
+            : string.Empty;
+        if (!string.IsNullOrWhiteSpace(namespaceName))
+        {
+            builder.Append("namespace ").Append(namespaceName).AppendLine();
+            builder.AppendLine("{");
+        }
+
+        while (containingTypes.Count > 0)
+        {
+            var type = containingTypes.Pop();
+            builder.Append("partial ");
+            builder.Append(type.TypeKind == TypeKind.Struct ? "struct " : "class ");
+            builder.Append(type.Name);
+            if (type.TypeParameters.Length > 0)
+            {
+                builder.Append('<');
+                builder.Append(string.Join(", ", type.TypeParameters.Select(static parameter => parameter.Name)));
+                builder.Append('>');
+            }
+            builder.AppendLine();
+            builder.AppendLine("{");
+        }
+
+        builder.Append("private object __RazorVueExpressionProbe => ");
+        builder.Append(expressionText);
+        builder.AppendLine(";");
+
+        for (var current = componentType; current is not null; current = current.ContainingType)
+            builder.AppendLine("}");
+
+        if (!string.IsNullOrWhiteSpace(namespaceName))
+            builder.AppendLine("}");
+
+        return builder.ToString();
     }
 
     private static string? GetInvocationMethodName(InvocationExpressionSyntax invocation)

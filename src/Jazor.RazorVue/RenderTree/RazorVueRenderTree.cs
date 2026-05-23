@@ -125,7 +125,24 @@ internal sealed record RazorVueAttributeNode(
     string Name,
     IOperation? Value,
     ImmutableArray<RazorVueCapturedValueBinding> CapturedBindings,
-    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueAttributeEntry(Origins);
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueAttributeEntry(Origins)
+{
+    public RazorVueEventModifiers EventModifiers { get; init; } = RazorVueEventModifiers.Empty;
+}
+
+internal sealed record RazorVueEventModifiers(
+    RazorVueEventModifierBinding? PreventDefault,
+    RazorVueEventModifierBinding? StopPropagation)
+{
+    public static RazorVueEventModifiers Empty { get; } = new(null, null);
+
+    public bool HasAny => PreventDefault is not null || StopPropagation is not null;
+}
+
+internal sealed record RazorVueEventModifierBinding(
+    IOperation Value,
+    ImmutableArray<RazorVueCapturedValueBinding> CapturedBindings,
+    ImmutableArray<RazorVueSourceOrigin> Origins);
 
 internal sealed record RazorVueAttributeSpreadNode(
     IOperation Expression,
@@ -137,6 +154,11 @@ internal abstract record RazorVueOpenNodeReplayOperation(
 
 internal sealed record RazorVueOpenNodeAttributeReplayOperation(
     RazorVueAttributeEntry Attribute,
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueOpenNodeReplayOperation(Origins);
+
+internal sealed record RazorVueOpenNodeEventModifierReplayOperation(
+    string EventHandlerName,
+    RazorVueEventModifiers EventModifiers,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueOpenNodeReplayOperation(Origins);
 
 internal sealed record RazorVueOpenNodeKeyReplayOperation(

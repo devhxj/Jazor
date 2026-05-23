@@ -5,6 +5,7 @@ using ECMAScript.Vben;
 using ECMAScript.TDesign;
 using ECMAScript.Vuetify;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Concurrent;
@@ -58,6 +59,7 @@ internal static class RazorVueMetadataReferences
         var seenPaths = CreateSeenPaths(references);
 
         AddAssemblyReference(references, seenPaths, typeof(ComponentBase));
+        AddAssemblyReference(references, seenPaths, typeof(WebRenderTreeBuilderExtensions));
         AddAssemblyReference(references, seenPaths, typeof(ECMAScript.Contract.IUIComponent));
         AddAssemblyReference(references, seenPaths, typeof(SpreadAttribute));
         AddAssemblyReference(references, seenPaths, typeof(ECMAScript.Vue3.IVueComponent));

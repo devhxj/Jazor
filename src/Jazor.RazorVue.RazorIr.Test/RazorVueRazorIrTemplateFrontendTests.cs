@@ -87,6 +87,112 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_ForElementDomEventWithModifiers_PreservesModifierMetadata()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<button @onclick="OnClick" @onclick:preventDefault="true" @onclick:stopPropagation="StopClick">Go</button>""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.EventModifiers.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool StopClick { get; set; }
+
+                    private void OnClick()
+                    {
+                    }
+                }
+            }
+            """);
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+
+        var button = Assert.IsInstanceOfType<RazorVueElementNode>(renderTree.Children.Single());
+        var clickAttribute = button.Attributes.OfType<RazorVueAttributeNode>().Single(static attribute => attribute.Name == "onclick");
+
+        Assert.IsNotNull(clickAttribute.Value);
+        Assert.IsNotNull(clickAttribute.EventModifiers.PreventDefault);
+        Assert.IsTrue(clickAttribute.EventModifiers.PreventDefault.Value.ConstantValue.HasValue);
+        Assert.AreEqual(true, clickAttribute.EventModifiers.PreventDefault.Value.ConstantValue.Value);
+        Assert.IsNotNull(clickAttribute.EventModifiers.StopPropagation);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(clickAttribute.EventModifiers.StopPropagation.Value);
+        Assert.AreEqual("StopClick", ((IPropertyReferenceOperation)clickAttribute.EventModifiers.StopPropagation.Value).Property.Name);
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithRazorIrTemplateFrontend_LowersElementDomEventWithModifiers()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<button @onclick="OnClick" @onclick:preventDefault="true" @onclick:stopPropagation="StopClick">Go</button>""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.EventModifiers.Sfc.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool StopClick { get; set; }
+
+                    private void OnClick()
+                    {
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVueSfcArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<button @click=\"(__event) =&gt; { __event?.preventDefault?.(); if (props.stopClick) __event?.stopPropagation?.(); return (__jazor$0)(__event); }\">");
+        StringAssert.Contains(artifact.ScriptSetupText, "function onClick()");
+        Assert.IsFalse(artifact.TemplateText.Contains("@onclick", StringComparison.Ordinal), artifact.TemplateText);
+        Assert.IsFalse(artifact.TemplateText.Contains(":onclick", StringComparison.Ordinal), artifact.TemplateText);
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithRazorIrTemplateFrontend_LowersElementDomEventLambdaHandler()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<button @onclick="() => Count++" @onclick:preventDefault="PreventClick">Go</button>""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.EventLambda.Sfc.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    private int Count { get; set; }
+
+                    [Parameter]
+                    public bool PreventClick { get; set; }
+                }
+            }
+            """);
+
+        var artifact = new RazorVueSfcArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "@click=\"(__event) =&gt; { if (props.preventClick) __event?.preventDefault?.(); return (__jazor$0)(__event); }\"");
+        StringAssert.Contains(artifact.ScriptSetupText, "const __jazor$0 = computed(() => () =>");
+        StringAssert.Contains(artifact.ScriptSetupText, "count++;");
+        Assert.IsFalse(artifact.TemplateText.Contains("@onclick", StringComparison.Ordinal), artifact.TemplateText);
+    }
+
+    [TestMethod]
     public void CreateRenderTree_ForStaticAttributeSplitAcrossLiteralIrNodes_ConcatenatesValue()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";

@@ -764,6 +764,17 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
                         continue;
                     }
 
+                    if (attribute.AttributeKind == RazorVueCanonicalAttributeKind.HtmlEvent)
+                    {
+                        AppendHtmlEventBinding(
+                            builder,
+                            attribute,
+                            bindingSiteMap,
+                            pathPrefix + "/attr[" + index + "]",
+                            templateScopeDepth);
+                        continue;
+                    }
+
                     if (attribute.BindingKind == RazorVueExpressionBindingKind.Literal &&
                         attribute.TemplateEncodability == RazorVueTemplateEncodability.DirectTemplate &&
                         attribute.AttributeKind != RazorVueCanonicalAttributeKind.ComponentEvent)
@@ -826,6 +837,117 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         }
     }
 
+    private static void AppendHtmlEventBinding(
+        StringBuilder builder,
+        RazorVueCanonicalAttributeBinding attribute,
+        IReadOnlyDictionary<string, string> bindingSiteMap,
+        string path,
+        int templateScopeDepth)
+    {
+        var expressionText = ResolveTemplateExpression(
+            attribute.ExpressionText!,
+            attribute.TemplateEncodability,
+            bindingSiteMap,
+            path,
+            templateScopeDepth);
+        var eventHandlerExpression = CanUseStaticVueEventModifiers(attribute.EventModifiers)
+            ? expressionText
+            : CreateTemplateHtmlEventHandlerExpression(
+                expressionText,
+                ResolveEventModifierExpression(
+                    attribute.EventModifiers.PreventDefaultExpressionText,
+                    attribute.EventModifiers,
+                    bindingSiteMap,
+                    path + "/preventDefault",
+                    templateScopeDepth),
+                ResolveEventModifierExpression(
+                    attribute.EventModifiers.StopPropagationExpressionText,
+                    attribute.EventModifiers,
+                    bindingSiteMap,
+                    path + "/stopPropagation",
+                    templateScopeDepth));
+
+        builder.Append(" @")
+            .Append(attribute.Name);
+
+        if (CanUseStaticVueEventModifiers(attribute.EventModifiers))
+        {
+            if (string.Equals(attribute.EventModifiers.PreventDefaultExpressionText, "true", StringComparison.Ordinal))
+                builder.Append(".prevent");
+            if (string.Equals(attribute.EventModifiers.StopPropagationExpressionText, "true", StringComparison.Ordinal))
+                builder.Append(".stop");
+        }
+
+        builder.Append("=\"")
+            .Append(EscapeAttributeValue(eventHandlerExpression))
+            .Append('"');
+    }
+
+    private static string? ResolveEventModifierExpression(
+        string? expressionText,
+        RazorVueCanonicalEventModifiers modifiers,
+        IReadOnlyDictionary<string, string> bindingSiteMap,
+        string path,
+        int templateScopeDepth)
+    {
+        if (expressionText is null)
+            return null;
+
+        return ResolveTemplateExpression(
+            expressionText,
+            modifiers.TemplateEncodability,
+            bindingSiteMap,
+            path,
+            templateScopeDepth);
+    }
+
+    private static string CreateTemplateHtmlEventHandlerExpression(
+        string handlerExpression,
+        string? preventDefaultExpression,
+        string? stopPropagationExpression)
+    {
+        var statements = new List<string>();
+        AppendTemplateEventModifierInvocation(
+            statements,
+            preventDefaultExpression ?? "false",
+            "__event?.preventDefault?.();");
+        AppendTemplateEventModifierInvocation(
+            statements,
+            stopPropagationExpression ?? "false",
+            "__event?.stopPropagation?.();");
+        statements.Add("return (" + handlerExpression + ")(__event);");
+        return "(__event) => { " + string.Join(" ", statements) + " }";
+    }
+
+    private static void AppendTemplateEventModifierInvocation(
+        List<string> statements,
+        string expression,
+        string invocation)
+    {
+        if (string.Equals(expression, "false", StringComparison.Ordinal))
+            return;
+
+        if (string.Equals(expression, "true", StringComparison.Ordinal))
+        {
+            statements.Add(invocation);
+            return;
+        }
+
+        statements.Add("if (" + expression + ") " + invocation);
+    }
+
+    private static bool CanUseStaticVueEventModifiers(RazorVueCanonicalEventModifiers modifiers)
+    {
+        if (!modifiers.HasAny)
+            return true;
+
+        return IsStaticTrueOrMissing(modifiers.PreventDefaultExpressionText) &&
+               IsStaticTrueOrMissing(modifiers.StopPropagationExpressionText);
+    }
+
+    private static bool IsStaticTrueOrMissing(string? expression)
+        => expression is null || string.Equals(expression, "true", StringComparison.Ordinal);
+
     private static void AppendNodeKeyBinding(
         StringBuilder builder,
         RazorVueCanonicalNodeKey? key,
@@ -886,7 +1008,14 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
             switch (attributes[index])
             {
                 case RazorVueCanonicalAttributeBinding attribute:
-                    var expressionText = attribute.ExpressionText is null
+                    var expressionText = attribute.AttributeKind == RazorVueCanonicalAttributeKind.HtmlEvent &&
+                                         attribute.ExpressionText is not null
+                        ? CreateMergedHtmlEventHandlerExpression(
+                            attribute,
+                            bindingSiteMap,
+                            pathPrefix + "/attr[" + index + "]",
+                            templateScopeDepth)
+                        : attribute.ExpressionText is null
                         ? "true"
                         : ResolveTemplateExpression(
                             attribute.ExpressionText,
@@ -916,6 +1045,38 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
             .Append('"');
     }
 
+    private static string CreateMergedHtmlEventHandlerExpression(
+        RazorVueCanonicalAttributeBinding attribute,
+        IReadOnlyDictionary<string, string> bindingSiteMap,
+        string path,
+        int templateScopeDepth)
+    {
+        var expressionText = ResolveTemplateExpression(
+            attribute.ExpressionText!,
+            attribute.TemplateEncodability,
+            bindingSiteMap,
+            path,
+            templateScopeDepth);
+
+        if (CanUseStaticVueEventModifiers(attribute.EventModifiers))
+            return expressionText;
+
+        return CreateTemplateHtmlEventHandlerExpression(
+            expressionText,
+            ResolveEventModifierExpression(
+                attribute.EventModifiers.PreventDefaultExpressionText,
+                attribute.EventModifiers,
+                bindingSiteMap,
+                path + "/preventDefault",
+                templateScopeDepth),
+            ResolveEventModifierExpression(
+                attribute.EventModifiers.StopPropagationExpressionText,
+                attribute.EventModifiers,
+                bindingSiteMap,
+                path + "/stopPropagation",
+                templateScopeDepth));
+    }
+
     private static void FlushMergedAttributeObjectEntries(List<string> segments, List<string> objectEntries)
     {
         if (objectEntries.Count == 0)
@@ -926,7 +1087,7 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
     }
 
     private static string GetMergedAttributeObjectKey(RazorVueCanonicalAttributeBinding attribute)
-        => attribute.AttributeKind == RazorVueCanonicalAttributeKind.ComponentEvent
+        => attribute.AttributeKind is RazorVueCanonicalAttributeKind.ComponentEvent or RazorVueCanonicalAttributeKind.HtmlEvent
             ? ToVueEventHandlerName(attribute.Name)
             : attribute.Name;
 

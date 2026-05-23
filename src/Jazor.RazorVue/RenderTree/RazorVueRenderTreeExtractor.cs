@@ -1,5 +1,6 @@
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
+using Jazor.RazorVue;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -651,6 +652,9 @@ internal sealed class RazorVueRenderTreeExtractor
             if (TryParseCurrentComponentRenderHelperInvocation(invocation))
                 return;
 
+            if (TryParseEventModifierInvocation(invocation))
+                return;
+
             if (!IsRenderTreeBuilderInvocation(invocation))
             {
                 if (IsRenderTreeBuilderMethod(invocation.TargetMethod))
@@ -866,7 +870,55 @@ internal sealed class RazorVueRenderTreeExtractor
                 name!,
                 value,
                 ToCapturedValueBindings(_activeCapturedBindings),
-                CreateOrigins(invocation, RazorVueOriginKind.Template)));
+                CreateOrigins(invocation, RazorVueOriginKind.Template))
+            {
+                EventModifiers = currentNode.GetEventModifiers(name!)
+            });
+        }
+
+        private bool TryParseEventModifierInvocation(IInvocationOperation invocation)
+        {
+            if (!IsEventModifierInvocation(invocation.TargetMethod) ||
+                invocation.Arguments.Length < 4)
+            {
+                return false;
+            }
+
+            var builderArgument = GetInvocationArgument(invocation, 0);
+            if (!IsKnownBuilderReference(builderArgument))
+            {
+                throw CreateUnsupportedBuilderCall(
+                    invocation,
+                    $"BuildRenderTree call '{GetBuilderCallDisplayName(invocation)}' uses a RenderTreeBuilder receiver that RazorVue cannot track in component '{_snapshot.Descriptor.FullName}'. " +
+                    "Use the active builder parameter or a direct local alias of that parameter.");
+            }
+
+            var eventHandlerName = GetConstantStringArgument(invocation, 2);
+            if (string.IsNullOrWhiteSpace(eventHandlerName))
+            {
+                throw CreateUnsupportedBuilderCall(
+                    invocation,
+                    $"BuildRenderTree call '{GetBuilderCallDisplayName(invocation)}' requires a constant event handler name in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
+            var value = GetInvocationArgument(invocation, 3);
+            if (value is null)
+            {
+                throw CreateUnsupportedBuilderCall(
+                    invocation,
+                    $"BuildRenderTree call '{GetBuilderCallDisplayName(invocation)}' requires an event modifier value in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
+            var currentNode = GetRequiredOpenElementBuilder(invocation);
+            currentNode.SetEventModifier(
+                eventHandlerName!,
+                invocation.TargetMethod.Name,
+                new RazorVueEventModifierBinding(
+                    value,
+                    ToCapturedValueBindings(_activeCapturedBindings),
+                    CreateOrigins(invocation, RazorVueOriginKind.Template)),
+                CreateOrigins(invocation, RazorVueOriginKind.Template));
+            return true;
         }
 
         private void AddComponentParameter(IInvocationOperation invocation)
@@ -2275,6 +2327,10 @@ internal sealed class RazorVueRenderTreeExtractor
                 {
                     Attribute = StripCapturedBindings(attributeOperation.Attribute, capturedBindings)
                 },
+                RazorVueOpenNodeEventModifierReplayOperation modifierOperation => modifierOperation with
+                {
+                    EventModifiers = StripCapturedBindings(modifierOperation.EventModifiers, capturedBindings)
+                },
                 RazorVueOpenNodeKeyReplayOperation keyOperation => keyOperation with
                 {
                     Key = StripCapturedBindings(keyOperation.Key, capturedBindings)
@@ -2312,6 +2368,33 @@ internal sealed class RazorVueRenderTreeExtractor
                 },
                 _ => operation
             };
+
+        private static RazorVueEventModifiers StripCapturedBindings(
+            RazorVueEventModifiers modifiers,
+            ImmutableArray<RenderHelperValueBinding> capturedBindings)
+        {
+            if (!modifiers.HasAny || capturedBindings.IsDefaultOrEmpty)
+                return modifiers;
+
+            return modifiers with
+            {
+                PreventDefault = StripCapturedBindings(modifiers.PreventDefault, capturedBindings),
+                StopPropagation = StripCapturedBindings(modifiers.StopPropagation, capturedBindings)
+            };
+        }
+
+        private static RazorVueEventModifierBinding? StripCapturedBindings(
+            RazorVueEventModifierBinding? binding,
+            ImmutableArray<RenderHelperValueBinding> capturedBindings)
+        {
+            if (binding is null || capturedBindings.IsDefaultOrEmpty)
+                return binding;
+
+            return binding with
+            {
+                CapturedBindings = FilterCapturedBindings(binding.CapturedBindings, capturedBindings)
+            };
+        }
 
         private static ImmutableArray<RazorVueCapturedValueBinding> FilterCapturedBindings(
             ImmutableArray<RazorVueCapturedValueBinding> existingBindings,
@@ -2383,6 +2466,14 @@ internal sealed class RazorVueRenderTreeExtractor
         private static bool IsRenderTreeBuilderMethod(IMethodSymbol method)
             => IsRenderTreeBuilderType(method.ContainingType);
 
+        private static bool IsEventModifierInvocation(IMethodSymbol method)
+            => (string.Equals(method.Name, "AddEventPreventDefaultAttribute", StringComparison.Ordinal) ||
+                string.Equals(method.Name, "AddEventStopPropagationAttribute", StringComparison.Ordinal)) &&
+               string.Equals(
+                   method.ContainingType?.ToDisplayString(),
+                   "Microsoft.AspNetCore.Components.Web.WebRenderTreeBuilderExtensions",
+                   StringComparison.Ordinal);
+
         private static bool IsRenderTreeBuilderType(ITypeSymbol? typeSymbol)
             => string.Equals(
                 typeSymbol?.ToDisplayString(),
@@ -2428,6 +2519,17 @@ internal sealed class RazorVueRenderTreeExtractor
             throw CreateStructuralIssue(
                 invocation,
                 $"BuildRenderTree encountered '{invocation.TargetMethod.Name}' while the current open node is {currentNode.Describe()} in component '{_snapshot.Descriptor.FullName}'.");
+        }
+
+        private ElementBuilder GetRequiredOpenElementBuilder(IInvocationOperation invocation)
+        {
+            var currentNode = GetRequiredOpenNodeBuilder(invocation);
+            if (currentNode is ElementBuilder elementBuilder)
+                return elementBuilder;
+
+            throw CreateStructuralIssue(
+                invocation,
+                $"BuildRenderTree encountered '{invocation.TargetMethod.Name}' while the current open node is {currentNode.Describe()} in component '{_snapshot.Descriptor.FullName}'. Event modifiers are only supported on HTML element frames.");
         }
 
         private bool TryGetNearestOpenNodeBuilder(out OpenNodeBuilder currentNode)
@@ -2563,6 +2665,14 @@ internal sealed class RazorVueRenderTreeExtractor
             var current = Unwrap(operation);
             return current?.ConstantValue.HasValue == true &&
                    current.ConstantValue.Value is null;
+        }
+
+        private static bool IsConstantFalse(IOperation? operation)
+        {
+            var current = Unwrap(operation);
+            return current?.ConstantValue.HasValue == true &&
+                   current.ConstantValue.Value is bool value &&
+                   !value;
         }
 
         private static IOperation? Unwrap(IOperation? operation)
@@ -3898,6 +4008,8 @@ internal sealed class RazorVueRenderTreeExtractor
         {
         }
 
+        protected List<RazorVueAttributeEntry> MutableAttributes => _attributes;
+
         public void AddAttribute(RazorVueAttributeEntry attribute)
         {
             AddAttributeWithoutReplay(attribute);
@@ -3976,6 +4088,24 @@ internal sealed class RazorVueRenderTreeExtractor
         public void AddAttributeWithoutReplay(RazorVueAttributeEntry attribute)
             => _attributes.Add(attribute);
 
+        public virtual RazorVueEventModifiers GetEventModifiers(string eventHandlerName)
+        {
+            _ = eventHandlerName;
+            return RazorVueEventModifiers.Empty;
+        }
+
+        public virtual void SetEventModifier(
+            string eventHandlerName,
+            string methodName,
+            RazorVueEventModifierBinding binding,
+            ImmutableArray<RazorVueSourceOrigin> origins)
+        {
+            _ = eventHandlerName;
+            _ = methodName;
+            _ = binding;
+            _ = origins;
+        }
+
         public void SetKeyWithoutReplay(
             RazorVueNodeKey? key,
             bool keyAssigned)
@@ -4027,6 +4157,8 @@ internal sealed class RazorVueRenderTreeExtractor
     private sealed class ElementBuilder(string tagName, ImmutableArray<RazorVueSourceOrigin> origins)
         : OpenNodeBuilder(origins)
     {
+        private readonly Dictionary<string, RazorVueEventModifiers> _eventModifiersByHandlerName = new(StringComparer.Ordinal);
+
         public override string Describe()
             => $"element <{tagName}>";
 
@@ -4038,6 +4170,62 @@ internal sealed class RazorVueRenderTreeExtractor
             {
                 ReplayOperations = BuildReplayOperations()
             };
+
+        public override RazorVueEventModifiers GetEventModifiers(string eventHandlerName)
+            => _eventModifiersByHandlerName.TryGetValue(eventHandlerName, out var modifiers)
+                ? modifiers
+                : RazorVueEventModifiers.Empty;
+
+        public override void SetEventModifier(
+            string eventHandlerName,
+            string methodName,
+            RazorVueEventModifierBinding binding,
+            ImmutableArray<RazorVueSourceOrigin> origins)
+        {
+            var current = GetEventModifiers(eventHandlerName);
+            var isConstantFalse = IsConstantFalseEventModifier(binding.Value);
+            var updated = methodName switch
+            {
+                "AddEventPreventDefaultAttribute" => current with { PreventDefault = isConstantFalse ? null : binding },
+                "AddEventStopPropagationAttribute" => current with { StopPropagation = isConstantFalse ? null : binding },
+                _ => current
+            };
+            if (current == updated)
+                return;
+
+            if (updated.HasAny)
+                _eventModifiersByHandlerName[eventHandlerName] = updated;
+            else
+                _eventModifiersByHandlerName.Remove(eventHandlerName);
+
+            UpdateExistingAttribute(eventHandlerName, updated);
+            AddReplayOperation(new RazorVueOpenNodeEventModifierReplayOperation(
+                eventHandlerName,
+                updated,
+                origins));
+        }
+
+        private void UpdateExistingAttribute(string eventHandlerName, RazorVueEventModifiers modifiers)
+        {
+            var attributes = MutableAttributes;
+            for (var index = attributes.Count - 1; index >= 0; index--)
+            {
+                if (attributes[index] is RazorVueAttributeNode attribute &&
+                    string.Equals(attribute.Name, eventHandlerName, StringComparison.Ordinal))
+                {
+                    attributes[index] = attribute with { EventModifiers = modifiers };
+                    return;
+                }
+            }
+        }
+
+        private static bool IsConstantFalseEventModifier(IOperation? operation)
+        {
+            var current = RazorVueOperationNormalizer.Unwrap(operation);
+            return current?.ConstantValue.HasValue == true &&
+                   current.ConstantValue.Value is bool value &&
+                   !value;
+        }
     }
 
     private sealed class ComponentBuilder(string componentName, string componentFullName, string resolutionName, INamedTypeSymbol componentType, ImmutableArray<RazorVueSourceOrigin> origins)

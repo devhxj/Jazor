@@ -1134,7 +1134,7 @@ internal sealed partial class RazorVueExpressionEmitter
             if (_logicPropertiesByName.TryGetValue(property.Property.Name, out var logicProperty) &&
                 RazorVueSymbolIdentity.SameMember(logicProperty.PropertySymbol, property.Property))
             {
-                EnsureSupportedRenderPropertyReference(property.Property);
+                EnsureSupportedRenderPropertyReference(property);
 
                 RecordRequiredSetupProperty(property.Property);
                 return logicProperty.LoweringKind == VueLogicPropertyLoweringKind.ValueBinding
@@ -1196,7 +1196,7 @@ internal sealed partial class RazorVueExpressionEmitter
             if (_logicPropertiesByName.TryGetValue(property.Property.Name, out var logicProperty) &&
                 RazorVueSymbolIdentity.SameMember(logicProperty.PropertySymbol, property.Property))
             {
-                EnsureSupportedRenderPropertyReference(property.Property);
+                EnsureSupportedRenderPropertyReference(property);
 
                 RecordRequiredSetupProperty(property.Property);
                 expression = logicProperty.LoweringKind == VueLogicPropertyLoweringKind.ValueBinding
@@ -1275,7 +1275,7 @@ internal sealed partial class RazorVueExpressionEmitter
             if (_logicPropertiesByName.TryGetValue(property.Property.Name, out var logicProperty) &&
                 RazorVueSymbolIdentity.SameMember(logicProperty.PropertySymbol, property.Property))
             {
-                EnsureSupportedRenderPropertyReference(property.Property);
+                EnsureSupportedRenderPropertyReference(property);
 
                 RecordRequiredSetupProperty(property.Property);
                 return logicProperty.LoweringKind == VueLogicPropertyLoweringKind.ValueBinding
@@ -1334,7 +1334,7 @@ internal sealed partial class RazorVueExpressionEmitter
         {
             if (_logicFieldsByName.ContainsKey(field.Field.Name))
             {
-                EnsureSupportedRenderFieldReference(field.Field);
+                EnsureSupportedRenderFieldReference(field);
 
                 RecordRequiredSetupField(field.Field);
                 return ToLowerCamelCase(field.Field.Name);
@@ -1369,7 +1369,7 @@ internal sealed partial class RazorVueExpressionEmitter
         {
             if (_logicFieldsByName.ContainsKey(field.Field.Name))
             {
-                EnsureSupportedRenderFieldReference(field.Field);
+                EnsureSupportedRenderFieldReference(field);
 
                 RecordRequiredSetupField(field.Field);
                 expression = ToLowerCamelCase(field.Field.Name);
@@ -1390,7 +1390,7 @@ internal sealed partial class RazorVueExpressionEmitter
         {
             if (_logicFieldsByName.ContainsKey(field.Field.Name))
             {
-                EnsureSupportedRenderFieldReference(field.Field);
+                EnsureSupportedRenderFieldReference(field);
 
                 RecordRequiredSetupField(field.Field);
                 return ToLowerCamelCase(field.Field.Name);
@@ -1490,6 +1490,21 @@ internal sealed partial class RazorVueExpressionEmitter
         return true;
     }
 
+    private void EnsureSupportedRenderPropertyReference(IPropertyReferenceOperation propertyReference)
+    {
+        var property = propertyReference.Property;
+        if (IsSupportedRenderPropertyReference(propertyReference))
+            return;
+
+        var reason = property.SetMethod is not null &&
+                     RazorVueCurrentComponentValueMemberHelper.TryGetUnsupportedMutableSetupCarrierMemberReason(property, out var mutableReason)
+            ? mutableReason
+            : "property initializer could not be lowered as a setup carrier";
+        throw CreateUnsupportedSetupLogicException(
+            property,
+            $"RazorVue render does not support component property '{property.Name}': {reason}.");
+    }
+
     private void EnsureSupportedRenderPropertyReference(IPropertySymbol property)
     {
         if (IsSupportedRenderPropertyReference(property))
@@ -1504,7 +1519,13 @@ internal sealed partial class RazorVueExpressionEmitter
             $"RazorVue render does not support component property '{property.Name}': {reason}.");
     }
 
+    private bool IsSupportedRenderPropertyReference(IPropertyReferenceOperation propertyReference)
+        => IsSupportedRenderPropertyReference(propertyReference.Property, GetOperationCompilation(propertyReference));
+
     private bool IsSupportedRenderPropertyReference(IPropertySymbol property)
+        => IsSupportedRenderPropertyReference(property, _snapshot.Compilation);
+
+    private bool IsSupportedRenderPropertyReference(IPropertySymbol property, Compilation compilation)
     {
         if (_logicPropertiesByName.TryGetValue(property.Name, out var logicProperty) &&
             RazorVueSymbolIdentity.SameMember(logicProperty.PropertySymbol, property) &&
@@ -1514,7 +1535,7 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         if (RazorVueCurrentComponentValueMemberHelper.TryGetValueMemberInitializer(
-                _snapshot.Compilation,
+                compilation,
                 property,
                 out _))
         {
@@ -1522,6 +1543,21 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         return RazorVueCurrentComponentValueMemberHelper.CanUseMutableSetupCarrierMember(property);
+    }
+
+    private void EnsureSupportedRenderFieldReference(IFieldReferenceOperation fieldReference)
+    {
+        var field = fieldReference.Field;
+        if (IsSupportedRenderFieldReference(fieldReference))
+            return;
+
+        var reason = !field.IsReadOnly &&
+                     RazorVueCurrentComponentValueMemberHelper.TryGetUnsupportedMutableSetupCarrierMemberReason(field, out var mutableReason)
+            ? mutableReason
+            : "field initializer could not be lowered as a setup carrier";
+        throw CreateUnsupportedSetupLogicException(
+            field,
+            $"RazorVue render does not support component field '{field.Name}': {reason}.");
     }
 
     private void EnsureSupportedRenderFieldReference(IFieldSymbol field)
@@ -1538,10 +1574,16 @@ internal sealed partial class RazorVueExpressionEmitter
             $"RazorVue render does not support component field '{field.Name}': {reason}.");
     }
 
+    private bool IsSupportedRenderFieldReference(IFieldReferenceOperation fieldReference)
+        => IsSupportedRenderFieldReference(fieldReference.Field, GetOperationCompilation(fieldReference));
+
     private bool IsSupportedRenderFieldReference(IFieldSymbol field)
+        => IsSupportedRenderFieldReference(field, _snapshot.Compilation);
+
+    private bool IsSupportedRenderFieldReference(IFieldSymbol field, Compilation compilation)
     {
         if (RazorVueCurrentComponentValueMemberHelper.TryGetValueMemberInitializer(
-                _snapshot.Compilation,
+                compilation,
                 field,
                 out _))
         {
@@ -1549,6 +1591,14 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         return RazorVueCurrentComponentValueMemberHelper.CanUseMutableSetupCarrierMember(field);
+    }
+
+    private Compilation GetOperationCompilation(IOperation operation)
+    {
+        var semanticCompilation = operation.SemanticModel?.Compilation;
+        return semanticCompilation is not null && semanticCompilation.ContainsSyntaxTree(operation.Syntax.SyntaxTree)
+            ? semanticCompilation
+            : _snapshot.Compilation;
     }
 
     private static string ResolveMemberName(ISymbol symbol)
@@ -2236,6 +2286,8 @@ internal sealed partial class RazorVueExpressionEmitter
                 EmitCurrentComponentCallbackReference(field.Field),
             IMethodReferenceOperation method when IsCurrentComponentMember(method.Method, method.Instance) =>
                 TryNormalizeCurrentComponentCallbackMethod(method),
+            IAnonymousFunctionOperation anonymousFunction =>
+                EmitSetupExpression(anonymousFunction),
             _ => string.Empty
         };
     }
@@ -2243,7 +2295,13 @@ internal sealed partial class RazorVueExpressionEmitter
     private string TryNormalizeCurrentComponentCallbackMethod(IMethodReferenceOperation methodReference)
     {
         if (!TryGetSimpleMethodBodyOperation(methodReference.Method, out var bodyOperation))
-            return string.Empty;
+        {
+            if (IsUnsupportedSetupHelperMethod(methodReference.Method))
+                return string.Empty;
+
+            RecordRequiredSetupMethod(methodReference.Method);
+            return ToLowerCamelCase(methodReference.Method.Name);
+        }
 
         var parameterNames = methodReference.Method.Parameters
             .Select(static parameter => parameter.Name)

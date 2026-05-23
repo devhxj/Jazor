@@ -217,6 +217,105 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersElementDomEventWithModifiers_IntoStableHHandlerWrapper()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using Microsoft.AspNetCore.Components.Web;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public EventCallback OnClick { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "button");
+                        builder.AddAttribute(1, "onclick", EventCallback.Factory.Create(this, OnClick));
+                        WebRenderTreeBuilderExtensions.AddEventPreventDefaultAttribute(builder, 2, "onclick", true);
+                        WebRenderTreeBuilderExtensions.AddEventStopPropagationAttribute(builder, 3, "onclick", true);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(
+            artifact.ModuleCode,
+            "h(\"button\", { \"onClick\": (__event) => { __event?.preventDefault?.(); __event?.stopPropagation?.(); return (() => emit(\"click\"))(__event); } })");
+        Assert.IsFalse(artifact.ModuleCode.Contains("\"onclick\":", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersElementDomEventWithDynamicModifier_IntoConditionalHHandlerWrapper()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using Microsoft.AspNetCore.Components.Web;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool PreventClick { get; set; }
+
+                    [Parameter]
+                    public EventCallback OnClick { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "button");
+                        builder.AddAttribute(1, "onclick", EventCallback.Factory.Create(this, OnClick));
+                        WebRenderTreeBuilderExtensions.AddEventPreventDefaultAttribute(builder, 2, "onclick", PreventClick);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorPreventDefault = props.preventClick;");
+        StringAssert.Contains(artifact.ModuleCode, "if (__jazorPreventDefault) __event?.preventDefault?.();");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorHandler(__event);");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersParameterInitializerDefaults_WithoutPropsRedeclaration()
     {
         var context = CreateContext(
@@ -27098,6 +27197,119 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
         StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(index);");
         StringAssert.Contains(artifact.ModuleCode, "index++;");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersImperativeElementDomEventModifier_UsingRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using Microsoft.AspNetCore.Components.Web;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-event-card")]
+                public class ImperativeEventCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    [Parameter]
+                    public EventCallback OnClick { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        var index = 0;
+                        while (index < Count)
+                        {
+                            builder.OpenElement(0, "button");
+                            builder.AddAttribute(1, "onclick", EventCallback.Factory.Create(this, OnClick));
+                            WebRenderTreeBuilderExtensions.AddEventPreventDefaultAttribute(builder, 2, "onclick", true);
+                            builder.CloseElement();
+                            index++;
+                        }
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.setAttribute(\"onclick\", () => emit(\"click\"));");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.setEventModifier(\"onclick\", \"preventDefault\", true);");
+        StringAssert.Contains(artifact.ModuleCode, "function __jazorNormalizeDomEventName(key)");
+        StringAssert.Contains(artifact.ModuleCode, "frame.props[eventKey] = __jazorWrapDomEventHandler");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersImperativeElementDomEventModifierClear_UsingRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using Microsoft.AspNetCore.Components.Web;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-event-card")]
+                public class ImperativeEventCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    [Parameter]
+                    public EventCallback OnClick { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        var index = 0;
+                        while (index < Count)
+                        {
+                            builder.OpenElement(0, "button");
+                            builder.AddAttribute(1, "onclick", EventCallback.Factory.Create(this, OnClick));
+                            WebRenderTreeBuilderExtensions.AddEventPreventDefaultAttribute(builder, 2, "onclick", true);
+                            WebRenderTreeBuilderExtensions.AddEventPreventDefaultAttribute(builder, 3, "onclick", false);
+                            builder.CloseElement();
+                            index++;
+                        }
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.setEventModifier(\"onclick\", \"preventDefault\", true);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.setEventModifier(\"onclick\", \"preventDefault\", false);");
+        StringAssert.Contains(artifact.ModuleCode, "if (!modifiers || (!modifiers.preventDefault && !modifiers.stopPropagation)) return originalHandler;");
     }
 
     [TestMethod]

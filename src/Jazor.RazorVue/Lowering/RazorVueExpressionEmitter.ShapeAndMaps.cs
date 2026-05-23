@@ -177,6 +177,11 @@ internal sealed partial class RazorVueExpressionEmitter
                 AppendAttributesShape(builder, [attributeOperation.Attribute]);
                 builder.Append(')');
                 break;
+            case RazorVueOpenNodeEventModifierReplayOperation modifierOperation:
+                builder.Append("eventmod(").Append(modifierOperation.EventHandlerName);
+                AppendEventModifiersShape(builder, modifierOperation.EventModifiers);
+                builder.Append(')');
+                break;
             case RazorVueOpenNodeKeyReplayOperation keyOperation:
                 builder.Append("keyop(").Append(keyOperation.KeyAssigned).Append(':');
                 if (keyOperation.Key is not null)
@@ -233,6 +238,7 @@ internal sealed partial class RazorVueExpressionEmitter
                     builder.Append(attribute.Name);
                     if (attribute.Value is not null)
                         builder.Append('=').Append(attribute.Value.Syntax.ToString());
+                    AppendEventModifiersShape(builder, attribute.EventModifiers);
                     break;
                 case RazorVueAttributeSpreadNode spread:
                     builder.Append("...");
@@ -242,6 +248,34 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         builder.Append('}');
+    }
+
+    private static void AppendEventModifiersShape(StringBuilder builder, RazorVueEventModifiers modifiers)
+    {
+        if (!modifiers.HasAny)
+            return;
+
+        builder.Append('[');
+        var needsSeparator = false;
+        AppendEventModifierShape(builder, "preventDefault", modifiers.PreventDefault, ref needsSeparator);
+        AppendEventModifierShape(builder, "stopPropagation", modifiers.StopPropagation, ref needsSeparator);
+        builder.Append(']');
+    }
+
+    private static void AppendEventModifierShape(
+        StringBuilder builder,
+        string name,
+        RazorVueEventModifierBinding? binding,
+        ref bool needsSeparator)
+    {
+        if (binding is null)
+            return;
+
+        if (needsSeparator)
+            builder.Append(',');
+
+        builder.Append(name).Append('=').Append(binding.Value.Syntax.ToString());
+        needsSeparator = true;
     }
 
     private static void AppendKeyShape(StringBuilder builder, RazorVueNodeKey? key)

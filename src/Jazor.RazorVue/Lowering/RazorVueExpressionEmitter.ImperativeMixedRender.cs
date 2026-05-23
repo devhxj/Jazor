@@ -458,6 +458,20 @@ internal sealed partial class RazorVueExpressionEmitter
                     allowedParameterSymbols));
                 builder.Append('\n');
                 break;
+            case RazorVueOpenNodeEventModifierReplayOperation modifierOperation:
+                if (component is not null)
+                    throw new InvalidOperationException("Event modifier replay requires an open element frame.");
+
+                builder.Append(builderAlias)
+                    .Append(".setEventModifiers(")
+                    .Append(ToJavaScriptString(modifierOperation.EventHandlerName))
+                    .Append(", ")
+                    .Append(EmitEventModifiersObject(
+                        modifierOperation.EventModifiers,
+                        allowedLocalSymbols,
+                        allowedParameterSymbols))
+                    .AppendLine(");");
+                break;
             case RazorVueOpenNodeKeyReplayOperation keyOperation:
                 if (!keyOperation.KeyAssigned)
                     break;

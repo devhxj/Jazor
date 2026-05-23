@@ -192,8 +192,22 @@ internal sealed record RazorVueCanonicalAttributeBinding(
     RazorVueTemplateEncodability TemplateEncodability,
     RazorVueTemplateExpressionSafety TemplateExpressionSafety,
     RazorVueSideEffectClassification SideEffectClassification,
+    RazorVueCanonicalEventModifiers EventModifiers,
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins)
     : RazorVueCanonicalAttributeEntry(TemplateEncodability, TemplateExpressionSafety, SideEffectClassification, SourceOrigins);
+
+internal sealed record RazorVueCanonicalEventModifiers(
+    string? PreventDefaultExpressionText,
+    string? StopPropagationExpressionText,
+    RazorVueTemplateEncodability TemplateEncodability,
+    RazorVueTemplateExpressionSafety TemplateExpressionSafety,
+    RazorVueSideEffectClassification SideEffectClassification)
+{
+    public static RazorVueCanonicalEventModifiers Empty { get; } =
+        new(null, null, RazorVueTemplateEncodability.DirectTemplate, RazorVueTemplateExpressionSafety.DirectTemplateSafe, RazorVueSideEffectClassification.None);
+
+    public bool HasAny => PreventDefaultExpressionText is not null || StopPropagationExpressionText is not null;
+}
 
 internal sealed record RazorVueCanonicalAttributeSpreadBinding(
     string ExpressionText,
@@ -284,6 +298,7 @@ internal enum RazorVueLiteralValueKind
 internal enum RazorVueCanonicalAttributeKind
 {
     HtmlAttribute,
+    HtmlEvent,
     ComponentProp,
     ComponentEvent,
     ComponentFallthroughAttribute

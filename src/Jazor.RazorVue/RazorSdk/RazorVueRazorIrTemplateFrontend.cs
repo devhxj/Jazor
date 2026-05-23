@@ -118,6 +118,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         private readonly Dictionary<string, IOperation> _literalStringOperationCache = new(StringComparer.Ordinal);
         private readonly Dictionary<string, int> _elementAttributeOrdinals = new(StringComparer.Ordinal);
         private readonly Dictionary<string, int> _componentAttributeOrdinals = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, int> _eventModifierOrdinals = new(StringComparer.Ordinal);
         private readonly Dictionary<ILocalSymbol, IOperation> _localStaticMarkupCarriers =
             new(SymbolEqualityComparer.Default);
         private readonly Dictionary<ILocalSymbol, ParsedSlotTemplate> _localRenderFragmentCarriers =
@@ -880,7 +881,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 if (IsKeyAttribute(attribute))
                     continue;
 
-                attributes.Add(ConvertHtmlAttributeEntry(attribute));
+                AddHtmlAttributeEntry(attributes, attribute);
             }
             foreach (var splat in node.BodyOrEmpty.Where(static child => child.Kind == RazorVueRazorIrNodeKind.Splat))
                 attributes.Add(ConvertSplatAttribute(splat));
@@ -1040,7 +1041,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             if (string.IsNullOrEmpty(markup))
                 return;
 
-            builder.AddRange(ParseStaticMarkupFragment(markup, CreateOrigins(GetBestSourceSpan(node))));
+            var origins = CreateOrigins(GetBestSourceSpan(node));
+            foreach (var markupNode in ParseStaticMarkupFragment(markup, origins))
+                builder.Add(NormalizeRazorEventDirectiveMarkupNode(markupNode, origins));
         }
 
         private RazorVueAttributeNode ConvertHtmlAttribute(RazorVueRazorIrNode node)
@@ -1048,9 +1051,11 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             if (node.HasAttributeNameExpression)
                 throw CreateUnsupportedNodeException(node, "dynamic HtmlAttributeIntermediateNode.AttributeNameExpression");
 
-            var attributeName = node.AttributeName ?? string.Empty;
+            var rawAttributeName = node.AttributeName ?? string.Empty;
+            var attributeName = TryNormalizeHtmlEventAttributeName(rawAttributeName)
+                                ?? rawAttributeName;
             var value = ResolveAttributeValue(
-                attributeName,
+                rawAttributeName,
                 node.Children,
                 node.Source,
                 node,
@@ -1063,7 +1068,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 CreateOrigins(node.Source));
         }
 
-        private RazorVueAttributeEntry ConvertHtmlAttributeEntry(RazorVueRazorIrNode node)
+        private void AddHtmlAttributeEntry(
+            ImmutableArray<RazorVueAttributeEntry>.Builder attributes,
+            RazorVueRazorIrNode node)
         {
             var attributeName = node.AttributeName ?? string.Empty;
             if (string.Equals(attributeName, "@attributes", StringComparison.Ordinal))
@@ -1072,14 +1079,338 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     ?? throw CreateUnsupportedAttributeException(
                         node.Source,
                         $"RazorVue Razor IR frontend requires an expression value for '@attributes' in component '{_snapshot.Descriptor.FullName}'.");
-                return new RazorVueAttributeSpreadNode(
+                attributes.Add(new RazorVueAttributeSpreadNode(
                     value,
                     ImmutableArray<RazorVueCapturedValueBinding>.Empty,
-                    CreateOrigins(node.Source));
+                    CreateOrigins(node.Source)));
+                return;
             }
 
-            return ConvertHtmlAttribute(node);
+            if (TryConvertHtmlEventModifierAttribute(
+                    node,
+                    out var eventHandlerName,
+                    out var modifierBinding,
+                    out var modifierOrigins))
+            {
+                ApplyHtmlEventModifierAttribute(attributes, eventHandlerName, node.AttributeName!, modifierBinding, modifierOrigins);
+                return;
+            }
+
+            AddOrMergeHtmlAttribute(attributes, ConvertHtmlAttribute(node));
         }
+
+        private static void AddOrMergeHtmlAttribute(
+            ImmutableArray<RazorVueAttributeEntry>.Builder attributes,
+            RazorVueAttributeNode attribute)
+        {
+            if (!attribute.EventModifiers.HasAny &&
+                RazorVueDomEventName.TryNormalizeBlazorEventAttributeName(attribute.Name, out _))
+            {
+                for (var index = attributes.Count - 1; index >= 0; index--)
+                {
+                    if (attributes[index] is not RazorVueAttributeNode existing ||
+                        !string.Equals(existing.Name, attribute.Name, StringComparison.Ordinal) ||
+                        !existing.EventModifiers.HasAny)
+                    {
+                        continue;
+                    }
+
+                    attributes[index] = attribute with { EventModifiers = existing.EventModifiers };
+                    return;
+                }
+            }
+
+            attributes.Add(attribute);
+        }
+
+        private bool TryConvertHtmlEventModifierAttribute(
+            RazorVueRazorIrNode node,
+            out string eventHandlerName,
+            out RazorVueEventModifierBinding modifierBinding,
+            out ImmutableArray<RazorVueSourceOrigin> origins)
+        {
+            eventHandlerName = string.Empty;
+            modifierBinding = default!;
+            origins = ImmutableArray<RazorVueSourceOrigin>.Empty;
+
+            if (!TryParseHtmlEventModifierAttributeName(node.AttributeName, out eventHandlerName, out _))
+                return false;
+
+            var value = ResolveAttributeValue(
+                node.AttributeName ?? string.Empty,
+                node.Children,
+                node.Source,
+                node,
+                builderMethodName: null,
+                builderAttributeOrdinal: -1)
+                ?? CreateLiteralBoolOperation(true);
+            origins = CreateOrigins(node.Source);
+            modifierBinding = new RazorVueEventModifierBinding(
+                value,
+                ImmutableArray<RazorVueCapturedValueBinding>.Empty,
+                origins);
+            return true;
+        }
+
+        private RazorVueRenderNode NormalizeRazorEventDirectiveMarkupNode(
+            RazorVueRenderNode node,
+            ImmutableArray<RazorVueSourceOrigin> origins)
+        {
+            if (node is not RazorVueElementNode element)
+                return node;
+
+            var attributes = ImmutableArray.CreateBuilder<RazorVueAttributeEntry>();
+            foreach (var attribute in element.Attributes)
+            {
+                if (attribute is not RazorVueAttributeNode attributeNode ||
+                    !IsRazorEventDirectiveMarkupAttribute(attributeNode.Name))
+                {
+                    attributes.Add(attribute);
+                    continue;
+                }
+
+                if (TryParseHtmlEventModifierAttributeName(attributeNode.Name, out var eventHandlerName, out var modifierName))
+                {
+                    var value = ResolveGeneratedEventModifierValue(eventHandlerName, modifierName)
+                                ?? ResolveRazorEventDirectiveMarkupExpression(attributeNode)
+                                ?? CreateLiteralBoolOperation(true);
+                    ApplyHtmlEventModifierAttribute(
+                        attributes,
+                        eventHandlerName,
+                        attributeNode.Name,
+                        new RazorVueEventModifierBinding(
+                            value,
+                            ImmutableArray<RazorVueCapturedValueBinding>.Empty,
+                            attributeNode.Origins.IsDefaultOrEmpty ? origins : attributeNode.Origins),
+                        attributeNode.Origins.IsDefaultOrEmpty ? origins : attributeNode.Origins);
+                    continue;
+                }
+
+                if (TryNormalizeHtmlEventAttributeName(attributeNode.Name) is { } normalizedEventHandlerName)
+                {
+                    var value = ResolveGeneratedEventAttributeValue(normalizedEventHandlerName)
+                                ?? ResolveRazorEventDirectiveMarkupHandler(attributeNode);
+                    AddOrMergeHtmlAttribute(
+                        attributes,
+                        new RazorVueAttributeNode(
+                            normalizedEventHandlerName,
+                            value,
+                            ImmutableArray<RazorVueCapturedValueBinding>.Empty,
+                            attributeNode.Origins.IsDefaultOrEmpty ? origins : attributeNode.Origins));
+                    continue;
+                }
+
+                attributes.Add(attribute);
+            }
+
+            var children = element.Children.Children
+                .Select(child => NormalizeRazorEventDirectiveMarkupNode(child, origins))
+                .ToImmutableArray();
+            return element with
+            {
+                Attributes = attributes.ToImmutable(),
+                Children = new RazorVueRenderFragment(children)
+            };
+        }
+
+        private IOperation? ResolveGeneratedEventAttributeValue(string eventHandlerName)
+        {
+            var ordinal = GetNextElementAttributeOrdinal(eventHandlerName);
+            return _resolver.TryResolveBuilderAttributeValue(
+                "AddAttribute",
+                eventHandlerName,
+                ordinal,
+                out var value)
+                ? value
+                : null;
+        }
+
+        private IOperation? ResolveGeneratedEventModifierValue(string eventHandlerName, string modifierName)
+        {
+            var methodName = modifierName switch
+            {
+                "preventDefault" => "AddEventPreventDefaultAttribute",
+                "stopPropagation" => "AddEventStopPropagationAttribute",
+                _ => null
+            };
+            if (methodName is null)
+                return null;
+
+            var ordinal = GetNextEventModifierOrdinal(methodName, eventHandlerName);
+            return _resolver.TryResolveEventModifierValue(
+                methodName,
+                eventHandlerName,
+                ordinal,
+                out var value)
+                ? value
+                : null;
+        }
+
+        private static bool IsRazorEventDirectiveMarkupAttribute(string attributeName)
+            => attributeName.StartsWith("@on", StringComparison.Ordinal);
+
+        private IOperation? ResolveRazorEventDirectiveMarkupHandler(RazorVueAttributeNode attribute)
+        {
+            if (!TryGetStaticStringValue(attribute.Value, out var expressionText))
+                return attribute.Value;
+
+            var callbackExpression = "Microsoft.AspNetCore.Components.EventCallback.Factory.Create(this, " +
+                                     expressionText +
+                                     ")";
+            if (_resolver.TryResolveComponentExpression(callbackExpression, out var operation))
+                return operation;
+
+            throw CreateUnsupportedAttributeException(
+                null,
+                $"RazorVue Razor IR frontend could not resolve Razor event handler expression '{expressionText}' in component '{_snapshot.Descriptor.FullName}'.");
+        }
+
+        private IOperation? ResolveRazorEventDirectiveMarkupExpression(RazorVueAttributeNode attribute)
+        {
+            if (!TryGetStaticStringValue(attribute.Value, out var expressionText))
+                return attribute.Value;
+
+            if (_resolver.TryResolveComponentExpression(expressionText, out var operation))
+                return operation;
+
+            throw CreateUnsupportedAttributeException(
+                null,
+                $"RazorVue Razor IR frontend could not resolve Razor event modifier expression '{expressionText}' in component '{_snapshot.Descriptor.FullName}'.");
+        }
+
+        private static bool TryGetStaticStringValue(IOperation? operation, out string value)
+        {
+            value = string.Empty;
+            if (operation?.ConstantValue.HasValue == true &&
+                operation.ConstantValue.Value is string text)
+            {
+                value = text;
+                return true;
+            }
+
+            return false;
+        }
+
+        private void ApplyHtmlEventModifierAttribute(
+            ImmutableArray<RazorVueAttributeEntry>.Builder attributes,
+            string eventHandlerName,
+            string modifierAttributeName,
+            RazorVueEventModifierBinding binding,
+            ImmutableArray<RazorVueSourceOrigin> origins)
+        {
+            for (var index = attributes.Count - 1; index >= 0; index--)
+            {
+                if (attributes[index] is not RazorVueAttributeNode attribute ||
+                    !string.Equals(attribute.Name, eventHandlerName, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                attributes[index] = attribute with
+                {
+                    EventModifiers = ApplyHtmlEventModifier(attribute.EventModifiers, modifierAttributeName, binding)
+                };
+                return;
+            }
+
+            var next = ApplyHtmlEventModifier(RazorVueEventModifiers.Empty, modifierAttributeName, binding);
+            if (!next.HasAny)
+                return;
+
+            attributes.Add(new RazorVueAttributeNode(
+                eventHandlerName,
+                null,
+                ImmutableArray<RazorVueCapturedValueBinding>.Empty,
+                origins)
+            {
+                EventModifiers = next
+            });
+        }
+
+        private static RazorVueEventModifiers ApplyHtmlEventModifier(
+            RazorVueEventModifiers current,
+            string modifierAttributeName,
+            RazorVueEventModifierBinding binding)
+        {
+            var isConstantFalse = IsConstantFalseEventModifier(binding.Value);
+            return GetHtmlEventModifierName(modifierAttributeName) switch
+            {
+                "preventDefault" => current with { PreventDefault = isConstantFalse ? null : binding },
+                "stopPropagation" => current with { StopPropagation = isConstantFalse ? null : binding },
+                _ => current
+            };
+        }
+
+        private static bool TryParseHtmlEventModifierAttributeName(
+            string? attributeName,
+            out string eventHandlerName,
+            out string modifierName)
+        {
+            eventHandlerName = string.Empty;
+            modifierName = string.Empty;
+            if (string.IsNullOrWhiteSpace(attributeName))
+            {
+                return false;
+            }
+
+            var candidate = attributeName!;
+            if (!candidate.StartsWith("@on", StringComparison.Ordinal))
+                return false;
+
+            var modifierSeparator = candidate.IndexOf(':');
+            if (modifierSeparator <= 1 || modifierSeparator == candidate.Length - 1)
+                return false;
+
+            var eventName = candidate.Substring(1, modifierSeparator - 1);
+            modifierName = candidate.Substring(modifierSeparator + 1);
+            if (!IsSupportedHtmlEventModifierName(modifierName) ||
+                !RazorVueDomEventName.TryNormalizeBlazorEventAttributeName(eventName, out _))
+            {
+                eventHandlerName = string.Empty;
+                modifierName = string.Empty;
+                return false;
+            }
+
+            eventHandlerName = eventName;
+            return true;
+        }
+
+        private static string? TryNormalizeHtmlEventAttributeName(string? attributeName)
+        {
+            if (string.IsNullOrWhiteSpace(attributeName))
+            {
+                return null;
+            }
+
+            var candidate = attributeName!;
+            if (!candidate.StartsWith("@on", StringComparison.Ordinal) ||
+                candidate.IndexOf(':') >= 0)
+            {
+                return null;
+            }
+
+            var eventName = candidate.Substring(1);
+            return RazorVueDomEventName.TryNormalizeBlazorEventAttributeName(eventName, out _)
+                ? eventName
+                : null;
+        }
+
+        private static bool IsSupportedHtmlEventModifierName(string modifierName)
+            => string.Equals(modifierName, "preventDefault", StringComparison.Ordinal) ||
+               string.Equals(modifierName, "stopPropagation", StringComparison.Ordinal);
+
+        private static string GetHtmlEventModifierName(string modifierAttributeName)
+        {
+            var separator = modifierAttributeName.IndexOf(':');
+            return separator >= 0 && separator < modifierAttributeName.Length - 1
+                ? modifierAttributeName.Substring(separator + 1)
+                : modifierAttributeName;
+        }
+
+        private static bool IsConstantFalseEventModifier(IOperation? operation)
+            => operation?.ConstantValue.HasValue == true &&
+               operation.ConstantValue.Value is bool boolValue &&
+               !boolValue;
 
         private RazorVueAttributeNode ConvertComponentAttribute(RazorVueRazorIrNode node)
         {
@@ -1479,6 +1810,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
         private int GetNextComponentAttributeOrdinal(string attributeName)
             => GetNextAttributeOrdinal(_componentAttributeOrdinals, attributeName);
+
+        private int GetNextEventModifierOrdinal(string methodName, string eventHandlerName)
+            => GetNextAttributeOrdinal(_eventModifierOrdinals, methodName + "\0" + eventHandlerName);
 
         private static int GetNextAttributeOrdinal(Dictionary<string, int> ordinals, string attributeName)
         {
@@ -5252,6 +5586,27 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
             _literalStringOperationCache[value] = operation;
             return operation;
+        }
+
+        private IOperation CreateLiteralBoolOperation(bool value)
+        {
+            var parseOptions = _context.Compilation.SyntaxTrees.FirstOrDefault()?.Options as CSharpParseOptions
+                               ?? CSharpParseOptions.Default;
+            var source = "file static class __RazorVueLiteralHolder { internal static object Value => "
+                         + (value ? "true" : "false")
+                         + "; }";
+            var syntaxTree = CSharpSyntaxTree.ParseText(source, parseOptions);
+            var compilation = CSharpCompilation.Create(
+                "__RazorVueLiteralHolder",
+                [syntaxTree],
+                _context.Compilation.References,
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            var literal = syntaxTree.GetRoot()
+                .DescendantNodes()
+                .OfType<LiteralExpressionSyntax>()
+                .Single();
+            return compilation.GetSemanticModel(syntaxTree).GetOperation(literal)
+                   ?? throw new InvalidOperationException("Could not materialize a Roslyn literal operation for Razor event modifier.");
         }
 
         private static string NormalizeLiteralAttributeText(string text)
