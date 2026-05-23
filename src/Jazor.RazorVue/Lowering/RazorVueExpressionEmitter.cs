@@ -701,6 +701,11 @@ internal sealed partial class RazorVueExpressionEmitter
                 ? new VariableDeclarator(new Identifier(operation.Symbol.Name), ParseJavaScriptExpression(declaratorExpression))
                 : null;
 
+        public override Expression? RewriteSimpleAssignmentPreorder(ISimpleAssignmentOperation operation, SenseArgument argument)
+            => _emitter.TryRewriteSimpleAssignment(operation, argument, out var expression)
+                ? ParseJavaScriptExpression(expression)
+                : null;
+
         public override Expression? RewriteFieldReference(
             IFieldReferenceOperation operation,
             SenseArgument argument,

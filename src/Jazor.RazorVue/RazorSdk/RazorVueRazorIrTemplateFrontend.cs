@@ -327,6 +327,15 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     continue;
                 }
 
+                if (builder.Count > 0 &&
+                    node.Kind == RazorVueRazorIrNodeKind.MarkupElement &&
+                    IsFirstChildLocalDeclarationOwnedByPendingImperative(
+                        builder[builder.Count - 1],
+                        pendingTemplateControlNode))
+                {
+                    builder.RemoveAt(builder.Count - 1);
+                }
+
                 if (TryConvertTemplateLocalCodeBlock(
                         bufferedNodes,
                         ref index,
@@ -353,7 +362,12 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                         currentParameterScope,
                         out var pendingControlNode))
                 {
+                    if (pendingControlNode is RazorVueImperativeBlockNode imperativeControlNode)
+                        RemoveDeclarationsOwnedByImperative(builder, imperativeControlNode);
+
                     builder.Add(pendingControlNode);
+                    if (pendingControlNode is RazorVueImperativeBlockNode imperative)
+                        AddVisibleLocalsToScope(imperative, ref currentLocalScope);
                     pendingTemplateControlNode = null;
                     continue;
                 }
@@ -485,6 +499,10 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     return false;
                 }
 
+                var segmentOperations = operations
+                    .Skip(segment.StartIndex)
+                    .Take(segment.EndExclusive - segment.StartIndex)
+                    .ToImmutableArray();
                 AppendConvertedTemplateSlice(
                     nodes,
                     nextNodeIndex,
@@ -493,21 +511,19 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     ref currentLocalScope,
                     currentParameterScope,
                     orderedVisibleLocals);
-
-                var segmentOperations = operations
-                    .Skip(segment.StartIndex)
-                    .Take(segment.EndExclusive - segment.StartIndex)
-                    .ToImmutableArray();
+                RemoveDeclarationsOwnedByOperations(children, segmentOperations);
                 var coveredNodes = nodes
                     .Skip(segmentStartIndex)
                     .Take(segmentEndExclusive - segmentStartIndex)
                     .ToArray();
 
-                children.Add(CreateImperativeBlockNode(
+                var imperativeNode = CreateImperativeBlockNode(
                     segmentOperations,
                     segment.Kind,
                     CreateImperativeOrigins(segmentOperations, coveredNodes),
-                    orderedVisibleLocals));
+                    orderedVisibleLocals);
+                children.Add(imperativeNode);
+                AddVisibleLocalsToScope(imperativeNode, ref currentLocalScope, orderedVisibleLocals);
                 nextNodeIndex = segmentEndExclusive;
             }
 
@@ -764,6 +780,60 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             }
 
             return builder.ToImmutable();
+        }
+
+        private static void AddVisibleLocalsToScope(
+            RazorVueImperativeBlockNode imperative,
+            ref ImmutableHashSet<ILocalSymbol> currentLocalScope,
+            List<ILocalSymbol>? orderedVisibleLocals = null)
+        {
+            foreach (var local in imperative.VisibleLocals)
+            {
+                if (currentLocalScope.Contains(local))
+                    continue;
+
+                currentLocalScope = currentLocalScope.Add(local);
+                orderedVisibleLocals?.Add(local);
+            }
+        }
+
+        private static void RemoveDeclarationsOwnedByImperative(
+            ImmutableArray<RazorVueRenderNode>.Builder builder,
+            RazorVueImperativeBlockNode imperative)
+            => RemoveDeclarationsOwnedByOperations(builder, imperative.Operations);
+
+        private static void RemoveDeclarationsOwnedByOperations(
+            ImmutableArray<RazorVueRenderNode>.Builder builder,
+            IEnumerable<IOperation> operations)
+        {
+            var imperativeDeclaredLocals = CollectDeclaredLocals(operations);
+            if (imperativeDeclaredLocals.Count == 0)
+                return;
+
+            for (var index = builder.Count - 1; index >= 0; index--)
+            {
+                if (builder[index] is not RazorVueLocalDeclarationNode localDeclaration)
+                    continue;
+
+                if (ContainsTemplateLocalSymbol(imperativeDeclaredLocals, localDeclaration.LocalSymbol))
+                    builder.RemoveAt(index);
+            }
+        }
+
+        private static bool IsFirstChildLocalDeclarationOwnedByPendingImperative(
+            RazorVueRenderNode node,
+            PendingTemplateControlNode? pendingControlNode)
+        {
+            if (node is not RazorVueLocalDeclarationNode localDeclaration ||
+                pendingControlNode is not { Kind: PendingTemplateControlKind.Imperative } pending ||
+                pending.ImperativeOperations.IsDefaultOrEmpty)
+            {
+                return false;
+            }
+
+            return ContainsTemplateLocalSymbol(
+                CollectDeclaredLocals(pending.ImperativeOperations),
+                localDeclaration.LocalSymbol);
         }
 
         private static ImmutableArray<IParameterSymbol> CollectVisibleParameters(IEnumerable<IOperation> operations)
@@ -2428,7 +2498,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 currentLocalScope = currentLocalScope.Add(declarator.Symbol);
             }
 
-            localDeclarations = declarationBuilder.ToImmutable();
+            localDeclarations = RemoveDeclarationsOwnedByPendingImperative(
+                declarationBuilder.ToImmutable(),
+                pendingControlNode);
             consumedNodeCount = Math.Max(1, continuationIndex - startIndex);
             return encounteredRenderFragmentCarrier ||
                    encounteredStaticMarkupCarrier ||
@@ -2436,6 +2508,153 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                    localDeclarations.Length > 0 ||
                    pendingControlNode is not null ||
                    continuationIndex > startIndex + 1;
+        }
+
+        private static ImmutableArray<RazorVueLocalDeclarationNode> RemoveDeclarationsOwnedByPendingImperative(
+            ImmutableArray<RazorVueLocalDeclarationNode> localDeclarations,
+            PendingTemplateControlNode? pendingControlNode)
+        {
+            if (localDeclarations.IsDefaultOrEmpty ||
+                pendingControlNode is not { Kind: PendingTemplateControlKind.Imperative } pending ||
+                pending.ImperativeOperations.IsDefaultOrEmpty)
+            {
+                return localDeclarations;
+            }
+
+            var imperativeDeclaredLocals = CollectDeclaredLocals(pending.ImperativeOperations);
+            if (imperativeDeclaredLocals.Count == 0)
+                return localDeclarations;
+
+            ImmutableArray<RazorVueLocalDeclarationNode>.Builder? builder = null;
+            foreach (var localDeclaration in localDeclarations)
+            {
+                if (!ContainsTemplateLocalSymbol(imperativeDeclaredLocals, localDeclaration.LocalSymbol))
+                {
+                    builder?.Add(localDeclaration);
+                    continue;
+                }
+
+                if (builder is not null)
+                    continue;
+
+                builder = ImmutableArray.CreateBuilder<RazorVueLocalDeclarationNode>(localDeclarations.Length);
+                foreach (var previous in localDeclarations.TakeWhile(previous =>
+                             !SymbolEqualityComparer.Default.Equals(previous.LocalSymbol, localDeclaration.LocalSymbol)))
+                {
+                    builder.Add(previous);
+                }
+            }
+
+            return builder is null ? localDeclarations : builder.ToImmutable();
+        }
+
+        private static HashSet<ILocalSymbol> CollectDeclaredLocals(IEnumerable<IOperation> operations)
+        {
+            var locals = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
+            foreach (var operation in operations)
+            {
+                foreach (var candidate in EnumerateOperationAndDescendants(operation))
+                {
+                    switch (candidate)
+                    {
+                        case IVariableDeclarationGroupOperation declarationGroup:
+                            AddDeclaredLocals(declarationGroup.Declarations, locals);
+                            break;
+                        case IVariableDeclarationOperation declarationOperation:
+                            AddDeclaredLocals([declarationOperation], locals);
+                            break;
+                        case IForEachLoopOperation foreachLoop:
+                            foreach (var local in foreachLoop.Locals)
+                                locals.Add(local);
+                            break;
+                        case IForLoopOperation forLoop:
+                            foreach (var local in forLoop.Locals)
+                                locals.Add(local);
+                            break;
+                        case IUsingDeclarationOperation { DeclarationGroup: { } declarationGroup }:
+                            AddDeclaredLocals(declarationGroup.Declarations, locals);
+                            break;
+                    }
+                }
+            }
+
+            return locals;
+        }
+
+        private static void AddDeclaredLocals(
+            IEnumerable<IVariableDeclarationOperation> declarations,
+            HashSet<ILocalSymbol> locals)
+        {
+            foreach (var declaration in declarations)
+            {
+                foreach (var declarator in declaration.Declarators)
+                    locals.Add(declarator.Symbol);
+            }
+        }
+
+        private static bool ContainsTemplateLocalSymbol(
+            IEnumerable<ILocalSymbol> locals,
+            ILocalSymbol candidate)
+            => locals.Any(local => IsSameTemplateLocalSymbol(local, candidate));
+
+        private static bool IsSameTemplateLocalSymbol(
+            ILocalSymbol left,
+            ILocalSymbol right)
+        {
+            if (SymbolEqualityComparer.Default.Equals(left, right))
+                return true;
+
+            if (!string.Equals(left.Name, right.Name, StringComparison.Ordinal))
+                return false;
+
+            if (!SymbolEqualityComparer.Default.Equals(left.Type, right.Type) &&
+                !string.Equals(left.Type.ToDisplayString(), right.Type.ToDisplayString(), StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            return HaveMatchingDeclarationSyntax(left, right) ||
+                   HaveMatchingContainingSymbol(left, right);
+        }
+
+        private static bool HaveMatchingContainingSymbol(
+            ILocalSymbol left,
+            ILocalSymbol right)
+        {
+            if (SymbolEqualityComparer.Default.Equals(left.ContainingSymbol, right.ContainingSymbol))
+                return true;
+
+            var leftDisplay = left.ContainingSymbol?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            var rightDisplay = right.ContainingSymbol?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            return !string.IsNullOrWhiteSpace(leftDisplay) &&
+                   string.Equals(leftDisplay, rightDisplay, StringComparison.Ordinal);
+        }
+
+        private static bool HaveMatchingDeclarationSyntax(
+            ILocalSymbol left,
+            ILocalSymbol right)
+        {
+            foreach (var leftReference in left.DeclaringSyntaxReferences)
+            {
+                foreach (var rightReference in right.DeclaringSyntaxReferences)
+                {
+                    if (!PathsEqual(leftReference.SyntaxTree.FilePath, rightReference.SyntaxTree.FilePath))
+                        continue;
+
+                    if (leftReference.Span == rightReference.Span)
+                        return true;
+
+                    var leftSpan = leftReference.Span;
+                    var rightSpan = rightReference.Span;
+                    if (leftSpan.Start < rightSpan.End &&
+                        rightSpan.Start < leftSpan.End)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         private bool TryCreateStandaloneTemplateImperativeContinuation(

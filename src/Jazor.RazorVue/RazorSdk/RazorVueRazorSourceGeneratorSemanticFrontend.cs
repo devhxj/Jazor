@@ -25,5 +25,8 @@ internal sealed class RazorVueRazorSourceGeneratorSemanticFrontend : Jazor.Razor
         => RazorVueRazorDocumentSemanticFrontend.Instance.ClassifyEntry(context, symbol);
 
     public ImmutableArray<RazorVueSemanticSnapshot> CreateSemanticSnapshots(Jazor.RazorVue.RazorVueCompilationContext context)
-        => RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(context, _sourceGeneratorDocuments);
+        => RazorVueRazorDocumentSemanticFrontend.Instance
+            .CreateSemanticSnapshots(context, _sourceGeneratorDocuments)
+            .Where(static snapshot => snapshot.RazorSourceGeneratorDocument is not null)
+            .ToImmutableArray();
 }

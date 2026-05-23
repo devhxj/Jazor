@@ -586,7 +586,7 @@ internal sealed partial class RazorVueExpressionEmitter
         if (invocation.Arguments.Length <= argumentIndex)
             return "undefined";
 
-        return EmitSetupExpression(invocation.Arguments[argumentIndex].Value, argument);
+        return EmitExpression(invocation.Arguments[argumentIndex].Value, argument);
     }
 
     private string EmitImperativeComponentParameterValue(IInvocationOperation invocation, SenseArgument argument, string builderTarget, int argumentIndex)
@@ -612,12 +612,12 @@ internal sealed partial class RazorVueExpressionEmitter
             return contextualRenderSlotFactory;
 
         if (IsImperativeUntypedRenderFragmentValue(value))
-            return EmitSetupExpression(value, argument);
+            return EmitExpression(value, argument);
 
         if (IsImperativeTypedRenderFragmentValue(value))
-            return EmitSetupExpression(value, argument);
+            return EmitExpression(value, argument);
 
-        return EmitSetupExpression(value, argument);
+        return EmitExpression(value, argument);
     }
 
     private bool TryEmitImperativeStoredLocalRenderSlotValue(
@@ -745,6 +745,49 @@ internal sealed partial class RazorVueExpressionEmitter
         return false;
     }
 
+    internal bool TryRewriteSimpleAssignment(
+        ISimpleAssignmentOperation operation,
+        SenseArgument argument,
+        out string expression)
+    {
+        expression = string.Empty;
+        if (_imperativeBuilderAlias is null ||
+            operation.Target is not ILocalReferenceOperation localReference ||
+            !IsImperativeRenderFragmentCarrierType(localReference.Local.Type))
+        {
+            return false;
+        }
+
+        if (RazorVueImperativeRenderFragmentCarrierHelper.IsSourceStableLocalRenderFragmentInitializerInvalidatedByLaterWrites(
+                _snapshot.Compilation,
+                localReference.Local))
+        {
+            throw CreateImperativeRenderFragmentLocalCarrierInvalidatedException(operation, localReference.Local);
+        }
+
+        var current = Unwrap(operation.Value) ?? operation.Value;
+        if (TryEmitImperativeRenderSlotFactory(current, out var renderSlotFactory))
+        {
+            expression = localReference.Local.Name + " = " + renderSlotFactory;
+            return true;
+        }
+
+        if (TryEmitImperativeContextualRenderSlotFactory(current, out var contextualRenderSlotFactory))
+        {
+            expression = localReference.Local.Name + " = " + contextualRenderSlotFactory;
+            return true;
+        }
+
+        if (TryEmitImperativeRenderFragmentFactoryInvocation(current, out var factoryBackedRenderSlotFactory))
+        {
+            expression = localReference.Local.Name + " = " + factoryBackedRenderSlotFactory;
+            return true;
+        }
+
+        _ = argument;
+        return false;
+    }
+
     private IOperation? TryGetNormalizedImperativeVariableInitializer(IVariableDeclaratorOperation operation)
     {
         foreach (var syntaxReference in operation.Symbol.DeclaringSyntaxReferences)
@@ -778,6 +821,11 @@ internal sealed partial class RazorVueExpressionEmitter
 
     private RazorVueCompilationIssueException CreateImperativeRenderFragmentLocalCarrierInvalidatedException(
         IVariableDeclaratorOperation operation)
+        => CreateImperativeRenderFragmentLocalCarrierInvalidatedException(operation, operation.Symbol);
+
+    private RazorVueCompilationIssueException CreateImperativeRenderFragmentLocalCarrierInvalidatedException(
+        IOperation operation,
+        ILocalSymbol local)
     {
         var origin = operation.Syntax is null
             ? _snapshot.Origins.FirstOrDefault()
@@ -785,7 +833,7 @@ internal sealed partial class RazorVueExpressionEmitter
         var issue = new RazorVueCompilationIssue(
             RazorVueIssueCode.CanonicalizationFailed,
             RazorVueIssueSeverity.Error,
-            $"RazorVue RenderFragment local '{operation.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Declaration-initialized local carriers must remain source-stable.",
+            $"RazorVue RenderFragment local '{local.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Declaration-initialized local carriers must remain source-stable.",
             ImmutableArray<string>.Empty);
         return new RazorVueCompilationIssueException(issue, _snapshot.Descriptor.FullName, origin);
     }

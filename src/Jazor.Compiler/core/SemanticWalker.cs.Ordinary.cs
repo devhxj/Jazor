@@ -1025,6 +1025,9 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitSimpleAssignment(ISimpleAssignmentOperation operation, SenseArgument argument)
 	{
+		if (Host?.RewriteSimpleAssignmentPreorder(operation, argument) is Expression preorderHostExpression)
+			return WithOriginIfMissing(preorderHostExpression, operation);
+
 		if (operation.Target is IDiscardOperation)
 		{
 			// tuple 赋值不依赖 Roslyn 恰好插入 conversion。

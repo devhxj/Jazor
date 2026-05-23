@@ -32,10 +32,26 @@ internal sealed partial class RazorVueExpressionEmitter
         return WithSetupRewriteScope(() => EmitCompilerLoweredExpression(current, compilerArgument));
     }
 
+    internal string EmitSetupStatementSequence(IEnumerable<IOperation> operations, SenseArgument? compilerArgument = null)
+    {
+        var operationList = operations?.ToArray() ?? throw new ArgumentNullException(nameof(operations));
+        if (operationList.Length == 0)
+            return string.Empty;
+
+        var argument = (compilerArgument ?? _compilerArgument).With(Sense.FunctionBody);
+        return WithSetupRewriteScope(() =>
+        {
+            var statements = _semanticWalker.TranslateStatementSequence(operationList, argument);
+            var functionBody = new FunctionBody(NodeList.From(statements), strict: true);
+            return NormalizeImperativeFunctionText(functionBody.ToKnRECMAScript());
+        });
+    }
+
     private LifecyclePayloadEmission EmitLifecyclePayloadCore(
         IMethodSymbol method,
         IOperation? operation,
-        bool allowFirstRenderPayload)
+        bool allowFirstRenderPayload,
+        bool allowPureCompilerOwnedFallback = false)
     {
         var current = Unwrap(operation);
         if (current is null)
@@ -43,6 +59,16 @@ internal sealed partial class RazorVueExpressionEmitter
 
         try
         {
+            if (TryEmitCompilerOwnedLifecyclePayload(
+                    method,
+                    current,
+                    allowFirstRenderPayload,
+                    out var dependencyBackedPayload,
+                    requireLocalDependency: true))
+            {
+                return dependencyBackedPayload;
+            }
+
             return current switch
             {
                 ILiteralOperation literal => new LifecyclePayloadEmission(EmitLiteral(literal), false),
@@ -69,8 +95,15 @@ internal sealed partial class RazorVueExpressionEmitter
         }
         catch (NotSupportedException)
         {
-            if (TryEmitCompilerOwnedLifecyclePayload(method, current, allowFirstRenderPayload, out var compilerOwnedPayload))
+            if (TryEmitCompilerOwnedLifecyclePayload(
+                    method,
+                    current,
+                    allowFirstRenderPayload,
+                    out var compilerOwnedPayload,
+                    allowPureCompilerOwnedFallback: allowPureCompilerOwnedFallback))
+            {
                 return compilerOwnedPayload;
+            }
 
             throw;
         }
@@ -80,22 +113,19 @@ internal sealed partial class RazorVueExpressionEmitter
         IMethodSymbol lifecycleMethod,
         IOperation operation,
         bool allowFirstRenderPayload,
-        out LifecyclePayloadEmission emission)
+        out LifecyclePayloadEmission emission,
+        bool requireLocalDependency = false,
+        bool allowPureCompilerOwnedFallback = false)
     {
         emission = default;
-        if (!allowFirstRenderPayload)
-            return false;
-
-        var firstRenderParameter = lifecycleMethod.Parameters.FirstOrDefault(static parameter => parameter.Name == "firstRender");
-        if (firstRenderParameter is null)
-            return false;
+        var firstRenderParameter = allowFirstRenderPayload
+            ? lifecycleMethod.Parameters.FirstOrDefault(static parameter => parameter.Name == "firstRender")
+            : null;
 
         var sourceStableLocals = RazorVueSourceStableLocalInitializerHelper.CollectSourceStableLocalInitializers(
             _snapshot.Compilation,
             GetLifecycleMethodOperations(lifecycleMethod),
             RazorVueSourceStableLocalInitializerHelper.CanParticipateInLifecycleCompilerFallback);
-        if (!MayContainLifecycleFirstRenderReference(lifecycleMethod, operation, sourceStableLocals))
-            return false;
 
         if (!ValidateLifecycleCompilerPayloadShape(operation, sourceStableLocals))
             return false;
@@ -103,6 +133,8 @@ internal sealed partial class RazorVueExpressionEmitter
         try
         {
             var dependencies = CollectLifecycleCompilerFallbackDependencies(operation, sourceStableLocals);
+            var usesFirstRender = firstRenderParameter is not null &&
+                MayContainLifecycleFirstRenderReference(lifecycleMethod, operation, sourceStableLocals, dependencies);
             var requiredLocals = dependencies.SourceStableLocals;
             var orderedLocals = OrderLifecycleSourceStableLocals(requiredLocals);
             var localAliases = CreateLifecycleSourceStableLocalAliases(orderedLocals);
@@ -110,6 +142,18 @@ internal sealed partial class RazorVueExpressionEmitter
             var localFunctionAliases = CreateLifecycleLocalFunctionAliases(localFunctions);
             var callableLocals = dependencies.CallableLocals;
             var callableLocalAliases = CreateLifecycleCallableLocalAliases(callableLocals);
+            var hasLocalDependency =
+                requiredLocals.Count != 0 ||
+                !localFunctions.IsDefaultOrEmpty ||
+                !callableLocals.IsDefaultOrEmpty;
+            if (requireLocalDependency && !hasLocalDependency)
+                return false;
+
+            if (!usesFirstRender && !hasLocalDependency && !allowPureCompilerOwnedFallback)
+            {
+                return false;
+            }
+
             var preludeBindings = EmitLifecyclePreludeBindings(
                 orderedLocals,
                 localAliases,
@@ -118,6 +162,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 callableLocals,
                 callableLocalAliases,
                 firstRenderParameter);
+            var parameterAliases = CreateLifecycleParameterAliases(firstRenderParameter);
             var expression = WithSourceStableLocalInitializers(
                 requiredLocals,
                 () => WithScopedLifecycleCallableAliases(
@@ -125,11 +170,8 @@ internal sealed partial class RazorVueExpressionEmitter
                     localFunctionAliases,
                     () => WithScopedLocalAliases(
                         localAliases,
-                        () => WithScopedParameterAliases(
-                            ImmutableDictionary.Create<IParameterSymbol, string>(SymbolEqualityComparer.Default)
-                                .Add(firstRenderParameter, "currentFirstRender"),
-                            () => EmitSetupExpression(operation)))));
-            emission = new LifecyclePayloadEmission(expression, true, preludeBindings);
+                        () => WithScopedParameterAliases(parameterAliases, () => EmitSetupExpression(operation)))));
+            emission = new LifecyclePayloadEmission(expression, usesFirstRender, preludeBindings);
             return true;
         }
         catch (RazorVueCompilationIssueException)
@@ -340,7 +382,7 @@ internal sealed partial class RazorVueExpressionEmitter
         IReadOnlyDictionary<IMethodSymbol, string> localFunctionAliases,
         ImmutableArray<ILocalSymbol> orderedCallableLocals,
         IReadOnlyDictionary<ILocalSymbol, string> callableLocalAliases,
-        IParameterSymbol firstRenderParameter)
+        IParameterSymbol? firstRenderParameter)
     {
         if (orderedLocals.IsDefaultOrEmpty &&
             orderedLocalFunctions.IsDefaultOrEmpty &&
@@ -405,7 +447,7 @@ internal sealed partial class RazorVueExpressionEmitter
         IReadOnlyDictionary<ILocalSymbol, string> localAliases,
         IReadOnlyDictionary<IMethodSymbol, string> localFunctionAliases,
         IReadOnlyDictionary<ILocalSymbol, string> callableLocalAliases,
-        IParameterSymbol firstRenderParameter,
+        IParameterSymbol? firstRenderParameter,
         ILocalSymbol? excludedLocal,
         IMethodSymbol? excludedLocalFunction,
         ILocalSymbol? excludedCallableLocal)
@@ -454,8 +496,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 () => WithScopedLocalAliases(
                     remainingAliases,
                     () => WithScopedParameterAliases(
-                        ImmutableDictionary.Create<IParameterSymbol, string>(SymbolEqualityComparer.Default)
-                            .Add(firstRenderParameter, "currentFirstRender"),
+                        CreateLifecycleParameterAliases(firstRenderParameter),
                         () => EmitSetupExpression(operation)))));
     }
 
@@ -466,7 +507,7 @@ internal sealed partial class RazorVueExpressionEmitter
         IReadOnlyDictionary<ILocalSymbol, string> localAliases,
         IReadOnlyDictionary<IMethodSymbol, string> localFunctionAliases,
         IReadOnlyDictionary<ILocalSymbol, string> callableLocalAliases,
-        IParameterSymbol firstRenderParameter)
+        IParameterSymbol? firstRenderParameter)
     {
         var syntaxReference = localFunction.DeclaringSyntaxReferences.FirstOrDefault();
         if (syntaxReference?.GetSyntax() is not LocalFunctionStatementSyntax localFunctionSyntax)
@@ -485,7 +526,8 @@ internal sealed partial class RazorVueExpressionEmitter
         var parameterAliases = ImmutableDictionary.CreateBuilder<IParameterSymbol, string>(SymbolEqualityComparer.Default);
         foreach (var parameter in localFunction.Parameters)
             parameterAliases[parameter] = parameter.Name;
-        parameterAliases[firstRenderParameter] = "currentFirstRender";
+        if (firstRenderParameter is not null)
+            parameterAliases[firstRenderParameter] = "currentFirstRender";
 
         var functionNode = WithSourceStableLocalInitializers(
             BuildOrderedLocalInitializerDictionary(orderedLocals),
@@ -512,6 +554,13 @@ internal sealed partial class RazorVueExpressionEmitter
             functionDeclaration.Async);
         return MaterializeCompilerStatement(aliasDeclaration, _compilerArgument);
     }
+
+    private static ImmutableDictionary<IParameterSymbol, string> CreateLifecycleParameterAliases(
+        IParameterSymbol? firstRenderParameter)
+        => firstRenderParameter is null
+            ? ImmutableDictionary<IParameterSymbol, string>.Empty.WithComparers(SymbolEqualityComparer.Default)
+            : ImmutableDictionary.Create<IParameterSymbol, string>(SymbolEqualityComparer.Default)
+                .Add(firstRenderParameter, "currentFirstRender");
 
     private IOperation GetLifecycleCallableInitializer(ILocalSymbol local)
     {
@@ -566,40 +615,99 @@ internal sealed partial class RazorVueExpressionEmitter
     private bool MayContainLifecycleFirstRenderReference(
         IMethodSymbol lifecycleMethod,
         IOperation operation,
-        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocals = null)
+        IReadOnlyDictionary<ILocalSymbol, IOperation> sourceStableLocals,
+        LifecycleCompilerFallbackDependencies dependencies)
     {
         var firstRenderParameter = lifecycleMethod.Parameters.FirstOrDefault(static parameter => parameter.Name == "firstRender");
         if (firstRenderParameter is null)
             return false;
 
         var visitedLocals = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
-        foreach (var descendant in operation.DescendantsAndSelf())
+        var visitedLocalFunctions = new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default);
+        var visitedCallableLocals = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
+        var localFunctions = new HashSet<IMethodSymbol>(dependencies.LocalFunctions, SymbolEqualityComparer.Default);
+        var callableLocals = new HashSet<ILocalSymbol>(dependencies.CallableLocals, SymbolEqualityComparer.Default);
+
+        return contains(operation);
+
+        bool contains(IOperation currentOperation)
         {
-            if (descendant is IParameterReferenceOperation parameterReference &&
-                SymbolEqualityComparer.Default.Equals(parameterReference.Parameter, firstRenderParameter))
+            foreach (var descendant in currentOperation.DescendantsAndSelf())
             {
-                return true;
-            }
-
-            if (descendant is ILocalReferenceOperation localReference &&
-                sourceStableLocals is not null &&
-                sourceStableLocals.TryGetValue(localReference.Local, out var initializer) &&
-                visitedLocals.Add(localReference.Local))
-            {
-                try
+                switch (descendant)
                 {
-                    if (MayContainLifecycleFirstRenderReference(lifecycleMethod, initializer, sourceStableLocals))
+                    case IParameterReferenceOperation parameterReference
+                        when SymbolEqualityComparer.Default.Equals(parameterReference.Parameter, firstRenderParameter):
                         return true;
-                }
-                finally
-                {
-                    visitedLocals.Remove(localReference.Local);
+
+                    case ILocalReferenceOperation localReference when sourceStableLocals.TryGetValue(localReference.Local, out var initializer):
+                        if (!visitedLocals.Add(localReference.Local))
+                            continue;
+
+                        try
+                        {
+                            if (contains(initializer))
+                                return true;
+                        }
+                        finally
+                        {
+                            visitedLocals.Remove(localReference.Local);
+                        }
+
+                        continue;
+
+                    case ILocalReferenceOperation localReference when callableLocals.Contains(localReference.Local):
+                        if (!visitedCallableLocals.Add(localReference.Local))
+                            continue;
+
+                        try
+                        {
+                            if (contains(GetLifecycleCallableInitializer(localReference.Local)))
+                                return true;
+                        }
+                        finally
+                        {
+                            visitedCallableLocals.Remove(localReference.Local);
+                        }
+
+                        continue;
+
+                    case IInvocationOperation invocation when localFunctions.Contains(invocation.TargetMethod):
+                        if (!visitedLocalFunctions.Add(invocation.TargetMethod))
+                            continue;
+
+                        try
+                        {
+                            if (contains(GetLifecycleLocalFunctionOperation(invocation.TargetMethod)))
+                                return true;
+                        }
+                        finally
+                        {
+                            visitedLocalFunctions.Remove(invocation.TargetMethod);
+                        }
+
+                        continue;
+
+                    case IMethodReferenceOperation methodReference when localFunctions.Contains(methodReference.Method):
+                        if (!visitedLocalFunctions.Add(methodReference.Method))
+                            continue;
+
+                        try
+                        {
+                            if (contains(GetLifecycleLocalFunctionOperation(methodReference.Method)))
+                                return true;
+                        }
+                        finally
+                        {
+                            visitedLocalFunctions.Remove(methodReference.Method);
+                        }
+
+                        continue;
                 }
             }
 
+            return false;
         }
-
-        return false;
     }
 
     private static bool ValidateLifecycleCompilerPayloadShape(
@@ -817,7 +925,11 @@ internal sealed partial class RazorVueExpressionEmitter
             return EmitLifecyclePayloadBoundInvocation(
                 invocation.TargetMethod,
                 invocation.Arguments,
-                operation => EmitLifecyclePayloadCore(lifecycleMethod, operation, allowFirstRenderPayload),
+                operation => EmitLifecyclePayloadCore(
+                    lifecycleMethod,
+                    operation,
+                    allowFirstRenderPayload,
+                    allowPureCompilerOwnedFallback: true),
                 _ => localFunctionAlias,
                 () => new NotSupportedException(
                     $"RazorVue lifecycle payload does not support local function invocation '{invocation.TargetMethod.Name}' in component '{lifecycleMethod.ContainingType.ToDisplayString()}'."));
@@ -829,7 +941,11 @@ internal sealed partial class RazorVueExpressionEmitter
             return EmitLifecyclePayloadBoundInvocation(
                 invocation.TargetMethod,
                 invocation.Arguments,
-                operation => EmitLifecyclePayloadCore(lifecycleMethod, operation, allowFirstRenderPayload),
+                operation => EmitLifecyclePayloadCore(
+                    lifecycleMethod,
+                    operation,
+                    allowFirstRenderPayload,
+                    allowPureCompilerOwnedFallback: true),
                 _ => targetExpression,
                 () => new NotSupportedException(
                     $"RazorVue lifecycle payload does not support delegate invocation '{invocation.TargetMethod.Name}' in component '{lifecycleMethod.ContainingType.ToDisplayString()}'."));
@@ -859,7 +975,11 @@ internal sealed partial class RazorVueExpressionEmitter
         return EmitLifecyclePayloadBoundInvocation(
             invocation.TargetMethod,
             invocation.Arguments,
-            operation => EmitLifecyclePayloadCore(lifecycleMethod, operation, allowFirstRenderPayload),
+            operation => EmitLifecyclePayloadCore(
+                lifecycleMethod,
+                operation,
+                allowFirstRenderPayload,
+                allowPureCompilerOwnedFallback: true),
             target => ToLowerCamelCase(target.Name),
             () => new NotSupportedException(
                 $"RazorVue lifecycle payload does not support current-component helper '{invocation.TargetMethod.Name}' in component '{lifecycleMethod.ContainingType.ToDisplayString()}'."));
@@ -1014,6 +1134,8 @@ internal sealed partial class RazorVueExpressionEmitter
             if (_logicPropertiesByName.TryGetValue(property.Property.Name, out var logicProperty) &&
                 RazorVueSymbolIdentity.SameMember(logicProperty.PropertySymbol, property.Property))
             {
+                EnsureSupportedRenderPropertyReference(property.Property);
+
                 RecordRequiredSetupProperty(property.Property);
                 return logicProperty.LoweringKind == VueLogicPropertyLoweringKind.ValueBinding
                     ? ToLowerCamelCase(property.Property.Name)
@@ -1074,6 +1196,8 @@ internal sealed partial class RazorVueExpressionEmitter
             if (_logicPropertiesByName.TryGetValue(property.Property.Name, out var logicProperty) &&
                 RazorVueSymbolIdentity.SameMember(logicProperty.PropertySymbol, property.Property))
             {
+                EnsureSupportedRenderPropertyReference(property.Property);
+
                 RecordRequiredSetupProperty(property.Property);
                 expression = logicProperty.LoweringKind == VueLogicPropertyLoweringKind.ValueBinding
                     ? ToLowerCamelCase(property.Property.Name)
@@ -1151,13 +1275,7 @@ internal sealed partial class RazorVueExpressionEmitter
             if (_logicPropertiesByName.TryGetValue(property.Property.Name, out var logicProperty) &&
                 RazorVueSymbolIdentity.SameMember(logicProperty.PropertySymbol, property.Property))
             {
-                if (logicProperty.LoweringKind == VueLogicPropertyLoweringKind.ValueBinding &&
-                    RazorVueCurrentComponentValueMemberHelper.TryGetUnsupportedValueMemberReason(_snapshot.Compilation, property.Property, out var reason))
-                {
-                    throw CreateUnsupportedSetupLogicException(
-                        property.Property,
-                        $"RazorVue setup-side logic does not support component property '{property.Property.Name}': {reason}.");
-                }
+                EnsureSupportedRenderPropertyReference(property.Property);
 
                 RecordRequiredSetupProperty(property.Property);
                 return logicProperty.LoweringKind == VueLogicPropertyLoweringKind.ValueBinding
@@ -1216,8 +1334,7 @@ internal sealed partial class RazorVueExpressionEmitter
         {
             if (_logicFieldsByName.ContainsKey(field.Field.Name))
             {
-                if (RazorVueCurrentComponentValueMemberHelper.TryGetUnsupportedValueMemberReason(_snapshot.Compilation, field.Field, out var reason))
-                    throw CreateUnsupportedSetupLogicException(field.Field, $"RazorVue render does not support component field '{field.Field.Name}': {reason}.");
+                EnsureSupportedRenderFieldReference(field.Field);
 
                 RecordRequiredSetupField(field.Field);
                 return ToLowerCamelCase(field.Field.Name);
@@ -1252,8 +1369,7 @@ internal sealed partial class RazorVueExpressionEmitter
         {
             if (_logicFieldsByName.ContainsKey(field.Field.Name))
             {
-                if (RazorVueCurrentComponentValueMemberHelper.TryGetUnsupportedValueMemberReason(_snapshot.Compilation, field.Field, out var reason))
-                    throw CreateUnsupportedSetupLogicException(field.Field, $"RazorVue render does not support component field '{field.Field.Name}': {reason}.");
+                EnsureSupportedRenderFieldReference(field.Field);
 
                 RecordRequiredSetupField(field.Field);
                 expression = ToLowerCamelCase(field.Field.Name);
@@ -1274,12 +1390,7 @@ internal sealed partial class RazorVueExpressionEmitter
         {
             if (_logicFieldsByName.ContainsKey(field.Field.Name))
             {
-                if (RazorVueCurrentComponentValueMemberHelper.TryGetUnsupportedValueMemberReason(_snapshot.Compilation, field.Field, out var reason))
-                {
-                    throw CreateUnsupportedSetupLogicException(
-                        field.Field,
-                        $"RazorVue setup-side logic does not support component field '{field.Field.Name}': {reason}.");
-                }
+                EnsureSupportedRenderFieldReference(field.Field);
 
                 RecordRequiredSetupField(field.Field);
                 return ToLowerCamelCase(field.Field.Name);
@@ -1348,7 +1459,7 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         if (logicProperty.LoweringKind == VueLogicPropertyLoweringKind.ValueBinding &&
-            RazorVueCurrentComponentValueMemberHelper.TryGetUnsupportedValueMemberReason(_snapshot.Compilation, property, out _))
+            !IsSupportedRenderPropertyReference(property))
         {
             return false;
         }
@@ -1371,12 +1482,73 @@ internal sealed partial class RazorVueExpressionEmitter
         if (!_logicFieldsByName.ContainsKey(field.Name))
             return false;
 
-        if (RazorVueCurrentComponentValueMemberHelper.TryGetUnsupportedValueMemberReason(_snapshot.Compilation, field, out _))
+        if (!IsSupportedRenderFieldReference(field))
             return false;
 
         RecordRequiredSetupField(field);
         expression = ToLowerCamelCase(field.Name);
         return true;
+    }
+
+    private void EnsureSupportedRenderPropertyReference(IPropertySymbol property)
+    {
+        if (IsSupportedRenderPropertyReference(property))
+            return;
+
+        var reason = property.SetMethod is not null &&
+                     RazorVueCurrentComponentValueMemberHelper.TryGetUnsupportedMutableSetupCarrierMemberReason(property, out var mutableReason)
+            ? mutableReason
+            : "property initializer could not be lowered as a setup carrier";
+        throw CreateUnsupportedSetupLogicException(
+            property,
+            $"RazorVue render does not support component property '{property.Name}': {reason}.");
+    }
+
+    private bool IsSupportedRenderPropertyReference(IPropertySymbol property)
+    {
+        if (_logicPropertiesByName.TryGetValue(property.Name, out var logicProperty) &&
+            RazorVueSymbolIdentity.SameMember(logicProperty.PropertySymbol, property) &&
+            logicProperty.LoweringKind == VueLogicPropertyLoweringKind.GetterFunction)
+        {
+            return true;
+        }
+
+        if (RazorVueCurrentComponentValueMemberHelper.TryGetValueMemberInitializer(
+                _snapshot.Compilation,
+                property,
+                out _))
+        {
+            return true;
+        }
+
+        return RazorVueCurrentComponentValueMemberHelper.CanUseMutableSetupCarrierMember(property);
+    }
+
+    private void EnsureSupportedRenderFieldReference(IFieldSymbol field)
+    {
+        if (IsSupportedRenderFieldReference(field))
+            return;
+
+        var reason = !field.IsReadOnly &&
+                     RazorVueCurrentComponentValueMemberHelper.TryGetUnsupportedMutableSetupCarrierMemberReason(field, out var mutableReason)
+            ? mutableReason
+            : "field initializer could not be lowered as a setup carrier";
+        throw CreateUnsupportedSetupLogicException(
+            field,
+            $"RazorVue render does not support component field '{field.Name}': {reason}.");
+    }
+
+    private bool IsSupportedRenderFieldReference(IFieldSymbol field)
+    {
+        if (RazorVueCurrentComponentValueMemberHelper.TryGetValueMemberInitializer(
+                _snapshot.Compilation,
+                field,
+                out _))
+        {
+            return true;
+        }
+
+        return RazorVueCurrentComponentValueMemberHelper.CanUseMutableSetupCarrierMember(field);
     }
 
     private static string ResolveMemberName(ISymbol symbol)

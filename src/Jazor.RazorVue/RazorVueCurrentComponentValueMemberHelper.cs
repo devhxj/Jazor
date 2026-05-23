@@ -17,10 +17,17 @@ internal static class RazorVueCurrentComponentValueMemberHelper
         if (property is null)
             throw new ArgumentNullException(nameof(property));
 
-        if (TryGetValueMemberInitializer(compilation, property, out _))
+        if (TryGetValueMemberInitializer(compilation, property, out _) ||
+            CanUseMutableSetupCarrierMember(property))
         {
             loweringKind = VueLogicPropertyLoweringKind.ValueBinding;
             return true;
+        }
+
+        if (property.SetMethod is not null)
+        {
+            loweringKind = VueLogicPropertyLoweringKind.Unsupported;
+            return false;
         }
 
         foreach (var syntaxReference in property.DeclaringSyntaxReferences)
@@ -116,6 +123,119 @@ internal static class RazorVueCurrentComponentValueMemberHelper
         ISymbol member)
         => TryGetValueMemberInitializer(compilation, member, out _);
 
+    public static bool CanUseMutableSetupCarrierMember(ISymbol member)
+        => member switch
+        {
+            IPropertySymbol property => !property.IsStatic &&
+                                        !property.IsIndexer &&
+                                        !property.IsImplicitlyDeclared &&
+                                        property.SetMethod?.DeclaredAccessibility == Accessibility.Private &&
+                                        HasAutoPropertyAccessors(property),
+            IFieldSymbol field => !field.IsStatic &&
+                                  !field.IsReadOnly &&
+                                  !field.IsImplicitlyDeclared &&
+                                  field.AssociatedSymbol is null &&
+                                  field.DeclaredAccessibility == Accessibility.Private,
+            _ => false
+        };
+
+    public static bool TryGetUnsupportedMutableSetupCarrierMemberReason(
+        ISymbol member,
+        out string reason)
+    {
+        if (member is null)
+            throw new ArgumentNullException(nameof(member));
+
+        reason = string.Empty;
+        if (CanUseMutableSetupCarrierMember(member))
+            return false;
+
+        reason = member switch
+        {
+            IPropertySymbol property when property.SetMethod?.DeclaredAccessibility != Accessibility.Private =>
+                "mutable setup-carrier properties must have a private setter",
+            IPropertySymbol => "mutable setup-carrier properties must be auto-properties with a private setter",
+            IFieldSymbol => "mutable setup-carrier fields must be private",
+            _ => "mutable setup carriers must be private component fields or properties"
+        };
+        return true;
+    }
+
+    private static bool HasAutoPropertyAccessors(IPropertySymbol property)
+    {
+        foreach (var syntaxReference in property.DeclaringSyntaxReferences)
+        {
+            if (syntaxReference.GetSyntax() is not PropertyDeclarationSyntax declaration ||
+                declaration.AccessorList is null ||
+                declaration.ExpressionBody is not null)
+            {
+                continue;
+            }
+
+            var hasGetter = false;
+            var hasSetter = false;
+            var allAccessorsAreAuto = true;
+            foreach (var accessor in declaration.AccessorList.Accessors)
+            {
+                if (accessor.Body is not null || accessor.ExpressionBody is not null)
+                {
+                    allAccessorsAreAuto = false;
+                    break;
+                }
+
+                if (accessor.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.GetAccessorDeclaration))
+                    hasGetter = true;
+                else if (accessor.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.SetAccessorDeclaration))
+                    hasSetter = true;
+            }
+
+            if (hasGetter && hasSetter && allAccessorsAreAuto)
+                return true;
+        }
+
+        return false;
+    }
+
+    public static bool TryGetMutableSetupCarrierInitializer(
+        Compilation compilation,
+        IPropertySymbol property,
+        out IOperation? initializer,
+        out bool hasDeclarationInitializer)
+    {
+        if (compilation is null)
+            throw new ArgumentNullException(nameof(compilation));
+        if (property is null)
+            throw new ArgumentNullException(nameof(property));
+
+        initializer = null;
+        hasDeclarationInitializer = false;
+        if (!CanUseMutableSetupCarrierMember(property))
+            return false;
+
+        initializer = TryGetPropertyDeclarationInitializer(compilation, property, out hasDeclarationInitializer);
+        return true;
+    }
+
+    public static bool TryGetMutableSetupCarrierInitializer(
+        Compilation compilation,
+        IFieldSymbol field,
+        out IOperation? initializer,
+        out bool hasDeclarationInitializer)
+    {
+        if (compilation is null)
+            throw new ArgumentNullException(nameof(compilation));
+        if (field is null)
+            throw new ArgumentNullException(nameof(field));
+
+        initializer = null;
+        hasDeclarationInitializer = false;
+        if (!CanUseMutableSetupCarrierMember(field))
+            return false;
+
+        initializer = TryGetFieldDeclarationInitializer(compilation, field, out hasDeclarationInitializer);
+        return true;
+    }
+
     public static bool TryGetValueMemberInitializer(
         Compilation compilation,
         ISymbol member,
@@ -143,6 +263,20 @@ internal static class RazorVueCurrentComponentValueMemberHelper
         if (!IsSupportedValueProperty(compilation, property))
             return null;
 
+        return TryGetPropertyDeclarationInitializer(compilation, property);
+    }
+
+    private static IOperation? TryGetPropertyDeclarationInitializer(
+        Compilation compilation,
+        IPropertySymbol property)
+        => TryGetPropertyDeclarationInitializer(compilation, property, out _);
+
+    private static IOperation? TryGetPropertyDeclarationInitializer(
+        Compilation compilation,
+        IPropertySymbol property,
+        out bool hasDeclarationInitializer)
+    {
+        hasDeclarationInitializer = false;
         foreach (var syntaxReference in property.DeclaringSyntaxReferences)
         {
             if (syntaxReference.GetSyntax() is not PropertyDeclarationSyntax declaration ||
@@ -151,6 +285,7 @@ internal static class RazorVueCurrentComponentValueMemberHelper
                 continue;
             }
 
+            hasDeclarationInitializer = true;
             var semanticModel = compilation.GetSemanticModel(declaration.SyntaxTree);
             if (RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
                     semanticModel,
@@ -172,6 +307,20 @@ internal static class RazorVueCurrentComponentValueMemberHelper
         if (!IsSupportedValueField(compilation, field))
             return null;
 
+        return TryGetFieldDeclarationInitializer(compilation, field);
+    }
+
+    private static IOperation? TryGetFieldDeclarationInitializer(
+        Compilation compilation,
+        IFieldSymbol field)
+        => TryGetFieldDeclarationInitializer(compilation, field, out _);
+
+    private static IOperation? TryGetFieldDeclarationInitializer(
+        Compilation compilation,
+        IFieldSymbol field,
+        out bool hasDeclarationInitializer)
+    {
+        hasDeclarationInitializer = false;
         foreach (var syntaxReference in field.DeclaringSyntaxReferences)
         {
             if (syntaxReference.GetSyntax() is not VariableDeclaratorSyntax declarator ||
@@ -180,6 +329,7 @@ internal static class RazorVueCurrentComponentValueMemberHelper
                 continue;
             }
 
+            hasDeclarationInitializer = true;
             var semanticModel = compilation.GetSemanticModel(declarator.SyntaxTree);
             if (RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
                     semanticModel,
@@ -204,7 +354,7 @@ internal static class RazorVueCurrentComponentValueMemberHelper
         if (property.SetMethod is null)
             return true;
 
-        return RazorVueMemberWriteAnalysis.CanUseSourceStableMutableCarrierMember(property) &&
+        return CanUseMutableSetupCarrierMember(property) &&
                !RazorVueMemberWriteAnalysis.HasObservableWritesOutsideDeclarationInitializer(compilation, property);
     }
 
@@ -218,7 +368,7 @@ internal static class RazorVueCurrentComponentValueMemberHelper
         if (field.IsReadOnly)
             return true;
 
-        return RazorVueMemberWriteAnalysis.CanUseSourceStableMutableCarrierMember(field) &&
+        return CanUseMutableSetupCarrierMember(field) &&
                !RazorVueMemberWriteAnalysis.HasObservableWritesOutsideDeclarationInitializer(compilation, field);
     }
 

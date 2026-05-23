@@ -51,7 +51,13 @@ internal static class RazorVueImperativeRenderSegmentationPlanner
             var startIndex = pendingSupportStart >= 0 ? pendingSupportStart : index;
             var endExclusive = index + 1;
             if (ShouldExtendSegmentToEnd(operations, startIndex, endExclusive))
+            {
                 endExclusive = operations.Count;
+                startIndex = ExtendSegmentStartForImmediateAssignedLocalReads(
+                    operations,
+                    startIndex,
+                    endExclusive);
+            }
 
             builder.Add(new PlannedSegment(startIndex, endExclusive, kind));
             pendingSupportStart = -1;
@@ -119,6 +125,119 @@ internal static class RazorVueImperativeRenderSegmentationPlanner
         }
 
         return false;
+    }
+
+    private static int ExtendSegmentStartForImmediateAssignedLocalReads(
+        IReadOnlyList<IOperation> operations,
+        int startIndex,
+        int endExclusive)
+    {
+        var extendedStart = startIndex;
+        foreach (var local in CollectLocalReferences(operations, startIndex, endExclusive))
+        {
+            if (TryFindImmediateAssignedLocalPrefixStart(
+                    operations,
+                    local,
+                    startIndex,
+                    out var prefixStart))
+            {
+                extendedStart = Math.Min(extendedStart, prefixStart);
+            }
+        }
+
+        return extendedStart;
+    }
+
+    private static IEnumerable<ILocalSymbol> CollectLocalReferences(
+        IReadOnlyList<IOperation> operations,
+        int startIndex,
+        int endExclusive)
+    {
+        var seen = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
+        for (var index = startIndex; index < endExclusive; index++)
+        {
+            foreach (var current in EnumerateSelfAndDescendants(operations[index]))
+            {
+                if (current is ILocalReferenceOperation localReference &&
+                    seen.Add(localReference.Local))
+                {
+                    yield return localReference.Local;
+                }
+            }
+        }
+    }
+
+    private static bool TryFindImmediateAssignedLocalPrefixStart(
+        IReadOnlyList<IOperation> operations,
+        ILocalSymbol local,
+        int beforeIndex,
+        out int prefixStart)
+    {
+        prefixStart = -1;
+        for (var declarationIndex = beforeIndex - 1; declarationIndex >= 0; declarationIndex--)
+        {
+            var declarationCandidate = RazorVueOperationNormalizer.Unwrap(operations[declarationIndex]);
+            if (declarationCandidate is null or IEmptyOperation)
+                continue;
+
+            if (!ContainsPendingSupportedLocalDeclarator(declarationCandidate, local))
+            {
+                if (IsSimpleAssignmentToLocal(declarationCandidate, local))
+                    continue;
+
+                if (IsSupportedLocalDeclarationContinuation(declarationCandidate))
+                    continue;
+
+                return false;
+            }
+
+            if (HasImmediateAssignmentBeforeSegment(operations, declarationIndex + 1, beforeIndex, local))
+            {
+                prefixStart = declarationIndex;
+                return true;
+            }
+
+            return false;
+        }
+
+        return false;
+    }
+
+    private static bool HasImmediateAssignmentBeforeSegment(
+        IReadOnlyList<IOperation> operations,
+        int startIndex,
+        int endExclusive,
+        ILocalSymbol local)
+    {
+        for (var index = startIndex; index < endExclusive; index++)
+        {
+            var current = RazorVueOperationNormalizer.Unwrap(operations[index]);
+            if (current is null or IEmptyOperation)
+                continue;
+
+            if (IsSimpleAssignmentToLocal(current, local))
+                return true;
+
+            if (IsSupportedLocalDeclarationContinuation(current))
+                continue;
+
+            return false;
+        }
+
+        return false;
+    }
+
+    private static bool IsSimpleAssignmentToLocal(
+        IOperation operation,
+        ILocalSymbol local)
+    {
+        var current = RazorVueOperationNormalizer.Unwrap(operation);
+        if (current is IExpressionStatementOperation expressionStatement)
+            current = RazorVueOperationNormalizer.Unwrap(expressionStatement.Operation);
+
+        return current is ISimpleAssignmentOperation assignment &&
+               assignment.Target is ILocalReferenceOperation localReference &&
+               SymbolEqualityComparer.Default.Equals(localReference.Local, local);
     }
 
     private static bool ContainsPendingSupportedLocalDeclarator(IOperation operation, ILocalSymbol localSymbol)

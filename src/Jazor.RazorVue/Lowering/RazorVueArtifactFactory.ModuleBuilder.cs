@@ -21,6 +21,7 @@ internal sealed partial class RazorVueArtifactFactory
     {
         var descriptor = snapshot.Descriptor;
         var usesImperativeRenderBody = expressionEmitter.ContainsImperativeRenderBody(renderTree);
+        var renderBody = usesImperativeRenderBody ? expressionEmitter.EmitImperativeRenderBody(renderTree) : null;
         var renderExpression = usesImperativeRenderBody ? null : expressionEmitter.EmitFragment(renderTree);
         var requiresAttributeMergeHelper = renderExpression is not null &&
                                            RazorVueAttributeMergeHelper.ContainsInvocation(renderExpression);
@@ -55,7 +56,7 @@ internal sealed partial class RazorVueArtifactFactory
             setupBodyBuilder.AppendLine("      __jazorComponent.slots = slots;");
             setupBodyBuilder.AppendLine("      __jazorComponent.expose = expose;");
             setupBodyBuilder.AppendLine("      __jazorComponent.attrs = attrs;");
-            setupBodyBuilder.Append("      ").Append(expressionEmitter.EmitImperativeRenderBody(renderTree).Replace("\n", "\n      ")).AppendLine();
+            setupBodyBuilder.Append("      ").Append(renderBody!.Replace("\n", "\n      ")).AppendLine();
             setupBodyBuilder.AppendLine("    };");
         }
         else
@@ -472,6 +473,9 @@ internal sealed partial class RazorVueArtifactFactory
         {
             return returnStatement.Expression.ToString();
         }
+
+        if (methodSyntax.Body is not null)
+            return methodSyntax.Body.NormalizeWhitespace(indentation: "    ", eol: "\n").ToFullString();
 
         return "unsupported";
     }

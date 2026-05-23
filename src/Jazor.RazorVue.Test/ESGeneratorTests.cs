@@ -4794,6 +4794,213 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithSupportedSetParametersAsyncBaseThenSourceStableLocalEmit_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.SupportedSetParametersAsyncLocalEmit.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-local-emit")]
+                public class SetParametersAsyncLocalEmitCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string> ValueChanged { get; set; }
+
+                    private string Prefix => "Count: ";
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        var label = Prefix + Value;
+                        await ValueChanged.InvokeAsync(label + "!");
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var lifecycleDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, lifecycleDiagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "function prefix()");
+        StringAssert.Contains(generatedSource, "const __jazorLifecycleLocal");
+        StringAssert.Contains(generatedSource, " = (prefix() + props.value);");
+        StringAssert.Contains(generatedSource, "await emit(\\\"update:value\\\", (__jazorLifecycleLocal");
+        StringAssert.Contains(generatedSource, " + \\\"!\\\"));");
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithSupportedSetParametersAsyncBaseThenLocalFunctionEmit_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.SupportedSetParametersAsyncLocalFunctionEmit.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-local-function-emit")]
+                public class SetParametersAsyncLocalFunctionEmitCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ValueChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        int Increment(int value) => value + 1;
+                        await ValueChanged.InvokeAsync(Increment(Value));
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var lifecycleDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, lifecycleDiagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "function __jazorLifecycleLocalFunction");
+        StringAssert.Contains(generatedSource, "return value + 1;");
+        StringAssert.Contains(generatedSource, "await emit(\\\"update:value\\\", __jazorLifecycleLocalFunction");
+        StringAssert.Contains(generatedSource, "(props.value));");
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithSupportedSetParametersAsyncBaseThenCallableLocalEmit_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.SupportedSetParametersAsyncCallableLocalEmit.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-callable-local-emit")]
+                public class SetParametersAsyncCallableLocalEmitCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ValueChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        Func<int, int> increment = static value => value + 1;
+                        await ValueChanged.InvokeAsync(increment(Value));
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var lifecycleDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, lifecycleDiagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "const __jazorLifecycleLocal");
+        StringAssert.Contains(generatedSource, "return value + 1;");
+        StringAssert.Contains(generatedSource, "await emit(\\\"update:value\\\", __jazorLifecycleLocal");
+        StringAssert.Contains(generatedSource, "(props.value));");
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithPassThroughSetParametersAsyncToSupportedBaseEmit_DoesNotReportJAZORVGA005()
     {
         var compilation = CreateCompilation(
@@ -5704,6 +5911,72 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithSourceStableLocalLifecyclePayload_LowersWithoutJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.SourceStableLocalLifecyclePayload.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-local-card")]
+                public class LifecycleLocalCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string> ValueChanged { get; set; }
+
+                    private string Prefix => "Count: ";
+
+                    protected override void OnParametersSet()
+                    {
+                        var label = Prefix + Value;
+                        ValueChanged.InvokeAsync(label + "!");
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, Value);
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        StringAssert.Contains(generatedSource, "function prefix()");
+        StringAssert.Contains(generatedSource, "const __jazorLifecycleLocal");
+        StringAssert.Contains(generatedSource, " = (prefix() + props.value);");
+        StringAssert.Contains(generatedSource, "emit(\\\"update:value\\\", (__jazorLifecycleLocal");
+        StringAssert.Contains(generatedSource, " + \\\"!\\\"));");
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithDeclarationInitializedFieldLifecyclePayload_LowersWithoutJAZORVGA005()
     {
         var compilation = CreateCompilation(
@@ -5832,6 +6105,96 @@ public sealed class ESGeneratorTests
         Assert.IsTrue(
             generatedSource.IndexOf("function formatLabel()", StringComparison.Ordinal) <
             generatedSource.IndexOf("watch(() => [props.value], () => {", StringComparison.Ordinal),
+            generatedSource);
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithBlockBodiedHelperCallLifecyclePayload_LowersWithoutJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.BlockBodiedHelperCallLifecyclePayload.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string> ValueChanged { get; set; }
+
+                    private string Prefix => "Count: ";
+
+                    private string FormatLabel(int value)
+                    {
+                        var normalized = value + 1;
+                        if (normalized > 10)
+                        {
+                            return Prefix + normalized;
+                        }
+
+                        return Prefix + Value;
+                    }
+
+                    protected override void OnParametersSet()
+                    {
+                        ValueChanged.InvokeAsync(FormatLabel(Value));
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, Value);
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        StringAssert.Contains(generatedSource, "function prefix()");
+        StringAssert.Contains(generatedSource, "function formatLabel(value)");
+        StringAssert.Contains(generatedSource, "let normalized = value + 1;");
+        StringAssert.Contains(generatedSource, "if (normalized > 10)");
+        StringAssert.Contains(generatedSource, "return prefix() + normalized;");
+        StringAssert.Contains(generatedSource, "return prefix() + props.value;");
+        StringAssert.Contains(generatedSource, "watch(() => [props.value], () => {");
+        StringAssert.Contains(generatedSource, "emit(\\\"update:value\\\", formatLabel(props.value));");
+        Assert.IsTrue(
+            generatedSource.IndexOf("function prefix()", StringComparison.Ordinal) <
+            generatedSource.IndexOf("function formatLabel(value)", StringComparison.Ordinal),
+            generatedSource);
+        Assert.IsTrue(
+            generatedSource.IndexOf("function formatLabel(value)", StringComparison.Ordinal) <
+            generatedSource.IndexOf("watch(() => [props.value], () => {", StringComparison.Ordinal),
+            generatedSource);
+        Assert.IsFalse(
+            generatedSource.Contains("logic:FormatLabel|1|False|unsupported", StringComparison.Ordinal),
             generatedSource);
     }
 

@@ -37,6 +37,7 @@
 - Razor 生成组件优先走 `RazorCodeDocument` / Razor IR。
 - 只有源码中显式手写的 `BuildRenderTree` 组件才允许走 `BuildRenderTree` 前端。
 - 对于 Razor 生成组件，如果既没有可绑定的 Razor 文档又不是手写 `BuildRenderTree` authoring，应显式失败，而不是静默回退。
+- Razor Source Generator semantic frontend 只接收带 `RazorSourceGeneratorDocument` 的 semantic snapshot；无 SG 文档的 helper component / partial snapshot 不能遮蔽真实 Razor IR canonicalization error。
 
 ## `@key` Support
 
@@ -103,6 +104,7 @@
 - 这类 Razor code-block 会被还原为现有的 `RazorVueLocalDeclarationNode`，因此 downstream canonical model / H lowering / SFC lowering 会沿用 handwritten `BuildRenderTree` 已有的 template-scoped local 语义，而不是走另一套特殊分支。
 - 对于 Razor IR template code-block 内部的局部 `RenderFragment` / `RenderFragment<T>` carrier，frontend 现在会按 handwritten `BuildRenderTree` 既有 contract 直接吸收为后续 `AddContent` / 组件 slot 参数可消费的结构化 template carrier，而不是把该 carrier 继续保留为根级 `RazorVueLocalDeclarationNode`。
 - 当前该局部 carrier 不仅支持“初始化器本身就是 inline Razor template”，也支持“先声明、再在同一线性局部声明前缀内完成一次简单赋值”的 source-stable 窄模式；这条 declaration-prefix 路线现在已正式覆盖 inline Razor template、本组件受支持 `RenderFragment` member carrier，以及受支持 fragment factory 调用结果。额外捕获值会继续被保留为外层 template scope，而不会被错误扁平化。
+- 这条局部 `RenderFragment` / `RenderFragment<T>` carrier 现在也能跨过后续 imperative tail：例如 local carrier 后接 `while` / conditional `return`，再把同一 carrier 赋给组件 typed slot/template 参数时，frontend 会把需要命令式执行的片段提升为 `RazorVueImperativeBlockNode`，同时保留 carrier/local 可见性与后续 sibling 的真实求值顺序。对“先声明、再立即赋值”的 carrier，如果 tail 后仍有 local 读取，segment planner 会把声明前缀并入同一 imperative render segment，并通过 `SemanticWalkerHost.RewriteSimpleAssignmentPreorder` 把简单赋值交给既有 slot-factory lowering，而不是在 RazorVue 内拼接一套私有 JS delegate 协议。
 - Razor IR template code-block 里的 local function fragment factory 声明现在也已并入同一局部 carrier 合同；例如 `@{ RenderFragment<int> template = CreateTemplate(Title); RenderFragment<int> CreateTemplate(string? title) => item => @<span>@title @item</span>; }` 会像当前组件 `@code` factory 一样保留 `title` captured scope 与内层 `item` typed scope，而不会把 local function 自身的 `@<...>` 模板体泄漏成根级 render node。
 - 对 untyped `RenderFragment` 而言，Razor IR frontend 现在也支持 direct expression consumption：`@Template`、`@template` 这类当前组件 member / source-stable local carrier 直接出现在 Razor 表达式位时，会还原为结构化 render subtree，而不是退化成普通表达式节点、重复输出模板体，或误落入 imperative tail。
 - 这条 untyped direct expression 路径同样覆盖“直接调用 fragment factory 并立即消费返回值”的 authored 语法：既支持当前组件 `@code` / member method，也支持 template code-block 内 local function factory；例如 `@CreateTemplate(Title)`、`@CreateTemplate()`、`@CreateTemplate(subtitle: Subtitle, title: Title)`，以及 `@{ RenderFragment CreateTemplate(string? title) => @<section><span>@title</span><p>ok</p></section>; } @CreateTemplate(Title)`。factory 的普通 captured 参数会继续保留为外层 scope，再在其内层直接物化最终 render subtree，而不会退化成普通 invocation expression；named argument out-of-order 也会按调用点求值顺序保留外层 scope 包裹顺序。
@@ -111,7 +113,7 @@
 - 对 typed slot outlet 而言，Razor authored direct invocation 现在也已对齐 handwritten `BuildRenderTree` 语义：`@Header(Count + 1)` 这类当前组件 `[Parameter] RenderFragment<T>?` slot source 会直接还原为带 argument 的 `RazorVueSlotOutletNode`，最终 lower 为 `<slot name="header" :value="(props.count + 1)" />`，而不会退化成普通插值表达式。
 - 对 typed `RenderFragment<T>` / typed slot 而言，slot context 参数仍保留在 slot/template 自身的 `ParameterName` / `ParameterSymbol` 上；只有 factory/member carrier 额外捕获了普通值参数或当前组件值时，才会在模板 children 外层再包裹 `RazorVueTemplateScopeNode`。如果 carrier 本身只是 `item => ...` 这类直接 typed template，则 children 会直接是结构化 element/expression 节点，而不会平白新增一层 scope。
 - typed slot/template-local 的“先声明、再在同一线性局部声明前缀内完成一次简单赋值”窄模式现在也已在 Razor IR 路线正式锁定；例如 `string? decorated; decorated = item;` 与 `string? decorated; var revision = 0; decorated = item;` 都会和声明点初始化一样被还原为稳定的 template-scoped local，而不会退化成一般赋值语句执行模型。
-- typed child-content / typed slot template body 中，纯 imperative code-block 也已开始按正式通道接入；像 `@{ while (Show) { <p>@item</p>; break; } }`、`@{ do { <p>@item</p>; break; } while (Show); }`、`@{ foreach (var value in Items!) { if (value < 0) { break; } <p>@item @value</p> } }`、`@{ foreach (var value in Items!) { if (value == SkipValue) { continue; } <p>@item @value</p> } }`、`@{ for (var index = 0; index < Count; index++) { if (index >= StopIndex) { break; } <p>@item @index</p> } }`、`@{ for (var index = 0; index < Count; index++) { if (index == SkipIndex) { continue; } <p>@item @index</p> } }`、`@{ using (CreateDisposable()) { <section>@item</section> } }`、`@{ lock (_gate) { <section>@item</section> } }` 这类“没有任何前置局部声明”的 standalone imperative body，不再因为缺少 local 前缀而卡在 `unbound template CSharpCodeIntermediateNode`，而是直接提升为 `RazorVueImperativeBlockNode` 并复用现有 imperative render bridge。
+- typed child-content / typed slot template body 中，纯 imperative code-block 也已开始按正式通道接入；像 `@{ while (Show) { <p>@item</p>; break; } }`、`@{ do { <p>@item</p>; break; } while (Show); }`、`@{ foreach (var value in Items!) { if (value < 0) { break; } <p>@item @value</p> } }`、`@{ foreach (var value in Items!) { if (value == SkipValue) { continue; } <p>@item @value</p> } }`、`@{ for (var index = 0; index < Count; index++) { if (index >= StopIndex) { break; } <p>@item @index</p> } }`、`@{ for (var index = 0; index < Count; index++) { if (index == SkipIndex) { continue; } <p>@item @index</p> } }`、`@{ using (CreateDisposable()) { <section>@item</section> } }`、`@{ lock (_gate) { <section>@item</section> } }` 这类“没有任何前置局部声明”的 standalone imperative body，不再因为缺少 local 前缀而卡在 `unbound template CSharpCodeIntermediateNode`，而是直接提升为 `RazorVueImperativeBlockNode` 并复用现有 imperative render bridge。direct Razor control-block 形态也对齐进入这条路线；例如 typed slot body 内 `@while (...) { ... }` 会 lower 成 scoped slot callback 里的 imperative render IIFE，`@if (Hide) { return; } <p>@item</p>` 会保留提前返回对 tail markup 的可见性。
 - 这条“模板 code-block 结构化恢复”路线只覆盖声明式模板子集。对于更复杂的 block code，RazorVue 后续会按 `docs/01-目标/razorvue/design/RazorVue.BlockCode.ExecutionModel.md` 收敛为正式的命令式渲染通道，而不是继续无上限扩张前端特判矩阵。
 - 当前支持边界刻意收窄为“局部声明优先、且只进入受支持的顺序控制语句”的模板 code-block：
   - 每个局部要么在声明点提供 initializer，要么严格匹配“声明后在同一线性局部声明前缀内完成一次简单赋值”
@@ -143,26 +145,28 @@
   - `protected override Task OnInitializedAsync() => default;` 现在会在 analyzer / lowering / generator 三层一致视为 unsupported，因为 `default(Task)` 实际是 `null`，不是 no-op
 - lifecycle payload 当前也已补齐一条更真实但仍受控的 setup 依赖路径：
   - `[Parameter]` property 仍可直接进入 payload lowering
-  - source-stable current-component value member 现在也可作为 payload 原子参与 lowering，包括 declaration-initialized value-like property、declaration-initialized field，以及 getter-bodied property
+  - current-component setup value member 现在也可作为 payload 原子参与 lowering，包括 getter-bodied property、source-stable declaration-initialized value-like property/field，以及 private mutable setup carrier auto-property/field
   - 这些 member 仍不是在 lifecycle lowering 内手拼 JS；RazorVue 会把它们先纳入同一 setup/property/field lowering 主线，再在 payload 里引用最终 setup binding / setup function
 - 这条 lifecycle payload 扩面当前刻意只开放受控 current-component member 子集：
   - getter-bodied property 只接受 expression-bodied property、getter accessor 中单个 `return` 的 property，以及同一受控子集内的 getter 链
-  - declaration-initialized property / field 只接受 source-stable member；private mutable member 只有在“声明点初始化 + 可证明无后续写入”时才接受
+  - source-stable value member 仍只接受可静态还原 initializer 的只读/getter-only 形态；private mutable setup carrier 则必须是 private field 或 private-setter auto-property，会按 component setup `let` carrier 处理，允许后续写入存在
   - payload 表达式本身仍只接受当前既有安全组合：literal / `null` / `firstRender` / unary / binary / conditional / interpolated string，以及由这些受支持原子拼成的表达式
 - lifecycle payload 当前也已补齐一条受控 current-component helper/method-call 路径：
   - 仅限当前组件内 helper/method
-  - 调用点参数个数必须与 helper 签名完全一致
-  - helper 本身必须继续满足 setup helper lowering 合同：同步、非 `Task`/`ValueTask` 返回、源码可分析、body 可收敛到单表达式 / 单返回
+  - 调用点参数必须能按 Roslyn 绑定结果稳定落位；普通按值参数、named argument out-of-order、omitted optional default、以及 `params` 单数组形参均已支持，`ref` / `out` / `in` 仍显式 fail-fast
+  - helper 本身必须继续满足 setup helper lowering 合同：同步、非 `Task`/`ValueTask` 返回、源码可分析；expression-bodied / single-return helper 继续走 expression lowering，普通 block-bodied helper body 走 `SemanticWalker.TranslateStatementSequence(...)` 的 compiler-owned statement lowering
   - helper body 中对 declaration-initialized property / field、getter-bodied property、以及其他同步 helper 的依赖，继续沿同一 setup/property/field/method lowering 主线递归展开
 - `OnAfterRender*` 的 `firstRender` payload 现还补齐了一条 compiler-owned fallback：
   - 当 payload 实际引用 lifecycle `firstRender` 参数、且表达式形状仍落在当前受控子集内时，RazorVue 会把 `firstRender` 通过 `currentFirstRender` 别名交回 `EmitSetupExpression -> SemanticWalker -> Jazor.Compiler`
   - 这里不是在 RazorVue 内部继续手拼 CLR/成员/调用语义；RazorVue 只负责 after-render snapshot 协议与参数别名，具体表达式翻译仍归 `Jazor.Compiler`
   - 当前已锁定进入这条 fallback 的真实形态包括 `(bool)firstRender`、`object.Equals(firstRender, true)`、`object.Equals((bool)firstRender, true)`、`firstRender.Equals(true)`、`firstRender == true`、`bool? alias = firstRender; alias ?? false` 这一类 source-stable nullable-bool local carrier、`firstRender is true/false`、`firstRender is not true/false`、`firstRender is true or false`、`firstRender is true and not false`、`firstRender is bool`、`firstRender is object`、直接 against `firstRender` 的 declaration-pattern（例如 `firstRender is bool ready && ready`）、`firstRender switch { ... }`，以及继续满足 setup helper 合同的受控 helper-call payload（例如 `Normalize(firstRender)`）
   - 当前已锁定的典型发射结果包括：`object.Equals(firstRender, true)` / `object.Equals((bool)firstRender, true)` / `firstRender.Equals(true)` -> `currentFirstRender === true`，`firstRender == true` -> `(currentFirstRender === true)`，`alias ?? false` -> `currentFirstRender ?? false`，`firstRender is true` -> `currentFirstRender === true`，`firstRender is false` -> `currentFirstRender === false`，`firstRender is bool` -> `typeof currentFirstRender === "boolean"`，`firstRender is bool ready && ready` -> compiler-owned declaration-pattern lowering（包含 pattern local `ready` 的绑定与复用）
+- lifecycle payload 的 compiler-owned fallback 现也不再局限于 `OnAfterRender*` / `firstRender`：普通 lifecycle 中的 source-stable local、local function 与 callable local payload 会先发射稳定 prelude alias，再把最终 payload 交回 `EmitSetupExpression -> SemanticWalker -> Jazor.Compiler`。例如 `var label = Prefix + Value; ValueChanged.InvokeAsync(label + "!")` 与 `string FormatLabel(int value) => "Count: " + value; ValueChanged.InvokeAsync(FormatLabel(Value))` 会在 `watch(..., { immediate: true })` / hook body 内保留 local 单次求值与参数绑定，而不是在 RazorVue 内手拼 payload 表达式。
+- 对 `OnAfterRender*`，`firstRender` 使用检测会递归进入 source-stable local initializer、local function body 与 callable local initializer；local function 闭包捕获 `firstRender` 时仍会生成 `currentFirstRender` snapshot，并保持 async hook 中“先快照、再翻转”的协议。
 - 这条 helper payload 扩面依然不是“任意执行模型放开”：
-  - `async` helper、`Task` / `ValueTask` 返回 helper、非精确 arity helper 调用、越出当前 setup lowering 合同的 helper body、以及更宽的动态 member/dataflow 仍显式报 `UnsupportedLifecycleLowering` / analyzer `JAZORVUE005`
+  - `async` helper、`Task` / `ValueTask` 返回 helper、`ref` / `out` / `in` 参数、越出当前 setup lowering / `SemanticWalker` 合同的 helper body、以及更宽的动态 member/dataflow 仍显式报 `UnsupportedLifecycleLowering` / analyzer `JAZORVUE005`
   - 一般外部 invocation、未知实例 method-call payload，也没有因为这轮扩面而被放宽
-  - deeper object-construction/member-chain、local lambda / local-function 参与的 payload、property-pattern、依赖额外 source-stable object boxing/local carrier 的 declaration-pattern / pattern-var、null-conditional + coalesced 组合，以及更宽 dataflow 形状当前仍显式 fail-fast；这里开放的是“能被现有 compiler-owned lowering 诚实承载的 firstRender 表达式”，不是把 lifecycle payload 放宽成任意执行模型
+  - deeper object-construction/member-chain、property-pattern、依赖额外 source-stable object boxing/local carrier 的 declaration-pattern / pattern-var、null-conditional + coalesced 组合，以及更宽 dataflow 形状仍只在现有 compiler-owned lowering 已能诚实承载的受控路径内开放；这里不是把 lifecycle payload 放宽成任意执行模型
 - module builder / SFC builder 现在也已对 lifecycle 发射顺序做了正式收口：
   - 先创建 lifecycle plan
   - 在 plan 创建阶段就预收集 lifecycle payload 触发的 setup property/field/method 依赖
@@ -170,26 +174,28 @@
   - 最后再发射 `watch(..., { immediate: true })`、`onMounted`、`onUpdated`、`onUnmounted` 等 lifecycle hooks
 - 这条顺序不是代码风格调整，而是生产级语义要求：`OnParametersSet*` / `SetParametersAsync` 会 lower 到 `watch(..., { immediate: true })`，若 setup binding 晚于 watch 注册发射，会直接形成 TDZ / 初始化顺序风险。当前 pipeline / SFC artifact 都已锁定“setup 先于 immediate watch”这一合同。
 - analyzer / lowering / generator 现也已对齐到同一 lifecycle 支持矩阵：analyzer 不再用旧的语法级近似规则猜测 lifecycle payload 是否可支持，而是基于同一 semantic snapshot 复用 lowering 侧的 support-shape 判定；因此 declaration-initialized property/field lifecycle payload 不会再出现“pipeline 接受但 analyzer 仍报 `JAZORVUE005`”的漂移。
-- setup helper lowering 目前也已补齐“同步多级 helper 组合”的真实支持面：只要 helper 仍是当前组件内、源码可分析、同步、且每一层都满足现有 setup lowering 合同，就不再受旧的 2 层深度人工限制；例如 `FormatOuter -> FormatMiddle -> FormatInner` 这类三层及以上同步 helper 链会继续递归收集并 lower 到同一 setup scope。
+- setup helper lowering 目前也已补齐“同步多级 helper 组合”和“普通 block-bodied helper”的真实支持面：只要 helper 仍是当前组件内、源码可分析、同步、且每一层都满足现有 setup lowering 合同，就不再受旧的 2 层深度人工限制；例如 `FormatOuter -> FormatMiddle -> FormatInner` 这类三层及以上同步 helper 链会继续递归收集并 lower 到同一 setup scope。block-bodied helper 不在 RazorVue 内手拼 JS statement，而是由 `RazorVueExpressionEmitter.EmitSetupStatementSequence(...)` 交给 `SemanticWalker.TranslateStatementSequence(...)` 完成 CLR-aware statement lowering、依赖收集和 import/reference 语义。
 - setup-side logic 当前还正式补齐了一条 getter property 支持面：当前组件内、源码可分析、getter body 可收敛到“单表达式 / 单返回”的 property，现在可以像同步 helper 一样进入同一 setup scope；helper body 引用这类 property 时，RazorVue 会先把 property 发射为 setup function，再让后续表达式继续通过 `Jazor.Compiler` / `SemanticWalker` 完成 CLR-aware lowering，而不是在 RazorVue 内部手拼 JS 语义。
-- setup-side logic 现也补齐了 declaration-initialized value-like property 的受控支持面：当前组件内、声明点初始化、且源码可证明保持 source-stable 的 property，现在会直接发射为 setup value binding；helper body 或模板表达式对这类 property 的引用会继续通过 `RazorVueExpressionEmitter` / `SemanticWalker` / `Jazor.Compiler` 保持 CLR-aware lowering，而不是在 RazorVue 内部另写一套值替换逻辑。
+- setup-side logic 现也补齐了 value-like property / field 的受控支持面：当前组件内、声明点初始化且源码可证明保持 source-stable 的只读 property/field 会直接发射为 setup `const` binding；private mutable field 或 private-setter auto-property 会发射为 setup `let` carrier，即使源码中存在后续写入，也可被模板表达式、setup helper、lifecycle payload 与 imperative render body 引用。所有 initializer / helper body / render body 表达式仍继续通过 `RazorVueExpressionEmitter` / `SemanticWalker` / `Jazor.Compiler` 保持 CLR-aware lowering，而不是在 RazorVue 内部另写一套值替换逻辑。
 - 这条 property 支持当前刻意只开放 getter-bodied 受控子集：
   - expression-bodied property
   - getter accessor 里单个 `return` 的 property
   - getter 间链式依赖，只要整条链最终仍落在同一受控子集内
-- declaration-initialized value-like property 当前也只开放 source-stable 受控子集：
+- value-like property / field 当前开放两个不同合同，不能混淆：
   - getter-only auto-property 或 declaration initializer property
-  - private mutable property 仅在“声明点初始化 + 可证明无后续写入”时接受
-  - direct template expression 与 setup helper 引用走同一 setup binding 合同，不分裂成两套语义
+  - `readonly` field 或可证明 source-stable 的 declaration initializer member 会作为稳定 `const` binding
+  - private mutable field / private-setter auto-property 会作为 setup `let` carrier，允许 later writes；没有 initializer 时会按 CLR 默认值发射，存在 initializer 但无法 lowering 时会 fail-fast
+  - direct template expression、setup helper、lifecycle payload 与 imperative render body 引用走同一 setup binding 合同，不分裂成多套语义
 - 这条扩面同样保持 fail-fast：
   - property 链一旦出现循环依赖，会在编译期直接报 `UnsupportedSetupLogicLowering`
-  - declaration-initialized value-like property / field 一旦后续再次出现可观察写入，也会直接报 `UnsupportedSetupLogicLowering`；这条路径只接受 source-stable member，不会静默沿首次初始化继续 hoist
-  - 仍不支持依赖构造/写入时序语义的 property、`async` getter 语义模拟、以及超出当前单表达式 / 单返回受控子集的 getter
-- 这条扩面仍然刻意保持 fail-fast：`async` helper、`Task` / `ValueTask` 返回值、或 helper body 超出当前单表达式 / 单返回受控子集时，RazorVue 仍会显式报 `UnsupportedSetupLogicLowering`，而不会因为外层 helper 可分析就静默放行。
-- `SetParametersAsync` 也仍是受控子集：支持 no-op（含 expression-bodied `=> Task.CompletedTask` 一类空实现）、直达 `ComponentBase.SetParametersAsync(...)` 的 base pass-through，以及“base 后接单个受支持 `InvokeAsync` emit”这类可稳定映射到一个 Vue `watch` 的形态；重复 emit、额外 mutation 或更一般的方法体仍显式 unsupported。
+  - setter 不是 private 的 mutable property、带自定义 getter/setter 的 mutable property、非 private mutable field、static/indexer/隐式成员、以及存在 initializer 但无法进入 compiler lowering 的 mutable setup carrier 会直接报 `UnsupportedSetupLogicLowering`
+  - `RenderFragment` / `MarkupString` / static markup 这类需要 source-stable 追踪的 member carrier 仍不因为普通 setup `let` carrier 支持而放宽；它们一旦依赖后续可观察写入，继续按 source-stable 合同 fail-fast
+  - 仍不支持需要模拟构造/任意写入时序语义的 property、`async` getter 语义模拟、以及超出当前单表达式 / 单返回受控子集的 getter
+- 这条扩面仍然刻意保持 fail-fast：`async` helper、`Task` / `ValueTask` 返回值、`ref` / `out` / `in` 参数、或 helper body 超出当前 compiler-owned statement lowering 支持面时，RazorVue 仍会显式报 `UnsupportedSetupLogicLowering`，而不会因为外层 helper 可分析就静默放行。受支持 block-bodied helper 的 normalized body 也会进入 LogicHash，避免 HMR/manifest 逻辑指纹漏掉 helper body 变化。
+- `SetParametersAsync` 也仍是受控子集：支持 no-op（含 expression-bodied `=> Task.CompletedTask` 一类空实现）、直达 `ComponentBase.SetParametersAsync(...)` 的 base pass-through，以及“base pass-through 后接 source-stable local / local function / callable local 前缀，再进入单个受支持 `InvokeAsync` emit”这类可稳定映射到一个 Vue `watch` 的形态；重复 emit、额外 mutation、控制流或更一般的方法体仍显式 unsupported。
 - `SetParametersAsync` 的 no-op 也遵循同一条返回类型语义边界：`Task.CompletedTask` 仍接受，但 `=> default` 不再被误判成空实现。
 - `SetParametersAsync` 的 base-chain 也保持保守边界：如果 pass-through 目标落到另一个源码可分析且同样受支持的 base 实现，会继续递归接受；但若最终落到外部无源码的 override（不是 `ComponentBase` 默认实现），RazorVue 会显式按 unsupported / `FullReloadRequired` 处理，而不会把未知参数赋值语义乐观当成 no-op。
-- 上述 `SetParametersAsync` contract 现在已在 analyzer / lowering / generator 三层对齐；expression-bodied no-op（例如 `=> Task.CompletedTask`）不会再出现“pipeline 接受但 analyzer 仍报 `JAZORVUE006`”的漂移。
+- 上述 `SetParametersAsync` contract 现在已在 analyzer / lowering / generator 三层对齐；analyzer 会构建同一 semantic snapshot 并复用 lowering 侧 support-shape 判定，expression-bodied no-op 与 base+local-prefix emit 都不会再出现“pipeline 接受但 analyzer 仍报 `JAZORVUE006`”的漂移。
 
 ## Count-Style `for` Support
 
@@ -332,7 +338,7 @@
   - 当前组件 `[Parameter] RenderFragment?` 转发到子组件默认/未参数化 slot
   - 当前组件 `[Parameter] RenderFragment<T>?` 转发到子组件 typed/scoped slot，并保留子组件 slot contract 的上下文参数名
 - 普通 current-component property / field 即使类型也是 `RenderFragment` / `RenderFragment<T>`，当前也不会被静默当成 slot source。
-- private settable property / private 非 `readonly` field 只有在“声明点初始化 + 可证明无后续写入”的窄子集内才支持；dynamic 重赋值、`ref/out` 写入，以及需要任意 getter/dataflow 分析的 member carrier 当前仍明确不支持。
+- `RenderFragment` / `RenderFragment<T>` member carrier 仍按 source-stable 合同处理：只读 / `readonly` member 与可证明无后续写入的 private carrier 可以进入静态 fragment 解析；后续重赋值、`ref/out` 写入，以及需要任意 getter/dataflow 分析的 member carrier 当前仍明确不支持。普通 setup `let` carrier 支持不会放宽 fragment/static-markup carrier 的 source-stable 要求。
 - current-component member carrier 一旦形成自引用或环引用，会显式失败；RazorVue 不支持递归 current-component `RenderFragment` member carrier。
 - fragment factory helper 当前支持源码可分析返回值；generic current-component method / local function 也可接受，但仅限 Roslyn 已绑定到具体构造方法实例、且返回模板形状本身仍可静态还原的子集。
   - direct `AddContent(...)` 路径支持零参数、普通按值参数，以及 `params` 数组参数 factory

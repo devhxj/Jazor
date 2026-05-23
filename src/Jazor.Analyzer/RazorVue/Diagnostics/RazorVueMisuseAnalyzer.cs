@@ -90,7 +90,7 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
 
         if (knownSymbols.IsSetParametersAsync(method))
         {
-            if (IsSupportedSetParametersAsync(method))
+            if (IsSupportedSetParametersAsync(context.Compilation, method))
                 return;
 
             context.ReportDiagnostic(Diagnostic.Create(
@@ -125,137 +125,20 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
         return IsSupportedShouldRenderExpression(knownSymbols, method, returnStatement.Expression, visitedMethods);
     }
 
-    private static bool IsSupportedSetParametersAsync(IMethodSymbol method)
-        => AnalyzeSetParametersAsync(method, new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default)).IsSupported;
-
-    private static SetParametersAsyncAnalysis AnalyzeSetParametersAsync(
-        IMethodSymbol method,
-        HashSet<IMethodSymbol> visitedMethods)
+    private static bool IsSupportedSetParametersAsync(Compilation compilation, IMethodSymbol method)
     {
-        if (!visitedMethods.Add(method))
-            return new SetParametersAsyncAnalysis(false, false);
-
-        if (method.DeclaringSyntaxReferences.Length == 0)
-            return new SetParametersAsyncAnalysis(false, false);
-
-        if (method.DeclaringSyntaxReferences[0].GetSyntax() is not MethodDeclarationSyntax methodSyntax)
-            return new SetParametersAsyncAnalysis(false, false);
-
-        if (methodSyntax.ExpressionBody is not null)
-        {
-            if (IsNoOpTaskExpression(method, methodSyntax.ExpressionBody.Expression))
-                return new SetParametersAsyncAnalysis(true, false);
-
-            return IsBaseSetParametersAsyncCall(method, methodSyntax.ExpressionBody.Expression)
-                ? AnalyzeBaseSetParametersAsync(method, visitedMethods)
-                : new SetParametersAsyncAnalysis(false, false);
-        }
-
-        if (methodSyntax.Body is null)
-            return new SetParametersAsyncAnalysis(false, false);
-
-        if (methodSyntax.Body.Statements.Count == 0)
-            return new SetParametersAsyncAnalysis(true, false);
-
-        var statements = methodSyntax.Body.Statements;
-        var index = 0;
-        var sawBaseCall = false;
-        SetParametersAsyncAnalysis? baseAnalysis = null;
-        if (IsBaseSetParametersAsyncStatement(method, statements[0]))
-        {
-            sawBaseCall = true;
-            baseAnalysis = AnalyzeBaseSetParametersAsync(method, visitedMethods);
-            if (!baseAnalysis.Value.IsSupported)
-                return new SetParametersAsyncAnalysis(false, false);
-
-            index++;
-        }
-
-        if (index >= statements.Count)
-            return sawBaseCall
-                ? baseAnalysis!.Value
-                : new SetParametersAsyncAnalysis(true, false);
-
-        if (TryGetSetParametersAsyncNoOpOrEmit(method, statements[index], out var hasEmit))
-        {
-            index++;
-            if (index == statements.Count)
-            {
-                if (!hasEmit)
-                    return sawBaseCall
-                        ? baseAnalysis!.Value
-                        : new SetParametersAsyncAnalysis(true, false);
-
-                if (!sawBaseCall)
-                    return new SetParametersAsyncAnalysis(false, false);
-
-                // The lowering path only supports one synthesized watch/emit pair.
-                if (baseAnalysis!.Value.HasEmit)
-                    return new SetParametersAsyncAnalysis(false, false);
-
-                return new SetParametersAsyncAnalysis(true, true);
-            }
-
-            if (index == statements.Count - 1 &&
-                IsNoOpSetParametersAsyncStatement(method, statements[index]))
-            {
-                if (!hasEmit)
-                    return sawBaseCall
-                        ? baseAnalysis!.Value
-                        : new SetParametersAsyncAnalysis(true, false);
-
-                if (!sawBaseCall)
-                    return new SetParametersAsyncAnalysis(false, false);
-
-                // The lowering path only supports one synthesized watch/emit pair.
-                if (baseAnalysis!.Value.HasEmit)
-                    return new SetParametersAsyncAnalysis(false, false);
-
-                return new SetParametersAsyncAnalysis(true, true);
-            }
-        }
-
-        return new SetParametersAsyncAnalysis(false, false);
-    }
-
-    private static SetParametersAsyncAnalysis AnalyzeBaseSetParametersAsync(
-        IMethodSymbol method,
-        HashSet<IMethodSymbol> visitedMethods)
-    {
-        var baseMethod = FindBaseSetParametersAsyncMethod(method);
-        if (baseMethod is null)
-            return new SetParametersAsyncAnalysis(true, false);
-
-        if (baseMethod.DeclaringSyntaxReferences.Length == 0)
-        {
-            return IsDefaultComponentBaseSetParametersAsyncMethod(baseMethod)
-                ? new SetParametersAsyncAnalysis(true, false)
-                : new SetParametersAsyncAnalysis(false, false);
-        }
-
-        return AnalyzeSetParametersAsync(baseMethod, visitedMethods);
-    }
-
-    private static bool IsBaseSetParametersAsyncCall(IMethodSymbol method, ExpressionSyntax expression)
-    {
-        expression = UnwrapExpression(expression);
-        if (expression is AwaitExpressionSyntax awaitExpression)
-            expression = UnwrapExpression(awaitExpression.Expression);
-        if (TryUnwrapValueTaskCreation(null, expression, out var wrappedExpression))
-            expression = wrappedExpression;
-
-        if (expression is not InvocationExpressionSyntax invocation ||
-            invocation.Expression is not MemberAccessExpressionSyntax memberAccess ||
-            memberAccess.Expression is not BaseExpressionSyntax ||
-            memberAccess.Name.Identifier.ValueText != "SetParametersAsync" ||
-            invocation.ArgumentList.Arguments.Count != 1)
-        {
+        var razorVueContext = RazorVueCompilationContext.TryCreate(compilation);
+        if (razorVueContext is null)
             return false;
-        }
 
-        var argument = UnwrapExpression(invocation.ArgumentList.Arguments[0].Expression);
-        return argument is IdentifierNameSyntax identifier &&
-               identifier.Identifier.ValueText == method.Parameters[0].Name;
+        var candidate = razorVueContext.DiscoverComponentCandidates()
+            .FirstOrDefault(candidate =>
+                SymbolEqualityComparer.Default.Equals(candidate.ComponentSymbol, method.ContainingType));
+        if (candidate is null)
+            return false;
+
+        var snapshot = razorVueContext.CreateSemanticSnapshot(candidate);
+        return RazorVueSetupAndLifecycleLoweringSupport.DescribeSetParametersAsyncShape(snapshot, method) != "unsupported";
     }
 
     private static bool IsSupportedLifecycleMethod(Compilation compilation, IMethodSymbol method)
@@ -356,15 +239,6 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
         };
     }
 
-    private static bool IsBaseSetParametersAsyncStatement(IMethodSymbol method, StatementSyntax statement)
-        => statement switch
-        {
-            ExpressionStatementSyntax expressionStatement => IsBaseSetParametersAsyncCall(method, expressionStatement.Expression),
-            ReturnStatementSyntax returnStatement when returnStatement.Expression is not null =>
-                IsBaseSetParametersAsyncCall(method, returnStatement.Expression),
-            _ => false
-        };
-
     private static bool IsNoOpTaskExpression(IMethodSymbol method, ExpressionSyntax expression)
     {
         return IsNoOpAwaitableExpression(
@@ -377,43 +251,6 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
         return IsNoOpAwaitableExpression(
             expression,
             allowBareDefaultLiteral: IsNonGenericValueTaskType(method.ReturnType));
-    }
-
-    private static bool IsNoOpSetParametersAsyncStatement(IMethodSymbol method, StatementSyntax statement)
-        => statement switch
-        {
-            ReturnStatementSyntax returnStatement when returnStatement.Expression is null => true,
-            ReturnStatementSyntax returnStatement when returnStatement.Expression is not null =>
-                IsNoOpTaskExpression(method, returnStatement.Expression),
-            ExpressionStatementSyntax expressionStatement => IsNoOpTaskExpression(method, expressionStatement.Expression),
-            _ => false
-        };
-
-    private static bool TryGetSetParametersAsyncNoOpOrEmit(
-        IMethodSymbol method,
-        StatementSyntax statement,
-        out bool hasEmit)
-    {
-        hasEmit = false;
-        switch (statement)
-        {
-            case ReturnStatementSyntax returnStatement when returnStatement.Expression is null:
-                return true;
-            case ReturnStatementSyntax returnStatement when returnStatement.Expression is not null:
-                if (IsNoOpTaskExpression(method, returnStatement.Expression))
-                    return true;
-
-                hasEmit = IsSupportedInvokeAsyncExpression(returnStatement.Expression);
-                return hasEmit;
-            case ExpressionStatementSyntax expressionStatement:
-                if (IsNoOpTaskExpression(method, expressionStatement.Expression))
-                    return true;
-
-                hasEmit = IsSupportedInvokeAsyncExpression(expressionStatement.Expression);
-                return hasEmit;
-            default:
-                return false;
-        }
     }
 
     private static bool IsSupportedInvokeAsyncExpression(ExpressionSyntax expression)
@@ -443,35 +280,6 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
 
     private static bool IsSupportedLifecycleEmitExpression(ExpressionSyntax expression)
         => IsSupportedInvokeAsyncExpression(expression);
-
-    private static IMethodSymbol? FindBaseSetParametersAsyncMethod(IMethodSymbol method)
-    {
-        for (var current = method.ContainingType.BaseType; current is not null; current = current.BaseType)
-        {
-            var candidate = current.GetMembers("SetParametersAsync")
-                .OfType<IMethodSymbol>()
-                .FirstOrDefault(member =>
-                    !member.IsStatic &&
-                    member.Parameters.Length == 1 &&
-                    SymbolEqualityComparer.Default.Equals(
-                        member.Parameters[0].Type.OriginalDefinition,
-                        method.Parameters[0].Type.OriginalDefinition));
-            if (candidate is not null)
-                return candidate;
-        }
-
-        return null;
-    }
-
-    private static bool IsDefaultComponentBaseSetParametersAsyncMethod(IMethodSymbol method)
-        => method.Name == "SetParametersAsync" &&
-           method.Parameters.Length == 1 &&
-           method.ContainingType is
-           {
-               Name: "ComponentBase",
-               ContainingNamespace: { } ns
-           } &&
-           ns.ToDisplayString() == "Microsoft.AspNetCore.Components";
 
     private static bool IsConstantTrueShouldRenderExpression(ExpressionSyntax expression)
     {
@@ -715,16 +523,4 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
         return expression;
     }
 
-    private readonly struct SetParametersAsyncAnalysis
-    {
-        public SetParametersAsyncAnalysis(bool isSupported, bool hasEmit)
-        {
-            IsSupported = isSupported;
-            HasEmit = hasEmit;
-        }
-
-        public bool IsSupported { get; }
-
-        public bool HasEmit { get; }
-    }
 }

@@ -17,6 +17,7 @@ internal static class RazorVueImperativeSfcModuleBuilder
     {
         var descriptor = snapshot.Descriptor;
         var propDefaultBindings = CollectPropDefaultBindings(snapshot, descriptor, expressionEmitter);
+        var renderBody = expressionEmitter.EmitImperativeRenderBody(renderTree);
         var setupBodyBuilder = new StringBuilder();
         setupBodyBuilder.AppendLine("  setup(__jazorRawProps, { emit, slots, expose, attrs }) {");
         AppendPropsBinding(setupBodyBuilder, propDefaultBindings);
@@ -42,7 +43,7 @@ internal static class RazorVueImperativeSfcModuleBuilder
         setupBodyBuilder.AppendLine("      __jazorComponent.slots = slots;");
         setupBodyBuilder.AppendLine("      __jazorComponent.expose = expose;");
         setupBodyBuilder.AppendLine("      __jazorComponent.attrs = attrs;");
-        setupBodyBuilder.Append("      ").Append(expressionEmitter.EmitImperativeRenderBody(renderTree).Replace("\n", "\n      ")).AppendLine();
+        setupBodyBuilder.Append("      ").Append(renderBody.Replace("\n", "\n      ")).AppendLine();
         setupBodyBuilder.AppendLine("    };");
         setupBodyBuilder.AppendLine("  }");
 

@@ -270,20 +270,33 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         VueLogicPropertyDescriptor property,
         string indent)
     {
-        if (RazorVueCurrentComponentValueMemberHelper.TryGetUnsupportedValueMemberReason(snapshot.Compilation, property.PropertySymbol, out var propertyReason))
-        {
-            throw CreateUnsupportedSetupLoweringException(property.PropertySymbol, propertyReason);
-        }
-
         if (property.LoweringKind == VueLogicPropertyLoweringKind.Unsupported)
             throw CreateUnsupportedSetupLoweringException(property.PropertySymbol);
 
         try
         {
-            if (!TryGetPropertyExpressionOperation(snapshot, property.PropertySymbol, out var operation))
-                throw CreateUnsupportedSetupLoweringException(property.PropertySymbol);
+            IOperation? operation;
+            if (!TryGetPropertyExpressionOperation(snapshot, property.PropertySymbol, out operation))
+            {
+                if (RazorVueCurrentComponentValueMemberHelper.TryGetUnsupportedMutableSetupCarrierMemberReason(property.PropertySymbol, out var propertyReason))
+                    throw CreateUnsupportedSetupLoweringException(property.PropertySymbol, propertyReason);
 
-            var capture = expressionEmitter.CaptureSetupDependencies(() => expressionEmitter.EmitSetupExpression(operation));
+                _ = RazorVueCurrentComponentValueMemberHelper.TryGetMutableSetupCarrierInitializer(
+                    snapshot.Compilation,
+                    property.PropertySymbol,
+                    out operation,
+                    out var hasDeclarationInitializer);
+                if (operation is null && hasDeclarationInitializer)
+                    throw CreateUnsupportedSetupLoweringException(property.PropertySymbol);
+            }
+
+            var capture = operation is null
+                ? new RazorVueExpressionEmitter.SetupDependencyCapture(
+                    GetDefaultValueInitializerExpression(property.PropertySymbol.Type),
+                    ImmutableArray<IPropertySymbol>.Empty,
+                    ImmutableArray<IFieldSymbol>.Empty,
+                    ImmutableArray<IMethodSymbol>.Empty)
+                : expressionEmitter.CaptureSetupDependencies(() => expressionEmitter.EmitSetupExpression(operation));
             var propertyBuilder = new StringBuilder();
             if (property.LoweringKind == VueLogicPropertyLoweringKind.ValueBinding)
             {
@@ -326,7 +339,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
     private static bool TryGetPropertyExpressionOperation(
         RazorVueSemanticSnapshot snapshot,
         IPropertySymbol property,
-        out IOperation operation)
+        out IOperation? operation)
     {
         if (RazorVueCurrentComponentValueMemberHelper.TryGetValueMemberInitializer(
                 snapshot.Compilation,
@@ -338,7 +351,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             return true;
         }
 
-        operation = default!;
+        operation = null;
         foreach (var syntaxReference in property.DeclaringSyntaxReferences)
         {
             if (syntaxReference.GetSyntax() is not PropertyDeclarationSyntax declaration)
@@ -470,21 +483,33 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         VueLogicFieldDescriptor field,
         string indent)
     {
-        if (RazorVueCurrentComponentValueMemberHelper.TryGetUnsupportedValueMemberReason(snapshot.Compilation, field.FieldSymbol, out var fieldReason))
-            throw CreateUnsupportedSetupLoweringException(field.FieldSymbol, fieldReason);
-
         if (!RazorVueCurrentComponentValueMemberHelper.TryGetValueMemberInitializer(
                 snapshot.Compilation,
                 field.FieldSymbol,
                 out var operation) ||
             operation is null)
         {
-            throw CreateUnsupportedSetupLoweringException(field.FieldSymbol);
+            if (RazorVueCurrentComponentValueMemberHelper.TryGetUnsupportedMutableSetupCarrierMemberReason(field.FieldSymbol, out var fieldReason))
+                throw CreateUnsupportedSetupLoweringException(field.FieldSymbol, fieldReason);
+
+            _ = RazorVueCurrentComponentValueMemberHelper.TryGetMutableSetupCarrierInitializer(
+                snapshot.Compilation,
+                field.FieldSymbol,
+                out operation,
+                out var hasDeclarationInitializer);
+            if (operation is null && hasDeclarationInitializer)
+                throw CreateUnsupportedSetupLoweringException(field.FieldSymbol);
         }
 
         try
         {
-            var capture = expressionEmitter.CaptureSetupDependencies(() => expressionEmitter.EmitSetupExpression(operation));
+            var capture = operation is null
+                ? new RazorVueExpressionEmitter.SetupDependencyCapture(
+                    GetDefaultFieldInitializerExpression(field.FieldSymbol),
+                    ImmutableArray<IPropertySymbol>.Empty,
+                    ImmutableArray<IFieldSymbol>.Empty,
+                    ImmutableArray<IMethodSymbol>.Empty)
+                : expressionEmitter.CaptureSetupDependencies(() => expressionEmitter.EmitSetupExpression(operation));
             var fieldBuilder = new StringBuilder();
             fieldBuilder.Append(indent)
                 .Append(field.FieldSymbol.IsStatic || field.IsReadOnly ? "const " : "let ")
@@ -508,6 +533,33 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         }
     }
 
+    private static string GetDefaultFieldInitializerExpression(IFieldSymbol field)
+        => GetDefaultValueInitializerExpression(field.Type);
+
+    private static string GetDefaultValueInitializerExpression(ITypeSymbol type)
+    {
+        if (type.TypeKind == TypeKind.Enum)
+            return "0";
+
+        return type.SpecialType switch
+        {
+            SpecialType.System_Boolean => "false",
+            SpecialType.System_Char => "\"\\0\"",
+            SpecialType.System_SByte or
+            SpecialType.System_Byte or
+            SpecialType.System_Int16 or
+            SpecialType.System_UInt16 or
+            SpecialType.System_Int32 or
+            SpecialType.System_UInt32 or
+            SpecialType.System_Int64 or
+            SpecialType.System_UInt64 or
+            SpecialType.System_Decimal or
+            SpecialType.System_Single or
+            SpecialType.System_Double => "0",
+            _ => "null"
+        };
+    }
+
     private static SetupMemberLoweringResult BuildSetupMethodLowering(
         RazorVueSemanticSnapshot snapshot,
         RazorVueExpressionEmitter expressionEmitter,
@@ -521,31 +573,33 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         if (syntax is not MethodDeclarationSyntax methodSyntax)
             throw CreateUnsupportedSetupLoweringException(method.MethodSymbol);
 
-        ExpressionSyntax expressionSyntax = methodSyntax.ExpressionBody?.Expression
-            ?? (methodSyntax.Body?.Statements.Count == 1 && methodSyntax.Body.Statements[0] is ReturnStatementSyntax returnStatement && returnStatement.Expression is not null
-                ? returnStatement.Expression
-                : throw CreateUnsupportedSetupLoweringException(method.MethodSymbol));
-
-        var semanticModel = snapshot.Compilation.GetSemanticModel(expressionSyntax.SyntaxTree);
-        var operation = semanticModel.GetOperation(expressionSyntax);
-        if (operation is null)
-            throw CreateUnsupportedSetupLoweringException(method.MethodSymbol);
+        var semanticModel = snapshot.Compilation.GetSemanticModel(methodSyntax.SyntaxTree);
 
         try
         {
             var parameterAliases = method.MethodSymbol.Parameters
                 .Select(static parameter => parameter.Name)
                 .ToArray();
-            var capture = expressionEmitter.CaptureSetupDependenciesWithParameterAliases(
-                method.MethodSymbol.Parameters,
-                parameterAliases,
-                () => ContainsExplicitParentheses(expressionSyntax)
-                    ? BuildSetupExpressionPreservingExplicitParentheses(expressionSyntax, semanticModel, expressionEmitter)
-                    : expressionEmitter.EmitSetupExpression(operation));
-            var expression = capture.Expression;
-            if (RequiresWholeReturnParentheses(expressionSyntax) && !expression.StartsWith("(", StringComparison.Ordinal))
-                expression = "(" + expression + ")";
-            var normalizedReturnExpression = NormalizeSetupMethodReturnExpression(expression);
+            var capture = TryGetSetupMethodReturnExpressionOperation(methodSyntax, semanticModel, out var expressionSyntax, out var operation)
+                ? expressionEmitter.CaptureSetupDependenciesWithParameterAliases(
+                    method.MethodSymbol.Parameters,
+                    parameterAliases,
+                    () =>
+                    {
+                        var expression = ContainsExplicitParentheses(expressionSyntax)
+                            ? BuildSetupExpressionPreservingExplicitParentheses(expressionSyntax, semanticModel, expressionEmitter)
+                            : expressionEmitter.EmitSetupExpression(operation);
+                        if (RequiresWholeReturnParentheses(expressionSyntax) && !expression.StartsWith("(", StringComparison.Ordinal))
+                            expression = "(" + expression + ")";
+
+                        return "return " + NormalizeSetupMethodReturnExpression(expression) + ";";
+                    })
+                : TryGetSetupMethodBodyOperations(methodSyntax, semanticModel, out var operations)
+                    ? expressionEmitter.CaptureSetupDependenciesWithParameterAliases(
+                        method.MethodSymbol.Parameters,
+                        parameterAliases,
+                        () => expressionEmitter.EmitSetupStatementSequence(operations))
+                    : throw CreateUnsupportedSetupLoweringException(method.MethodSymbol);
             var methodBuilder = new StringBuilder();
             methodBuilder.Append(indent)
                 .Append("function ")
@@ -553,10 +607,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 .Append('(')
                 .Append(string.Join(", ", parameterAliases))
                 .AppendLine(") {");
-            methodBuilder.Append(indent)
-                .Append("  return ")
-                .Append(normalizedReturnExpression)
-                .AppendLine(";");
+            AppendIndentedSetupMethodBody(methodBuilder, capture.Expression, indent);
             methodBuilder.Append(indent).AppendLine("}");
             return new SetupMemberLoweringResult(
                 methodBuilder.ToString(),
@@ -571,6 +622,60 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         catch (Exception ex) when (ex is NotSupportedException or OperationTransformationException)
         {
             throw CreateUnsupportedSetupLoweringException(method.MethodSymbol);
+        }
+    }
+
+    private static bool TryGetSetupMethodReturnExpressionOperation(
+        MethodDeclarationSyntax methodSyntax,
+        SemanticModel semanticModel,
+        out ExpressionSyntax expressionSyntax,
+        out IOperation operation)
+    {
+        expressionSyntax = default!;
+        operation = default!;
+        expressionSyntax = methodSyntax.ExpressionBody?.Expression
+            ?? (methodSyntax.Body?.Statements.Count == 1 &&
+                methodSyntax.Body.Statements[0] is ReturnStatementSyntax { Expression: not null } returnStatement
+                    ? returnStatement.Expression
+                    : null!);
+        if (expressionSyntax is null)
+            return false;
+
+        operation = semanticModel.GetOperation(expressionSyntax)!;
+        return operation is not null;
+    }
+
+    private static bool TryGetSetupMethodBodyOperations(
+        MethodDeclarationSyntax methodSyntax,
+        SemanticModel semanticModel,
+        out ImmutableArray<IOperation> operations)
+    {
+        operations = ImmutableArray<IOperation>.Empty;
+        if (methodSyntax.Body is null ||
+            semanticModel.GetOperation(methodSyntax.Body) is not IBlockOperation blockOperation)
+        {
+            return false;
+        }
+
+        operations = blockOperation.Operations;
+        return !operations.IsDefaultOrEmpty;
+    }
+
+    private static void AppendIndentedSetupMethodBody(
+        StringBuilder builder,
+        string body,
+        string indent)
+    {
+        var normalized = Util.NormalizeLineEndingsToLf(body).Trim();
+        if (normalized.Length == 0)
+            return;
+
+        foreach (var line in normalized.Split('\n'))
+        {
+            builder
+                .Append(indent)
+                .Append("  ")
+                .AppendLine(line);
         }
     }
 
@@ -921,13 +1026,20 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         IMethodSymbol method,
         SyntaxList<StatementSyntax> statements,
         bool allowFirstRenderPayload,
-        out SupportedEmitCall? emitCall)
+        out SupportedEmitCall? emitCall,
+        int startIndex = 0,
+        int? endExclusive = null)
     {
         emitCall = null;
-        if (statements.Count < 2)
+        var exclusiveEnd = endExclusive ?? statements.Count;
+        if (startIndex < 0 ||
+            exclusiveEnd > statements.Count ||
+            exclusiveEnd - startIndex < 2)
+        {
             return false;
+        }
 
-        var lastStatement = statements[statements.Count - 1];
+        var lastStatement = statements[exclusiveEnd - 1];
         ExpressionSyntax? emitExpression = lastStatement switch
         {
             ExpressionStatementSyntax expressionStatement => expressionStatement.Expression,
@@ -946,8 +1058,9 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             methodBodyOperation.BlockBody?.Operations ?? ImmutableArray<IOperation>.Empty,
             RazorVueSourceStableLocalInitializerHelper.CanParticipateInLifecycleCompilerFallback);
 
-        foreach (var statement in statements.Take(statements.Count - 1))
+        for (var index = startIndex; index < exclusiveEnd - 1; index++)
         {
+            var statement = statements[index];
             if (!TryValidateLifecyclePrefixDeclarations(statement, semanticModel, localInitializers))
                 return false;
         }
@@ -1222,6 +1335,40 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             return sawBaseCall
                 ? baseAnalysis!
                 : new SetParametersAsyncAnalysis(true, null);
+
+        if (sawBaseCall && baseAnalysis!.EmitCall is null)
+        {
+            if (TryExtractSupportedLocalPrefixedLifecycleEmitCall(
+                    snapshot,
+                    expressionEmitter,
+                    method,
+                    statements,
+                    allowFirstRenderPayload: false,
+                    out var localPrefixedEmitCall,
+                    startIndex: index))
+            {
+                return localPrefixedEmitCall is null
+                    ? new SetParametersAsyncAnalysis(false, null)
+                    : new SetParametersAsyncAnalysis(true, localPrefixedEmitCall);
+            }
+
+            if (statements.Count - index >= 3 &&
+                IsNoOpSetParametersAsyncStatement(snapshot.Compilation, method, statements[statements.Count - 1]) &&
+                TryExtractSupportedLocalPrefixedLifecycleEmitCall(
+                    snapshot,
+                    expressionEmitter,
+                    method,
+                    statements,
+                    allowFirstRenderPayload: false,
+                    out localPrefixedEmitCall,
+                    startIndex: index,
+                    endExclusive: statements.Count - 1))
+            {
+                return localPrefixedEmitCall is null
+                    ? new SetParametersAsyncAnalysis(false, null)
+                    : new SetParametersAsyncAnalysis(true, localPrefixedEmitCall);
+            }
+        }
 
         if (TryGetSetParametersAsyncNoOpOrEmit(snapshot, expressionEmitter, method, statements[index], out var emitCall))
         {
