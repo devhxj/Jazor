@@ -627,6 +627,39 @@ Assert.AreEqual(
     }
 
     [TestMethod]
+    public void ConvertRuntimeClass_StaticClass_GeneratesClassDeclarationWithStaticMembers()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public static class NestedHelpers
+                {
+                    public static string Label = "helper";
+
+                    public static string Describe()
+                    {
+                        return Label;
+                    }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code, "NestedHelpers");
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var declaration = converter.ConvertRuntimeClass(classSymbol);
+        var script = declaration.ToKnRECMAScript();
+
+Assert.AreEqual(
+@"class NestedHelpers {
+  static label = ""helper"";
+  static describe() {
+    return NestedHelpers.label;
+  }
+}".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
     public async Task Convert_NestedClassSymbol_ThrowsNotSupportedException()
     {
         var code = """

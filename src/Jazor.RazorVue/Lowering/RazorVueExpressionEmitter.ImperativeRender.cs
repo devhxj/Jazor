@@ -32,8 +32,15 @@ internal sealed partial class RazorVueExpressionEmitter
         var bodyArgument = new SenseArgument(Sense.FunctionBody, UseImportAliases: true);
         var visibleLocalAliases = new Dictionary<ILocalSymbol, string>(SymbolEqualityComparer.Default);
         var imperativeBuilderTargets = new Dictionary<IParameterSymbol, string>(SymbolEqualityComparer.Default);
+        var locallyDeclaredLocals = RazorVueOperationLocalCollector.CollectDeclaredLocals(imperative.Operations);
         foreach (var local in imperative.VisibleLocals)
+        {
+            if (locallyDeclaredLocals.Contains(local))
+                continue;
+
             visibleLocalAliases[local] = local.Name;
+        }
+
         foreach (var parameter in imperative.VisibleParameters)
         {
             if (IsRenderTreeBuilderType(parameter.Type))
@@ -136,8 +143,33 @@ internal sealed partial class RazorVueExpressionEmitter
 
     private void EnsureSupportedImperativeOperation(IOperation operation)
     {
+        if (TryGetUnsupportedImperativeGotoOperation(operation, out var unsupportedGotoOperation))
+            throw CreateUnsupportedImperativeRenderLoweringException(unsupportedGotoOperation);
+
         if (TryGetUnsupportedImperativeAsyncOperation(operation, out var unsupportedOperation))
             throw CreateUnsupportedImperativeRenderLoweringException(unsupportedOperation);
+    }
+
+    private static bool TryGetUnsupportedImperativeGotoOperation(
+        IOperation? operation,
+        out IOperation unsupportedOperation)
+    {
+        unsupportedOperation = null!;
+        if (operation is null)
+            return false;
+
+        foreach (var current in RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(
+                     operation,
+                     includeLocalFunctionBodies: true))
+        {
+            if (current is IBranchOperation { BranchKind: BranchKind.GoTo })
+            {
+                unsupportedOperation = current;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static bool TryGetUnsupportedImperativeAsyncOperation(
@@ -148,7 +180,7 @@ internal sealed partial class RazorVueExpressionEmitter
         if (operation is null)
             return false;
 
-        foreach (var current in EnumerateImperativeOperationAndDescendants(operation))
+        foreach (var current in RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(operation))
         {
             if (current is IAnonymousFunctionOperation or ILocalFunctionOperation)
                 continue;
@@ -181,22 +213,6 @@ internal sealed partial class RazorVueExpressionEmitter
         return false;
     }
 
-    private static IEnumerable<IOperation> EnumerateImperativeOperationAndDescendants(IOperation root)
-    {
-        yield return root;
-        if (root is IAnonymousFunctionOperation or ILocalFunctionOperation)
-            yield break;
-
-        foreach (var child in root.ChildOperations)
-        {
-            if (child is null)
-                continue;
-
-            foreach (var nested in EnumerateImperativeOperationAndDescendants(child))
-                yield return nested;
-        }
-    }
-
     private RazorVueCompilationIssueException CreateUnsupportedImperativeRenderLoweringException(IOperation operation)
     {
         var construct = DescribeUnsupportedImperativeOperation(operation);
@@ -227,6 +243,7 @@ internal sealed partial class RazorVueExpressionEmitter
             IUsingDeclarationOperation { IsAsynchronous: true } => "await using",
             IAwaitOperation => "await",
             IForEachLoopOperation { IsAsynchronous: true } => "await foreach",
+            IBranchOperation { BranchKind: BranchKind.GoTo } => "goto",
             _ => operation.Kind.ToString()
         };
 
@@ -693,7 +710,7 @@ internal sealed partial class RazorVueExpressionEmitter
         if (invocation.Arguments.Length <= argumentIndex)
             return "undefined";
 
-        return EmitExpression(invocation.Arguments[argumentIndex].Value, argument);
+        return EmitImperativeNestedExpression(invocation.Arguments[argumentIndex].Value, argument);
     }
 
     private string EmitImperativeComponentParameterValue(IInvocationOperation invocation, SenseArgument argument, string builderTarget, int argumentIndex)
@@ -719,13 +736,16 @@ internal sealed partial class RazorVueExpressionEmitter
             return contextualRenderSlotFactory;
 
         if (IsImperativeUntypedRenderFragmentValue(value))
-            return EmitExpression(value, argument);
+            return EmitImperativeNestedExpression(value, argument);
 
         if (IsImperativeTypedRenderFragmentValue(value))
-            return EmitExpression(value, argument);
+            return EmitImperativeNestedExpression(value, argument);
 
-        return EmitExpression(value, argument);
+        return EmitImperativeNestedExpression(value, argument);
     }
+
+    private string EmitImperativeNestedExpression(IOperation operation, SenseArgument argument)
+        => EmitExpression(operation, argument.WithNewScope());
 
     private bool TryEmitImperativeStoredLocalRenderSlotValue(
         IOperation operation,
@@ -759,13 +779,13 @@ internal sealed partial class RazorVueExpressionEmitter
 
         if (IsImperativeUntypedRenderFragmentValue(initializer))
         {
-            expression = EmitSetupExpression(initializer, argument);
+            expression = EmitSetupExpression(initializer, argument.WithNewScope());
             return true;
         }
 
         if (IsImperativeTypedRenderFragmentValue(initializer))
         {
-            expression = EmitSetupExpression(initializer, argument);
+            expression = EmitSetupExpression(initializer, argument.WithNewScope());
             return true;
         }
 
@@ -1212,7 +1232,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 continue;
 
             var parameter = RazorVueMethodSymbolNormalizer.NormalizeParameter(invocation.TargetMethod, argument.Parameter);
-            aliases[parameter] = EmitSetupExpression(argument.Value);
+            aliases[parameter] = EmitSetupExpression(argument.Value, _compilerArgument.WithNewScope());
         }
 
         return aliases;

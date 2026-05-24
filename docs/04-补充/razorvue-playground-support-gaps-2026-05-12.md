@@ -29,11 +29,13 @@ RazorVue 对复杂 block code 的路线已不再是“前端继续堆 statement 
 - `.mjs` / H artifact 已具备 body-level imperative render bridge
 - `.vue` / SFC artifact 现已具备 render-function SFC 承载；imperative body 不再在 SFC lowering 阶段被显式拒绝
 - imperative runtime vocabulary 现已统一切换到 render-context 模型：最终 `.mjs` / render-function `.vue` 产物使用 `__jazorRenderContext`、`enterElement/leaveElement`、`append`、`setComponentParameter`、`finish`，不再暴露 Razor `RenderTreeBuilder` helper 名称
-- 首段真实 imperative render 承载已覆盖：提前 `return`、`while` / `do-while`、带 `break` / `continue` 的 `for` / `foreach`、`switch`、`lock`、`try/catch/finally`、`using` / `using declaration`、局部 mutation、imperative body 内静态 `AddMarkupContent(...)` / `AddContent(..., MarkupString)`
+- 首段真实 imperative render 承载已覆盖：提前 `return`、`while` / `do-while`、带 `break` / `continue` 的 `for` / `foreach`、`switch`、`lock`、`try/catch/finally`、`using` / `using declaration`、无 `goto` 的 labeled statement、局部 mutation、imperative body 内静态 `AddMarkupContent(...)` / `AddContent(..., MarkupString)`。`goto` 仍保持显式 unsupported，因为 `Jazor.Compiler` 也不提供等价 JS lowering
 - mixed declarative + imperative render tree 现已统一按“mixed render-function path”处理：任意位置只要出现 imperative node，最终 `.vue` 产物统一切到 render-function 模型，而不是试图局部回到 template canonical subtree
 - mixed render-function path 现在会保留可声明式表达的 sibling vnode：普通 count-style `for` / `foreach` body、条件分支、template scope、attribute/key/event scoped replay 仍优先发射为 `h(...)` / `__jazorVueForRange(...)` / `__jazorVueMergeAttributes(...)` 表达式；只有 scoped replay 内真正需要 frame/slot/child 回放的操作才进入 render-context bridge
 - `.mjs` module builder 与 render-function `.vue` builder 现在都会扫描 imperative render body 中的 helper invocation；因此 mixed imperative body 里的声明式 attribute spread 会自动注入 `__jazorVueMergeAttributes(...)` helper，不再只扫描 declarative root render expression
-- imperative render 中引用同文件 artifact module 内的同步 helper class 现已走 compiler-owned runtime class lowering：`new TestDisposable()`、`IDisposable GetDisposable() => new TestDisposable()`、组件内嵌 helper class、helper class 字段 initializer 中递归创建其他同模块 helper class，以及 helper method 内触发 CLR whitelist `Import` 的调用，都会通过 `AstConverter.ConvertRuntimeClass(...)` / `SemanticWalker` 的 module-local declared-name context 生成最终 class/function/import 形状，而不是在 RazorVue 内拼 carrier wrapper 或手写 JS 字符串
+- imperative render 中引用同文件 artifact module 内的同步 helper class 现已走 compiler-owned runtime class lowering：`new TestDisposable()`、`typeof(TestDisposable)`、`TestDisposable.StaticMember`、`static class StaticHelpers { ... }`、`IDisposable GetDisposable() => new TestDisposable()`、组件内嵌 helper class、helper class 字段 initializer 中递归创建其他同模块 helper class，以及 helper method 内触发 CLR whitelist `Import` 的调用，都会通过 `AstConverter.ConvertRuntimeClass(...)` / `SemanticWalker` 的 module-local declared-name context 生成最终 class/function/import 形状，而不是在 RazorVue 内拼 carrier wrapper 或手写 JS 字符串。helper type 发现现在也会通过 compiler-owned type-reference notification 记账，因此只消耗类型名或静态成员引用的 helper 同样会被保留；静态 helper class 由 `AstConverter` 发射为带 `static` field/method 的 JS class，普通模块级 static nested class 导出策略仍保持原有 fail-fast，不被这条 RazorVue runtime helper 通道放宽
+- mixed imperative segment 现在会保留同一 `BuildRenderTree` body 内被命令式片段实际调用的前置 local function declaration：例如“声明式 header + `void AppendLine(...)` + `while` 调用 + 声明式 footer”的形态会只把 `AppendLine` declaration、必要局部和 `while` 放入同一个 `RazorVueImperativeBlockNode`，header/footer 仍保持声明式 sibling。local function 声明与调用仍由 `SemanticWalker.VisitLocalFunction(...)` / invocation lowering 生成最终 JS，不在 RazorVue planner 中拼装函数体或改写调用名；未被命令式 segment 引用的 local function helper 仍可继续走原有声明式 render-helper canonical path。local function dependency expansion 现已递归进入已纳入 segment 的 local function body，因此 `AppendLine(...)` 内再调用 `FormatLine(...)` 这类 transitive local helper 时，会把两者声明一并纳入同一个 imperative segment
+- mixed imperative segment 现在正式覆盖 tuple deconstruction declaration/assignment，例如 `var pair = (...); var (label, suffix) = pair; while (...) { ... label ... } <footer>@label</footer>` 这类“解构声明 + 命令式 loop + 后续 sibling 读取”会整体进入同一个 imperative segment。RazorVue 不实现 tuple/CLR deconstruction 语义，只通过 `RazorVueOperationLocalCollector` 保持 segment 边界、可见局部与段内声明局部隔离，最终 `let label, suffix; label = pair...` 的声明 hoist、tuple field projection 和 assignment 仍由 `SemanticWalker` / `Jazor.Compiler` lowering
 
 ### 仍未完成
 
@@ -41,7 +43,7 @@ RazorVue 对复杂 block code 的路线已不再是“前端继续堆 statement 
 
 - imperative body 的 canonical template path：未完成
 - 真正 async imperative render contract：未完成；当前同步 `.mjs` / render-function `.vue` 主线对 `await`、`await foreach`、`await using` / `await using var` 均显式失败
-- 更复杂控制流下的进一步覆盖仍需继续扩大，但 `while` / `do-while`、`for` / `foreach` 的 `break` / `continue`、`switch` / `lock` / `try-catch/finally` 已进入正式 imperative render runtime 主线
+- 更复杂控制流下的进一步覆盖仍需继续扩大，但 `while` / `do-while`、`for` / `foreach` 的 `break` / `continue`、`switch` / `lock` / `try-catch/finally`、无 `goto` 的 labeled statement 已进入正式 imperative render runtime 主线
 
 其中 `imperative AddComponentParameter(...)` 这一项本轮已完成第一阶段正式支持：
 
@@ -70,14 +72,15 @@ RazorVue 对复杂 block code 的路线已不再是“前端继续堆 statement 
 
 - 架构与中间语义已收敛
 - 双前端已对齐
-- body-level imperative H/render-function 主线已覆盖 `return` / `while` / `do-while` / `for` / `foreach` 中的 `break` / `continue` / `switch` / `lock` / `try-catch-finally` / `using` / `using declaration` / mutation / constant markup
-- mixed render-function 组合层只负责 Vue artifact framing：条件/循环/template-scope 内含 imperative fragment 时会生成嵌套 render-context IIFE 或声明式 `map(...)` 组合，但条件、循环边界表达式、loop source、attribute spread 表达式、helper class、CLR import 与 member/type semantics 仍交给 `EmitScopedExpression` / `SemanticWalker` / `Jazor.Compiler`
-- `using` / `using declaration` 中的同模块 helper resource 支持保持在同步 render contract 内；helper class 声明插入在 Vue imports / compiler CLR imports 之后、`export default defineComponent(...)` 之前，依赖导入与声明名由 compiler module context 统一去重/绑定。该通道只收普通源码 helper class，不会把带 `[ECMAScript]` / `[ECMAScriptModule]` 标记的 host/component type 当作 helper class 扁平化
+- body-level imperative H/render-function 主线已覆盖 `return` / `while` / `do-while` / `for` / `foreach` 中的 `break` / `continue` / `switch` / `lock` / `try-catch-finally` / `using` / `using declaration` / 无 `goto` labeled statement / mutation / constant markup / tuple deconstruction declaration-assignment
+- mixed render-function 组合层只负责 Vue artifact framing：条件/循环/template-scope 内含 imperative fragment 时会生成嵌套 render-context IIFE 或声明式 `map(...)` 组合，但条件、循环边界表达式、loop source、attribute spread 表达式、local function declaration/call、helper class、CLR import、tuple deconstruction 与 member/type semantics 仍交给 `EmitScopedExpression` / `SemanticWalker` / `Jazor.Compiler`
+- `using` / `using declaration` 中的同模块 helper resource 支持保持在同步 render contract 内；helper class 声明插入在 Vue imports / compiler CLR imports 之后、`export default defineComponent(...)` 之前，依赖导入与声明名由 compiler module context 统一去重/绑定。该通道只收源码可分析的同 artifact module helper class（含只通过类型名/静态成员使用的 static helper class），不会把带 `[ECMAScript]` / `[ECMAScriptModule]` 标记的 host/component type 当作 helper class 扁平化
 - 下一阶段重点转向 canonical template path 与更复杂语句族扩面
 
 ### 当前保护
 
 - `src/Jazor.RazorVue/RenderTree/RazorVueImperativeRenderPromotionAnalyzer.cs`
+- `src/Jazor.RazorVue/RenderTree/RazorVueOperationLocalCollector.cs`
 - `src/Jazor.RazorVue/RenderTree/RazorVueRenderTreeExtractor.cs`
 - `src/Jazor.RazorVue/RazorSdk/RazorVueRazorIrTemplateFrontend.cs`
 - `src/Jazor.RazorVue/Canonical/RazorVueCanonicalHModelFactory.cs`
@@ -1406,8 +1409,11 @@ builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span
 - 支持：imperative body 内常量 `AddMarkupContent(...)`
 - 支持：mixed imperative body 中的声明式条件/循环/template-scope 子表达式组合；不会再把同一个 conditional / loop 节点递归重新包装成自身 fragment 导致 stack overflow
 - 支持：mixed imperative body 中声明式 sibling attribute spread 的 `__jazorVueMergeAttributes(...)` helper 注入，覆盖 `.mjs` 与 render-function `.vue`
+- 支持：mixed imperative body 中被命令式片段直接或间接调用的 local function declaration 保留；planner 只扩展 segment dependency，local function body 与调用仍由 `SemanticWalker` lowering
+- 支持：mixed imperative body 中的 tuple deconstruction declaration/assignment；段内声明局部不会再进入 RazorVue local alias map，函数级声明 hoist / tuple projection / assignment 由 `SemanticWalker` 完成
 - 支持：`OpenElement` / `CloseElement` / `OpenComponent` / `CloseComponent` / `AddAttribute` / `AddMultipleAttributes` / `SetKey` 的 imperative bridge 基础协议
 - 不支持：imperative body 继续结构化进入 template canonical subtree
+- 不支持：`goto`；当前同步 imperative render bridge 会显式报 `UnsupportedImperativeRenderLowering`，不会把跳转语义静默擦除
 - 不支持：动态 `AddMarkupContent(...)`
 
 ### 当前保护
@@ -1416,6 +1422,7 @@ builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span
 - `src/Jazor.RazorVue/Lowering/RazorVueExpressionEmitter.ImperativeMixedRender.cs`
 - `src/Jazor.RazorVue/Lowering/RazorVueArtifactFactory.ModuleBuilder.cs`
 - `src/Jazor.RazorVue/Lowering/RazorVueImperativeSfcModuleBuilder.cs`
+- `src/Jazor.RazorVue/RenderTree/RazorVueOperationLocalCollector.cs`
 - `src/Jazor.RazorVue/RenderTree/RazorVueOpenNodeReplayHelper.cs`
 - `src/Jazor.RazorVue.Test/RazorVuePipelineTests.cs`
 - `src/Jazor.RazorVue.Test/RazorVueSfcArtifactFactoryTests.cs`

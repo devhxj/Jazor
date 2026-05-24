@@ -27880,6 +27880,431 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersNestedHelperTypeTypeReferenceAndStaticMemberWithoutObjectCreation_UsingImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/nested-type-card")]
+                public class NestedTypeCard : ComponentBase, IVueComponent
+                {
+                    private sealed class TestDisposable : IDisposable
+                    {
+                        public static string Describe() => "helper";
+
+                        public void Dispose() { }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        lock (this)
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, typeof(TestDisposable).Name);
+                            builder.AddContent(2, TestDisposable.Describe());
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        var classIndex = artifact.ModuleCode.IndexOf("class TestDisposable", StringComparison.Ordinal);
+        var exportIndex = artifact.ModuleCode.IndexOf("export default defineComponent", StringComparison.Ordinal);
+
+        Assert.IsTrue(classIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(exportIndex > classIndex, artifact.ModuleCode);
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
+        StringAssert.Contains(artifact.ModuleCode, "TestDisposable.name");
+        StringAssert.Contains(artifact.ModuleCode, "TestDisposable.describe()");
+        StringAssert.Contains(artifact.ModuleCode, "try {");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersStaticNestedHelperTypeStaticMemberWithoutObjectCreation_UsingImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/static-helper-card")]
+                public class StaticHelperCard : ComponentBase, IVueComponent
+                {
+                    private static class StaticHelpers
+                    {
+                        public static string Label = "helper";
+
+                        public static string Describe() => Label;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        lock (this)
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, typeof(StaticHelpers).Name);
+                            builder.AddContent(2, StaticHelpers.Describe());
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        var classIndex = artifact.ModuleCode.IndexOf("class StaticHelpers", StringComparison.Ordinal);
+        var exportIndex = artifact.ModuleCode.IndexOf("export default defineComponent", StringComparison.Ordinal);
+
+        Assert.IsTrue(classIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(exportIndex > classIndex, artifact.ModuleCode);
+        StringAssert.Contains(artifact.ModuleCode, "static label = \"helper\";");
+        StringAssert.Contains(artifact.ModuleCode, "static describe()");
+        StringAssert.Contains(artifact.ModuleCode, "StaticHelpers.name");
+        StringAssert.Contains(artifact.ModuleCode, "StaticHelpers.describe()");
+        StringAssert.Contains(artifact.ModuleCode, "try {");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersReferencedLocalFunctionDeclarationIntoMixedImperativeRenderSegment()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/local-function-card")]
+                public class LocalFunctionCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "header");
+                        builder.AddContent(1, Title);
+                        builder.CloseElement();
+
+                        void AppendLine(string value)
+                        {
+                            builder.OpenElement(2, "p");
+                            builder.AddContent(3, value);
+                            builder.CloseElement();
+                        }
+
+                        var index = 0;
+                        while (index < 1)
+                        {
+                            AppendLine("ready");
+                            index++;
+                        }
+
+                        builder.OpenElement(4, "footer");
+                        builder.AddContent(5, "done");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "h(\"header\", null, props.title)");
+        StringAssert.Contains(artifact.ModuleCode, "function AppendLine(value)");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"p\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(value);");
+        StringAssert.Contains(artifact.ModuleCode, "while (index < 1) {");
+        StringAssert.Contains(artifact.ModuleCode, "AppendLine(\"ready\");");
+        StringAssert.Contains(artifact.ModuleCode, "h(\"footer\", null, \"done\")");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersTransitiveReferencedLocalFunctionDeclarationIntoMixedImperativeRenderSegment()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/transitive-local-function-card")]
+                public class TransitiveLocalFunctionCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "header");
+                        builder.AddContent(1, Title);
+                        builder.CloseElement();
+
+                        string FormatLine(string value)
+                        {
+                            return value + "!";
+                        }
+
+                        void AppendLine(string value)
+                        {
+                            builder.OpenElement(2, "p");
+                            builder.AddContent(3, FormatLine(value));
+                            builder.CloseElement();
+                        }
+
+                        var index = 0;
+                        while (index < 1)
+                        {
+                            AppendLine("ready");
+                            index++;
+                        }
+
+                        builder.OpenElement(4, "footer");
+                        builder.AddContent(5, "done");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "function FormatLine(value)");
+        StringAssert.Contains(artifact.ModuleCode, "function AppendLine(value)");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(FormatLine(value));");
+        StringAssert.Contains(artifact.ModuleCode, "AppendLine(\"ready\");");
+        StringAssert.Contains(artifact.ModuleCode, "h(\"footer\", null, \"done\")");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersDeconstructionAssignmentIntoMixedImperativeRenderSegment()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/deconstruction-card")]
+                public class DeconstructionCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "header");
+                        builder.AddContent(1, Title);
+                        builder.CloseElement();
+
+                        var pair = (Title, "ready");
+                        var (label, suffix) = pair;
+                        var index = 0;
+                        while (index < 1)
+                        {
+                            builder.OpenElement(2, "p");
+                            builder.AddContent(3, label);
+                            builder.AddContent(4, suffix);
+                            builder.CloseElement();
+                            index++;
+                        }
+
+                        builder.OpenElement(5, "footer");
+                        builder.AddContent(6, label);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "h(\"header\", null, props.title)");
+        StringAssert.Contains(artifact.ModuleCode, "label = pair.");
+        StringAssert.Contains(artifact.ModuleCode, "suffix = pair.");
+        StringAssert.Contains(artifact.ModuleCode, "while (index < 1) {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"p\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(label);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(suffix);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"footer\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(label);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersLabeledBlockIntoMixedImperativeRenderSegment()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/labeled-card")]
+                public class LabeledCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "header");
+                        builder.AddContent(1, Title);
+                        builder.CloseElement();
+
+                        renderBlock:
+                        {
+                            builder.OpenElement(2, "section");
+                            builder.AddContent(3, "labeled");
+                            builder.CloseElement();
+                        }
+
+                        builder.OpenElement(4, "footer");
+                        builder.AddContent(5, "done");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "h(\"header\", null, props.title)");
+        StringAssert.Contains(artifact.ModuleCode, "renderBlock: {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(\"labeled\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.leaveElement();");
+        StringAssert.Contains(artifact.ModuleCode, "h(\"footer\", null, \"done\")");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithGotoStatementInImperativeRenderBridge_ThrowsUnsupportedImperativeRenderLowering()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/goto-card")]
+                public class GotoCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        goto renderBlock;
+
+                        renderBlock:
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, "labeled");
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedImperativeRenderLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "goto");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersNestedHelperTypeWithClrImportInBuildRenderTree_UsingImperativeRenderBridge()
     {
         var context = CreateContext(

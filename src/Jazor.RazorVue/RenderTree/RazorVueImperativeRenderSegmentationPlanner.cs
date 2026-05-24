@@ -50,14 +50,7 @@ internal static class RazorVueImperativeRenderSegmentationPlanner
 
             var startIndex = pendingSupportStart >= 0 ? pendingSupportStart : index;
             var endExclusive = index + 1;
-            if (ShouldExtendSegmentToEnd(operations, startIndex, endExclusive))
-            {
-                endExclusive = operations.Count;
-                startIndex = ExtendSegmentStartForImmediateAssignedLocalReads(
-                    operations,
-                    startIndex,
-                    endExclusive);
-            }
+            ExpandSegmentBounds(operations, ref startIndex, ref endExclusive);
 
             builder.Add(new PlannedSegment(startIndex, endExclusive, kind));
             pendingSupportStart = -1;
@@ -73,6 +66,57 @@ internal static class RazorVueImperativeRenderSegmentationPlanner
 
         segments = planned;
         return true;
+    }
+
+    private static void ExpandSegmentBounds(
+        IReadOnlyList<IOperation> operations,
+        ref int startIndex,
+        ref int endExclusive)
+    {
+        var changed = true;
+        while (changed)
+        {
+            changed = false;
+
+            if (TryExpandSegmentForReferencedLocalFunctions(
+                    operations,
+                    startIndex,
+                    endExclusive,
+                    out var localFunctionStartIndex,
+                    out var localFunctionEndExclusive))
+            {
+                if (localFunctionStartIndex < startIndex)
+                {
+                    startIndex = localFunctionStartIndex;
+                    changed = true;
+                }
+
+                if (localFunctionEndExclusive > endExclusive)
+                {
+                    endExclusive = localFunctionEndExclusive;
+                    changed = true;
+                }
+            }
+
+            if (!ShouldExtendSegmentToEnd(operations, startIndex, endExclusive))
+                continue;
+
+            if (endExclusive != operations.Count)
+            {
+                endExclusive = operations.Count;
+                changed = true;
+            }
+
+            var extendedStart = ExtendSegmentStartForImmediateAssignedLocalReads(
+                operations,
+                startIndex,
+                endExclusive);
+            if (extendedStart < startIndex)
+            {
+                startIndex = extendedStart;
+                changed = true;
+            }
+        }
     }
 
     private static bool HasDeclarativeGaps(
@@ -156,7 +200,9 @@ internal static class RazorVueImperativeRenderSegmentationPlanner
         var seen = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
         for (var index = startIndex; index < endExclusive; index++)
         {
-            foreach (var current in EnumerateSelfAndDescendants(operations[index]))
+            foreach (var current in RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(
+                         operations[index],
+                         includeLocalFunctionBodies: true))
             {
                 if (current is ILocalReferenceOperation localReference &&
                     seen.Add(localReference.Local))
@@ -238,6 +284,70 @@ internal static class RazorVueImperativeRenderSegmentationPlanner
         return current is ISimpleAssignmentOperation assignment &&
                assignment.Target is ILocalReferenceOperation localReference &&
                SymbolEqualityComparer.Default.Equals(localReference.Local, local);
+    }
+
+    private static bool TryExpandSegmentForReferencedLocalFunctions(
+        IReadOnlyList<IOperation> operations,
+        int startIndex,
+        int endExclusive,
+        out int expandedStartIndex,
+        out int expandedEndExclusive)
+    {
+        expandedStartIndex = startIndex;
+        expandedEndExclusive = endExclusive;
+
+        foreach (var localFunction in CollectReferencedLocalFunctions(operations, startIndex, endExclusive))
+        {
+            if (!TryFindLocalFunctionDeclarationIndex(operations, localFunction, out var declarationIndex))
+                continue;
+
+            expandedStartIndex = Math.Min(expandedStartIndex, declarationIndex);
+            expandedEndExclusive = Math.Max(expandedEndExclusive, declarationIndex + 1);
+        }
+
+        return expandedStartIndex != startIndex ||
+               expandedEndExclusive != endExclusive;
+    }
+
+    private static IEnumerable<IMethodSymbol> CollectReferencedLocalFunctions(
+        IReadOnlyList<IOperation> operations,
+        int startIndex,
+        int endExclusive)
+    {
+        var seen = new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default);
+        for (var index = startIndex; index < endExclusive; index++)
+        {
+            foreach (var current in RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(
+                         operations[index],
+                         includeLocalFunctionBodies: true))
+            {
+                if (current is IInvocationOperation { TargetMethod.MethodKind: MethodKind.LocalFunction } invocation)
+                {
+                    var method = invocation.TargetMethod.OriginalDefinition;
+                    if (seen.Add(method))
+                        yield return method;
+                }
+            }
+        }
+    }
+
+    private static bool TryFindLocalFunctionDeclarationIndex(
+        IReadOnlyList<IOperation> operations,
+        IMethodSymbol localFunction,
+        out int declarationIndex)
+    {
+        for (var index = 0; index < operations.Count; index++)
+        {
+            if (RazorVueOperationNormalizer.Unwrap(operations[index]) is ILocalFunctionOperation declaration &&
+                SymbolEqualityComparer.Default.Equals(declaration.Symbol.OriginalDefinition, localFunction))
+            {
+                declarationIndex = index;
+                return true;
+            }
+        }
+
+        declarationIndex = -1;
+        return false;
     }
 
     private static bool ContainsPendingSupportedLocalDeclarator(IOperation operation, ILocalSymbol localSymbol)
@@ -343,6 +453,12 @@ internal static class RazorVueImperativeRenderSegmentationPlanner
             case IUsingDeclarationOperation:
                 kind = RazorVueImperativeBlockKind.TryBlock;
                 return true;
+            case ILabeledOperation:
+                kind = RazorVueImperativeBlockKind.MethodBody;
+                return true;
+            case IBranchOperation { BranchKind: BranchKind.GoTo }:
+                kind = RazorVueImperativeBlockKind.MethodBody;
+                return true;
             case IBranchOperation { BranchKind: BranchKind.Break or BranchKind.Continue }:
                 kind = RazorVueImperativeBlockKind.LoopBlock;
                 return true;
@@ -387,7 +503,7 @@ internal static class RazorVueImperativeRenderSegmentationPlanner
         if (ContainsUsingDeclarationSemantics(operations, startIndex, endExclusive))
             return true;
 
-        var declaredLocals = CollectDeclaredLocals(operations, startIndex, endExclusive);
+        var declaredLocals = RazorVueOperationLocalCollector.CollectDeclaredLocals(operations, startIndex, endExclusive);
         if (declaredLocals.Count == 0)
             return false;
 
@@ -407,7 +523,7 @@ internal static class RazorVueImperativeRenderSegmentationPlanner
     {
         for (var index = startIndex; index < endExclusive; index++)
         {
-            foreach (var current in EnumerateSelfAndDescendants(operations[index]))
+            foreach (var current in RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(operations[index]))
             {
                 if (current is IUsingDeclarationOperation)
                     return true;
@@ -417,52 +533,9 @@ internal static class RazorVueImperativeRenderSegmentationPlanner
         return false;
     }
 
-    private static HashSet<ILocalSymbol> CollectDeclaredLocals(
-        IReadOnlyList<IOperation> operations,
-        int startIndex,
-        int endExclusive)
-    {
-        var declaredLocals = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
-        for (var index = startIndex; index < endExclusive; index++)
-        {
-            foreach (var current in EnumerateSelfAndDescendants(operations[index]))
-            {
-                switch (current)
-                {
-                    case IVariableDeclarationGroupOperation declarationGroup:
-                        foreach (var declaration in declarationGroup.Declarations)
-                        {
-                            foreach (var declarator in declaration.Declarators)
-                                declaredLocals.Add(declarator.Symbol);
-                        }
-
-                        break;
-                    case IForEachLoopOperation foreachLoop:
-                        foreach (var local in foreachLoop.Locals)
-                            declaredLocals.Add(local);
-                        break;
-                    case IForLoopOperation forLoop:
-                        foreach (var local in forLoop.Locals)
-                            declaredLocals.Add(local);
-                        break;
-                    case IUsingDeclarationOperation usingDeclaration when usingDeclaration.DeclarationGroup is not null:
-                        foreach (var declaration in usingDeclaration.DeclarationGroup.Declarations)
-                        {
-                            foreach (var declarator in declaration.Declarators)
-                                declaredLocals.Add(declarator.Symbol);
-                        }
-
-                        break;
-                }
-            }
-        }
-
-        return declaredLocals;
-    }
-
     private static bool ReadsAnyLocal(IOperation operation, HashSet<ILocalSymbol> locals)
     {
-        foreach (var current in EnumerateSelfAndDescendants(operation))
+        foreach (var current in RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(operation))
         {
             if (current is ILocalReferenceOperation localReference &&
                 locals.Contains(localReference.Local))
@@ -472,20 +545,6 @@ internal static class RazorVueImperativeRenderSegmentationPlanner
         }
 
         return false;
-    }
-
-    private static IEnumerable<IOperation> EnumerateSelfAndDescendants(IOperation operation)
-    {
-        operation = RazorVueOperationNormalizer.Unwrap(operation)!;
-        yield return operation;
-        foreach (var child in operation.ChildOperations)
-        {
-            if (child is null)
-                continue;
-
-            foreach (var nested in EnumerateSelfAndDescendants(child))
-                yield return nested;
-        }
     }
 
     private static bool IsRenderTreeBuilderType(ITypeSymbol? typeSymbol)

@@ -171,7 +171,11 @@ public partial class SemanticWalker
 
 	private Expression? BuildFullTypeName(ITypeSymbol symbol, SenseArgument? context = null)
 	{
-		if (symbol is INamedTypeSymbol namedTypeSymbol &&
+		var namedTypeSymbol = symbol as INamedTypeSymbol;
+		if (namedTypeSymbol is not null)
+			Host?.ObserveTypeReference(namedTypeSymbol, context ?? SenseArgument.Default);
+
+		if (namedTypeSymbol is not null &&
 			TryGetCurrentModuleDeclaredName(namedTypeSymbol, out var moduleDeclaredTypeName))
 		{
 			return new Identifier(moduleDeclaredTypeName);

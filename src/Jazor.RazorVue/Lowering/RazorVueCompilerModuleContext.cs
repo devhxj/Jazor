@@ -83,6 +83,15 @@ internal sealed class RazorVueCompilerModuleContext
         }
     }
 
+    public void RecordTypeReference(ITypeSymbol type)
+    {
+        if (type is INamedTypeSymbol namedType &&
+            _helperTypeNames.ContainsKey(namedType.OriginalDefinition))
+        {
+            _requiredHelperTypes.Add(namedType.OriginalDefinition);
+        }
+    }
+
     public void AppendRequiredHelperTypeDeclarations(StringBuilder builder, string indent)
     {
         if (_requiredHelperTypes.Count == 0)
@@ -269,7 +278,6 @@ internal sealed class RazorVueCompilerModuleContext
     private static bool IsRuntimeHelperTypeCandidate(INamedTypeSymbol type)
         => type.TypeKind == TypeKind.Class &&
            !type.IsRecord &&
-           !type.IsStatic &&
            type.TypeParameters.Length == 0 &&
            !HasDirectECMAScriptSupportMarker(type);
 
@@ -364,6 +372,12 @@ internal sealed class RazorVueCompilerModuleContext
 
     private sealed class HelperDiscoveryCompilerHost(RazorVueCompilerModuleContext context) : SemanticWalkerHost
     {
+        public override void ObserveTypeReference(ITypeSymbol type, SenseArgument argument)
+        {
+            _ = argument;
+            context.RecordTypeReference(type);
+        }
+
         public override Expression? RewriteObjectCreationPreorder(IObjectCreationOperation operation, SenseArgument argument)
         {
             _ = argument;

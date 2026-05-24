@@ -36,10 +36,11 @@ internal static class RazorVueImperativeRenderPromotionAnalyzer
             ILockOperation lockOperation => RequiresImperativePromotion(lockOperation.Body),
             IUsingOperation usingOperation => RequiresImperativePromotion(usingOperation.Body),
             IUsingDeclarationOperation => true,
+            ILabeledOperation => true,
             IThrowOperation => true,
             IAwaitOperation => true,
             IExpressionStatementOperation expressionStatement => RequiresImperativePromotionExpressionStatement(expressionStatement),
-            IBranchOperation { BranchKind: BranchKind.Break or BranchKind.Continue } => true,
+            IBranchOperation { BranchKind: BranchKind.Break or BranchKind.Continue or BranchKind.GoTo } => true,
             _ => false
         };
     }
@@ -82,6 +83,8 @@ internal static class RazorVueImperativeRenderPromotionAnalyzer
             ITryOperation => RazorVueImperativeBlockKind.TryBlock,
             IUsingOperation => RazorVueImperativeBlockKind.TryBlock,
             IUsingDeclarationOperation => RazorVueImperativeBlockKind.TryBlock,
+            ILabeledOperation => RazorVueImperativeBlockKind.MethodBody,
+            IBranchOperation { BranchKind: BranchKind.GoTo } => RazorVueImperativeBlockKind.MethodBody,
             IBranchOperation { BranchKind: BranchKind.Break or BranchKind.Continue } => RazorVueImperativeBlockKind.LoopBlock,
             IExpressionStatementOperation expressionStatement => TryClassifyExpressionStatement(expressionStatement),
             IAssignmentOperation => RazorVueImperativeBlockKind.LocalBlock,

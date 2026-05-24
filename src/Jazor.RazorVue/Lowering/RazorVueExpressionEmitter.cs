@@ -713,6 +713,12 @@ internal sealed partial class RazorVueExpressionEmitter
                 : null;
         }
 
+        public override void ObserveTypeReference(ITypeSymbol type, SenseArgument argument)
+        {
+            _ = argument;
+            _emitter._compilerModuleContext.RecordTypeReference(type);
+        }
+
         public override VariableDeclarator? RewriteVariableDeclaratorPreorder(IVariableDeclaratorOperation operation, SenseArgument argument)
             => _emitter.TryRewriteVariableDeclarator(operation, argument, out var declaratorExpression)
                 ? new VariableDeclarator(new Identifier(operation.Symbol.Name), ParseJavaScriptExpression(declaratorExpression))

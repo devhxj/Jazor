@@ -1858,6 +1858,34 @@ public sealed class SemanticWalkerTupleTest
 }", script);
     }
 
+    [TestMethod]
+    public void Visit_Tuple_DeconstructVarThenRead_DeclaresTargetsInFunctionScope()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var pair = (Title: ""ready"", Suffix: ""!"");
+                    var (label, suffix) = pair;
+                    var result = label + suffix;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertTupleScriptEqual(
+@"{
+  let label, suffix;
+  let pair = { title: ""ready"", suffix: ""!"" };
+  label = pair.title, suffix = pair.suffix;
+  let result = label + suffix;
+}", script);
+    }
+
     /// <summary>
     /// 测试元组解构带丢弃
     /// </summary>

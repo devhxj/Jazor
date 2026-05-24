@@ -4591,6 +4591,332 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithNestedHelperTypeTypeReferenceAndStaticMemberInBuildRenderTree_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/nested-type-card")]
+                public class NestedTypeCard : ComponentBase, IVueComponent
+                {
+                    private sealed class TestDisposable : IDisposable
+                    {
+                        public static string Describe() => "helper";
+
+                        public void Dispose() { }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        lock (this)
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, typeof(TestDisposable).Name);
+                            builder.AddContent(2, TestDisposable.Describe());
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+        var classIndex = artifact.SfcText.IndexOf("class TestDisposable", StringComparison.Ordinal);
+        var exportIndex = artifact.SfcText.IndexOf("export default defineComponent", StringComparison.Ordinal);
+
+        Assert.AreEqual("components/nested-type-card.vue", artifact.RelativeSfcPath);
+        Assert.IsTrue(classIndex >= 0, artifact.SfcText);
+        Assert.IsTrue(exportIndex > classIndex, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
+        StringAssert.Contains(artifact.SfcText, "TestDisposable.name");
+        StringAssert.Contains(artifact.SfcText, "TestDisposable.describe()");
+        StringAssert.Contains(artifact.SfcText, "try {");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithStaticNestedHelperTypeStaticMemberInBuildRenderTree_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/static-helper-card")]
+                public class StaticHelperCard : ComponentBase, IVueComponent
+                {
+                    private static class StaticHelpers
+                    {
+                        public static string Label = "helper";
+
+                        public static string Describe() => Label;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        lock (this)
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, typeof(StaticHelpers).Name);
+                            builder.AddContent(2, StaticHelpers.Describe());
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+        var classIndex = artifact.SfcText.IndexOf("class StaticHelpers", StringComparison.Ordinal);
+        var exportIndex = artifact.SfcText.IndexOf("export default defineComponent", StringComparison.Ordinal);
+
+        Assert.AreEqual("components/static-helper-card.vue", artifact.RelativeSfcPath);
+        Assert.IsTrue(classIndex >= 0, artifact.SfcText);
+        Assert.IsTrue(exportIndex > classIndex, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "static label = \"helper\";");
+        StringAssert.Contains(artifact.SfcText, "static describe()");
+        StringAssert.Contains(artifact.SfcText, "StaticHelpers.name");
+        StringAssert.Contains(artifact.SfcText, "StaticHelpers.describe()");
+        StringAssert.Contains(artifact.SfcText, "try {");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithReferencedLocalFunctionDeclarationInMixedImperativeRenderSegment_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/local-function-card")]
+                public class LocalFunctionCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "header");
+                        builder.AddContent(1, Title);
+                        builder.CloseElement();
+
+                        void AppendLine(string value)
+                        {
+                            builder.OpenElement(2, "p");
+                            builder.AddContent(3, value);
+                            builder.CloseElement();
+                        }
+
+                        var index = 0;
+                        while (index < 1)
+                        {
+                            AppendLine("ready");
+                            index++;
+                        }
+
+                        builder.OpenElement(4, "footer");
+                        builder.AddContent(5, "done");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual("components/local-function-card.vue", artifact.RelativeSfcPath);
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "h(\"header\", null, props.title)");
+        StringAssert.Contains(artifact.SfcText, "function AppendLine(value)");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"p\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(value);");
+        StringAssert.Contains(artifact.SfcText, "while (index < 1) {");
+        StringAssert.Contains(artifact.SfcText, "AppendLine(\"ready\");");
+        StringAssert.Contains(artifact.SfcText, "h(\"footer\", null, \"done\")");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithLabeledBlockInMixedImperativeRenderSegment_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/labeled-card")]
+                public class LabeledCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "header");
+                        builder.AddContent(1, Title);
+                        builder.CloseElement();
+
+                        renderBlock:
+                        {
+                            builder.OpenElement(2, "section");
+                            builder.AddContent(3, "labeled");
+                            builder.CloseElement();
+                        }
+
+                        builder.OpenElement(4, "footer");
+                        builder.AddContent(5, "done");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual("components/labeled-card.vue", artifact.RelativeSfcPath);
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "h(\"header\", null, props.title)");
+        StringAssert.Contains(artifact.SfcText, "renderBlock: {");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(\"labeled\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.leaveElement();");
+        StringAssert.Contains(artifact.SfcText, "h(\"footer\", null, \"done\")");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithDeconstructionAssignmentInMixedImperativeRenderSegment_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/deconstruction-card")]
+                public class DeconstructionCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "header");
+                        builder.AddContent(1, Title);
+                        builder.CloseElement();
+
+                        var pair = (Title, "ready");
+                        var (label, suffix) = pair;
+                        var index = 0;
+                        while (index < 1)
+                        {
+                            builder.OpenElement(2, "p");
+                            builder.AddContent(3, label);
+                            builder.AddContent(4, suffix);
+                            builder.CloseElement();
+                            index++;
+                        }
+
+                        builder.OpenElement(5, "footer");
+                        builder.AddContent(6, label);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual("components/deconstruction-card.vue", artifact.RelativeSfcPath);
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "h(\"header\", null, props.title)");
+        StringAssert.Contains(artifact.SfcText, "label = pair.");
+        StringAssert.Contains(artifact.SfcText, "suffix = pair.");
+        StringAssert.Contains(artifact.SfcText, "while (index < 1) {");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"p\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(label);");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(suffix);");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"footer\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(label);");
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_WithNestedHelperTypeClrImportInBuildRenderTree_LowersRenderFunctionVueSfc()
     {
         var context = CreateContext(

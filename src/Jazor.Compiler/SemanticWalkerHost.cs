@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Acornima.Ast;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Jazor.Compiler;
@@ -16,6 +17,10 @@ public abstract class SemanticWalkerHost
 
     public virtual Expression? RewriteObjectCreationPreorder(IObjectCreationOperation operation, SenseArgument argument)
         => null;
+
+    public virtual void ObserveTypeReference(ITypeSymbol type, SenseArgument argument)
+    {
+    }
 
     public virtual VariableDeclarator? RewriteVariableDeclaratorPreorder(IVariableDeclaratorOperation operation, SenseArgument argument)
         => null;

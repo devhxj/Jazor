@@ -70,7 +70,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         if (symbol is null)
             throw new ArgumentNullException(nameof(symbol));
 
-        if (symbol.TypeKind != TypeKind.Class || symbol.IsRecord || symbol.IsStatic)
+        if (symbol.TypeKind != TypeKind.Class || symbol.IsRecord)
             throw new NotSupportedException($"Jazor runtime class conversion does not support {symbol.Kind}:{symbol.Name}.");
 
         return ConvertMemberClass(symbol, GetSupportedRuntimeClassBaseType(symbol), cancellationToken);
