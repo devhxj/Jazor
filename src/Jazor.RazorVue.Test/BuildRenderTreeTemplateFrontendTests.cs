@@ -712,6 +712,72 @@ public sealed class BuildRenderTreeTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_WithCallerOwnedRenderHelperRegion_ProducesChildReplay()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        RenderBody(builder, Title);
+                        builder.CloseElement();
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder, string? title)
+                    {
+                        builder.OpenRegion(1);
+                        builder.OpenElement(2, "span");
+                        builder.AddContent(3, title);
+                        builder.CloseElement();
+                        builder.CloseRegion();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+
+        var section = renderTree.Children.Single() as RazorVueElementNode;
+        Assert.IsNotNull(section);
+        var span = section.Children.Children.Single() as RazorVueElementNode;
+        Assert.IsNotNull(span);
+        Assert.AreEqual("span", span.TagName);
+        Assert.IsFalse(section.ReplayOperations.IsDefaultOrEmpty);
+        var scopedReplay = section.ReplayOperations.OfType<RazorVueOpenNodeScopedReplayOperation>().Single();
+        Assert.AreEqual(1, scopedReplay.CapturedBindings.Length);
+        Assert.AreEqual("title", scopedReplay.CapturedBindings[0].ParameterSymbol.Name);
+        var childReplay = scopedReplay.Operations.Single() as RazorVueOpenNodeChildReplayOperation;
+        Assert.IsNotNull(childReplay);
+        var replaySpan = childReplay.Child as RazorVueElementNode;
+        Assert.IsNotNull(replaySpan);
+        Assert.AreEqual("span", replaySpan.TagName);
+    }
+
+    [TestMethod]
     public void CreateRenderTree_WithOpenComponentUsingTypeOf_ResolvesComponentNode()
     {
         var context = CreateContext(
@@ -2591,6 +2657,90 @@ public sealed class BuildRenderTreeTemplateFrontendTests
         var expression = span.Children.Children.Single() as RazorVueExpressionNode;
         Assert.IsNotNull(expression);
         Assert.IsInstanceOfType<IParameterReferenceOperation>(expression.Expression);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithCurrentComponentRenderHelperMethodRequiringExtraParametersAndCallerOwnedRegionAmbientDefaultSlotChild_PreservesOpenComponentDefaultSlotShape()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/panel")]
+                public class Panel : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment? ChildContent { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<Panel>(0);
+                        RenderBody(builder, Title);
+                        builder.CloseComponent();
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder, string? title)
+                    {
+                        builder.OpenRegion(1);
+                        builder.OpenElement(2, "span");
+                        builder.AddContent(3, title);
+                        builder.CloseElement();
+                        builder.CloseRegion();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+
+        var component = renderTree.Children.Single() as RazorVueComponentNode;
+        Assert.IsNotNull(component);
+        Assert.AreEqual("Panel", component.ComponentName);
+        Assert.IsTrue(component.ImplicitDefaultSlotAssignments.IsDefaultOrEmpty);
+        Assert.AreEqual(1, component.AmbientDefaultSlotChildren.Children.Length);
+
+        var span = component.AmbientDefaultSlotChildren.Children.Single() as RazorVueElementNode;
+        Assert.IsNotNull(span);
+        Assert.AreEqual("span", span.TagName);
+        var expression = span.Children.Children.Single() as RazorVueExpressionNode;
+        Assert.IsNotNull(expression);
+        Assert.IsInstanceOfType<IParameterReferenceOperation>(expression.Expression);
+
+        var scopedReplay = component.ReplayOperations.OfType<RazorVueOpenNodeScopedReplayOperation>().Single();
+        Assert.AreEqual(1, scopedReplay.CapturedBindings.Length);
+        Assert.AreEqual("title", scopedReplay.CapturedBindings[0].ParameterSymbol.Name);
+        var slotReplay = scopedReplay.Operations.Single() as RazorVueOpenNodeAmbientDefaultSlotFragmentReplayOperation;
+        Assert.IsNotNull(slotReplay);
+        Assert.AreEqual(1, slotReplay.Children.Children.Length);
+        var replaySpan = slotReplay.Children.Children.Single() as RazorVueElementNode;
+        Assert.IsNotNull(replaySpan);
+        Assert.AreEqual("span", replaySpan.TagName);
+        var replayExpression = replaySpan.Children.Children.Single() as RazorVueExpressionNode;
+        Assert.IsNotNull(replayExpression);
+        Assert.IsInstanceOfType<IParameterReferenceOperation>(replayExpression.Expression);
     }
 
     [TestMethod]

@@ -110,19 +110,37 @@ public static class RazorVueManifestSerializer
         => string.IsNullOrWhiteSpace(currentValue) ? fallbackValue : currentValue!;
 
     private static string NormalizeSourceMapPath(string? currentValue, string relativeModulePath)
-        => string.IsNullOrWhiteSpace(currentValue) ? relativeModulePath + ".map" : currentValue!;
+        => NormalizeManifestRelativePath(currentValue, relativeModulePath + ".map", "source map relative path");
 
     private static string NormalizeOriginMapPath(string? currentValue, string relativeModulePath)
-        => string.IsNullOrWhiteSpace(currentValue) ? relativeModulePath + ".origins.json" : currentValue!;
+        => NormalizeManifestRelativePath(currentValue, relativeModulePath + ".origins.json", "origin map relative path");
 
     private static bool TryLoadUnifiedManifest(string json, string? componentModel, out RazorVueManifestModel manifest)
     {
         var unifiedManifest = JsonSerializer.Deserialize<UnifiedJazorManifestModel>(json, UnifiedManifestJsonOptions);
-        if (unifiedManifest?.Modules is null || !LooksLikeUnifiedManifest(unifiedManifest))
+        if (unifiedManifest is null)
         {
             manifest = null!;
             return false;
         }
+
+        if (unifiedManifest.Modules is null)
+        {
+            if (!string.IsNullOrWhiteSpace(unifiedManifest.RootAssemblyPath))
+                throw new InvalidDataException("Unified Jazor manifest modules cannot be null.");
+
+            manifest = null!;
+            return false;
+        }
+
+        if (!LooksLikeUnifiedManifest(unifiedManifest))
+        {
+            manifest = null!;
+            return false;
+        }
+
+        if (unifiedManifest.Modules.Any(static module => module is null))
+            throw new InvalidDataException("Unified Jazor manifest modules cannot contain null entries.");
 
         var componentModules = unifiedManifest.Modules
             .Where(static module => module.Component is not null)
@@ -144,35 +162,23 @@ public static class RazorVueManifestSerializer
     private static bool LooksLikeUnifiedManifest(UnifiedJazorManifestModel manifest)
         => !string.IsNullOrWhiteSpace(manifest.RootAssemblyPath)
            || manifest.Modules.Any(static module =>
-               !string.IsNullOrWhiteSpace(module.RelativePath)
+               module is not null &&
+               (!string.IsNullOrWhiteSpace(module.RelativePath)
                || !string.IsNullOrWhiteSpace(module.Kind)
                || !string.IsNullOrWhiteSpace(module.TypeName)
                || !string.IsNullOrWhiteSpace(module.Id)
-               || module.Component is not null);
+               || module.Component is not null));
 
     private static RazorVueManifestModel NormalizeManifest(RazorVueManifestModel manifest)
     {
+        if (manifest.Modules is null)
+            throw new InvalidDataException("Legacy RazorVue manifest modules cannot be null.");
+
+        if (manifest.Modules.Any(static module => module is null))
+            throw new InvalidDataException("Legacy RazorVue manifest modules cannot contain null entries.");
+
         var normalizedModules = manifest.Modules
-            .Select(static module => module with
-            {
-                ComponentId = NormalizeIdentityValue(
-                    module.ComponentId,
-                    module.AssemblyName + "::" + module.ComponentName),
-                ModuleId = NormalizeIdentityValue(
-                    module.ModuleId,
-                    module.RelativeModulePath),
-                RouteTemplates = NormalizeRouteTemplates(module.RouteTemplates ?? new List<string>()),
-                SourceMapPath = NormalizeSourceMapPath(
-                    module.SourceMapPath,
-                    module.RelativeModulePath),
-                OriginMapPath = NormalizeOriginMapPath(
-                    module.OriginMapPath,
-                    module.RelativeModulePath),
-                StyleHash = module.StyleHash ?? string.Empty,
-                ComponentModel = NormalizeComponentModel(module.ComponentModel),
-                Styles = NormalizeHostRequirementList(module.Styles),
-                PluginRequirements = NormalizeHostRequirementList(module.PluginRequirements)
-            })
+            .Select(NormalizeLegacyManifestEntry)
             .ToList();
 
         return manifest with
@@ -186,6 +192,42 @@ public static class RazorVueManifestSerializer
                 manifest.PluginRequirements is not null
                     ? manifest.PluginRequirements
                     : normalizedModules.SelectMany(static module => module.PluginRequirements).ToList())
+        };
+    }
+
+    private static RazorVueManifestEntry NormalizeLegacyManifestEntry(RazorVueManifestEntry module)
+    {
+        var assemblyName = NormalizeRequiredValue(module.AssemblyName, "legacy RazorVue manifest module assembly name");
+        var componentName = NormalizeRequiredValue(module.ComponentName, "legacy RazorVue manifest module component name");
+        var relativeModulePath = NormalizeManifestRelativePath(module.RelativeModulePath, null, "relative path");
+
+        return module with
+        {
+            AssemblyName = assemblyName,
+            ComponentName = componentName,
+            ComponentId = NormalizeIdentityValue(
+                module.ComponentId,
+                assemblyName + "::" + componentName),
+            ModuleId = NormalizeIdentityValue(
+                module.ModuleId,
+                relativeModulePath),
+            RouteTemplates = NormalizeRouteTemplates(module.RouteTemplates ?? new List<string>()),
+            RelativeModulePath = relativeModulePath,
+            SourceMapPath = NormalizeSourceMapPath(
+                module.SourceMapPath,
+                relativeModulePath),
+            OriginMapPath = NormalizeOriginMapPath(
+                module.OriginMapPath,
+                relativeModulePath),
+            Imports = NormalizeHostRequirementList(module.Imports ?? new List<string>()),
+            Styles = NormalizeHostRequirementList(module.Styles ?? new List<string>()),
+            PluginRequirements = NormalizeHostRequirementList(module.PluginRequirements ?? new List<string>()),
+            DescriptorHash = module.DescriptorHash ?? string.Empty,
+            TemplateHash = module.TemplateHash ?? string.Empty,
+            LogicHash = module.LogicHash ?? string.Empty,
+            ContentHash = module.ContentHash ?? string.Empty,
+            StyleHash = module.StyleHash ?? string.Empty,
+            ComponentModel = NormalizeComponentModel(module.ComponentModel)
         };
     }
 
@@ -210,7 +252,9 @@ public static class RazorVueManifestSerializer
     {
         var component = module.Component
             ?? throw new InvalidDataException("Unified Jazor manifest module does not contain component metadata.");
-        var relativePath = NormalizeRelativeModulePath(module.RelativePath);
+        var assemblyName = NormalizeRequiredValue(module.AssemblyName, "unified Jazor manifest component assembly name");
+        var typeName = NormalizeRequiredValue(module.TypeName, "unified Jazor manifest component type name");
+        var relativePath = NormalizeManifestRelativePath(module.RelativePath, null, "relative path");
         var componentModel = NormalizeComponentModel(component.Model);
 
         if (componentModel == "sfc" && !string.Equals(NormalizeModuleKind(module.Kind), "vue", StringComparison.Ordinal))
@@ -226,10 +270,10 @@ public static class RazorVueManifestSerializer
         }
 
         return new RazorVueManifestEntry(
-            module.AssemblyName,
-            NormalizeIdentityValue(component.ComponentId, module.AssemblyName + "::" + module.TypeName),
+            assemblyName,
+            NormalizeIdentityValue(component.ComponentId, assemblyName + "::" + typeName),
             NormalizeIdentityValue(component.ModuleId, relativePath),
-            NormalizeIdentityValue(component.ComponentName, module.TypeName),
+            NormalizeIdentityValue(component.ComponentName, typeName),
             NormalizeRouteTemplates(component.RouteTemplates ?? new List<string>()),
             relativePath,
             NormalizeSourceMapPath(module.SourceMapPath, relativePath),
@@ -248,6 +292,14 @@ public static class RazorVueManifestSerializer
             componentModel);
     }
 
+    private static string NormalizeRequiredValue(string? value, string description)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            throw new InvalidDataException($"RazorVue manifest {description} cannot be empty.");
+
+        return value!.Trim();
+    }
+
     private static string NormalizeModuleKind(string? kind)
     {
         if (string.IsNullOrWhiteSpace(kind))
@@ -261,7 +313,10 @@ public static class RazorVueManifestSerializer
         if (string.IsNullOrWhiteSpace(model))
             return "h";
 
-        return model!.Trim().ToLowerInvariant();
+        var normalized = model!.Trim().ToLowerInvariant();
+        return normalized is "h" or "sfc"
+            ? normalized
+            : throw new InvalidDataException("Unsupported manifest component model '" + model + "'.");
     }
 
     private static bool MatchesComponentModel(RazorVueManifestEntry module, string? componentModel)
@@ -271,9 +326,20 @@ public static class RazorVueManifestSerializer
                NormalizeComponentModel(componentModel),
                StringComparison.Ordinal);
 
-    private static string NormalizeRelativeModulePath(string relativePath)
+    private static string NormalizeManifestRelativePath(string? path, string? fallbackPath, string description)
     {
-        var normalized = relativePath.Replace('\\', '/').TrimStart('/');
+        var effectivePath = string.IsNullOrWhiteSpace(path) ? fallbackPath : path;
+        if (string.IsNullOrWhiteSpace(effectivePath))
+            throw new InvalidDataException($"RazorVue manifest {description} cannot be empty.");
+
+        var rawPath = effectivePath!.Trim();
+        if (StartsWithRootMarker(rawPath) || ContainsDriveQualifiedSegment(rawPath))
+        {
+            throw new InvalidDataException(
+                $"RazorVue manifest {description} must be relative: '{effectivePath}'.");
+        }
+
+        var normalized = rawPath.Replace('\\', '/');
         while (normalized.StartsWith("./", StringComparison.Ordinal))
             normalized = normalized.Substring(2);
 
@@ -281,10 +347,32 @@ public static class RazorVueManifestSerializer
             .Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
             .Where(static segment => segment != ".")
             .ToArray();
+        if (segments.Length == 0)
+            throw new InvalidDataException($"RazorVue manifest {description} cannot be empty.");
+
         if (segments.Any(static segment => segment == ".."))
-            throw new InvalidDataException($"Unified Jazor manifest relative path cannot escape output directory: '{relativePath}'.");
+        {
+            throw new InvalidDataException(
+                $"RazorVue manifest {description} cannot escape output directory: '{effectivePath}'.");
+        }
 
         return string.Join("/", segments);
+    }
+
+    private static bool StartsWithRootMarker(string path)
+        => path.StartsWith("/", StringComparison.Ordinal) ||
+           path.StartsWith("\\", StringComparison.Ordinal);
+
+    private static bool ContainsDriveQualifiedSegment(string path)
+    {
+        var normalized = path.Replace('\\', '/');
+        return normalized
+            .Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
+            .Any(static segment =>
+                segment.Length >= 2 &&
+                segment[1] == ':' &&
+                ((segment[0] >= 'A' && segment[0] <= 'Z') ||
+                 (segment[0] >= 'a' && segment[0] <= 'z')));
     }
 
     private static string ResolveManifestAssemblyName(string? rootAssemblyPath, IReadOnlyList<RazorVueManifestEntry> modules)

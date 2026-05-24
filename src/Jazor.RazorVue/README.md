@@ -248,6 +248,7 @@
   - `.vue` / SFC artifact 的 render-function 承载
   - imperative 产物 runtime vocabulary 现已统一为 render-context（`__jazorRenderContext`、`enterElement/leaveElement`、`append`、`setComponentParameter`、`finish`）；最终 Vue 产物不再暴露 Razor `RenderTreeBuilder` 语义
   - 首段真实 imperative render 承载：提前 `return`、`while` / `do-while`、带 `break` / `continue` 的 `for` / `foreach`、`switch`、`lock`、`try/catch/finally`、`using` / `using declaration`、无 `goto` 的 labeled statement、局部 mutation、imperative body 内静态 `AddMarkupContent(...)` / `AddContent(..., MarkupString)`。`goto` 继续显式 fail-fast，因为 `Jazor.Compiler` 也不提供等价 JS lowering
+  - body-level imperative `OpenRegion(...)` / `CloseRegion()` 作为 frame-shape 边界保留，不生成 Vue vnode；render-context 会校验 close 时回到 open 时的 frame depth，并在 `finish()` 时拒绝未闭合 region
   - mixed render-function 组合层会保留可声明式表达的 sibling vnode：普通 count-style `for` / `foreach`、conditional、template scope、attribute/key/event scoped replay 仍优先发射为表达式；只有 scoped replay 内真正需要 frame/slot/child 回放时才进入 render-context bridge
   - mixed imperative body 中若声明式 sibling 使用 attribute spread，`.mjs` 与 render-function `.vue` builder 都会按 body dependency 注入 `__jazorVueMergeAttributes(...)` helper；表达式本身仍由 `SemanticWalker` / `Jazor.Compiler` lowering
   - mixed imperative segment 会保留同一 `BuildRenderTree` body 内被该 segment 实际调用的前置 local function declaration。例如“声明式 header + `void AppendLine(...)` + `while` 调用 + 声明式 footer”只会把 local function declaration、必要局部和 `while` 纳入同一个 `RazorVueImperativeBlockNode`，header/footer 仍保持声明式 sibling。local function declaration/call 的最终 JS 继续由 `SemanticWalker` 负责，planner 只维护 segment 依赖边界。该依赖扩展也会递归进入已纳入 segment 的 local function body，因此 `AppendLine(...)` 内再调用 `FormatLine(...)` 这类 transitive local helper 时，两者声明会一并保留
@@ -376,7 +377,10 @@
   - 调用点参数与 helper 声明一一对应；支持 named argument，也支持安全可投影的 omitted optional default value
   - 多个额外参数会按调用点实参求值顺序形成嵌套局部作用域，同时保持每个 helper 形参绑定到其正确实参；即使 named argument 打乱声明顺序，也不会退化成按声明顺序重排求值
   - 对 `params` 参数，RazorVue 保留 Roslyn 的单数组绑定结果；canonical/H 会直接使用该数组表达式，SFC 会在需要时把数组初始化提升为 setup binding，再通过局部 template scope wrapper 消费
-  - helper body 必须源码可分析且自身形成可独立 canonicalize 的片段；不支持依赖调用方已打开节点/component frame 的 attribute/key/close 协议
+  - helper body 必须源码可分析；它可以自身形成可独立 canonicalize 的片段，也可以在调用方已打开 element/component frame 时执行受控 caller-owned replay
+  - caller-owned replay 覆盖 attribute / key / spread mutation、slot/default-slot assignment、ambient child emission，以及 helper-local 平衡 `OpenRegion` / `CloseRegion` 包裹的 child emission
+  - helper-local 平衡 region 会作为 Razor frame-shape 边界被 frontend 校验并在 replay 中归一化；element child replay 与 component ambient default-slot fragment replay 都会在最终 `.mjs` / render-function `.vue` 中擦除这类 region，不会无意义保留成 Vue runtime node，也不会把 component default-slot subtree 误发射为普通 children
+  - 仍不支持 `ref` / `out` / `in` 参数、跨 helper 留下未闭合 frame、关闭/重开 caller-owned frame、region 逃逸/不平衡、改变最终 active caller-owned frame，或需要跨 helper 推断 frame shape 的协议
 - 同文件 helper class 也可由 helper / using 路径触发递归 lowering，但仍必须是同步、源码可分析、同 artifact module 内的 runtime class；泛型、record、helper component 或 ECMAScript host type 不会进入该通道。static helper class 仅作为 RazorVue runtime helper class 支持，发射为带 `static` 成员的 JS class；普通模块级 static nested class 的导出策略仍保持 fail-fast。`await using` / `await using var` 仍显式 fail-fast，不进入同一 helper lowering 通道。
 - 对 SFC 输出，模板局部声明会编码为局部 template scope wrapper，而不是泄漏为顶层 `script setup` 公共绑定。
 

@@ -84,6 +84,7 @@ dotnet run --project src/Jazor.Emit -- razorvue-consumer-entry --host-root <jazo
 - `component.model = "h"` 的 RazorVue H 组件不会经过 SFC bridge，而是从 host `jazor` 根中的 `.mjs` 直接 default import。
 - `component.model = "sfc"` 的 RazorVue SFC 组件才会进入 `razorvue-sfc-bridge`，并以 named-export `.mjs` bridge 形式进入 consumer entry。
 - 当只选择部分 SFC 组件时，bridge 只编译选中的 entry 及其相对 `.vue` 依赖闭包，不会因为 manifest 中未选中的坏 SFC 组件拖垮 consumer build。
+- manifest 中的 component module path 与 sidecar path 必须是 manifest-relative path；统一 manifest 的 `relativePath` / `sourceMapPath` / `component.originMapPath`，以及 legacy RazorVue manifest 的 `RelativeModulePath` / `SourceMapPath` / `OriginMapPath`，遇到 rooted path、drive-qualified path 或 `..` 逃逸会在 projection 阶段直接判为 invalid。malformed module list、null entry、缺失必需 component identity 字段也会稳定判为 invalid，不会进入 bridge/consumer 文件解析。
 
 consumer runtime export 的稳定签名是：
 

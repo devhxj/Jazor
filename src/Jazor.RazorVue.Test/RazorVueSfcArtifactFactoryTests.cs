@@ -4090,6 +4090,63 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithBalancedRegionInImperativeBuildRenderTree_EmitsRegionDepthValidation()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-region-card")]
+                public class ImperativeRegionCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Hide { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (Hide)
+                        {
+                            return;
+                        }
+
+                        builder.OpenElement(0, "section");
+                        builder.OpenRegion(1);
+                        builder.AddContent(2, "ready");
+                        builder.CloseRegion();
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.openRegion();");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(\"ready\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.closeRegion();");
+        StringAssert.Contains(artifact.SfcText, "openRegion() { __regions.push(__stack.length); },");
+        StringAssert.Contains(artifact.SfcText, "if (__regions.length !== 0) throw new Error(\"RazorVue imperative render bridge completed with unclosed regions.\");");
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_WithCurrentComponentRenderHelperExtraParameterAndCallerOwnedAttributeMutationPlusChildEmission_LowersRenderFunctionVueSfc()
     {
         var context = CreateContext(
@@ -4141,6 +4198,67 @@ public sealed class RazorVueSfcArtifactFactoryTests
         Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
         Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
         StringAssert.Contains(artifact.SfcText, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithCurrentComponentRenderHelperExtraParameterAndCallerOwnedRegionChildEmission_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/render-helper-card")]
+                public class RenderHelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        RenderBody(builder, Title);
+                        builder.CloseElement();
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder, string? title)
+                    {
+                        builder.OpenRegion(1);
+                        builder.OpenElement(2, "span");
+                        builder.AddContent(3, title);
+                        builder.CloseElement();
+                        builder.CloseRegion();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
+        StringAssert.Contains(artifact.SfcText, "((title) => {");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(h(\"span\", null, title));");
+        StringAssert.Contains(artifact.SfcText, "})(props.title);");
+        Assert.IsFalse(artifact.SfcText.Contains("__jazorRenderContext.openRegion();", StringComparison.Ordinal), artifact.SfcText);
+        Assert.IsFalse(artifact.SfcText.Contains("__jazorRenderContext.closeRegion();", StringComparison.Ordinal), artifact.SfcText);
     }
 
     [TestMethod]
@@ -4266,6 +4384,74 @@ public sealed class RazorVueSfcArtifactFactoryTests
         Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
         StringAssert.Contains(artifact.SfcText, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
         StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.setComponentParameter(\"ChildContent\", () =>");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithCurrentComponentRenderHelperExtraParameterAndCallerOwnedRegionAmbientDefaultSlotChild_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/panel")]
+                public class Panel : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment? ChildContent { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<Panel>(0);
+                        RenderBody(builder, Title);
+                        builder.CloseComponent();
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder, string? title)
+                    {
+                        builder.OpenRegion(1);
+                        builder.OpenElement(2, "span");
+                        builder.AddContent(3, title);
+                        builder.CloseElement();
+                        builder.CloseRegion();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.setComponentParameter(\"ChildContent\", () =>");
+        Assert.IsFalse(
+            artifact.SfcText.Contains("__jazorRenderContext.append(h(\"span\", null, title));", StringComparison.Ordinal),
+            artifact.SfcText);
+        Assert.IsFalse(artifact.SfcText.Contains("__jazorRenderContext.openRegion();", StringComparison.Ordinal), artifact.SfcText);
+        Assert.IsFalse(artifact.SfcText.Contains("__jazorRenderContext.closeRegion();", StringComparison.Ordinal), artifact.SfcText);
     }
 
     [TestMethod]

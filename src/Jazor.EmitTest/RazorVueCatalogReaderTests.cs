@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Reflection;
+using System.Text.Json;
 
 namespace Jazor.EmitTest
 {
@@ -467,6 +468,374 @@ namespace Jazor.EmitTest
         }
 
         [TestMethod]
+        public void RazorVueManifestModel_Load_ReportsInvalid_WhenLegacyManifestUsesNonRelativeArtifactPath()
+        {
+            var manifestPath = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"), "jazor-manifest.json");
+            var invalidPathCases = new[]
+            {
+                ("RelativeModulePath", "/components/counter-card.mjs"),
+                ("RelativeModulePath", @"C:\temp\counter-card.mjs"),
+                ("RelativeModulePath", "components/../counter-card.mjs"),
+                ("SourceMapPath", "/components/counter-card.mjs.map"),
+                ("SourceMapPath", "components/../counter-card.mjs.map"),
+                ("OriginMapPath", @"\\server\share\counter-card.mjs.origins.json"),
+                ("OriginMapPath", "components/C:/counter-card.mjs.origins.json")
+            };
+
+            try
+            {
+                var directory = Path.GetDirectoryName(manifestPath);
+                if (!string.IsNullOrWhiteSpace(directory))
+                    Directory.CreateDirectory(directory);
+
+                foreach (var (pathProperty, invalidPath) in invalidPathCases)
+                {
+                    var relativeModulePath = pathProperty == "RelativeModulePath"
+                        ? invalidPath
+                        : "components/counter-card.mjs";
+                    var sourceMapPath = pathProperty == "SourceMapPath"
+                        ? invalidPath
+                        : "components/counter-card.mjs.map";
+                    var originMapPath = pathProperty == "OriginMapPath"
+                        ? invalidPath
+                        : "components/counter-card.mjs.origins.json";
+
+                    File.WriteAllText(
+                        manifestPath,
+                        $$"""
+                        {
+                          "AssemblyName": "Demo.Host",
+                          "GeneratedAtUtc": "2026-04-07T00:00:00Z",
+                          "Modules": [
+                            {
+                              "AssemblyName": "Demo.Components",
+                              "ComponentId": "Demo.Components::CounterCard",
+                              "ModuleId": "components/counter-card.mjs",
+                              "ComponentName": "CounterCard",
+                              "RouteTemplates": [],
+                              "RelativeModulePath": {{JsonSerializer.Serialize(relativeModulePath)}},
+                              "SourceMapPath": {{JsonSerializer.Serialize(sourceMapPath)}},
+                              "OriginMapPath": {{JsonSerializer.Serialize(originMapPath)}},
+                              "Imports": [ "vue" ],
+                              "Styles": [],
+                              "PluginRequirements": [],
+                              "DescriptorHash": "descriptor-hash",
+                              "TemplateHash": "template-hash",
+                              "LogicHash": "logic-hash",
+                              "ContentHash": "content-hash",
+                              "HmrBoundaryKind": 2,
+                              "RequiresHydration": false,
+                              "SupportsSsr": true
+                            }
+                          ]
+                        }
+                        """.ReplaceLineEndings("\n"));
+
+                    var result = RazorVueManifestSerializer.Load(manifestPath);
+
+                    Assert.AreEqual(RazorVueManifestLoadStatus.Invalid, result.Status, $"{pathProperty}: {invalidPath}");
+                    Assert.IsFalse(result.IsSuccess, $"{pathProperty}: {invalidPath}");
+                    Assert.IsNull(result.Manifest, $"{pathProperty}: {invalidPath}");
+                    StringAssert.Contains(result.Error ?? string.Empty, "relative path");
+                }
+            }
+            finally
+            {
+                var directory = Path.GetDirectoryName(manifestPath);
+                if (!string.IsNullOrWhiteSpace(directory) && Directory.Exists(directory))
+                    Directory.Delete(directory, recursive: true);
+            }
+        }
+
+        [TestMethod]
+        public void RazorVueManifestModel_Load_ReportsInvalid_WhenLegacyManifestHasMalformedModuleShape()
+        {
+            var manifestPath = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"), "jazor-manifest.json");
+            var malformedManifests = new[]
+            {
+                """
+                {
+                  "AssemblyName": "Demo.Host",
+                  "GeneratedAtUtc": "2026-04-07T00:00:00Z",
+                  "Modules": null
+                }
+                """,
+                """
+                {
+                  "AssemblyName": "Demo.Host",
+                  "GeneratedAtUtc": "2026-04-07T00:00:00Z",
+                  "Modules": [ null ]
+                }
+                """,
+                """
+                {
+                  "AssemblyName": "Demo.Host",
+                  "GeneratedAtUtc": "2026-04-07T00:00:00Z",
+                  "Modules": [
+                    {
+                      "AssemblyName": null,
+                      "ComponentName": "CounterCard",
+                      "RouteTemplates": [],
+                      "RelativeModulePath": "components/counter-card.mjs",
+                      "Imports": [],
+                      "Styles": [],
+                      "PluginRequirements": []
+                    }
+                  ]
+                }
+                """,
+                """
+                {
+                  "AssemblyName": "Demo.Host",
+                  "GeneratedAtUtc": "2026-04-07T00:00:00Z",
+                  "Modules": [
+                    {
+                      "AssemblyName": "Demo.Components",
+                      "ComponentName": null,
+                      "RouteTemplates": [],
+                      "RelativeModulePath": "components/counter-card.mjs",
+                      "Imports": [],
+                      "Styles": [],
+                      "PluginRequirements": []
+                    }
+                  ]
+                }
+                """
+            };
+
+            try
+            {
+                var directory = Path.GetDirectoryName(manifestPath);
+                if (!string.IsNullOrWhiteSpace(directory))
+                    Directory.CreateDirectory(directory);
+
+                foreach (var manifestJson in malformedManifests)
+                {
+                    File.WriteAllText(manifestPath, manifestJson.ReplaceLineEndings("\n"));
+
+                    var result = RazorVueManifestSerializer.Load(manifestPath);
+
+                    Assert.AreEqual(RazorVueManifestLoadStatus.Invalid, result.Status, manifestJson);
+                    Assert.IsFalse(result.IsSuccess, manifestJson);
+                    Assert.IsNull(result.Manifest, manifestJson);
+                    Assert.IsFalse(string.IsNullOrWhiteSpace(result.Error), manifestJson);
+                }
+            }
+            finally
+            {
+                var directory = Path.GetDirectoryName(manifestPath);
+                if (!string.IsNullOrWhiteSpace(directory) && Directory.Exists(directory))
+                    Directory.Delete(directory, recursive: true);
+            }
+        }
+
+        [TestMethod]
+        public void RazorVueManifestModel_Load_ReportsInvalid_WhenUnifiedManifestHasMalformedModuleShape()
+        {
+            var manifestPath = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"), "jazor-manifest.json");
+            var malformedManifests = new[]
+            {
+                """
+                {
+                  "rootAssemblyPath": "D:/demo/Demo.Host.dll",
+                  "generatedAtUtc": "2026-05-14T00:00:00Z",
+                  "modules": [ null ]
+                }
+                """,
+                """
+                {
+                  "rootAssemblyPath": "D:/demo/Demo.Host.dll",
+                  "generatedAtUtc": "2026-05-14T00:00:00Z",
+                  "modules": [
+                    {
+                      "assemblyName": "Demo.Components",
+                      "typeName": null,
+                      "id": "Demo.Components.CounterCard",
+                      "relativePath": "components/counter-card.mjs",
+                      "hash": "content-hash",
+                      "kind": "mjs",
+                      "component": {
+                        "model": "h",
+                        "imports": []
+                      }
+                    }
+                  ]
+                }
+                """,
+                """
+                {
+                  "rootAssemblyPath": "D:/demo/Demo.Host.dll",
+                  "generatedAtUtc": "2026-05-14T00:00:00Z",
+                  "modules": [
+                    {
+                      "assemblyName": null,
+                      "typeName": "Demo.Components.CounterCard",
+                      "id": "Demo.Components.CounterCard",
+                      "relativePath": "components/counter-card.mjs",
+                      "hash": "content-hash",
+                      "kind": "mjs",
+                      "component": {
+                        "model": "h",
+                        "imports": []
+                      }
+                    }
+                  ]
+                }
+                """
+            };
+
+            try
+            {
+                var directory = Path.GetDirectoryName(manifestPath);
+                if (!string.IsNullOrWhiteSpace(directory))
+                    Directory.CreateDirectory(directory);
+
+                foreach (var manifestJson in malformedManifests)
+                {
+                    File.WriteAllText(manifestPath, manifestJson.ReplaceLineEndings("\n"));
+
+                    var result = RazorVueManifestSerializer.Load(manifestPath);
+
+                    Assert.AreEqual(RazorVueManifestLoadStatus.Invalid, result.Status, manifestJson);
+                    Assert.IsFalse(result.IsSuccess, manifestJson);
+                    Assert.IsNull(result.Manifest, manifestJson);
+                    Assert.IsFalse(string.IsNullOrWhiteSpace(result.Error), manifestJson);
+                }
+            }
+            finally
+            {
+                var directory = Path.GetDirectoryName(manifestPath);
+                if (!string.IsNullOrWhiteSpace(directory) && Directory.Exists(directory))
+                    Directory.Delete(directory, recursive: true);
+            }
+        }
+
+        [TestMethod]
+        public void RazorVueManifestModel_Load_ProjectsUnifiedManifestComponentEntries_ByComponentModel()
+        {
+            var manifestPath = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"), "jazor-manifest.json");
+
+            try
+            {
+                var directory = Path.GetDirectoryName(manifestPath);
+                if (!string.IsNullOrWhiteSpace(directory))
+                    Directory.CreateDirectory(directory);
+
+                File.WriteAllText(
+                    manifestPath,
+                    """
+                    {
+                      "rootAssemblyPath": "D:/demo/Demo.Host.dll",
+                      "generatedAtUtc": "2026-05-14T00:00:00Z",
+                      "modules": [
+                        {
+                          "assemblyName": "Demo.Host",
+                          "typeName": "Demo.Host.AppModule",
+                          "id": "Demo.Host.AppModule",
+                          "relativePath": "host/app.mjs",
+                          "hash": "plain-content",
+                          "kind": "mjs"
+                        },
+                        {
+                          "assemblyName": "Demo.Components",
+                          "typeName": "Demo.Components.CounterCard",
+                          "id": "Demo.Components.CounterCard",
+                          "relativePath": "components/counter-card.mjs",
+                          "hash": "h-content",
+                          "sourceMapPath": "components/counter-card.mjs.map",
+                          "kind": "mjs",
+                          "component": {
+                            "model": "h",
+                            "componentId": "Demo.Components::CounterCard",
+                            "moduleId": "components/counter-card.mjs",
+                            "componentName": "CounterCard",
+                            "routeTemplates": [ "/counter", " /counter/details " ],
+                            "originMapPath": "components/counter-card.mjs.origins.json",
+                            "imports": [ "vue" ],
+                            "styles": [ "vuetify/styles", " vuetify/styles ", "feature/flags.css" ],
+                            "pluginRequirements": [ "vuetify", "feature-flags", "vuetify" ],
+                            "descriptorHash": "h-descriptor",
+                            "templateHash": "h-template",
+                            "logicHash": "h-logic",
+                            "contentHash": "h-content",
+                            "hmrBoundaryKind": 2,
+                            "requiresHydration": false,
+                            "supportsSsr": true
+                          }
+                        },
+                        {
+                          "assemblyName": "Demo.Components",
+                          "typeName": "Demo.Components.ProfilePage",
+                          "id": "Demo.Components.ProfilePage",
+                          "relativePath": "pages/profile-page.vue",
+                          "hash": "sfc-content",
+                          "kind": "vue",
+                          "component": {
+                            "model": "sfc",
+                            "componentId": "Demo.Components::ProfilePage",
+                            "moduleId": "pages/profile-page.vue",
+                            "componentName": "ProfilePage",
+                            "routeTemplates": [ "/profile" ],
+                            "imports": [ "vue" ],
+                            "styles": [ "profile.css" ],
+                            "pluginRequirements": [ "pinia" ],
+                            "descriptorHash": "sfc-descriptor",
+                            "templateHash": "sfc-template",
+                            "logicHash": "sfc-logic",
+                            "contentHash": "sfc-content",
+                            "styleHash": "sfc-style",
+                            "hmrBoundaryKind": 1,
+                            "requiresHydration": true,
+                            "supportsSsr": false
+                          }
+                        }
+                      ]
+                    }
+                    """.ReplaceLineEndings("\n"));
+
+                var allResult = RazorVueManifestSerializer.Load(manifestPath);
+                var hResult = RazorVueManifestSerializer.Load(manifestPath, "h");
+                var sfcResult = RazorVueManifestSerializer.Load(manifestPath, "sfc");
+
+                Assert.AreEqual(RazorVueManifestLoadStatus.Success, allResult.Status);
+                Assert.AreEqual(RazorVueManifestLoadStatus.Success, hResult.Status);
+                Assert.AreEqual(RazorVueManifestLoadStatus.Success, sfcResult.Status);
+
+                Assert.IsNotNull(allResult.Manifest);
+                Assert.HasCount(2, allResult.Manifest.Modules);
+                Assert.IsFalse(allResult.Manifest.Modules.Any(static module => module.ComponentName == "AppModule"));
+
+                Assert.IsNotNull(hResult.Manifest);
+                var hModule = hResult.Manifest.Modules.Single();
+                Assert.AreEqual("CounterCard", hModule.ComponentName);
+                Assert.AreEqual("h", hModule.ComponentModel);
+                Assert.AreEqual("components/counter-card.mjs", hModule.RelativeModulePath);
+                CollectionAssert.AreEqual(new[] { "/counter", "/counter/details" }, hModule.RouteTemplates);
+                CollectionAssert.AreEqual(new[] { "feature/flags.css", "vuetify/styles" }, hResult.Manifest.Styles);
+                CollectionAssert.AreEqual(new[] { "feature-flags", "vuetify" }, hResult.Manifest.PluginRequirements);
+
+                Assert.IsNotNull(sfcResult.Manifest);
+                var sfcModule = sfcResult.Manifest.Modules.Single();
+                Assert.AreEqual("ProfilePage", sfcModule.ComponentName);
+                Assert.AreEqual("sfc", sfcModule.ComponentModel);
+                Assert.AreEqual("pages/profile-page.vue", sfcModule.RelativeModulePath);
+                Assert.AreEqual("pages/profile-page.vue.map", sfcModule.SourceMapPath);
+                Assert.AreEqual("pages/profile-page.vue.origins.json", sfcModule.OriginMapPath);
+                Assert.AreEqual("sfc-style", sfcModule.StyleHash);
+                Assert.IsTrue(sfcModule.RequiresHydration);
+                Assert.IsFalse(sfcModule.SupportsSsr);
+                CollectionAssert.AreEqual(new[] { "profile.css" }, sfcResult.Manifest.Styles);
+                CollectionAssert.AreEqual(new[] { "pinia" }, sfcResult.Manifest.PluginRequirements);
+            }
+            finally
+            {
+                var directory = Path.GetDirectoryName(manifestPath);
+                if (!string.IsNullOrWhiteSpace(directory) && Directory.Exists(directory))
+                    Directory.Delete(directory, recursive: true);
+            }
+        }
+
+        [TestMethod]
         public void RazorVueManifestModel_Load_ReportsNoComponentEntries_WhenUnifiedManifestContainsOnlyPlainModules()
         {
             var manifestPath = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"), "jazor-manifest.json");
@@ -501,6 +870,237 @@ namespace Jazor.EmitTest
                 Assert.AreEqual(RazorVueManifestLoadStatus.NoComponentEntries, loadResult.Status);
                 Assert.IsFalse(loadResult.IsSuccess);
                 Assert.IsNull(loadResult.Manifest);
+            }
+            finally
+            {
+                var directory = Path.GetDirectoryName(manifestPath);
+                if (!string.IsNullOrWhiteSpace(directory) && Directory.Exists(directory))
+                    Directory.Delete(directory, recursive: true);
+            }
+        }
+
+        [TestMethod]
+        public void RazorVueManifestModel_Load_ReportsInvalid_WhenUnifiedComponentModuleHasMissingRelativePath()
+        {
+            var manifestPath = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"), "jazor-manifest.json");
+
+            try
+            {
+                var directory = Path.GetDirectoryName(manifestPath);
+                if (!string.IsNullOrWhiteSpace(directory))
+                    Directory.CreateDirectory(directory);
+
+                File.WriteAllText(
+                    manifestPath,
+                    """
+                    {
+                      "rootAssemblyPath": "D:/demo/Demo.Host.dll",
+                      "generatedAtUtc": "2026-05-14T00:00:00Z",
+                      "modules": [
+                        {
+                          "assemblyName": "Demo.Components",
+                          "typeName": "Demo.Components.CounterCard",
+                          "id": "Demo.Components.CounterCard",
+                          "relativePath": "",
+                          "hash": "h-content",
+                          "kind": "mjs",
+                          "component": {
+                            "model": "h",
+                            "componentName": "CounterCard"
+                          }
+                        }
+                      ]
+                    }
+                    """.ReplaceLineEndings("\n"));
+
+                var result = RazorVueManifestSerializer.Load(manifestPath);
+
+                Assert.AreEqual(RazorVueManifestLoadStatus.Invalid, result.Status);
+                Assert.IsFalse(result.IsSuccess);
+                Assert.IsNull(result.Manifest);
+                StringAssert.Contains(result.Error ?? string.Empty, "relative path");
+            }
+            finally
+            {
+                var directory = Path.GetDirectoryName(manifestPath);
+                if (!string.IsNullOrWhiteSpace(directory) && Directory.Exists(directory))
+                    Directory.Delete(directory, recursive: true);
+            }
+        }
+
+        [TestMethod]
+        public void RazorVueManifestModel_Load_ReportsInvalid_WhenUnifiedComponentModuleUsesNonRelativePath()
+        {
+            var manifestPath = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"), "jazor-manifest.json");
+            var invalidRelativePaths = new[]
+            {
+                "/components/counter-card.mjs",
+                "//server/share/counter-card.mjs",
+                @"\\server\share\counter-card.mjs",
+                @"C:\temp\counter-card.mjs",
+                "C:/temp/counter-card.mjs",
+                "components/../counter-card.mjs",
+                "./../counter-card.mjs",
+                "components/C:/counter-card.mjs"
+            };
+
+            try
+            {
+                var directory = Path.GetDirectoryName(manifestPath);
+                if (!string.IsNullOrWhiteSpace(directory))
+                    Directory.CreateDirectory(directory);
+
+                foreach (var invalidRelativePath in invalidRelativePaths)
+                {
+                    File.WriteAllText(
+                        manifestPath,
+                        $$"""
+                        {
+                          "rootAssemblyPath": "D:/demo/Demo.Host.dll",
+                          "generatedAtUtc": "2026-05-14T00:00:00Z",
+                          "modules": [
+                            {
+                              "assemblyName": "Demo.Components",
+                              "typeName": "Demo.Components.CounterCard",
+                              "id": "Demo.Components.CounterCard",
+                              "relativePath": {{JsonSerializer.Serialize(invalidRelativePath)}},
+                              "hash": "h-content",
+                              "kind": "mjs",
+                              "component": {
+                                "model": "h",
+                                "componentName": "CounterCard"
+                              }
+                            }
+                          ]
+                        }
+                        """.ReplaceLineEndings("\n"));
+
+                    var result = RazorVueManifestSerializer.Load(manifestPath);
+
+                    Assert.AreEqual(RazorVueManifestLoadStatus.Invalid, result.Status, invalidRelativePath);
+                    Assert.IsFalse(result.IsSuccess, invalidRelativePath);
+                    Assert.IsNull(result.Manifest, invalidRelativePath);
+                    StringAssert.Contains(result.Error ?? string.Empty, "relative path");
+                }
+            }
+            finally
+            {
+                var directory = Path.GetDirectoryName(manifestPath);
+                if (!string.IsNullOrWhiteSpace(directory) && Directory.Exists(directory))
+                    Directory.Delete(directory, recursive: true);
+            }
+        }
+
+        [TestMethod]
+        public void RazorVueManifestModel_Load_ReportsInvalid_WhenUnifiedComponentModuleUsesNonRelativeSidecarPath()
+        {
+            var manifestPath = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"), "jazor-manifest.json");
+            var invalidPathCases = new[]
+            {
+                ("sourceMapPath", "/components/counter-card.mjs.map"),
+                ("sourceMapPath", @"C:\temp\counter-card.mjs.map"),
+                ("sourceMapPath", "components/../counter-card.mjs.map"),
+                ("originMapPath", "//server/share/counter-card.mjs.origins.json"),
+                ("originMapPath", @"\\server\share\counter-card.mjs.origins.json"),
+                ("originMapPath", "components/C:/counter-card.mjs.origins.json")
+            };
+
+            try
+            {
+                var directory = Path.GetDirectoryName(manifestPath);
+                if (!string.IsNullOrWhiteSpace(directory))
+                    Directory.CreateDirectory(directory);
+
+                foreach (var (pathProperty, invalidPath) in invalidPathCases)
+                {
+                    var sourceMapPath = pathProperty == "sourceMapPath"
+                        ? invalidPath
+                        : "components/counter-card.mjs.map";
+                    var originMapPath = pathProperty == "originMapPath"
+                        ? invalidPath
+                        : "components/counter-card.mjs.origins.json";
+
+                    File.WriteAllText(
+                        manifestPath,
+                        $$"""
+                        {
+                          "rootAssemblyPath": "D:/demo/Demo.Host.dll",
+                          "generatedAtUtc": "2026-05-14T00:00:00Z",
+                          "modules": [
+                            {
+                              "assemblyName": "Demo.Components",
+                              "typeName": "Demo.Components.CounterCard",
+                              "id": "Demo.Components.CounterCard",
+                              "relativePath": "components/counter-card.mjs",
+                              "sourceMapPath": {{JsonSerializer.Serialize(sourceMapPath)}},
+                              "hash": "h-content",
+                              "kind": "mjs",
+                              "component": {
+                                "model": "h",
+                                "componentName": "CounterCard",
+                                "originMapPath": {{JsonSerializer.Serialize(originMapPath)}}
+                              }
+                            }
+                          ]
+                        }
+                        """.ReplaceLineEndings("\n"));
+
+                    var result = RazorVueManifestSerializer.Load(manifestPath);
+
+                    Assert.AreEqual(RazorVueManifestLoadStatus.Invalid, result.Status, $"{pathProperty}: {invalidPath}");
+                    Assert.IsFalse(result.IsSuccess, $"{pathProperty}: {invalidPath}");
+                    Assert.IsNull(result.Manifest, $"{pathProperty}: {invalidPath}");
+                    StringAssert.Contains(result.Error ?? string.Empty, "relative path");
+                }
+            }
+            finally
+            {
+                var directory = Path.GetDirectoryName(manifestPath);
+                if (!string.IsNullOrWhiteSpace(directory) && Directory.Exists(directory))
+                    Directory.Delete(directory, recursive: true);
+            }
+        }
+
+        [TestMethod]
+        public void RazorVueManifestModel_Load_ReportsInvalid_WhenUnifiedComponentModuleUsesUnsupportedComponentModel()
+        {
+            var manifestPath = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"), "jazor-manifest.json");
+
+            try
+            {
+                var directory = Path.GetDirectoryName(manifestPath);
+                if (!string.IsNullOrWhiteSpace(directory))
+                    Directory.CreateDirectory(directory);
+
+                File.WriteAllText(
+                    manifestPath,
+                    """
+                    {
+                      "rootAssemblyPath": "D:/demo/Demo.Host.dll",
+                      "generatedAtUtc": "2026-05-14T00:00:00Z",
+                      "modules": [
+                        {
+                          "assemblyName": "Demo.Components",
+                          "typeName": "Demo.Components.CounterCard",
+                          "id": "Demo.Components.CounterCard",
+                          "relativePath": "components/counter-card.wasm",
+                          "hash": "component-content",
+                          "kind": "mjs",
+                          "component": {
+                            "model": "wasm",
+                            "componentName": "CounterCard"
+                          }
+                        }
+                      ]
+                    }
+                    """.ReplaceLineEndings("\n"));
+
+                var result = RazorVueManifestSerializer.Load(manifestPath);
+
+                Assert.AreEqual(RazorVueManifestLoadStatus.Invalid, result.Status);
+                Assert.IsFalse(result.IsSuccess);
+                Assert.IsNull(result.Manifest);
+                StringAssert.Contains(result.Error ?? string.Empty, "Unsupported manifest component model");
             }
             finally
             {

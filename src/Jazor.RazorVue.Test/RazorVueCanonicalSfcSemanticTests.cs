@@ -814,6 +814,62 @@ public sealed class RazorVueCanonicalSfcSemanticTests
     }
 
     [TestMethod]
+    public void RazorVue_CanonicalModelFactory_CreatesImperativeRootProgram_ForCurrentComponentRenderHelperWithCallerOwnedRegionChildEmission()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        RenderBody(builder, Title);
+                        builder.CloseElement();
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder, string? title)
+                    {
+                        builder.OpenRegion(1);
+                        builder.OpenElement(2, "span");
+                        builder.AddContent(3, title);
+                        builder.CloseElement();
+                        builder.CloseRegion();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+        var sfc = new RazorVueSfcSemanticModelFactory().Create(canonical);
+
+        Assert.IsTrue(canonical.ImperativeRootProgram is not null);
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, sfc.RenderMode);
+        Assert.IsTrue(canonical.Template.Children.IsDefaultOrEmpty);
+    }
+
+    [TestMethod]
     public void RazorVue_CanonicalModelFactory_CreatesImperativeRootProgram_ForCurrentComponentRenderHelperWithExtraParameterAndCallerOwnedImplicitDefaultSlotAssignment()
     {
         var context = CreateContext(
@@ -924,6 +980,69 @@ public sealed class RazorVueCanonicalSfcSemanticTests
                         builder.OpenElement(1, "span");
                         builder.AddContent(2, title);
                         builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+        var sfc = new RazorVueSfcSemanticModelFactory().Create(canonical);
+
+        Assert.IsTrue(canonical.ImperativeRootProgram is not null);
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, sfc.RenderMode);
+        Assert.IsTrue(canonical.Template.Children.IsDefaultOrEmpty);
+    }
+
+    [TestMethod]
+    public void RazorVue_CanonicalModelFactory_CreatesImperativeRootProgram_ForCurrentComponentRenderHelperWithExtraParameterAndCallerOwnedRegionAmbientDefaultSlotChild()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/panel")]
+                public class Panel : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment? ChildContent { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<Panel>(0);
+                        RenderBody(builder, Title);
+                        builder.CloseComponent();
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder, string? title)
+                    {
+                        builder.OpenRegion(1);
+                        builder.OpenElement(2, "span");
+                        builder.AddContent(3, title);
+                        builder.CloseElement();
+                        builder.CloseRegion();
                     }
                 }
             }

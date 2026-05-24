@@ -640,7 +640,6 @@ jazor-manifest-razorvue.json
 - `ModuleWriter` 写普通 `.mjs` manifest 时必须保留已有 component entries，clean 只清理自己负责的普通 module，不能误删 RazorVue component manifest 项。
 - `RazorVueModuleWriter` 写 H 组件时合并到统一 `jazor-manifest.json`，产物为 `kind = "mjs"`、`component.model = "h"`。
 - `RazorVueSfcModuleWriter` 写 SFC 组件时合并到统一 `jazor-manifest.json`，产物为 `kind = "vue"`、`component.model = "sfc"`。
-- `RazorVueManifestSerializer.TryLoad(...)` 需要支持从统一 manifest 中投影 `modules[].component` 到现有 `RazorVueManifestModel`，让 diff、bundle、consumer entry 在内部模型未完全替换前仍可稳定复用。
 - `ModuleBundler` 不再读取 `RazorVueModuleWriter.GetManifestPath(...)` 产生的第二 manifest，而是从统一 manifest 投影 RazorVue component metadata。
 - 已完成（2026-05-13 本轮）：`ModuleCollector` 允许同一 emit run 同时收集 RazorVue H catalog 与 SFC catalog，并保留“单程序集只能暴露一种 catalog shape”保护；跨模型 `componentId` / `relativePath` 冲突会显式失败。
 - 已完成（2026-05-13 本轮）：`Jazor.Emit` 主流程不再在 H 与 SFC 之间二选一；clean/write 会分别处理 H 与 SFC，并在最终统一 manifest 基础上收敛生成单一 `__jazor/razorvue-host.mjs`。
@@ -649,6 +648,7 @@ jazor-manifest-razorvue.json
 - 已完成（2026-05-14 本轮）：`ModuleWriter` 在统一 manifest 下已收敛为“普通 `.mjs` 仅保留未被同路径 plain module 接管的 component entries”；当 plain module 接管旧 RazorVue H 路径时，会同步移除旧 `component` metadata 与 `.origins.json` sidecar，避免后续 RazorVue clean 把新 plain module 误删。
 - 已完成（2026-05-14 本轮）：MSBuild target 已移除公开的 `JazorRazorVueManifestPath` 默认值和 `jazor-manifest-razorvue.json` 引用；bundle 前快照统一收敛为 `JazorPreviousManifestSnapshotPath -> previous-jazor-manifest.json`，并由 `Jazor.targets` 直接传给 `bundle --previous-manifest`。
 - 已完成（2026-05-14 本轮）：`razorvue-diff`、bundle update plan 与 host asset sidecar 现已统一从 `jazor-manifest.json` 的 component projection 读取输入；`ModuleBundlerTests` / `RazorVueManifestDifferTests` / `SdkIntegrationTests` 已锁定“projection missing / invalid”语义，避免回退到第二 manifest 契约。
+- 已完成（2026-05-24 本轮）：`RazorVueManifestSerializer.Load(...)` / `TryLoad(...)` 直接支持从统一 manifest 的 `modules[].component` 投影到现有 `RazorVueManifestModel`，并可通过 `componentModel = "h"` / `"sfc"` 过滤 H 与 SFC component entries。plain `mjs` module 不参与 projection；投影时会校验 `component.model` 只能是 `h` / `sfc`，校验 `h -> kind:mjs`、`sfc -> kind:vue`，归一化 route/style/plugin requirement，并把缺失、空、rooted、drive-qualified 或 `..` 逃逸的 module path / sidecar path 报为 `Invalid`。该保护同时覆盖统一 manifest 的 `relativePath` / `sourceMapPath` / `component.originMapPath`，以及 legacy RazorVue manifest 的 `RelativeModulePath` / `SourceMapPath` / `OriginMapPath`；`modules: null`、`modules: [null]`、缺失必需 assembly/type/component identity 字段等 malformed module shape 会稳定返回 `Invalid`，避免未知 component 模型、不完整 component identity 或不安全 artifact path 污染 diff、bundle、SFC bridge 或 consumer entry。
 
 ### Consumer 与 SFC bridge 工作项
 
@@ -927,11 +927,12 @@ protected override void BuildRenderTree(RenderTreeBuilder builder)
 - 支持：上述 caller-owned mutation 在 render tree 中保留 helper 形参与 captured binding，H 路径会在安全的 identity case 直接折叠回调用点实参（例如 `"class": props.title`、`"key": props.title`），而 spread 继续走既有 `__jazorVueMergeAttributes(...)` 路径
 - 支持：当 invocation-scoped replay 不能被 template/SFC template block 诚实表达时，canonical/H/SFC 会显式切到 render-function / imperative render path，而不是把 helper 参数作用域错误 hoist 到 template 外层
 - 支持：attribute / key / event modifier 这类 scoped replay 本身不再触发 render-function / imperative bridge promotion；它们可以继续通过 captured expression、props merge helper 或 event wrapper 在 declarative path 中表达。只有 scoped replay 内出现 slot assignment、ambient child、default-slot fragment、child replay 等需要 open-frame 回放的结构性操作时，才会切到 render-function / imperative render path
+- 支持：caller-owned helper 内部的 helper-local 平衡 `OpenRegion(...)` / `CloseRegion()`，只要 region 不逃逸、不改变进入 helper 时的 caller-owned open node/frame，且最终仍回到同一 caller-owned frame。该 region 是 Razor frame-shape 边界，不是 Vue artifact 必须保留的运行时节点；进入 invocation-scoped replay 后最终 `.mjs` / render-function `.vue` 可以把它擦除为同一个 child vnode replay，例如 element frame 上的 `append(h("span", null, title))`。当目标 frame 是 component 时，同样的 region 包裹 ambient child emission 会先归一化为 default-slot fragment replay，再由 render-function path 发射为 `setComponentParameter("ChildContent", () => ...)`，不会退化成普通 component children，同时继续保留 helper captured binding 与 child emission 顺序。
 - 不支持：`ref` / `out` / `in`
 - 不支持：caller-owned open node 协议中的 open/close/region/frame-shape 变更：
   - `OpenElement` / `OpenComponent`
   - `CloseElement` / `CloseComponent`
-  - `OpenRegion` / `CloseRegion`
+- 不支持：caller-owned helper 内部 region 逃逸、不平衡，或需要跨 helper 推断 caller-owned frame shape 的 region/open-frame rewrite
 - 不支持：helper 改变最终 active caller-owned open frame，或结束时没有回到进入时的同一 open node/frame
 - 不支持：超出当前 replay contract 的 caller-owned frame 协议变更，例如跨 helper 留下未闭合 frame、切换到其他 caller-owned open node 再返回、或需要 region/open-frame 结构推断的 shape rewrite
 - 不支持：caller-owned mutation helper 结束后 frame depth 或 active open node 与进入时不一致；这类情况会显式 fail-fast，而不是静默猜测调用方协议
@@ -959,6 +960,7 @@ protected override void BuildRenderTree(RenderTreeBuilder builder)
 - current-component helper 在 caller-owned component slot forwarding 上保持“能 declarative 就 declarative”的合同：typed/named slot forwarding 不会仅因 helper 抽取就被误提升为 imperative root program
 - invocation-scoped replay 命中时，canonical / SFC 会切到 render-function，而不是继续错误尝试 template lowering
 - attribute/key/event scoped replay 不会误触发 imperative promotion；`AddMultipleAttributes(...)` 在 declarative 和 mixed imperative sibling 中继续走 `__jazorVueMergeAttributes(...)`，并由 module/SFC builder 按实际 body 引用注入 helper
+- caller-owned helper 内部平衡 `OpenRegion` / `CloseRegion` 已锁定为“frontend 接受并归一化为 child replay/default-slot fragment replay，canonical/SFC/pipeline 进入 render-function，并在最终 Vue artifact 中擦除 helper-local region frame”的合同；element child 与 component ambient default-slot child 两条路径均有回归保护
 - canonical model 保留 `title <- props.title` 绑定
 - named argument 绑定稳定工作
 - omitted optional default value 绑定稳定工作
@@ -1388,11 +1390,13 @@ builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span
 - root imperative body 现已进入 canonical / SFC semantic 正式模型：canonical model 会携带 `ImperativeRootProgram`，SFC semantic model 会以 `RenderMode = RenderFunction` 正式表示该产物，不再要求 SFC artifact factory 在入口层额外扫描 renderTree 决定是否走旁路
 - mixed declarative + imperative render body 会在同一个 render-function 中组合：声明式 sibling 继续以 `h(...)`、`__jazorVueForRange(...).map(...)`、条件表达式或 template-scope IIFE 表达，不需要 bridge 的 attribute/key/event scoped replay 不会把整棵 subtree 过度提升为 open-frame replay
 - imperative render body 中若出现声明式 helper 调用，例如 attribute spread 生成的 `__jazorVueMergeAttributes(...)`，`.mjs` 与 render-function `.vue` builder 会按 body dependency 注入 helper；helper 注入不再只依赖 root declarative render expression
+- `OpenRegion(...)` / `CloseRegion()` 在 body-level imperative render bridge 中作为 Razor frame-shape 边界保留，不 materialize 为 Vue vnode；bridge 会记录 region 打开时的 frame depth，要求 close 时回到同一 depth，并在 `finish()` 时拒绝未闭合 region，避免 region 跨 element/component frame 或静默泄漏
 - bridge 当前已稳定承载：
   - `return` 提前退出
   - `while` / `do-while`
   - 局部 mutation 后继续渲染
   - 数组/多根节点追加
+  - 平衡 `OpenRegion(...)` / `CloseRegion()`，作为 frame-shape 边界而不是 runtime node
   - imperative body 内常量 `AddMarkupContent(...)`，其静态 subtree 直接 lower 为 `h(...)` 表达式，而不是退化为 raw HTML 占位
 - 该 body-level imperative 主线现在同时覆盖：
   - handwritten `BuildRenderTree`
@@ -1406,6 +1410,7 @@ builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span
 - 支持：`while` / `do-while`
 - 支持：带 `break` / `continue` 的 `for` / `foreach`
 - 支持：局部赋值/递增后再渲染
+- 支持：body-level imperative bridge 内平衡 `OpenRegion(...)` / `CloseRegion()`；region 本身不产生 Vue vnode，但 close 必须回到 open 时的 frame depth，`finish()` 会拒绝未闭合 region
 - 支持：imperative body 内常量 `AddMarkupContent(...)`
 - 支持：mixed imperative body 中的声明式条件/循环/template-scope 子表达式组合；不会再把同一个 conditional / loop 节点递归重新包装成自身 fragment 导致 stack overflow
 - 支持：mixed imperative body 中声明式 sibling attribute spread 的 `__jazorVueMergeAttributes(...)` helper 注入，覆盖 `.mjs` 与 render-function `.vue`
@@ -1433,6 +1438,7 @@ builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span
 - `while` / `do-while` 通过 imperative render bridge
 - `for` / `foreach` 中的 `break` / `continue` 通过 imperative render bridge
 - 局部 mutation 通过 imperative render bridge
+- 平衡 `OpenRegion(...)` / `CloseRegion()` 通过 `.mjs` 与 render-function `.vue` imperative bridge，且 bridge helper 会校验 frame-depth 与未闭合 region
 - imperative body 内常量 `AddMarkupContent(...)` 直接发射 `h(...)` subtree，而不是残留 raw-html 占位
 - mixed imperative body 中的 count-style `for` 继续输出 `__jazorVueForRange(...).map((i) => h(...))`，不会因普通 child replay 日志退化为 open-frame bridge
 - mixed imperative body 中的 attribute spread sibling 会在 `.mjs` 与 render-function `.vue` 两条产物中注入 `__jazorVueMergeAttributes(...)` helper

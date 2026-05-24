@@ -242,10 +242,15 @@ internal sealed partial class RazorVueArtifactFactory
         builder.Append(indent).AppendLine("    setComponentParameter(name, value) { const frame = __stack[__stack.length - 1]; if (!frame || frame.kind !== \"component\") throw new Error(\"RazorVue imperative render context setComponentParameter requires an open component frame.\"); __applyComponentParameter(frame, name, value); },");
         builder.Append(indent).AppendLine("    mergeAttributes(values) { const frame = __stack[__stack.length - 1]; if (!frame) throw new Error(\"RazorVue imperative render context mergeAttributes requires an open frame.\"); __applyMultipleAttributes(frame, values); },");
         builder.Append(indent).AppendLine("    setKey(value) { const frame = __stack[__stack.length - 1]; if (!frame) throw new Error(\"RazorVue imperative render context setKey requires an open frame.\"); __applyProp(frame, \"key\", value); },");
-        builder.Append(indent).AppendLine("    openRegion() { __regions.push(__rootNodes.length); },");
-        builder.Append(indent).AppendLine("    closeRegion() { if (__regions.length === 0) throw new Error(\"RazorVue imperative render context closeRegion requires a matching openRegion.\"); __regions.pop(); },");
+        builder.Append(indent).AppendLine("    openRegion() { __regions.push(__stack.length); },");
+        builder.Append(indent).AppendLine("    closeRegion() {");
+        builder.Append(indent).AppendLine("      if (__regions.length === 0) throw new Error(\"RazorVue imperative render context closeRegion requires a matching openRegion.\");");
+        builder.Append(indent).AppendLine("      const expectedFrameDepth = __regions.pop();");
+        builder.Append(indent).AppendLine("      if (__stack.length !== expectedFrameDepth) throw new Error(\"RazorVue imperative render context closeRegion must return to the frame depth active at openRegion.\");");
+        builder.Append(indent).AppendLine("    },");
         builder.Append(indent).AppendLine("    finish() {");
         builder.Append(indent).AppendLine("      if (__stack.length !== 0) throw new Error(\"RazorVue imperative render bridge completed with unclosed frames.\");");
+        builder.Append(indent).AppendLine("      if (__regions.length !== 0) throw new Error(\"RazorVue imperative render bridge completed with unclosed regions.\");");
         builder.Append(indent).AppendLine("      if (__rootNodes.length === 0) return null;");
         builder.Append(indent).AppendLine("      return __rootNodes.length === 1 ? __rootNodes[0] : __rootNodes;");
         builder.Append(indent).AppendLine("    }");
