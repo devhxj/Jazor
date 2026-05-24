@@ -23,9 +23,11 @@ internal sealed partial class RazorVueArtifactFactory
         var usesImperativeRenderBody = expressionEmitter.ContainsImperativeRenderBody(renderTree);
         var renderBody = usesImperativeRenderBody ? expressionEmitter.EmitImperativeRenderBody(renderTree) : null;
         var renderExpression = usesImperativeRenderBody ? null : expressionEmitter.EmitFragment(renderTree);
-        var requiresAttributeMergeHelper = renderExpression is not null &&
-                                           RazorVueAttributeMergeHelper.ContainsInvocation(renderExpression);
+        var requiresAttributeMergeHelper =
+            (renderExpression is not null && RazorVueAttributeMergeHelper.ContainsInvocation(renderExpression)) ||
+            (renderBody is not null && RazorVueAttributeMergeHelper.ContainsInvocation(renderBody));
         var propDefaultBindings = CollectPropDefaultBindings(snapshot, descriptor, expressionEmitter);
+
         var setupBodyBuilder = new StringBuilder();
         setupBodyBuilder.AppendLine("  setup(__jazorRawProps, { emit, slots, expose, attrs }) {");
         AppendPropsBinding(setupBodyBuilder, propDefaultBindings);
@@ -65,11 +67,19 @@ internal sealed partial class RazorVueArtifactFactory
         }
         setupBodyBuilder.AppendLine("  }");
 
+        var helperDeclarationsBuilder = new StringBuilder();
+        expressionEmitter.AppendRequiredHelperTypeDeclarations(helperDeclarationsBuilder, string.Empty);
+        var helperDeclarations = helperDeclarationsBuilder.ToString();
         compilerImports = expressionEmitter.FlushCompilerImports();
 
         var builder = new StringBuilder();
         AppendVueImports(builder, snapshot, resolvedComponents, compilerImports);
         builder.AppendLine();
+        if (!string.IsNullOrWhiteSpace(helperDeclarations))
+        {
+            builder.AppendLine(helperDeclarations.TrimEnd());
+            builder.AppendLine();
+        }
         builder.AppendLine("export default defineComponent({");
         builder.Append("  name: \"").Append(descriptor.Name).AppendLine("\",");
         builder.Append("  props: ").Append(FormatStringArray(descriptor.Props.Select(static prop => prop.Name))).AppendLine(",");

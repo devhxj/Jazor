@@ -137,7 +137,15 @@ internal sealed partial class RazorVueExpressionEmitter
                 MayContainLifecycleFirstRenderReference(lifecycleMethod, operation, sourceStableLocals, dependencies);
             var requiredLocals = dependencies.SourceStableLocals;
             var orderedLocals = OrderLifecycleSourceStableLocals(requiredLocals);
-            var localAliases = CreateLifecycleSourceStableLocalAliases(orderedLocals);
+            var firstRenderAliasLocals = firstRenderParameter is null
+                ? ImmutableHashSet<ILocalSymbol>.Empty
+                : CollectLifecycleFirstRenderAliasLocals(requiredLocals, firstRenderParameter);
+            var preludeLocals = firstRenderAliasLocals.IsEmpty
+                ? orderedLocals
+                : orderedLocals
+                    .Where(pair => !firstRenderAliasLocals.Contains(pair.Key))
+                    .ToImmutableArray();
+            var localAliases = CreateLifecycleSourceStableLocalAliases(orderedLocals, firstRenderAliasLocals);
             var localFunctions = dependencies.LocalFunctions;
             var localFunctionAliases = CreateLifecycleLocalFunctionAliases(localFunctions);
             var callableLocals = dependencies.CallableLocals;
@@ -155,7 +163,7 @@ internal sealed partial class RazorVueExpressionEmitter
             }
 
             var preludeBindings = EmitLifecyclePreludeBindings(
-                orderedLocals,
+                preludeLocals,
                 localAliases,
                 localFunctions,
                 localFunctionAliases,
@@ -346,13 +354,68 @@ internal sealed partial class RazorVueExpressionEmitter
     }
 
     private static IReadOnlyDictionary<ILocalSymbol, string> CreateLifecycleSourceStableLocalAliases(
-        ImmutableArray<KeyValuePair<ILocalSymbol, IOperation>> orderedLocals)
+        ImmutableArray<KeyValuePair<ILocalSymbol, IOperation>> orderedLocals,
+        ImmutableHashSet<ILocalSymbol> firstRenderAliasLocals)
     {
         var aliases = new Dictionary<ILocalSymbol, string>(SymbolEqualityComparer.Default);
         foreach (var pair in orderedLocals)
-            aliases[pair.Key] = "__jazorLifecycleLocal" + Jazor.Common.Format.HashName(pair.Key.ToDisplayString()).TrimStart('_');
+        {
+            aliases[pair.Key] = firstRenderAliasLocals.Contains(pair.Key)
+                ? "currentFirstRender"
+                : "__jazorLifecycleLocal" + Jazor.Common.Format.HashName(pair.Key.ToDisplayString()).TrimStart('_');
+        }
 
         return aliases;
+    }
+
+    private static ImmutableHashSet<ILocalSymbol> CollectLifecycleFirstRenderAliasLocals(
+        IReadOnlyDictionary<ILocalSymbol, IOperation> requiredLocals,
+        IParameterSymbol firstRenderParameter)
+    {
+        if (requiredLocals.Count == 0)
+            return ImmutableHashSet<ILocalSymbol>.Empty;
+
+        var builder = ImmutableHashSet.CreateBuilder<ILocalSymbol>(SymbolEqualityComparer.Default);
+        foreach (var local in requiredLocals.Keys)
+        {
+            if (IsLifecycleFirstRenderAliasLocal(local, requiredLocals, firstRenderParameter, new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default)))
+                builder.Add(local);
+        }
+
+        return builder.ToImmutable();
+    }
+
+    private static bool IsLifecycleFirstRenderAliasLocal(
+        ILocalSymbol local,
+        IReadOnlyDictionary<ILocalSymbol, IOperation> requiredLocals,
+        IParameterSymbol firstRenderParameter,
+        HashSet<ILocalSymbol> visiting)
+    {
+        if (!visiting.Add(local))
+            return false;
+
+        try
+        {
+            if (!requiredLocals.TryGetValue(local, out var initializer))
+                return false;
+
+            var current = RazorVueOperationNormalizer.Unwrap(initializer) ?? initializer;
+            return current switch
+            {
+                IParameterReferenceOperation parameterReference
+                    when SymbolEqualityComparer.Default.Equals(parameterReference.Parameter, firstRenderParameter) => true,
+                ILocalReferenceOperation localReference => IsLifecycleFirstRenderAliasLocal(
+                    localReference.Local,
+                    requiredLocals,
+                    firstRenderParameter,
+                    visiting),
+                _ => false
+            };
+        }
+        finally
+        {
+            visiting.Remove(local);
+        }
     }
 
     private static IReadOnlyDictionary<IMethodSymbol, string> CreateLifecycleLocalFunctionAliases(

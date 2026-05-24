@@ -4,6 +4,7 @@ using Jazor.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Immutable;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -46,10 +47,12 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private readonly Dictionary<string, string> _importBindings = [];
     private readonly Dictionary<string, string> _importLocalBindings = [];
     private readonly ModuleNamePlan _moduleNamePlan = BuildModuleNamePlan(classSymbol, options?.MemberFilter);
+    private readonly IReadOnlyDictionary<ISymbol, string>? _declaredNameOverrides = options?.DeclaredNames;
+    private readonly SemanticWalkerHost? _semanticWalkerHost = options?.Host;
 
     private HashSet<string> ModuleLocalNames => _moduleNamePlan.LocalNames;
 
-    private Dictionary<ISymbol, string> ModuleDeclaredNames => _moduleNamePlan.DeclaredNames;
+    private IReadOnlyDictionary<ISymbol, string> ModuleDeclaredNames => _declaredNameOverrides ?? _moduleNamePlan.DeclaredNames;
 
     private HashSet<string> ReservedImportNames => _moduleNamePlan.ReservedImportNames;
 
@@ -58,6 +61,23 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     /// </summary>
     /// <returns></returns>
     public Task<Module?> Convert() => Convert(CancellationToken.None);
+
+    public ClassDeclaration ConvertRuntimeClass(INamedTypeSymbol symbol)
+        => ConvertRuntimeClass(symbol, CancellationToken.None);
+
+    public ClassDeclaration ConvertRuntimeClass(INamedTypeSymbol symbol, CancellationToken cancellationToken)
+    {
+        if (symbol is null)
+            throw new ArgumentNullException(nameof(symbol));
+
+        if (symbol.TypeKind != TypeKind.Class || symbol.IsRecord || symbol.IsStatic)
+            throw new NotSupportedException($"Jazor runtime class conversion does not support {symbol.Kind}:{symbol.Name}.");
+
+        return ConvertMemberClass(symbol, GetSupportedRuntimeClassBaseType(symbol), cancellationToken);
+    }
+
+    public ImmutableArray<ImportDeclaration> FlushImportDeclarations(IReadOnlyList<Statement> members)
+        => BuildImportDeclarations(members).ToImmutableArray();
 
     public async Task<Module?> Convert(CancellationToken cancellationToken)
     {
@@ -262,6 +282,12 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         }
     }
 
+    private SemanticWalker CreateSemanticWalker(CancellationToken cancellationToken)
+        => new(_classSymbol, ModuleDeclaredNames, cancellationToken)
+        {
+            Host = _semanticWalkerHost
+        };
+
     /// <summary>
     /// 为模块输出阶段创建共享导入上下文。
     /// 这里刻意让整个模块共用同一份导入绑定状态，
@@ -415,7 +441,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             var operation = GetSemanticModel(blockSyntax).GetOperation(blockSyntax);
             if (operation is not null)
             {
-                var walker = new SemanticWalker(_classSymbol, ModuleDeclaredNames, cancellationToken);
+                var walker = CreateSemanticWalker(cancellationToken);
                 var argument = CreateImportAwareArgument(Sense.FunctionBody);
                 body = MaterializeFunctionBody(walker.Visit(operation, argument), argument, symbol.ReturnsVoid);
                 MergeImports(argument);
@@ -430,7 +456,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             var operation = GetSemanticModel(expressionSyntax).GetOperation(expressionSyntax);
             if (operation is not null)
             {
-                var walker = new SemanticWalker(_classSymbol, ModuleDeclaredNames, cancellationToken);
+                var walker = CreateSemanticWalker(cancellationToken);
                 var argument = CreateImportAwareArgument(Sense.Any);
                 var visited = walker.Visit(operation, argument);
                 MergeImports(argument);
@@ -599,7 +625,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var walker = new SemanticWalker(_classSymbol, ModuleDeclaredNames, cancellationToken);
+        var walker = CreateSemanticWalker(cancellationToken);
         var argument = CreateImportAwareArgument(Sense.Any);
         var visited = walker.Visit(operation, argument);
         MergeImports(argument);
@@ -983,6 +1009,13 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 case INamedTypeSymbol nestedInterface when nestedInterface.TypeKind == TypeKind.Interface:
                     // interface 在成员类内同样只作为契约参与分析，不发射运行时对象。
                     break;
+                case INamedTypeSymbol nestedClass when
+                    _options.Profile == AstConverterProfile.RazorVueRuntime &&
+                    ModuleDeclaredNames.ContainsKey(nestedClass.OriginalDefinition):
+                    // RazorVue runtime helper classes are flattened to artifact-module scope
+                    // by RazorVueCompilerModuleContext so type references keep one stable
+                    // compiler-owned declared-name context.
+                    break;
                 case IEventSymbol eventSymbol:
                     throw new NotSupportedException($"Jazor member class does not support Event:{eventSymbol.Name}.");
                 default:
@@ -993,15 +1026,12 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         if (baseType is not null && !hasExplicitConstructor)
             nodes.Insert(0, CreateImplicitBaseConstructor(baseType));
 
-        var className =
-            symbol.ContainingType is not null &&
-            SymbolEqualityComparer.Default.Equals(symbol.ContainingType.OriginalDefinition, _classSymbol.OriginalDefinition)
-                ? GetModuleDeclaredName(symbol)
-                : Util.GetConfigOrSymbolName(symbol);
+        var className = ModuleDeclaredNames.ContainsKey(symbol.OriginalDefinition)
+            ? GetModuleDeclaredName(symbol)
+            : Util.GetConfigOrSymbolName(symbol);
         var superClassName =
             baseType is not null &&
-            baseType.ContainingType is not null &&
-            SymbolEqualityComparer.Default.Equals(baseType.ContainingType.OriginalDefinition, _classSymbol.OriginalDefinition)
+            ModuleDeclaredNames.ContainsKey(baseType.OriginalDefinition)
                 ? GetModuleDeclaredName(baseType)
                 : baseType is null
                     ? null
@@ -1221,6 +1251,20 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         return baseType;
     }
 
+    private INamedTypeSymbol? GetSupportedRuntimeClassBaseType(INamedTypeSymbol symbol)
+    {
+        if (symbol.BaseType is not INamedTypeSymbol baseType ||
+            baseType.SpecialType == SpecialType.System_Object)
+        {
+            return null;
+        }
+
+        if (ModuleDeclaredNames.ContainsKey(baseType.OriginalDefinition))
+            return baseType;
+
+        throw new NotSupportedException($"Jazor runtime class does not support inheritance {symbol.Name} : {baseType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}.");
+    }
+
     private static MethodDefinition CreateImplicitBaseConstructor(INamedTypeSymbol baseType)
     {
         var arguments = new List<Expression>();
@@ -1373,7 +1417,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         var operation = GetSemanticModel(value).GetOperation(value);
         if (operation is not null)
         {
-            var walker = new SemanticWalker(_classSymbol, ModuleDeclaredNames, cancellationToken);
+            var walker = CreateSemanticWalker(cancellationToken);
             var argument = CreateImportAwareArgument(Sense.Any);
             var expr = walker.Visit(operation, argument) as Expression;
             MergeImports(argument);
@@ -1769,6 +1813,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         => _options.Profile switch
         {
             AstConverterProfile.ClrRuntime => accessibility is Accessibility.Public or Accessibility.Internal,
+            AstConverterProfile.RazorVueRuntime => accessibility is Accessibility.Public or Accessibility.Internal,
             _ => accessibility == Accessibility.Public
         };
 

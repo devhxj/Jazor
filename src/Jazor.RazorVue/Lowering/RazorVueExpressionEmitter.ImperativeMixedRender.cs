@@ -23,8 +23,9 @@ internal sealed partial class RazorVueExpressionEmitter
         var currentLocalScope = allowedLocalSymbols;
         var currentParameterScope = allowedParameterSymbols;
 
-        foreach (var child in fragment.Children)
+        for (var childIndex = 0; childIndex < fragment.Children.Length; childIndex++)
         {
+            var child = fragment.Children[childIndex];
             switch (child)
             {
                 case RazorVueImperativeBlockNode imperative:
@@ -74,22 +75,10 @@ internal sealed partial class RazorVueExpressionEmitter
         {
             RazorVueElementNode element => EmitImperativeCompatibleElementNode(element, allowedLocalSymbols, allowedParameterSymbols),
             RazorVueComponentNode component => EmitImperativeCompatibleComponentNode(component, allowedLocalSymbols, allowedParameterSymbols),
-            RazorVueConditionalNode conditional => EmitImperativeCompatibleFragmentExpression(
-                new RazorVueRenderFragment([conditional]),
-                allowedLocalSymbols,
-                allowedParameterSymbols),
-            RazorVueForEachNode loop => EmitImperativeCompatibleFragmentExpression(
-                new RazorVueRenderFragment([loop]),
-                allowedLocalSymbols,
-                allowedParameterSymbols),
-            RazorVueForNode loop => EmitImperativeCompatibleFragmentExpression(
-                new RazorVueRenderFragment([loop]),
-                allowedLocalSymbols,
-                allowedParameterSymbols),
-            RazorVueTemplateScopeNode templateScope => EmitImperativeCompatibleFragmentExpression(
-                new RazorVueRenderFragment([templateScope]),
-                allowedLocalSymbols,
-                allowedParameterSymbols),
+            RazorVueConditionalNode conditional => EmitImperativeCompatibleConditionalNode(conditional, allowedLocalSymbols, allowedParameterSymbols),
+            RazorVueForEachNode loop => EmitImperativeCompatibleForEachNode(loop, allowedLocalSymbols, allowedParameterSymbols),
+            RazorVueForNode loop => EmitImperativeCompatibleForNode(loop, allowedLocalSymbols, allowedParameterSymbols),
+            RazorVueTemplateScopeNode templateScope => EmitImperativeCompatibleTemplateScopeNode(templateScope, allowedLocalSymbols, allowedParameterSymbols),
             RazorVueImperativeBlockNode imperative => EmitImperativeCompatibleFragmentExpression(
                 new RazorVueRenderFragment([imperative]),
                 allowedLocalSymbols,
@@ -103,7 +92,7 @@ internal sealed partial class RazorVueExpressionEmitter
         ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
         ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
     {
-        if (!RazorVueOpenNodeReplayHelper.HasScopedReplayOperations(element.ReplayOperations))
+        if (!RazorVueOpenNodeReplayHelper.RequiresImperativeScopedReplay(element.ReplayOperations))
         {
             return EmitVNodeCall(
                 ToJavaScriptString(element.TagName),
@@ -131,7 +120,7 @@ internal sealed partial class RazorVueExpressionEmitter
         ValidateDefaultLibrarySlotUsage(component, descriptor, descriptor?.Slots ?? ImmutableArray<VueSlotDescriptor>.Empty);
         ValidateDuplicateLibrarySlotUsage(component, descriptor, descriptor?.Slots ?? ImmutableArray<VueSlotDescriptor>.Empty);
 
-        if (RazorVueOpenNodeReplayHelper.HasScopedReplayOperations(component.ReplayOperations))
+        if (RazorVueOpenNodeReplayHelper.RequiresImperativeScopedReplay(component.ReplayOperations))
         {
             return EmitImperativeCompatibleOpenComponentReplayExpression(
                 component,
@@ -156,6 +145,48 @@ internal sealed partial class RazorVueExpressionEmitter
             ResolveComponentReference(component),
             ApplyNodeKey(attributes, component.Key, allowedLocalSymbols, allowedParameterSymbols),
             slots);
+    }
+
+    private string EmitImperativeCompatibleConditionalNode(
+        RazorVueConditionalNode conditional,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+        => "(" + EmitScopedExpression(conditional.Condition, allowedLocalSymbols, allowedParameterSymbols) + " ? " +
+           EmitImperativeCompatibleFragmentExpression(conditional.WhenTrue, allowedLocalSymbols, allowedParameterSymbols) + " : " +
+           EmitImperativeCompatibleFragmentExpression(conditional.WhenFalse, allowedLocalSymbols, allowedParameterSymbols) + ")";
+
+    private string EmitImperativeCompatibleForEachNode(
+        RazorVueForEachNode loop,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+        => EmitScopedExpression(loop.Source, allowedLocalSymbols, allowedParameterSymbols) + ".map((" + loop.ItemName + ") => " +
+           EmitImperativeCompatibleFragmentExpression(
+               loop.Body,
+               RazorVueTemplateExpressionScopeValidator.AddIfPresent(allowedLocalSymbols, loop.ItemSymbol),
+               allowedParameterSymbols) + ")";
+
+    private string EmitImperativeCompatibleForNode(
+        RazorVueForNode loop,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+        => EmitForRangeInvocation(loop, allowedLocalSymbols, allowedParameterSymbols) + ".map((" + loop.VariableName + ") => " +
+           EmitImperativeCompatibleFragmentExpression(
+               loop.Body,
+               RazorVueTemplateExpressionScopeValidator.AddIfPresent(allowedLocalSymbols, loop.VariableSymbol),
+               allowedParameterSymbols) + ")";
+
+    private string EmitImperativeCompatibleTemplateScopeNode(
+        RazorVueTemplateScopeNode templateScope,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+    {
+        var initializer = EmitScopedExpression(templateScope.Initializer, allowedLocalSymbols, allowedParameterSymbols);
+        return "((" + templateScope.ScopeName + ") => " +
+               EmitImperativeCompatibleFragmentExpression(
+                   templateScope.Children,
+                   allowedLocalSymbols,
+                   RazorVueTemplateExpressionScopeValidator.AddIfPresent(allowedParameterSymbols, templateScope.ScopeParameterSymbol)) +
+               ")(" + initializer + ")";
     }
 
     private string EmitImperativeCompatibleDefaultSlotEntry(
@@ -354,7 +385,7 @@ internal sealed partial class RazorVueExpressionEmitter
         switch (node)
         {
             case RazorVueElementNode element
-                when RazorVueOpenNodeReplayHelper.HasScopedReplayOperations(element.ReplayOperations):
+                when RazorVueOpenNodeReplayHelper.RequiresImperativeScopedReplay(element.ReplayOperations):
                 var elementBuilder = new StringBuilder();
                 elementBuilder.Append(builderAlias).Append(".enterElement(").Append(ToJavaScriptString(element.TagName)).AppendLine(");");
                 AppendReplayOperationsStatements(
@@ -371,7 +402,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 statements = elementBuilder.ToString();
                 return true;
             case RazorVueComponentNode component
-                when RazorVueOpenNodeReplayHelper.HasScopedReplayOperations(component.ReplayOperations):
+                when RazorVueOpenNodeReplayHelper.RequiresImperativeScopedReplay(component.ReplayOperations):
                 _resolvedComponents.TryGetValue(component.ComponentName, out var descriptor);
                 _componentSlotsByPublicName.TryGetValue(component.ComponentName, out var slotsByPublicName);
                 _componentEmitDescriptorsByRazorAlias.TryGetValue(component.ComponentName, out var emitDescriptorsByAlias);
@@ -814,10 +845,10 @@ internal sealed partial class RazorVueExpressionEmitter
         {
             RazorVueImperativeBlockNode => true,
             RazorVueElementNode element =>
-                RazorVueOpenNodeReplayHelper.HasScopedReplayOperations(element.ReplayOperations) ||
+                RazorVueOpenNodeReplayHelper.RequiresImperativeScopedReplay(element.ReplayOperations) ||
                 ContainsImperativeRenderBodyCore(element.Children),
             RazorVueComponentNode component =>
-                RazorVueOpenNodeReplayHelper.HasScopedReplayOperations(component.ReplayOperations) ||
+                RazorVueOpenNodeReplayHelper.RequiresImperativeScopedReplay(component.ReplayOperations) ||
                 ContainsImperativeRenderBodyCore(component.Children) ||
                 ContainsImperativeRenderBodyCore(component.AmbientDefaultSlotChildren) ||
                 component.SlotTemplates.Any(static slot => ContainsImperativeRenderBodyCore(slot.Children)) ||

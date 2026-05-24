@@ -66,6 +66,7 @@ internal sealed partial class RazorVueExpressionEmitter
     private Dictionary<IMethodSymbol, string>? _scopedLifecycleLocalFunctionAliases;
     private Dictionary<ILocalSymbol, string>? _scopedLocalAliases;
     private Dictionary<IParameterSymbol, string>? _scopedParameterAliases;
+    private readonly RazorVueCompilerModuleContext _compilerModuleContext;
     private readonly SenseArgument _compilerArgument;
     private readonly SemanticWalker _semanticWalker;
     private readonly List<RazorVueCompilerImportBinding> _compilerImports;
@@ -74,7 +75,8 @@ internal sealed partial class RazorVueExpressionEmitter
         RazorVueSemanticSnapshot snapshot,
         ImmutableDictionary<string, string>? componentReferences = null,
         ImmutableDictionary<string, VueComponentDescriptor>? resolvedComponents = null,
-        ImmutableDictionary<string, ImmutableDictionary<string, string>>? componentEmitsByRazorAlias = null)
+        ImmutableDictionary<string, ImmutableDictionary<string, string>>? componentEmitsByRazorAlias = null,
+        RazorVueCompilerModuleContext? compilerModuleContext = null)
     {
         _snapshot = snapshot ?? throw new ArgumentNullException(nameof(snapshot));
         _propsByPublicName = snapshot.Descriptor.Props.ToDictionary(
@@ -115,8 +117,9 @@ internal sealed partial class RazorVueExpressionEmitter
         _requiredSetupProperties = new HashSet<IPropertySymbol>(SymbolEqualityComparer.Default);
         _requiredSetupFields = new HashSet<IFieldSymbol>(SymbolEqualityComparer.Default);
         _requiredSetupMethods = new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default);
+        _compilerModuleContext = compilerModuleContext ?? RazorVueCompilerModuleContext.Create(snapshot);
         _compilerArgument = new SenseArgument(Sense.Any, UseImportAliases: true);
-        _semanticWalker = new SemanticWalker(snapshot.ComponentSymbol, moduleDeclaredNames: new Dictionary<ISymbol, string>(SymbolEqualityComparer.Default))
+        _semanticWalker = new SemanticWalker(snapshot.ComponentSymbol, _compilerModuleContext.DeclaredNames)
         {
             Host = new RazorVueCompilerHost(this),
             AllowStructuralSourceDataCarrierLowering = true
@@ -157,7 +160,12 @@ internal sealed partial class RazorVueExpressionEmitter
 
     internal string EmitImperativeRenderBody(RazorVueRenderFragment fragment)
     {
-        var statements = EmitImperativeFragmentStatements(fragment, ImperativeRenderContextAlias, EmptyLocalScope, EmptyParameterScope);
+        var statements = EmitImperativeFragmentStatements(
+            fragment,
+            ImperativeRenderContextAlias,
+            EmptyLocalScope,
+            EmptyParameterScope);
+
         if (string.IsNullOrWhiteSpace(statements))
             return "return " + ImperativeRenderContextAlias + ".finish();";
 
@@ -211,7 +219,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 case RazorVueImperativeBlockNode:
                     return true;
                 case RazorVueElementNode element:
-                    if (RazorVueOpenNodeReplayHelper.HasScopedReplayOperations(element.ReplayOperations) ||
+                    if (RazorVueOpenNodeReplayHelper.RequiresImperativeScopedReplay(element.ReplayOperations) ||
                         ContainsImperativeRenderBodyCore(element.Children))
                     {
                         return true;
@@ -219,7 +227,7 @@ internal sealed partial class RazorVueExpressionEmitter
 
                     break;
                 case RazorVueComponentNode component:
-                    if (RazorVueOpenNodeReplayHelper.HasScopedReplayOperations(component.ReplayOperations) ||
+                    if (RazorVueOpenNodeReplayHelper.RequiresImperativeScopedReplay(component.ReplayOperations) ||
                         ContainsImperativeRenderBodyCore(component.Children) ||
                         ContainsImperativeRenderBodyCore(component.AmbientDefaultSlotChildren))
                     {
@@ -310,8 +318,14 @@ internal sealed partial class RazorVueExpressionEmitter
             }
         }
 
-        return _compilerImports.Distinct().ToImmutableArray();
+        return _compilerImports
+            .Concat(_compilerModuleContext.CompilerImports)
+            .Distinct()
+            .ToImmutableArray();
     }
+
+    internal void AppendRequiredHelperTypeDeclarations(StringBuilder builder, string indent)
+        => _compilerModuleContext.AppendRequiredHelperTypeDeclarations(builder, indent);
 
     private string EmitCompilerLoweredExpression(IOperation operation, SenseArgument? compilerArgument = null)
     {
@@ -692,9 +706,12 @@ internal sealed partial class RazorVueExpressionEmitter
                 : null;
 
         public override Expression? RewriteObjectCreationPreorder(IObjectCreationOperation operation, SenseArgument argument)
-            => _emitter.TryRewriteStaticMarkupStringObjectCreation(operation, out var expression)
+        {
+            _emitter._compilerModuleContext.RecordObjectCreation(operation);
+            return _emitter.TryRewriteStaticMarkupStringObjectCreation(operation, out var expression)
                 ? ParseJavaScriptExpression(expression)
                 : null;
+        }
 
         public override VariableDeclarator? RewriteVariableDeclaratorPreorder(IVariableDeclaratorOperation operation, SenseArgument argument)
             => _emitter.TryRewriteVariableDeclarator(operation, argument, out var declaratorExpression)

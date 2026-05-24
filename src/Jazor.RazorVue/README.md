@@ -93,7 +93,8 @@
   - 含标准静态 attribute、嵌套 element、void element、自闭合 element、普通文本与 HTML comment 的同类静态片段
 - 该能力在 `BuildRenderTree` frontend 与 Razor IR frontend 之间复用了同一个静态标记解析器，因此两条路径对静态 HTML 片段的 element/text/attribute 还原语义保持一致。
 - `AddMarkupContent(...)`、`AddContent(..., MarkupString)` 与 Razor 模板中的 `@MarkupStringExpression` 仍刻意收窄为“编译期可证明为静态 HTML”的子集；允许的 string/`MarkupString` carrier 只限源码可分析、静态可追溯的局部、源码可分析的 current-component / local function static-markup factory 返回值，以及只读成员或“private mutable + 可证明无后续写入”的受控成员形态。对 handwritten `BuildRenderTree` 而言，静态 `AddMarkupContent(...)` 的 string local 现已正式覆盖 `const`、普通 declaration initializer，以及“先声明、再在同一线性局部声明前缀内完成一次简单赋值”的 source-stable 窄模式；`MarkupString` local 也在 handwritten `BuildRenderTree` 与 Razor IR authored template 两条路径上支持同一 declaration-prefix 合同，并允许在赋值前穿过 sibling local declarations。`CreateMarkup()`、`CreateMarkup(Title)`、省略 optional 参数的 `CreateMarkup()`，以及 `CreateMarkup(Title, "suffix")` 这类按 Roslyn 绑定为单数组形参的 `params` 调用，只要返回值本身仍可还原为静态 string / `MarkupString`，现在都可直接被上述静态-markup 消费点接受，并贯通 declarative / imperative / pipeline / SFC 主线。对带普通按值参数、omitted optional default 或 `params` 单数组绑定的 factory，RazorVue 都会保留调用点实参的左到右求值顺序，并把实参与形参绑定为 captured scope，再包裹最终静态 subtree，而不是通过“看起来是静态返回值”把调用直接擦掉。一旦这些 local 或 factory-backed carrier 后续依赖更宽 dataflow、重赋值、`ref/out`/`in`、实参与形参无法按当前合同绑定、或其他不可静态证明的变异，就会显式拒绝，而不是沿第一次赋值静默恢复旧静态 subtree。动态 markup、运行时拼接 markup、运行时构造的 `MarkupString` 或需要执行脚本语义的 raw HTML 当前仍不支持。
-- 上述静态-markup 解析链现在也明确覆盖“factory-backed member/local carrier 再消费”的组合形态：例如 `private string HeroMarkup => CreateMarkup(); builder.AddMarkupContent(..., HeroMarkup);`、`MarkupString markup; markup = CreateMarkup(); builder.AddContent(..., markup);`，以及 `builder.AddMarkupContent(..., CreateMarkup(Title));` / `builder.AddContent(..., CreateMarkup(Title));` 这类带普通按值参数但返回静态 markup 的 factory 消费，都会沿同一 source-stable/static-factory 解析链继续追踪到最终静态 markup 值，并在需要时保留调用点 captured-binding scope 后再贯通 render tree / pipeline / SFC / imperative bridge；不会在 property/local 这一层错误丢失 factory 返回值解析上下文，也不会把有参数的静态 factory 错误退回 unsupported。
+- imperative render / setup lowering 里引用同文件 helper class 时，不再走 carrier wrapper 或手写 JS 拼装；同模块普通同步 helper 由 `AstConverter.ConvertRuntimeClass(...)` 直出为 class declaration，再由 RazorVue module context 统一收集 helper 依赖、CLR/compiler import 绑定和模块内声明名，最后插入到 Vue/compiler imports 之后、`export default defineComponent(...)` 之前。该支持面覆盖组件内嵌 helper class、helper class 递归创建其他同模块 helper class，以及 helper method 内的 CLR whitelist `Import` 调用；带 `[ECMAScript]` / `[ECMAScriptModule]` 标记的 host/component type 不会被当作 helper class 扁平化。
+- 上述静态-markup 解析链现在也明确覆盖“factory-backed member/local carrier 再消费”的组合形态：例如 `private string HeroMarkup => CreateMarkup(); builder.AddMarkupContent(..., HeroMarkup);`、`MarkupString markup; markup = CreateMarkup(); builder.AddContent(..., markup);`，以及 `builder.AddMarkupContent(..., CreateMarkup(Title));` / `builder.AddContent(..., CreateMarkup(Title));` 这类带普通按值参数但返回静态 markup 的 factory 消费，都会沿同一 source-stable/static-factory 解析链继续追踪到最终静态 markup 值，并在需要时保留调用点 captured-binding scope 后再贯通 render tree / pipeline / SFC / imperative bridge；不会在 property/local 这一层错误丢失 factory 返回值解析上下文，也不会把有参数的静态 factory 错误退回 unsupported。imperative bridge 中的 `MarkupString` local 仍是值 carrier：声明/赋值语句继续通过 `SemanticWalker` 的 host rewrite 发射为静态 markup 值，不会被伪装成 `() => h(...)` thunk，也不会把 static-markup factory 错误纳入 setup helper dependency graph。
 
 ## Razor IR Template Locals
 
@@ -247,13 +248,15 @@
   - `.vue` / SFC artifact 的 render-function 承载
   - imperative 产物 runtime vocabulary 现已统一为 render-context（`__jazorRenderContext`、`enterElement/leaveElement`、`append`、`setComponentParameter`、`finish`）；最终 Vue 产物不再暴露 Razor `RenderTreeBuilder` 语义
   - 首段真实 imperative render 承载：提前 `return`、`while` / `do-while`、带 `break` / `continue` 的 `for` / `foreach`、`switch`、`lock`、`try/catch/finally`、`using` / `using declaration`、局部 mutation、imperative body 内静态 `AddMarkupContent(...)` / `AddContent(..., MarkupString)`
+  - mixed render-function 组合层会保留可声明式表达的 sibling vnode：普通 count-style `for` / `foreach`、conditional、template scope、attribute/key/event scoped replay 仍优先发射为表达式；只有 scoped replay 内真正需要 frame/slot/child 回放时才进入 render-context bridge
+  - mixed imperative body 中若声明式 sibling 使用 attribute spread，`.mjs` 与 render-function `.vue` builder 都会按 body dependency 注入 `__jazorVueMergeAttributes(...)` helper；表达式本身仍由 `SemanticWalker` / `Jazor.Compiler` lowering
   - 上述承载同时覆盖 handwritten `BuildRenderTree` 与 Razor authored root template `@{ ... }` code-block，经 Razor IR frontend 提升后复用同一 imperative render 主线
   - canonical / SFC semantic 正式模型现已承载“单 imperative root program”，不再要求 SFC artifact factory 在入口层单独扫描 renderTree 决定是否旁路
   - template canonical subtree 的稳定显式边界
 - 当 render tree 任意位置包含 imperative node 时，SFC 输出统一切到 render-function `.vue` 路径；不再尝试让 mixed imperative subtree 回流 template canonicalization
 - 当前 Phase 1 仍未落地的是：
   - imperative body 继续结构化进入 template canonical subtree 的路径
-  - 真正 async imperative render contract 的设计与产物承载；当前同步 `.mjs` / render-function `.vue` 主线会对 `await using` 显式 fail-fast，而不是生成非法 async render
+  - 真正 async imperative render contract 的设计与产物承载；当前同步 `.mjs` / render-function `.vue` 主线对 `await`、`await foreach`、`await using` / `await using var` 均显式 fail-fast，而不是生成非法或 fire-and-forget async render
   - `lock` 当前已进入正式命令式渲染通道，但语义边界刻意收敛为 single-agent erased lock lowering：保留单次求值、空值失败、同步顺序与异常传播，不宣称 CLR monitor / cross-thread 互斥语义
 - imperative component parameter bridge 现已进入 descriptor-aware 路线：
   - `OpenComponent(...)` 在 imperative render bridge 中会携带已解析组件 metadata，而不再把 `AddComponentParameter(...)` 一律当成原样 prop
@@ -265,7 +268,7 @@
   - Razor IR root template `@{ ... }` promotion 后的 imperative 路径也已与 handwritten `BuildRenderTree` 对齐，current-component slot forwarding 不再在 SG/IR 路径退化成普通 slot 函数值
 - 当前仍未落地的是：
   - imperative body 继续结构化进入 template canonical subtree 的路径
-  - 真正 async imperative render contract 的设计与产物承载；当前同步 `.mjs` / render-function `.vue` 主线会对 `await using` 显式 fail-fast，而不是生成非法 async render
+  - 真正 async imperative render contract 的设计与产物承载；当前同步 `.mjs` / render-function `.vue` 主线对 `await`、`await foreach`、`await using` / `await using var` 均显式 fail-fast，而不是生成非法或 fire-and-forget async render
 
 ## Default Slot Modeling
 
@@ -342,7 +345,7 @@
 - 上述 current-component member carrier 也支持有限的“只读 member 转发链”，例如一个只读 property 返回另一个只读 property / `readonly` field carrier；只要最终仍能静态追到源码可分析匿名模板，就会被接受。
 - Razor IR frontend 现在也与 handwritten `BuildRenderTree` 对齐支持这组 current-component carrier 子集：局部 `RenderFragment` / `RenderFragment<T>` 可以从只读 property、`readonly` field、“声明点初始化且无后续写入”的 private settable property / private 非 `readonly` field、有限只读 member 转发链，或受支持 fragment factory 调用结果初始化，然后再赋给 `AddContent(...)` 或组件 typed slot/template 参数；自引用/环引用仍会显式 fail-fast。
 - handwritten `BuildRenderTree` 当前还支持一个更窄的 fragment factory helper 子集：
-  - 当前组件方法或 local function 可以零参数返回 `RenderFragment` / `RenderFragment<T>`，只要其返回值本身仍能静态追到源码可分析匿名模板，就可被 `AddContent` 与组件 typed slot/template 参数消费。
+- 当前组件方法或 local function 可以零参数返回 `RenderFragment` / `RenderFragment<T>`，只要其返回值本身仍能静态追到源码可分析匿名模板，就可被 `AddContent` 与组件 typed slot/template 参数消费。
   - 当前组件方法或 local function 也可以带普通按值参数返回 `RenderFragment` / `RenderFragment<T>`，支持两类直接调用点：
     - `builder.AddContent(0, CreateTemplate(Title), 42);`
     - `builder.AddAttribute(1, "ItemTemplate", CreateTemplate(Title));`
@@ -372,6 +375,7 @@
   - 多个额外参数会按调用点实参求值顺序形成嵌套局部作用域，同时保持每个 helper 形参绑定到其正确实参；即使 named argument 打乱声明顺序，也不会退化成按声明顺序重排求值
   - 对 `params` 参数，RazorVue 保留 Roslyn 的单数组绑定结果；canonical/H 会直接使用该数组表达式，SFC 会在需要时把数组初始化提升为 setup binding，再通过局部 template scope wrapper 消费
   - helper body 必须源码可分析且自身形成可独立 canonicalize 的片段；不支持依赖调用方已打开节点/component frame 的 attribute/key/close 协议
+- 同文件 helper class 也可由 helper / using 路径触发递归 lowering，但仍必须是同步、源码可分析、同 artifact module 内的普通 runtime class；泛型/static/record/helper component 或 ECMAScript host type 不会进入该通道。`await using` / `await using var` 仍显式 fail-fast，不进入同一 helper lowering 通道。
 - 对 SFC 输出，模板局部声明会编码为局部 template scope wrapper，而不是泄漏为顶层 `script setup` 公共绑定。
 
 ## Verification
@@ -384,7 +388,7 @@ dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj -
 
 当前基线：
 
-- `src/Jazor.RazorVue.Test`: `1072 / 1072` 通过
+- `src/Jazor.RazorVue.Test`: `1304 / 1304` 通过
 - `src/Jazor.RazorVue.RazorIr.Test`: `371 / 371` 通过
 
 ## Read Next

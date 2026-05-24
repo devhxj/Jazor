@@ -723,6 +723,15 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
     private bool IsSymbolDeclaredInCurrentSourceBoundary(IOperation operation, ISymbol symbol)
     {
+        if (_moduleDeclaredNames is not null)
+        {
+            foreach (var candidate in EnumerateSupportMarkerCandidates(symbol))
+            {
+                if (_moduleDeclaredNames.ContainsKey(candidate.OriginalDefinition))
+                    return true;
+            }
+        }
+
         var boundaryType = TryGetCurrentSourceBoundaryType(operation);
         if (boundaryType is null)
             return false;
@@ -777,6 +786,12 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         var effectiveHost = hostType ?? symbol.ContainingType;
         if (effectiveHost is null)
             return false;
+
+        if (_moduleDeclaredNames is not null &&
+            _moduleDeclaredNames.ContainsKey(effectiveHost.OriginalDefinition))
+        {
+            return false;
+        }
 
         if (IsSymbolDeclaredInCurrentSourceBoundary(operation, effectiveHost))
             return false;

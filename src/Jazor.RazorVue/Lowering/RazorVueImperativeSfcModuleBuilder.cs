@@ -18,11 +18,14 @@ internal static class RazorVueImperativeSfcModuleBuilder
         var descriptor = snapshot.Descriptor;
         var propDefaultBindings = CollectPropDefaultBindings(snapshot, descriptor, expressionEmitter);
         var renderBody = expressionEmitter.EmitImperativeRenderBody(renderTree);
+        var requiresAttributeMergeHelper = RazorVueAttributeMergeHelper.ContainsInvocation(renderBody);
         var setupBodyBuilder = new StringBuilder();
         setupBodyBuilder.AppendLine("  setup(__jazorRawProps, { emit, slots, expose, attrs }) {");
         AppendPropsBinding(setupBodyBuilder, propDefaultBindings);
         if (RazorVueForLoopLoweringSupport.ContainsForLoop(renderTree))
             RazorVueForLoopLoweringSupport.AppendForRangeHelper(setupBodyBuilder, "    ");
+        if (requiresAttributeMergeHelper)
+            RazorVueAttributeMergeHelper.AppendHelper(setupBodyBuilder, "    ");
         AppendImperativeComponentMetadataBindings(setupBodyBuilder, resolvedComponents, "    ");
         AppendImperativeRenderBridgeHelper(setupBodyBuilder, "    ");
         var lifecyclePlan = RazorVueSetupAndLifecycleLoweringSupport.CreateLifecyclePlan(snapshot, expressionEmitter);
@@ -47,11 +50,19 @@ internal static class RazorVueImperativeSfcModuleBuilder
         setupBodyBuilder.AppendLine("    };");
         setupBodyBuilder.AppendLine("  }");
 
+        var helperDeclarationsBuilder = new StringBuilder();
+        expressionEmitter.AppendRequiredHelperTypeDeclarations(helperDeclarationsBuilder, string.Empty);
+        var helperDeclarations = helperDeclarationsBuilder.ToString();
         compilerImports = expressionEmitter.FlushCompilerImports();
 
         var builder = new StringBuilder();
         AppendVueImports(builder, snapshot, resolvedComponents, compilerImports);
         builder.AppendLine();
+        if (!string.IsNullOrWhiteSpace(helperDeclarations))
+        {
+            builder.AppendLine(helperDeclarations.TrimEnd());
+            builder.AppendLine();
+        }
         builder.AppendLine("export default defineComponent({");
         builder.Append("  name: \"").Append(descriptor.Name).AppendLine("\",");
         builder.Append("  props: ").Append(FormatStringArray(descriptor.Props.Select(static prop => prop.Name))).AppendLine(",");

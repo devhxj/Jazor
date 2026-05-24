@@ -1066,7 +1066,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         }
 
         emitCall = ExtractSupportedEmitCall(snapshot, expressionEmitter, method, emitExpression, allowFirstRenderPayload);
-        return true;
+        return emitCall is not null;
     }
 
     private static bool TryValidateLifecyclePrefixDeclarations(
@@ -1155,6 +1155,10 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             var payload = expressionEmitter is null
                 ? RazorVueExpressionEmitter.EmitLifecyclePayload(snapshot, method, payloadOperation, allowFirstRenderPayload)
                 : expressionEmitter.EmitLifecyclePayload(method, payloadOperation, allowFirstRenderPayload);
+
+            if (payload.Expression is null)
+                throw CreateUnsupportedLifecycleLoweringException(method);
+
             return new SupportedEmitCall(emitName, payload.Expression, payload.UsesFirstRender, payload.PreludeBindings);
         }
         catch (NotSupportedException)

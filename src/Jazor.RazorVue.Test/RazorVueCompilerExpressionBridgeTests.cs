@@ -217,12 +217,16 @@ public sealed class RazorVueCompilerExpressionBridgeTests
             .Execute(context)
             .Artifacts
             .Single();
+        var scriptText = string.IsNullOrEmpty(artifact.ScriptSetupText)
+            ? artifact.ScriptText
+            : artifact.ScriptSetupText;
 
-        StringAssert.Contains(artifact.ScriptSetupText, "const currentFirstRender = firstRender;");
-        StringAssert.Contains(artifact.ScriptSetupText, "firstRender = false;");
-        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorLifecycleLocal");
-        StringAssert.Contains(artifact.ScriptSetupText, " = currentFirstRender;");
-        StringAssert.Contains(artifact.ScriptSetupText, "await emit(\"readyChanged\", __jazorLifecycleLocal");
+        StringAssert.Contains(scriptText, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(scriptText, "firstRender = false;");
+        Assert.IsFalse(
+            scriptText.Contains("__jazorLifecycleLocal", StringComparison.Ordinal),
+            scriptText);
+        StringAssert.Contains(scriptText, "await emit(\"readyChanged\", currentFirstRender);");
     }
 
     [TestMethod]
@@ -274,13 +278,16 @@ public sealed class RazorVueCompilerExpressionBridgeTests
             .Execute(context)
             .Artifacts
             .Single();
+        var scriptText = string.IsNullOrEmpty(artifact.ScriptSetupText)
+            ? artifact.ScriptText
+            : artifact.ScriptSetupText;
 
-        StringAssert.Contains(artifact.ScriptSetupText, "const currentFirstRender = firstRender;");
-        StringAssert.Contains(artifact.ScriptSetupText, "firstRender = false;");
-        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorLifecycleLocal");
-        StringAssert.Contains(artifact.ScriptSetupText, " = currentFirstRender;");
-        StringAssert.Contains(artifact.ScriptSetupText, "await emit(\"readyChanged\", __jazorLifecycleLocal");
-        StringAssert.Contains(artifact.ScriptSetupText, " ?? false);");
+        StringAssert.Contains(scriptText, "const currentFirstRender = firstRender;");
+        StringAssert.Contains(scriptText, "firstRender = false;");
+        Assert.IsFalse(
+            scriptText.Contains("__jazorLifecycleLocal", StringComparison.Ordinal),
+            scriptText);
+        StringAssert.Contains(scriptText, "await emit(\"readyChanged\", currentFirstRender ?? false);");
     }
 
     [TestMethod]

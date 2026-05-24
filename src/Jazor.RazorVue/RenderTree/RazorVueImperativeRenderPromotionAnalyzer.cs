@@ -30,12 +30,14 @@ internal static class RazorVueImperativeRenderPromotionAnalyzer
             IBlockOperation block => RequiresImperativePromotion(block.Operations),
             IConditionalOperation conditional => RequiresImperativePromotion(conditional.WhenTrue) ||
                                                  RequiresImperativePromotion(conditional.WhenFalse),
+            IForEachLoopOperation { IsAsynchronous: true } => true,
             IForEachLoopOperation loop => RequiresImperativePromotion(loop.Body),
             IForLoopOperation loop => RequiresImperativePromotion(loop.Body),
             ILockOperation lockOperation => RequiresImperativePromotion(lockOperation.Body),
             IUsingOperation usingOperation => RequiresImperativePromotion(usingOperation.Body),
             IUsingDeclarationOperation => true,
             IThrowOperation => true,
+            IAwaitOperation => true,
             IExpressionStatementOperation expressionStatement => RequiresImperativePromotionExpressionStatement(expressionStatement),
             IBranchOperation { BranchKind: BranchKind.Break or BranchKind.Continue } => true,
             _ => false
@@ -64,7 +66,7 @@ internal static class RazorVueImperativeRenderPromotionAnalyzer
     private static bool RequiresImperativePromotionExpressionStatement(IExpressionStatementOperation expressionStatement)
     {
         var current = RazorVueOperationNormalizer.Unwrap(expressionStatement.Operation);
-        return current is IAssignmentOperation or IIncrementOrDecrementOperation;
+        return current is IAssignmentOperation or IIncrementOrDecrementOperation or IAwaitOperation;
     }
 
     private static RazorVueImperativeBlockKind? TryClassify(IOperation operation)
@@ -72,7 +74,9 @@ internal static class RazorVueImperativeRenderPromotionAnalyzer
         {
             IReturnOperation { IsImplicit: false } => RazorVueImperativeBlockKind.MethodBody,
             IThrowOperation => RazorVueImperativeBlockKind.MethodBody,
+            IAwaitOperation => RazorVueImperativeBlockKind.MethodBody,
             IWhileLoopOperation => RazorVueImperativeBlockKind.LoopBlock,
+            IForEachLoopOperation { IsAsynchronous: true } => RazorVueImperativeBlockKind.LoopBlock,
             ISwitchOperation => RazorVueImperativeBlockKind.SwitchBlock,
             ILockOperation => RazorVueImperativeBlockKind.LockBlock,
             ITryOperation => RazorVueImperativeBlockKind.TryBlock,
@@ -92,6 +96,7 @@ internal static class RazorVueImperativeRenderPromotionAnalyzer
         {
             IAssignmentOperation => RazorVueImperativeBlockKind.LocalBlock,
             IIncrementOrDecrementOperation => RazorVueImperativeBlockKind.LocalBlock,
+            IAwaitOperation => RazorVueImperativeBlockKind.MethodBody,
             _ => null
         };
     }
@@ -111,6 +116,7 @@ internal static class RazorVueImperativeRenderPromotionAnalyzer
             IBlockOperation block => ClassifyBodyKindOrNull(block.Operations),
             IConditionalOperation conditional => ClassifyOperationKind(conditional.WhenTrue) ??
                                                  ClassifyOperationKind(conditional.WhenFalse),
+            IForEachLoopOperation { IsAsynchronous: true } => RazorVueImperativeBlockKind.LoopBlock,
             IForEachLoopOperation loop => ClassifyOperationKind(loop.Body),
             IForLoopOperation loop => ClassifyOperationKind(loop.Body),
             ILockOperation lockOperation => ClassifyOperationKind(lockOperation.Body),

@@ -323,7 +323,13 @@ internal static class RazorVueImperativeRenderSegmentationPlanner
             case IThrowOperation:
                 kind = RazorVueImperativeBlockKind.MethodBody;
                 return true;
+            case IAwaitOperation:
+                kind = RazorVueImperativeBlockKind.MethodBody;
+                return true;
             case IWhileLoopOperation:
+                kind = RazorVueImperativeBlockKind.LoopBlock;
+                return true;
+            case IForEachLoopOperation { IsAsynchronous: true }:
                 kind = RazorVueImperativeBlockKind.LoopBlock;
                 return true;
             case ISwitchOperation:
@@ -353,6 +359,12 @@ internal static class RazorVueImperativeRenderSegmentationPlanner
                 if (statement is IAssignmentOperation or IIncrementOrDecrementOperation)
                 {
                     kind = RazorVueImperativeBlockKind.LocalBlock;
+                    return true;
+                }
+
+                if (statement is IAwaitOperation)
+                {
+                    kind = RazorVueImperativeBlockKind.MethodBody;
                     return true;
                 }
 

@@ -4,7 +4,9 @@ namespace Jazor.Compiler;
 
 public sealed record AstConverterOptions(
     AstConverterProfile Profile,
-    Func<ISymbol, bool>? MemberFilter = null)
+    Func<ISymbol, bool>? MemberFilter = null,
+    IReadOnlyDictionary<ISymbol, string>? DeclaredNames = null,
+    SemanticWalkerHost? Host = null)
 {
     public static AstConverterOptions Default { get; } = new(AstConverterProfile.Standard);
 }
@@ -12,5 +14,6 @@ public sealed record AstConverterOptions(
 public enum AstConverterProfile
 {
     Standard = 0,
-    ClrRuntime = 1
+    ClrRuntime = 1,
+    RazorVueRuntime = 2
 }

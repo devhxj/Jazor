@@ -140,7 +140,9 @@ internal sealed partial class RazorVueExpressionEmitter
             throw CreateUnsupportedImperativeRenderLoweringException(unsupportedOperation);
     }
 
-    private static bool TryGetUnsupportedImperativeAsyncOperation(IOperation? operation, out IOperation unsupportedOperation)
+    private static bool TryGetUnsupportedImperativeAsyncOperation(
+        IOperation? operation,
+        out IOperation unsupportedOperation)
     {
         unsupportedOperation = null!;
         if (operation is null)
@@ -151,7 +153,13 @@ internal sealed partial class RazorVueExpressionEmitter
             if (current is IAnonymousFunctionOperation or ILocalFunctionOperation)
                 continue;
 
-            if (current is IUsingOperation { IsAsynchronous: true } or IUsingDeclarationOperation { IsAsynchronous: true })
+            if (current is IUsingDeclarationOperation { IsAsynchronous: true })
+            {
+                unsupportedOperation = current;
+                return true;
+            }
+
+            if (current is IUsingOperation { IsAsynchronous: true })
             {
                 unsupportedOperation = current;
                 return true;
@@ -462,7 +470,18 @@ internal sealed partial class RazorVueExpressionEmitter
             IsSupportedImperativeStaticMarkupFactoryInvocation);
 
     private RazorVueStaticMarkupValueHelper.StaticMarkupResolution? TryResolveImperativeStaticMarkupString(IOperation? operation)
-        => RazorVueStaticMarkupValueHelper.TryResolveStaticMarkup(
+    {
+        if (TryResolveEmittedImperativeStaticMarkupLocal(
+                operation,
+                TryGetImperativeLocalMarkupStringInitializer,
+                TryGetImperativePropertyMarkupStringInitializer,
+                TryGetImperativeFieldMarkupStringInitializer,
+                out var localResolution))
+        {
+            return localResolution;
+        }
+
+        return RazorVueStaticMarkupValueHelper.TryResolveStaticMarkup(
             operation,
             _snapshot.Compilation,
             TryGetImperativeLocalMarkupStringInitializer,
@@ -470,6 +489,7 @@ internal sealed partial class RazorVueExpressionEmitter
             TryGetImperativeFieldMarkupStringInitializer,
             TryGetImperativeStaticMarkupFactoryReturnedValue,
             IsSupportedImperativeStaticMarkupFactoryInvocation);
+    }
 
     private string? TryGetImperativeStaticMarkupContent(IOperation? operation)
         => RazorVueStaticMarkupValueHelper.TryGetStaticMarkupValue(
@@ -482,7 +502,18 @@ internal sealed partial class RazorVueExpressionEmitter
             IsSupportedImperativeStaticMarkupFactoryInvocation);
 
     private RazorVueStaticMarkupValueHelper.StaticMarkupResolution? TryResolveImperativeStaticMarkupContent(IOperation? operation)
-        => RazorVueStaticMarkupValueHelper.TryResolveStaticMarkup(
+    {
+        if (TryResolveEmittedImperativeStaticMarkupLocal(
+                operation,
+                TryGetImperativeLocalStaticMarkupInitializer,
+                TryGetImperativePropertyStaticMarkupInitializer,
+                TryGetImperativeFieldStaticMarkupInitializer,
+                out var localResolution))
+        {
+            return localResolution;
+        }
+
+        return RazorVueStaticMarkupValueHelper.TryResolveStaticMarkup(
             operation,
             _snapshot.Compilation,
             TryGetImperativeLocalStaticMarkupInitializer,
@@ -490,6 +521,40 @@ internal sealed partial class RazorVueExpressionEmitter
             TryGetImperativeFieldStaticMarkupInitializer,
             TryGetImperativeStaticMarkupFactoryReturnedValue,
             IsSupportedImperativeStaticMarkupFactoryInvocation);
+    }
+
+    private bool TryResolveEmittedImperativeStaticMarkupLocal(
+        IOperation? operation,
+        Func<ILocalSymbol, IOperation?> localInitializerResolver,
+        Func<IPropertySymbol, IOperation?> propertyInitializerResolver,
+        Func<IFieldSymbol, IOperation?> fieldInitializerResolver,
+        out RazorVueStaticMarkupValueHelper.StaticMarkupResolution resolution)
+    {
+        resolution = default;
+        if (RazorVueOperationNormalizer.Unwrap(operation) is not ILocalReferenceOperation localReference)
+            return false;
+
+        var initializer = localInitializerResolver(localReference.Local);
+        if (initializer is null)
+            return false;
+
+        var resolved = RazorVueStaticMarkupValueHelper.TryResolveStaticMarkup(
+            initializer,
+            _snapshot.Compilation,
+            localInitializerResolver,
+            propertyInitializerResolver,
+            fieldInitializerResolver,
+            TryGetImperativeStaticMarkupFactoryReturnedValue,
+            IsSupportedImperativeStaticMarkupFactoryInvocation);
+        if (resolved is null)
+            return false;
+
+        // The local declarator/assignment is emitted by SemanticWalker and already
+        // preserves factory argument evaluation. The AddContent/AddMarkupContent
+        // consumption only needs the proven static vnode shape.
+        resolution = RazorVueStaticMarkupValueHelper.StaticMarkupResolution.Create(resolved.Value.Markup);
+        return true;
+    }
 
     private IOperation? TryGetImperativeLocalMarkupStringInitializer(ILocalSymbol local)
     {
@@ -612,7 +677,8 @@ internal sealed partial class RazorVueExpressionEmitter
     }
 
     private bool IsSupportedImperativeStaticMarkupFactoryInvocation(IInvocationOperation invocation)
-        => IsCurrentComponentMember(invocation.TargetMethod, invocation.Instance);
+        => invocation is { Instance: null, TargetMethod.MethodKind: MethodKind.LocalFunction } ||
+           IsCurrentComponentMember(invocation.TargetMethod, invocation.Instance);
 
     private IOperation? TryGetImperativeStaticMarkupFactoryReturnedValue(IInvocationOperation invocation)
         => RazorVueImperativeRenderFragmentCarrierHelper.TryGetRenderFragmentFactoryReturnedValue(
@@ -746,11 +812,16 @@ internal sealed partial class RazorVueExpressionEmitter
         out string expression)
     {
         expression = string.Empty;
-        if (_imperativeBuilderAlias is null ||
-            !IsImperativeRenderFragmentCarrierType(operation.Symbol.Type))
+        if (_imperativeBuilderAlias is null)
         {
             return false;
         }
+
+        if (TryRewriteImperativeStaticMarkupVariableDeclarator(operation, argument, out expression))
+            return true;
+
+        if (!IsImperativeRenderFragmentCarrierType(operation.Symbol.Type))
+            return false;
 
         if (RazorVueImperativeRenderFragmentCarrierHelper.IsSourceStableLocalRenderFragmentInitializerInvalidatedByLaterWrites(
                 _snapshot.Compilation,
@@ -793,11 +864,16 @@ internal sealed partial class RazorVueExpressionEmitter
     {
         expression = string.Empty;
         if (_imperativeBuilderAlias is null ||
-            operation.Target is not ILocalReferenceOperation localReference ||
-            !IsImperativeRenderFragmentCarrierType(localReference.Local.Type))
+            operation.Target is not ILocalReferenceOperation localReference)
         {
             return false;
         }
+
+        if (TryRewriteImperativeStaticMarkupLocalAssignment(operation, localReference, argument, out expression))
+            return true;
+
+        if (!IsImperativeRenderFragmentCarrierType(localReference.Local.Type))
+            return false;
 
         if (RazorVueImperativeRenderFragmentCarrierHelper.IsSourceStableLocalRenderFragmentInitializerInvalidatedByLaterWrites(
                 _snapshot.Compilation,
@@ -828,6 +904,70 @@ internal sealed partial class RazorVueExpressionEmitter
         _ = argument;
         return false;
     }
+
+    private bool TryRewriteImperativeStaticMarkupVariableDeclarator(
+        IVariableDeclaratorOperation operation,
+        SenseArgument argument,
+        out string expression)
+    {
+        expression = string.Empty;
+        if (!RazorVueStaticMarkupValueHelper.IsMarkupStringType(operation.Symbol.Type))
+            return false;
+
+        if (RazorVueSourceStableLocalInitializerHelper.IsSourceStableLocalInitializerInvalidatedByLaterWrites(
+                _snapshot.Compilation,
+                operation.Symbol,
+                RazorVueStaticMarkupValueHelper.IsMarkupStringType))
+        {
+            return false;
+        }
+
+        var current = TryGetNormalizedImperativeVariableInitializer(operation) ??
+                      operation.Initializer?.Value;
+        if (current is null)
+            return false;
+
+        if (TryResolveImperativeStaticMarkupCarrierValue(current) is not { } resolution)
+            return false;
+
+        expression = EmitStaticMarkupCarrierValueExpression(resolution, argument);
+        return true;
+    }
+
+    private bool TryRewriteImperativeStaticMarkupLocalAssignment(
+        ISimpleAssignmentOperation operation,
+        ILocalReferenceOperation localReference,
+        SenseArgument argument,
+        out string expression)
+    {
+        expression = string.Empty;
+        if (!RazorVueStaticMarkupValueHelper.IsMarkupStringType(localReference.Local.Type))
+            return false;
+
+        if (RazorVueSourceStableLocalInitializerHelper.IsSourceStableLocalInitializerInvalidatedByLaterWrites(
+                _snapshot.Compilation,
+                localReference.Local,
+                RazorVueStaticMarkupValueHelper.IsMarkupStringType))
+        {
+            return false;
+        }
+
+        if (TryResolveImperativeStaticMarkupCarrierValue(operation.Value) is not { } resolution)
+            return false;
+
+        expression = localReference.Local.Name + " = " + EmitStaticMarkupCarrierValueExpression(resolution, argument);
+        return true;
+    }
+
+    private RazorVueStaticMarkupValueHelper.StaticMarkupResolution? TryResolveImperativeStaticMarkupCarrierValue(IOperation? operation)
+        => RazorVueStaticMarkupValueHelper.TryResolveStaticMarkup(
+            operation,
+            _snapshot.Compilation,
+            TryGetImperativeLocalStaticMarkupInitializer,
+            TryGetImperativePropertyStaticMarkupInitializer,
+            TryGetImperativeFieldStaticMarkupInitializer,
+            TryGetImperativeStaticMarkupFactoryReturnedValue,
+            IsSupportedImperativeStaticMarkupFactoryInvocation);
 
     private IOperation? TryGetNormalizedImperativeVariableInitializer(IVariableDeclaratorOperation operation)
     {
@@ -1016,7 +1156,7 @@ internal sealed partial class RazorVueExpressionEmitter
                         {
                             var walker = new SemanticWalker(
                                 _snapshot.ComponentSymbol,
-                                moduleDeclaredNames: new Dictionary<ISymbol, string>(SymbolEqualityComparer.Default))
+                                _compilerModuleContext.DeclaredNames)
                             {
                                 Host = new RazorVueCompilerHost(this)
                             };
@@ -1264,6 +1404,26 @@ internal sealed partial class RazorVueExpressionEmitter
             return fragmentExpression;
 
         var currentExpression = fragmentExpression;
+        for (var index = resolution.CapturedBindings.Length - 1; index >= 0; index--)
+        {
+            var binding = resolution.CapturedBindings[index];
+            currentExpression =
+                "((" + binding.ParameterSymbol.Name + ") => " +
+                currentExpression +
+                ")(" + EmitStaticMarkupCapturedBindingInitializer(binding.Initializer, compilerArgument) + ")";
+        }
+
+        return currentExpression;
+    }
+
+    private string EmitStaticMarkupCarrierValueExpression(
+        RazorVueStaticMarkupValueHelper.StaticMarkupResolution resolution,
+        SenseArgument compilerArgument)
+    {
+        var currentExpression = ToJavaScriptString(resolution.Markup);
+        if (resolution.CapturedBindings.IsDefaultOrEmpty)
+            return currentExpression;
+
         for (var index = resolution.CapturedBindings.Length - 1; index >= 0; index--)
         {
             var binding = resolution.CapturedBindings[index];

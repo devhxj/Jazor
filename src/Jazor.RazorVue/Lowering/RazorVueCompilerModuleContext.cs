@@ -1,0 +1,424 @@
+using System.Collections.Immutable;
+using System.Text;
+using Acornima.Ast;
+using Jazor.Common;
+using Jazor.Compiler;
+using Jazor.RazorVue.Artifacts;
+using Jazor.RazorVue.Descriptor;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Operations;
+
+namespace Jazor.RazorVue.Lowering;
+
+internal sealed class RazorVueCompilerModuleContext
+{
+    private readonly RazorVueSemanticSnapshot _snapshot;
+    private readonly Dictionary<ISymbol, string> _declaredNames;
+    private readonly Dictionary<INamedTypeSymbol, string> _helperTypeNames;
+    private readonly HashSet<INamedTypeSymbol> _requiredHelperTypes;
+    private readonly List<RazorVueCompilerImportBinding> _compilerImports;
+
+    private RazorVueCompilerModuleContext(
+        RazorVueSemanticSnapshot snapshot,
+        Dictionary<ISymbol, string> declaredNames,
+        Dictionary<INamedTypeSymbol, string> helperTypeNames)
+    {
+        _snapshot = snapshot;
+        _declaredNames = declaredNames;
+        _helperTypeNames = helperTypeNames;
+        _requiredHelperTypes = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+        _compilerImports = new List<RazorVueCompilerImportBinding>();
+    }
+
+    public IReadOnlyDictionary<ISymbol, string> DeclaredNames => _declaredNames;
+
+    public ImmutableArray<RazorVueCompilerImportBinding> CompilerImports => _compilerImports.Distinct().ToImmutableArray();
+
+    public static RazorVueCompilerModuleContext Create(RazorVueSemanticSnapshot snapshot)
+    {
+        if (snapshot is null)
+            throw new ArgumentNullException(nameof(snapshot));
+
+        var localNames = BuildLocalNames(snapshot.ComponentSymbol);
+        var usedNames = new HashSet<string>(StringComparer.Ordinal);
+        var declaredNames = new Dictionary<ISymbol, string>(SymbolEqualityComparer.Default);
+        var helperTypeNames = new Dictionary<INamedTypeSymbol, string>(SymbolEqualityComparer.Default);
+
+        foreach (var method in snapshot.Logic.Methods
+                     .Select(static method => method.MethodSymbol)
+                     .Where(static method => ShouldDeclareMethod(method))
+                     .OrderBy(static method => GetSourceOrder(method))
+                     .ThenBy(static method => method.ToDisplayString(), StringComparer.Ordinal))
+        {
+            declaredNames[method.OriginalDefinition] = ChooseDeclaredName(
+                method,
+                usedNames,
+                localNames,
+                ToLowerCamelCase(method.Name));
+        }
+
+        foreach (var type in EnumerateSameSourceRuntimeHelperTypes(snapshot)
+                     .OrderBy(static type => GetSourceOrder(type))
+                     .ThenBy(static type => type.ToDisplayString(), StringComparer.Ordinal))
+        {
+            var name = ChooseDeclaredName(
+                type,
+                usedNames,
+                localNames,
+                Util.GetConfigOrSymbolName(type));
+            declaredNames[type.OriginalDefinition] = name;
+            helperTypeNames[type.OriginalDefinition] = name;
+        }
+
+        return new RazorVueCompilerModuleContext(snapshot, declaredNames, helperTypeNames);
+    }
+
+    public void RecordObjectCreation(IObjectCreationOperation operation)
+    {
+        if (operation.Type is INamedTypeSymbol namedType &&
+            _helperTypeNames.ContainsKey(namedType.OriginalDefinition))
+        {
+            _requiredHelperTypes.Add(namedType.OriginalDefinition);
+        }
+    }
+
+    public void AppendRequiredHelperTypeDeclarations(StringBuilder builder, string indent)
+    {
+        if (_requiredHelperTypes.Count == 0)
+            return;
+
+        var emitted = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+        while (true)
+        {
+            var next = _requiredHelperTypes
+                .Where(type => !emitted.Contains(type.OriginalDefinition))
+                .OrderBy(static type => GetSourceOrder(type))
+                .ThenBy(static type => type.ToDisplayString(), StringComparer.Ordinal)
+                .FirstOrDefault();
+            if (next is null)
+                return;
+
+            AppendHelperTypeDeclaration(builder, next, indent, emitted);
+        }
+    }
+
+    private void AppendHelperTypeDeclaration(
+        StringBuilder builder,
+        INamedTypeSymbol type,
+        string indent,
+        HashSet<INamedTypeSymbol> emitted)
+    {
+        if (!emitted.Add(type.OriginalDefinition))
+            return;
+
+        if (type.BaseType is INamedTypeSymbol baseType &&
+            _helperTypeNames.ContainsKey(baseType.OriginalDefinition))
+        {
+            AppendHelperTypeDeclaration(builder, baseType, indent, emitted);
+        }
+
+        if (TryConvertHelperType(type, out var declarationText))
+        {
+            AppendIndentedBlock(builder, declarationText, indent);
+            return;
+        }
+
+        throw CreateUnsupportedSetupHelperTypeException(type);
+    }
+
+    private void MergeCompilerImports(ImmutableArray<ImportDeclaration> imports)
+    {
+        foreach (var import in imports)
+        {
+            var modulePath = TryGetImportModulePath(import);
+            if (string.IsNullOrWhiteSpace(modulePath))
+                continue;
+
+            var source = modulePath!;
+            foreach (var specifier in import.Specifiers)
+            {
+                switch (specifier)
+                {
+                    case ImportDefaultSpecifier defaultSpecifier:
+                        _compilerImports.Add(new RazorVueCompilerImportBinding(
+                            source,
+                            RazorVueCompilerImportKind.Default,
+                            defaultSpecifier.Local.Name,
+                            ImportedName: null));
+                        break;
+                    case ImportNamespaceSpecifier namespaceSpecifier:
+                        _compilerImports.Add(new RazorVueCompilerImportBinding(
+                            source,
+                            RazorVueCompilerImportKind.Namespace,
+                            namespaceSpecifier.Local.Name,
+                            ImportedName: null));
+                        break;
+                    case ImportSpecifier namedSpecifier:
+                        _compilerImports.Add(new RazorVueCompilerImportBinding(
+                            source,
+                            RazorVueCompilerImportKind.Named,
+                            namedSpecifier.Local.Name,
+                            namedSpecifier.Imported.ToECMAScript()));
+                        break;
+                }
+            }
+        }
+    }
+
+    private static string? TryGetImportModulePath(ImportDeclaration import)
+    {
+        if (import.Source is not StringLiteral literal)
+            return null;
+
+        return literal.Value?.ToString();
+    }
+
+    private bool TryConvertHelperType(INamedTypeSymbol type, out string declarationText)
+    {
+        declarationText = string.Empty;
+        try
+        {
+            var syntaxReference = type.DeclaringSyntaxReferences.FirstOrDefault();
+            if (syntaxReference is null)
+                return false;
+
+            var semanticModel = _snapshot.Compilation.GetSemanticModel(syntaxReference.SyntaxTree);
+            var converter = new AstConverter(
+                _snapshot.ComponentSymbol,
+                semanticModel,
+                new AstConverterOptions(
+                    AstConverterProfile.RazorVueRuntime,
+                    MemberFilter: null,
+                    DeclaredNames: _declaredNames,
+                    Host: new HelperDiscoveryCompilerHost(this)));
+            var declaration = converter.ConvertRuntimeClass(type);
+            if (declaration is null)
+                return false;
+
+            declarationText = declaration.ToKnRECMAScript();
+            MergeCompilerImports(converter.FlushImportDeclarations([declaration]));
+            return !string.IsNullOrWhiteSpace(declarationText);
+        }
+        catch (Exception ex) when (ex is NotSupportedException or OperationTransformationException)
+        {
+            return false;
+        }
+    }
+
+    private static void AppendIndentedBlock(StringBuilder builder, string text, string indent)
+    {
+        var normalized = Util.NormalizeLineEndingsToLf(text).Trim();
+        if (normalized.Length == 0)
+            return;
+
+        foreach (var line in normalized.Split('\n'))
+            builder.Append(indent).AppendLine(line);
+    }
+
+
+    private static ImmutableArray<INamedTypeSymbol> EnumerateSameSourceRuntimeHelperTypes(RazorVueSemanticSnapshot snapshot)
+    {
+        var builder = ImmutableArray.CreateBuilder<INamedTypeSymbol>();
+        var seen = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+        var componentTrees = snapshot.ComponentSymbol.DeclaringSyntaxReferences
+            .Select(static reference => reference.SyntaxTree)
+            .Distinct()
+            .ToArray();
+
+        foreach (var tree in componentTrees)
+        {
+            var semanticModel = snapshot.Compilation.GetSemanticModel(tree);
+            foreach (var declaration in tree.GetRoot().DescendantNodes().OfType<TypeDeclarationSyntax>())
+            {
+                if (semanticModel.GetDeclaredSymbol(declaration) is not INamedTypeSymbol type)
+                    continue;
+
+                if (SymbolEqualityComparer.Default.Equals(type.OriginalDefinition, snapshot.ComponentSymbol.OriginalDefinition))
+                    continue;
+
+                if (!IsSameArtifactModuleType(snapshot.ComponentSymbol, type))
+                    continue;
+
+                if (!IsRuntimeHelperTypeCandidate(type))
+                    continue;
+
+                if (seen.Add(type.OriginalDefinition))
+                    builder.Add(type);
+            }
+        }
+
+        return builder.ToImmutable();
+    }
+
+    private static bool IsSameArtifactModuleType(INamedTypeSymbol componentType, INamedTypeSymbol type)
+    {
+        for (var containingType = type.ContainingType; containingType is not null; containingType = containingType.ContainingType)
+        {
+            if (SymbolEqualityComparer.Default.Equals(containingType.OriginalDefinition, componentType.OriginalDefinition))
+                return true;
+        }
+
+        var topLevelType = type;
+        while (topLevelType.ContainingType is not null)
+            topLevelType = topLevelType.ContainingType;
+
+        return SymbolEqualityComparer.Default.Equals(topLevelType.ContainingNamespace, componentType.ContainingNamespace);
+    }
+
+    private static bool IsRuntimeHelperTypeCandidate(INamedTypeSymbol type)
+        => type.TypeKind == TypeKind.Class &&
+           !type.IsRecord &&
+           !type.IsStatic &&
+           type.TypeParameters.Length == 0 &&
+           !HasDirectECMAScriptSupportMarker(type);
+
+    private static bool HasDirectECMAScriptSupportMarker(INamedTypeSymbol type)
+        => type.OriginalDefinition.GetAttributes().Any(static attribute =>
+            Util.IsECMAScriptSupportMarkerAttribute(attribute.AttributeClass));
+
+    private static bool ShouldDeclareMethod(IMethodSymbol method)
+        => method.MethodKind == MethodKind.Ordinary &&
+           !method.IsAsync &&
+           method.DeclaringSyntaxReferences.Length > 0;
+
+    private static HashSet<string> BuildLocalNames(INamedTypeSymbol componentSymbol)
+    {
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var syntaxReference in componentSymbol.DeclaringSyntaxReferences)
+        {
+            if (syntaxReference.GetSyntax() is not TypeDeclarationSyntax declaration)
+                continue;
+
+            var collector = new DeclaredNameCollector();
+            collector.Visit(declaration);
+            names.UnionWith(collector.Names);
+        }
+
+        return names;
+    }
+
+    private static string ChooseDeclaredName(
+        ISymbol symbol,
+        HashSet<string> usedNames,
+        HashSet<string> localNames,
+        string preferredName)
+    {
+        if (!string.IsNullOrWhiteSpace(preferredName) &&
+            !localNames.Contains(preferredName) &&
+            usedNames.Add(preferredName))
+        {
+            return preferredName;
+        }
+
+        var sourceName = symbol.Name;
+        if (!string.IsNullOrWhiteSpace(sourceName) &&
+            !localNames.Contains(sourceName) &&
+            usedNames.Add(sourceName))
+        {
+            return sourceName;
+        }
+
+        var display = symbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
+        var alias = "rv$" + Format.HashName(display).TrimStart('_');
+        var suffix = 0;
+        while (localNames.Contains(alias) || !usedNames.Add(alias))
+        {
+            suffix++;
+            alias = "rv$" + Format.HashName(display).TrimStart('_') + "$" + suffix.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        return alias;
+    }
+
+    private static int GetSourceOrder(ISymbol symbol)
+        => symbol.Locations.FirstOrDefault(static location => location.IsInSource)?.SourceSpan.Start ?? int.MaxValue;
+
+    private static string ToLowerCamelCase(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return value;
+
+        if (value.Length == 1)
+            return value.ToLowerInvariant();
+
+        if (char.IsUpper(value[0]) && char.IsUpper(value[1]))
+            return value;
+
+        return char.ToLowerInvariant(value[0]) + value.Substring(1);
+    }
+
+    private static RazorVueCompilationIssueException CreateUnsupportedSetupHelperTypeException(INamedTypeSymbol type)
+    {
+        var originLocation = type.Locations.FirstOrDefault(static location => location.IsInSource);
+        var origin = originLocation is null
+            ? null
+            : RazorVueSourceOrigin.FromLocation(originLocation, RazorVueOriginKind.Logic);
+        var issue = new RazorVueCompilationIssue(
+            RazorVueIssueCode.UnsupportedSetupLogicLowering,
+            RazorVueIssueSeverity.Error,
+            $"RazorVue setup lowering does not support helper type '{type.ToDisplayString()}' in the same artifact module.",
+            ImmutableArray<string>.Empty);
+        return new RazorVueCompilationIssueException(issue, type.ToDisplayString(), origin);
+    }
+
+    private sealed class HelperDiscoveryCompilerHost(RazorVueCompilerModuleContext context) : SemanticWalkerHost
+    {
+        public override Expression? RewriteObjectCreationPreorder(IObjectCreationOperation operation, SenseArgument argument)
+        {
+            _ = argument;
+            context.RecordObjectCreation(operation);
+            return null;
+        }
+    }
+
+    private sealed class DeclaredNameCollector : Microsoft.CodeAnalysis.CSharp.CSharpSyntaxWalker
+    {
+        public HashSet<string> Names { get; } = new(StringComparer.Ordinal);
+
+        public override void VisitParameter(ParameterSyntax node)
+        {
+            Add(node.Identifier);
+            base.VisitParameter(node);
+        }
+
+        public override void VisitVariableDeclarator(VariableDeclaratorSyntax node)
+        {
+            Add(node.Identifier);
+            base.VisitVariableDeclarator(node);
+        }
+
+        public override void VisitSingleVariableDesignation(SingleVariableDesignationSyntax node)
+        {
+            Add(node.Identifier);
+            base.VisitSingleVariableDesignation(node);
+        }
+
+        public override void VisitForEachStatement(ForEachStatementSyntax node)
+        {
+            Add(node.Identifier);
+            base.VisitForEachStatement(node);
+        }
+
+        public override void VisitCatchDeclaration(CatchDeclarationSyntax node)
+        {
+            Add(node.Identifier);
+            base.VisitCatchDeclaration(node);
+        }
+
+        public override void VisitLocalFunctionStatement(LocalFunctionStatementSyntax node)
+        {
+            Add(node.Identifier);
+            base.VisitLocalFunctionStatement(node);
+        }
+
+        private void Add(SyntaxToken identifier)
+        {
+            if (!identifier.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.None) &&
+                !string.IsNullOrWhiteSpace(identifier.ValueText))
+            {
+                Names.Add(identifier.ValueText);
+            }
+        }
+    }
+}

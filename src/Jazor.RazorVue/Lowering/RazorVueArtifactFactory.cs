@@ -288,7 +288,7 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
 
     private static bool HasUnsupportedTemplateNode(RazorVueRenderFragment fragment)
     {
-        if (RazorVueOpenNodeReplayHelper.ContainsScopedReplay(fragment))
+        if (RequiresImperativeScopedReplay(fragment))
             return true;
 
         if (fragment.Children.IsDefaultOrEmpty)
@@ -327,6 +327,39 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
 
         return false;
     }
+
+    private static bool RequiresImperativeScopedReplay(RazorVueRenderFragment fragment)
+    {
+        if (fragment.Children.IsDefaultOrEmpty)
+            return false;
+
+        foreach (var child in fragment.Children)
+        {
+            if (RequiresImperativeScopedReplay(child))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool RequiresImperativeScopedReplay(RazorVueRenderNode node)
+        => node switch
+        {
+            RazorVueElementNode element =>
+                RazorVueOpenNodeReplayHelper.RequiresImperativeScopedReplay(element.ReplayOperations) ||
+                RequiresImperativeScopedReplay(element.Children),
+            RazorVueComponentNode component =>
+                RazorVueOpenNodeReplayHelper.RequiresImperativeScopedReplay(component.ReplayOperations) ||
+                RequiresImperativeScopedReplay(component.Children) ||
+                RequiresImperativeScopedReplay(component.AmbientDefaultSlotChildren) ||
+                component.SlotTemplates.Any(static slot => RequiresImperativeScopedReplay(slot.Children)) ||
+                component.ImplicitDefaultSlotAssignments.Any(static assignment => RequiresImperativeScopedReplay(assignment.Children)),
+            RazorVueTemplateScopeNode templateScope => RequiresImperativeScopedReplay(templateScope.Children),
+            RazorVueConditionalNode conditional => RequiresImperativeScopedReplay(conditional.WhenTrue) || RequiresImperativeScopedReplay(conditional.WhenFalse),
+            RazorVueForEachNode loop => RequiresImperativeScopedReplay(loop.Body),
+            RazorVueForNode loop => RequiresImperativeScopedReplay(loop.Body),
+            _ => false
+        };
 
     private static VueRuntimeHints BuildHints(string moduleCode)
         => new(

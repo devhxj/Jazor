@@ -305,7 +305,7 @@ internal sealed class RazorVueCanonicalHModelFactory
         RazorVueRenderFragment renderTree)
     {
         _ = snapshot;
-        if (RazorVueOpenNodeReplayHelper.ContainsScopedReplay(renderTree))
+        if (RequiresImperativeScopedReplay(renderTree))
         {
             return new RazorVueCanonicalImperativeRootProgram(
                 RazorVueImperativeBlockKind.MethodBody,
@@ -330,6 +330,39 @@ internal sealed class RazorVueCanonicalHModelFactory
             isRootOnly,
             imperativeNodes.SelectMany(static imperative => imperative.Origins).Distinct().ToImmutableArray());
     }
+
+    private static bool RequiresImperativeScopedReplay(RazorVueRenderFragment fragment)
+    {
+        if (fragment.Children.IsDefaultOrEmpty)
+            return false;
+
+        foreach (var child in fragment.Children)
+        {
+            if (RequiresImperativeScopedReplay(child))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool RequiresImperativeScopedReplay(RazorVueRenderNode node)
+        => node switch
+        {
+            RazorVueElementNode element =>
+                RazorVueOpenNodeReplayHelper.RequiresImperativeScopedReplay(element.ReplayOperations) ||
+                RequiresImperativeScopedReplay(element.Children),
+            RazorVueComponentNode component =>
+                RazorVueOpenNodeReplayHelper.RequiresImperativeScopedReplay(component.ReplayOperations) ||
+                RequiresImperativeScopedReplay(component.Children) ||
+                RequiresImperativeScopedReplay(component.AmbientDefaultSlotChildren) ||
+                component.SlotTemplates.Any(static slot => RequiresImperativeScopedReplay(slot.Children)) ||
+                component.ImplicitDefaultSlotAssignments.Any(static assignment => RequiresImperativeScopedReplay(assignment.Children)),
+            RazorVueTemplateScopeNode templateScope => RequiresImperativeScopedReplay(templateScope.Children),
+            RazorVueConditionalNode conditional => RequiresImperativeScopedReplay(conditional.WhenTrue) || RequiresImperativeScopedReplay(conditional.WhenFalse),
+            RazorVueForEachNode loop => RequiresImperativeScopedReplay(loop.Body),
+            RazorVueForNode loop => RequiresImperativeScopedReplay(loop.Body),
+            _ => false
+        };
 
     private static IEnumerable<RazorVueImperativeBlockNode> EnumerateImperativeNodes(RazorVueRenderFragment fragment)
     {

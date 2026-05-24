@@ -4467,7 +4467,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
         StringAssert.Contains(artifact.SfcText, "<script lang=\"ts\">");
         StringAssert.Contains(artifact.SfcText, "try {");
         StringAssert.Contains(artifact.SfcText, "} catch {");
-        StringAssert.Contains(artifact.SfcText, "} finally {");
+        StringAssert.Contains(artifact.SfcText, "finally {");
         StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"section\");");
         StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(\"ready\");");
         StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"p\");");
@@ -4534,6 +4534,127 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithUsingDeclarationNestedHelperTypeInBuildRenderTree_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/nested-using-card")]
+                public class NestedUsingCard : ComponentBase, IVueComponent
+                {
+                    private sealed class TestDisposable : IDisposable
+                    {
+                        public void Dispose() { }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        using var disposable = new TestDisposable();
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+        var classIndex = artifact.SfcText.IndexOf("class TestDisposable", StringComparison.Ordinal);
+        var exportIndex = artifact.SfcText.IndexOf("export default defineComponent", StringComparison.Ordinal);
+
+        Assert.AreEqual("components/nested-using-card.vue", artifact.RelativeSfcPath);
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        Assert.IsFalse(artifact.UsesScriptSetup, artifact.SfcText);
+        Assert.IsTrue(classIndex >= 0, artifact.SfcText);
+        Assert.IsTrue(exportIndex > classIndex, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "let disposable = new TestDisposable");
+        StringAssert.Contains(artifact.SfcText, "disposable.dispose();");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(\"ready\");");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithNestedHelperTypeClrImportInBuildRenderTree_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/nested-clr-using-card")]
+                public class NestedClrUsingCard : ComponentBase, IVueComponent
+                {
+                    private sealed class TestDisposable : IDisposable
+                    {
+                        public void Dispose()
+                        {
+                            if (Array.IndexOf(new[] { "ready", "done" }, "ready") < 0)
+                                throw new InvalidOperationException();
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        using var disposable = new TestDisposable();
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+        var importIndex = artifact.SfcText.IndexOf("from \"System/ArrayModule.js\";", StringComparison.Ordinal);
+        var classIndex = artifact.SfcText.IndexOf("class TestDisposable", StringComparison.Ordinal);
+        var exportIndex = artifact.SfcText.IndexOf("export default defineComponent", StringComparison.Ordinal);
+
+        Assert.AreEqual("components/nested-clr-using-card.vue", artifact.RelativeSfcPath);
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        Assert.IsFalse(artifact.UsesScriptSetup, artifact.SfcText);
+        Assert.IsTrue(importIndex >= 0, artifact.SfcText);
+        Assert.IsTrue(classIndex > importIndex, artifact.SfcText);
+        Assert.IsTrue(exportIndex > classIndex, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "class TestDisposable");
+        StringAssert.Contains(artifact.SfcText, "dispose() {");
+        StringAssert.Contains(artifact.SfcText, "System/ArrayModule.js");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(\"ready\");");
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_WithUsingExpressionInterfaceResourceInBuildRenderTree_LowersRenderFunctionVueSfc()
     {
         var context = CreateContext(
@@ -4586,6 +4707,9 @@ public sealed class RazorVueSfcArtifactFactoryTests
         Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
         Assert.IsFalse(artifact.UsesScriptSetup, artifact.SfcText);
         StringAssert.Contains(artifact.SfcText, "<script lang=\"ts\">");
+        StringAssert.Contains(artifact.SfcText, "class TestDisposable");
+        StringAssert.Contains(artifact.SfcText, "function getDisposable()");
+        StringAssert.Contains(artifact.SfcText, "return new TestDisposable");
         StringAssert.Contains(artifact.SfcText, "let ");
         StringAssert.Contains(artifact.SfcText, " = getDisposable();");
         StringAssert.Contains(artifact.SfcText, "try {");
@@ -4597,7 +4721,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
-    public void RazorVue_SfcArtifactFactory_WithAwaitUsingInBuildRenderTree_ThrowsUnsupportedImperativeRenderLowering()
+    public void RazorVue_SfcArtifactFactory_WithAwaitUsingDeclarationInBuildRenderTree_ThrowsUnsupportedImperativeRenderLowering()
     {
         var context = CreateContext(
             """
@@ -6205,6 +6329,69 @@ public sealed class RazorVueSfcArtifactFactoryTests
         StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"section\");");
         StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(index);");
         StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(h(\"footer\", null, \"end\"));");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithAttributeSpreadSiblingAroundWhileLoop_InjectsMergeHelperForMixedRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/mixed-spread-loop-card")]
+                public class MixedSpreadLoopCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "header");
+                        builder.AddAttribute(1, "class", "start");
+                        builder.AddMultipleAttributes(2, AdditionalAttributes);
+                        builder.CloseElement();
+
+                        var index = 0;
+                        while (index < Count)
+                        {
+                            builder.OpenElement(3, "section");
+                            builder.AddContent(4, index);
+                            builder.CloseElement();
+                            index++;
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual("components/mixed-spread-loop-card.vue", artifact.RelativeSfcPath);
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        StringAssert.Contains(artifact.SfcText, "function __jazorVueMergeAttributes(...sources) {");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(h(\"header\", __jazorVueMergeAttributes({ \"class\": \"start\" }, props.additionalAttributes)));");
+        StringAssert.Contains(artifact.SfcText, "while (index < props.count)");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"section\");");
     }
 
     [TestMethod]

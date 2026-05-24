@@ -27430,6 +27430,66 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersAttributeSpreadSiblingAroundWhileLoop_InjectsMergeHelperForMixedImperativeRender()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/mixed-spread-loop-card")]
+                public class MixedSpreadLoopCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "header");
+                        builder.AddAttribute(1, "class", "start");
+                        builder.AddMultipleAttributes(2, AdditionalAttributes);
+                        builder.CloseElement();
+
+                        var index = 0;
+                        while (index < Count)
+                        {
+                            builder.OpenElement(3, "section");
+                            builder.AddContent(4, index);
+                            builder.CloseElement();
+                            index++;
+                        }
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "function __jazorVueMergeAttributes(...sources) {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(h(\"header\", __jazorVueMergeAttributes({ \"class\": \"start\" }, props.additionalAttributes)));");
+        StringAssert.Contains(artifact.ModuleCode, "while (index < props.count)");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersForLoopWithContinueInBuildRenderTree_UsingImperativeRenderBridge()
     {
         var context = CreateContext(
@@ -27706,7 +27766,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
         StringAssert.Contains(artifact.ModuleCode, "try {");
         StringAssert.Contains(artifact.ModuleCode, "} catch {");
-        StringAssert.Contains(artifact.ModuleCode, "} finally {");
+        StringAssert.Contains(artifact.ModuleCode, "finally {");
         StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
         StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(\"ready\");");
         StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"p\");");
@@ -27768,6 +27828,117 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersUsingDeclarationWithNestedHelperTypeInBuildRenderTree_UsingImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/nested-using-card")]
+                public class NestedUsingCard : ComponentBase, IVueComponent
+                {
+                    private sealed class TestDisposable : IDisposable
+                    {
+                        public void Dispose() { }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        using var disposable = new TestDisposable();
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        var classIndex = artifact.ModuleCode.IndexOf("class TestDisposable", StringComparison.Ordinal);
+        var exportIndex = artifact.ModuleCode.IndexOf("export default defineComponent", StringComparison.Ordinal);
+
+        Assert.IsTrue(classIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(exportIndex > classIndex, artifact.ModuleCode);
+        StringAssert.Contains(artifact.ModuleCode, "let disposable = new TestDisposable");
+        StringAssert.Contains(artifact.ModuleCode, "disposable.dispose();");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(\"ready\");");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersNestedHelperTypeWithClrImportInBuildRenderTree_UsingImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/nested-clr-using-card")]
+                public class NestedClrUsingCard : ComponentBase, IVueComponent
+                {
+                    private sealed class TestDisposable : IDisposable
+                    {
+                        public void Dispose()
+                        {
+                            if (Array.IndexOf(new[] { "ready", "done" }, "ready") < 0)
+                                throw new InvalidOperationException();
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        using var disposable = new TestDisposable();
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        var importIndex = artifact.ModuleCode.IndexOf("from \"System/ArrayModule.js\";", StringComparison.Ordinal);
+        var classIndex = artifact.ModuleCode.IndexOf("class TestDisposable", StringComparison.Ordinal);
+        var exportIndex = artifact.ModuleCode.IndexOf("export default defineComponent", StringComparison.Ordinal);
+
+        Assert.IsTrue(importIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(classIndex > importIndex, artifact.ModuleCode);
+        Assert.IsTrue(exportIndex > classIndex, artifact.ModuleCode);
+        StringAssert.Contains(artifact.ModuleCode, "class TestDisposable");
+        StringAssert.Contains(artifact.ModuleCode, "dispose() {");
+        StringAssert.Contains(artifact.ModuleCode, "System/ArrayModule.js");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(\"ready\");");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersUsingExpressionWithInterfaceResourceInBuildRenderTree_UsingImperativeRenderBridge()
     {
         var context = CreateContext(
@@ -27815,6 +27986,9 @@ public sealed class RazorVuePipelineTests
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
+        StringAssert.Contains(artifact.ModuleCode, "class TestDisposable");
+        StringAssert.Contains(artifact.ModuleCode, "function getDisposable()");
+        StringAssert.Contains(artifact.ModuleCode, "return new TestDisposable");
         StringAssert.Contains(artifact.ModuleCode, "let ");
         StringAssert.Contains(artifact.ModuleCode, " = getDisposable();");
         StringAssert.Contains(artifact.ModuleCode, "try {");
@@ -27826,7 +28000,68 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_WithAwaitUsingInBuildRenderTree_ThrowsUnsupportedImperativeRenderLowering()
+    public void RazorVue_Pipeline_LowersUsingExpressionWithRecursiveHelperTypeDependencyInBuildRenderTree_UsingImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                public sealed class DisposableOwner : IDisposable
+                {
+                    private readonly DisposableLeaf _leaf = new DisposableLeaf();
+
+                    public void Dispose() => _leaf.Dispose();
+                }
+
+                public sealed class DisposableLeaf : IDisposable
+                {
+                    public void Dispose() { }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/recursive-using-card")]
+                public class RecursiveUsingCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        using (GetDisposable())
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, "ready");
+                            builder.CloseElement();
+                        }
+                    }
+
+                    private IDisposable GetDisposable() => new DisposableOwner();
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "class DisposableLeaf");
+        StringAssert.Contains(artifact.ModuleCode, "class DisposableOwner");
+        StringAssert.Contains(artifact.ModuleCode, "new DisposableLeaf");
+        StringAssert.Contains(artifact.ModuleCode, "return new DisposableOwner");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(\"ready\");");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithAwaitUsingDeclarationInBuildRenderTree_ThrowsUnsupportedImperativeRenderLowering()
     {
         var context = CreateContext(
             """
@@ -27870,6 +28105,248 @@ public sealed class RazorVuePipelineTests
         var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedImperativeRenderLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "await using");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithAwaitUsingStatementInBuildRenderTree_ThrowsUnsupportedImperativeRenderLowering()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/await-using-card")]
+                public class AwaitUsingCard : ComponentBase, IVueComponent
+                {
+                    private sealed class AsyncDisposable : IAsyncDisposable
+                    {
+                        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+                    }
+
+                    protected override async void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        await using (var disposable = new AsyncDisposable())
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, "ready");
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedImperativeRenderLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "await using");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithAwaitUsingDeclarationBeforeDeclarativeSibling_ThrowsUnsupportedImperativeRenderLowering()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/await-using-card")]
+                public class AwaitUsingCard : ComponentBase, IVueComponent
+                {
+                    private sealed class AsyncDisposable : IAsyncDisposable
+                    {
+                        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+                    }
+
+                    protected override async void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (true)
+                        {
+                            await using var disposable = new AsyncDisposable();
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, "ready");
+                            builder.CloseElement();
+                        }
+
+                        builder.OpenElement(2, "footer");
+                        builder.AddContent(3, "after");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedImperativeRenderLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "await using");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithNestedAwaitUsingDeclarationInBuildRenderTree_ThrowsUnsupportedImperativeRenderLowering()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/await-using-card")]
+                public class AwaitUsingCard : ComponentBase, IVueComponent
+                {
+                    private sealed class AsyncDisposable : IAsyncDisposable
+                    {
+                        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+                    }
+
+                    protected override async void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (true)
+                        {
+                            await using var disposable = new AsyncDisposable();
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, "ready");
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedImperativeRenderLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "await using");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithAwaitExpressionInBuildRenderTree_ThrowsUnsupportedImperativeRenderLowering()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/await-card")]
+                public class AwaitCard : ComponentBase, IVueComponent
+                {
+                    protected override async void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        await Task.Yield();
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedImperativeRenderLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "await");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithAwaitForEachInBuildRenderTree_ThrowsUnsupportedImperativeRenderLowering()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/await-foreach-card")]
+                public class AwaitForEachCard : ComponentBase, IVueComponent
+                {
+                    protected override async void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        await foreach (var item in Items)
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, item);
+                            builder.CloseElement();
+                        }
+                    }
+
+                    private IAsyncEnumerable<string> Items => default!;
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedImperativeRenderLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "await foreach");
     }
 
     [TestMethod]
@@ -28939,7 +29416,8 @@ public sealed class RazorVuePipelineTests
         Assert.IsFalse(
             artifact.ModuleCode.Contains("(MarkupString)", StringComparison.Ordinal) ||
             artifact.ModuleCode.Contains("new MarkupString", StringComparison.Ordinal) ||
-            artifact.ModuleCode.Contains("Microsoft.AspNetCore.Components.MarkupString", StringComparison.Ordinal),
+            artifact.ModuleCode.Contains("Microsoft.AspNetCore.Components.MarkupString", StringComparison.Ordinal) ||
+            artifact.ModuleCode.Contains("createMarkup", StringComparison.Ordinal),
             artifact.ModuleCode);
     }
 
@@ -29286,6 +29764,72 @@ public sealed class RazorVuePipelineTests
             artifact.ModuleCode.Contains("(MarkupString)", StringComparison.Ordinal) ||
             artifact.ModuleCode.Contains("new MarkupString", StringComparison.Ordinal) ||
             artifact.ModuleCode.Contains("Microsoft.AspNetCore.Components.MarkupString", StringComparison.Ordinal),
+            artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersParameterizedFactoryBackedImmediateMarkupStringLocalCarrierInsideImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-property-markup-string-card")]
+                public class ImperativePropertyMarkupStringCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowMarkup { get; set; }
+
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (ShowMarkup)
+                        {
+                            MarkupString markup;
+                            markup = CreateMarkup(Title);
+                            builder.AddContent(0, markup);
+                            return;
+                        }
+
+                        builder.OpenElement(1, "p");
+                        builder.AddContent(2, "fallback");
+                        builder.CloseElement();
+                    }
+
+                    private MarkupString CreateMarkup(string? ignored)
+                        => (MarkupString)"<section class=\"hero\"><span>safe</span></section>";
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "if (props.showMarkup) {");
+        StringAssert.Contains(artifact.ModuleCode, "let markup;");
+        StringAssert.Contains(artifact.ModuleCode, "markup = (ignored => \"<section class=\\\"hero\\\"><span>safe</span></section>\")(props.title);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")));");
+        Assert.IsFalse(
+            artifact.ModuleCode.Contains("(ignored => h(", StringComparison.Ordinal) ||
+            artifact.ModuleCode.Contains("markup = () =>", StringComparison.Ordinal) ||
+            artifact.ModuleCode.Contains("append(markup())", StringComparison.Ordinal) ||
+            artifact.ModuleCode.Contains("createMarkup", StringComparison.Ordinal),
             artifact.ModuleCode);
     }
 

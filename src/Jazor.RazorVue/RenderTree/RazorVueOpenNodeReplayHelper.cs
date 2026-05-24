@@ -51,4 +51,31 @@ internal static class RazorVueOpenNodeReplayHelper
 
         return false;
     }
+
+    public static bool RequiresImperativeScopedReplay(ImmutableArray<RazorVueOpenNodeReplayOperation> operations)
+    {
+        if (operations.IsDefaultOrEmpty)
+            return false;
+
+        foreach (var operation in operations)
+        {
+            if (RequiresImperativeScopedReplay(operation, isScopedReplay: false))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool RequiresImperativeScopedReplay(
+        RazorVueOpenNodeReplayOperation operation,
+        bool isScopedReplay)
+        => operation switch
+        {
+            RazorVueOpenNodeAttributeReplayOperation => false,
+            RazorVueOpenNodeEventModifierReplayOperation => false,
+            RazorVueOpenNodeKeyReplayOperation => false,
+            RazorVueOpenNodeScopedReplayOperation scopedOperation => scopedOperation.Operations.Any(static child =>
+                RequiresImperativeScopedReplay(child, isScopedReplay: true)),
+            _ => isScopedReplay
+        };
 }
