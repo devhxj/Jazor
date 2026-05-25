@@ -2,27 +2,37 @@ import { defineComponent, h, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { usePlaygroundStore } from "./stores/playground-store.js";
 import { createCatalogViewModel, createDetailViewModel } from "./view-models.js";
-import { applyRouteDefaultParameterValues } from "./runtime-common.js";
+import { applyRouteDefaultParameterValues, doRouteParametersSatisfyConstraints } from "./runtime-common.js";
 
 export function createPlaygroundRoutes(routeDefinitions) {
   const catalogRoutes = resolveRoutes(routeDefinitions, "CatalogPage");
-  const detailRoute = resolveDetailRoute(routeDefinitions);
+  const detailRoutes = resolveDetailRoutes(routeDefinitions);
   const primaryCatalogRoute = resolvePrimaryCatalogRoute(catalogRoutes);
-  const catalogComponent = defineCatalogRouteComponent(primaryCatalogRoute, detailRoute);
-  const detailComponent = defineDetailRouteComponent(primaryCatalogRoute, detailRoute);
+  const primaryDetailRoute = resolvePrimaryDetailRoute(detailRoutes);
+  const catalogComponent = defineCatalogRouteComponent(primaryCatalogRoute, primaryDetailRoute);
+  const detailComponent = defineDetailRouteComponent(primaryCatalogRoute);
 
   return [
     ...catalogRoutes.map((route) => ({
       path: route.path,
       name: route.name,
+      beforeEnter: createRouteConstraintGuard(route),
       component: catalogComponent
     })),
-    {
-      path: detailRoute.path,
-      name: detailRoute.name,
+    ...detailRoutes.map((route) => ({
+      path: route.path,
+      name: route.name,
+      beforeEnter: createRouteConstraintGuard(route),
+      meta: {
+        routeDefinition: route
+      },
       component: detailComponent
-    }
+    }))
   ];
+}
+
+function createRouteConstraintGuard(routeDefinition) {
+  return (to) => doRouteParametersSatisfyConstraints(routeDefinition, to.params);
 }
 
 function defineCatalogRouteComponent(primaryCatalogRoute, detailRoute) {
@@ -78,15 +88,15 @@ function defineCatalogRouteComponent(primaryCatalogRoute, detailRoute) {
   });
 }
 
-function defineDetailRouteComponent(catalogRoute, detailRoute) {
+function defineDetailRouteComponent(catalogRoute) {
   return defineComponent({
     name: "PlaygroundDetailRoute",
     setup() {
       const route = useRoute();
       const store = usePlaygroundStore();
 
-      async function ensureLoaded(routeParameters) {
-        const detailId = resolveSingleRouteParameter(routeParameters, detailRoute);
+      async function ensureLoaded(routeParameters, routeDefinition) {
+        const detailId = resolveSingleRouteParameter(routeParameters, routeDefinition);
         if (typeof detailId !== "string" || detailId.length === 0) {
           return;
         }
@@ -100,13 +110,16 @@ function defineDetailRouteComponent(catalogRoute, detailRoute) {
       }
 
       onMounted(async () => {
-        await ensureLoaded(route.params);
+        await ensureLoaded(route.params, route.meta.routeDefinition);
       });
 
       watch(
-        () => detailRoute.parameterNames.map((name) => route.params[name]),
+        () => [
+          route.meta.routeDefinition,
+          ...((route.meta.routeDefinition?.parameterNames ?? []).map((name) => route.params[name]))
+        ],
         async () => {
-          await ensureLoaded(route.params);
+          await ensureLoaded(route.params, route.meta.routeDefinition);
         },
         { immediate: false }
       );
@@ -132,9 +145,9 @@ function defineDetailRouteComponent(catalogRoute, detailRoute) {
 }
 
 function resolveSingleRouteParameter(routeParameters, routeDefinition) {
-  const parameterName = routeDefinition.parameterNames[0];
+  const parameterName = routeDefinition?.parameterNames?.[0];
   if (typeof parameterName !== "string" || parameterName.length === 0) {
-    throw new Error(`Playground route '${routeDefinition.alias}' does not declare a supported route parameter.`);
+    throw new Error(`Playground route '${routeDefinition?.alias ?? ""}' does not declare a supported route parameter.`);
   }
 
   const normalizedRouteParameters = applyRouteDefaultParameterValues(routeDefinition, routeParameters);
@@ -160,16 +173,22 @@ function resolvePrimaryCatalogRoute(catalogRoutes) {
   return rootRoute ?? catalogRoutes[0];
 }
 
-function resolveDetailRoute(routeDefinitions) {
+function resolveDetailRoutes(routeDefinitions) {
   const matches = resolveRoutes(routeDefinitions, "DetailPage");
-  if (matches.length !== 1) {
-    throw new Error(`Playground expected exactly one detail route definition, but found ${matches.length}.`);
+  for (const route of matches) {
+    if (route.parameterNames.length < 1) {
+      throw new Error("Playground detail route must declare at least one route parameter.");
+    }
   }
 
-  const route = matches[0];
-  if (route.parameterNames.length !== 1) {
-    throw new Error("Playground detail route must declare exactly one route parameter.");
+  return matches;
+}
+
+function resolvePrimaryDetailRoute(detailRoutes) {
+  const singleParameterRoute = detailRoutes.find((route) => route.parameterNames.length === 1);
+  if (!singleParameterRoute) {
+    throw new Error("Playground detail routes must include at least one single-parameter route for catalog href generation.");
   }
 
-  return route;
+  return singleParameterRoute;
 }

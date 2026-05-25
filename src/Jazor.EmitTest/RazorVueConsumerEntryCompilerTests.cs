@@ -9,6 +9,10 @@ namespace Jazor.EmitTest;
 [TestClass]
 public sealed class RazorVueConsumerEntryCompilerTests
 {
+    private const string Int64MinValueText = "-9223372036854775808";
+    private const string Int64MaxValueText = "9223372036854775807";
+    private const string GuidRouteConstraintPattern = "[0-9A-Fa-f]{32}|[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}|\\\\{[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\\\\}|%7B[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}%7D|\\\\([0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\\\\\\\\)|%28[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}%29|\\\\{0x[0-9A-Fa-f]{8},0x[0-9A-Fa-f]{4},0x[0-9A-Fa-f]{4},\\\\{0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2}\\\\}\\\\}|%7B0x[0-9A-Fa-f]{8},0x[0-9A-Fa-f]{4},0x[0-9A-Fa-f]{4},%7B0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2}%7D%7D";
+
     [TestMethod]
     public async Task GenerateAsync_WritesBrowserAndSsrEntryModulesWithSelectedComponents()
     {
@@ -264,8 +268,248 @@ public sealed class RazorVueConsumerEntryCompilerTests
         Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
 
         var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
-        Assert.Contains("path: \"/examples/:id(-?\\\\d{1,})\"", clientEntry);
+        Assert.Contains("path: \"/examples/:id([\\u002B-]?\\\\d{1,})\"", clientEntry);
         Assert.Contains("parameterNames: Object.freeze([\"id\"])", clientEntry);
+        Assert.Contains("parameterConstraints: Object.freeze({\"id\":Object.freeze([Object.freeze({kind:\"integerRange\", min:\"-2147483648\", max:\"2147483647\"})])})", clientEntry);
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenRouteTemplateUsesLongRangeConstraints_EmitsVueRouteRegexAndConstraintMetadata()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue") with
+            {
+                RouteTemplates = ["/examples/{id:long:min(5):max(7)}", "/archive/{id:range(-2,2)}"]
+            });
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("path: \"/examples/:id([\\u002B-]?\\\\d{1,})\"", clientEntry);
+        Assert.Contains("path: \"/archive/:id([\\u002B-]?\\\\d{1,})\"", clientEntry);
+        Assert.Contains(
+            "parameterConstraints: Object.freeze({\"id\":Object.freeze([Object.freeze({kind:\"integerRange\", min:\"-9223372036854775808\", max:\"9223372036854775807\"}), Object.freeze({kind:\"integerRange\", min:\"5\"}), Object.freeze({kind:\"integerRange\", max:\"7\"})])})",
+            clientEntry);
+        Assert.Contains(
+            "parameterConstraints: Object.freeze({\"id\":Object.freeze([Object.freeze({kind:\"integerRange\", min:\"-2\", max:\"2\"})])})",
+            clientEntry);
+
+        using var resultDocument = JsonDocument.Parse(await File.ReadAllTextAsync(workspace.ResultPath, TestContext.CancellationTokenSource.Token));
+        var routes = resultDocument.RootElement.GetProperty("Routes").EnumerateArray().ToArray();
+        Assert.HasCount(2, routes);
+        var constraints = routes[0].GetProperty("ParameterConstraints").GetProperty("id").EnumerateArray().ToArray();
+        Assert.HasCount(3, constraints);
+        Assert.AreEqual("integerRange", constraints[0].GetProperty("Kind").GetString());
+        Assert.AreEqual(Int64MinValueText, constraints[0].GetProperty("Min").GetString());
+        Assert.AreEqual(Int64MaxValueText, constraints[0].GetProperty("Max").GetString());
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenRouteTemplateUsesIntersectableLengthConstraints_EmitsVueRouteRegexAndConstraintMetadata()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue") with
+            {
+                RouteTemplates = ["/examples/{id:int:length(1,3)}", "/tags/{slug:alpha:minlength(2):maxlength(4)}", "/codes/{code:minlength(2):maxlength(4)}", "/required/{id:int:required}"]
+            });
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("path: \"/examples/:id([\\u002B-]?\\\\d{1,})\"", clientEntry);
+        Assert.Contains("path: \"/tags/:slug([A-Za-z]{1,})\"", clientEntry);
+        Assert.Contains("path: \"/codes/:code([^/]{2,4})\"", clientEntry);
+        Assert.Contains("path: \"/required/:id([\\u002B-]?\\\\d{1,})\"", clientEntry);
+        Assert.Contains(
+            "parameterConstraints: Object.freeze({\"id\":Object.freeze([Object.freeze({kind:\"integerRange\", min:\"-2147483648\", max:\"2147483647\"}), Object.freeze({kind:\"lengthRange\", min:\"1\", max:\"3\"})])})",
+            clientEntry);
+        Assert.Contains(
+            "parameterConstraints: Object.freeze({\"slug\":Object.freeze([Object.freeze({kind:\"lengthRange\", min:\"2\"}), Object.freeze({kind:\"lengthRange\", max:\"4\"})])})",
+            clientEntry);
+        Assert.Contains(
+            "parameterConstraints: Object.freeze({\"code\":Object.freeze([Object.freeze({kind:\"lengthRange\", min:\"2\"}), Object.freeze({kind:\"lengthRange\", max:\"4\"})])})",
+            clientEntry);
+        Assert.Contains(
+            "parameterConstraints: Object.freeze({\"id\":Object.freeze([Object.freeze({kind:\"integerRange\", min:\"-2147483648\", max:\"2147483647\"}), Object.freeze({kind:\"lengthRange\", min:\"1\"})])})",
+            clientEntry);
+
+        using var resultDocument = JsonDocument.Parse(await File.ReadAllTextAsync(workspace.ResultPath, TestContext.CancellationTokenSource.Token));
+        var routes = resultDocument.RootElement.GetProperty("Routes").EnumerateArray().ToArray();
+        Assert.HasCount(4, routes);
+        var constraints = routes[0].GetProperty("ParameterConstraints").GetProperty("id").EnumerateArray().ToArray();
+        Assert.HasCount(2, constraints);
+        Assert.AreEqual("lengthRange", constraints[1].GetProperty("Kind").GetString());
+        Assert.AreEqual("1", constraints[1].GetProperty("Min").GetString());
+        Assert.AreEqual("3", constraints[1].GetProperty("Max").GetString());
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenRouteTemplateUsesUnfoldableMultipleConstraints_FailsWithActionableError()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue") with
+            {
+                RouteTemplates = ["/examples/{flag:bool:alpha}"]
+            });
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(15, result.ExitCode);
+        StringAssert.Contains(result.Error, "route constraint on parameter 'flag' is not currently supported for Vue Router conversion");
+        Assert.IsFalse(File.Exists(workspace.ClientEntryPath));
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenRouteTemplateUsesGuidConstraint_EmitsVueRouteRegexSegment()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue") with
+            {
+                RouteTemplates = ["/examples/{id:guid}"]
+            });
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains($"path: \"/examples/:id({GuidRouteConstraintPattern})\"", clientEntry);
+        Assert.Contains("parameterNames: Object.freeze([\"id\"])", clientEntry);
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenRouteTemplateUsesBoolConstraint_EmitsCaseInsensitiveVueRouteRegexSegment()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue") with
+            {
+                RouteTemplates = ["/examples/{flag:bool}"]
+            });
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("path: \"/examples/:flag([Tt][Rr][Uu][Ee]|[Ff][Aa][Ll][Ss][Ee])\"", clientEntry);
+        Assert.Contains("parameterNames: Object.freeze([\"flag\"])", clientEntry);
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenRouteTemplateUsesFloatingPointConstraints_EmitsVueRouteRegexAndConstraintMetadata()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue") with
+            {
+                RouteTemplates = ["/samples/{value:double}", "/measurements/{value:float}", "/money/{value:decimal}"]
+            });
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("path: \"/samples/:value([^/]\\u002B)\"", clientEntry);
+        Assert.Contains("path: \"/measurements/:value([^/]\\u002B)\"", clientEntry);
+        Assert.Contains("path: \"/money/:value([^/]\\u002B)\"", clientEntry);
+        Assert.Contains(
+            "parameterConstraints: Object.freeze({\"value\":Object.freeze([Object.freeze({kind:\"numberParse\", format:\"double\"})])})",
+            clientEntry);
+        Assert.Contains(
+            "parameterConstraints: Object.freeze({\"value\":Object.freeze([Object.freeze({kind:\"numberParse\", format:\"float\"})])})",
+            clientEntry);
+        Assert.Contains(
+            "parameterConstraints: Object.freeze({\"value\":Object.freeze([Object.freeze({kind:\"numberParse\", format:\"decimal\"})])})",
+            clientEntry);
+
+        using var resultDocument = JsonDocument.Parse(await File.ReadAllTextAsync(workspace.ResultPath, TestContext.CancellationTokenSource.Token));
+        var routes = resultDocument.RootElement.GetProperty("Routes").EnumerateArray().ToArray();
+        Assert.HasCount(3, routes);
+        var constraints = routes[0].GetProperty("ParameterConstraints").GetProperty("value").EnumerateArray().ToArray();
+        Assert.HasCount(1, constraints);
+        Assert.AreEqual("numberParse", constraints[0].GetProperty("Kind").GetString());
+        Assert.AreEqual("double", constraints[0].GetProperty("Format").GetString());
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenRouteTemplateUsesDateTimeConstraint_EmitsVueRouteRegexAndConstraintMetadata()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue") with
+            {
+                RouteTemplates = ["/events/{value:datetime}"]
+            });
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("path: \"/events/:value([^/]\\u002B)\"", clientEntry);
+        Assert.Contains(
+            "parameterConstraints: Object.freeze({\"value\":Object.freeze([Object.freeze({kind:\"dateTimeParse\"})])})",
+            clientEntry);
+
+        using var resultDocument = JsonDocument.Parse(await File.ReadAllTextAsync(workspace.ResultPath, TestContext.CancellationTokenSource.Token));
+        var routes = resultDocument.RootElement.GetProperty("Routes").EnumerateArray().ToArray();
+        Assert.HasCount(1, routes);
+        var constraints = routes[0].GetProperty("ParameterConstraints").GetProperty("value").EnumerateArray().ToArray();
+        Assert.HasCount(1, constraints);
+        Assert.AreEqual("dateTimeParse", constraints[0].GetProperty("Kind").GetString());
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenRouteTemplateUsesDateConstraint_FailsWithActionableError()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue") with
+            {
+                RouteTemplates = ["/events/{value:date}"]
+            });
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(15, result.ExitCode);
+        StringAssert.Contains(result.Error, "route constraint on parameter 'value' is not currently supported for Vue Router conversion");
+        Assert.IsFalse(File.Exists(workspace.ClientEntryPath));
     }
 
     [TestMethod]
@@ -333,12 +577,16 @@ public sealed class RazorVueConsumerEntryCompilerTests
         Assert.Contains("path: \"/examples/:id?\"", clientEntry);
         Assert.Contains("parameterNames: Object.freeze([\"id\"])", clientEntry);
         Assert.Contains("defaultParameterValues: Object.freeze({\"id\":\"42\"})", clientEntry);
+        Assert.Contains("elidableDefaultParameterNames: Object.freeze([\"id\"])", clientEntry);
 
         using var resultDocument = JsonDocument.Parse(await File.ReadAllTextAsync(workspace.ResultPath, TestContext.CancellationTokenSource.Token));
         var route = resultDocument.RootElement.GetProperty("Routes").EnumerateArray().Single();
         Assert.AreEqual("/examples/{id=42}", route.GetProperty("RouteTemplate").GetString());
         Assert.AreEqual("/examples/:id?", route.GetProperty("Path").GetString());
         Assert.AreEqual("42", route.GetProperty("DefaultParameterValues").GetProperty("id").GetString());
+        CollectionAssert.AreEqual(
+            new[] { "id" },
+            route.GetProperty("ElidableDefaultParameterNames").EnumerateArray().Select(static item => item.GetString()).OfType<string>().ToArray());
     }
 
     [TestMethod]
@@ -359,8 +607,10 @@ public sealed class RazorVueConsumerEntryCompilerTests
         Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
 
         var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
-        Assert.Contains("path: \"/examples/:id(-?\\\\d{1,})?\"", clientEntry);
+        Assert.Contains("path: \"/examples/:id([\\u002B-]?\\\\d{1,})?\"", clientEntry);
         Assert.Contains("defaultParameterValues: Object.freeze({\"id\":\"42\"})", clientEntry);
+        Assert.Contains("elidableDefaultParameterNames: Object.freeze([\"id\"])", clientEntry);
+        Assert.Contains("parameterConstraints: Object.freeze({\"id\":Object.freeze([Object.freeze({kind:\"integerRange\", min:\"-2147483648\", max:\"2147483647\"})])})", clientEntry);
     }
 
     [TestMethod]
@@ -403,12 +653,13 @@ public sealed class RazorVueConsumerEntryCompilerTests
         Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
 
         var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
-        Assert.Contains("path: \"/examples/post-:id(-?\\\\d{1,})\"", clientEntry);
+        Assert.Contains("path: \"/examples/post-:id([\\u002B-]?\\\\d{1,})\"", clientEntry);
         Assert.Contains("parameterNames: Object.freeze([\"id\"])", clientEntry);
+        Assert.Contains("parameterConstraints: Object.freeze({\"id\":Object.freeze([Object.freeze({kind:\"integerRange\", min:\"-2147483648\", max:\"2147483647\"})])})", clientEntry);
     }
 
     [TestMethod]
-    public async Task GenerateAsync_WhenRouteTemplateUsesOptionalCompositeSeparator_FailsWithActionableError()
+    public async Task GenerateAsync_WhenRouteTemplateUsesOptionalCompositeSeparator_EmitsStableRouteVariants()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteManifest(
@@ -422,14 +673,51 @@ public sealed class RazorVueConsumerEntryCompilerTests
         var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
             new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
 
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("path: \"/files/:filename.:ext\"", clientEntry);
+        Assert.Contains("path: \"/files/:filename\"", clientEntry);
+        Assert.Contains("parameterNames: Object.freeze([\"filename\", \"ext\"])", clientEntry);
+        Assert.Contains("parameterNames: Object.freeze([\"filename\"])", clientEntry);
+
+        using var resultDocument = JsonDocument.Parse(await File.ReadAllTextAsync(workspace.ResultPath, TestContext.CancellationTokenSource.Token));
+        var routes = resultDocument.RootElement.GetProperty("Routes").EnumerateArray().ToArray();
+        Assert.HasCount(2, routes);
+        Assert.AreEqual("/files/{filename}.{ext?}", routes[0].GetProperty("RouteTemplate").GetString());
+        Assert.AreEqual("/files/:filename.:ext", routes[0].GetProperty("Path").GetString());
+        CollectionAssert.AreEqual(
+            new[] { "filename", "ext" },
+            routes[0].GetProperty("ParameterNames").EnumerateArray().Select(static item => item.GetString()).OfType<string>().ToArray());
+        Assert.AreEqual("/files/:filename", routes[1].GetProperty("Path").GetString());
+        CollectionAssert.AreEqual(
+            new[] { "filename" },
+            routes[1].GetProperty("ParameterNames").EnumerateArray().Select(static item => item.GetString()).OfType<string>().ToArray());
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenRouteTemplateUsesMiddleOptionalCompositeSeparator_FailsAtParseBoundary()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue") with
+            {
+                RouteTemplates = ["/files/{filename}.{ext?}-{culture}"]
+            });
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
         Assert.IsFalse(result.IsSuccess);
         Assert.AreEqual(15, result.ExitCode);
-        StringAssert.Contains(result.Error, "optional separators inside composite route segments are not supported yet");
+        StringAssert.Contains(result.Error, "optional parameter must be at the end of the segment");
         Assert.IsFalse(File.Exists(workspace.ClientEntryPath));
     }
 
     [TestMethod]
-    public async Task GenerateAsync_WhenRouteTemplateUsesCompositeDefaultValue_FailsWithActionableError()
+    public async Task GenerateAsync_WhenRouteTemplateUsesCompositeDefaultValue_EmitsRequiredVueRouteAndNonElidableDefaultMetadata()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteManifest(
@@ -443,10 +731,44 @@ public sealed class RazorVueConsumerEntryCompilerTests
         var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
             new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
 
-        Assert.IsFalse(result.IsSuccess);
-        Assert.AreEqual(15, result.ExitCode);
-        StringAssert.Contains(result.Error, "route default values inside composite route segments are not currently supported");
-        Assert.IsFalse(File.Exists(workspace.ClientEntryPath));
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("path: \"/examples/post-:id\"", clientEntry);
+        Assert.Contains("parameterNames: Object.freeze([\"id\"])", clientEntry);
+        Assert.Contains("defaultParameterValues: Object.freeze({\"id\":\"42\"})", clientEntry);
+        Assert.Contains("elidableDefaultParameterNames: Object.freeze([])", clientEntry);
+
+        using var resultDocument = JsonDocument.Parse(await File.ReadAllTextAsync(workspace.ResultPath, TestContext.CancellationTokenSource.Token));
+        var route = resultDocument.RootElement.GetProperty("Routes").EnumerateArray().Single();
+        Assert.AreEqual("/examples/post-{id=42}", route.GetProperty("RouteTemplate").GetString());
+        Assert.AreEqual("/examples/post-:id", route.GetProperty("Path").GetString());
+        Assert.AreEqual("42", route.GetProperty("DefaultParameterValues").GetProperty("id").GetString());
+        Assert.HasCount(0, route.GetProperty("ElidableDefaultParameterNames").EnumerateArray().ToArray());
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenRouteTemplateUsesConstrainedCompositeDefaultValue_EmitsRequiredVueRouteRegexAndNonElidableDefaultMetadata()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue") with
+            {
+                RouteTemplates = ["/examples/post-{id:int=42}"]
+            });
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("path: \"/examples/post-:id([\\u002B-]?\\\\d{1,})\"", clientEntry);
+        Assert.Contains("defaultParameterValues: Object.freeze({\"id\":\"42\"})", clientEntry);
+        Assert.Contains("elidableDefaultParameterNames: Object.freeze([])", clientEntry);
+        Assert.Contains("parameterConstraints: Object.freeze({\"id\":Object.freeze([Object.freeze({kind:\"integerRange\", min:\"-2147483648\", max:\"2147483647\"})])})", clientEntry);
     }
 
     [TestMethod]

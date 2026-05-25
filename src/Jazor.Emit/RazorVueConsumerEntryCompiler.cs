@@ -7,6 +7,11 @@ namespace Jazor.Emit;
 
 internal sealed class RazorVueConsumerEntryCompiler
 {
+    private const string Int32MinValueText = "-2147483648";
+    private const string Int32MaxValueText = "2147483647";
+    private const string Int64MinValueText = "-9223372036854775808";
+    private const string Int64MaxValueText = "9223372036854775807";
+
     private static readonly UTF8Encoding Utf8WithoutBom = new(encoderShouldEmitUTF8Identifier: false);
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -15,6 +20,8 @@ internal sealed class RazorVueConsumerEntryCompiler
     private static readonly Regex JavaScriptIdentifierPattern = new(
         @"^[$_\p{L}][$_\p{L}\p{Nd}\p{Mn}\p{Mc}\p{Pc}\u200C\u200D]*$",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private const string GuidRouteConstraintPattern =
+        @"[0-9A-Fa-f]{32}|[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}|\{[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\}|%7B[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}%7D|\([0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\\)|%28[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}%29|\{0x[0-9A-Fa-f]{8},0x[0-9A-Fa-f]{4},0x[0-9A-Fa-f]{4},\{0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2}\}\}|%7B0x[0-9A-Fa-f]{8},0x[0-9A-Fa-f]{4},0x[0-9A-Fa-f]{4},%7B0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2}%7D%7D";
     private static readonly HashSet<string> JavaScriptReservedIdentifiers = new(StringComparer.Ordinal)
     {
         "await",
@@ -453,31 +460,39 @@ internal sealed class RazorVueConsumerEntryCompiler
                 var routeTemplate = routeTemplates[index];
                 if (!TryConvertRazorRouteTemplate(
                     routeTemplate,
-                    out var routePath,
-                    out var parameterNames,
-                    out var defaultParameterValues,
+                    out var routeVariants,
                     out var error))
                 {
                     return ResolveRoutesResult.Fail(
                         $"RazorVue consumer route template '{routeTemplate}' on component '{component.ManifestEntry.ComponentId}' is not currently supported: {error}");
                 }
 
-                if (!seenPaths.Add(routePath))
+                for (var variantIndex = 0; variantIndex < routeVariants.Count; variantIndex++)
                 {
-                    return ResolveRoutesResult.Fail(
-                        $"RazorVue consumer route path '{routePath}' was produced more than once. Route paths must be unique across the selected components.");
-                }
+                    var routeVariant = routeVariants[variantIndex];
+                    if (!seenPaths.Add(routeVariant.Path))
+                    {
+                        return ResolveRoutesResult.Fail(
+                            $"RazorVue consumer route path '{routeVariant.Path}' was produced more than once. Route paths must be unique across the selected components.");
+                    }
 
-                routes.Add(new RazorVueConsumerRouteResult(
-                    component.Alias + "__" + index.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                    component.Alias,
-                    component.ManifestEntry.ComponentId,
-                    component.ManifestEntry.ComponentName,
-                    component.ManifestEntry.ComponentModel,
-                    routeTemplate,
-                    routePath,
-                    parameterNames,
-                    defaultParameterValues));
+                    var routeName = routeVariants.Count == 1
+                        ? component.Alias + "__" + index.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                        : component.Alias + "__" + index.ToString(System.Globalization.CultureInfo.InvariantCulture) + "_" + variantIndex.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+                    routes.Add(new RazorVueConsumerRouteResult(
+                        routeName,
+                        component.Alias,
+                        component.ManifestEntry.ComponentId,
+                        component.ManifestEntry.ComponentName,
+                        component.ManifestEntry.ComponentModel,
+                        routeTemplate,
+                        routeVariant.Path,
+                        routeVariant.ParameterNames,
+                        routeVariant.DefaultParameterValues,
+                        routeVariant.ElidableDefaultParameterNames,
+                        routeVariant.ParameterConstraints));
+                }
             }
         }
 
@@ -582,6 +597,8 @@ internal sealed class RazorVueConsumerEntryCompiler
             lines.Add($"    path: {JsonSerializer.Serialize(route.Path)},");
             lines.Add($"    parameterNames: Object.freeze({BuildStringArrayLiteral(route.ParameterNames)}),");
             lines.Add($"    defaultParameterValues: Object.freeze({BuildStringDictionaryLiteral(route.DefaultParameterValues)}),");
+            lines.Add($"    elidableDefaultParameterNames: Object.freeze({BuildStringArrayLiteral(route.ElidableDefaultParameterNames)}),");
+            lines.Add($"    parameterConstraints: Object.freeze({BuildRouteConstraintDictionaryLiteral(route.ParameterConstraints)}),");
             lines.Add("  }),");
         }
 
@@ -796,19 +813,46 @@ internal sealed class RazorVueConsumerEntryCompiler
         return "{" + string.Join(", ", pairs) + "}";
     }
 
+    private static string BuildRouteConstraintDictionaryLiteral(IReadOnlyDictionary<string, IReadOnlyList<RazorVueRouteConstraintResult>> values)
+    {
+        if (values.Count == 0)
+            return "{}";
+
+        var pairs = values
+            .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+            .Select(static pair =>
+                $"{JsonSerializer.Serialize(pair.Key)}:Object.freeze([{string.Join(", ", pair.Value.Select(BuildRouteConstraintLiteral))}])");
+        return "{" + string.Join(", ", pairs) + "}";
+    }
+
+    private static string BuildRouteConstraintLiteral(RazorVueRouteConstraintResult constraint)
+    {
+        var parts = new List<string>
+        {
+            $"kind:{JsonSerializer.Serialize(constraint.Kind)}"
+        };
+
+        if (constraint.Min is not null)
+            parts.Add($"min:{JsonSerializer.Serialize(constraint.Min)}");
+
+        if (constraint.Max is not null)
+            parts.Add($"max:{JsonSerializer.Serialize(constraint.Max)}");
+
+        if (constraint.Format is not null)
+            parts.Add($"format:{JsonSerializer.Serialize(constraint.Format)}");
+
+        return "Object.freeze({" + string.Join(", ", parts) + "})";
+    }
+
     private static bool TryConvertRazorRouteTemplate(
         string routeTemplate,
-        out string routePath,
-        out string[] parameterNames,
-        out IReadOnlyDictionary<string, string> defaultParameterValues,
+        out IReadOnlyList<RazorVueRouteVariant> routeVariants,
         out string? error)
     {
         var normalizedTemplate = routeTemplate.Trim();
         if (normalizedTemplate.Length == 0)
         {
-            routePath = string.Empty;
-            parameterNames = [];
-            defaultParameterValues = EmptyDefaultParameterValues;
+            routeVariants = [];
             error = "route template cannot be empty.";
             return false;
         }
@@ -818,9 +862,7 @@ internal sealed class RazorVueConsumerEntryCompiler
 
         if (normalizedTemplate == "/")
         {
-            routePath = "/";
-            parameterNames = [];
-            defaultParameterValues = EmptyDefaultParameterValues;
+            routeVariants = [new RazorVueRouteVariant("/", [], EmptyDefaultParameterValues, [], EmptyRouteConstraints)];
             error = null;
             return true;
         }
@@ -832,160 +874,345 @@ internal sealed class RazorVueConsumerEntryCompiler
         }
         catch (Exception ex)
         {
-            routePath = string.Empty;
-            parameterNames = [];
-            defaultParameterValues = EmptyDefaultParameterValues;
+            routeVariants = [];
             error = $"route template could not be parsed: {ex.Message}";
             return false;
         }
 
-        var pathBuilder = new StringBuilder();
-        var names = new List<string>();
-        var defaults = new Dictionary<string, string>(StringComparer.Ordinal);
+        var builders = new List<RazorVueRouteVariantBuilder>
+        {
+            new()
+        };
 
         foreach (var segment in parsedTemplate.Segments)
         {
-            pathBuilder.Append('/');
+            foreach (var builder in builders)
+                builder.PathBuilder.Append('/');
 
-            foreach (var part in segment.Parts)
+            for (var partIndex = 0; partIndex < segment.Parts.Count; partIndex++)
             {
+                var part = segment.Parts[partIndex];
                 if (part.IsLiteral || part.IsOptionalSeperator)
                 {
-                    pathBuilder.Append(part.Text);
+                    foreach (var builder in builders)
+                        builder.PathBuilder.Append(part.Text);
                     continue;
                 }
 
                 if (!part.IsParameter)
                 {
-                    routePath = string.Empty;
-                    parameterNames = [];
-                    defaultParameterValues = EmptyDefaultParameterValues;
+                    routeVariants = [];
                     error = $"route segment part '{part}' is not supported.";
                     return false;
                 }
 
                 if (string.IsNullOrWhiteSpace(part.Name))
                 {
-                    routePath = string.Empty;
-                    parameterNames = [];
-                    defaultParameterValues = EmptyDefaultParameterValues;
+                    routeVariants = [];
                     error = "route parameter name cannot be empty.";
-                    return false;
-                }
-
-                var hasDefaultValue = part.DefaultValue is not null;
-                if (hasDefaultValue && segment.Parts.Count > 1)
-                {
-                    routePath = string.Empty;
-                    parameterNames = [];
-                    defaultParameterValues = EmptyDefaultParameterValues;
-                    error = "route default values inside composite route segments are not currently supported.";
                     return false;
                 }
 
                 if (part.IsOptional && segment.Parts.Count > 1)
                 {
-                    routePath = string.Empty;
-                    parameterNames = [];
-                    defaultParameterValues = EmptyDefaultParameterValues;
-                    error = "optional separators inside composite route segments are not supported yet.";
-                    return false;
-                }
-
-                if (names.Contains(part.Name, StringComparer.Ordinal))
-                {
-                    routePath = string.Empty;
-                    parameterNames = [];
-                    defaultParameterValues = EmptyDefaultParameterValues;
-                    error = $"route parameter '{part.Name}' was declared more than once.";
-                    return false;
-                }
-
-                names.Add(part.Name);
-                pathBuilder.Append(':');
-                pathBuilder.Append(part.Name);
-
-                var inlineConstraints = part.InlineConstraints?.ToArray() ?? [];
-                if (inlineConstraints.Length > 0)
-                {
-                    var constraintPattern = TryConvertInlineConstraintsToVueRegex(inlineConstraints);
-                    if (constraintPattern is null)
+                    if (!TryExpandOptionalCompositeParameter(builders, segment.Parts, partIndex, out var expandedBuilders, out error))
                     {
-                        routePath = string.Empty;
-                        parameterNames = [];
-                        defaultParameterValues = EmptyDefaultParameterValues;
-                        error = $"route constraint on parameter '{part.Name}' is not currently supported for Vue Router conversion.";
+                        routeVariants = [];
                         return false;
                     }
 
-                    pathBuilder.Append('(');
-                    pathBuilder.Append(constraintPattern);
-                    pathBuilder.Append(')');
+                    builders = expandedBuilders;
+                    continue;
                 }
 
-                if (part.IsCatchAll)
-                    pathBuilder.Append("(.*)*");
-                else if (part.IsOptional || hasDefaultValue)
-                    pathBuilder.Append('?');
-
-                if (hasDefaultValue)
+                foreach (var builder in builders)
                 {
-                    var defaultText = Convert.ToString(part.DefaultValue, System.Globalization.CultureInfo.InvariantCulture);
-                    if (string.IsNullOrEmpty(defaultText))
+                    if (!TryAppendRouteParameter(builder, part, isWholeSegment: segment.Parts.Count == 1, out error))
                     {
-                        routePath = string.Empty;
-                        parameterNames = [];
-                        defaultParameterValues = EmptyDefaultParameterValues;
-                        error = $"route default value on parameter '{part.Name}' could not be converted to a stable string representation.";
+                        routeVariants = [];
                         return false;
                     }
-
-                    defaults[part.Name] = defaultText;
                 }
             }
         }
 
-        routePath = pathBuilder.Length == 0 ? "/" : pathBuilder.ToString();
-        parameterNames = names.ToArray();
-        defaultParameterValues = defaults.Count == 0
-            ? EmptyDefaultParameterValues
-            : new Dictionary<string, string>(defaults, StringComparer.Ordinal);
+        routeVariants = builders
+            .Select(static builder => builder.Build())
+            .ToArray();
         error = null;
         return true;
     }
 
-    private static string? TryConvertInlineConstraintsToVueRegex(IReadOnlyList<InlineConstraint> inlineConstraints)
+    private static bool TryExpandOptionalCompositeParameter(
+        IReadOnlyList<RazorVueRouteVariantBuilder> sourceBuilders,
+        IList<TemplatePart> segmentParts,
+        int optionalParameterIndex,
+        out List<RazorVueRouteVariantBuilder> expandedBuilders,
+        out string? error)
     {
+        expandedBuilders = [];
+        error = null;
+
+        var optionalParameter = segmentParts[optionalParameterIndex];
+        var separatorIndex = optionalParameterIndex - 1;
+        if (separatorIndex < 0 || !segmentParts[separatorIndex].IsOptionalSeperator)
+        {
+            error = "optional composite route parameters require a preceding optional separator.";
+            return false;
+        }
+
+        if (optionalParameter.DefaultValue is not null)
+        {
+            error = "optional composite route parameters cannot also declare route default values.";
+            return false;
+        }
+
+        if (optionalParameterIndex != segmentParts.Count - 1)
+        {
+            error = "optional composite route parameters are only supported when they are the final segment part.";
+            return false;
+        }
+
+        var separatorText = segmentParts[separatorIndex].Text ?? string.Empty;
+        if (separatorText.Length == 0)
+        {
+            error = "optional composite route separators cannot be empty.";
+            return false;
+        }
+
+        foreach (var sourceBuilder in sourceBuilders)
+        {
+            var includeBuilder = sourceBuilder.Clone();
+            if (includeBuilder.PathBuilder.Length < separatorText.Length ||
+                !includeBuilder.PathBuilder.ToString().EndsWith(separatorText, StringComparison.Ordinal))
+            {
+                error = "optional composite route separator could not be associated with the following optional parameter.";
+                return false;
+            }
+
+            if (!TryAppendRouteParameter(includeBuilder, optionalParameter, isWholeSegment: false, forceRequired: true, out error))
+                return false;
+
+            var omitBuilder = sourceBuilder.Clone();
+            omitBuilder.PathBuilder.Length -= separatorText.Length;
+
+            expandedBuilders.Add(includeBuilder);
+            expandedBuilders.Add(omitBuilder);
+        }
+
+        return true;
+    }
+
+    private static bool TryAppendRouteParameter(
+        RazorVueRouteVariantBuilder builder,
+        TemplatePart part,
+        bool isWholeSegment,
+        out string? error)
+        => TryAppendRouteParameter(builder, part, isWholeSegment, forceRequired: false, out error);
+
+    private static bool TryAppendRouteParameter(
+        RazorVueRouteVariantBuilder builder,
+        TemplatePart part,
+        bool isWholeSegment,
+        bool forceRequired,
+        out string? error)
+    {
+        error = null;
+
+        var parameterName = part.Name;
+        if (string.IsNullOrWhiteSpace(parameterName))
+        {
+            error = "route parameter name cannot be empty.";
+            return false;
+        }
+
+        if (builder.ParameterNames.Contains(parameterName, StringComparer.Ordinal))
+        {
+            error = $"route parameter '{parameterName}' was declared more than once.";
+            return false;
+        }
+
+        builder.ParameterNames.Add(parameterName);
+        builder.PathBuilder.Append(':');
+        builder.PathBuilder.Append(parameterName);
+
+        var inlineConstraints = part.InlineConstraints?.ToArray() ?? [];
+        if (inlineConstraints.Length > 0)
+        {
+            var constraintPattern = TryConvertInlineConstraintsToVueRegex(inlineConstraints, out var routeConstraints);
+            if (constraintPattern is null)
+            {
+                error = $"route constraint on parameter '{parameterName}' is not currently supported for Vue Router conversion.";
+                return false;
+            }
+
+            builder.PathBuilder.Append('(');
+            builder.PathBuilder.Append(constraintPattern);
+            builder.PathBuilder.Append(')');
+
+            if (routeConstraints.Count > 0)
+                builder.ParameterConstraints[parameterName] = routeConstraints.ToList();
+        }
+
+        var hasDefaultValue = part.DefaultValue is not null;
+        if (part.IsCatchAll)
+            builder.PathBuilder.Append("(.*)*");
+        else if (!forceRequired && (part.IsOptional || (hasDefaultValue && isWholeSegment)))
+            builder.PathBuilder.Append('?');
+
+        if (hasDefaultValue)
+        {
+            var defaultText = Convert.ToString(part.DefaultValue, System.Globalization.CultureInfo.InvariantCulture);
+            if (string.IsNullOrEmpty(defaultText))
+            {
+                error = $"route default value on parameter '{parameterName}' could not be converted to a stable string representation.";
+                return false;
+            }
+
+            builder.DefaultParameterValues[parameterName] = defaultText;
+            if (isWholeSegment && !forceRequired)
+                builder.ElidableDefaultParameterNames.Add(parameterName);
+        }
+
+        return true;
+    }
+
+    private static string? TryConvertInlineConstraintsToVueRegex(
+        IReadOnlyList<InlineConstraint> inlineConstraints,
+        out IReadOnlyList<RazorVueRouteConstraintResult> routeConstraints)
+    {
+        routeConstraints = [];
         if (inlineConstraints.Count == 0)
             return null;
 
         var regexParts = new List<string>(inlineConstraints.Count);
+        var constraints = new List<RazorVueRouteConstraintResult>();
+        var lengthConstraints = new List<RazorVueRouteConstraintResult>();
         foreach (var constraint in inlineConstraints)
         {
             var text = constraint.Constraint?.Trim();
             if (string.IsNullOrWhiteSpace(text))
                 return null;
 
-            regexParts.Add(text switch
+            var routeConstraint = TryConvertRouteConstraintMetadata(text);
+            if (routeConstraint is not null)
+            {
+                constraints.Add(routeConstraint);
+
+                if (string.Equals(routeConstraint.Kind, "lengthRange", StringComparison.Ordinal))
+                {
+                    lengthConstraints.Add(routeConstraint);
+                    continue;
+                }
+            }
+
+            var routeRegexPattern = text switch
             {
                 "alpha" => "[A-Za-z]{1,}",
-                "bool" => "(?:true|false)",
-                "int" => "-?\\d{1,}",
-                "long" => "-?\\d{1,}",
-                "required" => "[^/]+",
+                "bool" => "[Tt][Rr][Uu][Ee]|[Ff][Aa][Ll][Ss][Ee]",
+                "guid" => GuidRouteConstraintPattern,
+                "int" => "[+-]?\\d{1,}",
+                "long" => "[+-]?\\d{1,}",
+                "double" => "[^/]+",
+                "float" => "[^/]+",
+                "decimal" => "[^/]+",
+                "datetime" => "[^/]+",
+                _ when TryConvertLongRangeConstraint(text, out _) => "[+-]?\\d{1,}",
                 _ when TryConvertRegexConstraint(text, out var regexPattern) => regexPattern,
-                _ when TryConvertLengthConstraint(text, out var lengthPattern) => lengthPattern,
                 _ => null
-            } ?? string.Empty);
+            };
+            if (string.IsNullOrEmpty(routeRegexPattern))
+                return null;
+
+            if (!regexParts.Contains(routeRegexPattern, StringComparer.Ordinal))
+                regexParts.Add(routeRegexPattern);
         }
 
-        if (regexParts.Any(static part => part.Length == 0))
-            return null;
-
+        routeConstraints = constraints;
         if (regexParts.Count == 1)
             return regexParts[0];
 
-        return string.Concat(regexParts.Select(static part => $"(?=(?:{part})$)")) + "[^/]+";
+        if (regexParts.Count == 0 && TryBuildLengthRangeRegex(lengthConstraints, out var lengthRangePattern))
+            return lengthRangePattern;
+
+        return null;
+    }
+
+    private static RazorVueRouteConstraintResult? TryConvertRouteConstraintMetadata(string text)
+    {
+        if (string.Equals(text, "int", StringComparison.Ordinal))
+            return new RazorVueRouteConstraintResult("integerRange", Int32MinValueText, Int32MaxValueText);
+
+        if (string.Equals(text, "long", StringComparison.Ordinal))
+            return new RazorVueRouteConstraintResult("integerRange", Int64MinValueText, Int64MaxValueText);
+
+        if (string.Equals(text, "required", StringComparison.Ordinal))
+            return new RazorVueRouteConstraintResult("lengthRange", "1", null);
+
+        if (string.Equals(text, "double", StringComparison.Ordinal))
+            return new RazorVueRouteConstraintResult("numberParse", null, null, "double");
+
+        if (string.Equals(text, "float", StringComparison.Ordinal))
+            return new RazorVueRouteConstraintResult("numberParse", null, null, "float");
+
+        if (string.Equals(text, "decimal", StringComparison.Ordinal))
+            return new RazorVueRouteConstraintResult("numberParse", null, null, "decimal");
+
+        if (string.Equals(text, "datetime", StringComparison.Ordinal))
+            return new RazorVueRouteConstraintResult("dateTimeParse", null, null);
+
+        if (TryConvertLengthConstraintMetadata(text, out var lengthConstraint))
+            return lengthConstraint;
+
+        return TryConvertLongRangeConstraint(text, out var constraint)
+            ? constraint
+            : null;
+    }
+
+    private static bool TryConvertLongRangeConstraint(string text, out RazorVueRouteConstraintResult constraint)
+    {
+        constraint = EmptyRouteConstraintResult;
+
+        if (TryReadConstraintArguments(text, "min", out var minArguments))
+        {
+            if (minArguments.Length == 1 && long.TryParse(minArguments[0], System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var min))
+            {
+                constraint = new RazorVueRouteConstraintResult("integerRange", min.ToString(System.Globalization.CultureInfo.InvariantCulture), null);
+                return true;
+            }
+
+            return false;
+        }
+
+        if (TryReadConstraintArguments(text, "max", out var maxArguments))
+        {
+            if (maxArguments.Length == 1 && long.TryParse(maxArguments[0], System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var max))
+            {
+                constraint = new RazorVueRouteConstraintResult("integerRange", null, max.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                return true;
+            }
+
+            return false;
+        }
+
+        if (TryReadConstraintArguments(text, "range", out var rangeArguments))
+        {
+            if (rangeArguments.Length == 2 &&
+                long.TryParse(rangeArguments[0], System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var min) &&
+                long.TryParse(rangeArguments[1], System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var max) &&
+                min <= max)
+            {
+                constraint = new RazorVueRouteConstraintResult(
+                    "integerRange",
+                    min.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    max.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                return true;
+            }
+
+            return false;
+        }
+
+        return false;
     }
 
     private static bool TryConvertRegexConstraint(string text, out string pattern)
@@ -1007,15 +1234,17 @@ internal sealed class RazorVueConsumerEntryCompiler
 
         if (TryReadConstraintArguments(text, "length", out var lengthArguments))
         {
-            if (lengthArguments.Length == 1 && int.TryParse(lengthArguments[0], out var exactLength) && exactLength >= 0)
+            if (lengthArguments.Length == 1 &&
+                int.TryParse(lengthArguments[0], System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var exactLength) &&
+                exactLength >= 0)
             {
                 pattern = $"[^/]{{{exactLength}}}";
                 return true;
             }
 
             if (lengthArguments.Length == 2 &&
-                int.TryParse(lengthArguments[0], out var minLength) &&
-                int.TryParse(lengthArguments[1], out var maxLength) &&
+                int.TryParse(lengthArguments[0], System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var minLength) &&
+                int.TryParse(lengthArguments[1], System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var maxLength) &&
                 minLength >= 0 &&
                 maxLength >= minLength)
             {
@@ -1028,7 +1257,7 @@ internal sealed class RazorVueConsumerEntryCompiler
 
         if (TryReadConstraintArguments(text, "minlength", out var minLengthArguments) &&
             minLengthArguments.Length == 1 &&
-            int.TryParse(minLengthArguments[0], out var minValue) &&
+            int.TryParse(minLengthArguments[0], System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var minValue) &&
             minValue >= 0)
         {
             pattern = $"[^/]{{{minValue},}}";
@@ -1037,10 +1266,111 @@ internal sealed class RazorVueConsumerEntryCompiler
 
         if (TryReadConstraintArguments(text, "maxlength", out var maxLengthArguments) &&
             maxLengthArguments.Length == 1 &&
-            int.TryParse(maxLengthArguments[0], out var maxValue) &&
+            int.TryParse(maxLengthArguments[0], System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var maxValue) &&
             maxValue >= 0)
         {
             pattern = $"[^/]{{0,{maxValue}}}";
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryBuildLengthRangeRegex(
+        IReadOnlyList<RazorVueRouteConstraintResult> lengthConstraints,
+        out string pattern)
+    {
+        pattern = string.Empty;
+        if (lengthConstraints.Count == 0)
+            return false;
+
+        int? min = null;
+        int? max = null;
+        foreach (var constraint in lengthConstraints)
+        {
+            if (!string.Equals(constraint.Kind, "lengthRange", StringComparison.Ordinal))
+                return false;
+
+            if (constraint.Min is not null)
+            {
+                var constraintMin = int.Parse(constraint.Min, System.Globalization.CultureInfo.InvariantCulture);
+                min = min is null ? constraintMin : Math.Max(min.Value, constraintMin);
+            }
+
+            if (constraint.Max is not null)
+            {
+                var constraintMax = int.Parse(constraint.Max, System.Globalization.CultureInfo.InvariantCulture);
+                max = max is null ? constraintMax : Math.Min(max.Value, constraintMax);
+            }
+        }
+
+        if (min is not null && max is not null && min.Value > max.Value)
+            return false;
+
+        if (min is null)
+        {
+            pattern = $"[^/]{{0,{max!.Value}}}";
+            return true;
+        }
+
+        if (max is null)
+        {
+            pattern = $"[^/]{{{min.Value},}}";
+            return true;
+        }
+
+        pattern = min.Value == max.Value
+            ? $"[^/]{{{min.Value}}}"
+            : $"[^/]{{{min.Value},{max.Value}}}";
+        return true;
+    }
+
+    private static bool TryConvertLengthConstraintMetadata(string text, out RazorVueRouteConstraintResult constraint)
+    {
+        constraint = EmptyRouteConstraintResult;
+
+        if (TryReadConstraintArguments(text, "length", out var lengthArguments))
+        {
+            if (lengthArguments.Length == 1 &&
+                int.TryParse(lengthArguments[0], System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var exactLength) &&
+                exactLength >= 0)
+            {
+                var exactText = exactLength.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                constraint = new RazorVueRouteConstraintResult("lengthRange", exactText, exactText);
+                return true;
+            }
+
+            if (lengthArguments.Length == 2 &&
+                int.TryParse(lengthArguments[0], System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var minLength) &&
+                int.TryParse(lengthArguments[1], System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var maxLength) &&
+                minLength >= 0 &&
+                maxLength >= minLength)
+            {
+                constraint = new RazorVueRouteConstraintResult(
+                    "lengthRange",
+                    minLength.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    maxLength.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                return true;
+            }
+
+            return false;
+        }
+
+        if (TryReadConstraintArguments(text, "minlength", out var minLengthArguments) &&
+            minLengthArguments.Length == 1 &&
+            int.TryParse(minLengthArguments[0], System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var minValue) &&
+            minValue >= 0)
+        {
+            constraint = new RazorVueRouteConstraintResult("lengthRange", minValue.ToString(System.Globalization.CultureInfo.InvariantCulture), null);
+            return true;
+        }
+
+        if (TryReadConstraintArguments(text, "maxlength", out var maxLengthArguments) &&
+            maxLengthArguments.Length == 1 &&
+            int.TryParse(maxLengthArguments[0], System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var maxValue) &&
+            maxValue >= 0)
+        {
+            constraint = new RazorVueRouteConstraintResult("lengthRange", null, maxValue.ToString(System.Globalization.CultureInfo.InvariantCulture));
             return true;
         }
 
@@ -1156,8 +1486,84 @@ internal sealed class RazorVueConsumerEntryCompiler
         string OutputPath,
         string? CssOutputPath);
 
+    private sealed record RazorVueRouteVariant(
+        string Path,
+        IReadOnlyList<string> ParameterNames,
+        IReadOnlyDictionary<string, string> DefaultParameterValues,
+        IReadOnlyList<string> ElidableDefaultParameterNames,
+        IReadOnlyDictionary<string, IReadOnlyList<RazorVueRouteConstraintResult>> ParameterConstraints);
+
+    private sealed class RazorVueRouteVariantBuilder
+    {
+        public RazorVueRouteVariantBuilder()
+            : this(
+                new StringBuilder(),
+                [],
+                new Dictionary<string, string>(StringComparer.Ordinal),
+                [],
+                new Dictionary<string, List<RazorVueRouteConstraintResult>>(StringComparer.Ordinal))
+        {
+        }
+
+        private RazorVueRouteVariantBuilder(
+            StringBuilder pathBuilder,
+            List<string> parameterNames,
+            Dictionary<string, string> defaultParameterValues,
+            List<string> elidableDefaultParameterNames,
+            Dictionary<string, List<RazorVueRouteConstraintResult>> parameterConstraints)
+        {
+            PathBuilder = pathBuilder;
+            ParameterNames = parameterNames;
+            DefaultParameterValues = defaultParameterValues;
+            ElidableDefaultParameterNames = elidableDefaultParameterNames;
+            ParameterConstraints = parameterConstraints;
+        }
+
+        public StringBuilder PathBuilder { get; }
+
+        public List<string> ParameterNames { get; }
+
+        public Dictionary<string, string> DefaultParameterValues { get; }
+
+        public List<string> ElidableDefaultParameterNames { get; }
+
+        public Dictionary<string, List<RazorVueRouteConstraintResult>> ParameterConstraints { get; }
+
+        public RazorVueRouteVariantBuilder Clone()
+            => new(
+                new StringBuilder(PathBuilder.ToString()),
+                [.. ParameterNames],
+                new Dictionary<string, string>(DefaultParameterValues, StringComparer.Ordinal),
+                [.. ElidableDefaultParameterNames],
+                ParameterConstraints.ToDictionary(
+                    static pair => pair.Key,
+                    static pair => pair.Value.ToList(),
+                    StringComparer.Ordinal));
+
+        public RazorVueRouteVariant Build()
+            => new(
+                PathBuilder.Length == 0 ? "/" : PathBuilder.ToString(),
+                ParameterNames.ToArray(),
+                DefaultParameterValues.Count == 0
+                    ? EmptyDefaultParameterValues
+                    : new Dictionary<string, string>(DefaultParameterValues, StringComparer.Ordinal),
+                ElidableDefaultParameterNames.ToArray(),
+                ParameterConstraints.Count == 0
+                    ? EmptyRouteConstraints
+                    : ParameterConstraints.ToDictionary(
+                        static pair => pair.Key,
+                        static pair => (IReadOnlyList<RazorVueRouteConstraintResult>)pair.Value.ToArray(),
+                        StringComparer.Ordinal));
+    }
+
     private static readonly IReadOnlyDictionary<string, string> EmptyDefaultParameterValues
         = new Dictionary<string, string>(StringComparer.Ordinal);
+
+    private static readonly IReadOnlyDictionary<string, IReadOnlyList<RazorVueRouteConstraintResult>> EmptyRouteConstraints
+        = new Dictionary<string, IReadOnlyList<RazorVueRouteConstraintResult>>(StringComparer.Ordinal);
+
+    private static readonly RazorVueRouteConstraintResult EmptyRouteConstraintResult
+        = new(string.Empty, null, null);
 }
 
 internal sealed record RazorVueConsumerEntryResult(
@@ -1187,6 +1593,12 @@ internal sealed record RazorVueConsumerComponentResult(
     string? SsrRelativeOutputPath,
     string? SsrOutputPath);
 
+internal sealed record RazorVueRouteConstraintResult(
+    string Kind,
+    string? Min,
+    string? Max,
+    string? Format = null);
+
 internal sealed record RazorVueConsumerRouteResult(
     string Name,
     string Alias,
@@ -1196,7 +1608,9 @@ internal sealed record RazorVueConsumerRouteResult(
     string RouteTemplate,
     string Path,
     IReadOnlyList<string> ParameterNames,
-    IReadOnlyDictionary<string, string> DefaultParameterValues);
+    IReadOnlyDictionary<string, string> DefaultParameterValues,
+    IReadOnlyList<string> ElidableDefaultParameterNames,
+    IReadOnlyDictionary<string, IReadOnlyList<RazorVueRouteConstraintResult>> ParameterConstraints);
 
 internal sealed record RazorVueConsumerEntryResultDocument(
     string ManifestPath,

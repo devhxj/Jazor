@@ -1,5 +1,5 @@
 import { createRouterMatcher } from "vue-router";
-import { applyRouteDefaultParameterValues } from "./runtime-common.js";
+import { applyRouteDefaultParameterValues, doRouteParametersSatisfyConstraints } from "./runtime-common.js";
 
 export function createCatalogViewModel(store, detailRouteDefinition) {
   const visibleExamples = store.filteredExamples;
@@ -23,7 +23,7 @@ export function createCatalogViewModel(store, detailRouteDefinition) {
       estimatedMinutes: example.EstimatedMinutes,
       tags: example.Tags ?? [],
       isFavorite: Boolean(example.IsFavorite),
-      detailHref: `${resolveRouteHref(detailRouteDefinition, { id: example.Id })}${detailQuerySuffix}`
+      detailHref: `${resolveRouteHrefForSingleParameter(detailRouteDefinition, example.Id)}${detailQuerySuffix}`
     })),
     emptyStateTitle: store.hasError ? "目录暂不可用" : "当前没有匹配项",
     emptyStateBody: store.hasError
@@ -79,10 +79,19 @@ export function deriveCatalogHref(catalogRouteDefinition, store) {
 }
 
 export function deriveDetailHref(detailRouteDefinition, exampleId, store) {
-  const resolvedPath = resolveRouteHref(detailRouteDefinition, {
-    id: exampleId
-  });
+  const resolvedPath = resolveRouteHrefForSingleParameter(detailRouteDefinition, exampleId);
   return `${resolvedPath}${deriveCatalogQuerySuffix(store)}`;
+}
+
+export function resolveRouteHrefForSingleParameter(routeDefinition, value) {
+  const parameterName = routeDefinition?.parameterNames?.[0];
+  if (typeof parameterName !== "string" || parameterName.length === 0) {
+    throw new Error("Playground route definition must declare at least one route parameter.");
+  }
+
+  return resolveRouteHref(routeDefinition, {
+    [parameterName]: value
+  });
 }
 
 export function resolveRouteHref(routeDefinition, routeParameters = {}) {
@@ -96,6 +105,10 @@ export function resolveRouteHref(routeDefinition, routeParameters = {}) {
 
   const matcher = getRouteHrefMatcher(routeDefinition);
   const normalizedParameters = normalizeRouteHrefParameters(routeDefinition, routeParameters);
+  if (!doRouteParametersSatisfyConstraints(routeDefinition, normalizedParameters)) {
+    throw new Error(`Playground route '${routeDefinition.name ?? ""}' parameters do not satisfy generated route constraints.`);
+  }
+
   const resolved = matcher.resolve(
     {
       name: routeDefinition.name,
@@ -110,11 +123,17 @@ function normalizeRouteHrefParameters(routeDefinition, routeParameters) {
   const parametersWithDefaults = applyRouteDefaultParameterValues(routeDefinition, routeParameters);
   const normalized = { ...parametersWithDefaults };
   const defaultValues = routeDefinition?.defaultParameterValues;
-  if (defaultValues === null || typeof defaultValues !== "object") {
+  const elidableNames = routeDefinition?.elidableDefaultParameterNames;
+  if (
+    defaultValues === null ||
+    typeof defaultValues !== "object" ||
+    !Array.isArray(elidableNames)
+  ) {
     return normalized;
   }
 
-  for (const [key, defaultValue] of Object.entries(defaultValues)) {
+  for (const key of elidableNames) {
+    const defaultValue = defaultValues[key];
     if (normalized[key] === defaultValue) {
       delete normalized[key];
     }

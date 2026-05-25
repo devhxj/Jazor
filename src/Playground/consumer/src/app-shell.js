@@ -1,7 +1,7 @@
 import { computed, defineComponent, h } from "vue";
 import { RouterView } from "vue-router";
 import { usePlaygroundStore } from "./stores/playground-store.js";
-import { resolveRouteHref } from "./view-models.js";
+import { resolveRouteHrefForSingleParameter } from "./view-models.js";
 
 export function createPlaygroundAppRoot({
   pinia,
@@ -94,7 +94,10 @@ export function createPlaygroundAppRoot({
 
 function createShellRouteModel(routeDefinitions) {
   const catalogRoutes = routeDefinitions.filter((route) => route.alias === "CatalogPage");
-  const detailRoute = routeDefinitions.find((route) => route.alias === "DetailPage") ?? null;
+  const detailRoutes = routeDefinitions.filter((route) => route.alias === "DetailPage");
+  const detailRoute = detailRoutes.find((route) => route.parameterNames.length === 1)
+    ?? detailRoutes[0]
+    ?? null;
 
   const catalogPrimaryRoute = catalogRoutes.find((route) => route.path === "/") ?? catalogRoutes[0] ?? null;
   const catalogAliasRoute = catalogRoutes.find((route) => route.path !== catalogPrimaryRoute?.path) ?? catalogPrimaryRoute;
@@ -104,7 +107,7 @@ function createShellRouteModel(routeDefinitions) {
     catalogAliasHref: catalogAliasRoute?.path ?? catalogPrimaryRoute?.path ?? "/",
     detailSampleHref: detailRoute === null
       ? "/examples/catalog-shell"
-      : resolveRouteHref(detailRoute, { id: "catalog-shell" }),
+      : resolveRouteHrefForSingleParameter(detailRoute, "catalog-shell"),
     routeTemplates: routeDefinitions.map((route) => route.routeTemplate ?? route.path)
   };
 }

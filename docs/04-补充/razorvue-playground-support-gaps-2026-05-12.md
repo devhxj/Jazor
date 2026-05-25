@@ -58,7 +58,7 @@
 
 - `.vue` default export/import 不是 Jazor authored module 的编译器边界。需要通过 `razorvue-sfc-bridge` 把 SFC default component 转成 named export/import；不计划在 Jazor 编译器里放开 default export/import。
 - RazorVue library mode 仍需要 consumer 构建层。Playground 的 colocated `consumer` 是单 ASP.NET Core 项目里的前端消费构建层，不是第二个 runtime host；标准 ASP.NET Core + RazorVue library-mode 模板和约定仍需继续产品化。
-- route template -> Vue Router bridge 仍拒绝两类无法诚实映射的形态：composite/mixed segment 内 default value，例如 `post-{id=42}`；带 optional separator 的 composite/mixed segment，例如 `/files/{filename}.{ext?}`。普通 literal、`{parameter}`、`{parameter?}`、whole-segment default value、受控 constraint、catch-all 等已不再属于该缺口。
+- route template -> Vue Router bridge 仍拒绝无法诚实映射的长尾形态：optional separator 参数不是 segment 尾部、没有紧邻前置 optional separator、需要多层组合展开的 composite/mixed segment，以及无法转换成 Vue Router regex path 的 constraint 组合。普通 literal、`{parameter}`、`{parameter?}`、whole-segment default value、composite default value、尾部 optional separator composite segment、受控 constraint、catch-all 等已不再属于该缺口。
 
 ## 已从缺口移除的主要能力
 
@@ -68,6 +68,8 @@
 - 静态 `OpenComponent(Type)` 及 source-stable local/current-component member `System.Type` carrier 已支持；这不是动态组件支持。
 - Razor IR mixed attribute、lowercase `class` / `style` fallthrough、`CssClass` / `CssStyle` 强类型映射、DOM event modifier、static markup、typed/untyped `RenderFragment` carrier、fragment factory、template local、setup helper/lifecycle 受控 payload 已进入支持面。
 - unified `jazor-manifest.json` component projection、SFC bridge named export、consumer route metadata、ASP.NET Core host 默认静态资源/SPA fallback 主线已收敛，旧第二 manifest 和 Playground 私有 matcher 不再是当前契约。
+- route bridge 已支持 composite default value（例如 `post-{id=42}`）和尾部 optional separator composite segment（例如 `/files/{filename}.{ext?}`）。前者保持 required Vue path 并仅通过 metadata 应用默认值，不做 URL elision；后者展开为带扩展名和无扩展名两条稳定 Vue route。
+- route constraint bridge 已支持 `guid`，覆盖常见 GUID 文本形态和 browser pathname 中 encoded wrapper 形态；`bool` 已改为大小写不敏感匹配；`int` / `long` / `min(...)` / `max(...)` / `range(...)` 已通过 generated `parameterConstraints` metadata 和 consumer runtime `BigInt` 校验补齐整数边界；`decimal` / `double` / `float` 已通过 `numberParse` metadata 校验 invariant numeric text；`datetime` 已通过 `dateTimeParse` metadata 校验 ASP.NET Core 内置 `DateTimeRouteConstraint` 的 invariant `DateTime.TryParse(...)` 常见 URL 形态；`required` 与 `length(...)` / `minlength(...)` / `maxlength(...)` 已支持与单一 path-regex 约束组合并通过 metadata 做长度求交校验。`date` 不是当前 ASP.NET Core 默认 `ConstraintMap` 内置 route constraint，仍保留 fail-fast，避免把未知自定义约束按 `datetime` 近似放行。
 
 ## 验证记录
 
@@ -75,4 +77,6 @@
 
 - `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj -v minimal`：1373 通过，0 失败。
 - `dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj -v minimal`：486 通过，0 失败。
-- 本次更新为文档压缩与边界重写；后续代码变更仍需按改动范围重新运行 focused / full RazorVue 测试。
+- `dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter 'FullyQualifiedName~RazorVueConsumerEntryCompilerTests' -v minimal`：31 通过，0 失败。
+- `dotnet run --file src/Playground/consumer/scripts/run-deno.cs -- test --allow-env './src/runtime-common.test.js'`：通过。
+- `dotnet run --file src/Playground/consumer/scripts/run-deno.cs -- run -A scripts/test.ts`：通过。
