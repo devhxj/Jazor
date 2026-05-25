@@ -123,9 +123,18 @@ internal static class RazorVueImperativeRenderFragmentCarrierHelper
         Compilation compilation,
         IInvocationOperation invocation,
         out IOperation returnedValue)
+        => TryGetRenderFragmentFactoryReturnedValue(
+            compilation,
+            RazorVueMethodSymbolNormalizer.GetCanonicalMethod(invocation.TargetMethod),
+            out returnedValue);
+
+    public static bool TryGetRenderFragmentFactoryReturnedValue(
+        Compilation compilation,
+        IMethodSymbol method,
+        out IOperation returnedValue)
     {
         returnedValue = default!;
-        foreach (var syntaxReference in RazorVueMethodSymbolNormalizer.GetCanonicalMethod(invocation.TargetMethod).DeclaringSyntaxReferences)
+        foreach (var syntaxReference in RazorVueMethodSymbolNormalizer.GetCanonicalMethod(method).DeclaringSyntaxReferences)
         {
             var syntax = syntaxReference.GetSyntax();
             var semanticModel = compilation.GetSemanticModel(syntax.SyntaxTree);
@@ -304,7 +313,7 @@ internal static class RazorVueImperativeRenderFragmentCarrierHelper
                 return;
 
             case IInvocationOperation invocation
-                when RazorVueSymbolIdentity.IsCurrentComponentMember(componentSymbol, invocation.TargetMethod, invocation.Instance, unwrap) &&
+                when IsSupportedRenderFragmentFactoryInvocation(compilation, componentSymbol, invocation, unwrap) &&
                      IsRenderFragmentCarrierType(invocation.TargetMethod.ReturnType):
                 var canonicalMethod = RazorVueMethodSymbolNormalizer.GetCanonicalMethod(invocation.TargetMethod);
                 if (!visitedMethods.Add(canonicalMethod))
@@ -343,6 +352,17 @@ internal static class RazorVueImperativeRenderFragmentCarrierHelper
                 visitedMethods,
                 bodies);
         }
+    }
+
+    private static bool IsSupportedRenderFragmentFactoryInvocation(
+        Compilation compilation,
+        INamedTypeSymbol componentSymbol,
+        IInvocationOperation invocation,
+        Func<IOperation?, IOperation?> unwrap)
+    {
+        _ = compilation;
+        return RazorVueSymbolIdentity.IsCurrentComponentMember(componentSymbol, invocation.TargetMethod, invocation.Instance, unwrap) ||
+               invocation is { Instance: null, TargetMethod.MethodKind: MethodKind.LocalFunction };
     }
 
     private static bool IsSupportedCurrentComponentRenderFragmentCarrierMember(

@@ -4147,6 +4147,703 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithTypedRenderFragmentAddContentInsideImperativeBuildRenderTree_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-fragment-card")]
+                public class ImperativeFragmentCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private RenderFragment<int> CreateTemplate(string? title)
+                        => item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, title);
+                            itemBuilder.AddContent(3, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderFragment<int> template = CreateTemplate(Title);
+
+                        var index = 0;
+                        while (index < Count)
+                        {
+                            builder.AddContent(0, template, index);
+                            index++;
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "let template = (title => item => {");
+        StringAssert.Contains(artifact.SfcText, "const __jazorImperativeRenderContext0 = __jazorCreateRenderContext(h);");
+        StringAssert.Contains(artifact.SfcText, "__jazorImperativeRenderContext0.append(title);");
+        StringAssert.Contains(artifact.SfcText, "__jazorImperativeRenderContext0.append(item);");
+        StringAssert.Contains(artifact.SfcText, "})(props.title);");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(template, index);");
+        Assert.IsFalse(
+            artifact.SfcText.Contains("CreateTemplate(props.title)", StringComparison.Ordinal) ||
+            artifact.SfcText.Contains("createTemplate(props.title)", StringComparison.Ordinal) ||
+            artifact.SfcText.Contains("itemBuilder =>", StringComparison.Ordinal),
+            artifact.SfcText);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithLocalFunctionFactoryTypedRenderFragmentAddContentInsideImperativeBuildRenderTree_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-fragment-card")]
+                public class ImperativeFragmentCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderFragment<int> CreateTemplate(string? title)
+                            => item => itemBuilder =>
+                            {
+                                itemBuilder.OpenElement(1, "span");
+                                itemBuilder.AddContent(2, title);
+                                itemBuilder.AddContent(3, item);
+                                itemBuilder.CloseElement();
+                            };
+
+                        RenderFragment<int> template = CreateTemplate(Title);
+
+                        var index = 0;
+                        while (index < Count)
+                        {
+                            builder.AddContent(0, template, index);
+                            index++;
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "let template = (title => item => {");
+        StringAssert.Contains(artifact.SfcText, "const __jazorImperativeRenderContext0 = __jazorCreateRenderContext(h);");
+        StringAssert.Contains(artifact.SfcText, "__jazorImperativeRenderContext0.append(title);");
+        StringAssert.Contains(artifact.SfcText, "__jazorImperativeRenderContext0.append(item);");
+        StringAssert.Contains(artifact.SfcText, "})(props.title);");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(template, index);");
+        Assert.IsFalse(
+            artifact.SfcText.Contains("CreateTemplate(props.title)", StringComparison.Ordinal) ||
+            artifact.SfcText.Contains("createTemplate(props.title)", StringComparison.Ordinal) ||
+            artifact.SfcText.Contains("itemBuilder =>", StringComparison.Ordinal),
+            artifact.SfcText);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithLocalFunctionFactoryUntypedRenderFragmentAddContentInsideImperativeBuildRenderTree_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-fragment-card")]
+                public class ImperativeFragmentCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderFragment CreateHeader(string? title)
+                            => headerBuilder =>
+                            {
+                                headerBuilder.OpenElement(1, "header");
+                                headerBuilder.AddContent(2, title);
+                                headerBuilder.CloseElement();
+                            };
+
+                        var index = 0;
+                        while (index < Count)
+                        {
+                            builder.AddContent(0, CreateHeader(Title));
+                            index++;
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append((title => () => {");
+        StringAssert.Contains(artifact.SfcText, "const __jazorImperativeRenderContext0 = __jazorCreateRenderContext(h);");
+        StringAssert.Contains(artifact.SfcText, "__jazorImperativeRenderContext0.enterElement(\"header\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorImperativeRenderContext0.append(title);");
+        StringAssert.Contains(artifact.SfcText, "})(props.title));");
+        Assert.IsFalse(
+            artifact.SfcText.Contains("CreateHeader(props.title)", StringComparison.Ordinal) ||
+            artifact.SfcText.Contains("createHeader(props.title)", StringComparison.Ordinal) ||
+            artifact.SfcText.Contains("headerBuilder =>", StringComparison.Ordinal),
+            artifact.SfcText);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithLocalFunctionFactoryBackedUntypedRenderFragmentAddContentInsideImperativeBuildRenderTree_EvaluatesCapturedArgumentsOnce()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-fragment-card")]
+                public class ImperativeFragmentCard : ComponentBase, IVueComponent
+                {
+                    private int _revision;
+
+                    private string NextTitle()
+                    {
+                        _revision++;
+                        return "title-" + _revision;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderFragment CreateHeader(string title)
+                            => headerBuilder =>
+                            {
+                                headerBuilder.OpenElement(1, "header");
+                                headerBuilder.AddContent(2, title);
+                                headerBuilder.CloseElement();
+                            };
+
+                        RenderFragment header = CreateHeader(NextTitle());
+                        var index = 0;
+                        while (index < 2)
+                        {
+                            builder.AddContent(0, header);
+                            index++;
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "let header = (title => () => {");
+        StringAssert.Contains(artifact.SfcText, "const __jazorImperativeRenderContext0 = __jazorCreateRenderContext(h);");
+        StringAssert.Contains(artifact.SfcText, "__jazorImperativeRenderContext0.append(title);");
+        StringAssert.Contains(artifact.SfcText, "})(nextTitle());");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(header);");
+        Assert.AreEqual(
+            1,
+            CountOccurrences(artifact.SfcText, "})(nextTitle());"),
+            artifact.SfcText);
+        Assert.IsFalse(
+            artifact.SfcText.Contains("CreateHeader(nextTitle())", StringComparison.Ordinal) ||
+            artifact.SfcText.Contains("createHeader(nextTitle())", StringComparison.Ordinal) ||
+            artifact.SfcText.Contains("headerBuilder =>", StringComparison.Ordinal),
+            artifact.SfcText);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithLocalFunctionFactoryTypedRenderFragmentComponentParameterInsideImperativeBuildRenderTree_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/imperative-fragment-card")]
+                public class ImperativeFragmentCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderFragment<int> CreateTemplate(string? title)
+                            => item => itemBuilder =>
+                            {
+                                itemBuilder.OpenElement(1, "span");
+                                itemBuilder.AddContent(2, title);
+                                itemBuilder.AddContent(3, item);
+                                itemBuilder.CloseElement();
+                            };
+
+                        var index = 0;
+                        while (index < 1)
+                        {
+                            builder.OpenComponent<ChildCard>(0);
+                            builder.AddAttribute(1, "ItemTemplate", CreateTemplate(Title));
+                            builder.CloseComponent();
+                            index++;
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "ImperativeFragmentCard");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterComponent(ChildCardComponent");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.setAttribute(\"ItemTemplate\", (title => item => {");
+        StringAssert.Contains(artifact.SfcText, "__jazorImperativeRenderContext0.append(title);");
+        StringAssert.Contains(artifact.SfcText, "__jazorImperativeRenderContext0.append(item);");
+        StringAssert.Contains(artifact.SfcText, "})(props.title));");
+        Assert.IsFalse(
+            artifact.SfcText.Contains("CreateTemplate(props.title)", StringComparison.Ordinal) ||
+            artifact.SfcText.Contains("createTemplate(props.title)", StringComparison.Ordinal) ||
+            artifact.SfcText.Contains("itemBuilder =>", StringComparison.Ordinal),
+            artifact.SfcText);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithLocalFunctionFactoryUntypedRenderFragmentDefaultSlotInsideImperativeBuildRenderTree_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/panel")]
+                public class Panel : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment? ChildContent { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/imperative-fragment-card")]
+                public class ImperativeFragmentCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderFragment CreateHeader(string? title)
+                            => headerBuilder =>
+                            {
+                                headerBuilder.OpenElement(1, "header");
+                                headerBuilder.AddContent(2, title);
+                                headerBuilder.CloseElement();
+                            };
+
+                        var index = 0;
+                        while (index < 1)
+                        {
+                            builder.OpenComponent<Panel>(0);
+                            builder.AddAttribute(1, "ChildContent", CreateHeader(Title));
+                            builder.CloseComponent();
+                            index++;
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "ImperativeFragmentCard");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterComponent(PanelComponent");
+        StringAssert.Contains(artifact.SfcText, "\"ChildContent\": { runtimeName: \"default\" }");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.setAttribute(\"ChildContent\", (title => () => {");
+        StringAssert.Contains(artifact.SfcText, "__jazorImperativeRenderContext0.enterElement(\"header\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorImperativeRenderContext0.append(title);");
+        StringAssert.Contains(artifact.SfcText, "})(props.title));");
+        Assert.IsFalse(
+            artifact.SfcText.Contains("CreateHeader(props.title)", StringComparison.Ordinal) ||
+            artifact.SfcText.Contains("createHeader(props.title)", StringComparison.Ordinal) ||
+            artifact.SfcText.Contains("headerBuilder =>", StringComparison.Ordinal),
+            artifact.SfcText);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithLocalFunctionFactoryBackedUntypedRenderFragmentDefaultSlotInsideImperativeBuildRenderTree_EvaluatesCapturedArgumentsOnce()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/panel")]
+                public class Panel : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment? ChildContent { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/imperative-fragment-card")]
+                public class ImperativeFragmentCard : ComponentBase, IVueComponent
+                {
+                    private int _revision;
+
+                    private string NextTitle()
+                    {
+                        _revision++;
+                        return "title-" + _revision;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderFragment CreateHeader(string title)
+                            => headerBuilder =>
+                            {
+                                headerBuilder.OpenElement(1, "header");
+                                headerBuilder.AddContent(2, title);
+                                headerBuilder.CloseElement();
+                            };
+
+                        RenderFragment header = CreateHeader(NextTitle());
+                        var index = 0;
+                        while (index < 2)
+                        {
+                            builder.OpenComponent<Panel>(0);
+                            builder.AddAttribute(1, "ChildContent", header);
+                            builder.CloseComponent();
+                            index++;
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "ImperativeFragmentCard");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "let header = (title => () => {");
+        StringAssert.Contains(artifact.SfcText, "__jazorImperativeRenderContext0.append(title);");
+        StringAssert.Contains(artifact.SfcText, "})(nextTitle());");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.setAttribute(\"ChildContent\", header);");
+        Assert.AreEqual(
+            1,
+            CountOccurrences(artifact.SfcText, "})(nextTitle());"),
+            artifact.SfcText);
+        Assert.IsFalse(
+            artifact.SfcText.Contains("CreateHeader(nextTitle())", StringComparison.Ordinal) ||
+            artifact.SfcText.Contains("createHeader(nextTitle())", StringComparison.Ordinal) ||
+            artifact.SfcText.Contains("headerBuilder =>", StringComparison.Ordinal),
+            artifact.SfcText);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithCurrentComponentMemberBackedTypedRenderFragmentAddContentInsideImperativeBuildRenderTree_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/item-editor")]
+                public class ItemEditor : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Prefix { get; set; }
+
+                    [Parameter]
+                    public int ModelValue { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/imperative-slot-host")]
+                public class ImperativeSlotHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowEditor { get; set; }
+
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private RenderFragment<int> Template => CreateTemplate(Title);
+
+                    private RenderFragment<int> CreateTemplate(string? title)
+                        => item => slotBuilder =>
+                        {
+                            slotBuilder.OpenComponent<ItemEditor>(4);
+                            slotBuilder.AddAttribute(5, nameof(ItemEditor.Prefix), title);
+                            slotBuilder.AddAttribute(6, nameof(ItemEditor.ModelValue), item);
+                            slotBuilder.CloseComponent();
+                        };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (!ShowEditor)
+                        {
+                            builder.OpenElement(0, "p");
+                            builder.AddContent(1, "fallback");
+                            builder.CloseElement();
+                            return;
+                        }
+
+                        builder.AddContent(2, Template, 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "ImperativeSlotHost");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append((title => item => {");
+        StringAssert.Contains(artifact.SfcText, "const __jazorImperativeRenderContext0 = __jazorCreateRenderContext(h);");
+        StringAssert.Contains(artifact.SfcText, "__jazorImperativeRenderContext0.enterComponent(ItemEditorComponent, __jazorImperativeComponentMetadata_ItemEditor);");
+        StringAssert.Contains(artifact.SfcText, "__jazorImperativeRenderContext0.setAttribute(\"Prefix\", title);");
+        StringAssert.Contains(artifact.SfcText, "__jazorImperativeRenderContext0.setAttribute(\"ModelValue\", item);");
+        StringAssert.Contains(artifact.SfcText, "})(props.title), 42);");
+        Assert.IsFalse(
+            artifact.SfcText.Contains("CreateTemplate(props.title)", StringComparison.Ordinal) ||
+            artifact.SfcText.Contains("createTemplate(props.title)", StringComparison.Ordinal) ||
+            artifact.SfcText.Contains("slotBuilder =>", StringComparison.Ordinal),
+            artifact.SfcText);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithCurrentComponentMemberBackedUntypedRenderFragmentDefaultSlotInsideImperativeBuildRenderTree_LowersRenderFunctionVueSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/panel")]
+                public class Panel : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment? ChildContent { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/imperative-slot-host")]
+                public class ImperativeSlotHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowHeader { get; set; }
+
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private RenderFragment Header => CreateHeader(Title);
+
+                    private RenderFragment CreateHeader(string? title)
+                        => headerBuilder =>
+                        {
+                            headerBuilder.OpenElement(1, "header");
+                            headerBuilder.AddContent(2, title);
+                            headerBuilder.CloseElement();
+                        };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (!ShowHeader)
+                        {
+                            builder.OpenElement(0, "p");
+                            builder.AddContent(1, "fallback");
+                            builder.CloseElement();
+                            return;
+                        }
+
+                        builder.OpenComponent<Panel>(2);
+                        builder.AddAttribute(3, nameof(Panel.ChildContent), Header);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "ImperativeSlotHost");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterComponent(PanelComponent");
+        StringAssert.Contains(artifact.SfcText, "\"ChildContent\": { runtimeName: \"default\" }");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.setAttribute(\"ChildContent\", (title => () => {");
+        StringAssert.Contains(artifact.SfcText, "__jazorImperativeRenderContext0.enterElement(\"header\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorImperativeRenderContext0.append(title);");
+        StringAssert.Contains(artifact.SfcText, "})(props.title));");
+        Assert.IsFalse(
+            artifact.SfcText.Contains("CreateHeader(props.title)", StringComparison.Ordinal) ||
+            artifact.SfcText.Contains("createHeader(props.title)", StringComparison.Ordinal) ||
+            artifact.SfcText.Contains("headerBuilder =>", StringComparison.Ordinal),
+            artifact.SfcText);
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_WithCurrentComponentRenderHelperExtraParameterAndCallerOwnedAttributeMutationPlusChildEmission_LowersRenderFunctionVueSfc()
     {
         var context = CreateContext(
@@ -9481,4 +10178,17 @@ public sealed class RazorVueSfcArtifactFactoryTests
             }
         }
         """;
+
+    private static int CountOccurrences(string text, string value)
+    {
+        var count = 0;
+        var index = 0;
+        while ((index = text.IndexOf(value, index, StringComparison.Ordinal)) >= 0)
+        {
+            count++;
+            index += value.Length;
+        }
+
+        return count;
+    }
 }

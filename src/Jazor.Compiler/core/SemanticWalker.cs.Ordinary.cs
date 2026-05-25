@@ -249,6 +249,9 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitLocalFunction(ILocalFunctionOperation operation, SenseArgument argument)
 	{
+		if (Host?.ShouldSkipLocalFunctionDeclaration(operation, argument) == true)
+			return WithOriginIfMissing(new SequenceExpression(NodeList.Empty<Expression>()), operation);
+
 		var id = new Identifier(operation.Symbol.Name);
 		var parameters = new List<Node>();
 		foreach (var param in operation.Symbol.Parameters)

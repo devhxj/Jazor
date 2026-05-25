@@ -37,6 +37,9 @@ public abstract class SemanticWalkerHost
     public virtual Expression? RewriteInvocationPreorder(IInvocationOperation operation, SenseArgument argument)
         => null;
 
+    public virtual bool ShouldSkipLocalFunctionDeclaration(ILocalFunctionOperation operation, SenseArgument argument)
+        => false;
+
     public virtual Expression? RewriteFieldReference(
         IFieldReferenceOperation operation,
         SenseArgument argument,

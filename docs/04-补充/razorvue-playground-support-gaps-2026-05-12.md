@@ -1002,7 +1002,9 @@ builder.AddContent(0, template, 42);
 - carrier 只接受源码可分析 initializer：
   - inline anonymous fragment
   - 或引用先前已解析的本地 fragment carrier
+  - 或受支持的 current-component/local function fragment factory invocation
 - `AddContent(sequence, RenderFragment<T>, value)`、slot template 等后续解析会优先消费该 carrier 映射
+- imperative bridge 消费 factory-backed carrier 时，factory 实参会在 carrier 创建点通过 IIFE capture 求值一次，fragment invocation 只接收 typed slot 参数
 - 普通 template-scoped local 仍保持“不允许 callable template state”保护，不会因为这次支持而被整体放宽
 
 ### 当前支持边界
@@ -1021,6 +1023,7 @@ builder.AddContent(0, template, 42);
 - 支持：generic current-component method / local function fragment factory，只要调用点已经被 Roslyn 绑定为具体构造方法实例，且返回模板形状本身仍可静态还原；其缓存语义与 non-generic 一致，仍是“缓存源码定义模板骨架，调用点单独绑定 captured 参数”
 - 支持：current-component method / local function 的 `params` 数组 fragment factory；expanded / empty `params` 调用会保留为单个数组绑定结果，而不是在 RazorVue 前端自行拍平成多个逻辑形参
 - 支持：带参数 fragment factory 的调用结果即使先经过上述受控 carrier，再用于 `AddContent(...)` 或组件 typed slot/template 参数，frontend / canonical / H / SFC 四层也会保持与直接调用点一致的作用域语义
+- 支持：handwritten `BuildRenderTree` imperative bridge 中受支持的 local function fragment factory。`builder.AddContent(..., CreateTemplate(Title), item)`、`RenderFragment<T> template = CreateTemplate(Title); builder.AddContent(..., template, item)`，以及 `builder.AddAttribute(..., "ItemTemplate", CreateTemplate(Title))` 这类命令式消费会直接 materialize 为 nested render-context factory；local function declaration 只在其全部引用都被这些受控消费点物化时由 `SemanticWalkerHost` 跳过，避免输出 Razor builder delegate helper
 - 支持：带参数 fragment factory 在 frontend / canonical / H / SFC 中保留额外参数局部作用域；named argument 打乱书写顺序时，仍按调用点左到右求值顺序保留外层 scope 包裹，而不是按形参声明顺序重排求值
 - 支持：同一个带参 fragment factory 在同一组件内被多个不同调用点重复使用时，RazorVue 只复用模板骨架，不复用某一次调用点的 captured 值绑定；`CreateTemplate(Title)` 与 `CreateTemplate(Subtitle)` 这类多次调用会各自保留独立外层 scope
 - 支持：若带参 fragment factory 的 captured 参数是数组创建（典型如 `params` expanded call），SFC 路径会在需要时把该数组初始化提升为 setup binding，再通过局部 template scope wrapper 消费，以避免模板内重复构造
@@ -1050,6 +1053,7 @@ builder.AddContent(0, template, 42);
 - current-component / local zero-argument fragment factory 与 inline typed fragment 保持相同作用域与 lowering 结果
 - direct `AddContent(...)` 与组件 typed slot/template 参数上的 parameterized fragment factory 均已支持，并在 frontend / canonical / H / SFC 四层保持一致作用域语义
 - parameterized fragment factory 结果即使先通过局部 carrier、只读 property 或 `readonly` field 承载，再被 direct `AddContent(...)` 或组件 typed slot/template 参数消费，四层仍保持“外层 captured-value scope、内层 typed fragment scope”的一致顺序
+- handwritten imperative bridge 中的 local function fragment factory 已锁定：direct `AddContent`、factory-backed local carrier、组件 typed slot/template 参数三条路径都会生成 nested render-context factory；captured 参数绑定复用 shared invocation binder，named argument out-of-order 保留调用点求值顺序且每个 captured 实参只求值一次
 - parameterized fragment factory 的 named-argument 路径已锁定为“按调用点左到右求值顺序保留嵌套 scope”，避免回退成按形参声明顺序重排
 - parameterized fragment factory 的“同方法多调用点”路径已锁定为“仅缓存模板骨架，不缓存调用点 captured binding”；Razor IR frontend 不会再把第一次调用的 captured 参数错误复用到后续不同调用点
 - 当前组件 `[Parameter] RenderFragment...` 作为 slot forwarding source 时，默认 slot 与 typed/scoped slot 两条路径都已锁定回归；typed forwarding 会按目标子组件 slot contract 保留 context 参数名，而不是退化成普通值表达式或错误的无参 slot template
@@ -1398,6 +1402,8 @@ builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span
   - 数组/多根节点追加
   - 平衡 `OpenRegion(...)` / `CloseRegion()`，作为 frame-shape 边界而不是 runtime node
   - imperative body 内常量 `AddMarkupContent(...)`，其静态 subtree 直接 lower 为 `h(...)` 表达式，而不是退化为 raw HTML 占位
+  - imperative body 内 `AddContent(sequence, RenderFragment)` 与 `AddContent(sequence, RenderFragment<T>, value)`，覆盖 inline fragment、source-stable local carrier、current-component/local function factory invocation，以及 factory-backed local carrier；消费点会转换成 Vue render-context factory，并继续通过 `SemanticWalker`/compiler host 处理 captured 参数、typed slot 参数与 fragment body 语句。factory 实参会在 fragment factory 创建点通过 IIFE capture 求值一次，而不是被内联到每次 fragment invocation；生成物也不会泄漏 Razor `RenderTreeBuilder` delegate
+  - imperative body 内组件 default / untyped slot 与 typed slot/template 参数（`AddAttribute` / `AddComponentParameter`）也可直接消费受支持的 current-component/local function fragment factory invocation，并按目标 component metadata 映射到 Vue slot callback
 - 该 body-level imperative 主线现在同时覆盖：
   - handwritten `BuildRenderTree`
   - Razor authored root template `@{ ... }` code-block，经 Razor IR frontend 提升为同一 `RazorVueImperativeBlockNode`
@@ -1416,10 +1422,13 @@ builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span
 - 支持：mixed imperative body 中声明式 sibling attribute spread 的 `__jazorVueMergeAttributes(...)` helper 注入，覆盖 `.mjs` 与 render-function `.vue`
 - 支持：mixed imperative body 中被命令式片段直接或间接调用的 local function declaration 保留；planner 只扩展 segment dependency，local function body 与调用仍由 `SemanticWalker` lowering
 - 支持：mixed imperative body 中的 tuple deconstruction declaration/assignment；段内声明局部不会再进入 RazorVue local alias map，函数级声明 hoist / tuple projection / assignment 由 `SemanticWalker` 完成
+- 支持：imperative body 中的 `AddContent(..., RenderFragment)` 与 `AddContent(..., RenderFragment<T>, value)`；inline/factory/member/source-stable local carrier 会物化为 nested render-context factory，factory 调用实参按调用点求值一次并捕获，`.mjs` 与 render-function `.vue` 两条产物都不会输出 `headerBuilder => ...` / `itemBuilder => ...` 这类 Razor builder delegate shape
+- 支持：imperative body 中组件 default / untyped slot 与 typed slot/template 参数直接或经 local/member carrier 消费受支持 fragment factory；factory-backed local carrier 会在声明点物化并捕获实参一次，后续 slot 参数消费保留 local 引用，不会重新展开 initializer；current-component member carrier 也与这条 contract 对齐，可直接用于 `AddContent(...)`、`ChildContent` 默认 slot 与 typed slot/template 参数；local function factory declaration 会在全部引用均已被物化时跳过普通 JS function declaration 输出，否则继续由 `SemanticWalker` 正常处理/诊断
 - 支持：`OpenElement` / `CloseElement` / `OpenComponent` / `CloseComponent` / `AddAttribute` / `AddMultipleAttributes` / `SetKey` 的 imperative bridge 基础协议
 - 不支持：imperative body 继续结构化进入 template canonical subtree
 - 不支持：`goto`；当前同步 imperative render bridge 会显式报 `UnsupportedImperativeRenderLowering`，不会把跳转语义静默擦除
 - 不支持：动态 `AddMarkupContent(...)`
+- 不支持：后续可观察写入或无法 source-stable 证明的 `RenderFragment` local/member carrier；这类场景继续 fail-fast，不会沿第一次赋值伪造 slot factory
 
 ### 当前保护
 
@@ -1440,6 +1449,8 @@ builder.AddContent(0, new MarkupString("<section class=\"hero\"><span>safe</span
 - 局部 mutation 通过 imperative render bridge
 - 平衡 `OpenRegion(...)` / `CloseRegion()` 通过 `.mjs` 与 render-function `.vue` imperative bridge，且 bridge helper 会校验 frame-depth 与未闭合 region
 - imperative body 内常量 `AddMarkupContent(...)` 直接发射 `h(...)` subtree，而不是残留 raw-html 占位
+- imperative body 内 `AddContent(..., RenderFragment)` 与 `AddContent(..., RenderFragment<T>, value)` 通过 `.mjs` 与 render-function `.vue` imperative bridge 生成 nested render-context factory，锁定 inline、current-component/local function factory invocation、factory-backed local carrier，且 factory 实参只在 carrier 创建点求值一次，不泄漏 builder delegate
+- imperative body 内组件 default / untyped slot 与 typed slot/template 参数直接或经 local/member carrier 消费 current-component/local function fragment factory 的 `.mjs` 与 render-function `.vue` 路径已锁定；嵌套组件 metadata/import 仍通过 nested body 收集，不因 factory 位于 current-component member 或 local function 而丢失，`ChildContent` 也会按 descriptor metadata 映射到 Vue `default` slot；factory-backed local/member carrier 在 slot 消费点不会被重复展开，因此 captured 实参不会在循环或 slot render 中重复求值
 - mixed imperative body 中的 count-style `for` 继续输出 `__jazorVueForRange(...).map((i) => h(...))`，不会因普通 child replay 日志退化为 open-frame bridge
 - mixed imperative body 中的 attribute spread sibling 会在 `.mjs` 与 render-function `.vue` 两条产物中注入 `__jazorVueMergeAttributes(...)` helper
 - Razor authored root template code-block 中的提前 `return` / `while` / 局部 mutation 也走同一 imperative render bridge，而不是回退到另一条前端语义

@@ -700,6 +700,12 @@ internal sealed partial class RazorVueExpressionEmitter
                 ? ParseJavaScriptExpression(expression)
                 : null;
 
+        public override bool ShouldSkipLocalFunctionDeclaration(ILocalFunctionOperation operation, SenseArgument argument)
+        {
+            _ = argument;
+            return _emitter.ShouldSkipImperativeLocalFunctionDeclaration(operation);
+        }
+
         public override Expression? RewriteConversionPreorder(IConversionOperation operation, SenseArgument argument)
             => _emitter.TryRewriteStaticMarkupStringConversion(operation, out var expression)
                 ? ParseJavaScriptExpression(expression)

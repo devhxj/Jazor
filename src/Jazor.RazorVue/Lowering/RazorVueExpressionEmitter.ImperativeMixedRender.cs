@@ -32,7 +32,10 @@ internal sealed partial class RazorVueExpressionEmitter
                     statements.Add(EmitImperativeBlockBody(imperative, builderAlias));
                     break;
                 case RazorVueLocalDeclarationNode localDeclaration:
-                    var initializerExpression = TryEmitImperativeRenderFragmentLocalDeclarationInitializer(localDeclaration.Initializer, currentParameterScope)
+                    var initializerExpression = TryEmitImperativeRenderFragmentLocalDeclarationInitializer(
+                            localDeclaration.Initializer,
+                            currentLocalScope,
+                            currentParameterScope)
                         ?? EmitScopedExpression(localDeclaration.Initializer, currentLocalScope, currentParameterScope);
                     statements.Add(
                         "const " + localDeclaration.LocalSymbol.Name + " = " +
