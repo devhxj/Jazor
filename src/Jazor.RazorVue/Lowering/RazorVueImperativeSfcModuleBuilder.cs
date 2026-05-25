@@ -38,15 +38,33 @@ internal static class RazorVueImperativeSfcModuleBuilder
             lifecyclePlan.RequiredMethods,
             "    ");
         RazorVueSetupAndLifecycleLoweringSupport.AppendLifecyclePlan(setupBodyBuilder, lifecyclePlan, "    ");
+        RazorVueArtifactFactory.AppendShouldRenderGateStateForSfc(setupBodyBuilder, lifecyclePlan.ShouldRenderGate, "    ");
         setupBodyBuilder.AppendLine("    const __jazorComponent = { props, emit, slots, expose, attrs };");
         setupBodyBuilder.AppendLine("    return () => {");
-        setupBodyBuilder.Append("      const ").Append(RazorVueExpressionEmitter.ImperativeRenderContextAlias).AppendLine(" = __jazorCreateRenderContext(h);");
-        setupBodyBuilder.AppendLine("      __jazorComponent.props = props;");
-        setupBodyBuilder.AppendLine("      __jazorComponent.emit = emit;");
-        setupBodyBuilder.AppendLine("      __jazorComponent.slots = slots;");
-        setupBodyBuilder.AppendLine("      __jazorComponent.expose = expose;");
-        setupBodyBuilder.AppendLine("      __jazorComponent.attrs = attrs;");
-        setupBodyBuilder.Append("      ").Append(renderBody.Replace("\n", "\n      ")).AppendLine();
+        RazorVueArtifactFactory.AppendShouldRenderGateEarlyReturnForSfc(setupBodyBuilder, lifecyclePlan.ShouldRenderGate, "      ");
+        if (lifecyclePlan.ShouldRenderGate is null)
+        {
+            setupBodyBuilder.Append("      const ").Append(RazorVueExpressionEmitter.ImperativeRenderContextAlias).AppendLine(" = __jazorCreateRenderContext(h);");
+            setupBodyBuilder.AppendLine("      __jazorComponent.props = props;");
+            setupBodyBuilder.AppendLine("      __jazorComponent.emit = emit;");
+            setupBodyBuilder.AppendLine("      __jazorComponent.slots = slots;");
+            setupBodyBuilder.AppendLine("      __jazorComponent.expose = expose;");
+            setupBodyBuilder.AppendLine("      __jazorComponent.attrs = attrs;");
+            setupBodyBuilder.Append("      ").Append(renderBody.Replace("\n", "\n      ")).AppendLine();
+        }
+        else
+        {
+            setupBodyBuilder.AppendLine("      const __jazorNextVNode = (() => {");
+            setupBodyBuilder.Append("        const ").Append(RazorVueExpressionEmitter.ImperativeRenderContextAlias).AppendLine(" = __jazorCreateRenderContext(h);");
+            setupBodyBuilder.AppendLine("        __jazorComponent.props = props;");
+            setupBodyBuilder.AppendLine("        __jazorComponent.emit = emit;");
+            setupBodyBuilder.AppendLine("        __jazorComponent.slots = slots;");
+            setupBodyBuilder.AppendLine("        __jazorComponent.expose = expose;");
+            setupBodyBuilder.AppendLine("        __jazorComponent.attrs = attrs;");
+            setupBodyBuilder.Append("        ").Append(renderBody.Replace("\n", "\n        ")).AppendLine();
+            setupBodyBuilder.AppendLine("      })();");
+            RazorVueArtifactFactory.AppendShouldRenderGateCacheNextVNodeForSfc(setupBodyBuilder, "      ");
+        }
         setupBodyBuilder.AppendLine("    };");
         setupBodyBuilder.AppendLine("  }");
 
@@ -80,8 +98,9 @@ internal static class RazorVueImperativeSfcModuleBuilder
 
     public static HmrBoundaryKind ClassifyHmrBoundary(
         RazorVueRenderFragment renderTree,
-        RazorVueSemanticSnapshot snapshot)
-        => RazorVueArtifactFactory.ClassifyHmrBoundaryForSfc(renderTree, snapshot);
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter expressionEmitter)
+        => RazorVueArtifactFactory.ClassifyHmrBoundaryForSfc(renderTree, snapshot, expressionEmitter);
 
     private static ImmutableArray<RazorVueArtifactFactory.PropDefaultBinding> CollectPropDefaultBindings(
         RazorVueSemanticSnapshot snapshot,

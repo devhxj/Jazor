@@ -50,7 +50,7 @@ internal sealed class RazorVueCanonicalHModelFactory
 
         var resolvedComponents = ResolveComponents(context, snapshot, renderTree);
         var expressionEmitter = CreateExpressionEmitter(snapshot, resolvedComponents);
-        var imperativeRootProgram = TryCreateImperativeRootProgram(snapshot, renderTree);
+        var imperativeRootProgram = TryCreateImperativeRootProgram(snapshot, renderTree, expressionEmitter);
         var template = imperativeRootProgram is null
             ? CreateTemplateFragment(
                 snapshot,
@@ -302,9 +302,18 @@ internal sealed class RazorVueCanonicalHModelFactory
 
     private static RazorVueCanonicalImperativeRootProgram? TryCreateImperativeRootProgram(
         RazorVueSemanticSnapshot snapshot,
-        RazorVueRenderFragment renderTree)
+        RazorVueRenderFragment renderTree,
+        RazorVueExpressionEmitter expressionEmitter)
     {
-        _ = snapshot;
+        if (RequiresRenderFunctionForShouldRenderGate(snapshot, expressionEmitter))
+        {
+            return new RazorVueCanonicalImperativeRootProgram(
+                RazorVueImperativeBlockKind.MethodBody,
+                renderTree,
+                IsRootOnly: false,
+                snapshot.Origins.AddRange(renderTree.Children.SelectMany(static child => child.Origins)).Distinct().ToImmutableArray());
+        }
+
         if (RequiresImperativeScopedReplay(renderTree))
         {
             return new RazorVueCanonicalImperativeRootProgram(
@@ -344,6 +353,13 @@ internal sealed class RazorVueCanonicalHModelFactory
 
         return false;
     }
+
+    private static bool RequiresRenderFunctionForShouldRenderGate(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter expressionEmitter)
+        => snapshot.Lifecycle.HasShouldRender &&
+           RazorVueSetupAndLifecycleLoweringSupport.DescribeShouldRenderShape(snapshot, expressionEmitter)
+               .StartsWith("condition:", StringComparison.Ordinal);
 
     private static bool RequiresImperativeScopedReplay(RazorVueRenderNode node)
         => node switch

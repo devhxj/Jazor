@@ -841,6 +841,9 @@ internal sealed class RazorVueConsumerEntryCompiler
         if (constraint.Format is not null)
             parts.Add($"format:{JsonSerializer.Serialize(constraint.Format)}");
 
+        if (constraint.Pattern is not null)
+            parts.Add($"pattern:{JsonSerializer.Serialize(constraint.Pattern)}");
+
         return "Object.freeze({" + string.Join(", ", parts) + "})";
     }
 
@@ -1085,7 +1088,7 @@ internal sealed class RazorVueConsumerEntryCompiler
         if (inlineConstraints.Count == 0)
             return null;
 
-        var regexParts = new List<string>(inlineConstraints.Count);
+        var regexCandidates = new List<RazorVueRouteRegexCandidate>(inlineConstraints.Count);
         var constraints = new List<RazorVueRouteConstraintResult>();
         var lengthConstraints = new List<RazorVueRouteConstraintResult>();
         foreach (var constraint in inlineConstraints)
@@ -1106,33 +1109,35 @@ internal sealed class RazorVueConsumerEntryCompiler
                 }
             }
 
-            var routeRegexPattern = text switch
+            var routeRegexCandidate = text switch
             {
-                "alpha" => "[A-Za-z]{1,}",
-                "bool" => "[Tt][Rr][Uu][Ee]|[Ff][Aa][Ll][Ss][Ee]",
-                "guid" => GuidRouteConstraintPattern,
-                "int" => "[+-]?\\d{1,}",
-                "long" => "[+-]?\\d{1,}",
-                "double" => "[^/]+",
-                "float" => "[^/]+",
-                "decimal" => "[^/]+",
-                "datetime" => "[^/]+",
-                _ when TryConvertLongRangeConstraint(text, out _) => "[+-]?\\d{1,}",
-                _ when TryConvertRegexConstraint(text, out var regexPattern) => regexPattern,
+                "bool" => new RazorVueRouteRegexCandidate("[Tt][Rr][Uu][Ee]|[Ff][Aa][Ll][Ss][Ee]", 10),
+                "guid" => new RazorVueRouteRegexCandidate(GuidRouteConstraintPattern, 20),
+                "int" => new RazorVueRouteRegexCandidate("[+-]?\\d{1,}", 30),
+                "long" => new RazorVueRouteRegexCandidate("[+-]?\\d{1,}", 30),
+                "alpha" => new RazorVueRouteRegexCandidate("[A-Za-z]{1,}", 40),
+                "double" => new RazorVueRouteRegexCandidate("[^/]+", 60),
+                "float" => new RazorVueRouteRegexCandidate("[^/]+", 60),
+                "decimal" => new RazorVueRouteRegexCandidate("[^/]+", 60),
+                "datetime" => new RazorVueRouteRegexCandidate("[^/]+", 60),
+                "file" => new RazorVueRouteRegexCandidate("[^/]+", 60),
+                "nonfile" => new RazorVueRouteRegexCandidate("[^/]+", 60),
+                _ when TryConvertLongRangeConstraint(text, out _) => new RazorVueRouteRegexCandidate("[+-]?\\d{1,}", 30),
+                _ when TryConvertRegexConstraint(text, out var regexPattern) => new RazorVueRouteRegexCandidate(regexPattern, 50),
                 _ => null
             };
-            if (string.IsNullOrEmpty(routeRegexPattern))
+            if (routeRegexCandidate is null || string.IsNullOrEmpty(routeRegexCandidate.Pattern))
                 return null;
 
-            if (!regexParts.Contains(routeRegexPattern, StringComparer.Ordinal))
-                regexParts.Add(routeRegexPattern);
+            if (!regexCandidates.Any(candidate => string.Equals(candidate.Pattern, routeRegexCandidate.Pattern, StringComparison.Ordinal)))
+                regexCandidates.Add(routeRegexCandidate);
         }
 
         routeConstraints = constraints;
-        if (regexParts.Count == 1)
-            return regexParts[0];
+        if (regexCandidates.Count > 0)
+            return regexCandidates.OrderBy(static candidate => candidate.Priority).First().Pattern;
 
-        if (regexParts.Count == 0 && TryBuildLengthRangeRegex(lengthConstraints, out var lengthRangePattern))
+        if (TryBuildLengthRangeRegex(lengthConstraints, out var lengthRangePattern))
             return lengthRangePattern;
 
         return null;
@@ -1140,6 +1145,15 @@ internal sealed class RazorVueConsumerEntryCompiler
 
     private static RazorVueRouteConstraintResult? TryConvertRouteConstraintMetadata(string text)
     {
+        if (string.Equals(text, "alpha", StringComparison.Ordinal))
+            return new RazorVueRouteConstraintResult("alphaText", null, null);
+
+        if (string.Equals(text, "bool", StringComparison.Ordinal))
+            return new RazorVueRouteConstraintResult("booleanParse", null, null);
+
+        if (string.Equals(text, "guid", StringComparison.Ordinal))
+            return new RazorVueRouteConstraintResult("guidParse", null, null);
+
         if (string.Equals(text, "int", StringComparison.Ordinal))
             return new RazorVueRouteConstraintResult("integerRange", Int32MinValueText, Int32MaxValueText);
 
@@ -1161,8 +1175,17 @@ internal sealed class RazorVueConsumerEntryCompiler
         if (string.Equals(text, "datetime", StringComparison.Ordinal))
             return new RazorVueRouteConstraintResult("dateTimeParse", null, null);
 
+        if (string.Equals(text, "file", StringComparison.Ordinal))
+            return new RazorVueRouteConstraintResult("fileName", null, null, "file");
+
+        if (string.Equals(text, "nonfile", StringComparison.Ordinal))
+            return new RazorVueRouteConstraintResult("fileName", null, null, "nonfile");
+
         if (TryConvertLengthConstraintMetadata(text, out var lengthConstraint))
             return lengthConstraint;
+
+        if (TryConvertRegexConstraint(text, out var regexPattern))
+            return new RazorVueRouteConstraintResult("regexMatch", null, null, Pattern: regexPattern);
 
         return TryConvertLongRangeConstraint(text, out var constraint)
             ? constraint
@@ -1564,6 +1587,10 @@ internal sealed class RazorVueConsumerEntryCompiler
 
     private static readonly RazorVueRouteConstraintResult EmptyRouteConstraintResult
         = new(string.Empty, null, null);
+
+    private sealed record RazorVueRouteRegexCandidate(
+        string Pattern,
+        int Priority);
 }
 
 internal sealed record RazorVueConsumerEntryResult(
@@ -1597,7 +1624,8 @@ internal sealed record RazorVueRouteConstraintResult(
     string Kind,
     string? Min,
     string? Max,
-    string? Format = null);
+    string? Format = null,
+    string? Pattern = null);
 
 internal sealed record RazorVueConsumerRouteResult(
     string Name,

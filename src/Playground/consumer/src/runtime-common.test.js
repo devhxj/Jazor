@@ -64,8 +64,15 @@ Deno.test("resolveConsumerRoutes normalizes generated route metadata", () => {
         id: [
           { kind: "integerRange", min: "-2147483648", max: "2147483647" },
           { kind: "lengthRange", min: "1", max: "10" },
+          { kind: "fileName", format: "file" },
+          { kind: "fileName", format: "nonfile" },
           { kind: "dateTimeParse" },
+          { kind: "alphaText" },
+          { kind: "booleanParse" },
+          { kind: "guidParse" },
+          { kind: "regexMatch", pattern: "^[A-Z]+$" },
           { kind: "integerRange", min: "", max: "" },
+          { kind: "regexMatch", pattern: "" },
           { kind: "unknown", min: "1" }
         ],
         unknown: [{ kind: "integerRange", min: "1" }]
@@ -116,7 +123,13 @@ Deno.test("resolveConsumerRoutes normalizes generated route metadata", () => {
     id: [
       { kind: "integerRange", min: "-2147483648", max: "2147483647" },
       { kind: "lengthRange", min: "1", max: "10" },
-      { kind: "dateTimeParse" }
+      { kind: "fileName", format: "file" },
+      { kind: "fileName", format: "nonfile" },
+      { kind: "dateTimeParse" },
+      { kind: "alphaText" },
+      { kind: "booleanParse" },
+      { kind: "guidParse" },
+      { kind: "regexMatch", pattern: "^[A-Z]+$" }
     ]
   });
   assertEquals(Object.isFrozen(routes[3].defaultParameterValues), true);
@@ -337,6 +350,80 @@ Deno.test("doesRouteMatchPath follows vue-router semantics for constrained, comp
       parameterConstraints: {
         value: [{ kind: "dateTimeParse" }]
       }
+    },
+    {
+      name: "DetailPage__16",
+      alias: "DetailPage",
+      componentId: "Playground.Pages.PlaygroundDetailPage",
+      componentName: "PlaygroundDetailPage",
+      componentModel: "sfc",
+      routeTemplate: "/assets/{path:file}",
+      path: "/assets/:path([^/]+)",
+      parameterNames: ["path"],
+      parameterConstraints: {
+        path: [{ kind: "fileName", format: "file" }]
+      }
+    },
+    {
+      name: "DetailPage__17",
+      alias: "DetailPage",
+      componentId: "Playground.Pages.PlaygroundDetailPage",
+      componentName: "PlaygroundDetailPage",
+      componentModel: "sfc",
+      routeTemplate: "/pages/{slug:nonfile}",
+      path: "/pages/:slug([^/]+)",
+      parameterNames: ["slug"],
+      parameterConstraints: {
+        slug: [{ kind: "fileName", format: "nonfile" }]
+      }
+    },
+    {
+      name: "DetailPage__18",
+      alias: "DetailPage",
+      componentId: "Playground.Pages.PlaygroundDetailPage",
+      componentName: "PlaygroundDetailPage",
+      componentModel: "sfc",
+      routeTemplate: "/booleans/{flag:bool:alpha}",
+      path: "/booleans/:flag([Tt][Rr][Uu][Ee]|[Ff][Aa][Ll][Ss][Ee])",
+      parameterNames: ["flag"],
+      parameterConstraints: {
+        flag: [
+          { kind: "booleanParse" },
+          { kind: "alphaText" }
+        ]
+      }
+    },
+    {
+      name: "DetailPage__19",
+      alias: "DetailPage",
+      componentId: "Playground.Pages.PlaygroundDetailPage",
+      componentName: "PlaygroundDetailPage",
+      componentModel: "sfc",
+      routeTemplate: "/codes/{id:int:regex(^\\d{2}$)}",
+      path: "/codes/:id([+-]?\\d+)",
+      parameterNames: ["id"],
+      parameterConstraints: {
+        id: [
+          { kind: "integerRange", min: "-2147483648", max: "2147483647" },
+          { kind: "regexMatch", pattern: "^\\d{2}$" }
+        ]
+      }
+    },
+    {
+      name: "DetailPage__20",
+      alias: "DetailPage",
+      componentId: "Playground.Pages.PlaygroundDetailPage",
+      componentName: "PlaygroundDetailPage",
+      componentModel: "sfc",
+      routeTemplate: "/identifiers/{id:guid:regex(^[0-9a-fA-F-]+$)}",
+      path: `/identifiers/:id(${guidRouteConstraintPattern})`,
+      parameterNames: ["id"],
+      parameterConstraints: {
+        id: [
+          { kind: "guidParse" },
+          { kind: "regexMatch", pattern: "^[0-9a-fA-F-]+$" }
+        ]
+      }
     }
   ]);
 
@@ -415,6 +502,27 @@ Deno.test("doesRouteMatchPath follows vue-router semantics for constrained, comp
   assertEquals(doesRouteMatchPath(routes[15], "/events/25%2F05%2F2026"), false);
   assertEquals(doesRouteMatchPath(routes[15], "/events/10000-01-01"), false);
   assertEquals(doesRouteMatchPath(routes[15], "/events/20260525"), false);
+  assertEquals(doesRouteMatchPath(routes[16], "/assets/readme.md"), true);
+  assertEquals(doesRouteMatchPath(routes[16], "/assets/.gitignore"), true);
+  assertEquals(doesRouteMatchPath(routes[16], "/assets/archive.tar.gz"), true);
+  assertEquals(doesRouteMatchPath(routes[16], "/assets/name..ext"), true);
+  assertEquals(doesRouteMatchPath(routes[16], "/assets/readme"), false);
+  assertEquals(doesRouteMatchPath(routes[16], "/assets/trailing."), false);
+  assertEquals(doesRouteMatchPath(routes[16], "/assets/name%2Etxt"), true);
+  assertEquals(doesRouteMatchPath(routes[17], "/pages/readme"), true);
+  assertEquals(doesRouteMatchPath(routes[17], "/pages/trailing."), true);
+  assertEquals(doesRouteMatchPath(routes[17], "/pages/name%2Etxt"), false);
+  assertEquals(doesRouteMatchPath(routes[17], "/pages/readme.md"), false);
+  assertEquals(doesRouteMatchPath(routes[17], "/pages/.gitignore"), false);
+  assertEquals(doesRouteMatchPath(routes[18], "/booleans/true"), true);
+  assertEquals(doesRouteMatchPath(routes[18], "/booleans/FALSE"), true);
+  assertEquals(doesRouteMatchPath(routes[18], "/booleans/yes"), false);
+  assertEquals(doesRouteMatchPath(routes[19], "/codes/12"), true);
+  assertEquals(doesRouteMatchPath(routes[19], "/codes/1"), false);
+  assertEquals(doesRouteMatchPath(routes[19], "/codes/+12"), false);
+  assertEquals(doesRouteMatchPath(routes[19], "/codes/abc"), false);
+  assertEquals(doesRouteMatchPath(routes[20], "/identifiers/00000000-0000-0000-0000-000000000000"), true);
+  assertEquals(doesRouteMatchPath(routes[20], "/identifiers/%7B00000000-0000-0000-0000-000000000000%7D"), false);
 });
 
 Deno.test("resolveRouteHref uses vue-router semantics for composite, default-valued, optional-separator, and catch-all paths", () => {
@@ -572,6 +680,72 @@ Deno.test("resolveRouteHref uses vue-router semantics for composite, default-val
       }
     }
   ])[0];
+  const fileNameRoute = resolveConsumerRoutes([
+    {
+      name: "DetailPage__10",
+      alias: "DetailPage",
+      componentId: "Playground.Pages.PlaygroundDetailPage",
+      componentName: "PlaygroundDetailPage",
+      componentModel: "sfc",
+      routeTemplate: "/assets/{path:file}",
+      path: "/assets/:path([^/]+)",
+      parameterNames: ["path"],
+      parameterConstraints: {
+        path: [{ kind: "fileName", format: "file" }]
+      }
+    }
+  ])[0];
+  const nonFileNameRoute = resolveConsumerRoutes([
+    {
+      name: "DetailPage__11",
+      alias: "DetailPage",
+      componentId: "Playground.Pages.PlaygroundDetailPage",
+      componentName: "PlaygroundDetailPage",
+      componentModel: "sfc",
+      routeTemplate: "/pages/{slug:nonfile}",
+      path: "/pages/:slug([^/]+)",
+      parameterNames: ["slug"],
+      parameterConstraints: {
+        slug: [{ kind: "fileName", format: "nonfile" }]
+      }
+    }
+  ])[0];
+  const constrainedBooleanRoute = resolveConsumerRoutes([
+    {
+      name: "DetailPage__12",
+      alias: "DetailPage",
+      componentId: "Playground.Pages.PlaygroundDetailPage",
+      componentName: "PlaygroundDetailPage",
+      componentModel: "sfc",
+      routeTemplate: "/booleans/{flag:bool:alpha}",
+      path: "/booleans/:flag([Tt][Rr][Uu][Ee]|[Ff][Aa][Ll][Ss][Ee])",
+      parameterNames: ["flag"],
+      parameterConstraints: {
+        flag: [
+          { kind: "booleanParse" },
+          { kind: "alphaText" }
+        ]
+      }
+    }
+  ])[0];
+  const constrainedCodeRoute = resolveConsumerRoutes([
+    {
+      name: "DetailPage__13",
+      alias: "DetailPage",
+      componentId: "Playground.Pages.PlaygroundDetailPage",
+      componentName: "PlaygroundDetailPage",
+      componentModel: "sfc",
+      routeTemplate: "/codes/{id:int:regex(^\\d{2}$)}",
+      path: "/codes/:id([+-]?\\d+)",
+      parameterNames: ["id"],
+      parameterConstraints: {
+        id: [
+          { kind: "integerRange", min: "-2147483648", max: "2147483647" },
+          { kind: "regexMatch", pattern: "^\\d{2}$" }
+        ]
+      }
+    }
+  ])[0];
 
   assertEquals(resolveRouteHref(compositeRoute, { slug: "catalog-shell" }), "/examples/post-catalog-shell");
   assertEquals(resolveRouteHref(defaultRoute, {}), "/examples");
@@ -591,6 +765,10 @@ Deno.test("resolveRouteHref uses vue-router semantics for composite, default-val
   assertEquals(resolveRouteHref(doubleRoute, { value: "1,,2" }), "/numbers/1,,2");
   assertEquals(resolveRouteHref(decimalRoute, { value: "1-" }), "/decimals/1-");
   assertEquals(resolveRouteHref(dateTimeRoute, { value: "2026-05-25T13:45:30Z" }), "/events/2026-05-25T13:45:30Z");
+  assertEquals(resolveRouteHref(fileNameRoute, { path: "readme.md" }), "/assets/readme.md");
+  assertEquals(resolveRouteHref(nonFileNameRoute, { slug: "readme" }), "/pages/readme");
+  assertEquals(resolveRouteHref(constrainedBooleanRoute, { flag: "FALSE" }), "/booleans/FALSE");
+  assertEquals(resolveRouteHref(constrainedCodeRoute, { id: "12" }), "/codes/12");
   assertThrows(
     () => resolveRouteHref(boundedRoute, { id: "8" }),
     Error,
@@ -613,6 +791,31 @@ Deno.test("resolveRouteHref uses vue-router semantics for composite, default-val
   );
   assertThrows(
     () => resolveRouteHref(dateTimeRoute, { value: "2026-02-29" }),
+    Error,
+    "parameters do not satisfy generated route constraints"
+  );
+  assertThrows(
+    () => resolveRouteHref(fileNameRoute, { path: "readme" }),
+    Error,
+    "parameters do not satisfy generated route constraints"
+  );
+  assertThrows(
+    () => resolveRouteHref(nonFileNameRoute, { slug: "readme.md" }),
+    Error,
+    "parameters do not satisfy generated route constraints"
+  );
+  assertThrows(
+    () => resolveRouteHref(constrainedBooleanRoute, { flag: "yes" }),
+    Error,
+    "parameters do not satisfy generated route constraints"
+  );
+  assertThrows(
+    () => resolveRouteHref(constrainedCodeRoute, { id: "+12" }),
+    Error,
+    "parameters do not satisfy generated route constraints"
+  );
+  assertThrows(
+    () => resolveRouteHref(constrainedCodeRoute, { id: "123" }),
     Error,
     "parameters do not satisfy generated route constraints"
   );

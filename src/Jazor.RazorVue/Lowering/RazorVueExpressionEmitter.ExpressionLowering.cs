@@ -29,6 +29,7 @@ internal sealed partial class RazorVueExpressionEmitter
         if (current is null)
             return "undefined";
 
+        ThrowIfReadOnlyByRefParameterEscapes(current);
         return WithSetupRewriteScope(() => EmitCompilerLoweredExpression(current, compilerArgument));
     }
 
@@ -37,6 +38,9 @@ internal sealed partial class RazorVueExpressionEmitter
         var operationList = operations?.ToArray() ?? throw new ArgumentNullException(nameof(operations));
         if (operationList.Length == 0)
             return string.Empty;
+
+        foreach (var operation in operationList)
+            ThrowIfReadOnlyByRefParameterEscapes(operation);
 
         var argument = (compilerArgument ?? _compilerArgument).With(Sense.FunctionBody);
         return WithSetupRewriteScope(() =>
@@ -585,6 +589,8 @@ internal sealed partial class RazorVueExpressionEmitter
             throw new NotSupportedException(
                 $"RazorVue lifecycle payload could not resolve local function operation for '{localFunction.Name}'.");
         }
+
+        ThrowIfReadOnlyByRefParameterEscapes(localFunctionOperation);
 
         var parameterAliases = ImmutableDictionary.CreateBuilder<IParameterSymbol, string>(SymbolEqualityComparer.Default);
         foreach (var parameter in localFunction.Parameters)
@@ -2055,8 +2061,12 @@ internal sealed partial class RazorVueExpressionEmitter
                 throw failure;
 
             var parameter = RazorVueMethodSymbolNormalizer.NormalizeParameter(targetMethod, rawParameter);
-            if (parameter.RefKind != RefKind.None || parameter.Ordinal < 0 || parameter.Ordinal >= emittedByParameterOrdinal.Length)
+            if (!CanBindSetupHelperArgument(parameter) ||
+                parameter.Ordinal < 0 ||
+                parameter.Ordinal >= emittedByParameterOrdinal.Length)
+            {
                 throw failure;
+            }
 
             if (!boundParameters.Add(parameter))
                 throw failure;
@@ -2097,8 +2107,12 @@ internal sealed partial class RazorVueExpressionEmitter
                 throw failure;
 
             var parameter = RazorVueMethodSymbolNormalizer.NormalizeParameter(targetMethod, rawParameter);
-            if (parameter.RefKind != RefKind.None || parameter.Ordinal < 0 || parameter.Ordinal >= emittedByParameterOrdinal.Length)
+            if (!CanBindSetupHelperArgument(parameter) ||
+                parameter.Ordinal < 0 ||
+                parameter.Ordinal >= emittedByParameterOrdinal.Length)
+            {
                 throw failure;
+            }
 
             if (!boundParameters.Add(parameter))
                 throw failure;
@@ -2219,6 +2233,49 @@ internal sealed partial class RazorVueExpressionEmitter
     private static bool RequiresTargetCapture(BoundInvocationArguments<string> binding)
         => !ArgumentsAreAlreadyInDeclarationOrder(binding);
 
+    private static bool CanBindSetupHelperArgument(IParameterSymbol parameter)
+        => parameter.RefKind is RefKind.None or RefKind.In;
+
+    private void ThrowIfReadOnlyByRefParameterEscapes(IOperation operation)
+    {
+        foreach (var current in operation.DescendantsAndSelf())
+        {
+            if (Unwrap(current) is not IArgumentOperation argument ||
+                argument.Parameter?.RefKind is not (RefKind.Ref or RefKind.Out or RefKind.In))
+            {
+                continue;
+            }
+
+            if (!TryGetReadOnlyByRefParameterReference(argument.Value, out var escapedParameter))
+                continue;
+
+            throw CreateUnsupportedSetupLogicException(
+                escapedParameter,
+                $"RazorVue setup lowering supports reading read-only 'in' value parameter '{escapedParameter.Name}' as a value, but cannot forward it through a by-reference invocation.");
+        }
+    }
+
+    private static bool TryGetReadOnlyByRefParameterReference(
+        IOperation? operation,
+        out IParameterSymbol parameter)
+    {
+        parameter = default!;
+        if (operation is null)
+            return false;
+
+        foreach (var current in operation.DescendantsAndSelf())
+        {
+            if (Unwrap(current) is IParameterReferenceOperation parameterReference &&
+                parameterReference.Parameter.RefKind == RefKind.In)
+            {
+                parameter = parameterReference.Parameter;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private string EmitMemberInvocationTarget(
         IOperation instance,
         string targetMethodName,
@@ -2291,6 +2348,23 @@ internal sealed partial class RazorVueExpressionEmitter
         => CreateUnsupportedSetupLogicException(
             method,
             $"RazorVue setup lowering does not support method '{method.Name}' in component '{method.ContainingType.ToDisplayString()}'.");
+
+    private RazorVueCompilationIssueException CreateUnsupportedSetupLogicException(IParameterSymbol parameter, string message)
+    {
+        var originLocation = parameter.Locations.FirstOrDefault(static location => location.IsInSource);
+        var origin = originLocation is null
+            ? null
+            : RazorVueSourceOrigin.FromLocation(originLocation, RazorVueOriginKind.Logic);
+        var ownerComponent = parameter.ContainingType?.ToDisplayString() ??
+                             parameter.ContainingSymbol?.ContainingType?.ToDisplayString() ??
+                             _snapshot.Descriptor.FullName;
+        var issue = new RazorVueCompilationIssue(
+            RazorVueIssueCode.UnsupportedSetupLogicLowering,
+            RazorVueIssueSeverity.Error,
+            message,
+            ImmutableArray<string>.Empty);
+        return new RazorVueCompilationIssueException(issue, ownerComponent, origin);
+    }
 
     private RazorVueCompilationIssueException CreateUnsupportedSetupLogicException(ISymbol symbol, string message)
     {

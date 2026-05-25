@@ -4361,10 +4361,10 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithUnsupportedShouldRender_DoesNotReportJAZORVGA005_AndKeepsFullReloadBoundary()
+    public void GenerateCatalog_WithDynamicShouldRender_DoesNotReportJAZORVGA005_AndKeepsLogicSafeBoundary()
     {
         var compilation = CreateCompilation(
-            "RazorVue.UnsupportedShouldRender.Generated",
+            "RazorVue.DynamicShouldRender.Generated",
             """
             using System;
             using ECMAScript.VueContract;
@@ -4415,7 +4415,7 @@ public sealed class ESGeneratorTests
 
         Assert.AreEqual(0, diagnostics.Length);
         var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
-        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.FullReloadRequired");
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
     }
 
     [TestMethod]
@@ -4545,10 +4545,10 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithPassThroughShouldRenderToUnsupportedBase_DoesNotReportJAZORVGA005_AndKeepsFullReloadBoundary()
+    public void GenerateCatalog_WithPassThroughShouldRenderToDynamicBase_DoesNotReportJAZORVGA005_AndKeepsLogicSafeBoundary()
     {
         var compilation = CreateCompilation(
-            "RazorVue.InheritedUnsupportedShouldRenderPassThrough.Generated",
+            "RazorVue.InheritedDynamicShouldRenderPassThrough.Generated",
             """
             using System;
             using ECMAScript.VueContract;
@@ -4578,7 +4578,7 @@ public sealed class ESGeneratorTests
                     }
                 }
 
-                [ECMAScript.ECMAScriptModule("./components/should-render-inherited-unsupported")]
+                [ECMAScript.ECMAScriptModule("./components/should-render-inherited-dynamic")]
                 public class ShouldRenderCard : ShouldRenderBaseCard
                 {
                     protected override bool ShouldRender()
@@ -4607,7 +4607,7 @@ public sealed class ESGeneratorTests
 
         Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
-        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.FullReloadRequired");
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
     }
 
     [TestMethod]
@@ -5074,7 +5074,7 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithBaseEmitAndDerivedEmitSetParametersAsync_KeepsFullReloadBoundaryWithoutJAZORVGA005()
+    public void GenerateCatalog_WithBaseEmitAndDerivedEmitSetParametersAsync_LowersOrderedEmitSequenceWithoutJAZORVGA005()
     {
         var compilation = CreateCompilation(
             "RazorVue.DuplicateSetParametersAsyncEmit.Generated",
@@ -5105,6 +5105,9 @@ public sealed class ESGeneratorTests
                     [Parameter]
                     public EventCallback<int> ValueChanged { get; set; }
 
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
                     public override async Task SetParametersAsync(ParameterView parameters)
                     {
                         await base.SetParametersAsync(parameters);
@@ -5118,7 +5121,7 @@ public sealed class ESGeneratorTests
                     public override async Task SetParametersAsync(ParameterView parameters)
                     {
                         await base.SetParametersAsync(parameters);
-                        await ValueChanged.InvokeAsync(Value);
+                        await ReadyChanged.InvokeAsync(Value > 0);
                     }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -5142,8 +5145,13 @@ public sealed class ESGeneratorTests
 
         Assert.AreEqual(0, lifecycleDiagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
-        Assert.IsFalse(generatedSource.Contains("watch(() => [props.value], async () => {", StringComparison.Ordinal), generatedSource);
-        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.FullReloadRequired");
+        StringAssert.Contains(generatedSource, "watch(() => [props.value], async () => {");
+        var valueEmitIndex = generatedSource.IndexOf("await emit(\\\"update:value\\\", props.value);", StringComparison.Ordinal);
+        var readyEmitIndex = generatedSource.IndexOf("await emit(\\\"readyChanged\\\", (props.value > 0));", StringComparison.Ordinal);
+        Assert.IsTrue(valueEmitIndex >= 0, generatedSource);
+        Assert.IsTrue(readyEmitIndex >= 0, generatedSource);
+        Assert.IsTrue(valueEmitIndex < readyEmitIndex, generatedSource);
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
     }
 
     [TestMethod]

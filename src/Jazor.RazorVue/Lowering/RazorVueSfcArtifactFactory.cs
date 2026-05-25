@@ -194,7 +194,7 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
             resolvedComponents);
         var templateShape = expressionEmitter.DescribeFragment(renderTree);
         var logicShape = RazorVueImperativeSfcModuleBuilder.BuildLogicShape(snapshot, renderTree, expressionEmitter);
-        var boundaryKind = RazorVueImperativeSfcModuleBuilder.ClassifyHmrBoundary(renderTree, snapshot);
+        var boundaryKind = RazorVueImperativeSfcModuleBuilder.ClassifyHmrBoundary(renderTree, snapshot, expressionEmitter);
 
         return new VueSfcArtifactIdentity(
             ComponentId: descriptor.FullName,

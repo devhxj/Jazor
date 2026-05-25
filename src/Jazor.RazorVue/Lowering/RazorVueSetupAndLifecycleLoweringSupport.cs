@@ -376,37 +376,39 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         RazorVueSemanticSnapshot snapshot,
         RazorVueExpressionEmitter? expressionEmitter)
     {
+        var onInitialized = TryPlanLifecycleHook(snapshot, expressionEmitter, "onMounted", snapshot.OnInitializedMethod, awaitResult: false, allowFirstRenderPayload: false);
+        var onInitializedAsync = TryPlanLifecycleHook(snapshot, expressionEmitter, "onMounted", snapshot.OnInitializedAsyncMethod, awaitResult: true, allowFirstRenderPayload: false);
+        var onParametersSet = TryPlanParametersSetHook(snapshot, expressionEmitter, snapshot.OnParametersSetMethod, awaitResult: false);
+        var onParametersSetAsync = TryPlanParametersSetHook(snapshot, expressionEmitter, snapshot.OnParametersSetAsyncMethod, awaitResult: true);
+        var setParametersAsync = TryPlanSetParametersAsyncHook(snapshot, expressionEmitter);
+        var dispose = TryPlanLifecycleHook(snapshot, expressionEmitter, "onUnmounted", snapshot.DisposeMethod, awaitResult: false, allowFirstRenderPayload: false);
+        var disposeAsync = TryPlanLifecycleHook(snapshot, expressionEmitter, "onUnmounted", snapshot.DisposeAsyncMethod, awaitResult: true, allowFirstRenderPayload: false);
+        var onAfterRender = TryPlanAfterRenderHook(snapshot, expressionEmitter, snapshot.OnAfterRenderMethod, awaitResult: false);
+        var onAfterRenderAsync = TryPlanAfterRenderHook(snapshot, expressionEmitter, snapshot.OnAfterRenderAsyncMethod, awaitResult: true);
+        var shouldRenderGate = TryPlanShouldRenderGate(snapshot, expressionEmitter);
+
         var requiredProperties = ImmutableArray<VueLogicPropertyDescriptor>.Empty;
         var requiredFields = ImmutableArray<VueLogicFieldDescriptor>.Empty;
         var requiredMethods = ImmutableArray<VueLogicMethodDescriptor>.Empty;
 
         if (expressionEmitter is not null)
         {
-            _ = TryPlanLifecycleHook(snapshot, expressionEmitter, "onMounted", snapshot.OnInitializedMethod, awaitResult: false, allowFirstRenderPayload: false);
-            _ = TryPlanLifecycleHook(snapshot, expressionEmitter, "onMounted", snapshot.OnInitializedAsyncMethod, awaitResult: true, allowFirstRenderPayload: false);
-            _ = TryPlanParametersSetHook(snapshot, expressionEmitter, snapshot.OnParametersSetMethod, awaitResult: false);
-            _ = TryPlanParametersSetHook(snapshot, expressionEmitter, snapshot.OnParametersSetAsyncMethod, awaitResult: true);
-            _ = TryPlanSetParametersAsyncHook(snapshot, expressionEmitter);
-            _ = TryPlanLifecycleHook(snapshot, expressionEmitter, "onUnmounted", snapshot.DisposeMethod, awaitResult: false, allowFirstRenderPayload: false);
-            _ = TryPlanLifecycleHook(snapshot, expressionEmitter, "onUnmounted", snapshot.DisposeAsyncMethod, awaitResult: true, allowFirstRenderPayload: false);
-            _ = TryPlanAfterRenderHook(snapshot, expressionEmitter, snapshot.OnAfterRenderMethod, awaitResult: false);
-            _ = TryPlanAfterRenderHook(snapshot, expressionEmitter, snapshot.OnAfterRenderAsyncMethod, awaitResult: true);
-
             requiredProperties = expressionEmitter.GetRequiredSetupProperties();
             requiredFields = expressionEmitter.GetRequiredSetupFields();
             requiredMethods = expressionEmitter.GetRequiredSetupMethods();
         }
 
         return new LifecycleLoweringPlan(
-            TryPlanLifecycleHook(snapshot, expressionEmitter, "onMounted", snapshot.OnInitializedMethod, awaitResult: false, allowFirstRenderPayload: false),
-            TryPlanLifecycleHook(snapshot, expressionEmitter, "onMounted", snapshot.OnInitializedAsyncMethod, awaitResult: true, allowFirstRenderPayload: false),
-            TryPlanParametersSetHook(snapshot, expressionEmitter, snapshot.OnParametersSetMethod, awaitResult: false),
-            TryPlanParametersSetHook(snapshot, expressionEmitter, snapshot.OnParametersSetAsyncMethod, awaitResult: true),
-            TryPlanSetParametersAsyncHook(snapshot, expressionEmitter),
-            TryPlanLifecycleHook(snapshot, expressionEmitter, "onUnmounted", snapshot.DisposeMethod, awaitResult: false, allowFirstRenderPayload: false),
-            TryPlanLifecycleHook(snapshot, expressionEmitter, "onUnmounted", snapshot.DisposeAsyncMethod, awaitResult: true, allowFirstRenderPayload: false),
-            TryPlanAfterRenderHook(snapshot, expressionEmitter, snapshot.OnAfterRenderMethod, awaitResult: false),
-            TryPlanAfterRenderHook(snapshot, expressionEmitter, snapshot.OnAfterRenderAsyncMethod, awaitResult: true),
+            onInitialized,
+            onInitializedAsync,
+            onParametersSet,
+            onParametersSetAsync,
+            setParametersAsync,
+            dispose,
+            disposeAsync,
+            onAfterRender,
+            onAfterRenderAsync,
+            shouldRenderGate,
             requiredProperties,
             requiredFields,
             requiredMethods);
@@ -421,7 +423,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
     }
 
     public static bool HasSupportedSetParametersAsyncLowering(RazorVueSemanticSnapshot snapshot)
-        => AnalyzeSetParametersAsync(snapshot, expressionEmitter: null, snapshot.SetParametersAsyncMethod).EmitCall is not null;
+        => !AnalyzeSetParametersAsync(snapshot, expressionEmitter: null, snapshot.SetParametersAsyncMethod).EmitCalls.IsDefaultOrEmpty;
 
     public static string DescribeLifecycleSupportShape(RazorVueSemanticSnapshot snapshot, IMethodSymbol? method, bool allowFirstRenderPayload)
     {
@@ -462,9 +464,9 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         if (!analysis.IsSupported)
             return "unsupported";
 
-        return analysis.EmitCall is null
+        return analysis.EmitCalls.IsDefaultOrEmpty
             ? "none"
-            : DescribeEmitCallShape(analysis.EmitCall);
+            : DescribeEmitCallSequenceShape(analysis.EmitCalls);
     }
 
     public static string DescribeShouldRenderShape(Compilation compilation, IMethodSymbol? method)
@@ -472,9 +474,33 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         if (method is null)
             return "none";
 
-        return AnalyzeShouldRender(compilation, method).IsSupported
-            ? "true"
-            : "unsupported";
+        var analysis = AnalyzeShouldRender(compilation, method);
+        return DescribeShouldRenderAnalysis(analysis);
+    }
+
+    public static string DescribeShouldRenderShape(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter expressionEmitter)
+    {
+        _ = expressionEmitter;
+        if (snapshot.ShouldRenderMethod is null)
+            return "none";
+
+        var analysis = AnalyzeShouldRender(
+            snapshot.Compilation,
+            snapshot.ShouldRenderMethod,
+            new RazorVueExpressionEmitter(snapshot));
+        return DescribeShouldRenderAnalysis(analysis);
+    }
+
+    private static string DescribeShouldRenderAnalysis(ShouldRenderAnalysis analysis)
+    {
+        if (!analysis.IsSupported)
+            return "unsupported";
+
+        return analysis.RequiresRenderGate
+            ? "condition:" + analysis.ExpressionText
+            : "true";
     }
 
     private static SetupMemberLoweringResult BuildSetupFieldLowering(
@@ -741,6 +767,19 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         builder.AppendLine(");");
     }
 
+    private static void AppendEmitStatements(
+        StringBuilder builder,
+        ImmutableArray<SupportedEmitCall> emitCalls,
+        bool awaitResult,
+        string indent)
+    {
+        if (emitCalls.IsDefaultOrEmpty)
+            return;
+
+        foreach (var emitCall in emitCalls)
+            AppendEmitStatement(builder, emitCall, awaitResult, payloadOverride: null, indent);
+    }
+
     private static void AppendEmitPrelude(
         StringBuilder builder,
         SupportedEmitCall emitCall,
@@ -751,6 +790,21 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
         foreach (var binding in emitCall.PreludeBindings)
             builder.Append(indent).AppendLine(binding.Code);
+    }
+
+    private static ImmutableArray<SupportedEmitCall> ConcatEmitCalls(
+        ImmutableArray<SupportedEmitCall> first,
+        ImmutableArray<SupportedEmitCall> second)
+    {
+        if (first.IsDefaultOrEmpty)
+            return second.IsDefault ? ImmutableArray<SupportedEmitCall>.Empty : second;
+        if (second.IsDefaultOrEmpty)
+            return first;
+
+        var builder = ImmutableArray.CreateBuilder<SupportedEmitCall>(first.Length + second.Length);
+        builder.AddRange(first);
+        builder.AddRange(second);
+        return builder.ToImmutable();
     }
 
     private static LifecycleHookPlan? TryPlanLifecycleHook(
@@ -772,7 +826,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             HookKind: LifecycleHookKind.Standard,
             HookName: hookName,
             AwaitResult: awaitResult,
-            EmitCall: emitCall,
+            EmitCalls: [emitCall],
             UsesImmediateWatch: false,
             WatchSource: string.Empty);
     }
@@ -794,7 +848,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             HookKind: LifecycleHookKind.ImmediateWatch,
             HookName: "watch",
             AwaitResult: awaitResult,
-            EmitCall: emitCall,
+            EmitCalls: [emitCall],
             UsesImmediateWatch: true,
             WatchSource: BuildPropsWatchSource(snapshot.Descriptor));
     }
@@ -804,14 +858,14 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         RazorVueExpressionEmitter? expressionEmitter)
     {
         var analysis = AnalyzeSetParametersAsync(snapshot, expressionEmitter, snapshot.SetParametersAsyncMethod);
-        if (!analysis.IsSupported || analysis.EmitCall is null)
+        if (!analysis.IsSupported || analysis.EmitCalls.IsDefaultOrEmpty)
             return null;
 
         return new LifecycleHookPlan(
             HookKind: LifecycleHookKind.ImmediateWatch,
             HookName: "watch",
             AwaitResult: true,
-            EmitCall: analysis.EmitCall,
+            EmitCalls: analysis.EmitCalls,
             UsesImmediateWatch: true,
             WatchSource: BuildPropsWatchSource(snapshot.Descriptor));
     }
@@ -829,6 +883,17 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         return emitCall is null ? null : CreateAfterRenderHookPlan(emitCall, awaitResult);
     }
 
+    private static ShouldRenderGatePlan? TryPlanShouldRenderGate(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter? expressionEmitter)
+    {
+        var analysis = AnalyzeShouldRender(snapshot.Compilation, snapshot.ShouldRenderMethod, expressionEmitter);
+        if (!analysis.IsSupported || !analysis.RequiresRenderGate)
+            return null;
+
+        return new ShouldRenderGatePlan(analysis.ExpressionText);
+    }
+
     private static LifecycleHookPlan CreateAfterRenderHookPlan(
         SupportedEmitCall emitCall,
         bool awaitResult)
@@ -836,7 +901,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             HookKind: LifecycleHookKind.AfterRender,
             HookName: "onAfterRender",
             AwaitResult: awaitResult,
-            EmitCall: emitCall,
+            EmitCalls: [emitCall],
             UsesImmediateWatch: false,
             WatchSource: string.Empty);
 
@@ -861,10 +926,10 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         LifecycleHookPlan? plan,
         string indent)
     {
-        if (plan is not { } hookPlan || hookPlan.EmitCall is null)
+        if (plan is not { } hookPlan || hookPlan.EmitCalls.IsDefaultOrEmpty)
             return;
 
-        var emitCall = hookPlan.EmitCall;
+        var emitCalls = hookPlan.EmitCalls;
 
         switch (hookPlan.HookKind)
         {
@@ -873,7 +938,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 if (hookPlan.AwaitResult)
                     builder.Append("async ");
                 builder.AppendLine("() => {");
-                AppendEmitStatement(builder, emitCall, hookPlan.AwaitResult, payloadOverride: null, indent + "  ");
+                AppendEmitStatements(builder, emitCalls, hookPlan.AwaitResult, indent + "  ");
                 builder.Append(indent).AppendLine("});");
                 return;
 
@@ -882,11 +947,12 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 if (hookPlan.AwaitResult)
                     builder.Append("async ");
                 builder.AppendLine("() => {");
-                AppendEmitStatement(builder, emitCall, hookPlan.AwaitResult, payloadOverride: null, indent + "  ");
+                AppendEmitStatements(builder, emitCalls, hookPlan.AwaitResult, indent + "  ");
                 builder.Append(indent).AppendLine("}, { immediate: true });");
                 return;
 
             case LifecycleHookKind.AfterRender:
+                var emitCall = emitCalls[0];
                 var snapshotsFirstRender = emitCall.UsesFirstRender;
                 var payloadOverride = snapshotsFirstRender
                     ? emitCall.PayloadExpression?.Replace(RazorVueExpressionEmitter.LifecycleFirstRenderPlaceholder, "currentFirstRender")
@@ -1161,6 +1227,10 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
             return new SupportedEmitCall(emitName, payload.Expression, payload.UsesFirstRender, payload.PreludeBindings);
         }
+        catch (RazorVueCompilationIssueException)
+        {
+            throw;
+        }
         catch (NotSupportedException)
         {
             throw CreateUnsupportedLifecycleLoweringException(method);
@@ -1297,121 +1367,60 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         HashSet<IMethodSymbol> visitedMethods)
     {
         if (method is null || !visitedMethods.Add(method))
-            return new SetParametersAsyncAnalysis(false, null);
+            return SetParametersAsyncAnalysis.Unsupported;
 
         if (method.DeclaringSyntaxReferences.Length == 0)
-            return new SetParametersAsyncAnalysis(false, null);
+            return SetParametersAsyncAnalysis.Unsupported;
 
         if (method.DeclaringSyntaxReferences[0].GetSyntax() is not MethodDeclarationSyntax methodSyntax)
-            return new SetParametersAsyncAnalysis(false, null);
+            return SetParametersAsyncAnalysis.Unsupported;
 
         if (methodSyntax.ExpressionBody is not null)
         {
             if (IsNoOpLifecycleExpression(snapshot.Compilation, method, methodSyntax.ExpressionBody.Expression))
-                return new SetParametersAsyncAnalysis(true, null);
+                return SetParametersAsyncAnalysis.NoOp;
 
             return IsBaseSetParametersAsyncCall(method, methodSyntax.ExpressionBody.Expression)
                 ? AnalyzeBaseSetParametersAsync(snapshot, expressionEmitter, method, visitedMethods)
-                : new SetParametersAsyncAnalysis(false, null);
+                : SetParametersAsyncAnalysis.Unsupported;
         }
 
         if (methodSyntax.Body is null)
-            return new SetParametersAsyncAnalysis(false, null);
+            return SetParametersAsyncAnalysis.Unsupported;
 
         if (methodSyntax.Body.Statements.Count == 0)
-            return new SetParametersAsyncAnalysis(true, null);
+            return SetParametersAsyncAnalysis.NoOp;
 
         var statements = methodSyntax.Body.Statements;
         var index = 0;
         var sawBaseCall = false;
-        SetParametersAsyncAnalysis? baseAnalysis = null;
+        var emitCalls = ImmutableArray<SupportedEmitCall>.Empty;
         if (IsBaseSetParametersAsyncStatement(method, statements[0]))
         {
             sawBaseCall = true;
-            baseAnalysis = AnalyzeBaseSetParametersAsync(snapshot, expressionEmitter, method, visitedMethods);
+            var baseAnalysis = AnalyzeBaseSetParametersAsync(snapshot, expressionEmitter, method, visitedMethods);
             if (!baseAnalysis.IsSupported)
-                return new SetParametersAsyncAnalysis(false, null);
+                return SetParametersAsyncAnalysis.Unsupported;
 
+            emitCalls = baseAnalysis.EmitCalls;
             index++;
         }
 
         if (index >= statements.Count)
-            return sawBaseCall
-                ? baseAnalysis!
-                : new SetParametersAsyncAnalysis(true, null);
+            return new SetParametersAsyncAnalysis(true, emitCalls);
 
-        if (sawBaseCall && baseAnalysis!.EmitCall is null)
-        {
-            if (TryExtractSupportedLocalPrefixedLifecycleEmitCall(
-                    snapshot,
-                    expressionEmitter,
-                    method,
-                    statements,
-                    allowFirstRenderPayload: false,
-                    out var localPrefixedEmitCall,
-                    startIndex: index))
-            {
-                return localPrefixedEmitCall is null
-                    ? new SetParametersAsyncAnalysis(false, null)
-                    : new SetParametersAsyncAnalysis(true, localPrefixedEmitCall);
-            }
+        if (!sawBaseCall)
+            return SetParametersAsyncAnalysis.Unsupported;
 
-            if (statements.Count - index >= 3 &&
-                IsNoOpSetParametersAsyncStatement(snapshot.Compilation, method, statements[statements.Count - 1]) &&
-                TryExtractSupportedLocalPrefixedLifecycleEmitCall(
-                    snapshot,
-                    expressionEmitter,
-                    method,
-                    statements,
-                    allowFirstRenderPayload: false,
-                    out localPrefixedEmitCall,
-                    startIndex: index,
-                    endExclusive: statements.Count - 1))
-            {
-                return localPrefixedEmitCall is null
-                    ? new SetParametersAsyncAnalysis(false, null)
-                    : new SetParametersAsyncAnalysis(true, localPrefixedEmitCall);
-            }
-        }
-
-        if (TryGetSetParametersAsyncNoOpOrEmit(snapshot, expressionEmitter, method, statements[index], out var emitCall))
-        {
-            index++;
-            if (index == statements.Count)
-            {
-                if (emitCall is null)
-                {
-                    return sawBaseCall
-                        ? baseAnalysis!
-                        : new SetParametersAsyncAnalysis(true, null);
-                }
-
-                return sawBaseCall
-                    ? baseAnalysis!.EmitCall is null
-                        ? new SetParametersAsyncAnalysis(true, emitCall)
-                        : new SetParametersAsyncAnalysis(false, null)
-                    : new SetParametersAsyncAnalysis(false, null);
-            }
-
-            if (index == statements.Count - 1 &&
-                IsNoOpSetParametersAsyncStatement(snapshot.Compilation, method, statements[index]))
-            {
-                if (emitCall is null)
-                {
-                    return sawBaseCall
-                        ? baseAnalysis!
-                        : new SetParametersAsyncAnalysis(true, null);
-                }
-
-                return sawBaseCall
-                    ? baseAnalysis!.EmitCall is null
-                        ? new SetParametersAsyncAnalysis(true, emitCall)
-                        : new SetParametersAsyncAnalysis(false, null)
-                    : new SetParametersAsyncAnalysis(false, null);
-            }
-        }
-
-        return new SetParametersAsyncAnalysis(false, null);
+        return TryGetSetParametersAsyncEmitSequence(
+                snapshot,
+                expressionEmitter,
+                method,
+                statements,
+                index,
+                out var localEmitCalls)
+            ? new SetParametersAsyncAnalysis(true, ConcatEmitCalls(emitCalls, localEmitCalls))
+            : SetParametersAsyncAnalysis.Unsupported;
     }
 
     private static SetParametersAsyncAnalysis AnalyzeBaseSetParametersAsync(
@@ -1422,42 +1431,56 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
     {
         var baseMethod = FindBaseSetParametersAsyncMethod(method);
         if (baseMethod is null)
-            return new SetParametersAsyncAnalysis(true, null);
+            return SetParametersAsyncAnalysis.NoOp;
 
         if (baseMethod.DeclaringSyntaxReferences.Length == 0)
         {
             return IsDefaultComponentBaseSetParametersAsyncMethod(snapshot.Compilation, baseMethod)
-                ? new SetParametersAsyncAnalysis(true, null)
-                : new SetParametersAsyncAnalysis(false, null);
+                ? SetParametersAsyncAnalysis.NoOp
+                : SetParametersAsyncAnalysis.Unsupported;
         }
 
         return AnalyzeSetParametersAsync(snapshot, expressionEmitter, baseMethod, visitedMethods);
     }
 
-    private static ShouldRenderAnalysis AnalyzeShouldRender(Compilation compilation, IMethodSymbol? method)
-        => AnalyzeShouldRender(compilation, method, new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default));
+    private static ShouldRenderAnalysis AnalyzeShouldRender(
+        Compilation compilation,
+        IMethodSymbol? method,
+        RazorVueExpressionEmitter? expressionEmitter = null)
+        => AnalyzeShouldRender(compilation, method, expressionEmitter, new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default));
 
     private static ShouldRenderAnalysis AnalyzeShouldRender(
         Compilation compilation,
         IMethodSymbol? method,
+        RazorVueExpressionEmitter? expressionEmitter,
         HashSet<IMethodSymbol> visitedMethods)
     {
         if (method is null || !visitedMethods.Add(method) || method.DeclaringSyntaxReferences.Length == 0)
-            return new ShouldRenderAnalysis(false);
+            return ShouldRenderAnalysis.Unsupported;
 
         if (method.DeclaringSyntaxReferences[0].GetSyntax() is not MethodDeclarationSyntax methodSyntax)
-            return new ShouldRenderAnalysis(false);
+            return ShouldRenderAnalysis.Unsupported;
 
         if (methodSyntax.ExpressionBody is not null)
-            return new ShouldRenderAnalysis(IsSupportedShouldRenderExpression(compilation, method, methodSyntax.ExpressionBody.Expression, visitedMethods));
+            return AnalyzeShouldRenderExpression(
+                compilation,
+                method,
+                expressionEmitter,
+                methodSyntax.ExpressionBody.Expression,
+                visitedMethods);
 
         if (methodSyntax.Body?.Statements.Count != 1 ||
             methodSyntax.Body.Statements[0] is not ReturnStatementSyntax { Expression: not null } returnStatement)
         {
-            return new ShouldRenderAnalysis(false);
+            return ShouldRenderAnalysis.Unsupported;
         }
 
-        return new ShouldRenderAnalysis(IsSupportedShouldRenderExpression(compilation, method, returnStatement.Expression, visitedMethods));
+        return AnalyzeShouldRenderExpression(
+            compilation,
+            method,
+            expressionEmitter,
+            returnStatement.Expression,
+            visitedMethods);
     }
 
     private static ExpressionSyntax UnwrapLifecycleExpression(ExpressionSyntax expression)
@@ -1618,6 +1641,164 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         }
     }
 
+    private static bool TryGetSetParametersAsyncEmitSequence(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter? expressionEmitter,
+        IMethodSymbol method,
+        SyntaxList<StatementSyntax> statements,
+        int startIndex,
+        out ImmutableArray<SupportedEmitCall> emitCalls)
+    {
+        emitCalls = ImmutableArray<SupportedEmitCall>.Empty;
+        if (startIndex < 0 || startIndex > statements.Count)
+            return false;
+
+        var semanticModel = snapshot.Compilation.GetSemanticModel(statements[0].SyntaxTree);
+        if (method.DeclaringSyntaxReferences[0].GetSyntax() is not MethodDeclarationSyntax methodSyntax ||
+            semanticModel.GetOperation(methodSyntax) is not IMethodBodyOperation methodBodyOperation)
+        {
+            return false;
+        }
+
+        var localInitializers = RazorVueSourceStableLocalInitializerHelper.CollectSourceStableLocalInitializers(
+            snapshot.Compilation,
+            methodBodyOperation.BlockBody?.Operations ?? ImmutableArray<IOperation>.Empty,
+            RazorVueSourceStableLocalInitializerHelper.CanParticipateInLifecycleCompilerFallback);
+        var emittedLocals = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
+        var materializedLocals = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
+        var localAliases = new Dictionary<ILocalSymbol, string>(SymbolEqualityComparer.Default);
+        var builder = ImmutableArray.CreateBuilder<SupportedEmitCall>();
+        var sawEmit = false;
+
+        for (var index = startIndex; index < statements.Count; index++)
+        {
+            var statement = statements[index];
+            if (TryValidateLifecyclePrefixDeclarations(statement, semanticModel, localInitializers))
+            {
+                var prefixLocals = GetLifecyclePrefixDeclaredLocals(statement, semanticModel);
+                foreach (var local in prefixLocals)
+                {
+                    if (!localInitializers.ContainsKey(local))
+                        return false;
+
+                    emittedLocals.Add(local);
+                    localAliases[local] = "__jazorLifecycleLocal" + Jazor.Common.Format.HashName(local.ToDisplayString()).TrimStart('_');
+                }
+
+                continue;
+            }
+
+            if (!TryGetSetParametersAsyncNoOpOrEmit(
+                    snapshot,
+                    expressionEmitter,
+                    method,
+                    statement,
+                    out var emitCall))
+            {
+                return false;
+            }
+
+            if (statement is ReturnStatementSyntax && index != statements.Count - 1)
+                return false;
+
+            if (emitCall is null)
+                continue;
+
+            sawEmit = true;
+            if (emittedLocals.Count == 0)
+            {
+                builder.Add(emitCall);
+                continue;
+            }
+
+            var preludeBuilder = ImmutableArray.CreateBuilder<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>();
+            foreach (var binding in emitCall.PreludeBindings)
+            {
+                if (TryGetLifecycleLocalPreludeAlias(binding, out var alias) &&
+                    TryFindLifecycleLocalByAlias(localAliases, alias, out var local))
+                {
+                    if (materializedLocals.Add(local))
+                        preludeBuilder.Add(binding);
+
+                    continue;
+                }
+
+                preludeBuilder.Add(binding);
+            }
+
+            builder.Add(emitCall with { PreludeBindings = preludeBuilder.ToImmutable() });
+        }
+
+        if (!sawEmit)
+        {
+            emitCalls = ImmutableArray<SupportedEmitCall>.Empty;
+            return true;
+        }
+
+        emitCalls = builder.ToImmutable();
+        return true;
+    }
+
+    private static ImmutableArray<ILocalSymbol> GetLifecyclePrefixDeclaredLocals(
+        StatementSyntax statement,
+        SemanticModel semanticModel)
+    {
+        switch (semanticModel.GetOperation(statement))
+        {
+            case IVariableDeclarationGroupOperation declarationGroup:
+                return declarationGroup.Declarations
+                    .SelectMany(static declaration => declaration.Declarators)
+                    .Select(static declarator => declarator.Symbol)
+                    .ToImmutableArray();
+
+            case IExpressionStatementOperation { Operation: IDeconstructionAssignmentOperation }:
+                return statement
+                    .DescendantNodes()
+                    .OfType<SingleVariableDesignationSyntax>()
+                    .Select(designation => semanticModel.GetDeclaredSymbol(designation))
+                    .OfType<ILocalSymbol>()
+                    .ToImmutableArray();
+
+            default:
+                return ImmutableArray<ILocalSymbol>.Empty;
+        }
+    }
+
+    private static bool TryGetLifecycleLocalPreludeAlias(
+        RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding binding,
+        out string alias)
+    {
+        const string constPrefix = "const __jazorLifecycleLocal";
+        alias = string.Empty;
+        if (!binding.Code.StartsWith(constPrefix, StringComparison.Ordinal))
+            return false;
+
+        var equalsIndex = binding.Code.IndexOf(" = ", StringComparison.Ordinal);
+        if (equalsIndex <= "const ".Length)
+            return false;
+
+        alias = binding.Code.Substring("const ".Length, equalsIndex - "const ".Length);
+        return alias.Length > 0;
+    }
+
+    private static bool TryFindLifecycleLocalByAlias(
+        IReadOnlyDictionary<ILocalSymbol, string> aliases,
+        string alias,
+        out ILocalSymbol local)
+    {
+        foreach (var pair in aliases)
+        {
+            if (string.Equals(pair.Value, alias, StringComparison.Ordinal))
+            {
+                local = pair.Key;
+                return true;
+            }
+        }
+
+        local = default!;
+        return false;
+    }
+
     private static bool TryUnwrapValueTaskCreation(Compilation compilation, ExpressionSyntax expression, out ExpressionSyntax innerExpression)
     {
         innerExpression = expression;
@@ -1684,16 +1865,52 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         return expression.IsKind(SyntaxKind.TrueLiteralExpression);
     }
 
-    private static bool IsSupportedShouldRenderExpression(
+    private static ShouldRenderAnalysis AnalyzeShouldRenderExpression(
         Compilation compilation,
         IMethodSymbol method,
+        RazorVueExpressionEmitter? expressionEmitter,
         ExpressionSyntax expression,
         HashSet<IMethodSymbol> visitedMethods)
     {
         expression = UnwrapLifecycleExpression(expression);
         if (IsConstantTrueShouldRenderExpression(expression))
-            return true;
+            return ShouldRenderAnalysis.NoGate;
 
+        if (TryAnalyzeBaseShouldRenderExpression(compilation, method, expressionEmitter, expression, visitedMethods, out var baseAnalysis))
+            return baseAnalysis;
+
+        if (expressionEmitter is null)
+            return ShouldRenderAnalysis.Unsupported;
+
+        try
+        {
+            return TryGetShouldRenderExpressionOperation(compilation, expression, out var operation)
+                ? new ShouldRenderAnalysis(
+                    true,
+                    RequiresRenderGate: true,
+                    expressionEmitter.CaptureSetupDependencies(() => expressionEmitter.EmitSetupExpression(operation)).Expression)
+                : ShouldRenderAnalysis.Unsupported;
+        }
+        catch (RazorVueCompilationIssueException)
+        {
+            throw;
+        }
+        catch (Exception ex) when (ex is NotSupportedException or OperationTransformationException)
+        {
+            return ShouldRenderAnalysis.Unsupported;
+        }
+    }
+
+    private static bool TryAnalyzeBaseShouldRenderExpression(
+        Compilation compilation,
+        IMethodSymbol method,
+        RazorVueExpressionEmitter? expressionEmitter,
+        ExpressionSyntax expression,
+        HashSet<IMethodSymbol> visitedMethods,
+        out ShouldRenderAnalysis analysis)
+    {
+        analysis = ShouldRenderAnalysis.Unsupported;
+        expression = UnwrapLifecycleExpression(expression);
         if (expression is not InvocationExpressionSyntax invocationExpression ||
             invocationExpression.Expression is not MemberAccessExpressionSyntax
             {
@@ -1707,20 +1924,37 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
         var componentBase = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.ComponentBase");
         if (componentBase is null)
-            return false;
+            return true;
 
         var semanticModel = compilation.GetSemanticModel(invocationExpression.SyntaxTree);
         if (semanticModel.GetOperation(invocationExpression) is not IInvocationOperation invocation)
-            return false;
-
-        if (SymbolEqualityComparer.Default.Equals(invocation.TargetMethod.ContainingType.OriginalDefinition, componentBase))
             return true;
 
-        var baseMethod = FindBaseLifecycleMethod(method);
-        if (baseMethod is null || !SymbolEqualityComparer.Default.Equals(invocation.TargetMethod.OriginalDefinition, baseMethod.OriginalDefinition))
-            return false;
+        if (SymbolEqualityComparer.Default.Equals(invocation.TargetMethod.ContainingType.OriginalDefinition, componentBase))
+        {
+            analysis = ShouldRenderAnalysis.NoGate;
+            return true;
+        }
 
-        return AnalyzeShouldRender(compilation, baseMethod, visitedMethods).IsSupported;
+        var baseMethod = FindBaseLifecycleMethod(method);
+        if (baseMethod is null ||
+            !SymbolEqualityComparer.Default.Equals(invocation.TargetMethod.OriginalDefinition, baseMethod.OriginalDefinition))
+        {
+            return true;
+        }
+
+        analysis = AnalyzeShouldRender(compilation, baseMethod, expressionEmitter, visitedMethods);
+        return true;
+    }
+
+    private static bool TryGetShouldRenderExpressionOperation(
+        Compilation compilation,
+        ExpressionSyntax expression,
+        out IOperation operation)
+    {
+        var semanticModel = compilation.GetSemanticModel(expression.SyntaxTree);
+        operation = semanticModel.GetOperation(expression)!;
+        return operation is not null;
     }
 
     private static bool IsComponentBaseNoOpLifecycle(Compilation compilation, IMethodSymbol method)
@@ -1785,6 +2019,9 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             emitCall.PreludeBindings.Select(static binding => binding.Code));
         return emitCall.EmitName + "|" + payload + "|locals:" + prelude;
     }
+
+    private static string DescribeEmitCallSequenceShape(ImmutableArray<SupportedEmitCall> emitCalls)
+        => string.Join(">", emitCalls.Select(DescribeEmitCallShape));
 
     private static string BuildPropsWatchSource(VueComponentDescriptor descriptor)
     {
@@ -1851,6 +2088,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         LifecycleHookPlan? DisposeAsync,
         LifecycleHookPlan? OnAfterRender,
         LifecycleHookPlan? OnAfterRenderAsync,
+        ShouldRenderGatePlan? ShouldRenderGate,
         ImmutableArray<VueLogicPropertyDescriptor> RequiredProperties,
         ImmutableArray<VueLogicFieldDescriptor> RequiredFields,
         ImmutableArray<VueLogicMethodDescriptor> RequiredMethods);
@@ -1866,9 +2104,11 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         LifecycleHookKind HookKind,
         string HookName,
         bool AwaitResult,
-        SupportedEmitCall? EmitCall,
+        ImmutableArray<SupportedEmitCall> EmitCalls,
         bool UsesImmediateWatch,
         string WatchSource);
+
+    internal readonly record struct ShouldRenderGatePlan(string ConditionExpression);
 
     private readonly record struct SetupMemberLoweringResult(
         string Block,
@@ -2015,6 +2255,19 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         string? PayloadExpression,
         bool UsesFirstRender,
         ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding> PreludeBindings);
-    private sealed record SetParametersAsyncAnalysis(bool IsSupported, SupportedEmitCall? EmitCall);
-    private sealed record ShouldRenderAnalysis(bool IsSupported);
+    private sealed record SetParametersAsyncAnalysis(
+        bool IsSupported,
+        ImmutableArray<SupportedEmitCall> EmitCalls)
+    {
+        public static SetParametersAsyncAnalysis Unsupported { get; } = new(false, ImmutableArray<SupportedEmitCall>.Empty);
+        public static SetParametersAsyncAnalysis NoOp { get; } = new(true, ImmutableArray<SupportedEmitCall>.Empty);
+    }
+    private sealed record ShouldRenderAnalysis(
+        bool IsSupported,
+        bool RequiresRenderGate,
+        string ExpressionText)
+    {
+        public static ShouldRenderAnalysis Unsupported { get; } = new(false, false, string.Empty);
+        public static ShouldRenderAnalysis NoGate { get; } = new(true, false, string.Empty);
+    }
 }

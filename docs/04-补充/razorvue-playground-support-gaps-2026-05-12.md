@@ -36,16 +36,16 @@
 
 ### 4. Render Helper / Open Frame 协议
 
-- render helper 的 `ref` / `out` / `in` 参数不支持。
+- render helper 的 `ref` / `out` 参数不支持；`RenderTreeBuilder` 参数也必须保持普通 by-value。非 builder 的 `in` 只读值参数已支持源码可分析读取，但把 `in` 参数继续转发到任意 by-reference invocation、写回协议或逃逸协议仍会显式失败。
 - recursive render helper 不支持。
 - caller-owned open frame helper 只支持受控 replay：attribute/key/spread mutation、slot/default-slot assignment、ambient child emission、helper-local 平衡 `OpenRegion` / `CloseRegion`。跨 helper 留下未闭合 frame、关闭/重开 caller-owned frame、改变最终 active frame、region 逃逸/不平衡、需要跨 helper 推断 frame shape 的协议继续失败。
 - 同文件 helper class lowering 只接受同步、源码可分析、同 artifact module 内 runtime class。泛型 helper class、record、helper component、ECMAScript host type 不会被该通道扁平化；普通模块级 static nested class 导出策略仍保持 fail-fast。
 
 ### 5. Setup / Lifecycle
 
-- setup/lifecycle lowering 不是通用执行模型。`async` helper、`Task` / `ValueTask` 返回 helper、`ref` / `out` / `in` 参数、一般外部 invocation、未知实例 method-call payload、超出当前 `SemanticWalker` statement lowering 支持面的 helper body 继续失败。
-- `SetParametersAsync` 只支持 no-op、直达 `ComponentBase.SetParametersAsync(...)` 的 pass-through、以及受控 base-pass-through + 单个受支持 `InvokeAsync(...)` emit。重复 emit、额外 mutation、控制流或更一般方法体不支持。
-- `ShouldRender` 只支持 `return true;` 和可源码解析到受支持 base 链的 pass-through。动态条件例如 `return Value > 0;` 仍会进入 unsupported / `FullReloadRequired`。
+- setup/lifecycle lowering 不是通用执行模型。`async` helper、`Task` / `ValueTask` 返回 helper、`ref` / `out` 参数、一般外部 invocation、未知实例 method-call payload、超出当前 `SemanticWalker` statement lowering 支持面的 helper body 继续失败。非写入 `in` 只读值参数已支持按值读取；把该 `in` 参数继续转发到任意 `ref` / `out` / `in` by-reference invocation 仍显式失败。
+- `SetParametersAsync` 只支持 no-op、直达 `ComponentBase.SetParametersAsync(...)` 的 pass-through、以及受控 base-pass-through + 线性有序 `InvokeAsync(...)` emit 序列。emit payload 可使用 source-stable local / local function / callable local 前缀；共享 local 会在 watch body 中只物化一次。额外 mutation、控制流、任意外部 invocation 或更一般方法体不支持。
+- `ShouldRender` 支持 `return true;`、可源码解析到受支持 base 链的 pass-through，以及单表达式/单 `return` 的动态 bool 条件。动态条件通过 `Jazor.Compiler` / `SemanticWalker` 降低为 setup 侧表达式，并在 render-function artifact 中用 cached vnode gate 模拟“首次强制渲染、后续 false 跳过渲染”的语义；canonical SFC 遇到动态 gate 会切到 render-function `.vue`。多语句/控制流 `ShouldRender`、外部引用程序集无源码 base override、无法由 setup expression lowering 支持的成员/调用仍保守 `FullReloadRequired`。
 - base pass-through 若最终落到外部引用程序集里的无源码 override，继续显式失败，不乐观当成 no-op。
 - `Task` 返回 lifecycle 的 bare `default` 不再视为 no-op；`Task.CompletedTask` 才是受支持空实现。non-generic `ValueTask` 的 `default` 仍按其独立 no-op 合同处理。
 
@@ -58,7 +58,7 @@
 
 - `.vue` default export/import 不是 Jazor authored module 的编译器边界。需要通过 `razorvue-sfc-bridge` 把 SFC default component 转成 named export/import；不计划在 Jazor 编译器里放开 default export/import。
 - RazorVue library mode 仍需要 consumer 构建层。Playground 的 colocated `consumer` 是单 ASP.NET Core 项目里的前端消费构建层，不是第二个 runtime host；标准 ASP.NET Core + RazorVue library-mode 模板和约定仍需继续产品化。
-- route template -> Vue Router bridge 仍拒绝无法诚实映射的长尾形态：optional separator 参数不是 segment 尾部、没有紧邻前置 optional separator、需要多层组合展开的 composite/mixed segment，以及无法转换成 Vue Router regex path 的 constraint 组合。普通 literal、`{parameter}`、`{parameter?}`、whole-segment default value、composite default value、尾部 optional separator composite segment、受控 constraint、catch-all 等已不再属于该缺口。
+- route template -> Vue Router bridge 仍拒绝无法诚实映射的长尾形态：optional separator 参数不是 segment 尾部、没有紧邻前置 optional separator、需要多层组合展开的 composite/mixed segment，以及无法转换成“一个 Vue Router path regex + generated metadata 二次校验”的 constraint 组合。普通 literal、`{parameter}`、`{parameter?}`、whole-segment default value、composite default value、尾部 optional separator composite segment、受控 constraint、可 metadata-backed 求交的 constraint 组合、catch-all 等已不再属于该缺口。
 
 ## 已从缺口移除的主要能力
 
@@ -66,17 +66,19 @@
 - mixed declarative + imperative render-function 路径已能保留可声明式表达的 sibling vnode，只在需要 frame/slot/child replay 时进入 render-context bridge。
 - imperative `AddComponentParameter(...)` 已按 descriptor 区分 prop / emit / slot；current-component slot forwarding、builder-style `RenderFragment` / `RenderFragment<T>` slot callback、nested component metadata/import 已进入正式路径。
 - 静态 `OpenComponent(Type)` 及 source-stable local/current-component member `System.Type` carrier 已支持；这不是动态组件支持。
-- Razor IR mixed attribute、lowercase `class` / `style` fallthrough、`CssClass` / `CssStyle` 强类型映射、DOM event modifier、static markup、typed/untyped `RenderFragment` carrier、fragment factory、template local、setup helper/lifecycle 受控 payload 已进入支持面。
+- Razor IR mixed attribute、lowercase `class` / `style` fallthrough、`CssClass` / `CssStyle` 强类型映射、DOM event modifier、static markup、typed/untyped `RenderFragment` carrier、fragment factory、template local、render helper 只读 `in` 值参数、setup/lifecycle helper 只读 `in` 值参数、setup helper/lifecycle 受控 payload、动态 `ShouldRender` cached render gate 已进入支持面。
 - unified `jazor-manifest.json` component projection、SFC bridge named export、consumer route metadata、ASP.NET Core host 默认静态资源/SPA fallback 主线已收敛，旧第二 manifest 和 Playground 私有 matcher 不再是当前契约。
 - route bridge 已支持 composite default value（例如 `post-{id=42}`）和尾部 optional separator composite segment（例如 `/files/{filename}.{ext?}`）。前者保持 required Vue path 并仅通过 metadata 应用默认值，不做 URL elision；后者展开为带扩展名和无扩展名两条稳定 Vue route。
-- route constraint bridge 已支持 `guid`，覆盖常见 GUID 文本形态和 browser pathname 中 encoded wrapper 形态；`bool` 已改为大小写不敏感匹配；`int` / `long` / `min(...)` / `max(...)` / `range(...)` 已通过 generated `parameterConstraints` metadata 和 consumer runtime `BigInt` 校验补齐整数边界；`decimal` / `double` / `float` 已通过 `numberParse` metadata 校验 invariant numeric text；`datetime` 已通过 `dateTimeParse` metadata 校验 ASP.NET Core 内置 `DateTimeRouteConstraint` 的 invariant `DateTime.TryParse(...)` 常见 URL 形态；`required` 与 `length(...)` / `minlength(...)` / `maxlength(...)` 已支持与单一 path-regex 约束组合并通过 metadata 做长度求交校验。`date` 不是当前 ASP.NET Core 默认 `ConstraintMap` 内置 route constraint，仍保留 fail-fast，避免把未知自定义约束按 `datetime` 近似放行。
+- route constraint bridge 已支持 `alpha` / `bool` / `guid` / `regex(...)` 的 generated metadata 二次校验；`guid` 覆盖常见 GUID 文本形态和 browser pathname 中 encoded wrapper 形态；`bool` 已改为大小写不敏感匹配；`int` / `long` / `min(...)` / `max(...)` / `range(...)` 已通过 generated `parameterConstraints` metadata 和 consumer runtime `BigInt` 校验补齐整数边界；`decimal` / `double` / `float` 已通过 `numberParse` metadata 校验 invariant numeric text；`datetime` 已通过 `dateTimeParse` metadata 校验 ASP.NET Core 内置 `DateTimeRouteConstraint` 的 invariant `DateTime.TryParse(...)` 常见 URL 形态；`file` / `nonfile` 已通过 `fileName` metadata 校验 decoded route parameter 的 filename/non-filename 语义；`required` 与 `length(...)` / `minlength(...)` / `maxlength(...)` 已支持与 path-regex 约束组合并通过 metadata 做长度求交校验；`bool:alpha`、`int:regex(...)` 等可 metadata-backed 求交组合已支持。`date` 不是当前 ASP.NET Core 默认 `ConstraintMap` 内置 route constraint，仍保留 fail-fast，避免把未知自定义约束按 `datetime` 近似放行。
 
 ## 验证记录
 
 最近一次相关实现验证记录：
 
-- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj -v minimal`：1373 通过，0 失败。
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~RazorVue_Pipeline_LowersSetupHelperWithInParameterAsReadOnlyValue|FullyQualifiedName~RazorVue_Pipeline_LowersLifecycleHelperWithInParameterAsReadOnlyValue|FullyQualifiedName~RazorVue_Pipeline_LowersLifecycleLocalFunctionWithInParameterAsReadOnlyValue|FullyQualifiedName~RazorVue_Pipeline_ThrowsCompilationIssueForSetupHelperForwardingInParameterByReference|FullyQualifiedName~RazorVue_Pipeline_ThrowsCompilationIssueForSetupHelperWithRefParameter' -v minimal`：5 通过，0 失败。
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~RazorVue_SfcArtifactFactory_LowersSetupHelperWithInParameter|FullyQualifiedName~RazorVue_SfcArtifactFactory_LowersLifecycleHelperWithInParameter|FullyQualifiedName~RazorVue_SfcArtifactFactory_ThrowsForSetupHelperForwardingInParameterByReference' -v minimal`：3 通过，0 失败。
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj -v minimal`：1396 通过，0 失败。
 - `dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj -v minimal`：486 通过，0 失败。
-- `dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter 'FullyQualifiedName~RazorVueConsumerEntryCompilerTests' -v minimal`：31 通过，0 失败。
+- `dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter 'FullyQualifiedName~RazorVueConsumerEntryCompilerTests' -v minimal`：33 通过，0 失败。
 - `dotnet run --file src/Playground/consumer/scripts/run-deno.cs -- test --allow-env './src/runtime-common.test.js'`：通过。
 - `dotnet run --file src/Playground/consumer/scripts/run-deno.cs -- run -A scripts/test.ts`：通过。

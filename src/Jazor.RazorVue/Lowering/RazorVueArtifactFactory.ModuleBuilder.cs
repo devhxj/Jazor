@@ -50,20 +50,50 @@ internal sealed partial class RazorVueArtifactFactory
         AppendLifecycleLowering(setupBodyBuilder, lifecyclePlan, "    ");
         if (usesImperativeRenderBody)
         {
+            AppendShouldRenderGateState(setupBodyBuilder, lifecyclePlan.ShouldRenderGate, "    ");
             setupBodyBuilder.AppendLine("    const __jazorComponent = { props, emit, slots, expose, attrs };");
             setupBodyBuilder.AppendLine("    return () => {");
-            setupBodyBuilder.Append("      const ").Append(RazorVueExpressionEmitter.ImperativeRenderContextAlias).AppendLine(" = __jazorCreateRenderContext(h);");
-            setupBodyBuilder.AppendLine("      __jazorComponent.props = props;");
-            setupBodyBuilder.AppendLine("      __jazorComponent.emit = emit;");
-            setupBodyBuilder.AppendLine("      __jazorComponent.slots = slots;");
-            setupBodyBuilder.AppendLine("      __jazorComponent.expose = expose;");
-            setupBodyBuilder.AppendLine("      __jazorComponent.attrs = attrs;");
-            setupBodyBuilder.Append("      ").Append(renderBody!.Replace("\n", "\n      ")).AppendLine();
+            AppendShouldRenderGateEarlyReturn(setupBodyBuilder, lifecyclePlan.ShouldRenderGate, "      ");
+            if (lifecyclePlan.ShouldRenderGate is null)
+            {
+                setupBodyBuilder.Append("      const ").Append(RazorVueExpressionEmitter.ImperativeRenderContextAlias).AppendLine(" = __jazorCreateRenderContext(h);");
+                setupBodyBuilder.AppendLine("      __jazorComponent.props = props;");
+                setupBodyBuilder.AppendLine("      __jazorComponent.emit = emit;");
+                setupBodyBuilder.AppendLine("      __jazorComponent.slots = slots;");
+                setupBodyBuilder.AppendLine("      __jazorComponent.expose = expose;");
+                setupBodyBuilder.AppendLine("      __jazorComponent.attrs = attrs;");
+                setupBodyBuilder.Append("      ").Append(renderBody!.Replace("\n", "\n      ")).AppendLine();
+            }
+            else
+            {
+                setupBodyBuilder.AppendLine("      const __jazorNextVNode = (() => {");
+                setupBodyBuilder.Append("        const ").Append(RazorVueExpressionEmitter.ImperativeRenderContextAlias).AppendLine(" = __jazorCreateRenderContext(h);");
+                setupBodyBuilder.AppendLine("        __jazorComponent.props = props;");
+                setupBodyBuilder.AppendLine("        __jazorComponent.emit = emit;");
+                setupBodyBuilder.AppendLine("        __jazorComponent.slots = slots;");
+                setupBodyBuilder.AppendLine("        __jazorComponent.expose = expose;");
+                setupBodyBuilder.AppendLine("        __jazorComponent.attrs = attrs;");
+                setupBodyBuilder.Append("        ").Append(renderBody!.Replace("\n", "\n        ")).AppendLine();
+                setupBodyBuilder.AppendLine("      })();");
+                AppendShouldRenderGateCacheNextVNode(setupBodyBuilder, "      ");
+            }
             setupBodyBuilder.AppendLine("    };");
         }
         else
         {
-            setupBodyBuilder.Append("    return () => ").Append(renderExpression).AppendLine(";");
+            AppendShouldRenderGateState(setupBodyBuilder, lifecyclePlan.ShouldRenderGate, "    ");
+            if (lifecyclePlan.ShouldRenderGate is null)
+            {
+                setupBodyBuilder.Append("    return () => ").Append(renderExpression).AppendLine(";");
+            }
+            else
+            {
+                setupBodyBuilder.AppendLine("    return () => {");
+                AppendShouldRenderGateEarlyReturn(setupBodyBuilder, lifecyclePlan.ShouldRenderGate, "      ");
+                setupBodyBuilder.Append("      const __jazorNextVNode = ").Append(renderExpression).AppendLine(";");
+                AppendShouldRenderGateCacheNextVNode(setupBodyBuilder, "      ");
+                setupBodyBuilder.AppendLine("    };");
+            }
         }
         setupBodyBuilder.AppendLine("  }");
 
@@ -336,6 +366,29 @@ internal sealed partial class RazorVueArtifactFactory
         RazorVueExpressionEmitter expressionEmitter)
         => AppendSetupLogicLowering(builder, snapshot, expressionEmitter);
 
+    internal static void AppendShouldRenderGateStateForSfc(
+        StringBuilder builder,
+        RazorVueSetupAndLifecycleLoweringSupport.ShouldRenderGatePlan? gate,
+        string indent)
+        => AppendShouldRenderGateState(builder, gate, indent);
+
+    internal static void AppendShouldRenderGateEarlyReturnForSfc(
+        StringBuilder builder,
+        RazorVueSetupAndLifecycleLoweringSupport.ShouldRenderGatePlan? gate,
+        string indent)
+        => AppendShouldRenderGateEarlyReturn(builder, gate, indent);
+
+    internal static void AppendShouldRenderGateCacheImperativeResultForSfc(
+        StringBuilder builder,
+        RazorVueSetupAndLifecycleLoweringSupport.ShouldRenderGatePlan? gate,
+        string indent)
+        => AppendShouldRenderGateCacheImperativeResult(builder, gate, indent);
+
+    internal static void AppendShouldRenderGateCacheNextVNodeForSfc(
+        StringBuilder builder,
+        string indent)
+        => AppendShouldRenderGateCacheNextVNode(builder, indent);
+
     private static void AppendSetupLogicLowering(
         StringBuilder builder,
         RazorVueSemanticSnapshot snapshot,
@@ -348,6 +401,55 @@ internal sealed partial class RazorVueArtifactFactory
             ImmutableArray<VueLogicFieldDescriptor>.Empty,
             ImmutableArray<VueLogicMethodDescriptor>.Empty,
             "    ");
+
+    private static void AppendShouldRenderGateState(
+        StringBuilder builder,
+        RazorVueSetupAndLifecycleLoweringSupport.ShouldRenderGatePlan? gate,
+        string indent)
+    {
+        if (gate is null)
+            return;
+
+        builder.Append(indent).AppendLine("let __jazorShouldRenderHasRendered = false;");
+        builder.Append(indent).AppendLine("let __jazorShouldRenderCachedVNode = null;");
+    }
+
+    private static void AppendShouldRenderGateEarlyReturn(
+        StringBuilder builder,
+        RazorVueSetupAndLifecycleLoweringSupport.ShouldRenderGatePlan? gate,
+        string indent)
+    {
+        if (gate is not { } plan)
+            return;
+
+        builder.Append(indent)
+            .Append("if (__jazorShouldRenderHasRendered && !(")
+            .Append(plan.ConditionExpression)
+            .AppendLine("))");
+        builder.Append(indent).AppendLine("  return __jazorShouldRenderCachedVNode;");
+    }
+
+    private static void AppendShouldRenderGateCacheImperativeResult(
+        StringBuilder builder,
+        RazorVueSetupAndLifecycleLoweringSupport.ShouldRenderGatePlan? gate,
+        string indent)
+    {
+        if (gate is null)
+            return;
+
+        builder.Append(indent)
+            .Append("const __jazorNextVNode = ")
+            .Append(RazorVueExpressionEmitter.ImperativeRenderContextAlias)
+            .AppendLine(".finish();");
+        AppendShouldRenderGateCacheNextVNode(builder, indent);
+    }
+
+    private static void AppendShouldRenderGateCacheNextVNode(StringBuilder builder, string indent)
+    {
+        builder.Append(indent).AppendLine("__jazorShouldRenderHasRendered = true;");
+        builder.Append(indent).AppendLine("__jazorShouldRenderCachedVNode = __jazorNextVNode;");
+        builder.Append(indent).AppendLine("return __jazorNextVNode;");
+    }
 
     private static void AppendSetupLogicLowering(
         StringBuilder builder,

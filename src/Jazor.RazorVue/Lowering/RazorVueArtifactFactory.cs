@@ -122,7 +122,7 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             resolvedComponents);
         var templateShape = expressionEmitter.DescribeFragment(renderTree);
         var logicShape = BuildLogicShape(context, snapshot, renderTree, expressionEmitter);
-        var boundaryKind = ClassifyHmrBoundary(renderTree, snapshot);
+        var boundaryKind = ClassifyHmrBoundary(renderTree, snapshot, expressionEmitter);
 
         return new VueArtifactIdentity(
             ComponentId: descriptor.FullName,
@@ -165,7 +165,7 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         logicShape.AppendLine("lifecycle:setParametersAsync=" + setParametersAsyncShape);
         logicShape.AppendLine("lifecycle:onAfterRender=" + onAfterRenderShape);
         logicShape.AppendLine("lifecycle:onAfterRenderAsync=" + onAfterRenderAsyncShape);
-        logicShape.AppendLine("lifecycle:shouldRender=" + RazorVueSetupAndLifecycleLoweringSupport.DescribeShouldRenderShape(snapshot.Compilation, snapshot.ShouldRenderMethod));
+        logicShape.AppendLine("lifecycle:shouldRender=" + RazorVueSetupAndLifecycleLoweringSupport.DescribeShouldRenderShape(snapshot, expressionEmitter));
         logicShape.AppendLine("lifecycle:dispose=" + disposeShape);
         logicShape.AppendLine("lifecycle:disposeAsync=" + disposeAsyncShape);
 
@@ -199,7 +199,8 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
 
     private static HmrBoundaryKind ClassifyHmrBoundary(
         RazorVueRenderFragment renderTree,
-        RazorVueSemanticSnapshot snapshot)
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter expressionEmitter)
     {
         var descriptor = snapshot.Descriptor;
         if (descriptor.Props.Length == 0 && descriptor.Emits.Length == 0 && descriptor.Slots.Length == 0)
@@ -208,8 +209,10 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         if (HasUnsupportedTemplateNode(renderTree))
             return HmrBoundaryKind.FullReloadRequired;
 
-        if (snapshot.Lifecycle.HasShouldRender &&
-            RazorVueSetupAndLifecycleLoweringSupport.DescribeShouldRenderShape(snapshot.Compilation, snapshot.ShouldRenderMethod) == "unsupported")
+        var shouldRenderShape = snapshot.Lifecycle.HasShouldRender
+            ? RazorVueSetupAndLifecycleLoweringSupport.DescribeShouldRenderShape(snapshot, expressionEmitter)
+            : "none";
+        if (shouldRenderShape == "unsupported")
         {
             return HmrBoundaryKind.FullReloadRequired;
         }
@@ -231,8 +234,14 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
                                            RazorVueSetupAndLifecycleLoweringSupport.HasSupportedLifecycleLowering(snapshot, snapshot.DisposeAsyncMethod, false);
         // HMR should only escalate to LogicSafe when lifecycle methods actually lower
         // into runtime hooks; no-op methods should behave like pure template changes.
-        if (hasSupportedLifecycleLowering || snapshot.Logic.Properties.Length > 0 || snapshot.Logic.Fields.Length > 0 || snapshot.Logic.Methods.Length > 0)
+        if (hasSupportedLifecycleLowering ||
+            shouldRenderShape.StartsWith("condition:", StringComparison.Ordinal) ||
+            snapshot.Logic.Properties.Length > 0 ||
+            snapshot.Logic.Fields.Length > 0 ||
+            snapshot.Logic.Methods.Length > 0)
+        {
             return HmrBoundaryKind.LogicSafe;
+        }
 
         if (HasTemplateShape(renderTree))
             return HmrBoundaryKind.TemplateOnly;
@@ -242,8 +251,9 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
 
     internal static HmrBoundaryKind ClassifyHmrBoundaryForSfc(
         RazorVueRenderFragment renderTree,
-        RazorVueSemanticSnapshot snapshot)
-        => ClassifyHmrBoundary(renderTree, snapshot);
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter expressionEmitter)
+        => ClassifyHmrBoundary(renderTree, snapshot, expressionEmitter);
 
     private static bool HasTemplateShape(RazorVueRenderFragment fragment)
     {

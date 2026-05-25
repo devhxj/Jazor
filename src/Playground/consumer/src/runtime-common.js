@@ -242,6 +242,37 @@ function normalizeParameterConstraint(constraint) {
     });
   }
 
+  if (
+    constraint.kind === "alphaText" ||
+    constraint.kind === "booleanParse" ||
+    constraint.kind === "guidParse"
+  ) {
+    return Object.freeze({
+      kind: constraint.kind
+    });
+  }
+
+  if (
+    constraint.kind === "regexMatch" &&
+    typeof constraint.pattern === "string" &&
+    constraint.pattern.length > 0
+  ) {
+    return Object.freeze({
+      kind: "regexMatch",
+      pattern: constraint.pattern
+    });
+  }
+
+  if (
+    constraint.kind === "fileName" &&
+    (constraint.format === "file" || constraint.format === "nonfile")
+  ) {
+    return Object.freeze({
+      kind: "fileName",
+      format: constraint.format
+    });
+  }
+
   return null;
 }
 
@@ -344,6 +375,26 @@ function doesRouteParameterValueSatisfyConstraints(value, constraints) {
       return isInvariantDateTimeText(value);
     }
 
+    if (constraint?.kind === "alphaText") {
+      return isAsciiAlphaText(value);
+    }
+
+    if (constraint?.kind === "booleanParse") {
+      return isBooleanText(value);
+    }
+
+    if (constraint?.kind === "guidParse") {
+      return isGuidText(value);
+    }
+
+    if (constraint?.kind === "regexMatch") {
+      return doesTextMatchRouteRegex(value, constraint.pattern);
+    }
+
+    if (constraint?.kind === "fileName") {
+      return isRouteFileNameText(value) === (constraint.format === "file");
+    }
+
     return false;
   });
 }
@@ -383,6 +434,34 @@ function isTextLengthInRange(value, min, max) {
   }
 
   return true;
+}
+
+function isAsciiAlphaText(value) {
+  return /^[A-Za-z]*$/.test(tryDecodeRouteParameter(value).trim());
+}
+
+function isBooleanText(value) {
+  return /^(?:true|false)$/i.test(tryDecodeRouteParameter(value).trim());
+}
+
+function isGuidText(value) {
+  const text = tryDecodeRouteParameter(value).trim();
+  return /^[0-9A-Fa-f]{32}$/.test(text) ||
+    /^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$/.test(text) ||
+    /^\{[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\}$/.test(text) ||
+    /^\([0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\)$/.test(text) ||
+    /^\{0x[0-9A-Fa-f]{8},0x[0-9A-Fa-f]{4},0x[0-9A-Fa-f]{4},\{0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2},0x[0-9A-Fa-f]{2}\}\}$/.test(text);
+}
+
+function doesTextMatchRouteRegex(value, pattern) {
+  let regex;
+  try {
+    regex = new RegExp(pattern);
+  } catch {
+    return false;
+  }
+
+  return regex.test(tryDecodeRouteParameter(value).trim());
 }
 
 function isInvariantFloatingPointText(value) {
@@ -789,6 +868,16 @@ function getInvariantDayOfWeek(year, month, day) {
       Math.trunc(zeroBasedCentury / 4) +
       5 * zeroBasedCentury) % 7;
   return (zeller + 6) % 7;
+}
+
+function isRouteFileNameText(value) {
+  const text = tryDecodeRouteParameter(value).trim();
+  if (text.length === 0 || text.includes("/")) {
+    return false;
+  }
+
+  const lastDotIndex = text.lastIndexOf(".");
+  return lastDotIndex >= 0 && lastDotIndex < text.length - 1;
 }
 
 function tryDecodeRouteParameter(value) {

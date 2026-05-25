@@ -666,6 +666,8 @@ internal sealed class RazorVueRenderTreeExtractor
             if (TryParseEventModifierInvocation(invocation))
                 return;
 
+            ThrowIfReadOnlyByRefParameterEscapes(invocation);
+
             if (!IsRenderTreeBuilderInvocation(invocation))
             {
                 if (IsRenderTreeBuilderMethod(invocation.TargetMethod))
@@ -1868,24 +1870,35 @@ internal sealed class RazorVueRenderTreeExtractor
                 return false;
             }
 
+            var selectedBuilderParameter = builderParameters[0];
+            if (selectedBuilderParameter.RefKind != RefKind.None)
+            {
+                var modifier = GetRefKindModifier(selectedBuilderParameter.RefKind);
+                failureMessage =
+                    $"BuildRenderTree helper method '{helperDisplayName}' cannot declare '{modifier}' RenderTreeBuilder parameter '{selectedBuilderParameter.Name}' in component '{_snapshot.Descriptor.FullName}'. RenderTreeBuilder helper parameters must be ordinary by-value parameters.";
+                return false;
+            }
+
             foreach (var parameter in method.Parameters)
             {
+                if (parameter.RefKind == RefKind.None)
+                    continue;
+
+                if (parameter.RefKind == RefKind.In &&
+                    !SymbolEqualityComparer.Default.Equals(parameter, selectedBuilderParameter))
+                {
+                    continue;
+                }
+
                 if (parameter.RefKind != RefKind.None)
                 {
-                    var modifier = parameter.RefKind switch
-                    {
-                        RefKind.Ref => "ref",
-                        RefKind.Out => "out",
-                        RefKind.In => "in",
-                        _ => parameter.RefKind.ToString().ToLowerInvariant()
-                    };
+                    var modifier = GetRefKindModifier(parameter.RefKind);
                     failureMessage =
-                        $"BuildRenderTree helper method '{helperDisplayName}' cannot declare '{modifier}' parameter '{parameter.Name}' in component '{_snapshot.Descriptor.FullName}'. Only ordinary by-value parameters are supported.";
+                        $"BuildRenderTree helper method '{helperDisplayName}' cannot declare '{modifier}' parameter '{parameter.Name}' in component '{_snapshot.Descriptor.FullName}'. Only ordinary by-value parameters and read-only 'in' value parameters are supported.";
                     return false;
                 }
             }
 
-            var selectedBuilderParameter = builderParameters[0];
             builderParameter = RazorVueMethodSymbolNormalizer.NormalizeParameter(method, selectedBuilderParameter);
             extraParameters = method.Parameters
                 .Where(parameter => !SymbolEqualityComparer.Default.Equals(parameter, selectedBuilderParameter))
@@ -1925,6 +1938,9 @@ internal sealed class RazorVueRenderTreeExtractor
                 }
 
                 var parameter = RazorVueMethodSymbolNormalizer.NormalizeParameter(invocation.TargetMethod, rawParameter);
+                if (!IsSupportedRenderHelperArgumentKind(invocation, parameter, out failureMessage))
+                    return false;
+
                 if (!boundParameters.Add(parameter))
                 {
                     failureMessage =
@@ -1960,6 +1976,72 @@ internal sealed class RazorVueRenderTreeExtractor
             builderArgument = matchedBuilderArgument;
             extraArgumentBindings = extraBindingsBuilder.ToImmutable();
             return true;
+        }
+
+        private bool IsSupportedRenderHelperArgumentKind(
+            IInvocationOperation invocation,
+            IParameterSymbol normalizedParameter,
+            out string failureMessage)
+        {
+            failureMessage = string.Empty;
+
+            var expectedRefKind = normalizedParameter.RefKind;
+            if (expectedRefKind is RefKind.None or RefKind.In)
+                return true;
+
+            var modifier = GetRefKindModifier(expectedRefKind);
+            failureMessage =
+                $"BuildRenderTree helper method '{GetBuilderCallDisplayName(invocation)}' cannot bind '{modifier}' argument for parameter '{normalizedParameter.Name}' in component '{_snapshot.Descriptor.FullName}'. Render helper parameters only support by-value binding and read-only 'in' value binding.";
+            return false;
+        }
+
+        private void ThrowIfReadOnlyByRefParameterEscapes(IOperation operation)
+        {
+            foreach (var current in EnumerateSelfAndDescendants(operation))
+            {
+                if (Unwrap(current) is not IArgumentOperation argument ||
+                    argument.Parameter?.RefKind is not (RefKind.Ref or RefKind.Out or RefKind.In))
+                {
+                    continue;
+                }
+
+                if (!TryGetReadOnlyByRefParameterReference(argument.Value, out var escapedParameter))
+                    continue;
+
+                throw CreateStructuralIssue(
+                    argument,
+                    $"BuildRenderTree helper parameter '{escapedParameter.Name}' in component '{_snapshot.Descriptor.FullName}' is a read-only 'in' value parameter and cannot be forwarded through a by-reference invocation. RazorVue only supports reading 'in' render helper parameters as values.");
+            }
+        }
+
+        private static string GetRefKindModifier(RefKind refKind)
+            => refKind switch
+            {
+                RefKind.Ref => "ref",
+                RefKind.Out => "out",
+                RefKind.In => "in",
+                _ => refKind.ToString().ToLowerInvariant()
+            };
+
+        private static bool TryGetReadOnlyByRefParameterReference(
+            IOperation? operation,
+            out IParameterSymbol parameter)
+        {
+            parameter = default!;
+            if (operation is null)
+                return false;
+
+            foreach (var current in EnumerateSelfAndDescendants(operation))
+            {
+                if (Unwrap(current) is IParameterReferenceOperation parameterReference &&
+                    parameterReference.Parameter.RefKind == RefKind.In)
+                {
+                    parameter = parameterReference.Parameter;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void ParseRenderHelperBody(IInvocationOperation invocation, IParameterSymbol builderParameter)

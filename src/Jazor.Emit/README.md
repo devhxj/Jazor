@@ -110,7 +110,7 @@ runRazorVueConsumerSsr(razorVueConsumerComponents, razorVueHostRequirements, raz
 当前会显式拒绝：
 
 - optional separator 参数不是 segment 尾部、没有紧邻前置 optional separator、或需要多层组合展开的 composite/mixed segment
-- 无法诚实映射到 Vue Router regex path 的 route constraint 组合
+- 无法诚实映射为“一个 Vue Router path regex + generated metadata 二次校验”的 route constraint 组合
 
 对于 default value，consumer entry 会把默认值写入 `defaultParameterValues` metadata，并用 `elidableDefaultParameterNames` 明确标注哪些默认值允许在 href 生成时省略。whole-segment default value 会转换成 Vue Router 可接受的 optional path（例如 `:id?` / `:id(<regex>)?`），并标记为可省略；composite default value（例如 `post-{id=42}`）按 ASP.NET Core inbound 语义保持 required path，因此不会进入 `elidableDefaultParameterNames`。consumer runtime 会在 route match 读取与 href 生成时统一应用这两份 metadata，避免把 composite default 错误折叠成不存在的 URL。
 
@@ -119,17 +119,18 @@ runRazorVueConsumerSsr(razorVueConsumerComponents, razorVueHostRequirements, raz
 - `int`，生成整数 path regex，并通过 `parameterConstraints` metadata 在 consumer runtime 中按 Int32 边界校验
 - `long`，生成整数 path regex，并通过 `parameterConstraints` metadata 在 consumer runtime 中按 Int64 边界校验
 - `min(...)` / `max(...)` / `range(...)`，按 ASP.NET Core integer/long route constraint 语义生成整数 path regex，并通过 `parameterConstraints` metadata + runtime `BigInt` 校验边界
-- `alpha`
-- `bool`，按 ASP.NET Core route constraint 语义接受大小写混合的 `true` / `false`
-- `guid`，覆盖 `N` / `D` / `B` / `P` / `X` 常见 GUID 文本形态，并兼容 browser pathname 中的 encoded wrapper 形态
+- `alpha`，生成 ASCII alpha path regex，并通过 `alphaText` metadata 在 consumer runtime 中二次校验
+- `bool`，生成大小写不敏感 bool path regex，并通过 `booleanParse` metadata 按 ASP.NET Core route constraint 语义校验 `true` / `false`
+- `guid`，生成 GUID path regex，并通过 `guidParse` metadata 覆盖 `N` / `D` / `B` / `P` / `X` 常见 GUID 文本形态，兼容 browser pathname 中的 encoded wrapper 形态
 - `decimal`，生成非空 path regex，并通过 `numberParse` metadata 在 consumer runtime 中校验 invariant decimal text，包括 `NumberStyles.Number` 的宽松 thousands separator、前置/尾随符号、29 位有效数字舍入和 96-bit decimal 最大值边界
 - `double` / `float`，生成非空 path regex，并通过 `numberParse` metadata 在 consumer runtime 中校验 invariant floating-point text，包括 exponent、宽松 thousands separator、`NaN` 和 `Infinity`
 - `datetime`，生成非空 path regex，并通过 `dateTimeParse` metadata 在 consumer runtime 中校验 ASP.NET Core `DateTimeRouteConstraint` 对应的 invariant `DateTime.TryParse(...)` 常见 URL 形态，包括 ISO-like numeric date/time、US numeric date、英文月份、day-of-week 校验、time-only、`GMT` / `Z` / numeric offset 后缀、闰年和 `24:00:00` rollover 边界
+- `file` / `nonfile`，生成非空 path regex，并通过 `fileName` metadata 在 consumer runtime 中按 ASP.NET Core filename constraint 语义校验最后路径段是否包含非末尾扩展名点号；decoded route parameter 中的 `%2E` 按实际 `.` 处理
 - `required`，作为 `lengthRange(min: 1)` metadata 参与约束求交
-- `length(...)` / `minlength(...)` / `maxlength(...)`，支持单独生成 path regex，也支持与 `int` / `long` / `alpha` / `regex(...)` 等单一 path-regex 约束组合，通过 `parameterConstraints` metadata 在 consumer runtime 中执行长度求交校验
-- `regex(...)`
+- `length(...)` / `minlength(...)` / `maxlength(...)`，支持单独生成 path regex，也支持与 `int` / `long` / `alpha` / `regex(...)` 等 path-regex 约束组合，通过 `parameterConstraints` metadata 在 consumer runtime 中执行长度求交校验
+- `regex(...)`，生成 Vue Router path regex，并通过 `regexMatch` metadata 在 route match / href 生成时继续校验
 
-`guid` 的 Vue Router path regex 会避开该 parser 对 custom-regex `)` 的单层转义限制；生成结果不是 C# 语义转译，只是最终 Vue route artifact 的可解析 path pattern。`int` / `long` / `min(...)` / `max(...)` / `range(...)` 的数值边界、`decimal` / `double` / `float` 的 parse 语义、`datetime` 的 DateTime parse 语义，以及 `length(...)` / `minlength(...)` / `maxlength(...)` 的长度边界不只靠 path regex，consumer runtime 会在 Vue Router match / `beforeEnter` / href 生成外层继续执行 generated metadata 校验，避免溢出值、不可解析数值文本或多 constraint 求交失败值被路由误接收。`date` 不是当前 ASP.NET Core 默认 `ConstraintMap` 中的内置 route constraint，仍保持 fail-fast；后续若要支持自定义 `date` constraint，需要先明确其服务端 constraint 类型和解析合同，不能按 `datetime` 近似放行。
+`guid` 的 Vue Router path regex 会避开该 parser 对 custom-regex `)` 的单层转义限制；生成结果不是 C# 语义转译，只是最终 Vue route artifact 的可解析 path pattern。`alpha` / `bool` / `guid` / `regex(...)`、`int` / `long` / `min(...)` / `max(...)` / `range(...)` 的数值边界、`decimal` / `double` / `float` 的 parse 语义、`datetime` 的 DateTime parse 语义、`file` / `nonfile` 的 filename 语义，以及 `length(...)` / `minlength(...)` / `maxlength(...)` 的长度边界不只靠 path regex，consumer runtime 会在 Vue Router match / `beforeEnter` / href 生成外层继续执行 generated metadata 校验，避免溢出值、不可解析数值文本或多 constraint 求交失败值被路由误接收。对于可 metadata-backed 求交的组合，例如 `{flag:bool:alpha}` 或 `{id:int:regex(^\d{{2}}$)}`，consumer entry 会选择一个稳定的 Vue path regex，并把所有约束写入 metadata 逐项校验；未知约束或无法转换为该模型的组合仍 fail-fast。`date` 不是当前 ASP.NET Core 默认 `ConstraintMap` 中的内置 route constraint，仍保持 fail-fast；后续若要支持自定义 `date` constraint，需要先明确其服务端 constraint 类型和解析合同，不能按 `datetime` 近似放行。
 
 consumer runtime 侧也已同步对齐：Playground 这类 consumer 不再维护独立的简化 path matcher / href 拼接规则，而是复用 `vue-router` matcher 语义处理 anchor interception 与 route href 生成，并在其外层叠加 generated route metadata 中的 default parameter 和 parameter constraint contract，避免 generated route metadata 与真实 router 语义漂移。
 
