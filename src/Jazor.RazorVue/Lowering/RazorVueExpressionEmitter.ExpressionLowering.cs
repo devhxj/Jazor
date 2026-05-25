@@ -1218,6 +1218,27 @@ internal sealed partial class RazorVueExpressionEmitter
         bool useSetupEmitter,
         out string expression)
     {
+        if (_imperativeBuilderAlias is not null &&
+            RazorVueComponentTypeCarrierHelper.TryGetInvalidatedSourceStableComponentTypeMember(
+                _snapshot.Compilation,
+                _snapshot.ComponentSymbol,
+                property,
+                out var invalidatedComponentTypeMemberCarrier))
+        {
+            throw CreateImperativeComponentTypeMemberCarrierInvalidatedException(property, invalidatedComponentTypeMemberCarrier);
+        }
+
+        if (_imperativeBuilderAlias is not null &&
+            RazorVueComponentTypeCarrierHelper.TryResolveSourceStableVueComponentTypeMember(
+                _snapshot.Compilation,
+                _snapshot.ComponentSymbol,
+                property,
+                out var componentTypeMemberCarrier,
+                out _))
+        {
+            throw CreateImperativeComponentTypeMemberCarrierRuntimeValueException(property, componentTypeMemberCarrier);
+        }
+
         if (useSetupEmitter)
         {
             if (TryEmitKnownAliasedProperty(property, useSetupEmitter: true, argument, out expression))
@@ -1416,6 +1437,27 @@ internal sealed partial class RazorVueExpressionEmitter
         bool useSetupEmitter,
         out string expression)
     {
+        if (_imperativeBuilderAlias is not null &&
+            RazorVueComponentTypeCarrierHelper.TryGetInvalidatedSourceStableComponentTypeMember(
+                _snapshot.Compilation,
+                _snapshot.ComponentSymbol,
+                field,
+                out var invalidatedComponentTypeMemberCarrier))
+        {
+            throw CreateImperativeComponentTypeMemberCarrierInvalidatedException(field, invalidatedComponentTypeMemberCarrier);
+        }
+
+        if (_imperativeBuilderAlias is not null &&
+            RazorVueComponentTypeCarrierHelper.TryResolveSourceStableVueComponentTypeMember(
+                _snapshot.Compilation,
+                _snapshot.ComponentSymbol,
+                field,
+                out var componentTypeMemberCarrier,
+                out _))
+        {
+            throw CreateImperativeComponentTypeMemberCarrierRuntimeValueException(field, componentTypeMemberCarrier);
+        }
+
         if (useSetupEmitter)
         {
             if (IsCurrentComponentMember(field.Field, field.Instance))
@@ -1883,6 +1925,26 @@ internal sealed partial class RazorVueExpressionEmitter
 
     internal bool TryRewriteLocalReference(ILocalReferenceOperation operation, SenseArgument argument, out string expression)
     {
+        if (_imperativeBuilderAlias is not null &&
+            RazorVueComponentTypeCarrierHelper.TryGetInvalidatedSourceStableComponentTypeMember(
+                _snapshot.Compilation,
+                _snapshot.ComponentSymbol,
+                operation,
+                out var invalidatedComponentTypeMemberCarrier))
+        {
+            throw CreateImperativeComponentTypeMemberCarrierInvalidatedException(operation, invalidatedComponentTypeMemberCarrier);
+        }
+
+        if (_imperativeBuilderAlias is not null &&
+            RazorVueComponentTypeCarrierHelper.TryResolveSourceStableVueComponentTypeLocal(
+                _snapshot.Compilation,
+                _snapshot.ComponentSymbol,
+                operation.Local,
+                out _))
+        {
+            throw CreateImperativeComponentTypeCarrierRuntimeValueException(operation, operation.Local);
+        }
+
         if (_scopedLifecycleCallableAliases is not null &&
             _scopedLifecycleCallableAliases.TryGetValue(operation.Local, out expression))
         {

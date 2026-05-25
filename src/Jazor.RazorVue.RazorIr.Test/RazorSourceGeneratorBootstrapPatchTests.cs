@@ -244,6 +244,8 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
                     using static ECMAScript.Vue3;
                     using Microsoft.AspNetCore.Components;
 
+                    namespace Demo.Pages;
+
                     [ECMAScriptModule("{{moduleImport}}")]
                     public partial class {{componentName}} : ComponentBase, IVueComponent
                     {
@@ -340,6 +342,7 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
             <Project Sdk="Microsoft.NET.Sdk.Razor">
               <PropertyGroup>
                 <TargetFramework>TARGET_FRAMEWORK</TargetFramework>
+                <RootNamespace>Demo</RootNamespace>
                 <Nullable>enable</Nullable>
                 <ImplicitUsings>enable</ImplicitUsings>
                 <RazorLangVersion>RAZOR_LANG_VERSION</RazorLangVersion>
@@ -392,6 +395,8 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
             using ECMAScript;
             using static ECMAScript.Vue3;
             using Microsoft.AspNetCore.Components;
+
+            namespace Demo;
 
             [ECMAScriptModule("./components/counter")]
             public partial class Counter : ComponentBase, IVueComponent

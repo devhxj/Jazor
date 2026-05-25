@@ -71,6 +71,15 @@
 - 当表达式语义要求单次求值保护时，最终 JS lowering 允许输出 IIFE / 临时变量，而不是强制追求最短文本形式。
 - 仍保留显式失败边界：如果某个 mixed attribute child 既不是可证明静态 literal，也不是可重建的 Razor expression/code 节点，frontend 会直接报 unsupported，而不会静默生成不可靠代码。
 
+## `OpenComponent(Type)` Support
+
+- handwritten `BuildRenderTree` 现支持静态 `OpenComponent(Type)` 目标，包括直接 `builder.OpenComponent(0, typeof(ChildCard))`，源码稳定 `System.Type` local carrier：`var childType = typeof(ChildCard); builder.OpenComponent(0, childType);`、`Type childType; childType = typeof(ChildCard); builder.OpenComponent(0, childType);`，以及源码稳定 current-component member carrier：`private Type ChildType => typeof(ChildCard); builder.OpenComponent(0, ChildType);`、`private readonly Type _childType = typeof(ChildCard); builder.OpenComponent(0, _childType);`。
+- local/member carrier 可以形成受控转发链，例如 `var childType = ChildType; builder.OpenComponent(0, childType);` 或 `private Type ChildType => PrimaryChildType; private Type PrimaryChildType => typeof(ChildCard);`。解析会递归追到最终 `typeof(IVueComponent)`，并用访问集阻断循环，不会把循环或运行时 dataflow 当作动态组件解析。
+- 这条能力只把可证明为 `typeof(IVueComponent)` 的 carrier 解析成静态组件引用。component resolver、imperative bridge、descriptor identity/runtime-usage 收集都会沿同一 helper 解析，因此 import、metadata 与 HMR shape 不会遗漏。
+- current-component member carrier 仅接受只读/getter-only member，或 private mutable property/field 且可证明不存在后续可观察写入的 source-stable 形态；later writes 会显式 fail-fast，不会沿首次 initializer 伪造静态组件目标。
+- 这不是动态组件支持：运行时 `Type` dataflow、后续可观察写入后的 carrier、非组件类型作为 `OpenComponent(Type)` 目标、以及把组件 `System.Type` carrier 当普通 render 内容、attribute、key、条件或 loop source 使用，都会显式 fail-fast 或由组件解析层报 `ComponentNotFound`。
+- 普通 CLR/type-token 表达式仍属于 `Jazor.Compiler` / `SemanticWalker` 语义，例如 `typeof(TestDisposable).Name` 或 `var helperType = typeof(TestDisposable); helperType.Name` 会继续 lower 为 helper type token，不会被 RazorVue 的组件 carrier 通道替代。
+
 ## Static Markup Support
 
 - handwritten `BuildRenderTree` 现已支持静态 markup subtree，只要内容可安全解析为静态 HTML subtree。

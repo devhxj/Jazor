@@ -452,6 +452,8 @@ internal sealed class RazorVueRenderTreeExtractor
             new(SymbolEqualityComparer.Default);
         private readonly Dictionary<ILocalSymbol, IOperation> _sourceStableLocalStaticMarkupInitializers =
             new(SymbolEqualityComparer.Default);
+        private readonly Dictionary<ILocalSymbol, IOperation> _sourceStableLocalComponentTypeInitializers =
+            new(SymbolEqualityComparer.Default);
         private readonly Dictionary<ILocalSymbol, IOperation> _localStaticMarkupCarriers =
             new(SymbolEqualityComparer.Default);
         private readonly Dictionary<ISymbol, ParsedSlotTemplate> _memberRenderFragmentCarriers = memberRenderFragmentCarriers is null
@@ -470,6 +472,8 @@ internal sealed class RazorVueRenderTreeExtractor
             new(SymbolEqualityComparer.Default);
         private readonly Dictionary<ILocalSymbol, PendingStaticMarkupLocalCarrierDeclaration> _pendingStaticMarkupLocalCarriers =
             new(SymbolEqualityComparer.Default);
+        private readonly Dictionary<ILocalSymbol, PendingComponentTypeLocalCarrierDeclaration> _pendingComponentTypeLocalCarriers =
+            new(SymbolEqualityComparer.Default);
         private readonly Dictionary<ILocalSymbol, PendingTemplateScopedDeclaration> _pendingTemplateScopedDeclarations =
             new(SymbolEqualityComparer.Default);
         private readonly Dictionary<string, IOperation> _literalStringOperationCache = new(StringComparer.Ordinal);
@@ -482,6 +486,7 @@ internal sealed class RazorVueRenderTreeExtractor
         {
             PrimeSourceStableLocalRenderFragmentInitializers(operations);
             PrimeSourceStableLocalStaticMarkupInitializers(operations);
+            PrimeSourceStableLocalComponentTypeInitializers(operations);
             foreach (var operation in operations)
                 ParseOperation(operation);
 
@@ -499,6 +504,7 @@ internal sealed class RazorVueRenderTreeExtractor
         {
             PrimeSourceStableLocalRenderFragmentInitializers(operations);
             PrimeSourceStableLocalStaticMarkupInitializers(operations);
+            PrimeSourceStableLocalComponentTypeInitializers(operations);
             var nextOperationIndex = 0;
             foreach (var segment in segments)
             {
@@ -539,6 +545,7 @@ internal sealed class RazorVueRenderTreeExtractor
                     ParseExpressionStatement(expressionStatement);
                     break;
                 case IConditionalOperation conditional:
+                    ThrowIfComponentTypeCarrierUsedAsRuntimeValue(conditional.Condition, conditional);
                     AddNode(new RazorVueConditionalNode(
                         conditional.Condition,
                         ParseNestedBranch(conditional.WhenTrue),
@@ -546,6 +553,7 @@ internal sealed class RazorVueRenderTreeExtractor
                         CreateOrigins(current, RazorVueOriginKind.Template)));
                     break;
                 case IForEachLoopOperation foreachLoop:
+                    ThrowIfComponentTypeCarrierUsedAsRuntimeValue(foreachLoop.Collection, foreachLoop);
                     AddNode(new RazorVueForEachNode(
                         foreachLoop.Locals.Length > 0 ? foreachLoop.Locals[0].Name : "item",
                         foreachLoop.Locals.Length > 0 ? foreachLoop.Locals[0] : null,
@@ -627,6 +635,9 @@ internal sealed class RazorVueRenderTreeExtractor
                     return;
 
                 if (TryCompletePendingStaticMarkupLocalCarrier(assignment))
+                    return;
+
+                if (TryCompletePendingComponentTypeLocalCarrier(assignment))
                     return;
 
                 if (TryCompletePendingTemplateScopedDeclaration(assignment))
@@ -745,7 +756,7 @@ internal sealed class RazorVueRenderTreeExtractor
                 CreateOrigins(invocation, RazorVueOriginKind.Template)));
         }
 
-        private static bool TryResolveOpenComponent(
+        private bool TryResolveOpenComponent(
             IInvocationOperation invocation,
             out INamedTypeSymbol componentType,
             out string resolutionName)
@@ -761,11 +772,29 @@ internal sealed class RazorVueRenderTreeExtractor
                 return true;
             }
 
-            if (GetInvocationArgument(invocation, 1) is ITypeOfOperation { TypeOperand: INamedTypeSymbol explicitComponentType } typeOfOperation)
+            if (RazorVueComponentTypeCarrierHelper.TryResolveComponentType(
+                    _compilation,
+                    _snapshot.ComponentSymbol,
+                    GetInvocationArgument(invocation, 1),
+                    out var explicitComponentType,
+                    out var typeOfOperation))
             {
                 componentType = explicitComponentType;
-                resolutionName = GetTypeOfComponentResolutionName(typeOfOperation, componentType.ToDisplayString());
+                resolutionName = typeOfOperation is null
+                    ? componentType.Name
+                    : GetTypeOfComponentResolutionName(typeOfOperation, componentType.ToDisplayString());
                 return true;
+            }
+
+            if (RazorVueComponentTypeCarrierHelper.TryGetInvalidatedSourceStableComponentTypeMember(
+                    _compilation,
+                    _snapshot.ComponentSymbol,
+                    GetInvocationArgument(invocation, 1),
+                    out var memberCarrier))
+            {
+                throw CreateStructuralIssue(
+                    invocation,
+                    $"RazorVue System.Type member '{memberCarrier.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. OpenComponent(Type) carriers must remain source-stable.");
             }
 
             return false;
@@ -848,6 +877,7 @@ internal sealed class RazorVueRenderTreeExtractor
             }
 
             var value = GetInvocationArgument(invocation, 2);
+            ThrowIfComponentTypeCarrierUsedAsRuntimeValue(value, invocation);
             var currentNode = GetRequiredOpenNodeBuilder(invocation);
             if (TryHandleComponentSlotValue(currentNode, name!, value, invocation))
                 return;
@@ -902,6 +932,7 @@ internal sealed class RazorVueRenderTreeExtractor
             }
 
             var value = GetInvocationArgument(invocation, 3);
+            ThrowIfComponentTypeCarrierUsedAsRuntimeValue(value, invocation);
             if (value is null)
             {
                 throw CreateUnsupportedBuilderCall(
@@ -932,6 +963,7 @@ internal sealed class RazorVueRenderTreeExtractor
             }
 
             var value = GetInvocationArgument(invocation, 2);
+            ThrowIfComponentTypeCarrierUsedAsRuntimeValue(value, invocation);
             var currentNode = GetRequiredOpenComponentBuilder(invocation);
             if (TryHandleComponentSlotValue(currentNode, name!, value, invocation))
                 return;
@@ -957,6 +989,7 @@ internal sealed class RazorVueRenderTreeExtractor
         private void AddMultipleAttributes(IInvocationOperation invocation)
         {
             var value = GetInvocationArgument(invocation, 1);
+            ThrowIfComponentTypeCarrierUsedAsRuntimeValue(value, invocation);
             if (value is null || IsConstantNull(value))
                 return;
 
@@ -971,12 +1004,14 @@ internal sealed class RazorVueRenderTreeExtractor
         {
             var currentNode = GetRequiredOpenNodeBuilder(invocation);
             var key = GetInvocationArgument(invocation, 0);
+            ThrowIfComponentTypeCarrierUsedAsRuntimeValue(key, invocation);
             currentNode.SetKey(key, ToCapturedValueBindings(_activeCapturedBindings), CreateOrigins(invocation, RazorVueOriginKind.Template));
         }
 
         private void AddContent(IInvocationOperation invocation)
         {
             var value = GetInvocationArgument(invocation, 1);
+            ThrowIfComponentTypeCarrierUsedAsRuntimeValue(value, invocation);
             if (value is null || IsConstantNull(value))
                 return;
 
@@ -1038,6 +1073,52 @@ internal sealed class RazorVueRenderTreeExtractor
             }
 
             AddNode(new RazorVueExpressionNode(value, origins));
+        }
+
+        private void ThrowIfComponentTypeCarrierUsedAsRuntimeValue(IOperation? operation, IOperation origin)
+        {
+            if (operation is null)
+                return;
+
+            foreach (var candidate in EnumerateSelfAndDescendants(operation))
+            {
+                switch (Unwrap(candidate))
+                {
+                    case ITypeOfOperation { TypeOperand: INamedTypeSymbol typeOperand }
+                        when RazorVueComponentTypeCarrierHelper.IsVueComponentType(_compilation, typeOperand):
+                        throw CreateStructuralIssue(
+                            origin,
+                            $"BuildRenderTree uses typeof(...) as a runtime value in component '{_snapshot.Descriptor.FullName}'. RazorVue only supports System.Type values as source-stable OpenComponent(Type) carriers.");
+                    case ILocalReferenceOperation localReference
+                        when RazorVueComponentTypeCarrierHelper.TryResolveSourceStableVueComponentTypeLocal(
+                            _compilation,
+                            _snapshot.ComponentSymbol,
+                            localReference.Local,
+                            out _):
+                        throw CreateStructuralIssue(
+                            origin,
+                            $"BuildRenderTree uses System.Type local '{localReference.Local.Name}' as a runtime value in component '{_snapshot.Descriptor.FullName}'. RazorVue only supports System.Type locals as source-stable OpenComponent(Type) carriers.");
+                    case { }
+                        when RazorVueComponentTypeCarrierHelper.TryGetInvalidatedSourceStableComponentTypeMember(
+                            _compilation,
+                            _snapshot.ComponentSymbol,
+                            candidate,
+                            out var invalidatedMemberCarrier):
+                        throw CreateStructuralIssue(
+                            origin,
+                            $"RazorVue System.Type member '{invalidatedMemberCarrier.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. OpenComponent(Type) carriers must remain source-stable.");
+                    case IPropertyReferenceOperation or IFieldReferenceOperation
+                        when RazorVueComponentTypeCarrierHelper.TryResolveSourceStableVueComponentTypeMember(
+                            _compilation,
+                            _snapshot.ComponentSymbol,
+                            candidate,
+                            out var memberCarrier,
+                            out _):
+                        throw CreateStructuralIssue(
+                            origin,
+                            $"BuildRenderTree uses System.Type member '{memberCarrier.Name}' as a runtime value in component '{_snapshot.Descriptor.FullName}'. RazorVue only supports System.Type members as source-stable OpenComponent(Type) carriers.");
+                }
+            }
         }
 
         private void AddMarkupContent(IInvocationOperation invocation)
@@ -1250,6 +1331,10 @@ internal sealed class RazorVueRenderTreeExtractor
             if (!RazorVueForLoopAnalyzer.TryAnalyze(loop, Unwrap, out var analyzedLoop))
                 return false;
 
+            ThrowIfComponentTypeCarrierUsedAsRuntimeValue(analyzedLoop.InitialValue, loop);
+            ThrowIfComponentTypeCarrierUsedAsRuntimeValue(analyzedLoop.LimitValue, loop);
+            ThrowIfComponentTypeCarrierUsedAsRuntimeValue(analyzedLoop.StepValue, loop);
+
             RazorVueForLoopAnalyzer.ValidateStaticLoopProgressIfProvable(
                 loop,
                 analyzedLoop,
@@ -1381,6 +1466,9 @@ internal sealed class RazorVueRenderTreeExtractor
                     }
 
                     if (TryRegisterStaticMarkupLocalCarrier(declarator, out failureMessage))
+                        continue;
+
+                    if (TryRegisterComponentTypeLocalCarrier(declarator, out failureMessage))
                         continue;
 
                     if (TryRegisterTemplateScopedDeclaration(declarator, out failureMessage))
@@ -1517,6 +1605,85 @@ internal sealed class RazorVueRenderTreeExtractor
             }
 
             _localStaticMarkupCarriers[declarator.Symbol] = initializer;
+            return true;
+        }
+
+        private bool TryRegisterComponentTypeLocalCarrier(
+            IVariableDeclaratorOperation declarator,
+            out string failureMessage)
+        {
+            failureMessage =
+                $"BuildRenderTree does not support local variable declaration '{GetOperationDisplay(declarator)}' in component '{_snapshot.Descriptor.FullName}'.";
+
+            if (!RazorVueComponentTypeCarrierHelper.IsSystemType(declarator.Symbol.Type))
+                return false;
+
+            var initializer = TryGetSourceStableComponentTypeInitializer(declarator.Symbol);
+            if (initializer is null)
+            {
+                if (declarator.Initializer?.Value is { } directInitializer &&
+                    Unwrap(directInitializer) is ITypeOfOperation { TypeOperand: INamedTypeSymbol directTypeOperand } &&
+                    RazorVueComponentTypeCarrierHelper.IsVueComponentType(_compilation, directTypeOperand))
+                {
+                    throw CreateStructuralIssue(
+                        declarator,
+                        RazorVueSourceStableLocalInitializerHelper.IsSourceStableLocalInitializerInvalidatedByLaterWrites(
+                            _compilation,
+                            declarator.Symbol,
+                            RazorVueComponentTypeCarrierHelper.IsSystemType)
+                            ? $"RazorVue System.Type local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. OpenComponent(Type) carriers must remain source-stable."
+                            : $"RazorVue System.Type local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' requires a compile-time provable typeof(component) initializer before it can be used as an OpenComponent(Type) carrier.");
+                }
+
+                return false;
+            }
+
+            if (!RazorVueComponentTypeCarrierHelper.TryResolveComponentType(
+                    _compilation,
+                    _snapshot.ComponentSymbol,
+                    initializer,
+                    out var componentType,
+                    out _) ||
+                !RazorVueComponentTypeCarrierHelper.IsVueComponentType(_compilation, componentType))
+            {
+                return false;
+            }
+
+            if (declarator.Initializer?.Value is null && _allowTemplateScopedLocals)
+                _pendingComponentTypeLocalCarriers[declarator.Symbol] =
+                    new PendingComponentTypeLocalCarrierDeclaration(declarator);
+
+            return true;
+        }
+
+        private bool TryCompletePendingComponentTypeLocalCarrier(ISimpleAssignmentOperation assignment)
+        {
+            if (assignment.Target is not ILocalReferenceOperation localReference)
+                return false;
+
+            if (!_pendingComponentTypeLocalCarriers.TryGetValue(localReference.Local, out var pendingDeclaration))
+                return false;
+
+            _pendingComponentTypeLocalCarriers.Remove(localReference.Local);
+            var initializer = TryGetSourceStableComponentTypeInitializer(pendingDeclaration.Declarator.Symbol);
+            if (initializer is null)
+            {
+                throw CreateStructuralIssue(
+                    assignment,
+                    $"RazorVue System.Type local '{pendingDeclaration.Declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once within the same linear local-declaration prefix by a simple assignment statement and cannot be observed through later writes.");
+            }
+
+            if (!RazorVueComponentTypeCarrierHelper.TryResolveComponentType(
+                    _compilation,
+                    _snapshot.ComponentSymbol,
+                    initializer,
+                    out var componentType,
+                    out _) ||
+                !RazorVueComponentTypeCarrierHelper.IsVueComponentType(_compilation, componentType))
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -3125,6 +3292,22 @@ internal sealed class RazorVueRenderTreeExtractor
             }
         }
 
+        private void PrimeSourceStableLocalComponentTypeInitializers(IEnumerable<IOperation> operations)
+        {
+            _sourceStableLocalComponentTypeInitializers.Clear();
+            var buffered = operations as IReadOnlyList<IOperation> ?? operations.ToArray();
+            if (buffered.Count == 0)
+                return;
+
+            foreach (var pair in RazorVueSourceStableLocalInitializerHelper.CollectSourceStableLocalInitializers(
+                         _compilation,
+                         buffered,
+                         RazorVueComponentTypeCarrierHelper.IsSystemType))
+            {
+                _sourceStableLocalComponentTypeInitializers[pair.Key] = pair.Value;
+            }
+        }
+
         private IOperation? TryGetSourceStableRenderFragmentInitializer(ILocalSymbol local)
             => _sourceStableLocalRenderFragmentInitializers.TryGetValue(local, out var initializer)
                 ? initializer
@@ -3132,6 +3315,11 @@ internal sealed class RazorVueRenderTreeExtractor
 
         private IOperation? TryGetSourceStableStaticMarkupInitializer(ILocalSymbol local)
             => _sourceStableLocalStaticMarkupInitializers.TryGetValue(local, out var initializer)
+                ? initializer
+                : null;
+
+        private IOperation? TryGetSourceStableComponentTypeInitializer(ILocalSymbol local)
+            => _sourceStableLocalComponentTypeInitializers.TryGetValue(local, out var initializer)
                 ? initializer
                 : null;
 
@@ -3909,6 +4097,7 @@ internal sealed class RazorVueRenderTreeExtractor
         private bool HasPendingImmediateAssignmentDeclarations()
             => _pendingRenderFragmentLocalCarriers.Count > 0 ||
                _pendingStaticMarkupLocalCarriers.Count > 0 ||
+               _pendingComponentTypeLocalCarriers.Count > 0 ||
                _pendingTemplateScopedDeclarations.Count > 0;
 
         private bool IsPendingImmediateAssignment(IOperation operation)
@@ -3922,6 +4111,7 @@ internal sealed class RazorVueRenderTreeExtractor
 
             return _pendingRenderFragmentLocalCarriers.ContainsKey(localReference.Local) ||
                    _pendingStaticMarkupLocalCarriers.ContainsKey(localReference.Local) ||
+                   _pendingComponentTypeLocalCarriers.ContainsKey(localReference.Local) ||
                    _pendingTemplateScopedDeclarations.ContainsKey(localReference.Local);
         }
 
@@ -3961,6 +4151,13 @@ internal sealed class RazorVueRenderTreeExtractor
                 message =
                     $"RazorVue MarkupString local '{pendingDeclaration.Declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once within the same linear local-declaration prefix by a simple assignment statement.";
             }
+            else if (_pendingComponentTypeLocalCarriers.Count > 0)
+            {
+                var pendingDeclaration = _pendingComponentTypeLocalCarriers.Values.First();
+                originOperation = pendingDeclaration.Declarator;
+                message =
+                    $"RazorVue System.Type local '{pendingDeclaration.Declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once within the same linear local-declaration prefix by a simple assignment statement.";
+            }
             else
             {
                 var pendingDeclaration = _pendingTemplateScopedDeclarations.Values.First();
@@ -3978,6 +4175,9 @@ internal sealed class RazorVueRenderTreeExtractor
             IVariableDeclaratorOperation Declarator);
 
         private readonly record struct PendingStaticMarkupLocalCarrierDeclaration(
+            IVariableDeclaratorOperation Declarator);
+
+        private readonly record struct PendingComponentTypeLocalCarrierDeclaration(
             IVariableDeclaratorOperation Declarator);
 
         private readonly record struct PendingTemplateScopedDeclaration(

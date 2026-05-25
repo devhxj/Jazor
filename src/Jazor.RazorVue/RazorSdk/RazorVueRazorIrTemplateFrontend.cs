@@ -1004,6 +1004,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
             if (RazorVueStaticMarkupValueHelper.IsMarkupStringType(Unwrap(operation)?.Type))
             {
+                TryThrowInvalidStaticMarkupLocalCarrier(sourceSpan, operation);
                 throw CreateUnsupportedAttributeException(
                     sourceSpan,
                     $"RazorVue Razor IR frontend only supports compile-time provable static MarkupString template expressions in component '{_snapshot.Descriptor.FullName}'.");
@@ -3079,6 +3080,24 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             }
 
             _localStaticMarkupCarriers[declarator.Symbol] = Unwrap(initializer) ?? initializer;
+        }
+
+        private void TryThrowInvalidStaticMarkupLocalCarrier(
+            RazorVueRazorSourceSpan sourceSpan,
+            IOperation operation)
+        {
+            if (Unwrap(operation) is not ILocalReferenceOperation localReference ||
+                !RazorVueStaticMarkupValueHelper.IsMarkupStringType(localReference.Local.Type))
+            {
+                return;
+            }
+
+            if (!IsSourceStableLocalMarkupStringInitializerInvalidatedByLaterWrites(localReference.Local))
+                return;
+
+            throw CreateUnsupportedAttributeException(
+                sourceSpan,
+                $"RazorVue MarkupString local '{localReference.Local.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. MarkupString local carriers must remain source-stable.");
         }
 
         private bool TryResolveImmediateAssignedInitializer(

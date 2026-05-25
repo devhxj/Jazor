@@ -917,6 +917,9 @@ internal sealed partial class RazorVueExpressionEmitter
         if (TryRewriteImperativeStaticMarkupVariableDeclarator(operation, argument, out expression))
             return true;
 
+        if (TryRewriteImperativeComponentTypeVariableDeclarator(operation, out expression))
+            return true;
+
         if (!IsImperativeRenderFragmentCarrierType(operation.Symbol.Type))
             return false;
 
@@ -970,6 +973,9 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         if (TryRewriteImperativeStaticMarkupLocalAssignment(operation, localReference, argument, out expression))
+            return true;
+
+        if (TryRewriteImperativeComponentTypeLocalAssignment(operation, localReference, out expression))
             return true;
 
         if (!IsImperativeRenderFragmentCarrierType(localReference.Local.Type))
@@ -1062,6 +1068,90 @@ internal sealed partial class RazorVueExpressionEmitter
         return true;
     }
 
+    private bool TryRewriteImperativeComponentTypeVariableDeclarator(
+        IVariableDeclaratorOperation operation,
+        out string expression)
+    {
+        expression = string.Empty;
+        if (!RazorVueComponentTypeCarrierHelper.IsSystemType(operation.Symbol.Type))
+            return false;
+
+        if (RazorVueSourceStableLocalInitializerHelper.IsSourceStableLocalInitializerInvalidatedByLaterWrites(
+                _snapshot.Compilation,
+                operation.Symbol,
+                RazorVueComponentTypeCarrierHelper.IsSystemType))
+        {
+            throw CreateImperativeComponentTypeCarrierInvalidatedException(operation, operation.Symbol);
+        }
+
+        var current = TryGetNormalizedImperativeVariableInitializer(operation) ??
+                      operation.Initializer?.Value;
+        if (current is null)
+            return false;
+
+        if (!RazorVueComponentTypeCarrierHelper.TryResolveComponentType(
+                _snapshot.Compilation,
+                _snapshot.ComponentSymbol,
+                current,
+                out var componentType,
+                out _))
+        {
+            return false;
+        }
+
+        if (TryResolveImperativeComponentReference(componentType) is not { } componentReference)
+            return false;
+
+        expression = componentReference;
+        return true;
+    }
+
+    private bool TryRewriteImperativeComponentTypeLocalAssignment(
+        ISimpleAssignmentOperation operation,
+        ILocalReferenceOperation localReference,
+        out string expression)
+    {
+        expression = string.Empty;
+        if (!RazorVueComponentTypeCarrierHelper.IsSystemType(localReference.Local.Type))
+            return false;
+
+        if (RazorVueSourceStableLocalInitializerHelper.IsSourceStableLocalInitializerInvalidatedByLaterWrites(
+                _snapshot.Compilation,
+                localReference.Local,
+                RazorVueComponentTypeCarrierHelper.IsSystemType))
+        {
+            throw CreateImperativeComponentTypeCarrierInvalidatedException(operation, localReference.Local);
+        }
+
+        if (!RazorVueComponentTypeCarrierHelper.TryResolveComponentType(
+                _snapshot.Compilation,
+                _snapshot.ComponentSymbol,
+                operation.Value,
+                out var componentType,
+                out _))
+        {
+            return false;
+        }
+
+        if (TryResolveImperativeComponentReference(componentType) is not { } componentReference)
+            return false;
+
+        expression = localReference.Local.Name + " = " + componentReference;
+        return true;
+    }
+
+    private void ThrowIfInvalidatedImperativeComponentTypeMemberCarrier(IOperation operation)
+    {
+        if (RazorVueComponentTypeCarrierHelper.TryGetInvalidatedSourceStableComponentTypeMember(
+                _snapshot.Compilation,
+                _snapshot.ComponentSymbol,
+                operation,
+                out var memberCarrier))
+        {
+            throw CreateImperativeComponentTypeMemberCarrierInvalidatedException(operation, memberCarrier);
+        }
+    }
+
     private RazorVueStaticMarkupValueHelper.StaticMarkupResolution? TryResolveImperativeStaticMarkupCarrierValue(IOperation? operation)
         => RazorVueStaticMarkupValueHelper.TryResolveStaticMarkup(
             operation,
@@ -1118,6 +1208,81 @@ internal sealed partial class RazorVueExpressionEmitter
             RazorVueIssueCode.CanonicalizationFailed,
             RazorVueIssueSeverity.Error,
             $"RazorVue RenderFragment local '{local.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Declaration-initialized local carriers must remain source-stable.",
+            ImmutableArray<string>.Empty);
+        return new RazorVueCompilationIssueException(issue, _snapshot.Descriptor.FullName, origin);
+    }
+
+    private RazorVueCompilationIssueException CreateImperativeComponentTypeCarrierInvalidatedException(
+        IOperation operation,
+        ILocalSymbol local)
+    {
+        var origin = operation.Syntax is null
+            ? _snapshot.Origins.FirstOrDefault()
+            : RazorVueSourceOrigin.FromLocation(operation.Syntax.GetLocation(), RazorVueOriginKind.Template);
+        var issue = new RazorVueCompilationIssue(
+            RazorVueIssueCode.CanonicalizationFailed,
+            RazorVueIssueSeverity.Error,
+            $"RazorVue System.Type local '{local.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. OpenComponent(Type) carriers must remain source-stable.",
+            ImmutableArray<string>.Empty);
+        return new RazorVueCompilationIssueException(issue, _snapshot.Descriptor.FullName, origin);
+    }
+
+    private RazorVueCompilationIssueException CreateImperativeComponentTypeMemberCarrierInvalidatedException(
+        IOperation operation,
+        ISymbol member)
+    {
+        var origin = operation.Syntax is null
+            ? _snapshot.Origins.FirstOrDefault()
+            : RazorVueSourceOrigin.FromLocation(operation.Syntax.GetLocation(), RazorVueOriginKind.Template);
+        var issue = new RazorVueCompilationIssue(
+            RazorVueIssueCode.CanonicalizationFailed,
+            RazorVueIssueSeverity.Error,
+            $"RazorVue System.Type member '{member.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. OpenComponent(Type) carriers must remain source-stable.",
+            ImmutableArray<string>.Empty);
+        return new RazorVueCompilationIssueException(issue, _snapshot.Descriptor.FullName, origin);
+    }
+
+    private RazorVueCompilationIssueException CreateImperativeComponentTypeCarrierUnresolvedException(
+        IOperation operation,
+        INamedTypeSymbol componentType)
+    {
+        var origin = operation.Syntax is null
+            ? _snapshot.Origins.FirstOrDefault()
+            : RazorVueSourceOrigin.FromLocation(operation.Syntax.GetLocation(), RazorVueOriginKind.Template);
+        var issue = new RazorVueCompilationIssue(
+            RazorVueIssueCode.CanonicalizationFailed,
+            RazorVueIssueSeverity.Error,
+            $"RazorVue OpenComponent(Type) in component '{_snapshot.Descriptor.FullName}' requires a source-stable typeof(...) value that resolves to a visible RazorVue component. Type '{componentType.ToDisplayString()}' is not resolved as a component in this artifact.",
+            ImmutableArray<string>.Empty);
+        return new RazorVueCompilationIssueException(issue, _snapshot.Descriptor.FullName, origin);
+    }
+
+    private RazorVueCompilationIssueException CreateImperativeComponentTypeCarrierRuntimeValueException(
+        IOperation operation,
+        ILocalSymbol local)
+    {
+        var origin = operation.Syntax is null
+            ? _snapshot.Origins.FirstOrDefault()
+            : RazorVueSourceOrigin.FromLocation(operation.Syntax.GetLocation(), RazorVueOriginKind.Template);
+        var issue = new RazorVueCompilationIssue(
+            RazorVueIssueCode.CanonicalizationFailed,
+            RazorVueIssueSeverity.Error,
+            $"RazorVue System.Type local '{local.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be used as a runtime render value. System.Type locals are only supported as source-stable OpenComponent(Type) carriers.",
+            ImmutableArray<string>.Empty);
+        return new RazorVueCompilationIssueException(issue, _snapshot.Descriptor.FullName, origin);
+    }
+
+    private RazorVueCompilationIssueException CreateImperativeComponentTypeMemberCarrierRuntimeValueException(
+        IOperation operation,
+        ISymbol member)
+    {
+        var origin = operation.Syntax is null
+            ? _snapshot.Origins.FirstOrDefault()
+            : RazorVueSourceOrigin.FromLocation(operation.Syntax.GetLocation(), RazorVueOriginKind.Template);
+        var issue = new RazorVueCompilationIssue(
+            RazorVueIssueCode.CanonicalizationFailed,
+            RazorVueIssueSeverity.Error,
+            $"RazorVue System.Type member '{member.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be used as a runtime render value. System.Type members are only supported as source-stable OpenComponent(Type) carriers.",
             ImmutableArray<string>.Empty);
         return new RazorVueCompilationIssueException(issue, _snapshot.Descriptor.FullName, origin);
     }
@@ -1868,10 +2033,19 @@ internal sealed partial class RazorVueExpressionEmitter
             return TryResolveImperativeComponentReference(genericComponentType);
         }
 
-        if (invocation.Arguments.Length >= 2 &&
-            Unwrap(invocation.Arguments[1].Value) is ITypeOfOperation { TypeOperand: INamedTypeSymbol explicitComponentType })
+        if (invocation.Arguments.Length < 2)
+            return null;
+
+        ThrowIfInvalidatedImperativeComponentTypeMemberCarrier(invocation.Arguments[1].Value);
+        if (RazorVueComponentTypeCarrierHelper.TryResolveComponentType(
+            _snapshot.Compilation,
+            _snapshot.ComponentSymbol,
+            invocation.Arguments[1].Value,
+            out var explicitComponentType,
+            out _))
         {
-            return TryResolveImperativeComponentReference(explicitComponentType);
+            return TryResolveImperativeComponentReference(explicitComponentType)
+                   ?? throw CreateImperativeComponentTypeCarrierUnresolvedException(invocation, explicitComponentType);
         }
 
         return null;
@@ -1885,10 +2059,19 @@ internal sealed partial class RazorVueExpressionEmitter
             return TryResolveImperativeComponentMetadataReference(genericComponentType);
         }
 
-        if (invocation.Arguments.Length >= 2 &&
-            Unwrap(invocation.Arguments[1].Value) is ITypeOfOperation { TypeOperand: INamedTypeSymbol explicitComponentType })
+        if (invocation.Arguments.Length < 2)
+            return null;
+
+        ThrowIfInvalidatedImperativeComponentTypeMemberCarrier(invocation.Arguments[1].Value);
+        if (RazorVueComponentTypeCarrierHelper.TryResolveComponentType(
+            _snapshot.Compilation,
+            _snapshot.ComponentSymbol,
+            invocation.Arguments[1].Value,
+            out var explicitComponentType,
+            out _))
         {
-            return TryResolveImperativeComponentMetadataReference(explicitComponentType);
+            return TryResolveImperativeComponentMetadataReference(explicitComponentType)
+                   ?? throw CreateImperativeComponentTypeCarrierUnresolvedException(invocation, explicitComponentType);
         }
 
         return null;

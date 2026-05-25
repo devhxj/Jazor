@@ -29075,6 +29075,57 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersNestedHelperTypeLocalCarrierName_UsingImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/nested-type-card")]
+                public class NestedTypeCard : ComponentBase, IVueComponent
+                {
+                    private sealed class TestDisposable : IDisposable
+                    {
+                        public void Dispose() { }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        lock (this)
+                        {
+                            var helperType = typeof(TestDisposable);
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, helperType.Name);
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "class TestDisposable");
+        StringAssert.Contains(artifact.ModuleCode, "let helperType = TestDisposable");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(helperType.name);");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersStaticNestedHelperTypeStaticMemberWithoutObjectCreation_UsingImperativeRenderBridge()
     {
         var context = CreateContext(
@@ -31907,6 +31958,763 @@ public sealed class RazorVuePipelineTests
         Assert.IsFalse(
             artifact.ModuleCode.Contains("__jazorRenderContext.enterComponent(ItemEditorComponent", StringComparison.Ordinal),
             artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersOpenComponentTypeOfLocalCarrier_ToStaticComponentReference()
+    {
+        var artifact = CreateBuildRenderTreePipeline().Execute(CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/type-carrier-host")]
+                public class TypeCarrierHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        var childType = typeof(ChildCard);
+                        builder.OpenComponent(0, childType);
+                        builder.AddComponentParameter(1, nameof(ChildCard.Title), Title);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """)).Artifacts.Single(static artifact => artifact.ComponentName == "TypeCarrierHost");
+
+        StringAssert.Contains(artifact.ModuleCode, "import ChildCardComponent from \"./components/child-card.mjs\";");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(ChildCardComponent, { \"title\": props.title });");
+        Assert.IsFalse(artifact.ModuleCode.Contains("childType", StringComparison.Ordinal), artifact.ModuleCode);
+        CollectionAssert.Contains(artifact.Imports.ToArray(), "./components/child-card.mjs");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersImperativeOpenComponentTypeOfLocalCarrier_ToStaticComponentReference()
+    {
+        var artifact = CreateBuildRenderTreePipeline().Execute(CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/type-carrier-host")]
+                public class TypeCarrierHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Visible { get; set; }
+
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (!Visible)
+                        {
+                            return;
+                        }
+
+                        var childType = typeof(ChildCard);
+                        builder.OpenComponent(0, childType);
+                        builder.AddComponentParameter(1, nameof(ChildCard.Title), Title);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """)).Artifacts.Single(static artifact => artifact.ComponentName == "TypeCarrierHost");
+
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
+        StringAssert.Contains(artifact.ModuleCode, "let childType = ChildCardComponent;");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterComponent(ChildCardComponent, __jazorImperativeComponentMetadata_ChildCard);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.setComponentParameter(\"Title\", props.title);");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorImperativeComponentMetadata_ChildCard = {");
+        Assert.IsFalse(artifact.ModuleCode.Contains("typeof(ChildCard)", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("builder.openComponent", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersOpenComponentTypeOfPropertyCarrier_ToStaticComponentReference()
+    {
+        var artifact = CreateBuildRenderTreePipeline().Execute(CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/type-carrier-host")]
+                public class TypeCarrierHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private Type ChildType => typeof(ChildCard);
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent(0, ChildType);
+                        builder.AddComponentParameter(1, nameof(ChildCard.Title), Title);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """)).Artifacts.Single(static artifact => artifact.ComponentName == "TypeCarrierHost");
+
+        StringAssert.Contains(artifact.ModuleCode, "import ChildCardComponent from \"./components/child-card.mjs\";");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(ChildCardComponent, { \"title\": props.title });");
+        Assert.IsFalse(artifact.ModuleCode.Contains("ChildType", StringComparison.Ordinal), artifact.ModuleCode);
+        CollectionAssert.Contains(artifact.Imports.ToArray(), "./components/child-card.mjs");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersImperativeOpenComponentTypeOfReadonlyFieldCarrier_ToStaticComponentReference()
+    {
+        var artifact = CreateBuildRenderTreePipeline().Execute(CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/type-carrier-host")]
+                public class TypeCarrierHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Visible { get; set; }
+
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private readonly Type _childType = typeof(ChildCard);
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (!Visible)
+                        {
+                            return;
+                        }
+
+                        builder.OpenComponent(0, _childType);
+                        builder.AddComponentParameter(1, nameof(ChildCard.Title), Title);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """)).Artifacts.Single(static artifact => artifact.ComponentName == "TypeCarrierHost");
+
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterComponent(ChildCardComponent, __jazorImperativeComponentMetadata_ChildCard);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.setComponentParameter(\"Title\", props.title);");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorImperativeComponentMetadata_ChildCard = {");
+        Assert.IsFalse(artifact.ModuleCode.Contains("_childType", StringComparison.Ordinal), artifact.ModuleCode);
+        CollectionAssert.Contains(artifact.Imports.ToArray(), "./components/child-card.mjs");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersOpenComponentTypeOfLocalForwardedFromMemberCarrier_ToStaticComponentReference()
+    {
+        var artifact = CreateBuildRenderTreePipeline().Execute(CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/type-carrier-host")]
+                public class TypeCarrierHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private Type ChildType => typeof(ChildCard);
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        var childType = ChildType;
+                        builder.OpenComponent(0, childType);
+                        builder.AddComponentParameter(1, nameof(ChildCard.Title), Title);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """)).Artifacts.Single(static artifact => artifact.ComponentName == "TypeCarrierHost");
+
+        StringAssert.Contains(artifact.ModuleCode, "import ChildCardComponent from \"./components/child-card.mjs\";");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(ChildCardComponent, { \"title\": props.title });");
+        Assert.IsFalse(artifact.ModuleCode.Contains("childType", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("ChildType", StringComparison.Ordinal), artifact.ModuleCode);
+        CollectionAssert.Contains(artifact.Imports.ToArray(), "./components/child-card.mjs");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersOpenComponentTypeOfMemberForwardingChain_ToStaticComponentReference()
+    {
+        var artifact = CreateBuildRenderTreePipeline().Execute(CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/type-carrier-host")]
+                public class TypeCarrierHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private Type PrimaryChildType => typeof(ChildCard);
+
+                    private Type ChildType => PrimaryChildType;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent(0, ChildType);
+                        builder.AddComponentParameter(1, nameof(ChildCard.Title), Title);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """)).Artifacts.Single(static artifact => artifact.ComponentName == "TypeCarrierHost");
+
+        StringAssert.Contains(artifact.ModuleCode, "import ChildCardComponent from \"./components/child-card.mjs\";");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(ChildCardComponent, { \"title\": props.title });");
+        Assert.IsFalse(artifact.ModuleCode.Contains("PrimaryChildType", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("ChildType", StringComparison.Ordinal), artifact.ModuleCode);
+        CollectionAssert.Contains(artifact.Imports.ToArray(), "./components/child-card.mjs");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithReassignedOpenComponentTypeOfLocalCarrier_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/other-card")]
+                public class OtherCard : ComponentBase, IVueComponent
+                {
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/type-carrier-host")]
+                public class TypeCarrierHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Visible { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (Visible)
+                        {
+                            var childType = typeof(ChildCard);
+                            childType = typeof(OtherCard);
+                            builder.OpenComponent(0, childType);
+                            builder.CloseComponent();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "System.Type local 'childType'");
+        StringAssert.Contains(exception.Issue.Message, "later writes");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithOpenComponentTypeOfLocalCarrierForNonComponent_ThrowsComponentNotFound()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/type-carrier-host")]
+                public class TypeCarrierHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Visible { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (Visible)
+                        {
+                            var childType = typeof(string);
+                            builder.OpenComponent(0, childType);
+                            builder.CloseComponent();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.ComponentNotFound, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "Component 'string'");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithImperativeComponentTypeLocalCarrierUsedAsContent_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/type-carrier-host")]
+                public class TypeCarrierHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Visible { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (Visible)
+                        {
+                            var childType = typeof(ChildCard);
+                            builder.AddContent(0, childType);
+                        }
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "System.Type local 'childType'");
+        StringAssert.Contains(exception.Issue.Message, "runtime value");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithReassignedOpenComponentTypeOfMemberCarrier_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/other-card")]
+                public class OtherCard : ComponentBase, IVueComponent
+                {
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/type-carrier-host")]
+                public class TypeCarrierHost : ComponentBase, IVueComponent
+                {
+                    private Type ChildType { get; set; } = typeof(ChildCard);
+
+                    protected override void OnInitialized()
+                    {
+                        ChildType = typeof(OtherCard);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent(0, ChildType);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "System.Type member 'ChildType'");
+        StringAssert.Contains(exception.Issue.Message, "later writes");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithOpenComponentTypeOfMemberCarrierForNonComponent_ThrowsComponentNotFound()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/type-carrier-host")]
+                public class TypeCarrierHost : ComponentBase, IVueComponent
+                {
+                    private Type ChildType => typeof(string);
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent(0, ChildType);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.ComponentNotFound, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "Component 'string'");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithComponentTypeMemberCarrierUsedAsContent_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/type-carrier-host")]
+                public class TypeCarrierHost : ComponentBase, IVueComponent
+                {
+                    private Type ChildType => typeof(ChildCard);
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, ChildType);
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "System.Type member 'ChildType'");
+        StringAssert.Contains(exception.Issue.Message, "runtime value");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithComponentTypeLocalForwardedFromMemberCarrierUsedAsContent_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/type-carrier-host")]
+                public class TypeCarrierHost : ComponentBase, IVueComponent
+                {
+                    private Type ChildType => typeof(ChildCard);
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        var childType = ChildType;
+                        builder.AddContent(0, childType);
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "System.Type local 'childType'");
+        StringAssert.Contains(exception.Issue.Message, "runtime value");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithReassignedComponentTypeMemberCarrierUsedAsContent_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/type-carrier-host")]
+                public class TypeCarrierHost : ComponentBase, IVueComponent
+                {
+                    private Type ChildType { get; set; } = typeof(ChildCard);
+
+                    protected override void OnInitialized()
+                    {
+                        ChildType = typeof(string);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, ChildType);
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "System.Type member 'ChildType'");
+        StringAssert.Contains(exception.Issue.Message, "later writes");
     }
 
     [TestMethod]

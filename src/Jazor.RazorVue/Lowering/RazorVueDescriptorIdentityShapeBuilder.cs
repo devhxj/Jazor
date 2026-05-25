@@ -959,7 +959,13 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
                 componentType = genericComponentType;
             }
             else if (invocation.Arguments.Length >= 2 &&
-                     RazorVueOperationNormalizer.Unwrap(invocation.Arguments[1].Value) is ITypeOfOperation { TypeOperand: INamedTypeSymbol explicitComponentType })
+                     invocation.SemanticModel?.Compilation is { } compilation &&
+                     RazorVueComponentTypeCarrierHelper.TryResolveComponentType(
+                         compilation,
+                         _ownerComponentSymbol,
+                         invocation.Arguments[1].Value,
+                         out var explicitComponentType,
+                         out _))
             {
                 componentType = explicitComponentType;
             }

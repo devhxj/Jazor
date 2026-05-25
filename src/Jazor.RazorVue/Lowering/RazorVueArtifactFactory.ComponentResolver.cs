@@ -240,7 +240,7 @@ internal sealed partial class RazorVueArtifactFactory
                 foreach (var nestedOperation in EnumerateOperationAndDescendants(body))
                 {
                     if (nestedOperation is IInvocationOperation nestedInvocation &&
-                        IsOpenComponentInvocation(nestedInvocation, out var nestedComponentType, out var nestedResolutionName))
+                        IsOpenComponentInvocation(nestedInvocation, componentSymbol, out var nestedComponentType, out var nestedResolutionName))
                     {
                         components.Add(new RazorVueComponentNode(
                             nestedComponentType.Name,
@@ -263,7 +263,7 @@ internal sealed partial class RazorVueArtifactFactory
             if (current is not IInvocationOperation invocation)
                 continue;
 
-            if (!IsOpenComponentInvocation(invocation, out var componentType, out var resolutionName))
+            if (!IsOpenComponentInvocation(invocation, componentSymbol, out var componentType, out var resolutionName))
                 continue;
 
             components.Add(new RazorVueComponentNode(
@@ -286,6 +286,7 @@ internal sealed partial class RazorVueArtifactFactory
 
     private static bool IsOpenComponentInvocation(
         IInvocationOperation invocation,
+        INamedTypeSymbol componentSymbol,
         out INamedTypeSymbol componentType,
         out string resolutionName)
     {
@@ -304,7 +305,13 @@ internal sealed partial class RazorVueArtifactFactory
         }
 
         if (invocation.Arguments.Length >= 2 &&
-            RazorVueOperationNormalizer.Unwrap(invocation.Arguments[1].Value) is ITypeOfOperation { TypeOperand: INamedTypeSymbol explicitComponentType })
+            invocation.SemanticModel?.Compilation is { } compilation &&
+            RazorVueComponentTypeCarrierHelper.TryResolveComponentType(
+                compilation,
+                componentSymbol,
+                invocation.Arguments[1].Value,
+                out var explicitComponentType,
+                out _))
         {
             componentType = explicitComponentType;
             resolutionName = explicitComponentType.ToDisplayString();
