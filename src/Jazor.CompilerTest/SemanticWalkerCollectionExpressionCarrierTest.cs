@@ -99,4 +99,48 @@ public sealed class SemanticWalkerCollectionExpressionCarrierTest
   let values = [];
 }", script);
 	}
+
+	[TestMethod]
+	public void Visit_CollectionExpression_IReadOnlyListWithErasedUnsupportedElementType_Allows()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    IReadOnlyList<Random> values = [];
+                }
+            }
+            ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let values = [];
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_CollectionExpression_IReadOnlyCollectionWithErasedUnsupportedElementType_Allows()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    IReadOnlyCollection<Random> values = [];
+                }
+            }
+            ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let values = [];
+}", script);
+	}
 }

@@ -49,6 +49,8 @@ internal static partial class WhiteList
 		types["System.Collections.Generic.IEqualityComparer<T>"] = new(Op.Alias, "Object");
 		types["System.Collections.IList"] = new(Op.Alias, "Array");
 		types["System.Collections.Generic.IList<T>"] = new(Op.Alias, "Array");
+		types["System.Collections.Generic.IReadOnlyCollection<T>"] = new(Op.Alias, "Array");
+		types["System.Collections.Generic.IReadOnlyList<T>"] = new(Op.Alias, "Array");
 		types["System.Collections.Generic.ISet<T>"] = new(Op.Alias, "Set");
 		types["short"] = new(Op.Alias, "Number");
 		types["int"] = new(Op.Alias, "Number");
@@ -1043,6 +1045,8 @@ internal static partial class WhiteList
 		members["System.Collections.IList.IndexOf(object)"] = new(Op.Alias, "indexOf");
 		members["System.Collections.Generic.IList<T>.this[int].get"] = new(Op.Import, "_8b52bea1dfb9f9ba", "System/Collections/Generic/IListT1Module.js");
 		members["System.Collections.Generic.IList<T>.IndexOf(T)"] = new(Op.Alias, "indexOf");
+		members["System.Collections.Generic.IReadOnlyCollection<T>.Count.get"] = new(Op.Alias, "length");
+		members["System.Collections.Generic.IReadOnlyList<T>.this[int].get"] = new(Op.Import, "_b6ea5fe846ef1d65", "System/Collections/Generic/IReadOnlyListT1Module.js");
 		members["System.Collections.Generic.ISet<T>.Add(T)"] = new(Op.Import, "_fa512a510bd763de", "System/Collections/Generic/ISetT1Module.js");
 		members["System.Collections.Generic.ISet<T>.UnionWith(System.Collections.Generic.IEnumerable<T>)"] = new(Op.Import, "_d9af20d6b8c5e775", "System/Collections/Generic/ISetT1Module.js");
 		members["System.Collections.Generic.ISet<T>.IntersectWith(System.Collections.Generic.IEnumerable<T>)"] = new(Op.Import, "_202b815f92a32e5d", "System/Collections/Generic/ISetT1Module.js");

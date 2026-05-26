@@ -6826,7 +6826,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-	let comparer = globalThis.__jazorComparerDefault ??= {};
+  let comparer = globalThis.__jazorComparerDefault ??= {};
   let order = _7dffdd7244581cc5(comparer, left, right);
 }", script);
 	}
@@ -7871,8 +7871,8 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "let list = [1, 2, 3];");
-		StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
-		StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: selector is null\");");
+		StringAssert.Contains(script, "throw new TypeError(\"source\");");
+		StringAssert.Contains(script, "throw new TypeError(\"selector\");");
 		StringAssert.Contains(script, "return __src.map(__callback);");
 	}
 
@@ -7894,8 +7894,8 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.IsNotNull(script);
-		StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
-		StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: predicate is null\");");
+		StringAssert.Contains(script, "throw new TypeError(\"source\");");
+		StringAssert.Contains(script, "throw new TypeError(\"predicate\");");
 		StringAssert.Contains(script, "return __src.filter(__callback);");
 	}
 
@@ -7917,8 +7917,8 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.IsNotNull(script);
-		StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
-		StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: predicate is null\");");
+		StringAssert.Contains(script, "throw new TypeError(\"source\");");
+		StringAssert.Contains(script, "throw new TypeError(\"predicate\");");
 		StringAssert.Contains(script, "return Array.from(__src).filter(__callback);");
 	}
 
@@ -7940,8 +7940,8 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.IsNotNull(script);
-		StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
-		StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: predicate is null\");");
+		StringAssert.Contains(script, "throw new TypeError(\"source\");");
+		StringAssert.Contains(script, "throw new TypeError(\"predicate\");");
 		StringAssert.Contains(script, "return Array.from(__src).filter(__callback);");
 	}
 
@@ -7965,8 +7965,8 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "let source = new Set;");
-		StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
-		StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: predicate is null\");");
+		StringAssert.Contains(script, "throw new TypeError(\"source\");");
+		StringAssert.Contains(script, "throw new TypeError(\"predicate\");");
 		StringAssert.Contains(script, "return Array.from(__src).filter(__callback);");
 	}
 
@@ -7990,8 +7990,8 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "let source = new Map;");
-		StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
-		StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: predicate is null\");");
+		StringAssert.Contains(script, "throw new TypeError(\"source\");");
+		StringAssert.Contains(script, "throw new TypeError(\"predicate\");");
 		StringAssert.Contains(script, "return Array.from(__src).filter(__callback);");
 	}
 

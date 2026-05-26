@@ -1896,8 +1896,8 @@ public sealed class SemanticWalkerDeclarationTest
 
         Assert.IsNotNull(script);
         StringAssert.Contains(script, "let list = [1, 2, 3];");
-        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
-        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: predicate is null\");");
+        StringAssert.Contains(script, "throw new TypeError(\"source\");");
+        StringAssert.Contains(script, "throw new TypeError(\"predicate\");");
         StringAssert.Contains(script, "return __src.filter(__callback);");
     }
 

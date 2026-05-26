@@ -427,7 +427,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = new Object;
-  let result = obj !== null && typeof obj === ""object"";
+  let result = obj != null && typeof obj === ""object"";
 }", script);
   }
 
@@ -456,7 +456,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitIsType(isTypeOperation!, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"obj !== null && typeof obj === ""object""", script);
+    Assert.AreEqual(@"obj != null && typeof obj === ""object""", script);
   }
 
   /// <summary>
@@ -4086,7 +4086,7 @@ line2"";
 
     Assert.AreEqual(@"{
   let obj = globalThis.__jazorEqualityComparerDefault ??= {};
-  let result = obj !== null;
+  let result = obj != null;
 }", script);
   }
 
@@ -4114,7 +4114,7 @@ line2"";
     Assert.AreEqual(@"{
   let comparer;
   let obj = globalThis.__jazorEqualityComparerDefault ??= {};
-  let result = obj !== null && (comparer = obj, true) && _dae184550b995be1(comparer, 1, 1);
+  let result = obj != null && (comparer = obj, true) && _dae184550b995be1(comparer, 1, 1);
 }", script);
   }
 
@@ -4141,7 +4141,7 @@ line2"";
 
     Assert.AreEqual(@"{
   let obj = globalThis.__jazorEqualityComparerDefault ??= {};
-  let result = obj !== null;
+  let result = obj != null;
 }", script);
   }
 
@@ -4169,7 +4169,7 @@ line2"";
     Assert.AreEqual(@"{
   let comparer;
   let obj = globalThis.__jazorEqualityComparerDefault ??= {};
-  let result = obj !== null && (comparer = obj, true) && _eb0a1792ad8b44b7(comparer, 1, 1);
+  let result = obj != null && (comparer = obj, true) && _eb0a1792ad8b44b7(comparer, 1, 1);
 }", script);
   }
 
@@ -4198,7 +4198,7 @@ line2"";
 
     AssertScriptEqual(@"{
   let obj = this.GetValue();
-  let result = obj !== null;
+  let result = obj != null;
 }", script);
   }
 
@@ -4634,7 +4634,7 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.IsNotNull(script);
-    AssertStringContainsJsNaming(script, "let result = (v$0 = this.GetValue(), v$0 !== null);", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "let result = (v$0 = this.GetValue(), v$0 != null);", StringComparison.Ordinal);
     AssertContainsCount(script, "this.GetValue()", 1);
   }
 
@@ -4661,7 +4661,7 @@ line2"";
 
     Assert.IsNotNull(script);
     AssertStringContainsJsNaming(script, "\"Name\" in obj", StringComparison.Ordinal);
-    AssertStringContainsJsNaming(script, "!== null", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "obj.Name != null", StringComparison.Ordinal);
     Assert.IsFalse(script.Contains("&& false", StringComparison.Ordinal));
     AssertContainsCount(script, "obj.Name", 1);
   }
@@ -7309,7 +7309,7 @@ line2"";
     catch (OperationTransformationException exception)
     {
       StringAssert.Contains(exception.Message, "structural lowering");
-      StringAssert.Contains(exception.Message, "bare record type pattern");
+      StringAssert.Contains(exception.Message, "bare type pattern");
     }
   }
 

@@ -31,29 +31,29 @@ export function createTodoState() {
     showCompleted: true,
     statusMessage: "Library mode emits Vue SFC artifacts during design time.",
     tasks: [
-      { Id: 1, Title: "Define per-component SFC topology", Category: "Compiler", IsDone: false, IsPinned: true },
-      { Id: 2, Title: "Wire host requirements into consumer bootstrap", Category: "Host", IsDone: true, IsPinned: false },
-      { Id: 3, Title: "Verify generated .vue imports stay stable", Category: "Emit", IsDone: false, IsPinned: false }
+      { id: 1, title: "Define per-component SFC topology", category: "Compiler", isDone: false, isPinned: true },
+      { id: 2, title: "Wire host requirements into consumer bootstrap", category: "Host", isDone: true, isPinned: false },
+      { id: 3, title: "Verify generated .vue imports stay stable", category: "Emit", isDone: false, isPinned: false }
     ]
   });
 }
 
 export function createTodoRootComponent(TodoApp, state = createTodoState()) {
   const totalCount = computed(() => state.tasks.length);
-  const completedCount = computed(() => state.tasks.filter((task) => task.IsDone).length);
-  const openCount = computed(() => state.tasks.filter((task) => !task.IsDone).length);
-  const pinnedCount = computed(() => state.tasks.filter((task) => task.IsPinned).length);
-  const visibleCount = computed(() => state.tasks.filter((task) => state.showCompleted || !task.IsDone).length);
+  const completedCount = computed(() => state.tasks.filter((task) => task.isDone).length);
+  const openCount = computed(() => state.tasks.filter((task) => !task.isDone).length);
+  const pinnedCount = computed(() => state.tasks.filter((task) => task.isPinned).length);
+  const visibleCount = computed(() => state.tasks.filter((task) => state.showCompleted || !task.isDone).length);
 
   function addTask() {
     const title = state.draftTitle && state.draftTitle.trim() ? state.draftTitle.trim() : "Untitled task";
     const category = state.draftCategory && state.draftCategory.trim() ? state.draftCategory.trim() : "General";
     state.tasks.unshift({
-      Id: state.nextId++,
-      Title: title,
-      Category: category,
-      IsDone: false,
-      IsPinned: state.draftPinned
+      id: state.nextId++,
+      title,
+      category,
+      isDone: false,
+      isPinned: state.draftPinned
     });
     state.statusMessage = `Added "${title}" to the top of the workspace.`;
     state.draftTitle = "";

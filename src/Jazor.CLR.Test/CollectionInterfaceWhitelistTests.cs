@@ -61,6 +61,20 @@ public sealed class CollectionInterfaceWhitelistTests
 	}
 
 	[TestMethod]
+	public void IReadOnlyCollectionInterfaceMappings_ProjectReadOnlyArrayView()
+	{
+		AssertTypeAlias(typeof(Jazor.CLR.IReadOnlyCollectionT1Module<>), "System.Collections.Generic.IReadOnlyCollection<T>", "Array");
+		AssertMemberOp(typeof(Jazor.CLR.IReadOnlyCollectionT1Module<>), "System.Collections.Generic.IReadOnlyCollection<T>.Count.get", Op.Alias);
+	}
+
+	[TestMethod]
+	public void IReadOnlyListInterfaceMappings_ProjectReadOnlyIndexedArrayView()
+	{
+		AssertTypeAlias(typeof(Jazor.CLR.IReadOnlyListT1Module<>), "System.Collections.Generic.IReadOnlyList<T>", "Array");
+		AssertMemberOp(typeof(Jazor.CLR.IReadOnlyListT1Module<>), "System.Collections.Generic.IReadOnlyList<T>.this[int].get", Op.Import);
+	}
+
+	[TestMethod]
 	public void IDictionaryInterfaceMappings_OnlyKeepCarrierStableQueryMembers()
 	{
 		AssertTypeAlias(typeof(Jazor.CLR.IDictionaryT2Module<,>), "System.Collections.Generic.IDictionary<TKey, TValue>", "Map");

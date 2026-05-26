@@ -6,8 +6,8 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.22" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.22" />
+  <PackageReference Include="Jazor" Version="0.1.26" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.26" />
 </ItemGroup>
 ```
 
@@ -15,7 +15,7 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Pinia.Testing" Version="0.1.22" />
+  <PackageReference Include="ECMAScript.Pinia.Testing" Version="0.1.26" />
 </ItemGroup>
 ```
 

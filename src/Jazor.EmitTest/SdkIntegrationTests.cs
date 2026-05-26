@@ -1531,7 +1531,7 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(componentModule, "\"disabled\": props.disabled");
         StringAssert.Contains(componentModule, "\"modelValue\": props.value");
         StringAssert.Contains(componentModule, "\"onUpdate:modelValue\": (__value) => emit(\"update:value\", __value)");
-        StringAssert.Contains(componentModule, "header: (slotProps) => props.header(slotProps)");
+        StringAssert.Contains(componentModule, "header: (slotProps) => slots.header ? slots.header(slotProps) : null");
         StringAssert.Contains(hostRequirementsModule, "export const razorVueStyles = Object.freeze([\"demo/button.css\"]);");
         StringAssert.Contains(hostRequirementsModule, "export const razorVuePluginRequirements = Object.freeze([\"demo-host\"]);");
         StringAssert.Contains(hostRequirementsModule, "\"componentName\":\"CounterCard\"");
@@ -1816,9 +1816,9 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(sfc, "<VCardTitle>");
         StringAssert.Contains(sfc, "External RazorVue Consumer");
         StringAssert.Contains(sfc, "<VList");
-        StringAssert.Contains(sfc, "item.Title");
-        StringAssert.Contains(sfc, "item.Category");
-        StringAssert.Contains(sfc, "item.IsPinned");
+        StringAssert.Contains(sfc, "item.title");
+        StringAssert.Contains(sfc, "item.category");
+        StringAssert.Contains(sfc, "item.isPinned");
         StringAssert.Contains(sfc, "from \"vuetify/components\"");
         StringAssert.Contains(sfc, "defineProps<{ items?: any }>()");
         Assert.IsFalse(sfc.Contains("text=\"External RazorVue Consumer\"", StringComparison.Ordinal), sfc);
@@ -3616,8 +3616,8 @@ public sealed class SdkIntegrationTests
 
             export function createDashboardItems() {
               return [
-                { Title: "Preview external pure Deno consumer", Category: "Automation", IsDone: false, IsPinned: true },
-                { Title: "Validate host requirements", Category: "Runtime", IsDone: true, IsPinned: false }
+                { title: "Preview external pure Deno consumer", category: "Automation", isDone: false, isPinned: true },
+                { title: "Validate host requirements", category: "Runtime", isDone: true, isPinned: false }
               ];
             }
 

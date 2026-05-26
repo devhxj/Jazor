@@ -191,7 +191,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
 
         Assert.IsNotNull(script);
         StringAssert.Contains(script, "let parsed = parser.parse(\"/users/42\");");
-        StringAssert.Contains(script, "if (parsed === null)");
+        StringAssert.Contains(script, "if (parsed == null)");
         StringAssert.Contains(script, "let cloned = { id: parsed[\"id\"] ?? \"\" };");
         StringAssert.Contains(script, "return parser.stringify(cloned);");
     }
@@ -2876,7 +2876,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
 
         Assert.IsNotNull(script);
         StringAssert.Contains(script, "scrollBehavior: (to, from, savedPosition) => {");
-        StringAssert.Contains(script, "if (!(savedPosition === null))");
+        StringAssert.Contains(script, "if (!(savedPosition == null))");
         StringAssert.Contains(script, "return savedPosition;");
         StringAssert.Contains(script, "let selectorTarget = {");
         StringAssert.Contains(script, "el: \"#app\"");
@@ -2958,12 +2958,25 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
 
     private static MetadataReference[] BuildCompilationReferences(IEnumerable<MetadataReference>? additionalReferences = null)
     {
-        var references = Net110.References.All.Cast<MetadataReference>().ToList();
+        var references = CurrentRuntimeReferences().ToList();
         references.Add(MetadataReference.CreateFromFile(typeof(Number).Assembly.Location));
         if (additionalReferences is not null)
             references.AddRange(additionalReferences);
 
         return references.ToArray();
+    }
+
+    private static IEnumerable<MetadataReference> CurrentRuntimeReferences()
+    {
+        var trustedPlatformAssemblies = (string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES");
+        if (string.IsNullOrWhiteSpace(trustedPlatformAssemblies))
+            return Net110.References.All.Cast<MetadataReference>();
+
+        return trustedPlatformAssemblies
+            .Split(Path.PathSeparator)
+            .Where(static path => !string.IsNullOrWhiteSpace(path))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Select(static path => MetadataReference.CreateFromFile(path));
     }
 
     private static SyntaxTree[] BuildSyntaxTrees(string code)

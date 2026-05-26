@@ -62,6 +62,7 @@ public sealed class JoltBuildOptimizationTests
             Assert.IsTrue(result.Success, FormatDiagnostics(result));
 
             var entryChunkContent = await ReadEntryChunkAsync(tempDir, result);
+            var executableEntryChunkContent = StripBundledLicenseComment(entryChunkContent);
             Assert.IsFalse(entryChunkContent.Contains("import.meta.hot", StringComparison.Ordinal));
             Assert.IsFalse(entryChunkContent.Contains("__jazorHmrId", StringComparison.Ordinal));
             Assert.IsFalse(entryChunkContent.Contains("__JAZOR_HMR__", StringComparison.Ordinal));
@@ -71,7 +72,7 @@ public sealed class JoltBuildOptimizationTests
             Assert.IsFalse(entryChunkContent.Contains("minify-js-comment", StringComparison.Ordinal), "Expected minification to strip comments.");
             Assert.IsFalse(entryChunkContent.Contains("function formatMessage( value )", StringComparison.Ordinal), "Expected minification to collapse author formatting.");
             Assert.IsFalse(entryChunkContent.Contains("console.log( App, formatMessage( usedTreeShakingValue ) );", StringComparison.Ordinal), "Expected minification to collapse author call-site formatting.");
-            Assert.IsFalse(entryChunkContent.Contains("  ", StringComparison.Ordinal), "Expected minification to remove repeated author whitespace.");
+            Assert.IsFalse(executableEntryChunkContent.Contains("  ", StringComparison.Ordinal), "Expected minification to remove repeated author whitespace from executable code.");
         }
         finally
         {
@@ -214,6 +215,15 @@ public sealed class JoltBuildOptimizationTests
 
     private static int CountLines(string text)
         => text.Split(["\r\n", "\n"], StringSplitOptions.None).Length;
+
+    private static string StripBundledLicenseComment(string content)
+    {
+        const string licenseCommentMarker = "/*! Bundled license information:";
+        var markerIndex = content.IndexOf(licenseCommentMarker, StringComparison.Ordinal);
+        return markerIndex < 0
+            ? content
+            : content[..markerIndex];
+    }
 
     private static string FormatDiagnostics(BuildResult result)
         => string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message));

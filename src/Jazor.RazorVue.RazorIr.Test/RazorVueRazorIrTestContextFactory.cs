@@ -244,6 +244,17 @@ internal static class RazorVueRazorIrTestContextFactory
                 builder.Append(" AttributeName=\"").Append(node.AttributeName).Append('"');
             if (!string.IsNullOrWhiteSpace(node.TypeName))
                 builder.Append(" TypeName=\"").Append(node.TypeName).Append('"');
+            if (node.IsDesignTimePropertyAccessHelper)
+                builder.Append(" IsDesignTimePropertyAccessHelper=\"true\"");
+            if (node.IsSynthesized)
+                builder.Append(" IsSynthesized=\"true\"");
+            if (node.Source is not null)
+            {
+                var source = node.Source.Value;
+                builder.Append(" Source=\"").Append(source.FilePath).Append(':').Append(source.AbsoluteIndex).Append(':').Append(source.Length).Append('"');
+            }
+            if (node.Children.Length > 0)
+                builder.Append(" Children=\"").Append(node.Children.Length).Append('"');
             builder.AppendLine();
 
             foreach (var child in node.Children)

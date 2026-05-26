@@ -977,7 +977,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 attributes.ToImmutable(),
                 slotTemplates.ToImmutable(),
                 implicitDefaultSlotAssignments.ToImmutable(),
-                new RazorVueRenderFragment(children.ToImmutable()),
+                RazorVueRenderFragment.Empty,
                 new RazorVueRenderFragment(children.ToImmutable()),
                 CreateOrigins(node.Source is null ? node.StartTagSpan : node.Source));
         }

@@ -76,9 +76,10 @@ await ScriptHelpers.RunDotNetAsync(
         vuetifyProject,
         "-c",
         options.Configuration,
-        "--no-build",
         "-o",
         packageOutput,
+        "-v",
+        "minimal",
         .. isolationArguments,
         "/nr:false",
         "-p:UseSharedCompilation=false"

@@ -17,7 +17,7 @@ Jazor is a C#-to-JavaScript compiler that translates Roslyn `IOperation` semanti
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.22" />
+  <PackageReference Include="Jazor" Version="0.1.26" />
 </ItemGroup>
 ```
 
@@ -29,7 +29,7 @@ Every project that declares `[ECMAScriptModule]` must reference `Jazor`:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.22" />
+  <PackageReference Include="Jazor" Version="0.1.26" />
 </ItemGroup>
 ```
 
@@ -41,11 +41,11 @@ Keep `JazorEmit` disabled (default) in library projects.
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.22" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.22" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.22" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.22" />
-  <PackageReference Include="ECMAScript.TDesign" Version="0.1.22" />
+  <PackageReference Include="Jazor" Version="0.1.26" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.26" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.26" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.26" />
+  <PackageReference Include="ECMAScript.TDesign" Version="0.1.26" />
 </ItemGroup>
 ```
 
@@ -58,7 +58,7 @@ The final executable or web host project enables emit and optionally bundling:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.22" />
+  <PackageReference Include="Jazor" Version="0.1.26" />
 </ItemGroup>
 
 <PropertyGroup>

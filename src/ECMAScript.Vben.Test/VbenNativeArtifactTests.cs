@@ -18,7 +18,7 @@ public sealed partial class VbenContainerInjectTests
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
-                        builder.OpenComponent(0, typeof(VbenAdminLayout));
+                        builder.OpenComponent<VbenAdminLayout>(0);
                         builder.AddComponentParameter(1, nameof(VbenAdminLayout.Mode), VbenLayoutMode.Top);
                         builder.CloseComponent();
                     }
@@ -214,7 +214,7 @@ public sealed partial class VbenContainerInjectTests
         StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:expandedKeys\": (__value) => emit(\"update:expandedKeys\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "header: () => h(VbenHeaderBarComponent, { \"title\": \"Workbench\", \"subtitle\": \"Operations\" }, { logo: () => slots.headerLogo ? slots.headerLogo() : null, actions: () => slots.headerActions ? slots.headerActions() : null, userRegion: () => slots.userRegion ? slots.userRegion() : null })");
         StringAssert.Contains(artifact.ModuleCode, "sidebar: () => h(VbenSidebarMenuComponent, { \"collapsed\": props.collapsed, \"selectedKey\": props.selectedKey, \"onUpdate:selectedKey\": (__value) => emit(\"update:selectedKey\", __value), \"expandedKeys\": props.expandedKeys, \"onUpdate:expandedKeys\": (__value) => emit(\"update:expandedKeys\", __value) }, { logo: () => slots.sidebarLogo ? slots.sidebarLogo() : null })");
-        StringAssert.Contains(artifact.ModuleCode, "default: () => h(VbenPageContainerComponent, { \"title\": \"Dashboard\", \"subtitle\": \"Realtime\" }, { extra: () => slots.pageExtra ? slots.pageExtra() : null, default: () => slots.default ? slots.default() : null })");
+        StringAssert.Contains(artifact.ModuleCode, "default: () => h(VbenPageContainerComponent, { \"title\": \"Dashboard\", \"subtitle\": \"Realtime\" }, { default: () => slots.default ? slots.default() : null, extra: () => slots.pageExtra ? slots.pageExtra() : null })");
 
         CollectionAssert.AreEquivalent(
             new[]
@@ -352,7 +352,7 @@ public sealed partial class VbenContainerInjectTests
                         builder.AddComponentParameter(7, nameof(VbenAdminLayout.ExpandedKeysChanged), ExpandedKeysChanged);
                         builder.AddComponentParameter(8, nameof(VbenAdminLayout.Header), (RenderFragment)(headerBuilder =>
                         {
-                            headerBuilder.OpenComponent(0, typeof(VbenHeaderBar));
+                            headerBuilder.OpenComponent<VbenHeaderBar>(0);
                             headerBuilder.AddComponentParameter(1, nameof(VbenHeaderBar.Title), "Workbench");
                             headerBuilder.AddComponentParameter(2, nameof(VbenHeaderBar.Subtitle), "Operations");
                             headerBuilder.AddComponentParameter(3, nameof(VbenHeaderBar.Logo), HeaderLogo);
@@ -362,7 +362,7 @@ public sealed partial class VbenContainerInjectTests
                         }));
                         builder.AddComponentParameter(9, nameof(VbenAdminLayout.Sidebar), (RenderFragment)(sidebarBuilder =>
                         {
-                            sidebarBuilder.OpenComponent(0, typeof(VbenSidebarMenu));
+                            sidebarBuilder.OpenComponent<VbenSidebarMenu>(0);
                             sidebarBuilder.AddComponentParameter(1, nameof(VbenSidebarMenu.Collapsed), Collapsed);
                             sidebarBuilder.AddComponentParameter(2, nameof(VbenSidebarMenu.SelectedKey), SelectedKey);
                             sidebarBuilder.AddComponentParameter(3, nameof(VbenSidebarMenu.SelectedKeyChanged), SelectedKeyChanged);
@@ -373,7 +373,7 @@ public sealed partial class VbenContainerInjectTests
                         }));
                         builder.AddComponentParameter(10, nameof(VbenContentComponentBase.ChildContent), (RenderFragment)(contentBuilder =>
                         {
-                            contentBuilder.OpenComponent(0, typeof(VbenPageContainer));
+                            contentBuilder.OpenComponent<VbenPageContainer>(0);
                             contentBuilder.AddComponentParameter(1, nameof(VbenPageContainer.Title), "Dashboard");
                             contentBuilder.AddComponentParameter(2, nameof(VbenPageContainer.Subtitle), "Realtime");
                             contentBuilder.AddComponentParameter(3, nameof(VbenPageContainer.Extra), PageExtra);

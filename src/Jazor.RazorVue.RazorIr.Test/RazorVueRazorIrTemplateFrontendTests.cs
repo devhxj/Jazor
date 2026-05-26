@@ -1041,6 +1041,39 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithRazorIrTemplateFrontend_LowersLibraryDefaultChildContentWithoutDuplicateSlot()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<VContainer Fluid="true"><p>Body</p></VContainer>""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.LibraryDefaultChildContent.Tests",
+            documentPath,
+            documentText,
+            """
+            using ECMAScript.Vuetify;
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """,
+            """
+            @using Demo.Pages
+            @using ECMAScript.Vuetify
+            """);
+
+        var artifact = new RazorVueSfcArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<VContainer");
+        StringAssert.Contains(artifact.TemplateText, "<p>");
+        StringAssert.Contains(artifact.TemplateText, "Body");
+    }
+
+    [TestMethod]
     public void CreateRenderTree_ForComponentRawClassFallthrough_ProducesLiteralClassAttribute()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";

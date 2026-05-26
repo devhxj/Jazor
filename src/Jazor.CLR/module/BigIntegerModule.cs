@@ -1195,16 +1195,16 @@ public static class BigIntegerModule
 	public static BigInt _276680abacb93277(BigInt value)
 	{
 		if (value == BigInt.Zero)
-			return BigIntFn(32);
+			return BigIntFn(64);
 		if (value < BigInt.Zero)
 			return BigInt.Zero;
 
-		var remainder = GetBitLengthCore(value) % BigIntFn(32);
+		var remainder = GetBitLengthCore(value) % BigIntFn(64);
 		if (remainder == BigInt.Zero)
 			return BigInt.Zero;
 
-		return BigIntFn(32) - remainder;
-	}	
+		return BigIntFn(64) - remainder;
+	}
 
 	///<summary>Computes the number of bits that are set in a value.</summary>
 	[Jazor(Op.Import ,"static System.Numerics.BigInteger.PopCount(System.Numerics.BigInteger)")]

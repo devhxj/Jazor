@@ -4216,8 +4216,8 @@ export function logValue() {
 
         Assert.IsNotNull(script);
         Assert.IsFalse(script.Contains("System/Linq/EnumerableModule.js", StringComparison.Ordinal));
-        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
-        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: predicate is null\");");
+        StringAssert.Contains(script, "throw new TypeError(\"source\");");
+        StringAssert.Contains(script, "throw new TypeError(\"predicate\");");
         StringAssert.Contains(script, "return Array.from(__src).filter(__callback);");
     }
 
@@ -4242,8 +4242,8 @@ export function logValue() {
 
         Assert.IsNotNull(script);
         Assert.IsFalse(script.Contains("System/Linq/EnumerableModule.js", StringComparison.Ordinal));
-        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
-        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: selector is null\");");
+        StringAssert.Contains(script, "throw new TypeError(\"source\");");
+        StringAssert.Contains(script, "throw new TypeError(\"selector\");");
         StringAssert.Contains(script, "return Array.from(__src).map(__callback);");
     }
 
@@ -4268,8 +4268,8 @@ export function logValue() {
 
         Assert.IsNotNull(script);
         Assert.IsFalse(script.Contains("System/Linq/EnumerableModule.js", StringComparison.Ordinal));
-        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
-        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: predicate is null\");");
+        StringAssert.Contains(script, "throw new TypeError(\"source\");");
+        StringAssert.Contains(script, "throw new TypeError(\"predicate\");");
         StringAssert.Contains(script, "return __src.filter(__callback);");
     }
 
@@ -4294,8 +4294,8 @@ export function logValue() {
 
         Assert.IsNotNull(script);
         Assert.IsFalse(script.Contains("System/Linq/EnumerableModule.js", StringComparison.Ordinal));
-        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
-        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: selector is null\");");
+        StringAssert.Contains(script, "throw new TypeError(\"source\");");
+        StringAssert.Contains(script, "throw new TypeError(\"selector\");");
         StringAssert.Contains(script, "return __src.map(__callback);");
     }
 
@@ -4320,8 +4320,8 @@ export function logValue() {
 
         Assert.IsNotNull(script);
         Assert.IsFalse(script.Contains("System/Linq/EnumerableModule.js", StringComparison.Ordinal));
-        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
-        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: predicate is null\");");
+        StringAssert.Contains(script, "throw new TypeError(\"source\");");
+        StringAssert.Contains(script, "throw new TypeError(\"predicate\");");
         StringAssert.Contains(script, "return __src.filter(__callback);");
     }
 
@@ -4346,8 +4346,8 @@ export function logValue() {
 
         Assert.IsNotNull(script);
         Assert.IsFalse(script.Contains("System/Linq/EnumerableModule.js", StringComparison.Ordinal));
-        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
-        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: selector is null\");");
+        StringAssert.Contains(script, "throw new TypeError(\"source\");");
+        StringAssert.Contains(script, "throw new TypeError(\"selector\");");
         StringAssert.Contains(script, "return Array.from(__src).map(__callback);");
     }
 
@@ -14368,7 +14368,7 @@ function cleanup() { }
 @"let _input;
 let _output;
 export function renderPreview() {
-  if (_input === null || _output === null)
+  if (_input == null || _output == null)
     return;
   let normalized = _input.value;
   _output.textContent = normalized;

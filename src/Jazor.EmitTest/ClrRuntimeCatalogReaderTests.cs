@@ -69,7 +69,7 @@ public sealed class ClrRuntimeCatalogReaderTests
         Assert.IsFalse(runtimeModule.Content.Contains("import {", StringComparison.Ordinal), runtimeModule.Content);
         Assert.IsFalse(runtimeModule.Content.Contains("export const RuntimeModule = {", StringComparison.Ordinal), runtimeModule.Content);
         StringAssert.Contains(runtimeModule.Content, "this.items = materializeArray(collection, ");
-        StringAssert.Contains(runtimeModule.Content, "return new JQueue;");
+        StringAssert.Contains(runtimeModule.Content, "return new JQueue(\"$ctor_");
 
         var byteModule = modules.Single(module => string.Equals(module.RelativePath, "System/ByteModule.js", StringComparison.OrdinalIgnoreCase));
         StringAssert.Contains(byteModule.Content, "export function _8719e4b3055c5188");
@@ -271,7 +271,7 @@ public sealed class ClrRuntimeCatalogReaderTests
         StringAssert.Contains(bigIntegerModule.Content, "if (value < 0n || baseValue === 1)");
         StringAssert.Contains(bigIntegerModule.Content, "if (baseValue === Number.POSITIVE_INFINITY)");
         StringAssert.Contains(bigIntegerModule.Content, "return Math.log(0) / Math.log(baseValue);");
-        StringAssert.Contains(bigIntegerModule.Content, "return BigInt(32);");
+        StringAssert.Contains(bigIntegerModule.Content, "return BigInt(64);");
         StringAssert.Contains(bigIntegerModule.Content, "let modulusMagnitude = modulus < 0n ? -modulus : modulus;");
         StringAssert.Contains(bigIntegerModule.Content, "let negativeResult = value < 0n && (exponent & 1n) === 1n;");
         Assert.IsFalse(bigIntegerModule.Content.Contains("throw new RangeError(\"Logarithm is undefined for non-positive numbers\")", StringComparison.Ordinal), bigIntegerModule.Content);

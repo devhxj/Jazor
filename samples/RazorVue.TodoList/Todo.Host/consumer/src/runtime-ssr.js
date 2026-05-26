@@ -30,16 +30,16 @@ export async function runTodoConsumerSsr(components, hostRequirements, razorVueC
         showCompleted: true,
         statusMessage: "SSR smoke loaded generated RazorVue SFC.",
         totalCount: 2,
-        completedCount: 1,
-        openCount: 1,
-        pinnedCount: 1,
-        visibleCount: 2,
-        tasks: [
-          { Id: 1, Title: "Validate generated DTO projections", Category: "Runtime", IsDone: false, IsPinned: true },
-          { Id: 2, Title: "Bundle generated Vue SFC", Category: "Tooling", IsDone: true, IsPinned: false }
-        ],
-        onAddRequested: () => {}
-      });
+      completedCount: 1,
+      openCount: 1,
+      pinnedCount: 1,
+      visibleCount: 2,
+      tasks: [
+        { id: 1, title: "Validate generated DTO projections", category: "Runtime", isDone: false, isPinned: true },
+        { id: 2, title: "Bundle generated Vue SFC", category: "Tooling", isDone: true, isPinned: false }
+      ],
+      onAddRequested: () => {}
+    });
     }
   });
 
