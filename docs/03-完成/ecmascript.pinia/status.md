@@ -193,6 +193,12 @@ Pinia 测试不再继续混在 `Jazor.CompilerTest`：
   - `dotnet run --file samples/ECMAScript.Pinia.Counter/verify-smoke.cs -- -Configuration Release -BaseOutputPath artifacts/out/pinia-sample/ -BaseIntermediateOutputPath artifacts/obj/pinia-sample/`
 - `v0.1.25` 已基于该修复重新触发发布；其中 `verify-pinia` 的 `dotnet` / `sample-smoke` / `package-dry-run` 三条前置门禁已全部恢复通过，说明这次阻断已被收口在正确层面。
 
+2026-05-26 发布工作流对齐：
+
+- 可信发布策略已从 `nuget-publish.yml` 迁移到 `nuget-publish-ref.yml`，该 workflow 现在同时承接 `push.tags: v*` 与手工 `workflow_dispatch` 的 `release_ref` 发布入口；
+- `nuget-publish.yml` 已降级为仅打包的 dry-run 入口，不再承担 nuget.org / GitHub Packages 推送或 GitHub Release 创建；
+- 这次对齐的目的，是把 tag 发布、ref 重跑和 dry-run 打包拆成清晰的独立入口，避免 trusted publishing 因 workflow 文件名漂移再次失配。
+
 ## 下一步行动
 
 1. plugin 投影模式继续沉淀  

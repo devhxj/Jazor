@@ -1,6 +1,9 @@
 name: Publish NuGet From Ref
 
 on:
+  push:
+    tags:
+      - "v*"
   workflow_dispatch:
     inputs:
       release_ref:
@@ -14,12 +17,18 @@ on:
         type: boolean
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
   packages: write
 
 jobs:
+  verify-pinia:
+    if: ${{ github.event_name == 'push' }}
+    uses: ./.github/workflows/pinia-verify.yml
+
   publish:
+    needs: verify-pinia
+    if: ${{ always() && (github.event_name != 'push' || needs.verify-pinia.result == 'success') }}
     runs-on: windows-latest
     environment: production
     env:
@@ -27,10 +36,35 @@ jobs:
       NUGET_USER: ${{ secrets.NUGET_USER }}
 
     steps:
+      - name: Resolve release ref
+        id: release_ref
+        shell: pwsh
+        run: |
+          if ('${{ github.event_name }}' -eq 'workflow_dispatch') {
+            $releaseRef = '${{ inputs.release_ref }}'
+            $dryRun = '${{ inputs.dry_run }}'
+          } else {
+            $releaseRef = '${{ github.ref_name }}'
+            $dryRun = 'false'
+          }
+
+          if ([string]::IsNullOrWhiteSpace($releaseRef)) {
+            throw 'Release ref could not be resolved.'
+          }
+
+          $publishEnabled = $dryRun -ne 'true'
+          $createRelease = $publishEnabled -and $releaseRef.StartsWith('v', [System.StringComparison]::Ordinal)
+          $safeRef = $releaseRef -replace '[^A-Za-z0-9._-]', '-'
+
+          "release_ref=$releaseRef" >> $env:GITHUB_OUTPUT
+          "safe_ref=$safeRef" >> $env:GITHUB_OUTPUT
+          "publish_enabled=$($publishEnabled.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          "create_release=$($createRelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+
       - name: Checkout requested ref
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.release_ref }}
+          ref: ${{ steps.release_ref.outputs.release_ref }}
           fetch-depth: 0
 
       - name: Setup .NET
@@ -71,12 +105,12 @@ jobs:
       - name: Upload package artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Jazor.${{ steps.package.outputs.version }}.${{ inputs.release_ref }}.nupkg
+          name: Jazor.${{ steps.package.outputs.version }}.${{ steps.release_ref.outputs.safe_ref }}.nupkg
           path: artifacts/packages/*
           if-no-files-found: error
 
       - name: Ensure publish auth is configured
-        if: ${{ github.event.inputs.dry_run != 'true' }}
+        if: ${{ steps.release_ref.outputs.publish_enabled == 'true' }}
         shell: pwsh
         run: |
           if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY) -and [string]::IsNullOrWhiteSpace($env:NUGET_USER))
@@ -85,7 +119,7 @@ jobs:
           }
 
       - name: NuGet trusted publishing login
-        if: ${{ github.event.inputs.dry_run != 'true' && env.NUGET_USER != '' }}
+        if: ${{ steps.release_ref.outputs.publish_enabled == 'true' && env.NUGET_USER != '' }}
         id: nuget_login
         continue-on-error: true
         uses: NuGet/login@v1
@@ -93,7 +127,7 @@ jobs:
           user: ${{ secrets.NUGET_USER }}
 
       - name: Push package with trusted publishing
-        if: ${{ github.event.inputs.dry_run != 'true' && steps.nuget_login.outcome == 'success' }}
+        if: ${{ steps.release_ref.outputs.publish_enabled == 'true' && steps.nuget_login.outcome == 'success' }}
         shell: pwsh
         run: |
           $packages = Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg' | Sort-Object Name
@@ -103,11 +137,50 @@ jobs:
           }
 
       - name: Push package with API key fallback
-        if: ${{ github.event.inputs.dry_run != 'true' && steps.nuget_login.outcome != 'success' && env.NUGET_API_KEY != '' }}
+        if: ${{ steps.release_ref.outputs.publish_enabled == 'true' && steps.nuget_login.outcome != 'success' && env.NUGET_API_KEY != '' }}
         shell: pwsh
         run: |
           $packages = Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg' | Sort-Object Name
           if (-not $packages) { throw 'No packages found in artifacts/packages.' }
           foreach ($pkg in $packages) {
             dotnet nuget push $pkg.FullName --api-key '${{ secrets.NUGET_API_KEY }}' --source 'https://api.nuget.org/v3/index.json' --skip-duplicate
+          }
+
+      - name: Push to GitHub Packages
+        if: ${{ steps.release_ref.outputs.publish_enabled == 'true' }}
+        shell: pwsh
+        run: |
+          $packages = Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg' | Sort-Object Name
+          if (-not $packages) { throw 'No packages found in artifacts/packages.' }
+          foreach ($pkg in $packages) {
+            dotnet nuget push $pkg.FullName --api-key '${{ secrets.GITHUB_TOKEN }}' --source 'https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json' --skip-duplicate
+          }
+
+      - name: Generate release notes
+        if: ${{ steps.release_ref.outputs.create_release == 'true' }}
+        id: release_notes
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path 'artifacts' -Force | Out-Null
+          $notesPath = Join-Path (Resolve-Path 'artifacts') 'release-notes.md'
+          dotnet run --file ./scripts/csharp/release-notes.cs -- `
+            --tag '${{ steps.release_ref.outputs.release_ref }}' `
+            --repository '${{ github.repository }}' |
+            Set-Content -LiteralPath $notesPath -Encoding UTF8
+          "notes_path=$notesPath" >> $env:GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        if: ${{ steps.release_ref.outputs.create_release == 'true' }}
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $tag = '${{ steps.release_ref.outputs.release_ref }}'
+          $notesPath = '${{ steps.release_notes.outputs.notes_path }}'
+
+          gh release view $tag --repo "${{ github.repository }}" *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release edit $tag --repo "${{ github.repository }}" --title $tag --notes-file $notesPath --latest
+          } else {
+            gh release create $tag --repo "${{ github.repository }}" --title $tag --notes-file $notesPath --latest
           }

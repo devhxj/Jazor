@@ -178,12 +178,18 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 	public void Pinia_PublishWorkflow_DependsOnReusableVerificationLane()
 	{
 		var repoRoot = ResolveRepositoryRoot();
-		var workflowPath = Path.Combine(repoRoot, ".github", "workflows", "nuget-publish.yml");
+		var workflowPath = Path.Combine(repoRoot, ".github", "workflows", "nuget-publish-ref.yml");
 		var source = System.IO.File.ReadAllText(workflowPath);
 
+		StringAssert.Contains(source, "name: Publish NuGet From Ref");
+		StringAssert.Contains(source, "tags:");
+		StringAssert.Contains(source, "- \"v*\"");
 		StringAssert.Contains(source, "verify-pinia:");
 		StringAssert.Contains(source, "uses: ./.github/workflows/pinia-verify.yml");
 		StringAssert.Contains(source, "needs: verify-pinia");
+		StringAssert.Contains(source, "github.event_name != 'push' || needs.verify-pinia.result == 'success'");
+		StringAssert.Contains(source, "id: release_ref");
+		StringAssert.Contains(source, "$releaseRef = '${{ github.ref_name }}'");
 		StringAssert.Contains(source, "--package jazor `");
 		StringAssert.Contains(source, "--package pinia `");
 		StringAssert.Contains(source, "--package pinia-testing `");
@@ -192,6 +198,27 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "--package tdesign `");
 		StringAssert.Contains(source, "Get-ChildItem 'artifacts/packages/Jazor.*.nupkg'");
 		StringAssert.Contains(source, "Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg'");
+		StringAssert.Contains(source, "NuGet trusted publishing login");
+		StringAssert.Contains(source, "Push to GitHub Packages");
+		StringAssert.Contains(source, "Create GitHub Release");
+	}
+
+	[TestMethod]
+	public void Pinia_LegacyNuGetWorkflow_RemainsPackOnlyDryRun()
+	{
+		var repoRoot = ResolveRepositoryRoot();
+		var workflowPath = Path.Combine(repoRoot, ".github", "workflows", "nuget-publish.yml");
+		var source = System.IO.File.ReadAllText(workflowPath);
+
+		StringAssert.Contains(source, "name: Pack NuGet Dry Run");
+		StringAssert.Contains(source, "workflow_dispatch:");
+		StringAssert.Contains(source, "ref: ${{ inputs.ref || github.ref }}");
+		StringAssert.Contains(source, "--skip-push");
+		Assert.IsFalse(source.Contains("push:", StringComparison.Ordinal), "Dry-run workflow must not run on tag pushes.");
+		Assert.IsFalse(source.Contains("id-token: write", StringComparison.Ordinal), "Dry-run workflow must not request NuGet trusted-publishing permissions.");
+		Assert.IsFalse(source.Contains("NuGet trusted publishing login", StringComparison.Ordinal), "Dry-run workflow must not publish to nuget.org.");
+		Assert.IsFalse(source.Contains("Push to GitHub Packages", StringComparison.Ordinal), "Dry-run workflow must not publish to GitHub Packages.");
+		Assert.IsFalse(source.Contains("Create GitHub Release", StringComparison.Ordinal), "Dry-run workflow must not create GitHub releases.");
 	}
 
 	[TestMethod]
