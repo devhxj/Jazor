@@ -1996,6 +1996,17 @@ internal sealed class RazorVueRenderTreeExtractor
         }
 
         private void ThrowIfReadOnlyByRefParameterEscapes(IOperation operation)
+            => ThrowIfReadOnlyByRefParameterEscapes(
+                operation,
+                readOnlyByRefParameters: null,
+                "BuildRenderTree helper parameter",
+                "render helper parameters");
+
+        private void ThrowIfReadOnlyByRefParameterEscapes(
+            IOperation operation,
+            ImmutableHashSet<IParameterSymbol>? readOnlyByRefParameters,
+            string parameterContext,
+            string usageContext)
         {
             foreach (var current in EnumerateSelfAndDescendants(operation))
             {
@@ -2005,12 +2016,56 @@ internal sealed class RazorVueRenderTreeExtractor
                     continue;
                 }
 
-                if (!TryGetReadOnlyByRefParameterReference(argument.Value, out var escapedParameter))
+                if (!TryGetReadOnlyByRefParameterReference(
+                        argument.Value,
+                        readOnlyByRefParameters,
+                        out var escapedParameter))
+                {
                     continue;
+                }
 
                 throw CreateStructuralIssue(
                     argument,
-                    $"BuildRenderTree helper parameter '{escapedParameter.Name}' in component '{_snapshot.Descriptor.FullName}' is a read-only 'in' value parameter and cannot be forwarded through a by-reference invocation. RazorVue only supports reading 'in' render helper parameters as values.");
+                    $"{parameterContext} '{escapedParameter.Name}' in component '{_snapshot.Descriptor.FullName}' is a read-only 'in' value parameter and cannot be forwarded through a by-reference invocation. RazorVue only supports reading 'in' {usageContext} as values.");
+            }
+        }
+
+        private void ThrowIfRenderFragmentFactoryReadOnlyByRefParameterEscapes(IInvocationOperation invocation)
+        {
+            var canonicalMethod = RazorVueMethodSymbolNormalizer.GetCanonicalMethod(invocation.TargetMethod);
+            var readOnlyByRefParameters = canonicalMethod.Parameters
+                .Where(static parameter => parameter.RefKind == RefKind.In)
+                .ToImmutableHashSet<IParameterSymbol>(SymbolEqualityComparer.Default);
+            if (readOnlyByRefParameters.Count == 0)
+                return;
+
+            foreach (var syntaxReference in canonicalMethod.DeclaringSyntaxReferences)
+            {
+                var syntax = syntaxReference.GetSyntax();
+                var semanticModel = _compilation.GetSemanticModel(syntax.SyntaxTree);
+                var operation = syntax switch
+                {
+                    MethodDeclarationSyntax methodDeclaration => methodDeclaration.Body is not null
+                        ? semanticModel.GetOperation(methodDeclaration.Body)
+                        : methodDeclaration.ExpressionBody is not null
+                            ? semanticModel.GetOperation(methodDeclaration.ExpressionBody.Expression)
+                            : null,
+                    LocalFunctionStatementSyntax localFunction => localFunction.Body is not null
+                        ? semanticModel.GetOperation(localFunction.Body)
+                        : localFunction.ExpressionBody is not null
+                            ? semanticModel.GetOperation(localFunction.ExpressionBody.Expression)
+                            : null,
+                    _ => null
+                };
+
+                if (operation is not null)
+                {
+                    ThrowIfReadOnlyByRefParameterEscapes(
+                        operation,
+                        readOnlyByRefParameters,
+                        "BuildRenderTree fragment factory parameter",
+                        "fragment factory parameters");
+                }
             }
         }
 
@@ -2025,6 +2080,7 @@ internal sealed class RazorVueRenderTreeExtractor
 
         private static bool TryGetReadOnlyByRefParameterReference(
             IOperation? operation,
+            ImmutableHashSet<IParameterSymbol>? readOnlyByRefParameters,
             out IParameterSymbol parameter)
         {
             parameter = default!;
@@ -2034,7 +2090,9 @@ internal sealed class RazorVueRenderTreeExtractor
             foreach (var current in EnumerateSelfAndDescendants(operation))
             {
                 if (Unwrap(current) is IParameterReferenceOperation parameterReference &&
-                    parameterReference.Parameter.RefKind == RefKind.In)
+                    parameterReference.Parameter.RefKind == RefKind.In &&
+                    (readOnlyByRefParameters is null ||
+                     readOnlyByRefParameters.Contains(parameterReference.Parameter)))
                 {
                     parameter = parameterReference.Parameter;
                     return true;
@@ -3571,6 +3629,8 @@ internal sealed class RazorVueRenderTreeExtractor
                 throw CreateUnsupportedBuilderCall(invocation, failureMessage);
             }
 
+            ThrowIfRenderFragmentFactoryReadOnlyByRefParameterEscapes(invocation);
+
             if (!TryGetRenderFragmentFactoryReturnedValue(invocation, out var returnedValue))
             {
                 throw CreateUnsupportedBuilderCall(
@@ -3609,19 +3669,13 @@ internal sealed class RazorVueRenderTreeExtractor
 
             foreach (var parameter in method.Parameters)
             {
-                if (parameter.RefKind != RefKind.None)
-                {
-                    var modifier = parameter.RefKind switch
-                    {
-                        RefKind.Ref => "ref",
-                        RefKind.Out => "out",
-                        RefKind.In => "in",
-                        _ => parameter.RefKind.ToString().ToLowerInvariant()
-                    };
-                    failureMessage =
-                        $"BuildRenderTree fragment factory method '{helperDisplayName}' cannot declare '{modifier}' parameter '{parameter.Name}' in component '{_snapshot.Descriptor.FullName}'. Only ordinary by-value parameters are supported.";
-                    return false;
-                }
+                if (parameter.RefKind is RefKind.None or RefKind.In)
+                    continue;
+
+                var modifier = GetRefKindModifier(parameter.RefKind);
+                failureMessage =
+                    $"BuildRenderTree fragment factory method '{helperDisplayName}' cannot declare '{modifier}' parameter '{parameter.Name}' in component '{_snapshot.Descriptor.FullName}'. Only ordinary by-value parameters and read-only 'in' value parameters are supported.";
+                return false;
             }
 
             extraParameters = method.Parameters
@@ -3657,6 +3711,9 @@ internal sealed class RazorVueRenderTreeExtractor
                 }
 
                 var parameter = RazorVueMethodSymbolNormalizer.NormalizeParameter(invocation.TargetMethod, rawParameter);
+                if (!IsSupportedRenderFragmentFactoryArgumentKind(invocation, parameter, out failureMessage))
+                    return false;
+
                 if (!boundParameters.Add(parameter))
                 {
                     failureMessage =
@@ -3684,6 +3741,23 @@ internal sealed class RazorVueRenderTreeExtractor
 
             extraArgumentBindings = extraBindingsBuilder.ToImmutable();
             return true;
+        }
+
+        private bool IsSupportedRenderFragmentFactoryArgumentKind(
+            IInvocationOperation invocation,
+            IParameterSymbol normalizedParameter,
+            out string failureMessage)
+        {
+            failureMessage = string.Empty;
+
+            var expectedRefKind = normalizedParameter.RefKind;
+            if (expectedRefKind is RefKind.None or RefKind.In)
+                return true;
+
+            var modifier = GetRefKindModifier(expectedRefKind);
+            failureMessage =
+                $"BuildRenderTree fragment factory method '{GetBuilderCallDisplayName(invocation)}' cannot bind '{modifier}' argument for parameter '{normalizedParameter.Name}' in component '{_snapshot.Descriptor.FullName}'. RenderFragment factory parameters only support by-value binding and read-only 'in' value binding.";
+            return false;
         }
 
         private bool TryGetRenderFragmentFactoryReturnedValue(

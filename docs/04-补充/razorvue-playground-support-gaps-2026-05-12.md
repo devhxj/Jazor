@@ -1,4 +1,4 @@
-# RazorVue Playground 支持缺口状态（2026-05-25）
+# RazorVue Playground 支持缺口状态（2026-05-26）
 
 ## 目的
 
@@ -32,6 +32,7 @@
 - 动态 raw markup 不支持。`AddMarkupContent(...)`、`AddContent(..., MarkupString)` 和 Razor template 中的 `MarkupString` 只接受源码可分析且可证明为静态 HTML 的子集；运行时拼接 markup、运行时构造 `MarkupString`、脚本/raw HTML 执行语义继续失败。
 - 任意 `RenderFragment` / delegate dataflow 不支持。只接受 inline template、source-stable local/member carrier、受支持 current-component/local function fragment factory 这类可静态追踪形态。
 - 后续可观察写入的 `RenderFragment` / `MarkupString` / static-markup carrier 不支持；普通 setup `let` carrier 支持不会放宽这些 source-stable 合同。
+- fragment factory 的 `ref` / `out` 参数和 by-reference 转发/逃逸仍不支持。`in` 只读值参数已支持按 captured value 读取，但继续传入任意 `ref` / `out` / `in` by-reference invocation 会显式失败。
 - recursive fragment factory、无法静态还原匿名模板 body 的 callable、需要任意 getter/dataflow 推理的 fragment member carrier 不支持。
 
 ### 4. Render Helper / Open Frame 协议
@@ -45,7 +46,7 @@
 
 - setup/lifecycle lowering 不是通用执行模型。`async` helper、`Task` / `ValueTask` 返回 helper、`ref` / `out` 参数、一般外部 invocation、未知实例 method-call payload、超出当前 `SemanticWalker` statement lowering 支持面的 helper body 继续失败。非写入 `in` 只读值参数已支持按值读取；把该 `in` 参数继续转发到任意 `ref` / `out` / `in` by-reference invocation 仍显式失败。
 - `SetParametersAsync` 只支持 no-op、直达 `ComponentBase.SetParametersAsync(...)` 的 pass-through、以及受控 base-pass-through + 线性有序 `InvokeAsync(...)` emit 序列。emit payload 可使用 source-stable local / local function / callable local 前缀；共享 local 会在 watch body 中只物化一次。额外 mutation、控制流、任意外部 invocation 或更一般方法体不支持。
-- `ShouldRender` 支持 `return true;`、可源码解析到受支持 base 链的 pass-through，以及单表达式/单 `return` 的动态 bool 条件。动态条件通过 `Jazor.Compiler` / `SemanticWalker` 降低为 setup 侧表达式，并在 render-function artifact 中用 cached vnode gate 模拟“首次强制渲染、后续 false 跳过渲染”的语义；canonical SFC 遇到动态 gate 会切到 render-function `.vue`。多语句/控制流 `ShouldRender`、外部引用程序集无源码 base override、无法由 setup expression lowering 支持的成员/调用仍保守 `FullReloadRequired`。
+- `ShouldRender` 支持 `return true;`、可源码解析到受支持 base 链的 pass-through、单表达式/单 `return` 的动态 bool 条件，以及“局部声明 / 局部函数前缀 + 最终 `return bool`”的线性语句体。动态条件和线性前缀语句体都通过 `Jazor.Compiler` / `SemanticWalker` 降低为 setup 侧表达式/语句，并在 render-function artifact 中用 cached vnode gate 模拟“首次强制渲染、后续 false 跳过渲染”的语义；canonical SFC 遇到动态 gate 会切到 render-function `.vue`。外层 `if` / loop / switch / try / 早退、多 return、局部 lambda / delegate state、嵌套局部函数、外部引用程序集无源码 base override、无法由 setup lowering 支持的成员/调用仍保守 `FullReloadRequired`。
 - base pass-through 若最终落到外部引用程序集里的无源码 override，继续显式失败，不乐观当成 no-op。
 - `Task` 返回 lifecycle 的 bare `default` 不再视为 no-op；`Task.CompletedTask` 才是受支持空实现。non-generic `ValueTask` 的 `default` 仍按其独立 no-op 合同处理。
 
@@ -66,7 +67,7 @@
 - mixed declarative + imperative render-function 路径已能保留可声明式表达的 sibling vnode，只在需要 frame/slot/child replay 时进入 render-context bridge。
 - imperative `AddComponentParameter(...)` 已按 descriptor 区分 prop / emit / slot；current-component slot forwarding、builder-style `RenderFragment` / `RenderFragment<T>` slot callback、nested component metadata/import 已进入正式路径。
 - 静态 `OpenComponent(Type)` 及 source-stable local/current-component member `System.Type` carrier 已支持；这不是动态组件支持。
-- Razor IR mixed attribute、lowercase `class` / `style` fallthrough、`CssClass` / `CssStyle` 强类型映射、DOM event modifier、static markup、typed/untyped `RenderFragment` carrier、fragment factory、template local、render helper 只读 `in` 值参数、setup/lifecycle helper 只读 `in` 值参数、setup helper/lifecycle 受控 payload、动态 `ShouldRender` cached render gate 已进入支持面。
+- Razor IR mixed attribute、lowercase `class` / `style` fallthrough、`CssClass` / `CssStyle` 强类型映射、DOM event modifier、static markup、typed/untyped `RenderFragment` carrier、fragment factory、fragment factory 只读 `in` 值参数、template local、render helper 只读 `in` 值参数、setup/lifecycle helper 只读 `in` 值参数、setup helper/lifecycle 受控 payload、动态 `ShouldRender` cached render gate、`ShouldRender` 线性局部前缀 cached render gate 已进入支持面。
 - unified `jazor-manifest.json` component projection、SFC bridge named export、consumer route metadata、ASP.NET Core host 默认静态资源/SPA fallback 主线已收敛，旧第二 manifest 和 Playground 私有 matcher 不再是当前契约。
 - route bridge 已支持 composite default value（例如 `post-{id=42}`）和尾部 optional separator composite segment（例如 `/files/{filename}.{ext?}`）。前者保持 required Vue path 并仅通过 metadata 应用默认值，不做 URL elision；后者展开为带扩展名和无扩展名两条稳定 Vue route。
 - route constraint bridge 已支持 `alpha` / `bool` / `guid` / `regex(...)` 的 generated metadata 二次校验；`guid` 覆盖常见 GUID 文本形态和 browser pathname 中 encoded wrapper 形态；`bool` 已改为大小写不敏感匹配；`int` / `long` / `min(...)` / `max(...)` / `range(...)` 已通过 generated `parameterConstraints` metadata 和 consumer runtime `BigInt` 校验补齐整数边界；`decimal` / `double` / `float` 已通过 `numberParse` metadata 校验 invariant numeric text；`datetime` 已通过 `dateTimeParse` metadata 校验 ASP.NET Core 内置 `DateTimeRouteConstraint` 的 invariant `DateTime.TryParse(...)` 常见 URL 形态；`file` / `nonfile` 已通过 `fileName` metadata 校验 decoded route parameter 的 filename/non-filename 语义；`required` 与 `length(...)` / `minlength(...)` / `maxlength(...)` 已支持与 path-regex 约束组合并通过 metadata 做长度求交校验；`bool:alpha`、`int:regex(...)` 等可 metadata-backed 求交组合已支持。`date` 不是当前 ASP.NET Core 默认 `ConstraintMap` 内置 route constraint，仍保留 fail-fast，避免把未知自定义约束按 `datetime` 近似放行。
@@ -75,10 +76,13 @@
 
 最近一次相关实现验证记录：
 
-- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~RazorVue_Pipeline_LowersSetupHelperWithInParameterAsReadOnlyValue|FullyQualifiedName~RazorVue_Pipeline_LowersLifecycleHelperWithInParameterAsReadOnlyValue|FullyQualifiedName~RazorVue_Pipeline_LowersLifecycleLocalFunctionWithInParameterAsReadOnlyValue|FullyQualifiedName~RazorVue_Pipeline_ThrowsCompilationIssueForSetupHelperForwardingInParameterByReference|FullyQualifiedName~RazorVue_Pipeline_ThrowsCompilationIssueForSetupHelperWithRefParameter' -v minimal`：5 通过，0 失败。
-- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~RazorVue_SfcArtifactFactory_LowersSetupHelperWithInParameter|FullyQualifiedName~RazorVue_SfcArtifactFactory_LowersLifecycleHelperWithInParameter|FullyQualifiedName~RazorVue_SfcArtifactFactory_ThrowsForSetupHelperForwardingInParameterByReference' -v minimal`：3 通过，0 失败。
-- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj -v minimal`：1396 通过，0 失败。
-- `dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj -v minimal`：486 通过，0 失败。
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~LocalPrefixedShouldRender|FullyQualifiedName~ControlFlowShouldRender|FullyQualifiedName~DynamicShouldRender_IsAccepted|FullyQualifiedName~LocalNamedPropsWithoutShadowingSetupProps|FullyQualifiedName~LocalFunctionPrefixedShouldRender|FullyQualifiedName~LocalLambdaShouldRender' -v minimal`：10 通过，0 失败。
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~LocalFunctionPrefixedShouldRender|FullyQualifiedName~LocalPrefixedShouldRender|FullyQualifiedName~GenerateCatalog_WithLocalPrefixedShouldRender|FullyQualifiedName~WithLocalPrefixedShouldRender' -v minimal`：5 通过，0 失败。
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~NestedLocalFunctionHasSeparateInByRefForwarding|FullyQualifiedName~ForwardingInParameterByReference|FullyQualifiedName~RenderFragmentFactoryMethodWithInParameter' -v minimal`：10 通过，0 失败。
+- `dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj --filter 'FullyQualifiedName~InParameter' -v minimal`：6 通过，0 失败。
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~ParameterizedCurrentComponentRenderFragmentFactoryMethod' -v minimal`：32 通过，0 失败。
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj -v minimal`：1414 通过，0 失败。
+- `dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj -v minimal`：492 通过，0 失败。
 - `dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter 'FullyQualifiedName~RazorVueConsumerEntryCompilerTests' -v minimal`：33 通过，0 失败。
 - `dotnet run --file src/Playground/consumer/scripts/run-deno.cs -- test --allow-env './src/runtime-common.test.js'`：通过。
 - `dotnet run --file src/Playground/consumer/scripts/run-deno.cs -- run -A scripts/test.ts`：通过。

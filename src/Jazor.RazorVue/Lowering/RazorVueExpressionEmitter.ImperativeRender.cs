@@ -906,19 +906,28 @@ internal sealed partial class RazorVueExpressionEmitter
     internal bool TryRewriteVariableDeclarator(
         IVariableDeclaratorOperation operation,
         SenseArgument argument,
-        out string expression)
+        out VariableDeclarator declarator)
     {
-        expression = string.Empty;
+        declarator = default!;
+        if (TryRewriteScopedLocalAliasVariableDeclarator(operation, argument, out declarator))
+            return true;
+
         if (_imperativeBuilderAlias is null)
         {
             return false;
         }
 
-        if (TryRewriteImperativeStaticMarkupVariableDeclarator(operation, argument, out expression))
+        if (TryRewriteImperativeStaticMarkupVariableDeclarator(operation, argument, out var expression))
+        {
+            declarator = new VariableDeclarator(new Identifier(operation.Symbol.Name), ParseJavaScriptExpression(expression));
             return true;
+        }
 
         if (TryRewriteImperativeComponentTypeVariableDeclarator(operation, out expression))
+        {
+            declarator = new VariableDeclarator(new Identifier(operation.Symbol.Name), ParseJavaScriptExpression(expression));
             return true;
+        }
 
         if (!IsImperativeRenderFragmentCarrierType(operation.Symbol.Type))
             return false;
@@ -938,13 +947,13 @@ internal sealed partial class RazorVueExpressionEmitter
         current = Unwrap(current) ?? current;
         if (TryEmitImperativeRenderSlotFactory(current, out var renderSlotFactory))
         {
-            expression = renderSlotFactory;
+            declarator = new VariableDeclarator(new Identifier(operation.Symbol.Name), ParseJavaScriptExpression(renderSlotFactory));
             return true;
         }
 
         if (TryEmitImperativeContextualRenderSlotFactory(current, out var contextualRenderSlotFactory))
         {
-            expression = contextualRenderSlotFactory;
+            declarator = new VariableDeclarator(new Identifier(operation.Symbol.Name), ParseJavaScriptExpression(contextualRenderSlotFactory));
             return true;
         }
 
@@ -953,11 +962,30 @@ internal sealed partial class RazorVueExpressionEmitter
                 candidate => EmitImperativeNestedExpression(candidate, argument),
                 out var factoryBackedRenderSlotFactory))
         {
-            expression = factoryBackedRenderSlotFactory;
+            declarator = new VariableDeclarator(new Identifier(operation.Symbol.Name), ParseJavaScriptExpression(factoryBackedRenderSlotFactory));
             return true;
         }
 
         return false;
+    }
+
+    private bool TryRewriteScopedLocalAliasVariableDeclarator(
+        IVariableDeclaratorOperation operation,
+        SenseArgument argument,
+        out VariableDeclarator declarator)
+    {
+        declarator = default!;
+        if (_scopedLocalAliases is null ||
+            !_scopedLocalAliases.TryGetValue(operation.Symbol, out var alias))
+        {
+            return false;
+        }
+
+        var initializer = operation.Initializer?.Value is { } value
+            ? ParseJavaScriptExpression(EmitSetupExpression(value, argument))
+            : null;
+        declarator = new VariableDeclarator(new Identifier(alias), initializer);
+        return true;
     }
 
     internal bool TryRewriteSimpleAssignment(

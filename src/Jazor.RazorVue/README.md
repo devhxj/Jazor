@@ -131,9 +131,9 @@
 - 这条局部 `RenderFragment` / `RenderFragment<T>` carrier 现在也能跨过后续 imperative tail：例如 local carrier 后接 `while` / conditional `return`，再把同一 carrier 赋给组件 typed slot/template 参数时，frontend 会把需要命令式执行的片段提升为 `RazorVueImperativeBlockNode`，同时保留 carrier/local 可见性与后续 sibling 的真实求值顺序。对“先声明、再立即赋值”的 carrier，如果 tail 后仍有 local 读取，segment planner 会把声明前缀并入同一 imperative render segment，并通过 `SemanticWalkerHost.RewriteSimpleAssignmentPreorder` 把简单赋值交给既有 slot-factory lowering，而不是在 RazorVue 内拼接一套私有 JS delegate 协议。
 - Razor IR template code-block 里的 local function fragment factory 声明现在也已并入同一局部 carrier 合同；例如 `@{ RenderFragment<int> template = CreateTemplate(Title); RenderFragment<int> CreateTemplate(string? title) => item => @<span>@title @item</span>; }` 会像当前组件 `@code` factory 一样保留 `title` captured scope 与内层 `item` typed scope，而不会把 local function 自身的 `@<...>` 模板体泄漏成根级 render node。
 - 对 untyped `RenderFragment` 而言，Razor IR frontend 现在也支持 direct expression consumption：`@Template`、`@template` 这类当前组件 member / source-stable local carrier 直接出现在 Razor 表达式位时，会还原为结构化 render subtree，而不是退化成普通表达式节点、重复输出模板体，或误落入 imperative tail。
-- 这条 untyped direct expression 路径同样覆盖“直接调用 fragment factory 并立即消费返回值”的 authored 语法：既支持当前组件 `@code` / member method，也支持 template code-block 内 local function factory；例如 `@CreateTemplate(Title)`、`@CreateTemplate()`、`@CreateTemplate(subtitle: Subtitle, title: Title)`，以及 `@{ RenderFragment CreateTemplate(string? title) => @<section><span>@title</span><p>ok</p></section>; } @CreateTemplate(Title)`。factory 的普通 captured 参数会继续保留为外层 scope，再在其内层直接物化最终 render subtree，而不会退化成普通 invocation expression；named argument out-of-order 也会按调用点求值顺序保留外层 scope 包裹顺序。
+- 这条 untyped direct expression 路径同样覆盖“直接调用 fragment factory 并立即消费返回值”的 authored 语法：既支持当前组件 `@code` / member method，也支持 template code-block 内 local function factory；例如 `@CreateTemplate(Title)`、`@CreateTemplate()`、`@CreateTemplate(subtitle: Subtitle, title: Title)`，以及 `@{ RenderFragment CreateTemplate(string? title) => @<section><span>@title</span><p>ok</p></section>; } @CreateTemplate(Title)`。factory 的普通 captured 参数和非写入 `in` 只读值参数会继续保留为外层 scope，再在其内层直接物化最终 render subtree，而不会退化成普通 invocation expression；named argument out-of-order 也会按调用点求值顺序保留外层 scope 包裹顺序。
 - 对 typed `RenderFragment<T>` 而言，Razor IR frontend 现在也支持 direct invocation consumption：`@Template(42)`、`@template(42)` 这类当前组件 member / source-stable local carrier 直接出现在 Razor 表达式位时，会还原为结构化 `RazorVueTemplateScopeNode`，并继续保留外层 captured-value scope，而不是退化成普通 invocation 表达式或在后续 canonical/SFC 阶段触发 unsupported member/property 失败。
-- 这条 typed direct invocation 路径同样覆盖“直接调用 fragment factory 再立即消费返回值”的 authored 语法：既支持当前组件 `@code` / member method，也支持 template code-block 内 local function factory；例如 `@CreateTemplate(Title)(42)`、`@CreateTemplate()(42)`、`@CreateTemplate(subtitle: Subtitle, title: Title)(42)`，以及 `@{ RenderFragment<int> CreateTemplate(string? title) => item => @<span>@title @item</span>; } @CreateTemplate(Title)(42)`。factory 的普通 captured 参数仍会保留为外层 scope，typed slot context 参数则继续落到内层 `RazorVueTemplateScopeNode`，named argument out-of-order 也会按调用点求值顺序保留外层 scope 包裹顺序。
+- 这条 typed direct invocation 路径同样覆盖“直接调用 fragment factory 再立即消费返回值”的 authored 语法：既支持当前组件 `@code` / member method，也支持 template code-block 内 local function factory；例如 `@CreateTemplate(Title)(42)`、`@CreateTemplate()(42)`、`@CreateTemplate(subtitle: Subtitle, title: Title)(42)`，以及 `@{ RenderFragment<int> CreateTemplate(string? title) => item => @<span>@title @item</span>; } @CreateTemplate(Title)(42)`。factory 的普通 captured 参数和非写入 `in` 只读值参数仍会保留为外层 scope，typed slot context 参数则继续落到内层 `RazorVueTemplateScopeNode`，named argument out-of-order 也会按调用点求值顺序保留外层 scope 包裹顺序。
 - 对 typed slot outlet 而言，Razor authored direct invocation 现在也已对齐 handwritten `BuildRenderTree` 语义：`@Header(Count + 1)` 这类当前组件 `[Parameter] RenderFragment<T>?` slot source 会直接还原为带 argument 的 `RazorVueSlotOutletNode`，最终 lower 为 `<slot name="header" :value="(props.count + 1)" />`，而不会退化成普通插值表达式。
 - 对 typed `RenderFragment<T>` / typed slot 而言，slot context 参数仍保留在 slot/template 自身的 `ParameterName` / `ParameterSymbol` 上；只有 factory/member carrier 额外捕获了普通值参数或当前组件值时，才会在模板 children 外层再包裹 `RazorVueTemplateScopeNode`。如果 carrier 本身只是 `item => ...` 这类直接 typed template，则 children 会直接是结构化 element/expression 节点，而不会平白新增一层 scope。
 - 在 handwritten `BuildRenderTree` 的 body-level imperative bridge 中，`builder.AddContent(sequence, RenderFragment)` 与 `builder.AddContent(sequence, RenderFragment<T>, value)` 现在也按同一 fragment 合同落地：inline fragment、source-stable local carrier、current-component/local function factory invocation，以及 factory-backed local carrier 都会转换为 nested `__jazorCreateRenderContext(h)` factory，再由 `append(fragment)` / `append(fragment, value)` 消费。组件 default / untyped slot 与 typed slot/template 参数（`AddAttribute` / `AddComponentParameter`）也可直接或经 local carrier 消费受支持 factory invocation，并按目标 descriptor 把 `ChildContent` 映射到 Vue `default` slot。captured 参数、typed slot 参数和 fragment body 仍经 `SemanticWalker` / compiler host 降级；factory 实参会在 fragment factory 创建点通过 IIFE capture 求值一次，不会在 local carrier 消费点重新展开，也不会被内联到每次 fragment invocation；生成物不会把 `headerBuilder => ...` / `itemBuilder => ...` 这类 Razor builder delegate 形态泄漏到 `.mjs` 或 render-function `.vue` 产物。local function factory declaration 只在全部引用都已被受控消费点物化时由 compiler host seam 跳过；后续可观察写入或无法 source-stable 证明的 carrier 继续 fail-fast。
@@ -155,14 +155,18 @@
 
 ## Lifecycle Support
 
-- RazorVue 的 lifecycle/setup lowering 仍是受控子集，但当前已正式支持一条更完整的 `ShouldRender` 透传链契约。
+- RazorVue 的 lifecycle/setup lowering 仍是受控子集，但当前已正式支持 `ShouldRender` cached render gate、受控 base-pass-through 和线性局部前缀语句体。
 - `ShouldRender` 当前接受的安全形态包括：
   - `return true;`
   - `return base.ShouldRender();`，当该 `base` 最终解析到 `ComponentBase.ShouldRender()` 时
-  - `return base.ShouldRender();`，当该 `base` 最终递归解析到另一个同样受支持的 base `ShouldRender` 实现时，例如“派生类透传 -> 抽象基类 `return true;`”
-- 这条支持是递归受控的，而不是“只要写了 `base.ShouldRender()` 就接受”：
-  - 如果 base 链上的最终实现仍是动态条件（例如 `return Value > 0;`），RazorVue 仍会把整条链判为 unsupported，并继续落到 `FullReloadRequired`
-  - 若 base 链形成循环、缺少源码、或方法体形状超出上述受控子集，也会继续显式失败
+  - `return base.ShouldRender();`，当该 `base` 最终递归解析到另一个同样受支持的 base `ShouldRender` 实现时，例如“派生类透传 -> 抽象基类动态条件”
+  - 单表达式 / 单 `return` 的动态 bool 条件，例如 `return Value > 0;`
+  - 线性局部声明或局部函数前缀后接最终 `return bool`，例如 `var threshold = Value + 1; return threshold > 2;` 或 `bool IsReady(int value) => value > 2; return IsReady(Value);`
+- 动态条件和线性前缀语句体都继续交给 `RazorVueExpressionEmitter` / `SemanticWalker` / `Jazor.Compiler` lowering，RazorVue 只负责包裹 cached vnode gate：首次 render 强制通过，后续 `false` 返回上一次 cached vnode。
+- 这条支持是递归受控的，而不是“只要写了 `base.ShouldRender()` 或任意多语句体就接受”：
+  - 外层 `if` / loop / switch / try / 早退、多 return、局部 lambda / delegate state、嵌套局部函数仍不属于当前 `ShouldRender` gate 支持面
+  - 若 base 链形成循环、缺少源码、外部引用程序集无源码 override，或方法体形状超出上述受控子集，也会继续显式失败
+  - 线性前缀中的局部变量会稳定别名，避免与 `props` / `emit` / `slots` / render gate 缓存变量等 setup 名称发生 JavaScript 遮蔽；局部函数声明名和参数名必须本身是安全 binding identifier
 - 普通 lifecycle 的 base-pass-through 现在也对齐接受一个更窄的尾随 no-op 形态：例如 `await base.OnInitializedAsync(); return;` 这类“base 透传后只跟空返回”的方法体，会与纯 pass-through 一样被视为没有新增运行时行为，不再误退回 unsupported。
 - lifecycle / no-op contract 本轮进一步按真实返回类型收紧并对齐：
   - `Task` 返回的 lifecycle 只接受真实 completed-task no-op，例如 `Task.CompletedTask`
@@ -343,7 +347,7 @@
 - 对于 `AddContent(sequence, RenderFragment<T>, value)`，当前支持源码可分析的 typed fragment：可以是 inline anonymous-function fragment、同一可分析作用域内的 source-stable 局部 `RenderFragment<T>` carrier、受控 current-component member carrier，或受支持 current-component/local function fragment factory / factory-backed carrier；仍不把任意 delegate 值、后续可观察写入的 carrier 或动态 callable 形态放宽为模板执行。
 - 同一条“源码可分析的局部 `RenderFragment<T>` carrier”规则也适用于组件 typed slot/template 参数，例如 `builder.AddAttribute(1, "ItemTemplate", template);`。
 - 对于 imperative bridge 中这类局部 typed `RenderFragment<T>` carrier，RazorVue 会直接把 carrier declarator 改写成最终 slot 函数：slot 函数自身创建独立 `__jazorCreateRenderContext(h)`、经 `Jazor.Compiler` / `SemanticWalker` 翻译其 builder body、最后返回 `.finish()`；不会再引入 `__jazorCreateContextualRenderSlot`、wrapper marker JS，或把 inner builder body 继续保留为 `item => __builder => ...` 形状。
-- 对于 imperative bridge 中这类由当前组件或 local function fragment factory 返回、再落入 local/member carrier 的 typed `RenderFragment<T>`，RazorVue 现在也直接 lower 为最终 slot callback：factory 的普通 captured 参数会在 carrier 创建点通过 IIFE 先求值并绑定一次，再由最终 callback body 引用该 captured alias，不会把实参表达式复制到每次 fragment invocation。captured 参数绑定复用 shared invocation binder，named argument out-of-order 会保持调用点左到右求值顺序。
+- 对于 imperative bridge 中这类由当前组件或 local function fragment factory 返回、再落入 local/member carrier 的 typed `RenderFragment<T>`，RazorVue 现在也直接 lower 为最终 slot callback：factory 的普通 captured 参数和非写入 `in` 只读值参数会在 carrier 创建点通过 IIFE 先求值并绑定一次，再由最终 callback body 引用该 captured alias，不会把实参表达式复制到每次 fragment invocation。captured 参数绑定复用 shared invocation binder，named argument out-of-order 会保持调用点左到右求值顺序。
 - 这条 imperative bridge contract 现在也已对 current-component member carrier 的消费路径做了显式回归锁定：member carrier 不仅可用于组件 typed slot/template 参数，也可直接用于 `AddContent(..., RenderFragment<T>, value)` 与 untyped `ChildContent` 默认 slot；只要 member 本身仍满足 source-stable 限制，`.mjs` 与 render-function `.vue` 两条产物都会继续输出最终 nested render-context factory、保留 nested component metadata/import，并且不会在消费点重新展开 member initializer。
 - 对于 handwritten `BuildRenderTree` 中这类局部 typed `RenderFragment<T>` carrier，如果它采用“先声明、再在同一线性局部声明前缀内完成一次简单赋值”的窄模式，当前 contract 也会继续跨过 mixed imperative segmentation 生效；即 declarative 前缀里完成 `template = CreateTemplate(Title);` 后，后续 imperative block 中再消费 `template` 仍会沿同一静态 carrier 链追到最终 slot callback lowering，而不会退回动态 delegate 值或丢失 nested component import / metadata。现在这条 contract 也允许 `RenderFragment<int> template; var revision = 0; template = CreateTemplate(Title);` 这类 sibling-local declaration 变体。
 - 这条“先声明、再在同一线性局部声明前缀内完成一次简单赋值”的局部 carrier 合同现在也在 BuildRenderTree frontend / mixed imperative / pipeline 三条线上统一做了 fail-fast：一旦该 local 在后续再次出现可观察写入（重新赋值、递增/递减、`ref/out` 暴露等），RazorVue 会把它判定为不再 source-stable，而不是继续沿第一次赋值静默恢复旧模板。
@@ -365,7 +369,7 @@
     - `builder.AddContent(0, CreateTemplate(Title), 42);`
     - `builder.AddAttribute(1, "ItemTemplate", CreateTemplate(Title));`
   - 这类 factory 调用结果也可以先落入受控 carrier，再由后续调用点消费，例如 `RenderFragment<int> template = CreateTemplate(Title); builder.AddContent(0, template, 42);` 或只读 property / `readonly` field 转发该结果。
-  - 对于带参数 fragment factory，额外参数会通过嵌套 template scope / 嵌套 IIFE 保留单次求值与局部不泄漏语义；named argument 即使打乱调用书写顺序，也会继续按调用点左到右求值顺序保留作用域包裹，而不会退化成按形参声明顺序重排求值
+  - 对于带参数 fragment factory，普通按值参数和非写入 `in` 只读值参数会通过嵌套 template scope / 嵌套 IIFE 保留单次求值与局部不泄漏语义；named argument 即使打乱调用书写顺序，也会继续按调用点左到右求值顺序保留作用域包裹，而不会退化成按形参声明顺序重排求值
   - 同一个带参 fragment factory 即使在同一组件内被多个不同调用点重复使用，RazorVue 也只缓存“模板骨架”，不会缓存某一次调用点的 captured 值绑定；`CreateTemplate(Title)` 与 `CreateTemplate(Subtitle)` 会各自保留自己的外层 scope，而不会互相污染
 - 当前组件自身的 slot outlet / slot forwarding 源只认 `[Parameter] RenderFragment...` 属性。
 - 该规则同时覆盖：
@@ -376,11 +380,11 @@
 - `RenderFragment` / `RenderFragment<T>` member carrier 仍按 source-stable 合同处理：只读 / `readonly` member 与可证明无后续写入的 private carrier 可以进入静态 fragment 解析；后续重赋值、`ref/out` 写入，以及需要任意 getter/dataflow 分析的 member carrier 当前仍明确不支持。普通 setup `let` carrier 支持不会放宽 fragment/static-markup carrier 的 source-stable 要求。
 - current-component member carrier 一旦形成自引用或环引用，会显式失败；RazorVue 不支持递归 current-component `RenderFragment` member carrier。
 - fragment factory helper 当前支持源码可分析返回值；generic current-component method / local function 也可接受，但仅限 Roslyn 已绑定到具体构造方法实例、且返回模板形状本身仍可静态还原的子集。
-  - direct `AddContent(...)` 路径支持零参数、普通按值参数，以及 `params` 数组参数 factory
-  - 组件 typed slot/template 参数路径也支持零参数、普通按值参数，以及 `params` 数组参数 factory，但仍要求调用点直接传入当前组件方法 / local function factory
+  - direct `AddContent(...)` 路径支持零参数、普通按值参数、非写入 `in` 只读值参数，以及 `params` 数组参数 factory
+  - 组件 typed slot/template 参数路径也支持零参数、普通按值参数、非写入 `in` 只读值参数，以及 `params` 数组参数 factory，但仍要求调用点直接传入当前组件方法 / local function factory
   - generic fragment factory 与 non-generic 走同一条缓存/作用域路径：RazorVue 按源码定义方法缓存模板骨架，按构造调用点绑定具体 captured 参数，不会把某一次 closed generic 调用的值污染到另一处调用点
   - `params` 在 RazorVue 中按“单个强类型数组形参绑定”处理，不扩展成 JavaScript 风格可变参数拍平协议
-  - `ref` / `out` / `in` / recursive fragment factory 当前仍明确不支持
+  - `ref` / `out` 参数、`in` 参数 by-reference 转发/逃逸、以及 recursive fragment factory 当前仍明确不支持
 - 对于带额外值参数的 render helper，当前只支持：
   - 恰好一个普通 by-value `RenderTreeBuilder` 参数
   - 其余参数为普通按值参数、非 builder `in` 只读值参数，或一个按 Roslyn 正常绑定为单个数组实参的 `params` 参数
@@ -406,8 +410,8 @@ dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj -
 
 当前基线：
 
-- `src/Jazor.RazorVue.Test`: `1396 / 1396` 通过
-- `src/Jazor.RazorVue.RazorIr.Test`: `371 / 371` 通过
+- `src/Jazor.RazorVue.Test`: `1414 / 1414` 通过
+- `src/Jazor.RazorVue.RazorIr.Test`: `492 / 492` 通过
 
 ## Read Next
 

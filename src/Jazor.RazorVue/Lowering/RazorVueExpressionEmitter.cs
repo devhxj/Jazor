@@ -477,6 +477,29 @@ internal sealed partial class RazorVueExpressionEmitter
         }
     }
 
+    internal T WithScopedLocalAliases<T>(
+        IReadOnlyDictionary<ILocalSymbol, string> aliases,
+        Func<T> action)
+    {
+        var previous = _scopedLocalAliases;
+        var current = previous is null
+            ? new Dictionary<ILocalSymbol, string>(SymbolEqualityComparer.Default)
+            : new Dictionary<ILocalSymbol, string>(previous, SymbolEqualityComparer.Default);
+
+        foreach (var pair in aliases)
+            current[pair.Key] = pair.Value;
+
+        _scopedLocalAliases = current;
+        try
+        {
+            return action();
+        }
+        finally
+        {
+            _scopedLocalAliases = previous;
+        }
+    }
+
     internal readonly record struct SetupDependencyCapture(
         string Expression,
         ImmutableArray<IPropertySymbol> PropertyDependencies,
@@ -726,8 +749,8 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         public override VariableDeclarator? RewriteVariableDeclaratorPreorder(IVariableDeclaratorOperation operation, SenseArgument argument)
-            => _emitter.TryRewriteVariableDeclarator(operation, argument, out var declaratorExpression)
-                ? new VariableDeclarator(new Identifier(operation.Symbol.Name), ParseJavaScriptExpression(declaratorExpression))
+            => _emitter.TryRewriteVariableDeclarator(operation, argument, out var declarator)
+                ? declarator
                 : null;
 
         public override Expression? RewriteSimpleAssignmentPreorder(ISimpleAssignmentOperation operation, SenseArgument argument)

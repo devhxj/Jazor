@@ -24618,6 +24618,226 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersLocalPrefixedShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-local")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        var threshold = Value + 1;
+                        var ready = threshold > 2;
+                        return ready && Value < 10;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderHasRendered = false;");
+        StringAssert.Contains(artifact.ModuleCode, "if (__jazorShouldRenderHasRendered && !((() => {");
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " = props.value + 1;");
+        StringAssert.Contains(artifact.ModuleCode, " > 2;");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " && props.value < 10;");
+        StringAssert.Contains(artifact.ModuleCode, "})()))");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersLocalFunctionPrefixedShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-local-function")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        bool IsReady(int value) => value > 2;
+                        var next = Value + 1;
+                        return IsReady(next);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "function IsReady(value) {");
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " = props.value + 1;");
+        StringAssert.Contains(artifact.ModuleCode, "return IsReady(__jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "if (__jazorShouldRenderHasRendered && !((() => {");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersShouldRenderLocalNamedPropsWithoutShadowingSetupProps()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-local-props")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        var props = Value + 1;
+                        return props > Value;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " = props.value + 1;");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " > props.value;");
+        Assert.IsFalse(artifact.ModuleCode.Contains("let props =", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForControlFlowShouldRender()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-control-flow")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        if (Value < 0)
+                        {
+                            return false;
+                        }
+
+                        return Value > 0;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorShouldRenderHasRendered", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersDynamicShouldRenderConditionWithSetupHelperDependency()
     {
         var context = CreateContext(
@@ -25830,6 +26050,115 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersParameterizedCurrentComponentRenderFragmentFactoryMethodWithInParameterIntoNestedImmediateInvocation()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/typed-fragment-card")]
+                public class TypedFragmentCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private RenderFragment<int> CreateTemplate(in string? title)
+                        => CreateTemplateCore(title);
+
+                    private RenderFragment<int> CreateTemplateCore(string? capturedTitle)
+                        => item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, capturedTitle);
+                            itemBuilder.AddContent(3, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, CreateTemplate(Title), 42);
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => ((title) => ((capturedTitle) => ((item) => h(\"span\", null, [capturedTitle, item]))(42))(title))(props.title);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersRenderFragmentFactoryWithInParameter_WhenNestedLocalFunctionHasSeparateInByRefForwarding()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/typed-fragment-card")]
+                public class TypedFragmentCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private RenderFragment<int> CreateTemplate(in string? title)
+                        => item => itemBuilder =>
+                        {
+                            void Nested(in string? value)
+                            {
+                                ConsumeByRef(in value);
+                            }
+
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, CreateTemplate(Title), 42);
+                    }
+
+                    private static void ConsumeByRef(in string? value)
+                    {
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => ((title) => ((item) => h(\"span\", null, item))(42))(props.title);");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersGenericParameterizedCurrentComponentRenderFragmentFactoryMethodIntoNestedImmediateInvocation()
     {
         var context = CreateContext(
@@ -26465,6 +26794,67 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersParameterizedCurrentComponentRenderFragmentFactoryMethodWithInParameterForTypedSlotTemplate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private RenderFragment<int> CreateTemplate(in string? title)
+                        => CreateTemplateCore(title);
+
+                    private RenderFragment<int> CreateTemplateCore(string? capturedTitle)
+                        => item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, capturedTitle);
+                            itemBuilder.AddContent(3, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<ChildCard>(0);
+                        builder.AddAttribute(1, "ItemTemplate", CreateTemplate(Title));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "Host");
+        StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (item) => ((title) => ((capturedTitle) => h(\"span\", null, [capturedTitle, item]))(title))(props.title)");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_WithCyclicCurrentComponentRenderFragmentFactoryMethods_ThrowsCanonicalizationFailed()
     {
         var context = CreateContext(
@@ -26506,6 +26896,63 @@ public sealed class RazorVuePipelineTests
         Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "recursive");
         StringAssert.Contains(exception.Issue.Message, "CreateTemplateA");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForRenderFragmentFactoryForwardingInParameterByReference()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/typed-fragment-card")]
+                public class TypedFragmentCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private RenderFragment<int> CreateTemplate(in string? title)
+                    {
+                        ConsumeByRef(in title);
+                        return item => itemBuilder =>
+                        {
+                            itemBuilder.AddContent(1, item);
+                        };
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, CreateTemplate(Title), 42);
+                    }
+
+                    private static void ConsumeByRef(in string? value)
+                    {
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "by-reference");
+        StringAssert.Contains(exception.Issue.Message, "fragment factory");
     }
 
     [TestMethod]

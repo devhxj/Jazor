@@ -2698,29 +2698,6 @@ internal sealed partial class RazorVueExpressionEmitter
         }
     }
 
-    private T WithScopedLocalAliases<T>(
-        IReadOnlyDictionary<ILocalSymbol, string> aliases,
-        Func<T> action)
-    {
-        var previous = _scopedLocalAliases;
-        var current = previous is null
-            ? new Dictionary<ILocalSymbol, string>(SymbolEqualityComparer.Default)
-            : new Dictionary<ILocalSymbol, string>(previous, SymbolEqualityComparer.Default);
-
-        foreach (var pair in aliases)
-            current[pair.Key] = pair.Value;
-
-        _scopedLocalAliases = current;
-        try
-        {
-            return action();
-        }
-        finally
-        {
-            _scopedLocalAliases = previous;
-        }
-    }
-
     private static string NormalizeArrowFunctionExpressionBody(string expression)
     {
         if (string.IsNullOrWhiteSpace(expression))

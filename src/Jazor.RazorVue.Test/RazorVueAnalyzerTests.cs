@@ -127,7 +127,7 @@ public sealed class RazorVueAnalyzerTests
     }
 
     [TestMethod]
-    public async Task RazorVue_Misuse_ShouldRender_ReportsJAZORVUE005()
+    public async Task RazorVue_Misuse_DynamicShouldRender_IsAccepted()
     {
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
@@ -154,6 +154,118 @@ public sealed class RazorVueAnalyzerTests
                 protected override bool ShouldRender()
                 {
                     return Value > 0;
+                }
+            }
+            """);
+
+        AssertNoDiagnostic(diagnostics, "JAZORVUE005");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_LocalPrefixedShouldRender_IsAccepted()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class ValidComponent : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public int Value { get; set; }
+
+                protected override bool ShouldRender()
+                {
+                    var threshold = Value + 1;
+                    return threshold > 2;
+                }
+            }
+            """);
+
+        AssertNoDiagnostic(diagnostics, "JAZORVUE005");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_ControlFlowShouldRender_ReportsJAZORVUE005()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class InvalidComponent : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public int Value { get; set; }
+
+                protected override bool ShouldRender()
+                {
+                    if (Value < 0)
+                    {
+                        return false;
+                    }
+
+                    return Value > 0;
+                }
+            }
+            """);
+
+        AssertHasDiagnostic(diagnostics, "JAZORVUE005");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_LocalLambdaShouldRender_ReportsJAZORVUE005()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class InvalidComponent : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public int Value { get; set; }
+
+                protected override bool ShouldRender()
+                {
+                    Func<int, bool> ready = value => value > 0;
+                    return ready(Value);
                 }
             }
             """);
@@ -263,7 +375,7 @@ public sealed class RazorVueAnalyzerTests
     }
 
     [TestMethod]
-    public async Task RazorVue_Misuse_PassThroughShouldRenderToUnsupportedBase_ReportsJAZORVUE005()
+    public async Task RazorVue_Misuse_PassThroughShouldRenderToDynamicBase_IsAccepted()
     {
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
@@ -301,7 +413,7 @@ public sealed class RazorVueAnalyzerTests
             }
             """);
 
-        AssertHasDiagnostic(diagnostics, "JAZORVUE005");
+        AssertNoDiagnostic(diagnostics, "JAZORVUE005");
     }
 
     [TestMethod]

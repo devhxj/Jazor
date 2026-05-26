@@ -493,6 +493,18 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         return DescribeShouldRenderAnalysis(analysis);
     }
 
+    public static string DescribeShouldRenderSupportShape(RazorVueSemanticSnapshot snapshot, IMethodSymbol? method)
+    {
+        if (method is null)
+            return "none";
+
+        var analysis = AnalyzeShouldRender(
+            snapshot.Compilation,
+            method,
+            new RazorVueExpressionEmitter(snapshot));
+        return DescribeShouldRenderAnalysis(analysis);
+    }
+
     private static string DescribeShouldRenderAnalysis(ShouldRenderAnalysis analysis)
     {
         if (!analysis.IsSupported)
@@ -1469,17 +1481,25 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 methodSyntax.ExpressionBody.Expression,
                 visitedMethods);
 
-        if (methodSyntax.Body?.Statements.Count != 1 ||
-            methodSyntax.Body.Statements[0] is not ReturnStatementSyntax { Expression: not null } returnStatement)
-        {
+        if (methodSyntax.Body is null)
             return ShouldRenderAnalysis.Unsupported;
+
+        if (methodSyntax.Body.Statements.Count == 1 &&
+            methodSyntax.Body.Statements[0] is ReturnStatementSyntax { Expression: not null } returnStatement)
+        {
+            return AnalyzeShouldRenderExpression(
+                compilation,
+                method,
+                expressionEmitter,
+                returnStatement.Expression,
+                visitedMethods);
         }
 
-        return AnalyzeShouldRenderExpression(
+        return AnalyzeShouldRenderStatementBody(
             compilation,
             method,
             expressionEmitter,
-            returnStatement.Expression,
+            methodSyntax.Body,
             visitedMethods);
     }
 
@@ -1864,6 +1884,426 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         expression = UnwrapLifecycleExpression(expression);
         return expression.IsKind(SyntaxKind.TrueLiteralExpression);
     }
+
+    private static ShouldRenderAnalysis AnalyzeShouldRenderStatementBody(
+        Compilation compilation,
+        IMethodSymbol method,
+        RazorVueExpressionEmitter? expressionEmitter,
+        BlockSyntax body,
+        HashSet<IMethodSymbol> visitedMethods)
+    {
+        if (body.Statements.Count < 2 ||
+            body.Statements[body.Statements.Count - 1] is not ReturnStatementSyntax { Expression: not null } returnStatement)
+        {
+            return ShouldRenderAnalysis.Unsupported;
+        }
+
+        for (var index = 0; index < body.Statements.Count - 1; index++)
+        {
+            if (!IsSupportedShouldRenderPrefixStatement(body.Statements[index]))
+                return ShouldRenderAnalysis.Unsupported;
+        }
+
+        if (IsConstantTrueShouldRenderExpression(returnStatement.Expression) ||
+            TryAnalyzeBaseShouldRenderExpression(
+                compilation,
+                method,
+                expressionEmitter,
+                returnStatement.Expression,
+                visitedMethods,
+                out _))
+        {
+            return ShouldRenderAnalysis.Unsupported;
+        }
+
+        if (expressionEmitter is null)
+            return ShouldRenderAnalysis.Unsupported;
+
+        try
+        {
+            var semanticModel = compilation.GetSemanticModel(body.SyntaxTree);
+            if (semanticModel.GetOperation(body) is not IBlockOperation blockOperation ||
+                blockOperation.Operations.IsDefaultOrEmpty)
+            {
+                return ShouldRenderAnalysis.Unsupported;
+            }
+
+            if (!TryCreateShouldRenderLocalAliases(
+                    blockOperation.Operations,
+                    out var localAliases))
+            {
+                return ShouldRenderAnalysis.Unsupported;
+            }
+
+            var capture = expressionEmitter.CaptureSetupDependencies(
+                () => expressionEmitter.WithScopedLocalAliases(
+                    localAliases,
+                    () => expressionEmitter.EmitSetupStatementSequence(blockOperation.Operations)));
+            var bodyText = Util.NormalizeLineEndingsToLf(capture.Expression).Trim();
+            if (bodyText.Length == 0)
+                return ShouldRenderAnalysis.Unsupported;
+
+            return new ShouldRenderAnalysis(
+                IsSupported: true,
+                RequiresRenderGate: true,
+                ExpressionText: "(() => {\n" + bodyText + "\n})()");
+        }
+        catch (RazorVueCompilationIssueException)
+        {
+            throw;
+        }
+        catch (Exception ex) when (ex is NotSupportedException or OperationTransformationException)
+        {
+            return ShouldRenderAnalysis.Unsupported;
+        }
+    }
+
+    private static bool IsSupportedShouldRenderPrefixStatement(StatementSyntax statement)
+        => statement is LocalDeclarationStatementSyntax or LocalFunctionStatementSyntax;
+
+    private static bool TryCreateShouldRenderLocalAliases(
+        ImmutableArray<IOperation> operations,
+        out IReadOnlyDictionary<ILocalSymbol, string> localAliases)
+    {
+        localAliases = ImmutableDictionary<ILocalSymbol, string>.Empty.WithComparers(SymbolEqualityComparer.Default);
+        if (operations.IsDefaultOrEmpty ||
+            operations.Length < 2 ||
+            RazorVueOperationNormalizer.Unwrap(operations[operations.Length - 1]) is not IReturnOperation { ReturnedValue: not null } ||
+            ContainsShouldRenderAnonymousFunction(operations))
+        {
+            return false;
+        }
+
+        if (!TryCreateShouldRenderReservedLocalNames(operations, out var reservedNames))
+            return false;
+
+        var aliases = ImmutableDictionary.CreateBuilder<ILocalSymbol, string>(SymbolEqualityComparer.Default);
+        for (var index = 0; index < operations.Length - 1; index++)
+        {
+            switch (RazorVueOperationNormalizer.Unwrap(operations[index]))
+            {
+                case IVariableDeclarationGroupOperation declarationGroup:
+                    foreach (var declaration in declarationGroup.Declarations)
+                    {
+                        foreach (var declarator in declaration.Declarators)
+                        {
+                            if (!TryCreateShouldRenderLocalAlias(declarator.Symbol, reservedNames, out var alias))
+                                return false;
+
+                            aliases[declarator.Symbol] = alias;
+                        }
+                    }
+
+                    break;
+
+                case ILocalFunctionOperation localFunction:
+                    if (!CanLowerShouldRenderLocalFunction(localFunction, reservedNames))
+                        return false;
+
+                    break;
+
+                default:
+                    return false;
+            }
+        }
+
+        localAliases = aliases.ToImmutable();
+        return true;
+    }
+
+    private static bool TryCreateShouldRenderLocalAlias(
+        ILocalSymbol local,
+        HashSet<string> reservedNames,
+        out string alias)
+    {
+        alias = "__jazorShouldRenderLocal" + Jazor.Common.Format.HashName(local.ToDisplayString()).TrimStart('_');
+        if (!reservedNames.Contains(alias) && reservedNames.Add(alias))
+            return true;
+
+        var suffix = 0;
+        while (suffix < 1024)
+        {
+            suffix++;
+            var candidate = alias + "$" + suffix.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            if (!reservedNames.Contains(candidate) && reservedNames.Add(candidate))
+            {
+                alias = candidate;
+                return true;
+            }
+        }
+
+        alias = string.Empty;
+        return false;
+    }
+
+    private static bool CanLowerShouldRenderLocalFunction(
+        ILocalFunctionOperation operation,
+        HashSet<string> reservedNames)
+    {
+        var method = operation.Symbol;
+        if (method.IsAsync ||
+            method.IsGenericMethod ||
+            method.RefKind != RefKind.None ||
+            !IsJavaScriptBindingIdentifier(method.Name) ||
+            IsShouldRenderSetupReservedName(method.Name))
+        {
+            return false;
+        }
+
+        var functionScopeNames = CreateShouldRenderChildReservedLocalNames();
+        foreach (var parameter in method.Parameters)
+        {
+            if (parameter.RefKind is not (RefKind.None or RefKind.In) ||
+                !TryReserveShouldRenderBindingIdentifier(parameter.Name, functionScopeNames))
+            {
+                return false;
+            }
+        }
+
+        return TryReserveShouldRenderLocalFunctionBodyBindings(operation, functionScopeNames);
+    }
+
+    private static bool TryReserveShouldRenderLocalFunctionBodyBindings(
+        ILocalFunctionOperation operation,
+        HashSet<string> reservedNames)
+    {
+        foreach (var current in operation.DescendantsAndSelf())
+        {
+            switch (RazorVueOperationNormalizer.Unwrap(current))
+            {
+                case IAnonymousFunctionOperation:
+                    return false;
+
+                case ILocalFunctionOperation localFunction when !ReferenceEquals(localFunction, operation):
+                    return false;
+
+                case IVariableDeclaratorOperation declarator:
+                    if (!TryReserveShouldRenderBindingIdentifier(declarator.Symbol.Name, reservedNames))
+                        return false;
+
+                    break;
+
+                case IForLoopOperation forLoop:
+                    foreach (var local in forLoop.Locals)
+                    {
+                        if (!TryReserveShouldRenderBindingIdentifier(local.Name, reservedNames))
+                            return false;
+                    }
+
+                    break;
+
+                case IForEachLoopOperation forEachLoop:
+                    foreach (var local in forEachLoop.Locals)
+                    {
+                        if (!TryReserveShouldRenderBindingIdentifier(local.Name, reservedNames))
+                            return false;
+                    }
+
+                    break;
+
+                case ICatchClauseOperation catchClause:
+                    foreach (var local in CollectShouldRenderDeclaredLocals(catchClause.ExceptionDeclarationOrExpression))
+                    {
+                        if (!TryReserveShouldRenderBindingIdentifier(local.Name, reservedNames))
+                            return false;
+                    }
+
+                    break;
+
+                case IDeclarationExpressionOperation declarationExpression:
+                    foreach (var local in CollectShouldRenderDeclaredLocals(declarationExpression.Expression))
+                    {
+                        if (!TryReserveShouldRenderBindingIdentifier(local.Name, reservedNames))
+                            return false;
+                    }
+
+                    break;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool ContainsShouldRenderAnonymousFunction(ImmutableArray<IOperation> operations)
+    {
+        foreach (var operation in operations)
+        {
+            foreach (var current in operation.DescendantsAndSelf())
+            {
+                if (RazorVueOperationNormalizer.Unwrap(current) is IAnonymousFunctionOperation)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static IEnumerable<ILocalSymbol> CollectShouldRenderDeclaredLocals(IOperation? operation)
+    {
+        switch (RazorVueOperationNormalizer.Unwrap(operation))
+        {
+            case ILocalReferenceOperation localReference:
+                yield return localReference.Local;
+                break;
+
+            case IVariableDeclaratorOperation declarator:
+                yield return declarator.Symbol;
+                break;
+
+            case IDeclarationExpressionOperation declarationExpression:
+                foreach (var local in CollectShouldRenderDeclaredLocals(declarationExpression.Expression))
+                    yield return local;
+
+                break;
+
+            case ITupleOperation tuple:
+                foreach (var element in tuple.Elements)
+                {
+                    foreach (var local in CollectShouldRenderDeclaredLocals(element))
+                        yield return local;
+                }
+
+                break;
+        }
+    }
+
+    private static bool TryCreateShouldRenderReservedLocalNames(
+        ImmutableArray<IOperation> operations,
+        out HashSet<string> reservedNames)
+    {
+        reservedNames = CreateShouldRenderChildReservedLocalNames();
+        for (var index = 0; index < operations.Length - 1; index++)
+        {
+            if (RazorVueOperationNormalizer.Unwrap(operations[index]) is ILocalFunctionOperation localFunction &&
+                !TryReserveShouldRenderBindingIdentifier(localFunction.Symbol.Name, reservedNames))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static HashSet<string> CreateShouldRenderChildReservedLocalNames()
+    {
+        return new HashSet<string>(StringComparer.Ordinal)
+        {
+            "props",
+            "emit",
+            "slots",
+            "expose",
+            "attrs",
+            "__jazorRawProps",
+            "__jazorShouldRenderHasRendered",
+            "__jazorShouldRenderCachedVNode",
+            "__jazorNextVNode",
+            RazorVueExpressionEmitter.ImperativeRenderContextAlias
+        };
+    }
+
+    private static bool TryReserveShouldRenderBindingIdentifier(string name, HashSet<string> reservedNames)
+        => IsJavaScriptBindingIdentifier(name) &&
+           !IsShouldRenderSetupReservedName(name) &&
+           reservedNames.Add(name);
+
+    private static bool IsShouldRenderSetupReservedName(string name)
+        => name is "props"
+            or "emit"
+            or "slots"
+            or "expose"
+            or "attrs"
+            or "__jazorRawProps"
+            or "__jazorShouldRenderHasRendered"
+            or "__jazorShouldRenderCachedVNode"
+            or "__jazorNextVNode"
+            or RazorVueExpressionEmitter.ImperativeRenderContextAlias;
+
+    private static bool IsJavaScriptBindingIdentifier(string? name)
+    {
+        if (name is not { Length: > 0 } ||
+            IsJavaScriptReservedBindingIdentifier(name) ||
+            !IsJavaScriptIdentifierStart(name[0]))
+        {
+            return false;
+        }
+
+        for (var index = 1; index < name.Length; index++)
+        {
+            if (!IsJavaScriptIdentifierPart(name[index]))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool IsJavaScriptReservedBindingIdentifier(string name)
+        => name is "arguments"
+            or "await"
+            or "break"
+            or "case"
+            or "catch"
+            or "class"
+            or "const"
+            or "continue"
+            or "debugger"
+            or "default"
+            or "delete"
+            or "do"
+            or "else"
+            or "enum"
+            or "eval"
+            or "export"
+            or "extends"
+            or "false"
+            or "finally"
+            or "for"
+            or "function"
+            or "if"
+            or "implements"
+            or "import"
+            or "in"
+            or "instanceof"
+            or "interface"
+            or "let"
+            or "new"
+            or "null"
+            or "package"
+            or "private"
+            or "protected"
+            or "public"
+            or "return"
+            or "static"
+            or "super"
+            or "switch"
+            or "this"
+            or "throw"
+            or "true"
+            or "try"
+            or "typeof"
+            or "var"
+            or "void"
+            or "while"
+            or "with"
+            or "yield";
+
+    private static bool IsJavaScriptIdentifierStart(char value)
+        => value is '$' or '_' ||
+           char.GetUnicodeCategory(value) is
+               System.Globalization.UnicodeCategory.UppercaseLetter or
+               System.Globalization.UnicodeCategory.LowercaseLetter or
+               System.Globalization.UnicodeCategory.TitlecaseLetter or
+               System.Globalization.UnicodeCategory.ModifierLetter or
+               System.Globalization.UnicodeCategory.OtherLetter or
+               System.Globalization.UnicodeCategory.LetterNumber;
+
+    private static bool IsJavaScriptIdentifierPart(char value)
+        => IsJavaScriptIdentifierStart(value) ||
+           value is '\u200C' or '\u200D' ||
+           char.GetUnicodeCategory(value) is
+               System.Globalization.UnicodeCategory.NonSpacingMark or
+               System.Globalization.UnicodeCategory.SpacingCombiningMark or
+               System.Globalization.UnicodeCategory.DecimalDigitNumber or
+               System.Globalization.UnicodeCategory.ConnectorPunctuation;
 
     private static ShouldRenderAnalysis AnalyzeShouldRenderExpression(
         Compilation compilation,

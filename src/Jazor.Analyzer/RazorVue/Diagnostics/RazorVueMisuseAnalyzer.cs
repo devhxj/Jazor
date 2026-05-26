@@ -68,7 +68,7 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
         var location = method.Locations.FirstOrDefault(static x => x.IsInSource) ?? Location.None;
         if (knownSymbols.IsShouldRender(method))
         {
-            if (IsSupportedShouldRender(knownSymbols, method))
+            if (IsSupportedShouldRender(context.Compilation, method))
                 return;
 
             context.ReportDiagnostic(Diagnostic.Create(
@@ -99,30 +99,20 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
         }
     }
 
-    private static bool IsSupportedShouldRender(RazorVueKnownSymbols knownSymbols, IMethodSymbol method)
-        => IsSupportedShouldRender(knownSymbols, method, new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default));
-
-    private static bool IsSupportedShouldRender(
-        RazorVueKnownSymbols knownSymbols,
-        IMethodSymbol method,
-        HashSet<IMethodSymbol> visitedMethods)
+    private static bool IsSupportedShouldRender(Compilation compilation, IMethodSymbol method)
     {
-        if (!visitedMethods.Add(method) || method.DeclaringSyntaxReferences.Length == 0)
+        var razorVueContext = RazorVueCompilationContext.TryCreate(compilation);
+        if (razorVueContext is null)
             return false;
 
-        if (method.DeclaringSyntaxReferences[0].GetSyntax() is not MethodDeclarationSyntax methodSyntax)
+        var candidate = razorVueContext.DiscoverComponentCandidates()
+            .FirstOrDefault(candidate =>
+                SymbolEqualityComparer.Default.Equals(candidate.ComponentSymbol, method.ContainingType));
+        if (candidate is null)
             return false;
 
-        if (methodSyntax.ExpressionBody is not null)
-            return IsSupportedShouldRenderExpression(knownSymbols, method, methodSyntax.ExpressionBody.Expression, visitedMethods);
-
-        if (methodSyntax.Body?.Statements.Count != 1 ||
-            methodSyntax.Body.Statements[0] is not ReturnStatementSyntax { Expression: not null } returnStatement)
-        {
-            return false;
-        }
-
-        return IsSupportedShouldRenderExpression(knownSymbols, method, returnStatement.Expression, visitedMethods);
+        var snapshot = razorVueContext.CreateSemanticSnapshot(candidate);
+        return RazorVueSetupAndLifecycleLoweringSupport.DescribeShouldRenderSupportShape(snapshot, method) != "unsupported";
     }
 
     private static bool IsSupportedSetParametersAsync(Compilation compilation, IMethodSymbol method)
@@ -280,55 +270,6 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
 
     private static bool IsSupportedLifecycleEmitExpression(ExpressionSyntax expression)
         => IsSupportedInvokeAsyncExpression(expression);
-
-    private static bool IsConstantTrueShouldRenderExpression(ExpressionSyntax expression)
-    {
-        expression = UnwrapExpression(expression);
-        return expression.IsKind(SyntaxKind.TrueLiteralExpression);
-    }
-
-    private static bool IsSupportedShouldRenderExpression(
-        RazorVueKnownSymbols knownSymbols,
-        IMethodSymbol method,
-        ExpressionSyntax expression,
-        HashSet<IMethodSymbol> visitedMethods)
-    {
-        expression = UnwrapExpression(expression);
-        if (IsConstantTrueShouldRenderExpression(expression))
-            return true;
-
-        if (expression is not InvocationExpressionSyntax invocationExpression)
-            return false;
-
-        if (invocationExpression.Expression is not MemberAccessExpressionSyntax
-            {
-                Expression: BaseExpressionSyntax,
-                Name.Identifier.ValueText: "ShouldRender"
-            } ||
-            invocationExpression.ArgumentList.Arguments.Count != 0)
-        {
-            return false;
-        }
-
-        for (var current = method.ContainingType.BaseType; current is not null; current = current.BaseType)
-        {
-            var candidate = current.GetMembers("ShouldRender")
-                .OfType<IMethodSymbol>()
-                .FirstOrDefault(static member =>
-                    !member.IsStatic &&
-                    member.Parameters.Length == 0 &&
-                    member.ReturnType.SpecialType == SpecialType.System_Boolean);
-            if (candidate is null)
-                continue;
-
-            if (SymbolEqualityComparer.Default.Equals(candidate.ContainingType.OriginalDefinition, knownSymbols.Symbols.ComponentBase))
-                return true;
-
-            return IsSupportedShouldRender(knownSymbols, candidate, visitedMethods);
-        }
-
-        return false;
-    }
 
     private static bool TryAnalyzeBaseLifecyclePassThrough(
         IMethodSymbol method,
