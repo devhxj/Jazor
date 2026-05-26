@@ -24676,6 +24676,67 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersLocalMutationShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-local-mutation")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        var props = Value;
+                        props++;
+                        props += 2;
+                        return props > 3;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderHasRendered = false;");
+        StringAssert.Contains(artifact.ModuleCode, "if (__jazorShouldRenderHasRendered && !((() => {");
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " = props.value;");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "++;");
+        StringAssert.Contains(artifact.ModuleCode, " += 2;");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " > 3;");
+        Assert.IsFalse(artifact.ModuleCode.Contains("let props =", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersLocalFunctionPrefixedShouldRenderConditionIntoCachedRenderGate()
     {
         var context = CreateContext(
@@ -24727,6 +24788,66 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, " = props.value + 1;");
         StringAssert.Contains(artifact.ModuleCode, "return IsReady(__jazorShouldRenderLocal");
         StringAssert.Contains(artifact.ModuleCode, "if (__jazorShouldRenderHasRendered && !((() => {");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersLocalFunctionWithLocalMutationShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-local-function-local-mutation")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        bool IsReady(int value)
+                        {
+                            var next = value;
+                            next++;
+                            return next > 2;
+                        }
+
+                        return IsReady(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "function IsReady(value) {");
+        StringAssert.Contains(artifact.ModuleCode, "let next = value;");
+        StringAssert.Contains(artifact.ModuleCode, "next++;");
+        StringAssert.Contains(artifact.ModuleCode, "return next > 2;");
+        StringAssert.Contains(artifact.ModuleCode, "return IsReady(props.value);");
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -24785,7 +24906,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForControlFlowShouldRender()
+    public void RazorVue_Pipeline_LowersIfElseShouldRenderConditionIntoCachedRenderGate()
     {
         var context = CreateContext(
             """
@@ -24833,8 +24954,1052 @@ public sealed class RazorVuePipelineTests
             """);
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderHasRendered = false;");
+        StringAssert.Contains(artifact.ModuleCode, "if (__jazorShouldRenderHasRendered && !((() => {");
+        StringAssert.Contains(artifact.ModuleCode, "if (props.value < 0) {");
+        StringAssert.Contains(artifact.ModuleCode, "return false;");
+        StringAssert.Contains(artifact.ModuleCode, "return props.value > 0;");
+        StringAssert.Contains(artifact.ModuleCode, "})()))");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderCachedVNode;");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersIfElseShouldRenderBranchLocalsWithoutShadowingSetupProps()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-if-else-branch-local")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        if (Value < 0)
+                        {
+                            var props = Value + 1;
+                            return props < 0;
+                        }
+                        else
+                        {
+                            var props = Value + 2;
+                            return props > 2;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "if (__jazorShouldRenderHasRendered && !((() => {");
+        StringAssert.Contains(artifact.ModuleCode, "if (props.value < 0) {");
+        StringAssert.Contains(artifact.ModuleCode, " = props.value + 1;");
+        StringAssert.Contains(artifact.ModuleCode, " = props.value + 2;");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
+        Assert.IsFalse(artifact.ModuleCode.Contains("let props =", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersIfElseShouldRenderLocalMutationConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-if-local-mutation")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        if (Value > 0)
+                        {
+                            var props = Value;
+                            props--;
+                            return props > 0;
+                        }
+
+                        return false;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "if (__jazorShouldRenderHasRendered && !((() => {");
+        StringAssert.Contains(artifact.ModuleCode, "if (props.value > 0) {");
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " = props.value;");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "--;");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " > 0;");
+        StringAssert.Contains(artifact.ModuleCode, "return false;");
+        Assert.IsFalse(artifact.ModuleCode.Contains("let props =", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersSwitchShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-switch")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        switch (Value)
+                        {
+                            case 0:
+                                return false;
+                            case 1:
+                                return true;
+                            default:
+                                return Value > 1;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "if (__jazorShouldRenderHasRendered && !((() => {");
+        StringAssert.Contains(artifact.ModuleCode, "switch (props.value) {");
+        StringAssert.Contains(artifact.ModuleCode, "case 0:");
+        StringAssert.Contains(artifact.ModuleCode, "return false;");
+        StringAssert.Contains(artifact.ModuleCode, "case 1:");
+        StringAssert.Contains(artifact.ModuleCode, "return true;");
+        StringAssert.Contains(artifact.ModuleCode, "default:");
+        StringAssert.Contains(artifact.ModuleCode, "return props.value > 1;");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderCachedVNode;");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersSwitchShouldRenderCaseLocalMutationConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-switch-local-mutation")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        switch (Value)
+                        {
+                            case 0:
+                                return false;
+                            default:
+                                var props = Value;
+                                props++;
+                                return props > 1;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "switch (props.value) {");
+        StringAssert.Contains(artifact.ModuleCode, "case 0:");
+        StringAssert.Contains(artifact.ModuleCode, "default:");
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " = props.value;");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "++;");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " > 1;");
+        Assert.IsFalse(artifact.ModuleCode.Contains("let props =", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersSwitchShouldRenderWithoutDefaultAndTrailingReturnIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-switch-trailing-return")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        switch (Value)
+                        {
+                            case 0:
+                                return false;
+                        }
+
+                        return Value > 0;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "switch (props.value) {");
+        StringAssert.Contains(artifact.ModuleCode, "case 0:");
+        StringAssert.Contains(artifact.ModuleCode, "return false;");
+        StringAssert.Contains(artifact.ModuleCode, "return props.value > 0;");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForLoopShouldRender()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-loop")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        while (Value > 0)
+                        {
+                            return true;
+                        }
+
+                        return false;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
         Assert.IsFalse(artifact.ModuleCode.Contains("__jazorShouldRenderHasRendered", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForSwitchShouldRenderWithLoopCase()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-switch-loop")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        switch (Value)
+                        {
+                            default:
+                                while (Value > 0)
+                                {
+                                    return true;
+                                }
+
+                                return false;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorShouldRenderHasRendered", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForSwitchShouldRenderWithPropertyMutation()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-switch-property-mutation")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        switch (Value)
+                        {
+                            default:
+                                Value++;
+                                return Value > 0;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorShouldRenderHasRendered", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForSwitchShouldRenderWithGuardedCase()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-switch-guard")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        switch (Value)
+                        {
+                            case 0 when Value > 1:
+                                return false;
+                            default:
+                                return true;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorShouldRenderHasRendered", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForPropertyMutationShouldRender()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-property-mutation")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Value++;
+                        return Value > 0;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorShouldRenderHasRendered", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForPropertyMutationInsideReturnShouldRender()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-property-mutation-return")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        return Value++ > 0;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorShouldRenderHasRendered", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForPropertyMutationInsideLocalMutationValueShouldRender()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-property-mutation-local-value")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        var props = 0;
+                        props = Value++;
+                        return props > 0;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorShouldRenderHasRendered", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForPropertyMutationInsideLocalFunctionShouldRender()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-property-mutation-local-function")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        bool IsReady()
+                        {
+                            Value++;
+                            return Value > 0;
+                        }
+
+                        return IsReady();
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorShouldRenderHasRendered", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersPatternLocalShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-pattern-local")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public object? Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        if (Value is int props)
+                        {
+                            return props > 0;
+                        }
+
+                        return false;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderHasRendered = false;");
+        StringAssert.Contains(artifact.ModuleCode, "if (__jazorShouldRenderHasRendered && !((() => {");
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "if (typeof props.value === \"number\" && (");
+        StringAssert.Contains(artifact.ModuleCode, " = props.value, true)) {");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " > 0;");
+        StringAssert.Contains(artifact.ModuleCode, "return false;");
+        Assert.IsFalse(artifact.ModuleCode.Contains("let props =", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersExpressionPatternLocalShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-expression-pattern-local")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public object? Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        return Value is int props && props > 0;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderHasRendered = false;");
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "typeof props.value === \"number\"");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " > 0");
+        Assert.IsFalse(artifact.ModuleCode.Contains("let props =", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersOutDeclarationShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-out-local")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        if (int.TryParse(Value, out var props))
+                        {
+                            return props > 0;
+                        }
+
+                        return false;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderHasRendered = false;");
+        StringAssert.Contains(artifact.ModuleCode, "if (__jazorShouldRenderHasRendered && !((() => {");
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "System/Int32Module.js");
+        StringAssert.Contains(artifact.ModuleCode, "props.value, __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "[1]");
+        StringAssert.Contains(artifact.ModuleCode, "[0]");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " > 0;");
+        StringAssert.Contains(artifact.ModuleCode, "return false;");
+        Assert.IsFalse(artifact.ModuleCode.Contains("let props =", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersRecursivePatternDeclaredLocalShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-recursive-pattern-local")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public object? Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        if (Value is int { } props)
+                        {
+                            return props > 0;
+                        }
+
+                        return false;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderHasRendered = false;");
+        StringAssert.Contains(artifact.ModuleCode, "if (__jazorShouldRenderHasRendered && !((() => {");
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "if (typeof props.value === \"number\" && (");
+        StringAssert.Contains(artifact.ModuleCode, " = props.value, true)) {");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " > 0;");
+        StringAssert.Contains(artifact.ModuleCode, "return false;");
+        Assert.IsFalse(artifact.ModuleCode.Contains("let props =", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersListPatternDeclaredLocalShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-list-pattern-local")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int[] Values { get; set; } = [];
+
+                    protected override bool ShouldRender()
+                    {
+                        if (Values is [1, ..] props)
+                        {
+                            return props.Length > 0;
+                        }
+
+                        return false;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Values.Length);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderHasRendered = false;");
+        StringAssert.Contains(artifact.ModuleCode, "if (__jazorShouldRenderHasRendered && !((() => {");
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "if (Array.isArray(props.values) && props.values.length >= 1 && props.values[0] === 1 && (");
+        StringAssert.Contains(artifact.ModuleCode, " = props.values, true)) {");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, ".length > 0;");
+        StringAssert.Contains(artifact.ModuleCode, "return false;");
+        Assert.IsFalse(artifact.ModuleCode.Contains("let props =", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]

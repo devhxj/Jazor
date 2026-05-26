@@ -753,6 +753,11 @@ internal sealed partial class RazorVueExpressionEmitter
                 ? declarator
                 : null;
 
+        public override Identifier? RewriteLocalDeclarationIdentifier(ILocalSymbol local, IOperation operation, SenseArgument argument)
+            => _emitter.TryRewriteLocalDeclarationIdentifier(local, out var identifier)
+                ? identifier
+                : null;
+
         public override Expression? RewriteSimpleAssignmentPreorder(ISimpleAssignmentOperation operation, SenseArgument argument)
             => _emitter.TryRewriteSimpleAssignment(operation, argument, out var expression)
                 ? ParseJavaScriptExpression(expression)

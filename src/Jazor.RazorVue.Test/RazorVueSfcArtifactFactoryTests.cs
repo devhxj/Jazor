@@ -4311,6 +4311,329 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithLocalMutationShouldRender_LowersRenderFunctionVueSfcWithCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-local-mutation-sfc")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        var props = Value;
+                        props++;
+                        props += 2;
+                        return props > 3;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "let __jazorShouldRenderHasRendered = false;");
+        StringAssert.Contains(artifact.SfcText, "if (__jazorShouldRenderHasRendered && !((() => {");
+        StringAssert.Contains(artifact.SfcText, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.SfcText, " = props.value;");
+        StringAssert.Contains(artifact.SfcText, "++;");
+        StringAssert.Contains(artifact.SfcText, " += 2;");
+        StringAssert.Contains(artifact.SfcText, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.SfcText, " > 3;");
+        StringAssert.Contains(artifact.SfcText, "return __jazorShouldRenderCachedVNode;");
+        Assert.IsFalse(artifact.SfcText.Contains("let props =", StringComparison.Ordinal), artifact.SfcText);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithIfElseShouldRender_LowersRenderFunctionVueSfcWithCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-if-sfc")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        if (Value < 0)
+                        {
+                            return false;
+                        }
+
+                        return Value > 0;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "let __jazorShouldRenderHasRendered = false;");
+        StringAssert.Contains(artifact.SfcText, "if (__jazorShouldRenderHasRendered && !((() => {");
+        StringAssert.Contains(artifact.SfcText, "if (props.value < 0) {");
+        StringAssert.Contains(artifact.SfcText, "return false;");
+        StringAssert.Contains(artifact.SfcText, "return props.value > 0;");
+        StringAssert.Contains(artifact.SfcText, "return __jazorShouldRenderCachedVNode;");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithSwitchShouldRender_LowersRenderFunctionVueSfcWithCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-switch-sfc")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        switch (Value)
+                        {
+                            case 0:
+                                return false;
+                            case 1:
+                                return true;
+                            default:
+                                return Value > 1;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "let __jazorShouldRenderHasRendered = false;");
+        StringAssert.Contains(artifact.SfcText, "if (__jazorShouldRenderHasRendered && !((() => {");
+        StringAssert.Contains(artifact.SfcText, "switch (props.value) {");
+        StringAssert.Contains(artifact.SfcText, "case 0:");
+        StringAssert.Contains(artifact.SfcText, "return false;");
+        StringAssert.Contains(artifact.SfcText, "case 1:");
+        StringAssert.Contains(artifact.SfcText, "return true;");
+        StringAssert.Contains(artifact.SfcText, "default:");
+        StringAssert.Contains(artifact.SfcText, "return props.value > 1;");
+        StringAssert.Contains(artifact.SfcText, "return __jazorShouldRenderCachedVNode;");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithPatternLocalShouldRender_LowersRenderFunctionVueSfcWithCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-pattern-sfc")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public object? Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        if (Value is int props)
+                        {
+                            return props > 0;
+                        }
+
+                        return false;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "let __jazorShouldRenderHasRendered = false;");
+        StringAssert.Contains(artifact.SfcText, "if (__jazorShouldRenderHasRendered && !((() => {");
+        StringAssert.Contains(artifact.SfcText, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.SfcText, "typeof props.value === \"number\"");
+        StringAssert.Contains(artifact.SfcText, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.SfcText, " > 0;");
+        StringAssert.Contains(artifact.SfcText, "return __jazorShouldRenderCachedVNode;");
+        Assert.IsFalse(artifact.SfcText.Contains("let props =", StringComparison.Ordinal), artifact.SfcText);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithRecursivePatternDeclaredLocalShouldRender_LowersRenderFunctionVueSfcWithCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-recursive-pattern-sfc")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public object? Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        if (Value is int { } props)
+                        {
+                            return props > 0;
+                        }
+
+                        return false;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "let __jazorShouldRenderHasRendered = false;");
+        StringAssert.Contains(artifact.SfcText, "if (__jazorShouldRenderHasRendered && !((() => {");
+        StringAssert.Contains(artifact.SfcText, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.SfcText, "typeof props.value === \"number\"");
+        StringAssert.Contains(artifact.SfcText, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.SfcText, " > 0;");
+        StringAssert.Contains(artifact.SfcText, "return __jazorShouldRenderCachedVNode;");
+        Assert.IsFalse(artifact.SfcText.Contains("let props =", StringComparison.Ordinal), artifact.SfcText);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_WithBalancedRegionInImperativeBuildRenderTree_EmitsRegionDepthValidation()
     {
         var context = CreateContext(

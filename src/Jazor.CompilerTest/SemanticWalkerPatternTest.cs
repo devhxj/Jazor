@@ -1399,6 +1399,36 @@ public sealed class SemanticWalkerPatternTest
   }
 
   [TestMethod]
+  public void Visit_ListPattern_DeclaredSymbol_AssignsAfterSuccessfulMatch()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] array = [1, 2, 3];
+                    if (array is [1, 2, ..] values)
+                    {
+                        Console.WriteLine(values.Length);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let values;
+  let array = [1, 2, 3];
+  if (Array.isArray(array) && array.length >= 2 && array[0] === 1 && array[1] === 2 && (values = array, true)) {
+    console.log(values.length);
+  }
+}", script);
+  }
+
+  [TestMethod]
   public void Visit_ListPattern_ListCarrier_UsesWhitelistIndexerHelper()
   {
     var block = GetBlockOperation(@"
@@ -3322,7 +3352,94 @@ public sealed class SemanticWalkerPatternTest
 
     AssertScriptEqual(@"{
   let obj = { Name: ""Test"" };
-  let result = true;
+  let result = obj != null;
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_RecursivePattern_DeclaredSymbol_AssignsAfterSuccessfulMatch()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = 42;
+                    if (obj is int { } value)
+                    {
+                        Console.WriteLine(value);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let value;
+  let obj = 42;
+  if (typeof obj === ""number"" && (value = obj, true)) {
+    console.log(value);
+  }
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_RecursivePattern_DeclaredSymbol_CachesInvocationInput()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object GetValue()
+                    {
+                        return 42;
+                    }
+
+                    bool result = GetValue() is int { } value;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    StringAssert.Contains(script, "let v$0, value;", StringComparison.Ordinal);
+    AssertContainsCount(script, "= GetValue(),", 1);
+    StringAssert.Contains(script, "let result = (v$0 = GetValue(), typeof v$0 === \"number\" && (value = v$0, true));", StringComparison.Ordinal);
+  }
+
+  [TestMethod]
+  public void Visit_RecursivePattern_EmptyPropertyPatternWithDeclaration_AssignsAfterNonNullCheck()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = ""ready"";
+                    if (obj is { } value)
+                    {
+                        Console.WriteLine(value);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let value;
+  let obj = ""ready"";
+  if (obj != null && (value = obj, true)) {
+    console.log(value);
+  }
 }", script);
   }
 

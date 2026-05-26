@@ -384,17 +384,16 @@ public partial class SemanticWalker
 			ProcessPositionalSubpatterns(operation, namedType, targetExpr, conditions, patternArgument);
 		}
 
-		// 组合所有条件
-		if (conditions.Count > 0)
-		{
-			var result = conditions[0];
-			for (int i = 1; i < conditions.Count; i++)
-				result = new LogicalExpression(Operator.LogicalAnd, result, conditions[i]);
-			return PrependEvaluation(targetInitialization, result);
-		}
+		if (conditions.Count == 0)
+			conditions.Add(BuildRecursivePatternFallbackMatch(operation, targetExpr));
 
-		// 空模式总是匹配
-		return PrependEvaluation(targetInitialization, new BooleanLiteral(true, "true"));
+		if (operation.DeclaredSymbol is not null)
+			conditions.Add(BuildPatternDeclaredSymbolAssignment(operation.DeclaredSymbol, targetExpr, operation, argument));
+
+		var result = conditions[0];
+		for (int i = 1; i < conditions.Count; i++)
+			result = new LogicalExpression(Operator.LogicalAnd, result, conditions[i]);
+		return PrependEvaluation(targetInitialization, result);
 	}
 
 	/// <summary>
@@ -788,7 +787,24 @@ public partial class SemanticWalker
 			}
 		}
 
+		if (operation.DeclaredSymbol is not null)
+			result = new LogicalExpression(
+				Operator.LogicalAnd,
+				result,
+				BuildPatternDeclaredSymbolAssignment(operation.DeclaredSymbol, obj, operation, argument));
+
 		return PrependEvaluation(listInitialization, PrependEvaluation(lengthInitialization, result));
+	}
+
+	private static Expression BuildRecursivePatternFallbackMatch(IRecursivePatternOperation operation, Expression targetExpr)
+	{
+		if (operation.MatchedType?.IsValueType == true &&
+			operation.MatchedType.OriginalDefinition.SpecialType != SpecialType.System_Nullable_T)
+		{
+			return new BooleanLiteral(true, "true");
+		}
+
+		return new NonLogicalBinaryExpression(Operator.Inequality, targetExpr, Null);
 	}
 
 	private Expression BuildListPatternCarrierCheck(IListPatternOperation operation, Expression targetExpr, SenseArgument argument)
@@ -2247,14 +2263,7 @@ public partial class SemanticWalker
 		if (operation.DeclaredSymbol is not null)
 		{
 			// 声明模式转换为变量声明
-			var id = new Identifier(operation.DeclaredSymbol.Name);
-			var declarator = new VariableDeclarator(id, null);
-			argument.AddVarDeclarator(declarator, _recursionDepth);
-
-			var assignmentExpr = new AssignmentExpression(Operator.Assignment, id, assignValueExpr);
-			var exprs = NodeList.From<Expression>(assignmentExpr, new BooleanLiteral(true, "true"));
-
-			declaredExpr = new SequenceExpression(exprs);
+			declaredExpr = BuildPatternDeclaredSymbolAssignment(operation.DeclaredSymbol, assignValueExpr, operation, argument);
 		}
 
 		if (typeMatchExpr is not null && declaredExpr is not null)
@@ -2263,6 +2272,29 @@ public partial class SemanticWalker
 			return PrependEvaluation(assignmentInitialization, typeMatchExpr);
 		else
 			return PrependEvaluation(assignmentInitialization, declaredExpr!);
+	}
+
+	private Expression BuildPatternDeclaredSymbolAssignment(
+		ISymbol declaredSymbol,
+		Expression value,
+		IOperation operation,
+		SenseArgument argument)
+	{
+		var id = CreatePatternDeclaredSymbolIdentifier(declaredSymbol, operation, argument);
+		var assignmentExpr = new AssignmentExpression(Operator.Assignment, id, value);
+		return new SequenceExpression(NodeList.From<Expression>(assignmentExpr, new BooleanLiteral(true, "true")));
+	}
+
+	private Identifier CreatePatternDeclaredSymbolIdentifier(
+		ISymbol declaredSymbol,
+		IOperation operation,
+		SenseArgument argument)
+	{
+		var id = declaredSymbol is ILocalSymbol local
+			? Host?.RewriteLocalDeclarationIdentifier(local, operation, argument) ?? new Identifier(declaredSymbol.Name)
+			: new Identifier(declaredSymbol.Name);
+		argument.AddVarDeclarator(new VariableDeclarator(id, null), _recursionDepth);
+		return id;
 	}
 
 }

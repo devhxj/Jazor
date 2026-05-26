@@ -1974,6 +1974,19 @@ internal sealed partial class RazorVueExpressionEmitter
         return false;
     }
 
+    internal bool TryRewriteLocalDeclarationIdentifier(ILocalSymbol local, out Identifier identifier)
+    {
+        if (_scopedLocalAliases is not null &&
+            _scopedLocalAliases.TryGetValue(local, out var alias))
+        {
+            identifier = new Identifier(alias);
+            return true;
+        }
+
+        identifier = default!;
+        return false;
+    }
+
     private bool TryRewriteLifecycleScopedCallableInvocation(
         IInvocationOperation invocation,
         SenseArgument argument,

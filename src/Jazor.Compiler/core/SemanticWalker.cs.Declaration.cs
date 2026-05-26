@@ -91,7 +91,8 @@ public partial class SemanticWalker
 		if (Host?.RewriteVariableDeclaratorPreorder(operation, argument) is VariableDeclarator preorderHostDeclarator)
 			return WithOriginIfMissing(preorderHostDeclarator, operation);
 
-		var identifier = new Identifier(operation.Symbol.Name);
+		var identifier = Host?.RewriteLocalDeclarationIdentifier(operation.Symbol, operation, argument) ??
+			new Identifier(operation.Symbol.Name);
 		var init = operation.Initializer?.Value is IOperation value
 			? TranslateTupleForTarget(value, operation.Symbol.Type, argument)
 			: null;
@@ -153,13 +154,21 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitDeclarationExpression(IDeclarationExpressionOperation operation, SenseArgument argument)
 	{
-		var expr = Translate<Expression>(operation.Expression, argument);
 		if (argument.Sense == Sense.OutParameter)
 		{
+			if (operation.Expression is ILocalReferenceOperation localReference &&
+				Host?.RewriteLocalDeclarationIdentifier(localReference.Local, operation, argument) is Identifier declarationIdentifier)
+			{
+				argument.AddVarDeclarator(new VariableDeclarator(declarationIdentifier, null), _recursionDepth);
+				return declarationIdentifier;
+			}
+
+			var expr = Translate<Expression>(operation.Expression, argument);
 			var declarator = new VariableDeclarator(expr, null);
 			argument.AddVarDeclarator(declarator, _recursionDepth);
+			return expr;
 		}
 
-		return expr;
+		return Translate<Expression>(operation.Expression, argument);
 	}
 }

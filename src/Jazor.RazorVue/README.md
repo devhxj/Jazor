@@ -155,18 +155,24 @@
 
 ## Lifecycle Support
 
-- RazorVue 的 lifecycle/setup lowering 仍是受控子集，但当前已正式支持 `ShouldRender` cached render gate、受控 base-pass-through 和线性局部前缀语句体。
+- RazorVue 的 lifecycle/setup lowering 仍是受控子集，但当前已正式支持 `ShouldRender` cached render gate、受控 base-pass-through、线性局部前缀语句体、表达式/条件中的 declaration local、recursive/list pattern 顶层声明 local、local-only mutation statement，以及受控 `if` / `else` 和传统 `switch` 条件语句体。
 - `ShouldRender` 当前接受的安全形态包括：
   - `return true;`
   - `return base.ShouldRender();`，当该 `base` 最终解析到 `ComponentBase.ShouldRender()` 时
   - `return base.ShouldRender();`，当该 `base` 最终递归解析到另一个同样受支持的 base `ShouldRender` 实现时，例如“派生类透传 -> 抽象基类动态条件”
   - 单表达式 / 单 `return` 的动态 bool 条件，例如 `return Value > 0;`
+  - 单表达式 / 条件表达式中的 declaration-pattern local，例如 `return Value is int props && props > 0;`
+  - 条件表达式中的 recursive/list pattern 顶层声明 local，例如 `if (Value is int { } props) { return props > 0; } return false;` 或 `if (Values is [1, ..] props) { return props.Length > 0; } return false;`
+  - 条件表达式中的 `out var` declaration local，例如 `if (int.TryParse(Value, out var props)) { return props > 0; } return false;`
   - 线性局部声明或局部函数前缀后接最终 `return bool`，例如 `var threshold = Value + 1; return threshold > 2;` 或 `bool IsReady(int value) => value > 2; return IsReady(Value);`
-- 动态条件和线性前缀语句体都继续交给 `RazorVueExpressionEmitter` / `SemanticWalker` / `Jazor.Compiler` lowering，RazorVue 只负责包裹 cached vnode gate：首次 render 强制通过，后续 `false` 返回上一次 cached vnode。
+  - standalone local-only mutation 表达式语句，例如 `var count = Value; count++; count += 2; return count > 3;`
+  - 外层 `if` / `else` 语句体，只要所有实际路径都以 `return bool` 完结，分支内只包含局部声明、local-only mutation statement 和同一受控 `if` 形态，例如 `if (Value > 0) { var count = Value; count--; return count > 0; } return false;`
+  - 传统 constant/default `switch` 语句体，case body 继续限制在同一受控语句子集内，例如 `switch (Value) { case 0: return false; default: var count = Value; count++; return count > 1; }`
+- 动态条件、declaration local、线性前缀语句体、受控 `if` 和受控传统 `switch` 语句体都继续交给 `RazorVueExpressionEmitter` / `SemanticWalker` / `Jazor.Compiler` lowering，RazorVue 只负责包裹 cached vnode gate：首次 render 强制通过，后续 `false` 返回上一次 cached vnode。
 - 这条支持是递归受控的，而不是“只要写了 `base.ShouldRender()` 或任意多语句体就接受”：
-  - 外层 `if` / loop / switch / try / 早退、多 return、局部 lambda / delegate state、嵌套局部函数仍不属于当前 `ShouldRender` gate 支持面
+  - loop / try、switch expression、pattern/guarded switch case、表达式内部 mutation、current-component property/field mutation、任意外部/member mutation、任意 invocation expression statement、局部 lambda / delegate state、嵌套局部函数仍不属于当前 `ShouldRender` gate 支持面
   - 若 base 链形成循环、缺少源码、外部引用程序集无源码 override，或方法体形状超出上述受控子集，也会继续显式失败
-  - 线性前缀中的局部变量会稳定别名，避免与 `props` / `emit` / `slots` / render gate 缓存变量等 setup 名称发生 JavaScript 遮蔽；局部函数声明名和参数名必须本身是安全 binding identifier
+  - 方法体、分支与表达式 declaration local 会通过 compiler host seam 统一重写声明点和引用点，避免与 `props` / `emit` / `slots` / render gate 缓存变量等 setup 名称发生 JavaScript 遮蔽；局部函数声明名和参数名必须本身是安全 binding identifier
 - 普通 lifecycle 的 base-pass-through 现在也对齐接受一个更窄的尾随 no-op 形态：例如 `await base.OnInitializedAsync(); return;` 这类“base 透传后只跟空返回”的方法体，会与纯 pass-through 一样被视为没有新增运行时行为，不再误退回 unsupported。
 - lifecycle / no-op contract 本轮进一步按真实返回类型收紧并对齐：
   - `Task` 返回的 lifecycle 只接受真实 completed-task no-op，例如 `Task.CompletedTask`
@@ -410,7 +416,7 @@ dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj -
 
 当前基线：
 
-- `src/Jazor.RazorVue.Test`: `1414 / 1414` 通过
+- `src/Jazor.RazorVue.Test`: `1434 / 1434` 通过
 - `src/Jazor.RazorVue.RazorIr.Test`: `492 / 492` 通过
 
 ## Read Next

@@ -1892,30 +1892,6 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         BlockSyntax body,
         HashSet<IMethodSymbol> visitedMethods)
     {
-        if (body.Statements.Count < 2 ||
-            body.Statements[body.Statements.Count - 1] is not ReturnStatementSyntax { Expression: not null } returnStatement)
-        {
-            return ShouldRenderAnalysis.Unsupported;
-        }
-
-        for (var index = 0; index < body.Statements.Count - 1; index++)
-        {
-            if (!IsSupportedShouldRenderPrefixStatement(body.Statements[index]))
-                return ShouldRenderAnalysis.Unsupported;
-        }
-
-        if (IsConstantTrueShouldRenderExpression(returnStatement.Expression) ||
-            TryAnalyzeBaseShouldRenderExpression(
-                compilation,
-                method,
-                expressionEmitter,
-                returnStatement.Expression,
-                visitedMethods,
-                out _))
-        {
-            return ShouldRenderAnalysis.Unsupported;
-        }
-
         if (expressionEmitter is null)
             return ShouldRenderAnalysis.Unsupported;
 
@@ -1924,6 +1900,30 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             var semanticModel = compilation.GetSemanticModel(body.SyntaxTree);
             if (semanticModel.GetOperation(body) is not IBlockOperation blockOperation ||
                 blockOperation.Operations.IsDefaultOrEmpty)
+            {
+                return ShouldRenderAnalysis.Unsupported;
+            }
+
+            if (!TryValidateShouldRenderStatementSequence(
+                    blockOperation.Operations,
+                    ShouldRenderStatementScope.MethodBody,
+                    out var bodyAlwaysReturns,
+                    out var containsConditional) ||
+                !bodyAlwaysReturns)
+            {
+                return ShouldRenderAnalysis.Unsupported;
+            }
+
+            if (!containsConditional &&
+                body.Statements[body.Statements.Count - 1] is ReturnStatementSyntax { Expression: not null } returnStatement &&
+                (IsConstantTrueShouldRenderExpression(returnStatement.Expression) ||
+                 TryAnalyzeBaseShouldRenderExpression(
+                     compilation,
+                     method,
+                     expressionEmitter,
+                     returnStatement.Expression,
+                     visitedMethods,
+                     out _)))
             {
                 return ShouldRenderAnalysis.Unsupported;
             }
@@ -1958,8 +1958,208 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         }
     }
 
-    private static bool IsSupportedShouldRenderPrefixStatement(StatementSyntax statement)
-        => statement is LocalDeclarationStatementSyntax or LocalFunctionStatementSyntax;
+    private enum ShouldRenderStatementScope
+    {
+        MethodBody,
+        BranchBody
+    }
+
+    private static bool TryValidateShouldRenderStatementSequence(
+        ImmutableArray<IOperation> operations,
+        ShouldRenderStatementScope scope,
+        out bool alwaysReturns,
+        out bool containsConditional)
+    {
+        alwaysReturns = false;
+        containsConditional = false;
+        if (operations.IsDefaultOrEmpty)
+            return true;
+
+        for (var index = 0; index < operations.Length; index++)
+        {
+            if (alwaysReturns)
+                return false;
+
+            if (!TryValidateShouldRenderStatement(
+                    operations[index],
+                    scope,
+                    out var statementAlwaysReturns,
+                    out var statementContainsConditional))
+            {
+                return false;
+            }
+
+            containsConditional |= statementContainsConditional;
+            if (statementAlwaysReturns)
+                alwaysReturns = true;
+        }
+
+        return true;
+    }
+
+    private static bool TryValidateShouldRenderStatement(
+        IOperation operation,
+        ShouldRenderStatementScope scope,
+        out bool alwaysReturns,
+        out bool containsConditional)
+    {
+        alwaysReturns = false;
+        containsConditional = false;
+        var current = RazorVueOperationNormalizer.Unwrap(operation);
+        switch (current)
+        {
+            case IBlockOperation block:
+                return TryValidateShouldRenderStatementSequence(
+                    block.Operations,
+                    scope,
+                    out alwaysReturns,
+                    out containsConditional);
+
+            case IReturnOperation { ReturnedValue: not null } returnOperation:
+                if (ContainsShouldRenderUnsupportedExpressionConstruct(returnOperation.ReturnedValue))
+                    return false;
+
+                alwaysReturns = true;
+                return true;
+
+            case IVariableDeclarationGroupOperation declarationGroup:
+                if (ContainsShouldRenderUnsupportedExpressionConstruct(declarationGroup))
+                    return false;
+
+                return true;
+
+            case IExpressionStatementOperation expressionStatement:
+                return TryValidateShouldRenderLocalMutationExpressionStatement(expressionStatement);
+
+            case ILocalFunctionOperation localFunction when scope == ShouldRenderStatementScope.MethodBody:
+                return CanLowerShouldRenderLocalFunction(
+                    localFunction,
+                    CreateShouldRenderChildReservedLocalNames());
+
+            case IConditionalOperation conditional when conditional.Syntax is IfStatementSyntax:
+                if (ContainsShouldRenderUnsupportedExpressionConstruct(conditional.Condition))
+                    return false;
+
+                containsConditional = true;
+                if (!TryValidateShouldRenderStatement(
+                        conditional.WhenTrue,
+                        ShouldRenderStatementScope.BranchBody,
+                        out var trueAlwaysReturns,
+                        out var trueContainsConditional))
+                {
+                    return false;
+                }
+
+                var falseAlwaysReturns = false;
+                var falseContainsConditional = false;
+                if (conditional.WhenFalse is not null &&
+                    !TryValidateShouldRenderStatement(
+                        conditional.WhenFalse,
+                        ShouldRenderStatementScope.BranchBody,
+                        out falseAlwaysReturns,
+                        out falseContainsConditional))
+                {
+                    return false;
+                }
+
+                containsConditional |= trueContainsConditional || falseContainsConditional;
+                alwaysReturns = trueAlwaysReturns && conditional.WhenFalse is not null && falseAlwaysReturns;
+                return true;
+
+            case ISwitchOperation switchOperation when switchOperation.Syntax is SwitchStatementSyntax:
+                return TryValidateShouldRenderSwitchStatement(
+                    switchOperation,
+                    out alwaysReturns,
+                    out containsConditional);
+
+            default:
+                return false;
+        }
+    }
+
+    private static bool TryValidateShouldRenderSwitchStatement(
+        ISwitchOperation switchOperation,
+        out bool alwaysReturns,
+        out bool containsConditional)
+    {
+        alwaysReturns = false;
+        containsConditional = true;
+        if (ContainsShouldRenderUnsupportedExpressionConstruct(switchOperation.Value))
+            return false;
+
+        var hasDefaultCase = false;
+        var allCaseBodiesAlwaysReturn = true;
+        foreach (var switchCase in switchOperation.Cases)
+        {
+            if (switchCase.Clauses.IsDefaultOrEmpty)
+                return false;
+
+            foreach (var clause in switchCase.Clauses)
+            {
+                switch (clause)
+                {
+                    case IDefaultCaseClauseOperation:
+                        hasDefaultCase = true;
+                        break;
+
+                    case ISingleValueCaseClauseOperation singleValueClause:
+                        if (ContainsShouldRenderUnsupportedExpressionConstruct(singleValueClause.Value))
+                            return false;
+
+                        break;
+
+                    default:
+                        return false;
+                }
+            }
+
+            if (!TryValidateShouldRenderStatementSequence(
+                    switchCase.Body,
+                    ShouldRenderStatementScope.BranchBody,
+                    out var caseAlwaysReturns,
+                    out var caseContainsConditional))
+            {
+                return false;
+            }
+
+            containsConditional |= caseContainsConditional;
+            allCaseBodiesAlwaysReturn &= caseAlwaysReturns;
+        }
+
+        alwaysReturns = hasDefaultCase && allCaseBodiesAlwaysReturn;
+        return true;
+    }
+
+    private static bool TryValidateShouldRenderLocalMutationExpressionStatement(
+        IExpressionStatementOperation expressionStatement)
+    {
+        var expression = RazorVueOperationNormalizer.Unwrap(expressionStatement.Operation);
+        return expression is not null &&
+            TryValidateShouldRenderLocalMutationExpression(expression);
+    }
+
+    private static bool TryValidateShouldRenderLocalMutationExpression(IOperation operation)
+    {
+        switch (RazorVueOperationNormalizer.Unwrap(operation))
+        {
+            case ISimpleAssignmentOperation assignment:
+                return IsShouldRenderLocalMutationTarget(assignment.Target) &&
+                    !ContainsShouldRenderUnsupportedExpressionConstruct(assignment.Value);
+
+            case ICompoundAssignmentOperation assignment:
+                return IsShouldRenderLocalMutationTarget(assignment.Target) &&
+                    !ContainsShouldRenderUnsupportedExpressionConstruct(assignment.Value);
+
+            case IIncrementOrDecrementOperation incrementOrDecrement:
+                return IsShouldRenderLocalMutationTarget(incrementOrDecrement.Target);
+
+            default:
+                return false;
+        }
+    }
+
+    private static bool IsShouldRenderLocalMutationTarget(IOperation? operation)
+        => RazorVueOperationNormalizer.Unwrap(operation) is ILocalReferenceOperation;
 
     private static bool TryCreateShouldRenderLocalAliases(
         ImmutableArray<IOperation> operations,
@@ -1967,9 +2167,17 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
     {
         localAliases = ImmutableDictionary<ILocalSymbol, string>.Empty.WithComparers(SymbolEqualityComparer.Default);
         if (operations.IsDefaultOrEmpty ||
-            operations.Length < 2 ||
-            RazorVueOperationNormalizer.Unwrap(operations[operations.Length - 1]) is not IReturnOperation { ReturnedValue: not null } ||
             ContainsShouldRenderAnonymousFunction(operations))
+        {
+            return false;
+        }
+
+        if (!TryValidateShouldRenderStatementSequence(
+                operations,
+                ShouldRenderStatementScope.MethodBody,
+                out var alwaysReturns,
+                out _) ||
+            !alwaysReturns)
         {
             return false;
         }
@@ -1978,9 +2186,9 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             return false;
 
         var aliases = ImmutableDictionary.CreateBuilder<ILocalSymbol, string>(SymbolEqualityComparer.Default);
-        for (var index = 0; index < operations.Length - 1; index++)
+        foreach (var operation in EnumerateShouldRenderMethodScopedOperations(operations))
         {
-            switch (RazorVueOperationNormalizer.Unwrap(operations[index]))
+            switch (RazorVueOperationNormalizer.Unwrap(operation))
             {
                 case IVariableDeclarationGroupOperation declarationGroup:
                     foreach (var declaration in declarationGroup.Declarations)
@@ -1996,19 +2204,204 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
                     break;
 
+                case IDeclarationExpressionOperation declarationExpression:
+                    foreach (var local in CollectShouldRenderDeclaredLocals(declarationExpression.Expression))
+                    {
+                        if (!TryCreateShouldRenderLocalAlias(local, reservedNames, out var alias))
+                            return false;
+
+                        aliases[local] = alias;
+                    }
+
+                    break;
+
+                case IDeclarationPatternOperation { DeclaredSymbol: ILocalSymbol local }:
+                    if (!TryCreateShouldRenderLocalAlias(local, reservedNames, out var patternAlias))
+                        return false;
+
+                    aliases[local] = patternAlias;
+                    break;
+
+                case IRecursivePatternOperation { DeclaredSymbol: ILocalSymbol local }:
+                    if (!TryCreateShouldRenderLocalAlias(local, reservedNames, out var recursivePatternAlias))
+                        return false;
+
+                    aliases[local] = recursivePatternAlias;
+                    break;
+
+                case IListPatternOperation { DeclaredSymbol: ILocalSymbol local }:
+                    if (!TryCreateShouldRenderLocalAlias(local, reservedNames, out var listPatternAlias))
+                        return false;
+
+                    aliases[local] = listPatternAlias;
+                    break;
+
                 case ILocalFunctionOperation localFunction:
                     if (!CanLowerShouldRenderLocalFunction(localFunction, reservedNames))
                         return false;
 
                     break;
-
-                default:
-                    return false;
             }
         }
 
         localAliases = aliases.ToImmutable();
         return true;
+    }
+
+    private static bool TryCreateShouldRenderExpressionLocalAliases(
+        IOperation operation,
+        out IReadOnlyDictionary<ILocalSymbol, string> localAliases)
+    {
+        localAliases = ImmutableDictionary<ILocalSymbol, string>.Empty.WithComparers(SymbolEqualityComparer.Default);
+        if (ContainsShouldRenderAnonymousFunction(operation))
+            return false;
+
+        if (!TryCreateShouldRenderExpressionReservedLocalNames(operation, out var reservedNames))
+            return false;
+
+        var aliases = ImmutableDictionary.CreateBuilder<ILocalSymbol, string>(SymbolEqualityComparer.Default);
+        foreach (var current in EnumerateShouldRenderExpressionScopedOperations(operation))
+        {
+            switch (RazorVueOperationNormalizer.Unwrap(current))
+            {
+                case IDeclarationExpressionOperation declarationExpression:
+                    foreach (var local in CollectShouldRenderDeclaredLocals(declarationExpression.Expression))
+                    {
+                        if (!TryCreateShouldRenderLocalAlias(local, reservedNames, out var alias))
+                            return false;
+
+                        aliases[local] = alias;
+                    }
+
+                    break;
+
+                case IDeclarationPatternOperation { DeclaredSymbol: ILocalSymbol local }:
+                    if (!TryCreateShouldRenderLocalAlias(local, reservedNames, out var patternAlias))
+                        return false;
+
+                    aliases[local] = patternAlias;
+                    break;
+
+                case IRecursivePatternOperation { DeclaredSymbol: ILocalSymbol local }:
+                    if (!TryCreateShouldRenderLocalAlias(local, reservedNames, out var recursivePatternAlias))
+                        return false;
+
+                    aliases[local] = recursivePatternAlias;
+                    break;
+
+                case IListPatternOperation { DeclaredSymbol: ILocalSymbol local }:
+                    if (!TryCreateShouldRenderLocalAlias(local, reservedNames, out var listPatternAlias))
+                        return false;
+
+                    aliases[local] = listPatternAlias;
+                    break;
+            }
+        }
+
+        localAliases = aliases.ToImmutable();
+        return true;
+    }
+
+    private static IEnumerable<IOperation> EnumerateShouldRenderMethodScopedOperations(
+        ImmutableArray<IOperation> operations)
+    {
+        foreach (var operation in operations)
+        {
+            foreach (var current in EnumerateShouldRenderMethodScopedOperations(operation))
+                yield return current;
+        }
+    }
+
+    private static IEnumerable<IOperation> EnumerateShouldRenderMethodScopedOperations(IOperation operation)
+    {
+        var current = RazorVueOperationNormalizer.Unwrap(operation);
+        if (current is null)
+            yield break;
+
+        yield return current;
+
+        switch (current)
+        {
+            case ILocalFunctionOperation:
+                yield break;
+
+            case IBlockOperation block:
+                foreach (var child in EnumerateShouldRenderMethodScopedOperations(block.Operations))
+                    yield return child;
+                yield break;
+
+            case IConditionalOperation conditional when conditional.Syntax is IfStatementSyntax:
+                if (conditional.Condition is not null)
+                {
+                    foreach (var child in EnumerateShouldRenderExpressionScopedOperations(conditional.Condition))
+                        yield return child;
+                }
+
+                foreach (var child in EnumerateShouldRenderMethodScopedOperations(conditional.WhenTrue))
+                    yield return child;
+
+                if (conditional.WhenFalse is not null)
+                {
+                    foreach (var child in EnumerateShouldRenderMethodScopedOperations(conditional.WhenFalse))
+                        yield return child;
+                }
+
+                yield break;
+
+            default:
+                foreach (var child in current.ChildOperations)
+                {
+                    if (child is null)
+                        continue;
+
+                    foreach (var nested in EnumerateShouldRenderMethodScopedOperations(child))
+                        yield return nested;
+                }
+
+                yield break;
+        }
+    }
+
+    private static IEnumerable<IOperation> EnumerateShouldRenderExpressionScopedOperations(IOperation operation)
+    {
+        var current = RazorVueOperationNormalizer.Unwrap(operation);
+        if (current is null)
+            yield break;
+
+        yield return current;
+
+        if (current is IAnonymousFunctionOperation or ILocalFunctionOperation)
+            yield break;
+
+        foreach (var child in current.ChildOperations)
+        {
+            if (child is null)
+                continue;
+
+            foreach (var nested in EnumerateShouldRenderExpressionScopedOperations(child))
+                yield return nested;
+        }
+    }
+
+    private static bool ContainsShouldRenderUnsupportedExpressionConstruct(IOperation? operation)
+    {
+        if (operation is null)
+            return false;
+
+        foreach (var current in EnumerateShouldRenderExpressionScopedOperations(operation))
+        {
+            if (RazorVueOperationNormalizer.Unwrap(current) is
+                IAnonymousFunctionOperation or
+                ILocalFunctionOperation or
+                ISimpleAssignmentOperation or
+                ICompoundAssignmentOperation or
+                IIncrementOrDecrementOperation)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static bool TryCreateShouldRenderLocalAlias(
@@ -2077,6 +2470,27 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 case ILocalFunctionOperation localFunction when !ReferenceEquals(localFunction, operation):
                     return false;
 
+                case ISimpleAssignmentOperation assignment when !IsShouldRenderLocalMutationTarget(assignment.Target):
+                    return false;
+
+                case ISimpleAssignmentOperation assignment:
+                    if (ContainsShouldRenderUnsupportedExpressionConstruct(assignment.Value))
+                        return false;
+
+                    break;
+
+                case ICompoundAssignmentOperation assignment when !IsShouldRenderLocalMutationTarget(assignment.Target):
+                    return false;
+
+                case ICompoundAssignmentOperation assignment:
+                    if (ContainsShouldRenderUnsupportedExpressionConstruct(assignment.Value))
+                        return false;
+
+                    break;
+
+                case IIncrementOrDecrementOperation incrementOrDecrement when !IsShouldRenderLocalMutationTarget(incrementOrDecrement.Target):
+                    return false;
+
                 case IVariableDeclaratorOperation declarator:
                     if (!TryReserveShouldRenderBindingIdentifier(declarator.Symbol.Name, reservedNames))
                         return false;
@@ -2118,6 +2532,24 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                     }
 
                     break;
+
+                case IDeclarationPatternOperation { DeclaredSymbol: ILocalSymbol local }:
+                    if (!TryReserveShouldRenderBindingIdentifier(local.Name, reservedNames))
+                        return false;
+
+                    break;
+
+                case IRecursivePatternOperation { DeclaredSymbol: ILocalSymbol local }:
+                    if (!TryReserveShouldRenderBindingIdentifier(local.Name, reservedNames))
+                        return false;
+
+                    break;
+
+                case IListPatternOperation { DeclaredSymbol: ILocalSymbol local }:
+                    if (!TryReserveShouldRenderBindingIdentifier(local.Name, reservedNames))
+                        return false;
+
+                    break;
             }
         }
 
@@ -2128,11 +2560,19 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
     {
         foreach (var operation in operations)
         {
-            foreach (var current in operation.DescendantsAndSelf())
-            {
-                if (RazorVueOperationNormalizer.Unwrap(current) is IAnonymousFunctionOperation)
-                    return true;
-            }
+            if (ContainsShouldRenderAnonymousFunction(operation))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool ContainsShouldRenderAnonymousFunction(IOperation operation)
+    {
+        foreach (var current in operation.DescendantsAndSelf())
+        {
+            if (RazorVueOperationNormalizer.Unwrap(current) is IAnonymousFunctionOperation)
+                return true;
         }
 
         return false;
@@ -2172,9 +2612,26 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         out HashSet<string> reservedNames)
     {
         reservedNames = CreateShouldRenderChildReservedLocalNames();
-        for (var index = 0; index < operations.Length - 1; index++)
+        foreach (var operation in EnumerateShouldRenderMethodScopedOperations(operations))
         {
-            if (RazorVueOperationNormalizer.Unwrap(operations[index]) is ILocalFunctionOperation localFunction &&
+            if (RazorVueOperationNormalizer.Unwrap(operation) is ILocalFunctionOperation localFunction &&
+                !TryReserveShouldRenderBindingIdentifier(localFunction.Symbol.Name, reservedNames))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool TryCreateShouldRenderExpressionReservedLocalNames(
+        IOperation operation,
+        out HashSet<string> reservedNames)
+    {
+        reservedNames = CreateShouldRenderChildReservedLocalNames();
+        foreach (var current in EnumerateShouldRenderExpressionScopedOperations(operation))
+        {
+            if (RazorVueOperationNormalizer.Unwrap(current) is ILocalFunctionOperation localFunction &&
                 !TryReserveShouldRenderBindingIdentifier(localFunction.Symbol.Name, reservedNames))
             {
                 return false;
@@ -2324,12 +2781,23 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
         try
         {
-            return TryGetShouldRenderExpressionOperation(compilation, expression, out var operation)
-                ? new ShouldRenderAnalysis(
-                    true,
-                    RequiresRenderGate: true,
-                    expressionEmitter.CaptureSetupDependencies(() => expressionEmitter.EmitSetupExpression(operation)).Expression)
-                : ShouldRenderAnalysis.Unsupported;
+            if (!TryGetShouldRenderExpressionOperation(compilation, expression, out var operation))
+                return ShouldRenderAnalysis.Unsupported;
+
+            if (ContainsShouldRenderUnsupportedExpressionConstruct(operation))
+                return ShouldRenderAnalysis.Unsupported;
+
+            if (!TryCreateShouldRenderExpressionLocalAliases(operation, out var localAliases))
+                return ShouldRenderAnalysis.Unsupported;
+
+            var condition = expressionEmitter.CaptureSetupDependencies(
+                () => expressionEmitter.WithScopedLocalAliases(
+                    localAliases,
+                    () => expressionEmitter.EmitSetupExpression(operation))).Expression;
+            return new ShouldRenderAnalysis(
+                true,
+                RequiresRenderGate: true,
+                condition);
         }
         catch (RazorVueCompilationIssueException)
         {

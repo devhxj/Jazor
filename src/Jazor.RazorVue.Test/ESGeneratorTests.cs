@@ -4478,6 +4478,322 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithLocalMutationShouldRender_DoesNotReportJAZORVGA005_AndKeepsLogicSafeBoundary()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.LocalMutationShouldRender.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-local-mutation")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        var props = Value;
+                        props++;
+                        props += 2;
+                        return props > 3;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithIfElseShouldRender_DoesNotReportJAZORVGA005_AndKeepsLogicSafeBoundary()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.IfElseShouldRender.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-if")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        if (Value < 0)
+                        {
+                            return false;
+                        }
+
+                        return Value > 0;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithSwitchShouldRender_DoesNotReportJAZORVGA005_AndKeepsLogicSafeBoundary()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.SwitchShouldRender.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-switch")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        switch (Value)
+                        {
+                            case 0:
+                                return false;
+                            case 1:
+                                return true;
+                            default:
+                                return Value > 1;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithPatternLocalShouldRender_DoesNotReportJAZORVGA005_AndKeepsLogicSafeBoundary()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.PatternLocalShouldRender.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-pattern")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public object? Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        if (Value is int props)
+                        {
+                            return props > 0;
+                        }
+
+                        return false;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithRecursivePatternDeclaredLocalShouldRender_DoesNotReportJAZORVGA005_AndKeepsLogicSafeBoundary()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.RecursivePatternDeclaredLocalShouldRender.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-recursive-pattern")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public object? Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        if (Value is int { } props)
+                        {
+                            return props > 0;
+                        }
+
+                        return false;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithComponentBaseShouldRenderPassThrough_DoesNotReportJAZORVGA005_AndKeepsTemplateOnlyBoundary()
     {
         var compilation = CreateCompilation(
