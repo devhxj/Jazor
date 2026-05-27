@@ -1522,6 +1522,17 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         Compilation compilation,
         IMethodSymbol method,
         IOperation? operation)
+        => IsIgnorableNoOpLifecycleValueExpression(
+            compilation,
+            method,
+            operation,
+            new HashSet<ISymbol>(SymbolEqualityComparer.Default));
+
+    private static bool IsIgnorableNoOpLifecycleValueExpression(
+        Compilation compilation,
+        IMethodSymbol method,
+        IOperation? operation,
+        HashSet<ISymbol> visitedValueMembers)
     {
         var current = RazorVueOperationNormalizer.Unwrap(operation);
         if (current is null)
@@ -1538,28 +1549,110 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             IParameterReferenceOperation => true,
             IPropertyReferenceOperation property
                 when IsCurrentComponentParameterProperty(method, property) => true,
+            IPropertyReferenceOperation property
+                when IsCurrentComponentSourceStableValueMember(compilation, method, property, visitedValueMembers) => true,
+            IFieldReferenceOperation field
+                when IsCurrentComponentSourceStableValueMember(compilation, method, field, visitedValueMembers) => true,
             IConversionOperation conversion
                 when conversion.OperatorMethod is null =>
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conversion.Operand),
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conversion.Operand, visitedValueMembers),
             IUnaryOperation unary
                 when unary.OperatorMethod is null =>
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, unary.Operand),
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, unary.Operand, visitedValueMembers),
             IBinaryOperation binary
                 when binary.OperatorMethod is null =>
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, binary.LeftOperand) &&
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, binary.RightOperand),
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, binary.LeftOperand, visitedValueMembers) &&
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, binary.RightOperand, visitedValueMembers),
             IConditionalOperation conditional
                 when conditional.WhenTrue is not null && conditional.WhenFalse is not null =>
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conditional.Condition) &&
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conditional.WhenTrue) &&
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conditional.WhenFalse),
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conditional.Condition, visitedValueMembers) &&
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conditional.WhenTrue, visitedValueMembers) &&
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conditional.WhenFalse, visitedValueMembers),
             ICoalesceOperation coalesce =>
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, coalesce.Value) &&
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, coalesce.WhenNull),
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, coalesce.Value, visitedValueMembers) &&
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, coalesce.WhenNull, visitedValueMembers),
             ITupleOperation tuple =>
-                tuple.Elements.All(element => IsIgnorableNoOpLifecycleValueExpression(compilation, method, element)),
+                tuple.Elements.All(element => IsIgnorableNoOpLifecycleValueExpression(compilation, method, element, visitedValueMembers)),
             _ => false
         };
+    }
+
+    private static bool IsCurrentComponentSourceStableValueMember(
+        Compilation compilation,
+        IMethodSymbol method,
+        IPropertyReferenceOperation propertyReference,
+        HashSet<ISymbol> visitedValueMembers)
+    {
+        var property = propertyReference.Property;
+        if (property.IsStatic ||
+            property.IsIndexer ||
+            propertyReference.Arguments.Length != 0 ||
+            property.ContainingType is null ||
+            !ContainsTypeOrBase(method.ContainingType, property.ContainingType))
+        {
+            return false;
+        }
+
+        var instance = RazorVueOperationNormalizer.Unwrap(propertyReference.Instance);
+        if (instance is not null and not IInstanceReferenceOperation)
+            return false;
+
+        return IsIgnorableSourceStableValueMemberInitializer(
+            compilation,
+            method,
+            property,
+            visitedValueMembers);
+    }
+
+    private static bool IsCurrentComponentSourceStableValueMember(
+        Compilation compilation,
+        IMethodSymbol method,
+        IFieldReferenceOperation fieldReference,
+        HashSet<ISymbol> visitedValueMembers)
+    {
+        var field = fieldReference.Field;
+        if (field.IsStatic ||
+            field.ContainingType is null ||
+            !ContainsTypeOrBase(method.ContainingType, field.ContainingType))
+        {
+            return false;
+        }
+
+        var instance = RazorVueOperationNormalizer.Unwrap(fieldReference.Instance);
+        if (instance is not null and not IInstanceReferenceOperation)
+            return false;
+
+        return IsIgnorableSourceStableValueMemberInitializer(
+            compilation,
+            method,
+            field,
+            visitedValueMembers);
+    }
+
+    private static bool IsIgnorableSourceStableValueMemberInitializer(
+        Compilation compilation,
+        IMethodSymbol method,
+        ISymbol member,
+        HashSet<ISymbol> visitedValueMembers)
+    {
+        if (!RazorVueCurrentComponentValueMemberHelper.TryGetValueMemberInitializer(compilation, member, out var initializer))
+            return false;
+
+        if (initializer is null || !visitedValueMembers.Add(member))
+            return false;
+
+        try
+        {
+            return IsIgnorableNoOpLifecycleValueExpression(
+                compilation,
+                method,
+                initializer,
+                visitedValueMembers);
+        }
+        finally
+        {
+            visitedValueMembers.Remove(member);
+        }
     }
 
     private static bool IsCurrentComponentParameterProperty(
