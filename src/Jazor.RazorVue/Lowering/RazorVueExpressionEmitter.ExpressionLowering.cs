@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using Acornima;
 using Acornima.Ast;
 using Jazor.Compiler;
 using Jazor.RazorVue.Artifacts;
@@ -14,6 +15,9 @@ namespace Jazor.RazorVue.Lowering;
 
 internal sealed partial class RazorVueExpressionEmitter
 {
+    internal const string ShouldRenderSwitchFallthroughAlias = "__jazorShouldRenderSwitchFallthrough";
+    internal const string ShouldRenderSwitchResultAlias = "__jazorShouldRenderSwitchResult";
+
     private string EmitExpression(IOperation operation, SenseArgument? compilerArgument = null)
     {
         var current = Unwrap(operation);
@@ -50,6 +54,543 @@ internal sealed partial class RazorVueExpressionEmitter
             return NormalizeImperativeFunctionText(functionBody.ToKnRECMAScript());
         });
     }
+
+    internal string EmitSetupShouldRenderStatementSequence(IEnumerable<IOperation> operations, SenseArgument? compilerArgument = null)
+    {
+        var operationList = operations?.ToArray() ?? throw new ArgumentNullException(nameof(operations));
+        if (operationList.Length == 0)
+            return string.Empty;
+
+        foreach (var operation in operationList)
+            ThrowIfReadOnlyByRefParameterEscapes(operation);
+
+        var argument = (compilerArgument ?? _compilerArgument).With(Sense.FunctionBody);
+        return WithShouldRenderStatementRewriteScope(() =>
+            WithSetupRewriteScope(() =>
+            {
+                var statements = _semanticWalker.TranslateStatementSequence(operationList, argument);
+                RewriteShouldRenderPatternSwitchIifes(operationList, statements);
+                var functionBody = new FunctionBody(NodeList.From(statements), strict: true);
+                return NormalizeImperativeFunctionText(functionBody.ToKnRECMAScript());
+            }));
+    }
+
+    private static void RewriteShouldRenderPatternSwitchIifes(
+        IReadOnlyList<IOperation> operations,
+        IList<Statement> statements)
+    {
+        if (operations.Count == 0 || statements.Count == 0)
+            return;
+
+        var patternSwitchPlans = CreateShouldRenderPatternSwitchPlans(operations);
+        if (patternSwitchPlans.Count == 0)
+            return;
+
+        var needsFallthroughSentinel = false;
+        var bridgeIndex = 0;
+        var planIndex = 0;
+        for (var statementIndex = 0; statementIndex < statements.Count; statementIndex++)
+        {
+            var statement = statements[statementIndex];
+            if (!TryRewriteShouldRenderPatternSwitchStatement(
+                    statement,
+                    patternSwitchPlans,
+                    ref planIndex,
+                    ref bridgeIndex,
+                    topLevel: true,
+                    out var replacement,
+                    out var statementNeedsFallthroughSentinel))
+            {
+                continue;
+            }
+
+            statements[statementIndex] = replacement;
+            needsFallthroughSentinel |= statementNeedsFallthroughSentinel;
+        }
+
+        if (planIndex != patternSwitchPlans.Count)
+            throw new NotSupportedException("RazorVue ShouldRender pattern-switch lowering could not locate every compiler-owned switch IIFE statement.");
+
+        if (needsFallthroughSentinel)
+        {
+            statements.Insert(
+                0,
+                new VariableDeclaration(
+                    VariableDeclarationKind.Const,
+                    NodeList.From(new VariableDeclarator(
+                        new Identifier(ShouldRenderSwitchFallthroughAlias),
+                        new ObjectExpression(NodeList.Empty<Node>())))));
+        }
+    }
+
+    private static IReadOnlyList<ShouldRenderPatternSwitchPlan> CreateShouldRenderPatternSwitchPlans(
+        IReadOnlyList<IOperation> operations)
+    {
+        var plans = new List<ShouldRenderPatternSwitchPlan>();
+        for (var index = 0; index < operations.Count; index++)
+            AddShouldRenderPatternSwitchPlans(operations[index], isLastTopLevelOperation: index == operations.Count - 1, plans);
+
+        return plans;
+    }
+
+    private static void AddShouldRenderPatternSwitchPlans(
+        IOperation operation,
+        bool isLastTopLevelOperation,
+        List<ShouldRenderPatternSwitchPlan> plans)
+    {
+        var current = Unwrap(operation);
+        switch (current)
+        {
+            case null:
+                return;
+
+            case ISwitchOperation switchOperation when IsPatternSwitchOperation(switchOperation):
+                plans.Add(new ShouldRenderPatternSwitchPlan(BridgeFallthrough: !isLastTopLevelOperation));
+                return;
+
+            case IBlockOperation block:
+                foreach (var child in block.Operations)
+                    AddShouldRenderPatternSwitchPlans(child, isLastTopLevelOperation: false, plans);
+                return;
+
+            case IConditionalOperation conditional when conditional.Syntax is IfStatementSyntax:
+                AddShouldRenderPatternSwitchPlans(conditional.WhenTrue, isLastTopLevelOperation: false, plans);
+                if (conditional.WhenFalse is not null)
+                    AddShouldRenderPatternSwitchPlans(conditional.WhenFalse, isLastTopLevelOperation: false, plans);
+                return;
+
+            case IWhileLoopOperation whileLoop:
+                AddShouldRenderPatternSwitchPlans(whileLoop.Body, isLastTopLevelOperation: false, plans);
+                return;
+
+            case IForLoopOperation forLoop:
+                AddShouldRenderPatternSwitchPlans(forLoop.Body, isLastTopLevelOperation: false, plans);
+                return;
+
+            case IForEachLoopOperation forEachLoop:
+                AddShouldRenderPatternSwitchPlans(forEachLoop.Body, isLastTopLevelOperation: false, plans);
+                return;
+
+            case ITryOperation tryOperation:
+                AddShouldRenderPatternSwitchPlans(tryOperation.Body, isLastTopLevelOperation: false, plans);
+                foreach (var catchClause in tryOperation.Catches)
+                    AddShouldRenderPatternSwitchPlans(catchClause.Handler, isLastTopLevelOperation: false, plans);
+                if (tryOperation.Finally is not null)
+                    AddShouldRenderPatternSwitchPlans(tryOperation.Finally, isLastTopLevelOperation: false, plans);
+                return;
+        }
+    }
+
+    private static bool TryRewriteShouldRenderPatternSwitchStatement(
+        Statement statement,
+        IReadOnlyList<ShouldRenderPatternSwitchPlan> plans,
+        ref int planIndex,
+        ref int bridgeIndex,
+        bool topLevel,
+        out Statement replacement,
+        out bool needsFallthroughSentinel)
+    {
+        needsFallthroughSentinel = false;
+        if (TryRewriteShouldRenderPatternSwitchIifeStatement(
+                statement,
+                plans,
+                ref planIndex,
+                ref bridgeIndex,
+                topLevel,
+                out replacement,
+                out needsFallthroughSentinel))
+        {
+            return true;
+        }
+
+        switch (statement)
+        {
+            case BlockStatement block:
+            {
+                var rewrittenBody = RewriteShouldRenderPatternSwitchStatementList(
+                    block.Body,
+                    plans,
+                    ref planIndex,
+                    ref bridgeIndex,
+                    out needsFallthroughSentinel);
+                if (rewrittenBody is null)
+                {
+                    replacement = statement;
+                    return false;
+                }
+
+                replacement = CreateShouldRenderPatternSwitchBlockReplacement(block, rewrittenBody);
+                return true;
+            }
+
+            case IfStatement ifStatement:
+            {
+                var consequentChanged = TryRewriteShouldRenderPatternSwitchStatement(
+                    ifStatement.Consequent,
+                    plans,
+                    ref planIndex,
+                    ref bridgeIndex,
+                    topLevel: false,
+                    out var consequent,
+                    out var consequentNeedsFallthroughSentinel);
+                var alternate = ifStatement.Alternate;
+                var alternateNeedsFallthroughSentinel = false;
+                var alternateChanged = false;
+                if (ifStatement.Alternate is not null)
+                {
+                    alternateChanged = TryRewriteShouldRenderPatternSwitchStatement(
+                        ifStatement.Alternate,
+                        plans,
+                        ref planIndex,
+                        ref bridgeIndex,
+                        topLevel: false,
+                        out var rewrittenAlternate,
+                        out var rewrittenAlternateNeedsFallthroughSentinel);
+                    if (alternateChanged)
+                    {
+                        alternate = rewrittenAlternate;
+                        alternateNeedsFallthroughSentinel = rewrittenAlternateNeedsFallthroughSentinel;
+                    }
+                }
+
+                if (!consequentChanged && !alternateChanged)
+                {
+                    replacement = statement;
+                    return false;
+                }
+
+                replacement = new IfStatement(
+                    ifStatement.Test,
+                    consequentChanged ? consequent : ifStatement.Consequent,
+                    alternateChanged ? alternate : ifStatement.Alternate);
+                needsFallthroughSentinel = consequentNeedsFallthroughSentinel || (alternateChanged && alternateNeedsFallthroughSentinel);
+                return true;
+            }
+
+            case WhileStatement whileStatement:
+                return TryRewriteShouldRenderPatternSwitchLoopBody(
+                    statement,
+                    whileStatement.Body,
+                    rewrittenBody => new WhileStatement(whileStatement.Test, rewrittenBody),
+                    plans,
+                    ref planIndex,
+                    ref bridgeIndex,
+                    out replacement,
+                    out needsFallthroughSentinel);
+
+            case DoWhileStatement doWhileStatement:
+                return TryRewriteShouldRenderPatternSwitchLoopBody(
+                    statement,
+                    doWhileStatement.Body,
+                    rewrittenBody => new DoWhileStatement(rewrittenBody, doWhileStatement.Test),
+                    plans,
+                    ref planIndex,
+                    ref bridgeIndex,
+                    out replacement,
+                    out needsFallthroughSentinel);
+
+            case ForStatement forStatement:
+                return TryRewriteShouldRenderPatternSwitchLoopBody(
+                    statement,
+                    forStatement.Body,
+                    rewrittenBody => new ForStatement(forStatement.Init, forStatement.Test, forStatement.Update, rewrittenBody),
+                    plans,
+                    ref planIndex,
+                    ref bridgeIndex,
+                    out replacement,
+                    out needsFallthroughSentinel);
+
+            case ForOfStatement forOfStatement:
+                return TryRewriteShouldRenderPatternSwitchLoopBody(
+                    statement,
+                    forOfStatement.Body,
+                    rewrittenBody => new ForOfStatement(forOfStatement.Left, forOfStatement.Right, rewrittenBody, forOfStatement.Await),
+                    plans,
+                    ref planIndex,
+                    ref bridgeIndex,
+                    out replacement,
+                    out needsFallthroughSentinel);
+
+            case TryStatement tryStatement:
+            {
+                var blockChanged = TryRewriteShouldRenderPatternSwitchNestedBlock(
+                    tryStatement.Block,
+                    plans,
+                    ref planIndex,
+                    ref bridgeIndex,
+                    out var block,
+                    out var blockNeedsFallthroughSentinel);
+                var handlerBody = tryStatement.Handler?.Body;
+                var handlerNeedsFallthroughSentinel = false;
+                var handlerChanged = false;
+                if (tryStatement.Handler is not null)
+                {
+                    handlerChanged = TryRewriteShouldRenderPatternSwitchNestedBlock(
+                        tryStatement.Handler.Body,
+                        plans,
+                        ref planIndex,
+                        ref bridgeIndex,
+                        out var rewrittenHandlerBody,
+                        out var rewrittenHandlerNeedsFallthroughSentinel);
+                    if (handlerChanged)
+                    {
+                        handlerBody = rewrittenHandlerBody;
+                        handlerNeedsFallthroughSentinel = rewrittenHandlerNeedsFallthroughSentinel;
+                    }
+                }
+
+                var finalizer = tryStatement.Finalizer;
+                var finalizerNeedsFallthroughSentinel = false;
+                var finalizerChanged = false;
+                if (tryStatement.Finalizer is not null)
+                {
+                    finalizerChanged = TryRewriteShouldRenderPatternSwitchNestedBlock(
+                        tryStatement.Finalizer,
+                        plans,
+                        ref planIndex,
+                        ref bridgeIndex,
+                        out var rewrittenFinalizer,
+                        out var rewrittenFinalizerNeedsFallthroughSentinel);
+                    if (finalizerChanged)
+                    {
+                        finalizer = rewrittenFinalizer;
+                        finalizerNeedsFallthroughSentinel = rewrittenFinalizerNeedsFallthroughSentinel;
+                    }
+                }
+
+                if (!blockChanged && !handlerChanged && !finalizerChanged)
+                {
+                    replacement = statement;
+                    return false;
+                }
+
+                replacement = new TryStatement(
+                    blockChanged ? block : tryStatement.Block,
+                    handlerChanged ? new CatchClause(tryStatement.Handler!.Param, handlerBody!) : tryStatement.Handler,
+                    finalizerChanged ? finalizer : tryStatement.Finalizer);
+                needsFallthroughSentinel = blockNeedsFallthroughSentinel ||
+                    (handlerChanged && handlerNeedsFallthroughSentinel) ||
+                    (finalizerChanged && finalizerNeedsFallthroughSentinel);
+                return true;
+            }
+
+            default:
+                replacement = statement;
+                return false;
+        }
+    }
+
+    private static bool TryRewriteShouldRenderPatternSwitchIifeStatement(
+        Statement statement,
+        IReadOnlyList<ShouldRenderPatternSwitchPlan> plans,
+        ref int planIndex,
+        ref int bridgeIndex,
+        bool topLevel,
+        out Statement replacement,
+        out bool needsFallthroughSentinel)
+    {
+        needsFallthroughSentinel = false;
+        replacement = statement;
+
+        var expression = statement switch
+        {
+            NonSpecialExpressionStatement nonSpecialExpressionStatement => nonSpecialExpressionStatement.Expression,
+            ExpressionStatement expressionStatement => expressionStatement.Expression,
+            _ => null
+        };
+
+        if (expression is not CallExpression
+            {
+                Callee: ArrowFunctionExpression { Body: FunctionBody }
+            } callExpression)
+        {
+            return false;
+        }
+
+        if (planIndex >= plans.Count)
+            throw new NotSupportedException("RazorVue ShouldRender pattern-switch lowering found more compiler-owned switch IIFEs than expected.");
+
+        var plan = plans[planIndex++];
+        if (!plan.BridgeFallthrough && topLevel)
+        {
+            replacement = new ReturnStatement(callExpression);
+            return true;
+        }
+
+        if (!plan.BridgeFallthrough)
+        {
+            replacement = new ReturnStatement(callExpression);
+            return true;
+        }
+
+        var resultAlias = bridgeIndex == 0
+            ? ShouldRenderSwitchResultAlias
+            : ShouldRenderSwitchResultAlias + "$" + bridgeIndex.ToString(CultureInfo.InvariantCulture);
+        var fallthroughCall = RewritePatternSwitchIifeFallthrough(callExpression);
+        replacement = new NestedBlockStatement(NodeList.From(new Statement[]
+        {
+            new VariableDeclaration(
+                VariableDeclarationKind.Const,
+                NodeList.From(new VariableDeclarator(
+                    new Identifier(resultAlias),
+                    fallthroughCall))),
+            new IfStatement(
+                new NonLogicalBinaryExpression(
+                    Operator.StrictInequality,
+                    new Identifier(resultAlias),
+                    new Identifier(ShouldRenderSwitchFallthroughAlias)),
+                new ReturnStatement(new Identifier(resultAlias)),
+                null)
+        }));
+
+        needsFallthroughSentinel = true;
+        bridgeIndex++;
+        return true;
+    }
+
+    private static Statement CreateShouldRenderPatternSwitchBlockReplacement(
+        BlockStatement original,
+        IReadOnlyList<Statement> body)
+        => original is FunctionBody functionBody
+            ? new FunctionBody(NodeList.From(body), functionBody.Strict)
+            : new NestedBlockStatement(NodeList.From(body));
+
+    private static List<Statement>? RewriteShouldRenderPatternSwitchStatementList(
+        IEnumerable<Statement> statements,
+        IReadOnlyList<ShouldRenderPatternSwitchPlan> plans,
+        ref int planIndex,
+        ref int bridgeIndex,
+        out bool needsFallthroughSentinel)
+    {
+        needsFallthroughSentinel = false;
+        List<Statement>? rewritten = null;
+        var index = 0;
+        foreach (var statement in statements)
+        {
+            if (TryRewriteShouldRenderPatternSwitchStatement(
+                    statement,
+                    plans,
+                    ref planIndex,
+                    ref bridgeIndex,
+                    topLevel: false,
+                    out var replacement,
+                    out var statementNeedsFallthroughSentinel))
+            {
+                rewritten ??= statements.ToList();
+                rewritten[index] = replacement;
+                needsFallthroughSentinel |= statementNeedsFallthroughSentinel;
+            }
+
+            index++;
+        }
+
+        return rewritten;
+    }
+
+    private static bool TryRewriteShouldRenderPatternSwitchNestedBlock(
+        NestedBlockStatement block,
+        IReadOnlyList<ShouldRenderPatternSwitchPlan> plans,
+        ref int planIndex,
+        ref int bridgeIndex,
+        out NestedBlockStatement replacement,
+        out bool needsFallthroughSentinel)
+    {
+        var rewrittenBody = RewriteShouldRenderPatternSwitchStatementList(
+            block.Body,
+            plans,
+            ref planIndex,
+            ref bridgeIndex,
+            out needsFallthroughSentinel);
+        if (rewrittenBody is null)
+        {
+            replacement = block;
+            return false;
+        }
+
+        replacement = new NestedBlockStatement(NodeList.From(rewrittenBody));
+        return true;
+    }
+
+    private static bool TryRewriteShouldRenderPatternSwitchLoopBody(
+        Statement original,
+        Statement body,
+        Func<Statement, Statement> createReplacement,
+        IReadOnlyList<ShouldRenderPatternSwitchPlan> plans,
+        ref int planIndex,
+        ref int bridgeIndex,
+        out Statement replacement,
+        out bool needsFallthroughSentinel)
+    {
+        if (!TryRewriteShouldRenderPatternSwitchStatement(
+                body,
+                plans,
+                ref planIndex,
+                ref bridgeIndex,
+                topLevel: false,
+                out var rewrittenBody,
+                out needsFallthroughSentinel))
+        {
+            replacement = original;
+            return false;
+        }
+
+        replacement = createReplacement(rewrittenBody);
+        return true;
+    }
+
+    private static CallExpression RewritePatternSwitchIifeFallthrough(CallExpression callExpression)
+    {
+        if (callExpression.Callee is not ArrowFunctionExpression { Body: FunctionBody functionBody } arrowFunction)
+        {
+            throw new NotSupportedException("RazorVue ShouldRender pattern-switch lowering expected a compiler-owned arrow IIFE.");
+        }
+
+        var statements = functionBody.Body
+            .Select(static statement => RewritePatternSwitchFallthroughReturn(statement))
+            .ToList();
+        statements.Add(new ReturnStatement(new Identifier(ShouldRenderSwitchFallthroughAlias)));
+
+        var rewrittenBody = new FunctionBody(NodeList.From(statements), functionBody.Strict);
+        var rewrittenArrow = new ArrowFunctionExpression(
+            NodeList.Empty<Node>(),
+            rewrittenBody,
+            expression: false,
+            async: arrowFunction.Async);
+        return new CallExpression(rewrittenArrow, NodeList.Empty<Expression>(), callExpression.Optional);
+    }
+
+    private static Statement RewritePatternSwitchFallthroughReturn(Statement statement)
+    {
+        switch (statement)
+        {
+            case ReturnStatement { Argument: null }:
+                return new ReturnStatement(new Identifier(ShouldRenderSwitchFallthroughAlias));
+
+            case IfStatement ifStatement:
+                return new IfStatement(
+                    ifStatement.Test,
+                    RewritePatternSwitchFallthroughReturn(ifStatement.Consequent),
+                    ifStatement.Alternate is null
+                        ? null
+                        : RewritePatternSwitchFallthroughReturn(ifStatement.Alternate));
+
+            case NestedBlockStatement block:
+                return new NestedBlockStatement(NodeList.From(block.Body.Select(static child => RewritePatternSwitchFallthroughReturn(child))));
+
+            default:
+                return statement;
+        }
+    }
+
+    private static bool IsPatternSwitchOperation(IOperation operation)
+    {
+        var current = Unwrap(operation);
+        return current is ISwitchOperation switchOperation &&
+            switchOperation.Cases.Any(static switchCase =>
+                switchCase.Clauses.Any(static clause => clause.CaseKind == CaseKind.Pattern));
+    }
+
+    private readonly record struct ShouldRenderPatternSwitchPlan(bool BridgeFallthrough);
 
     private LifecyclePayloadEmission EmitLifecyclePayloadCore(
         IMethodSymbol method,

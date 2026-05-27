@@ -51,7 +51,7 @@ public partial class SemanticWalker
         {
             var mergedCatchArg = scopedArgument.EnterScope(operation, ScopeSite.CatchBody());
             var tryParam = new Identifier(AllocateUniqueName(operation, mergedCatchArg, LoweringSite.MultiCatchParameter()));
-            var sharedCatchParam = TryExtractSharedCatchParam(operation.Catches);
+            var sharedCatchParam = TryExtractSharedCatchParam(operation.Catches, mergedCatchArg);
             var groups = new List<(string TypeKey, ITypeSymbol ExceptionType, List<ICatchClauseOperation> Clauses)>();
             foreach (var @catch in operation.Catches)
             {
@@ -79,7 +79,7 @@ public partial class SemanticWalker
                     return fallback;
 
                 var @catch = clauses[index];
-                var currentParam = ExtractCatchClauseParam(@catch);
+                var currentParam = ExtractCatchClauseParam(@catch, mergedCatchArg);
                 var branchStatements = new List<Statement>();
 
                 if (sharedParam is null && currentParam is not null)
@@ -122,7 +122,7 @@ public partial class SemanticWalker
                     var parameters = new List<string>();
                     foreach (var @catch in clauses)
                     {
-                        var param = ExtractCatchClauseParam(@catch);
+                        var param = ExtractCatchClauseParam(@catch, mergedCatchArg);
                         if (param is null || parameters.Contains(param.Name))
                             continue;
 
@@ -192,7 +192,7 @@ public partial class SemanticWalker
     /// <param name="operation"></param>
     /// <param name="argument"></param>
     /// <returns></returns>
-    private Identifier? ExtractCatchClauseParam(ICatchClauseOperation operation)
+    private Identifier? ExtractCatchClauseParam(ICatchClauseOperation operation, SenseArgument argument)
     {
         // 从ExceptionDeclarationOrExpression中提取异常变量名
         Identifier? param = null;
@@ -203,13 +203,15 @@ public partial class SemanticWalker
             switch (operation.ExceptionDeclarationOrExpression)
             {
                 case ILocalReferenceOperation localRef when localRef.Local is not null:
-                    param = new Identifier(localRef.Local.Name);
+                    param = Host?.RewriteCatchClauseParameterIdentifier(operation, localRef.Local, argument) ??
+                        new Identifier(localRef.Local.Name);
                     break;
                 case IParameterReferenceOperation paramRef when paramRef.Parameter is not null:
                     param = new Identifier(paramRef.Parameter.Name);
                     break;
                 case IVariableDeclaratorOperation varDeclarator when varDeclarator.Symbol is not null:
-                    param = new Identifier(varDeclarator.Symbol.Name);
+                    param = Host?.RewriteCatchClauseParameterIdentifier(operation, varDeclarator.Symbol, argument) ??
+                        new Identifier(varDeclarator.Symbol.Name);
                     break;
                 default:
                     HandleTransformationFailure<Node>(operation.ExceptionDeclarationOrExpression, "Try statement catch clause could not be translated to JavaScript.");
@@ -224,18 +226,22 @@ public partial class SemanticWalker
         {
             // Roslyn 在部分 catch lowering 场景里不会稳定暴露 ExceptionDeclarationOrExpression，
             // 回退到语法声明可以保证多 catch 合并时仍能识别共享异常变量。
-            param = new Identifier(catchClause.Declaration.Identifier.ValueText);
+            var declaredLocal = operation.SemanticModel?.GetDeclaredSymbol(catchClause.Declaration);
+            param = declaredLocal is ILocalSymbol local
+                ? Host?.RewriteCatchClauseParameterIdentifier(operation, local, argument) ??
+                    new Identifier(catchClause.Declaration.Identifier.ValueText)
+                : new Identifier(catchClause.Declaration.Identifier.ValueText);
         }
 
         return param;
     }
 
-    private Identifier? TryExtractSharedCatchParam(ImmutableArray<ICatchClauseOperation> catches)
+    private Identifier? TryExtractSharedCatchParam(ImmutableArray<ICatchClauseOperation> catches, SenseArgument argument)
     {
         string? sharedName = null;
         foreach (var @catch in catches)
         {
-            var param = ExtractCatchClauseParam(@catch);
+            var param = ExtractCatchClauseParam(@catch, argument);
             if (param is null)
                 return null;
 
@@ -390,7 +396,7 @@ public partial class SemanticWalker
         RejectUnsupportedSingleCatchTypeIfNeeded(operation);
         var catchScope = EnsureScopeContext(operation, argument).EnterScope(operation, ScopeSite.CatchBody());
         var param = RequiresCatchBinding(operation)
-            ? ExtractCatchClauseParam(operation) ?? new Identifier(AllocateUniqueName(operation, catchScope, LoweringSite.SyntheticCatchParameter()))
+            ? ExtractCatchClauseParam(operation, catchScope) ?? new Identifier(AllocateUniqueName(operation, catchScope, LoweringSite.SyntheticCatchParameter()))
             : null;
         var catchArgument = param is not null
             ? catchScope.WithCatchVar(param.Name)

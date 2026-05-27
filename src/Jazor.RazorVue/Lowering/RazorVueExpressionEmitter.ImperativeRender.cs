@@ -982,10 +982,54 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         var initializer = operation.Initializer?.Value is { } value
-            ? ParseJavaScriptExpression(EmitSetupExpression(value, argument))
+            ? _isShouldRenderStatementRewriteScopeActive &&
+              TryEmitShouldRenderMethodGroupDelegateInitializer(value, out var methodGroupExpression)
+                ? ParseJavaScriptExpression(methodGroupExpression)
+                : ParseJavaScriptExpression(EmitSetupExpression(value, argument))
             : null;
         declarator = new VariableDeclarator(new Identifier(alias), initializer);
         return true;
+    }
+
+    private bool TryEmitShouldRenderMethodGroupDelegateInitializer(
+        IOperation operation,
+        out string expression)
+    {
+        expression = string.Empty;
+        if (!TryGetMethodGroupReference(operation, out var methodReference))
+            return false;
+
+        if (methodReference.Method.MethodKind == MethodKind.LocalFunction)
+        {
+            expression = methodReference.Method.Name;
+            return true;
+        }
+
+        if (!IsCurrentComponentMember(methodReference.Method, methodReference.Instance))
+            return false;
+
+        RecordRequiredSetupMethod(methodReference.Method);
+        expression = ToLowerCamelCase(methodReference.Method.Name);
+        return true;
+    }
+
+    private static bool TryGetMethodGroupReference(
+        IOperation? operation,
+        out IMethodReferenceOperation methodReference)
+    {
+        switch (RazorVueOperationNormalizer.Unwrap(operation))
+        {
+            case IMethodReferenceOperation directMethodReference:
+                methodReference = directMethodReference;
+                return true;
+            case IDelegateCreationOperation delegateCreation:
+                return TryGetMethodGroupReference(delegateCreation.Target, out methodReference);
+            case IConversionOperation conversion:
+                return TryGetMethodGroupReference(conversion.Operand, out methodReference);
+            default:
+                methodReference = default!;
+                return false;
+        }
     }
 
     internal bool TryRewriteSimpleAssignment(

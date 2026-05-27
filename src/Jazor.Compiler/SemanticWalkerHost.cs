@@ -28,6 +28,9 @@ public abstract class SemanticWalkerHost
     public virtual Identifier? RewriteLocalDeclarationIdentifier(ILocalSymbol local, IOperation operation, SenseArgument argument)
         => null;
 
+    public virtual Identifier? RewriteCatchClauseParameterIdentifier(ICatchClauseOperation operation, ILocalSymbol local, SenseArgument argument)
+        => null;
+
     public virtual Expression? RewriteSimpleAssignmentPreorder(ISimpleAssignmentOperation operation, SenseArgument argument)
         => null;
 

@@ -58,6 +58,7 @@ internal sealed partial class RazorVueExpressionEmitter
     private readonly HashSet<IFieldSymbol> _requiredSetupFields;
     private readonly HashSet<IMethodSymbol> _requiredSetupMethods;
     private bool _isSetupRewriteScopeActive;
+    private bool _isShouldRenderStatementRewriteScopeActive;
     private HashSet<IPropertySymbol>? _capturedSetupPropertyDependencies;
     private HashSet<IFieldSymbol>? _capturedSetupFieldDependencies;
     private HashSet<IMethodSymbol>? _capturedSetupMethodDependencies;
@@ -500,6 +501,20 @@ internal sealed partial class RazorVueExpressionEmitter
         }
     }
 
+    private T WithShouldRenderStatementRewriteScope<T>(Func<T> action)
+    {
+        var previous = _isShouldRenderStatementRewriteScopeActive;
+        _isShouldRenderStatementRewriteScopeActive = true;
+        try
+        {
+            return action();
+        }
+        finally
+        {
+            _isShouldRenderStatementRewriteScopeActive = previous;
+        }
+    }
+
     internal readonly record struct SetupDependencyCapture(
         string Expression,
         ImmutableArray<IPropertySymbol> PropertyDependencies,
@@ -757,6 +772,15 @@ internal sealed partial class RazorVueExpressionEmitter
             => _emitter.TryRewriteLocalDeclarationIdentifier(local, out var identifier)
                 ? identifier
                 : null;
+
+        public override Identifier? RewriteCatchClauseParameterIdentifier(ICatchClauseOperation operation, ILocalSymbol local, SenseArgument argument)
+        {
+            _ = operation;
+            _ = argument;
+            return _emitter.TryRewriteLocalDeclarationIdentifier(local, out var identifier)
+                ? identifier
+                : null;
+        }
 
         public override Expression? RewriteSimpleAssignmentPreorder(ISimpleAssignmentOperation operation, SenseArgument argument)
             => _emitter.TryRewriteSimpleAssignment(operation, argument, out var expression)
