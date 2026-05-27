@@ -26983,7 +26983,82 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForTryCatchBareReturnWithoutFinallySetParametersAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersBaseThenTryCatchEmitThenBareReturnWithoutFinallySetParametersAsyncIntoSingleWatchLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-try-catch-bare-return")]
+                public class SetParametersAsyncTryCatchBareReturnCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        try
+                        {
+                            await ValueChanged.InvokeAsync(Value);
+                            return;
+                        }
+                        catch (Exception)
+                        {
+                            await ReadyChanged.InvokeAsync(false);
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        var tryIndex = artifact.ModuleCode.IndexOf("try {", StringComparison.Ordinal);
+        var tryEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"update:value\", props.value);", StringComparison.Ordinal);
+        var returnIndex = artifact.ModuleCode.IndexOf("return;", StringComparison.Ordinal);
+        var catchIndex = artifact.ModuleCode.IndexOf("} catch {", StringComparison.Ordinal);
+        var catchEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"readyChanged\", false);", StringComparison.Ordinal);
+
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
+        Assert.IsTrue(tryIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(tryEmitIndex > tryIndex, artifact.ModuleCode);
+        Assert.IsTrue(returnIndex > tryEmitIndex, artifact.ModuleCode);
+        Assert.IsTrue(catchIndex > returnIndex, artifact.ModuleCode);
+        Assert.IsTrue(catchEmitIndex > catchIndex, artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForTryCatchBareReturnWithoutRuntimeBeforeReturnSetParametersAsyncLifecycle()
     {
         var context = CreateContext(
             """

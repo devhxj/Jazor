@@ -2695,7 +2695,16 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         }
 
         if (ContainsLifecycleDirectReturnStatement(tryStatements) &&
+            catchStatements.IsDefaultOrEmpty &&
             finallyStatements.IsDefaultOrEmpty)
+        {
+            return false;
+        }
+
+        if (ContainsLifecycleDirectReturnStatement(tryStatements) &&
+            !catchStatements.IsDefaultOrEmpty &&
+            finallyStatements.IsDefaultOrEmpty &&
+            !HasLifecycleRuntimeBeforeDirectReturn(tryStatements))
         {
             return false;
         }
@@ -2939,6 +2948,20 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
     private static bool ContainsLifecycleDirectReturnStatement(ImmutableArray<SupportedLifecycleStatement> statements)
         => !statements.IsDefaultOrEmpty &&
            statements.Any(static statement => statement is SupportedLifecycleReturnStatement);
+
+    private static bool HasLifecycleRuntimeBeforeDirectReturn(ImmutableArray<SupportedLifecycleStatement> statements)
+    {
+        if (statements.IsDefaultOrEmpty)
+            return false;
+
+        for (var index = 0; index < statements.Length; index++)
+        {
+            if (statements[index] is SupportedLifecycleReturnStatement returnStatement)
+                return index > 0 || !returnStatement.PreludeBindings.IsDefaultOrEmpty;
+        }
+
+        return false;
+    }
 
     private static ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding> FilterLifecyclePreludeBindings(
         ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding> bindings,
