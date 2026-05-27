@@ -2089,6 +2089,17 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
             if (statement is TryStatementSyntax tryStatement)
             {
+                if (TryGetTerminalSetParametersAsyncNoOpTryCatchStatement(
+                        snapshot,
+                        expressionEmitter,
+                        method,
+                        tryStatement,
+                        state,
+                        sawEmit))
+                {
+                    break;
+                }
+
                 if (TryGetSetParametersAsyncTryCatchStatement(
                         snapshot,
                         expressionEmitter,
@@ -2196,6 +2207,90 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
         lifecycleStatements = builder.ToImmutable();
         return true;
+    }
+
+    private static bool TryGetTerminalSetParametersAsyncNoOpTryCatchStatement(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter? expressionEmitter,
+        IMethodSymbol method,
+        TryStatementSyntax tryStatement,
+        SetParametersAsyncStatementSequenceState state,
+        bool sawEmit)
+    {
+        if (!state.AllowTerminalNoOpControlFlow ||
+            sawEmit ||
+            tryStatement.Catches.Count != 1 ||
+            tryStatement.Finally is not null ||
+            tryStatement.Catches[0].Filter is not null ||
+            ContainsThrowStatement(tryStatement) ||
+            ContainsDirectUnsupportedLifecycleReturnStatement(tryStatement.Block, allowDirectNoOpReturnStatement: true) ||
+            ContainsDirectUnsupportedLifecycleReturnStatement(tryStatement.Catches[0].Block, allowDirectNoOpReturnStatement: false))
+        {
+            return false;
+        }
+
+        if (!TryGetSetParametersAsyncCatchClause(
+                snapshot,
+                expressionEmitter,
+                method,
+                tryStatement.Catches[0],
+                state.CloneForBranch(),
+                out _,
+                out _))
+        {
+            return false;
+        }
+
+        var noOpState = state.CloneForDirectNoOpReturnBody();
+        return TryGetSetParametersAsyncNoOpReturningStatementSequence(
+                   snapshot,
+                   method,
+                   tryStatement.Block.Statements,
+                   noOpState) &&
+               CanIgnoreSetParametersAsyncPendingLocals(snapshot, method, noOpState);
+    }
+
+    private static bool TryGetSetParametersAsyncNoOpReturningStatementSequence(
+        RazorVueSemanticSnapshot snapshot,
+        IMethodSymbol method,
+        IReadOnlyList<StatementSyntax> statements,
+        SetParametersAsyncStatementSequenceState state)
+    {
+        foreach (var statement in statements)
+        {
+            if (TryValidateLifecyclePrefixDeclarations(statement, state.SemanticModel, state.LocalInitializers))
+            {
+                var prefixLocals = GetLifecyclePrefixDeclaredLocals(statement, state.SemanticModel);
+                foreach (var local in prefixLocals)
+                {
+                    if (!state.LocalInitializers.ContainsKey(local))
+                        return false;
+
+                    state.EmittedLocals.Add(local);
+                    state.LocalAliases[local] = "__jazorLifecycleLocal" + Jazor.Common.Format.HashName(local.ToDisplayString()).TrimStart('_');
+                }
+
+                continue;
+            }
+
+            switch (statement)
+            {
+                case EmptyStatementSyntax:
+                    continue;
+
+                case ExpressionStatementSyntax expressionStatement
+                    when IsNoOpLifecycleExpression(snapshot.Compilation, method, expressionStatement.Expression):
+                    continue;
+
+                case ReturnStatementSyntax { Expression: null }:
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
+        return false;
     }
 
     private static bool TryGetTerminalSetParametersAsyncNoOpReturnStatement(
@@ -3031,6 +3126,10 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 ILocalFunctionOperation or
                 IInvocationOperation or
                 IMethodReferenceOperation or
+                IObjectCreationOperation or
+                IAnonymousObjectCreationOperation or
+                IArrayCreationOperation or
+                ICollectionExpressionOperation or
                 ISimpleAssignmentOperation or
                 ICompoundAssignmentOperation or
                 IIncrementOrDecrementOperation)
