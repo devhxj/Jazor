@@ -1594,9 +1594,8 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             helperMethod.ReturnsByRef ||
             helperMethod.ReturnsByRefReadonly ||
             IsTaskLikeType(compilation, helperMethod.ReturnType) ||
-            helperMethod.Parameters.Length != 0 ||
             helperMethod.TypeParameters.Length != 0 ||
-            invocation.Arguments.Length != 0 ||
+            !AreIgnorableNoOpLifecycleHelperArguments(compilation, lifecycleMethod, helperMethod, invocation, visitedSymbols) ||
             helperMethod.ContainingType is null ||
             !SymbolEqualityComparer.Default.Equals(helperMethod.ContainingType, lifecycleMethod.ContainingType))
         {
@@ -1608,6 +1607,40 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             return false;
 
         return IsIgnorableNoOpLifecycleHelperMethod(compilation, lifecycleMethod, helperMethod, visitedSymbols);
+    }
+
+    private static bool AreIgnorableNoOpLifecycleHelperArguments(
+        Compilation compilation,
+        IMethodSymbol lifecycleMethod,
+        IMethodSymbol helperMethod,
+        IInvocationOperation invocation,
+        HashSet<ISymbol> visitedSymbols)
+    {
+        foreach (var parameter in helperMethod.Parameters)
+        {
+            if (parameter.RefKind != RefKind.None ||
+                parameter.IsParams)
+            {
+                return false;
+            }
+        }
+
+        foreach (var argument in invocation.Arguments)
+        {
+            if (argument.Parameter is null ||
+                argument.Parameter.RefKind != RefKind.None ||
+                argument.ArgumentKind == ArgumentKind.ParamArray ||
+                !IsIgnorableNoOpLifecycleValueExpression(
+                    compilation,
+                    lifecycleMethod,
+                    argument.Value,
+                    visitedSymbols))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static bool IsIgnorableNoOpLifecycleHelperMethod(
