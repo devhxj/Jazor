@@ -20915,6 +20915,66 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersInheritedBaseChainSetupCarriersInRenderExpression()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                public abstract class RenderCarrierRootBase : ComponentBase, IVueComponent
+                {
+                    protected readonly string _prefix = "Count: ";
+                }
+
+                public abstract class RenderCarrierBase : RenderCarrierRootBase
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected string Prefix => _prefix.Trim();
+
+                    protected int Offset { get; } = 1;
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/inherited-render-carrier-card")]
+                public class InheritedRenderCarrierCard : RenderCarrierBase
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Prefix + (Value + Offset));
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const _prefix = \"Count: \";");
+        StringAssert.Contains(artifact.ModuleCode, "function prefix()");
+        StringAssert.Contains(artifact.ModuleCode, "return _prefix.trim();");
+        StringAssert.Contains(artifact.ModuleCode, "const offset = 1;");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", null, (prefix() + (props.value + offset)));");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersDeclarationInitializedPrivateMutablePropertyWithLaterWrites()
     {
         var context = CreateContext(

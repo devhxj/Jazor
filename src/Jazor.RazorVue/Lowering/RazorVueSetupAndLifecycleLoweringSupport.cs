@@ -87,9 +87,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         var activeProperties = new HashSet<IPropertySymbol>(SymbolEqualityComparer.Default);
         var activeFields = new HashSet<IFieldSymbol>(SymbolEqualityComparer.Default);
         var activeMethods = new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default);
-        var propertyBlocks = new List<string>();
-        var fieldBlocks = new List<string>();
-        var methodBlocks = new List<string>();
+        var setupBlocks = new List<string>();
 
         foreach (var property in initialRequiredProperties
                      .Concat(expressionEmitter.GetRequiredSetupProperties())
@@ -119,14 +117,8 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             EmitMethod(method);
         }
 
-        foreach (var propertyBlock in propertyBlocks)
-            builder.Append(propertyBlock);
-
-        foreach (var fieldBlock in fieldBlocks)
-            builder.Append(fieldBlock);
-
-        foreach (var methodBlock in methodBlocks)
-            builder.Append(methodBlock);
+        foreach (var setupBlock in setupBlocks)
+            builder.Append(setupBlock);
 
         void EmitProperty(VueLogicPropertyDescriptor property)
         {
@@ -155,7 +147,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 }
 
                 if (emittedProperties.Add(property.PropertySymbol))
-                    propertyBlocks.Add(result.Block);
+                    setupBlocks.Add(result.Block);
             }
             finally
             {
@@ -190,7 +182,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 }
 
                 if (emittedFields.Add(field.FieldSymbol))
-                    fieldBlocks.Add(result.Block);
+                    setupBlocks.Add(result.Block);
             }
             finally
             {
@@ -225,7 +217,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 }
 
                 if (emittedMethods.Add(method.MethodSymbol))
-                    methodBlocks.Add(result.Block);
+                    setupBlocks.Add(result.Block);
             }
             finally
             {

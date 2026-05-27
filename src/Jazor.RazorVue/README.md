@@ -230,7 +230,7 @@
   - `readonly` field 或可证明 source-stable 的 declaration initializer member 会作为稳定 `const` binding
   - private mutable field / private-setter auto-property 会作为 setup `let` carrier，允许 later writes；没有 initializer 时会按 CLR 默认值发射，存在 initializer 但无法 lowering 时会 fail-fast
   - direct template expression、setup helper、lifecycle payload 与 imperative render body 引用走同一 setup binding 合同，不分裂成多套语义
-- 上述 setup value member 合同同样覆盖源码可分析 base class 上的受控 member：例如 base class 的 declaration-initialized getter-only property 或 `readonly` field 被 derived component lifecycle payload 引用时，会先发射稳定 setup binding，再在 `watch(..., { immediate: true })` body 中引用该 binding；继承来源不会放宽 public mutable property、setter 写入时序或构造时序模拟。
+- 上述 setup value member 合同同样覆盖源码可分析 base class 上的受控 member：例如 base class 的 declaration-initialized getter-only property、getter function 或 `readonly` field 被 derived component render/template、setup helper 或 lifecycle payload 引用时，会先按 property/field/method dependency 拓扑顺序发射稳定 setup binding/function，再由最终 render expression 或 `watch(..., { immediate: true })` body 引用该 binding；继承来源不会放宽 public mutable property、setter 写入时序或构造时序模拟。
 - 这条扩面同样保持 fail-fast：
   - property 链一旦出现循环依赖，会在编译期直接报 `UnsupportedSetupLogicLowering`
   - setter 不是 private 的 mutable property、带 private setter 但源码中存在后续 property 写入的 getter property、非 private mutable field、static/indexer/隐式成员、以及存在 initializer 但无法进入 compiler lowering 的 mutable setup carrier 会直接报 `UnsupportedSetupLogicLowering`

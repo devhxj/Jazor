@@ -15825,6 +15825,80 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithInheritedBaseChainSetupCarrierRenderExpression_GeneratesCatalogSource()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.InheritedBaseChainSetupCarrier.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                public abstract class RenderCarrierRootBase : ComponentBase, IVueComponent
+                {
+                    protected readonly string _prefix = "Count: ";
+                }
+
+                public abstract class RenderCarrierBase : RenderCarrierRootBase
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected string Prefix => _prefix.Trim();
+
+                    protected int Offset { get; } = 1;
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/inherited-render-carrier-card")]
+                public class InheritedRenderCarrierCard : RenderCarrierBase
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, Prefix + (Value + Offset));
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .ToArray();
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static x => x.ToString())));
+        StringAssert.Contains(generatedSource, "const _prefix = \\\"Count: \\\";");
+        StringAssert.Contains(generatedSource, "function prefix()");
+        StringAssert.Contains(generatedSource, "return _prefix.trim();");
+        StringAssert.Contains(generatedSource, "const offset = 1;");
+        StringAssert.Contains(generatedSource, "(prefix() + (props.value + offset))");
+        Assert.IsTrue(
+            generatedSource.IndexOf("const _prefix = \\\"Count: \\\";", StringComparison.Ordinal) <
+            generatedSource.IndexOf("function prefix()", StringComparison.Ordinal),
+            generatedSource);
+        Assert.IsTrue(
+            generatedSource.IndexOf("function prefix()", StringComparison.Ordinal) <
+            generatedSource.IndexOf("(prefix() + (props.value + offset))", StringComparison.Ordinal),
+            generatedSource);
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithThreeLevelHelperComposition_GeneratesCatalogSource()
     {
         var compilation = CreateCompilation(
