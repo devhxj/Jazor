@@ -4476,6 +4476,9 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                         continue;
                     }
 
+                    if (IsNullConstantOperation(declarator.Initializer?.Value))
+                        continue;
+
                     if (!TryGetShouldRenderLocalMethodGroupInitializer(declarator, out var methodReference, out var semanticModel) ||
                         !CanLowerShouldRenderMethodGroupDelegateInitializer(methodReference, semanticModel))
                     {
@@ -4587,13 +4590,26 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
     private static bool ValidateShouldRenderDelegateLocalUsage(ImmutableArray<IOperation> operations)
     {
-        var delegateLocals = ImmutableHashSet.CreateBuilder<ILocalSymbol>(SymbolEqualityComparer.Default);
+        var delegateLocals = ImmutableDictionary.CreateBuilder<ILocalSymbol, ShouldRenderDelegateLocalUsageKind>(SymbolEqualityComparer.Default);
         foreach (var operation in EnumerateShouldRenderMethodScopedOperations(operations))
         {
             if (RazorVueOperationNormalizer.Unwrap(operation) is IVariableDeclaratorOperation declarator &&
                 declarator.Symbol.Type.TypeKind == TypeKind.Delegate)
             {
-                delegateLocals.Add(declarator.Symbol);
+                if (TryGetShouldRenderLocalAnonymousFunctionInitializer(declarator, out _) ||
+                    TryGetShouldRenderLocalMethodGroupInitializer(declarator, out _, out _))
+                {
+                    delegateLocals[declarator.Symbol] = ShouldRenderDelegateLocalUsageKind.Callable;
+                    continue;
+                }
+
+                if (IsNullConstantOperation(declarator.Initializer?.Value))
+                {
+                    delegateLocals[declarator.Symbol] = ShouldRenderDelegateLocalUsageKind.NullOnly;
+                    continue;
+                }
+
+                return false;
             }
         }
 
@@ -4603,7 +4619,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
     private static bool ValidateShouldRenderDelegateLocalUsage(
         ImmutableArray<IOperation> operations,
-        ImmutableHashSet<ILocalSymbol> delegateLocals)
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> delegateLocals)
     {
         foreach (var operation in operations)
         {
@@ -4616,7 +4632,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
     private static bool ValidateShouldRenderDelegateLocalUsage(
         IOperation operation,
-        ImmutableHashSet<ILocalSymbol> delegateLocals)
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> delegateLocals)
     {
         var current = RazorVueOperationNormalizer.Unwrap(operation);
         if (current is null)
@@ -4634,7 +4650,8 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
             case IInvocationOperation invocation
                 when invocation.TargetMethod.MethodKind == MethodKind.DelegateInvoke &&
-                     IsShouldRenderTrackedDelegateLocalReference(invocation.Instance, delegateLocals):
+                     TryGetShouldRenderTrackedDelegateLocalReference(invocation.Instance, delegateLocals, out var usageKind) &&
+                     usageKind == ShouldRenderDelegateLocalUsageKind.Callable:
                 foreach (var argument in invocation.Arguments)
                 {
                     if (!ValidateShouldRenderDelegateLocalUsage(argument, delegateLocals))
@@ -4644,7 +4661,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 return true;
 
             case ILocalReferenceOperation localReference
-                when delegateLocals.Contains(localReference.Local):
+                when delegateLocals.ContainsKey(localReference.Local):
                 return false;
 
             default:
@@ -4663,7 +4680,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
     private static bool IsShouldRenderTrackedDelegateLocalNullComparison(
         IBinaryOperation operation,
-        ImmutableHashSet<ILocalSymbol> delegateLocals)
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> delegateLocals)
     {
         if (operation.OperatorKind is not (BinaryOperatorKind.Equals or BinaryOperatorKind.NotEquals))
             return false;
@@ -4677,7 +4694,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
     private static bool IsShouldRenderTrackedDelegateLocalNullPattern(
         IIsPatternOperation operation,
-        ImmutableHashSet<ILocalSymbol> delegateLocals)
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> delegateLocals)
         => IsShouldRenderTrackedDelegateLocalReference(operation.Value, delegateLocals) &&
            IsNullConstantPattern(operation.Pattern);
 
@@ -4703,9 +4720,29 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
     private static bool IsShouldRenderTrackedDelegateLocalReference(
         IOperation? operation,
-        ImmutableHashSet<ILocalSymbol> delegateLocals)
-        => RazorVueOperationNormalizer.Unwrap(operation) is ILocalReferenceOperation localReference &&
-           delegateLocals.Contains(localReference.Local);
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> delegateLocals)
+        => TryGetShouldRenderTrackedDelegateLocalReference(operation, delegateLocals, out _);
+
+    private static bool TryGetShouldRenderTrackedDelegateLocalReference(
+        IOperation? operation,
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> delegateLocals,
+        out ShouldRenderDelegateLocalUsageKind usageKind)
+    {
+        if (RazorVueOperationNormalizer.Unwrap(operation) is ILocalReferenceOperation localReference &&
+            delegateLocals.TryGetValue(localReference.Local, out usageKind))
+        {
+            return true;
+        }
+
+        usageKind = default;
+        return false;
+    }
+
+    private enum ShouldRenderDelegateLocalUsageKind
+    {
+        Callable,
+        NullOnly
+    }
 
     private static bool TryCreateShouldRenderExpressionLocalAliases(
         IOperation operation,

@@ -29715,7 +29715,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForNullInitializedDelegateCheckShouldRender()
+    public void RazorVue_Pipeline_LowersNullInitializedDelegateCheckShouldRenderConditionIntoCachedRenderGate()
     {
         var context = CreateContext(
             """
@@ -29746,6 +29746,112 @@ public sealed class RazorVuePipelineTests
                     {
                         Func<int, bool>? ready = null;
                         return ready is null;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " = null;");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " == null;");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersDefaultInitializedDelegateCheckShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-default-delegate-check")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool>? ready = default;
+                        return ready == default;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " = null;");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " === null;");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForNullInitializedDelegateInvocationShouldRender()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-null-delegate-invocation")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool>? ready = null;
+                        return ready(Value);
                     }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)

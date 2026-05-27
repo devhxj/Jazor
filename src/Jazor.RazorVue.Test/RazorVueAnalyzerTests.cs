@@ -114,7 +114,7 @@ public sealed class RazorVueAnalyzerTests
             }
 
             [ECMAScript.ECMAScriptModule]
-            public class InvalidComponent : ComponentBase, IVueComponent
+            public class ValidComponent : ComponentBase, IVueComponent
             {
                 public void Trigger()
                 {
@@ -2090,7 +2090,7 @@ public sealed class RazorVueAnalyzerTests
     }
 
     [TestMethod]
-    public async Task RazorVue_Misuse_NullInitializedDelegateCheckShouldRender_ReportsJAZORVUE005()
+    public async Task RazorVue_Misuse_NullInitializedDelegateCheckShouldRender_IsAccepted()
     {
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
@@ -2118,6 +2118,78 @@ public sealed class RazorVueAnalyzerTests
                 {
                     Func<int, bool>? ready = null;
                     return ready is null;
+                }
+            }
+            """);
+
+        AssertNoDiagnostic(diagnostics, "JAZORVUE005");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_DefaultInitializedDelegateCheckShouldRender_IsAccepted()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class ValidComponent : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public int Value { get; set; }
+
+                protected override bool ShouldRender()
+                {
+                    Func<int, bool>? ready = default;
+                    return ready == default;
+                }
+            }
+            """);
+
+        AssertNoDiagnostic(diagnostics, "JAZORVUE005");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_NullInitializedDelegateInvocationShouldRender_ReportsJAZORVUE005()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class InvalidComponent : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public int Value { get; set; }
+
+                protected override bool ShouldRender()
+                {
+                    Func<int, bool>? ready = null;
+                    return ready(Value);
                 }
             }
             """);
