@@ -3047,6 +3047,51 @@ public sealed class RazorVueDescriptorExtractionTests
     }
 
     [TestMethod]
+    public void RazorVue_Snapshot_ClassifiesCustomGetterPrivateSetterWithoutLaterWritesAsGetterFunction()
+    {
+        var snapshot = CreateSingleSnapshot(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/helper-card")]
+                public class HelperCard : ComponentBase, IVueComponent
+                {
+                    private string _prefix = "Count: ";
+
+                    private string Prefix
+                    {
+                        get => _prefix.Trim();
+                        set => _prefix = value;
+                    }
+
+                    public string FormatTitle()
+                        => Prefix;
+                }
+            }
+            """);
+
+        Assert.AreEqual(1, snapshot.Logic.Properties.Length);
+        Assert.AreEqual("Prefix", snapshot.Logic.Properties[0].Name);
+        Assert.IsFalse(snapshot.Logic.Properties[0].IsReadOnly);
+        Assert.AreEqual(VueLogicPropertyLoweringKind.GetterFunction, snapshot.Logic.Properties[0].LoweringKind);
+        Assert.AreEqual("FormatTitle", snapshot.Logic.Methods.Single().Name);
+    }
+
+    [TestMethod]
     public void RazorVue_Snapshot_ClassifiesDeclarationInitializedSetupPropertyAsValueBinding()
     {
         var snapshot = CreateSingleSnapshot(

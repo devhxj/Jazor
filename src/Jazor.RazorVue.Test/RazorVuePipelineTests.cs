@@ -20534,7 +20534,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForCustomGetterPrivateSetterSetupProperty()
+    public void RazorVue_Pipeline_LowersCustomGetterPrivateSetterSetupPropertyWithoutLaterWrites()
     {
         var context = CreateContext(
             """
@@ -20576,10 +20576,66 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "let _prefix = \"Count: \";");
+        StringAssert.Contains(artifact.ModuleCode, "function prefix()");
+        StringAssert.Contains(artifact.ModuleCode, "return _prefix.trim();");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", null, prefix());");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForCustomGetterPrivateSetterSetupPropertyWithLaterWrites()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/custom-mutable-property-card")]
+                public class CustomMutablePropertyCard : ComponentBase, IVueComponent
+                {
+                    private string _prefix = "Count: ";
+
+                    private string Prefix
+                    {
+                        get => _prefix.Trim();
+                        set => _prefix = value;
+                    }
+
+                    private void Mutate()
+                    {
+                        Prefix = "Changed: ";
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Prefix);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
         var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedSetupLogicLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "Prefix");
-        StringAssert.Contains(exception.Message, "auto-properties");
+        StringAssert.Contains(exception.Message, "later writes");
         Assert.AreEqual("Demo.Components.CustomMutablePropertyCard", exception.OwnerComponentFullName);
     }
 

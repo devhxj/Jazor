@@ -223,6 +223,7 @@
   - expression-bodied property
   - getter accessor 里单个 `return` 的 property
   - getter 间链式依赖，只要整条链最终仍落在同一受控子集内
+  - 带 private setter 的同类 getter property，但只在源码可证明没有后续 property 写入时作为 getter function 支持；setter 本身不会进入 lowering 合同
 - value-like property / field 当前开放两个不同合同，不能混淆：
   - getter-only auto-property 或 declaration initializer property
   - `readonly` field 或可证明 source-stable 的 declaration initializer member 会作为稳定 `const` binding
@@ -230,7 +231,7 @@
   - direct template expression、setup helper、lifecycle payload 与 imperative render body 引用走同一 setup binding 合同，不分裂成多套语义
 - 这条扩面同样保持 fail-fast：
   - property 链一旦出现循环依赖，会在编译期直接报 `UnsupportedSetupLogicLowering`
-  - setter 不是 private 的 mutable property、带自定义 getter/setter 的 mutable property、非 private mutable field、static/indexer/隐式成员、以及存在 initializer 但无法进入 compiler lowering 的 mutable setup carrier 会直接报 `UnsupportedSetupLogicLowering`
+  - setter 不是 private 的 mutable property、带 private setter 但源码中存在后续 property 写入的 getter property、非 private mutable field、static/indexer/隐式成员、以及存在 initializer 但无法进入 compiler lowering 的 mutable setup carrier 会直接报 `UnsupportedSetupLogicLowering`
   - `RenderFragment` / `MarkupString` / static markup 这类需要 source-stable 追踪的 member carrier 仍不因为普通 setup `let` carrier 支持而放宽；它们一旦依赖后续可观察写入，继续按 source-stable 合同 fail-fast
   - 仍不支持需要模拟构造/任意写入时序语义的 property、`async` getter 语义模拟、以及超出当前单表达式 / 单返回受控子集的 getter
 - 这条扩面仍然刻意保持 fail-fast：`async` helper、`Task` / `ValueTask` 返回值、`ref` / `out` 参数、`in` 参数 by-reference 转发/逃逸、或 helper body 超出当前 compiler-owned statement lowering 支持面时，RazorVue 仍会显式报 `UnsupportedSetupLogicLowering`，而不会因为外层 helper 可分析就静默放行。受支持 block-bodied helper 的 normalized body 也会进入 LogicHash，避免 HMR/manifest 逻辑指纹漏掉 helper body 变化。

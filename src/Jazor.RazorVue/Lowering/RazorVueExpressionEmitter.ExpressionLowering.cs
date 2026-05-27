@@ -2149,7 +2149,10 @@ internal sealed partial class RazorVueExpressionEmitter
             return;
 
         var reason = property.SetMethod is not null &&
-                     RazorVueCurrentComponentValueMemberHelper.TryGetUnsupportedMutableSetupCarrierMemberReason(property, out var mutableReason)
+                     RazorVueCurrentComponentValueMemberHelper.TryGetUnsupportedSetupPropertyReason(
+                         GetOperationCompilation(propertyReference),
+                         property,
+                         out var mutableReason)
             ? mutableReason
             : "property initializer could not be lowered as a setup carrier";
         throw CreateUnsupportedSetupLogicException(
@@ -2163,7 +2166,10 @@ internal sealed partial class RazorVueExpressionEmitter
             return;
 
         var reason = property.SetMethod is not null &&
-                     RazorVueCurrentComponentValueMemberHelper.TryGetUnsupportedMutableSetupCarrierMemberReason(property, out var mutableReason)
+                     RazorVueCurrentComponentValueMemberHelper.TryGetUnsupportedSetupPropertyReason(
+                         _snapshot.Compilation,
+                         property,
+                         out var mutableReason)
             ? mutableReason
             : "property initializer could not be lowered as a setup carrier";
         throw CreateUnsupportedSetupLogicException(

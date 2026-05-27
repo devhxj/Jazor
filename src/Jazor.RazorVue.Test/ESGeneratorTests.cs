@@ -15402,6 +15402,68 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithCustomGetterPrivateSetterSetupPropertyWithoutLaterWrites_GeneratesCatalogSource()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.CustomGetterPrivateSetterSetupProperty.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/custom-property-helper-card")]
+                public class CustomPropertyHelperCard : ComponentBase, IVueComponent
+                {
+                    private string _prefix = "Count: ";
+
+                    private string Prefix
+                    {
+                        get => _prefix.Trim();
+                        set => _prefix = value;
+                    }
+
+                    public string FormatTitle()
+                        => Prefix;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, FormatTitle());
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .ToArray();
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static x => x.ToString())));
+        StringAssert.Contains(generatedSource, "let _prefix = \\\"Count: \\\";");
+        StringAssert.Contains(generatedSource, "function prefix()");
+        StringAssert.Contains(generatedSource, "return _prefix.trim();");
+        StringAssert.Contains(generatedSource, "function formatTitle()");
+        StringAssert.Contains(generatedSource, "return prefix();");
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithDeclarationInitializedSetupPropertyLowering_GeneratesCatalogSource()
     {
         var compilation = CreateCompilation(

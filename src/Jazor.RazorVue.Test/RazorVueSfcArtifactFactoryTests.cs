@@ -10215,6 +10215,59 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersCustomGetterPrivateSetterSetupPropertyWithoutLaterWrites_IntoScriptSetupFunction()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/custom-property-card")]
+                public class CustomPropertyCard : ComponentBase, IVueComponent
+                {
+                    private string _prefix = "Count: ";
+
+                    private string Prefix
+                    {
+                        get => _prefix.Trim();
+                        set => _prefix = value;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Prefix);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "CustomPropertyCard");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "{{ prefix() }}");
+        StringAssert.Contains(artifact.ScriptSetupText, "let _prefix = \"Count: \";");
+        StringAssert.Contains(artifact.ScriptSetupText, "function prefix()");
+        StringAssert.Contains(artifact.ScriptSetupText, "return _prefix.trim();");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_EmitsLifecycleSetupBindingsBeforeImmediateWatchRegistration()
     {
         var context = CreateContext(

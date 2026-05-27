@@ -24,44 +24,37 @@ internal static class RazorVueCurrentComponentValueMemberHelper
             return true;
         }
 
-        if (property.SetMethod is not null)
+        if (HasSupportedGetterFunctionSyntax(property) &&
+            CanUseGetterFunctionProperty(compilation, property))
         {
-            loweringKind = VueLogicPropertyLoweringKind.Unsupported;
-            return false;
-        }
-
-        foreach (var syntaxReference in property.DeclaringSyntaxReferences)
-        {
-            if (syntaxReference.GetSyntax() is not PropertyDeclarationSyntax declaration)
-                continue;
-
-            if (declaration.Initializer?.Value is not null)
-                continue;
-
-            if (declaration.ExpressionBody?.Expression is not null)
-            {
-                loweringKind = VueLogicPropertyLoweringKind.GetterFunction;
-                return true;
-            }
-
-            var getter = declaration.AccessorList?.Accessors
-                .FirstOrDefault(static accessor => accessor.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.GetAccessorDeclaration));
-            if (getter?.ExpressionBody?.Expression is not null)
-            {
-                loweringKind = VueLogicPropertyLoweringKind.GetterFunction;
-                return true;
-            }
-
-            if (getter?.Body?.Statements.Count == 1 &&
-                getter.Body.Statements[0] is ReturnStatementSyntax { Expression: not null })
-            {
-                loweringKind = VueLogicPropertyLoweringKind.GetterFunction;
-                return true;
-            }
+            loweringKind = VueLogicPropertyLoweringKind.GetterFunction;
+            return true;
         }
 
         loweringKind = VueLogicPropertyLoweringKind.Unsupported;
         return false;
+    }
+
+    public static bool TryGetUnsupportedSetupPropertyReason(
+        Compilation compilation,
+        IPropertySymbol property,
+        out string reason)
+    {
+        if (compilation is null)
+            throw new ArgumentNullException(nameof(compilation));
+        if (property is null)
+            throw new ArgumentNullException(nameof(property));
+
+        reason = string.Empty;
+        if (HasSupportedGetterFunctionSyntax(property) &&
+            property.SetMethod?.DeclaredAccessibility == Accessibility.Private &&
+            RazorVueMemberWriteAnalysis.HasObservableWritesOutsideDeclarationInitializer(compilation, property))
+        {
+            reason = "getter setup properties with a private setter cannot be observed through later writes";
+            return true;
+        }
+
+        return TryGetUnsupportedMutableSetupCarrierMemberReason(property, out reason);
     }
 
     public static bool TryGetUnsupportedValueMemberReason(
@@ -138,6 +131,48 @@ internal static class RazorVueCurrentComponentValueMemberHelper
                                   field.DeclaredAccessibility == Accessibility.Private,
             _ => false
         };
+
+    private static bool CanUseGetterFunctionProperty(
+        Compilation compilation,
+        IPropertySymbol property)
+    {
+        if (property.IsStatic || property.IsIndexer || property.IsImplicitlyDeclared)
+            return false;
+
+        if (property.SetMethod is null)
+            return true;
+
+        return property.SetMethod.DeclaredAccessibility == Accessibility.Private &&
+               !RazorVueMemberWriteAnalysis.HasObservableWritesOutsideDeclarationInitializer(compilation, property);
+    }
+
+    private static bool HasSupportedGetterFunctionSyntax(IPropertySymbol property)
+    {
+        foreach (var syntaxReference in property.DeclaringSyntaxReferences)
+        {
+            if (syntaxReference.GetSyntax() is not PropertyDeclarationSyntax declaration)
+                continue;
+
+            if (declaration.Initializer?.Value is not null)
+                continue;
+
+            if (declaration.ExpressionBody?.Expression is not null)
+                return true;
+
+            var getter = declaration.AccessorList?.Accessors
+                .FirstOrDefault(static accessor => accessor.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.GetAccessorDeclaration));
+            if (getter?.ExpressionBody?.Expression is not null)
+                return true;
+
+            if (getter?.Body?.Statements.Count == 1 &&
+                getter.Body.Statements[0] is ReturnStatementSyntax { Expression: not null })
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     public static bool TryGetUnsupportedMutableSetupCarrierMemberReason(
         ISymbol member,

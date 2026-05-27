@@ -278,8 +278,13 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             IOperation? operation;
             if (!TryGetPropertyExpressionOperation(snapshot, property.PropertySymbol, out operation))
             {
-                if (RazorVueCurrentComponentValueMemberHelper.TryGetUnsupportedMutableSetupCarrierMemberReason(property.PropertySymbol, out var propertyReason))
+                if (RazorVueCurrentComponentValueMemberHelper.TryGetUnsupportedSetupPropertyReason(
+                        snapshot.Compilation,
+                        property.PropertySymbol,
+                        out var propertyReason))
+                {
                     throw CreateUnsupportedSetupLoweringException(property.PropertySymbol, propertyReason);
+                }
 
                 _ = RazorVueCurrentComponentValueMemberHelper.TryGetMutableSetupCarrierInitializer(
                     snapshot.Compilation,
