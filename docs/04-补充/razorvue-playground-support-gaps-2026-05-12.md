@@ -102,6 +102,7 @@
 - 本轮继续补齐 `SetParametersAsync` terminal try/catch no-op：`try { return; } catch (Exception) { await ReadyChanged.InvokeAsync(false); }` 以及 `catch (Exception) when (Value > 0)` 这类不引用 catch 变量且 filter 仍落在 lifecycle payload 安全子集内的形态，在 try 内 return 之前没有任何可观察 runtime 行为时，会被视为 no-op，保持 TemplateOnly，不生成 Vue `watch`，也不会 replay 不可达 catch recovery / filter gate。该擦除只在顶层 post-base sequence、尚未发生 emit、单个 catch-all / 未使用 `System.Exception` catch、无 finally、无 throw、try body 可证明只含无副作用前缀和裸 `return;` 时成立；`var ready = IsReady();`、`new object()`、array creation、mutation、invocation、catch 变量 payload、filter 内 mutation / lambda / local-function、typed/multi catch、finally cleanup 或一般 CFG 仍保持 `FullReloadRequired` / unsupported。
 - 本轮继续补齐 `ShouldRender` 受控 local lambda delegate：`Func<int, bool> ready = value => value > 0; return ready(Value);` 这类声明点直接初始化为同步匿名函数、返回 `bool`、参数非 `ref/out/in`、body 仍落在受控 `ShouldRender` 语句子集内且该 delegate local 只作为直接调用目标使用的形态，会进入 cached render gate，并继续复用 `SemanticWalker` 的 lambda/delegate lowering 与 `ShouldRender` local alias。method-group delegate carrier、delegate 重赋值、delegate 值比较/传参/返回、嵌套 lambda/local function、lambda 内 current-component property/field mutation 或外部/member mutation 仍保守失败。
 - 本轮继续补齐 `ShouldRender` 受控 method-group delegate carrier：`bool IsReady(int value) => value > 0; Func<int, bool> ready = IsReady; return ready(Value);` 和当前组件内同步 `private bool IsReady(int value) { ... }` method group 均可进入 cached render gate。支持面只接受声明点直接初始化为源码可分析 method group、返回 `bool`、参数非 `ref/out/in`、delegate local 只作为直接调用目标使用；重赋值、值比较/传参/返回、外部无源码 method group、嵌套 local function/lambda、method body 内 current-component property/field mutation 或外部/member mutation 继续 `FullReloadRequired` / fail-fast。
+- 本轮补齐无 public hot contract 的纯静态/template render HMR 边界：没有 props / emits / slots 且 artifact 只包含可证明 template shape 的组件现在归类为 `TemplateOnly`，manifest diff 在 descriptor 与 logic hash 稳定且只有 template hash 变化时可给出 `TemplatePatch`。同样没有 public hot contract 但包含受支持 lifecycle lowering、动态 `ShouldRender`、setup property / field / method 等运行时逻辑的组件仍保持 `FullReloadRequired`，因为缺少可证明安全承接逻辑热补丁的公共响应式契约。
 - 本轮补齐 `System.Collections.Generic.IReadOnlyCollection<T>` / `IReadOnlyList<T>` Array carrier：`IReadOnlyCollection<T>.Count`、`IReadOnlyList<T>[int]` 和 `IReadOnlyList<T> Items { get; set; } = []` 已可通过 compiler / CLR whitelist / RazorVue Razor SG SFC consumer 路径。
 - 本轮外部 Razor SG SFC consumer 已恢复：官方 Razor SG tail 输出中的 `IReadOnlyList<T>` collection expression 可 lowering，SFC 输出和 pure Deno consumer 均按 camelCase DTO contract 运行。
 - route bridge 已支持常见 literal、parameter、optional/default/composite 形态、catch-all，以及当前已实现的 built-in constraint metadata 二次校验；仅长尾不可诚实映射形态仍留在缺口中。
@@ -109,6 +110,9 @@
 
 ## 最新验证记录
 
+- 2026-05-27：`dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~NoPropsEmitsOrSlots|FullyQualifiedName~NoContractStaticTemplate|FullyQualifiedName~NoContractComponentWithRuntimeLogic|FullyQualifiedName~NoContractStaticTemplateChange' -v minimal`：5 通过，0 失败。
+- 2026-05-27：`dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~Boundary|FullyQualifiedName~ManifestDiff|FullyQualifiedName~HmrBoundary' -v minimal`：100 通过，0 失败。
+- 2026-05-27：`dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj -v minimal`：1673 通过，0 失败。
 - 2026-05-27：`dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~PrivateMutableSetupCarrierLifecyclePayload|FullyQualifiedName~PrivateMutablePropertyOnParametersSetLifecyclePayload|FullyQualifiedName~PrivateMutableFieldOnAfterRenderAsyncLifecyclePayload' -v minimal`：4 通过，0 失败。
 - 2026-05-27：`dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~Lifecycle' -v minimal`：354 通过，0 失败。
 - 2026-05-27：`dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj -v minimal`：1662 通过，0 失败。
@@ -199,4 +203,4 @@
 
 ## 下一个任务
 
-- 本轮后下一个生产化补齐候选：继续从 RazorVue 测试里仍显式断言 unsupported / `FullReloadRequired` / `JAZORVUE006` 的项扫描小 slice。优先复核 setup/lifecycle source-stable carrier 中仍能由现有 `RazorVueExpressionEmitter` / `SemanticWalker` 诚实 lowering 的窄边界；继续排除 public mutable property、typed/multi catch、catch 变量 payload、mutation、一般 CFG 重构、自定义 route constraint、dynamic raw markup、真正 async render contract 与 `ref/out/in` by-reference 转发。
+- 本轮后下一个生产化补齐候选：继续从 RazorVue 测试里仍显式断言 unsupported / `FullReloadRequired` / `JAZORVUE006` 的项扫描小 slice。优先复核 setup/lifecycle source-stable carrier、HMR identity 或 manifest diff 中仍能由现有 `RazorVueExpressionEmitter` / `SemanticWalker` 诚实 lowering 的窄边界；继续排除 public mutable property、typed/multi catch、catch 变量 payload、mutation、一般 CFG 重构、自定义 route constraint、dynamic raw markup、真正 async render contract 与 `ref/out/in` by-reference 转发。

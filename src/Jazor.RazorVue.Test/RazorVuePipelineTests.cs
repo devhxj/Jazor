@@ -12570,10 +12570,8 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForComponentWithNoPropsEmitsOrSlots()
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForComponentWithNoPropsEmitsOrSlots()
     {
-        // A component with no props, emits, or slots cannot be hot-reloaded safely because
-        // there is no reactive contract to track changes through.
         var context = CreateContext(
             """
             using System;
@@ -12595,6 +12593,49 @@ public sealed class RazorVuePipelineTests
                 [ECMAScript.ECMAScriptModule("./components/static-badge")]
                 public class StaticBadge : ComponentBase, IVueComponent
                 {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "span");
+                        builder.AddContent(1, "static");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForNoContractComponentWithRuntimeLogic()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/no-contract-logic")]
+                public class NoContractLogicCard : ComponentBase, IVueComponent
+                {
+                    public int Calculate()
+                    {
+                        return 2;
+                    }
+
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
                         builder.OpenElement(0, "span");
@@ -12723,10 +12764,8 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForComponentWithNoPropsEmitsOrSlotsEvenWithStaticTemplate()
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForComponentWithNoPropsEmitsOrSlotsEvenWithStaticTemplate()
     {
-        // A component with zero props/emits/slots still has no reactive contract even when its
-        // BuildRenderTree body is static, so the HMR boundary remains FullReloadRequired.
         var context = CreateContext(
             """
             using System;
@@ -12759,13 +12798,86 @@ public sealed class RazorVuePipelineTests
             """);
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
-        // No props, no emits, no slots, but has a static template body.
-        // Expected: FullReloadRequired because with no reactive contract there is no safe
-        // incremental reload boundary — the whole component must be replaced.
-        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
         // Verify the static template is present in the output so the test is not vacuous.
         StringAssert.Contains(artifact.ModuleCode, "\"span\"");
         StringAssert.Contains(artifact.ModuleCode, "\"hello\"");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ManifestDiffTreatsNoContractStaticTemplateChangeAsTemplatePatch()
+    {
+        var artifactA = CreateBuildRenderTreePipeline().Execute(CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/pure-static")]
+                public class PureStaticBadge : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "span");
+                        builder.AddContent(1, "hello");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """)).Artifacts.Single();
+        var artifactB = CreateBuildRenderTreePipeline().Execute(CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/pure-static")]
+                public class PureStaticBadge : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "span");
+                        builder.AddContent(1, "goodbye");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """)).Artifacts.Single();
+
+        var diff = RazorVueManifestDiffer.Diff(
+            CreateManifest(artifactA),
+            CreateManifest(artifactB));
+
+        Assert.AreEqual(RazorVueHotUpdateAction.TemplatePatch, diff.Action);
+        Assert.AreEqual("Template hash changed while descriptor and logic stayed stable.", diff.Reason);
+        Assert.AreEqual(RazorVueHotUpdateAction.TemplatePatch, diff.Modules[0].Action);
+        Assert.IsFalse(diff.Modules[0].DescriptorChanged);
+        Assert.IsTrue(diff.Modules[0].TemplateChanged);
+        Assert.IsFalse(diff.Modules[0].LogicChanged);
     }
 
     [TestMethod]

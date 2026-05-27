@@ -32,6 +32,11 @@
 - `Canonical/`, `Sfc/`, `Lowering/`, `Artifacts/`, `Emit/`: shared artifact/model pipeline。
 - `Documents/`, `Protocol/`: Jolt 与分析宿主共享文档/RPC 契约。
 
+## HMR Boundary
+
+- 没有 props / emits / slots 的纯静态/template render 组件仍可归类为 `TemplateOnly`；当 manifest diff 发现 descriptor 与 logic hash 稳定、只有 template hash 变化时，可产出 `TemplatePatch`。
+- 同样没有 public hot contract 但包含受支持 lifecycle lowering、动态 `ShouldRender`、setup property / field / method 等运行时逻辑的组件继续归类为 `FullReloadRequired`。这条边界只放开纯模板热补丁，不把无公共响应式契约的运行时逻辑变化降级为安全 HMR。
+
 ## Template Frontend Rule
 
 - Razor 生成组件优先走 `RazorCodeDocument` / Razor IR。

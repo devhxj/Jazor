@@ -203,8 +203,9 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         RazorVueExpressionEmitter expressionEmitter)
     {
         var descriptor = snapshot.Descriptor;
-        if (descriptor.Props.Length == 0 && descriptor.Emits.Length == 0 && descriptor.Slots.Length == 0)
-            return HmrBoundaryKind.FullReloadRequired;
+        var hasPublicHotContract = descriptor.Props.Length > 0 ||
+                                   descriptor.Emits.Length > 0 ||
+                                   descriptor.Slots.Length > 0;
 
         if (HasUnsupportedTemplateNode(renderTree))
             return HmrBoundaryKind.FullReloadRequired;
@@ -232,6 +233,18 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
                                            RazorVueSetupAndLifecycleLoweringSupport.HasSupportedLifecycleLowering(snapshot, snapshot.OnAfterRenderAsyncMethod, true) ||
                                            RazorVueSetupAndLifecycleLoweringSupport.HasSupportedLifecycleLowering(snapshot, snapshot.DisposeMethod, false) ||
                                            RazorVueSetupAndLifecycleLoweringSupport.HasSupportedLifecycleLowering(snapshot, snapshot.DisposeAsyncMethod, false);
+        // Components without a prop/emit/slot surface can only use template HMR when
+        // their generated artifact is pure template shape; runtime logic still reloads.
+        if (!hasPublicHotContract &&
+            (hasSupportedLifecycleLowering ||
+             shouldRenderShape.StartsWith("condition:", StringComparison.Ordinal) ||
+             snapshot.Logic.Properties.Length > 0 ||
+             snapshot.Logic.Fields.Length > 0 ||
+             snapshot.Logic.Methods.Length > 0))
+        {
+            return HmrBoundaryKind.FullReloadRequired;
+        }
+
         // HMR should only escalate to LogicSafe when lifecycle methods actually lower
         // into runtime hooks; no-op methods should behave like pure template changes.
         if (hasSupportedLifecycleLowering ||
