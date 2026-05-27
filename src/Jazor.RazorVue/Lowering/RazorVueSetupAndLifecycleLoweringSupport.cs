@@ -3698,7 +3698,16 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         if (catchLocal is not null &&
             ReferencesLocal(filterSyntax, semanticModel, catchLocal))
         {
-            return false;
+            if (!TryFoldSetParametersAsyncCatchLocalNullFilter(
+                    filterSyntax,
+                    semanticModel,
+                    catchLocal,
+                    out filterExpression))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         var filterOperation = semanticModel.GetOperation(filterSyntax);
@@ -3734,6 +3743,87 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         filterPreludeBindings = FilterLifecyclePreludeBindings(emission.PreludeBindings, state.CloneForBranch());
         return true;
     }
+
+    private static bool TryFoldSetParametersAsyncCatchLocalNullFilter(
+        ExpressionSyntax filterSyntax,
+        SemanticModel semanticModel,
+        ILocalSymbol catchLocal,
+        out string filterExpression)
+    {
+        filterExpression = string.Empty;
+        if (!TryEvaluateSetParametersAsyncCatchLocalNullCheck(
+                semanticModel.GetOperation(filterSyntax),
+                catchLocal,
+                out var result))
+        {
+            return false;
+        }
+
+        filterExpression = result ? "true" : "false";
+        return true;
+    }
+
+    private static bool TryEvaluateSetParametersAsyncCatchLocalNullCheck(
+        IOperation? operation,
+        ILocalSymbol catchLocal,
+        out bool result)
+    {
+        var current = RazorVueOperationNormalizer.Unwrap(operation);
+        switch (current)
+        {
+            case IIsPatternOperation isPattern
+                when IsSetParametersAsyncCatchLocalReference(isPattern.Value, catchLocal) &&
+                     TryEvaluateSetParametersAsyncCatchLocalNullPattern(isPattern.Pattern, out result):
+                return true;
+
+            case IBinaryOperation binaryOperation
+                when binaryOperation.OperatorKind is BinaryOperatorKind.Equals or BinaryOperatorKind.NotEquals &&
+                     IsSetParametersAsyncCatchLocalNullComparison(binaryOperation, catchLocal):
+                result = binaryOperation.OperatorKind == BinaryOperatorKind.NotEquals;
+                return true;
+
+            default:
+                result = false;
+                return false;
+        }
+    }
+
+    private static bool IsSetParametersAsyncCatchLocalNullComparison(
+        IBinaryOperation operation,
+        ILocalSymbol catchLocal)
+        =>
+            (IsSetParametersAsyncCatchLocalReference(operation.LeftOperand, catchLocal) &&
+             IsNullConstantOperation(operation.RightOperand)) ||
+            (IsSetParametersAsyncCatchLocalReference(operation.RightOperand, catchLocal) &&
+             IsNullConstantOperation(operation.LeftOperand));
+
+    private static bool TryEvaluateSetParametersAsyncCatchLocalNullPattern(
+        IPatternOperation pattern,
+        out bool result)
+    {
+        switch (RazorVueOperationNormalizer.Unwrap(pattern))
+        {
+            case IConstantPatternOperation constantPattern
+                when IsNullConstantOperation(constantPattern.Value):
+                result = false;
+                return true;
+
+            case INegatedPatternOperation negatedPattern
+                when TryEvaluateSetParametersAsyncCatchLocalNullPattern(negatedPattern.Pattern, out var nestedResult):
+                result = !nestedResult;
+                return true;
+
+            default:
+                result = false;
+                return false;
+        }
+    }
+
+    private static bool IsSetParametersAsyncCatchLocalReference(
+        IOperation? operation,
+        ILocalSymbol catchLocal)
+        => RazorVueOperationNormalizer.Unwrap(operation) is ILocalReferenceOperation localReference &&
+           SymbolEqualityComparer.Default.Equals(localReference.Local, catchLocal);
 
     private static bool ReferencesLocal(
         SyntaxNode syntax,

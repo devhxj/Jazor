@@ -5606,7 +5606,7 @@ public sealed class RazorVueAnalyzerTests
     }
 
     [TestMethod]
-    public async Task RazorVue_Misuse_BaseThenCatchVariableFilterSetParametersAsync_ReportsJAZORVUE006()
+    public async Task RazorVue_Misuse_BaseThenCatchVariableNonNullFilterSetParametersAsync_IsAccepted()
     {
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
@@ -5645,6 +5645,56 @@ public sealed class RazorVueAnalyzerTests
                         await ValueChanged.InvokeAsync(Value);
                     }
                     catch (Exception error) when (error is not null)
+                    {
+                        await ReadyChanged.InvokeAsync(false);
+                    }
+                }
+            }
+            """);
+
+        AssertNoDiagnostic(diagnostics, "JAZORVUE006");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_BaseThenCatchVariablePayloadFilterSetParametersAsync_ReportsJAZORVUE006()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class InvalidComponent : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public int Value { get; set; }
+
+                [Parameter]
+                public EventCallback<int> ValueChanged { get; set; }
+
+                [Parameter]
+                public EventCallback<bool> ReadyChanged { get; set; }
+
+                public override async Task SetParametersAsync(ParameterView parameters)
+                {
+                    await base.SetParametersAsync(parameters);
+                    try
+                    {
+                        await ValueChanged.InvokeAsync(Value);
+                    }
+                    catch (Exception error) when (error.Message is not null)
                     {
                         await ReadyChanged.InvokeAsync(false);
                     }

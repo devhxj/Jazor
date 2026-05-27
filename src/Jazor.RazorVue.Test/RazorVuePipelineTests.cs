@@ -28176,7 +28176,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForCatchVariableFilterSetParametersAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersBaseThenCatchVariableNonNullFilterSetParametersAsyncIntoSingleWatchLifecycle()
     {
         var context = CreateContext(
             """
@@ -28218,6 +28218,84 @@ public sealed class RazorVuePipelineTests
                             await ValueChanged.InvokeAsync(Value);
                         }
                         catch (Exception error) when (error is not null)
+                        {
+                            await ReadyChanged.InvokeAsync(false);
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        var tryIndex = artifact.ModuleCode.IndexOf("try {", StringComparison.Ordinal);
+        var valueEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"update:value\", props.value);", StringComparison.Ordinal);
+        var catchIndex = artifact.ModuleCode.IndexOf("} catch (__jazorLifecycleCatch) {", StringComparison.Ordinal);
+        var filterAssignmentIndex = artifact.ModuleCode.IndexOf("__jazorLifecycleCatchHandled = true;", StringComparison.Ordinal);
+        var handlerIndex = artifact.ModuleCode.IndexOf("if (__jazorLifecycleCatchHandled) {", StringComparison.Ordinal);
+        var readyEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"readyChanged\", false);", StringComparison.Ordinal);
+        var throwIndex = artifact.ModuleCode.IndexOf("throw __jazorLifecycleCatch;", StringComparison.Ordinal);
+
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
+        Assert.IsTrue(tryIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(valueEmitIndex > tryIndex, artifact.ModuleCode);
+        Assert.IsTrue(catchIndex > valueEmitIndex, artifact.ModuleCode);
+        Assert.IsTrue(filterAssignmentIndex > catchIndex, artifact.ModuleCode);
+        Assert.IsTrue(handlerIndex > filterAssignmentIndex, artifact.ModuleCode);
+        Assert.IsTrue(readyEmitIndex > handlerIndex, artifact.ModuleCode);
+        Assert.IsTrue(throwIndex > readyEmitIndex, artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForCatchVariablePayloadFilterSetParametersAsyncLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-catch-variable-payload-filter")]
+                public class SetParametersAsyncUnsupportedCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        try
+                        {
+                            await ValueChanged.InvokeAsync(Value);
+                        }
+                        catch (Exception error) when (error.Message is not null)
                         {
                             await ReadyChanged.InvokeAsync(false);
                         }
