@@ -23795,6 +23795,118 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForBaseThenTerminalGuardReturnSetParametersAsyncLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-terminal-guard-return")]
+                public class SetParametersAsyncTerminalGuardReturnCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        var ready = Value > 0;
+                        if (!ready)
+                        {
+                            return;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        Assert.IsFalse(artifact.ModuleCode.Contains("watch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForTerminalGuardReturnWithSideEffectConditionSetParametersAsyncLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-terminal-guard-return-side-effect")]
+                public class SetParametersAsyncTerminalGuardReturnSideEffectCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    public bool IsReady()
+                    {
+                        Value++;
+                        return Value > 0;
+                    }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        if (!IsReady())
+                        {
+                            return;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersBaseThenEmitSetParametersAsyncIntoWatchLifecycle()
     {
         var context = CreateContext(
@@ -25214,6 +25326,348 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersBaseThenTryCatchEmptyTryRecoverySetParametersAsyncIntoSingleWatchLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-try-catch-empty-try-recovery")]
+                public class SetParametersAsyncTryCatchEmptyTryRecoveryCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        try
+                        {
+                        }
+                        catch (Exception)
+                        {
+                            await ReadyChanged.InvokeAsync(false);
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        var tryIndex = artifact.ModuleCode.IndexOf("try {", StringComparison.Ordinal);
+        var catchIndex = artifact.ModuleCode.IndexOf("} catch {", StringComparison.Ordinal);
+        var readyEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"readyChanged\", false);", StringComparison.Ordinal);
+
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
+        Assert.IsTrue(tryIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(catchIndex > tryIndex, artifact.ModuleCode);
+        Assert.IsTrue(readyEmitIndex > catchIndex, artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersBaseThenTryCatchEmptyCatchSetParametersAsyncIntoSingleWatchLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-empty-catch")]
+                public class SetParametersAsyncEmptyCatchCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ValueChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        try
+                        {
+                            await ValueChanged.InvokeAsync(Value);
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        var tryIndex = artifact.ModuleCode.IndexOf("try {", StringComparison.Ordinal);
+        var valueEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"update:value\", props.value);", StringComparison.Ordinal);
+        var catchIndex = artifact.ModuleCode.IndexOf("} catch {", StringComparison.Ordinal);
+
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
+        Assert.IsTrue(tryIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(valueEmitIndex > tryIndex, artifact.ModuleCode);
+        Assert.IsTrue(catchIndex > valueEmitIndex, artifact.ModuleCode);
+        Assert.AreEqual(-1, artifact.ModuleCode.IndexOf("await emit(", catchIndex + 1, StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersBaseThenTryCatchCompletedTaskCatchSetParametersAsyncIntoSingleWatchLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-completed-task-catch")]
+                public class SetParametersAsyncCompletedTaskCatchCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ValueChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        try
+                        {
+                            await ValueChanged.InvokeAsync(Value);
+                        }
+                        catch (Exception)
+                        {
+                            await Task.CompletedTask;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        var tryIndex = artifact.ModuleCode.IndexOf("try {", StringComparison.Ordinal);
+        var valueEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"update:value\", props.value);", StringComparison.Ordinal);
+        var catchIndex = artifact.ModuleCode.IndexOf("} catch {", StringComparison.Ordinal);
+
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
+        Assert.IsTrue(tryIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(valueEmitIndex > tryIndex, artifact.ModuleCode);
+        Assert.IsTrue(catchIndex > valueEmitIndex, artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("Task.CompletedTask", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(-1, artifact.ModuleCode.IndexOf("await emit(", catchIndex + 1, StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersBaseThenTryFinallyEmptyTryCleanupSetParametersAsyncIntoSingleWatchLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-try-finally-empty-try-cleanup")]
+                public class SetParametersAsyncTryFinallyEmptyTryCleanupCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        var ready = Value > 0;
+                        try
+                        {
+                        }
+                        finally
+                        {
+                            await ReadyChanged.InvokeAsync(ready);
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        var localDeclarationIndex = artifact.ModuleCode.IndexOf("const __jazorLifecycleLocal", StringComparison.Ordinal);
+        var tryIndex = artifact.ModuleCode.IndexOf("try {", StringComparison.Ordinal);
+        var finallyIndex = artifact.ModuleCode.IndexOf("} finally {", StringComparison.Ordinal);
+        var readyEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"readyChanged\", __jazorLifecycleLocal", StringComparison.Ordinal);
+
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
+        Assert.IsTrue(localDeclarationIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(tryIndex > localDeclarationIndex, artifact.ModuleCode);
+        Assert.IsTrue(finallyIndex > tryIndex, artifact.ModuleCode);
+        Assert.IsTrue(readyEmitIndex > finallyIndex, artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersBaseThenTryFinallyCompletedTaskTryCleanupSetParametersAsyncIntoSingleWatchLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-try-finally-completed-task-try-cleanup")]
+                public class SetParametersAsyncTryFinallyCompletedTaskTryCleanupCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        var ready = Value > 0;
+                        try
+                        {
+                            await Task.CompletedTask;
+                        }
+                        finally
+                        {
+                            await ReadyChanged.InvokeAsync(ready);
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        var localDeclarationIndex = artifact.ModuleCode.IndexOf("const __jazorLifecycleLocal", StringComparison.Ordinal);
+        var tryIndex = artifact.ModuleCode.IndexOf("try {", StringComparison.Ordinal);
+        var finallyIndex = artifact.ModuleCode.IndexOf("} finally {", StringComparison.Ordinal);
+        var readyEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"readyChanged\", __jazorLifecycleLocal", StringComparison.Ordinal);
+
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
+        Assert.IsTrue(localDeclarationIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(tryIndex > localDeclarationIndex, artifact.ModuleCode);
+        Assert.IsTrue(finallyIndex > tryIndex, artifact.ModuleCode);
+        Assert.IsTrue(readyEmitIndex > finallyIndex, artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("Task.CompletedTask", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersBaseThenCatchAllEmitSetParametersAsyncIntoSingleWatchLifecycle()
     {
         var context = CreateContext(
@@ -25526,6 +25980,241 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersBaseThenTryCatchFinallyEmptyFinallySetParametersAsyncIntoSingleWatchLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-try-catch-empty-finally")]
+                public class SetParametersAsyncTryCatchEmptyFinallyCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        try
+                        {
+                            await ValueChanged.InvokeAsync(Value);
+                        }
+                        catch (Exception)
+                        {
+                            await ReadyChanged.InvokeAsync(false);
+                        }
+                        finally
+                        {
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        var tryIndex = artifact.ModuleCode.IndexOf("try {", StringComparison.Ordinal);
+        var valueEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"update:value\", props.value);", StringComparison.Ordinal);
+        var catchIndex = artifact.ModuleCode.IndexOf("} catch {", StringComparison.Ordinal);
+        var catchEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"readyChanged\", false);", StringComparison.Ordinal);
+        var finallyIndex = artifact.ModuleCode.IndexOf("} finally {", StringComparison.Ordinal);
+
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
+        Assert.IsTrue(tryIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(valueEmitIndex > tryIndex, artifact.ModuleCode);
+        Assert.IsTrue(catchIndex > valueEmitIndex, artifact.ModuleCode);
+        Assert.IsTrue(catchEmitIndex > catchIndex, artifact.ModuleCode);
+        Assert.IsTrue(finallyIndex > catchEmitIndex, artifact.ModuleCode);
+        Assert.IsTrue(artifact.ModuleCode.IndexOf("await emit(\"readyChanged\",", finallyIndex, StringComparison.Ordinal) < 0, artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersBaseThenTryCatchFinallyCompletedTaskFinallySetParametersAsyncIntoSingleWatchLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-try-catch-completed-task-finally")]
+                public class SetParametersAsyncTryCatchCompletedTaskFinallyCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        try
+                        {
+                            await ValueChanged.InvokeAsync(Value);
+                        }
+                        catch (Exception)
+                        {
+                            await ReadyChanged.InvokeAsync(false);
+                        }
+                        finally
+                        {
+                            await Task.CompletedTask;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        var tryIndex = artifact.ModuleCode.IndexOf("try {", StringComparison.Ordinal);
+        var valueEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"update:value\", props.value);", StringComparison.Ordinal);
+        var catchIndex = artifact.ModuleCode.IndexOf("} catch {", StringComparison.Ordinal);
+        var catchEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"readyChanged\", false);", StringComparison.Ordinal);
+        var finallyIndex = artifact.ModuleCode.IndexOf("} finally {", StringComparison.Ordinal);
+
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
+        Assert.IsTrue(tryIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(valueEmitIndex > tryIndex, artifact.ModuleCode);
+        Assert.IsTrue(catchIndex > valueEmitIndex, artifact.ModuleCode);
+        Assert.IsTrue(catchEmitIndex > catchIndex, artifact.ModuleCode);
+        Assert.IsTrue(finallyIndex > catchEmitIndex, artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("Task.CompletedTask", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsTrue(artifact.ModuleCode.IndexOf("await emit(\"readyChanged\",", finallyIndex, StringComparison.Ordinal) < 0, artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersBaseThenTryCatchFinallyEmptyTryCatchCleanupSetParametersAsyncIntoSingleWatchLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-try-catch-finally-empty-try-catch-cleanup")]
+                public class SetParametersAsyncTryCatchFinallyEmptyTryCatchCleanupCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        var ready = Value > 0;
+                        try
+                        {
+                        }
+                        catch (Exception)
+                        {
+                            await Task.CompletedTask;
+                        }
+                        finally
+                        {
+                            await ReadyChanged.InvokeAsync(ready);
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        var localDeclarationIndex = artifact.ModuleCode.IndexOf("const __jazorLifecycleLocal", StringComparison.Ordinal);
+        var tryIndex = artifact.ModuleCode.IndexOf("try {", StringComparison.Ordinal);
+        var catchIndex = artifact.ModuleCode.IndexOf("} catch {", StringComparison.Ordinal);
+        var finallyIndex = artifact.ModuleCode.IndexOf("} finally {", StringComparison.Ordinal);
+        var finallyEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"readyChanged\", __jazorLifecycleLocal", StringComparison.Ordinal);
+
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
+        StringAssert.Contains(artifact.ModuleCode, " = (props.value > 0);");
+        Assert.IsTrue(localDeclarationIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(tryIndex > localDeclarationIndex, artifact.ModuleCode);
+        Assert.IsTrue(catchIndex > tryIndex, artifact.ModuleCode);
+        Assert.IsTrue(finallyIndex > catchIndex, artifact.ModuleCode);
+        Assert.IsTrue(finallyEmitIndex > finallyIndex, artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("Task.CompletedTask", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersBaseThenTryCatchFinallyUnusedCatchVariableEmitSetParametersAsyncIntoSingleWatchLifecycle()
     {
         var context = CreateContext(
@@ -25689,6 +26378,149 @@ public sealed class RazorVuePipelineTests
         Assert.IsTrue(returnIndex > guardIndex, artifact.ModuleCode);
         Assert.IsTrue(valueEmitIndex > returnIndex, artifact.ModuleCode);
         Assert.IsTrue(finallyIndex > valueEmitIndex, artifact.ModuleCode);
+        Assert.IsTrue(readyEmitIndex > finallyIndex, artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersBaseThenTryFinallyBareReturnSetParametersAsyncIntoSingleWatchLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-try-finally-bare-return")]
+                public class SetParametersAsyncTryFinallyBareReturnCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        try
+                        {
+                            return;
+                        }
+                        finally
+                        {
+                            await ReadyChanged.InvokeAsync(Value > 0);
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        var tryIndex = artifact.ModuleCode.IndexOf("try {", StringComparison.Ordinal);
+        var returnIndex = artifact.ModuleCode.IndexOf("return;", StringComparison.Ordinal);
+        var finallyIndex = artifact.ModuleCode.IndexOf("} finally {", StringComparison.Ordinal);
+        var readyEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"readyChanged\", (props.value > 0));", StringComparison.Ordinal);
+
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
+        Assert.IsTrue(tryIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(returnIndex > tryIndex, artifact.ModuleCode);
+        Assert.IsTrue(finallyIndex > returnIndex, artifact.ModuleCode);
+        Assert.IsTrue(readyEmitIndex > finallyIndex, artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersBaseThenTryFinallyBareReturnSetParametersAsyncWithLocalPrefixBeforeReturn()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-try-finally-return-local")]
+                public class SetParametersAsyncTryFinallyReturnLocalCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        var ready = Value > 0;
+                        try
+                        {
+                            return;
+                        }
+                        finally
+                        {
+                            await ReadyChanged.InvokeAsync(ready);
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        var localDeclarationIndex = artifact.ModuleCode.IndexOf("const __jazorLifecycleLocal", StringComparison.Ordinal);
+        var secondLocalDeclarationIndex = artifact.ModuleCode.IndexOf("const __jazorLifecycleLocal", localDeclarationIndex + 1, StringComparison.Ordinal);
+        var tryIndex = artifact.ModuleCode.IndexOf("try {", StringComparison.Ordinal);
+        var returnIndex = artifact.ModuleCode.IndexOf("return;", StringComparison.Ordinal);
+        var finallyIndex = artifact.ModuleCode.IndexOf("} finally {", StringComparison.Ordinal);
+        var readyEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"readyChanged\", __jazorLifecycleLocal", StringComparison.Ordinal);
+
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
+        Assert.IsTrue(localDeclarationIndex >= 0, artifact.ModuleCode);
+        Assert.AreEqual(-1, secondLocalDeclarationIndex, artifact.ModuleCode);
+        Assert.IsTrue(tryIndex > localDeclarationIndex, artifact.ModuleCode);
+        Assert.IsTrue(returnIndex > tryIndex, artifact.ModuleCode);
+        Assert.IsTrue(finallyIndex > returnIndex, artifact.ModuleCode);
         Assert.IsTrue(readyEmitIndex > finallyIndex, artifact.ModuleCode);
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
     }
@@ -26071,7 +26903,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForTryCatchFinallyBareReturnSetParametersAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersBaseThenTryCatchFinallyBareReturnSetParametersAsyncIntoSingleWatchLifecycle()
     {
         var context = CreateContext(
             """
@@ -26094,7 +26926,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/set-parameters-async-try-catch-finally-bare-return")]
-                public class SetParametersAsyncUnsupportedCard : ComponentBase, IVueComponent
+                public class SetParametersAsyncTryCatchFinallyBareReturnCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -26133,11 +26965,84 @@ public sealed class RazorVuePipelineTests
             """);
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        var tryIndex = artifact.ModuleCode.IndexOf("try {", StringComparison.Ordinal);
+        var returnIndex = artifact.ModuleCode.IndexOf("return;", StringComparison.Ordinal);
+        var catchIndex = artifact.ModuleCode.IndexOf("} catch {", StringComparison.Ordinal);
+        var catchEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"readyChanged\", false);", StringComparison.Ordinal);
+        var finallyIndex = artifact.ModuleCode.IndexOf("} finally {", StringComparison.Ordinal);
+        var finalEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"update:value\", props.value);", StringComparison.Ordinal);
+
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
+        Assert.IsTrue(tryIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(returnIndex > tryIndex, artifact.ModuleCode);
+        Assert.IsTrue(catchIndex > returnIndex, artifact.ModuleCode);
+        Assert.IsTrue(catchEmitIndex > catchIndex, artifact.ModuleCode);
+        Assert.IsTrue(finallyIndex > catchEmitIndex, artifact.ModuleCode);
+        Assert.IsTrue(finalEmitIndex > finallyIndex, artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForTryCatchBareReturnWithoutFinallySetParametersAsyncLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-try-catch-bare-return")]
+                public class SetParametersAsyncUnsupportedCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        try
+                        {
+                            return;
+                        }
+                        catch (Exception)
+                        {
+                            await ReadyChanged.InvokeAsync(false);
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForElseReturnSetParametersAsyncLifecycle()
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForDoubleReturnIfElseSetParametersAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -26160,7 +27065,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/set-parameters-async-else-return")]
-                public class SetParametersAsyncUnsupportedCard : ComponentBase, IVueComponent
+                public class SetParametersAsyncElseReturnCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -26194,7 +27099,158 @@ public sealed class RazorVuePipelineTests
             """);
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
-        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("watch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("await emit(\"update:value\"", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersBaseThenEmitThenDoubleReturnIfElseSetParametersAsyncIntoSingleWatchLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-emit-then-else-return")]
+                public class SetParametersAsyncEmitThenReturnCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ValueChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        await ValueChanged.InvokeAsync(Value);
+                        if (Value <= 0)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        var emitIndex = artifact.ModuleCode.IndexOf("await emit(\"update:value\", props.value);", StringComparison.Ordinal);
+        var ifIndex = artifact.ModuleCode.IndexOf("if ((props.value <= 0)) {", StringComparison.Ordinal);
+        var firstReturnIndex = artifact.ModuleCode.IndexOf("return;", StringComparison.Ordinal);
+        var elseIndex = artifact.ModuleCode.IndexOf("} else {", StringComparison.Ordinal);
+        var secondReturnIndex = artifact.ModuleCode.IndexOf("return;", firstReturnIndex + 1, StringComparison.Ordinal);
+
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
+        Assert.IsTrue(emitIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(ifIndex > emitIndex, artifact.ModuleCode);
+        Assert.IsTrue(firstReturnIndex > ifIndex, artifact.ModuleCode);
+        Assert.IsTrue(elseIndex > firstReturnIndex, artifact.ModuleCode);
+        Assert.IsTrue(secondReturnIndex > elseIndex, artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersBaseThenEmitThenDoubleReturnIfElseSetParametersAsyncWithLocalCondition()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-emit-then-local-else-return")]
+                public class SetParametersAsyncEmitThenLocalReturnCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ValueChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        var ready = Value > 0;
+                        await ValueChanged.InvokeAsync(Value);
+                        if (!ready)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        var localDeclarationIndex = artifact.ModuleCode.IndexOf("const __jazorLifecycleLocal", StringComparison.Ordinal);
+        var secondLocalDeclarationIndex = artifact.ModuleCode.IndexOf("const __jazorLifecycleLocal", localDeclarationIndex + 1, StringComparison.Ordinal);
+        var emitIndex = artifact.ModuleCode.IndexOf("await emit(\"update:value\", props.value);", StringComparison.Ordinal);
+        var ifIndex = artifact.ModuleCode.IndexOf("if (!__jazorLifecycleLocal", StringComparison.Ordinal);
+        var firstReturnIndex = artifact.ModuleCode.IndexOf("return;", StringComparison.Ordinal);
+        var elseIndex = artifact.ModuleCode.IndexOf("} else {", StringComparison.Ordinal);
+        var secondReturnIndex = artifact.ModuleCode.IndexOf("return;", firstReturnIndex + 1, StringComparison.Ordinal);
+
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
+        Assert.IsTrue(localDeclarationIndex >= 0, artifact.ModuleCode);
+        Assert.AreEqual(-1, secondLocalDeclarationIndex, artifact.ModuleCode);
+        Assert.IsTrue(emitIndex > localDeclarationIndex, artifact.ModuleCode);
+        Assert.IsTrue(ifIndex > emitIndex, artifact.ModuleCode);
+        Assert.IsTrue(firstReturnIndex > ifIndex, artifact.ModuleCode);
+        Assert.IsTrue(elseIndex > firstReturnIndex, artifact.ModuleCode);
+        Assert.IsTrue(secondReturnIndex > elseIndex, artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]

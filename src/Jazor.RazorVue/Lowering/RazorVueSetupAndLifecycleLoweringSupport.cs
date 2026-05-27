@@ -837,6 +837,11 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 builder.Append(indent).AppendLine("}");
                 return;
 
+            case SupportedLifecycleReturnStatement returnStatement:
+                AppendLifecyclePreludeBindings(builder, returnStatement.PreludeBindings, indent);
+                builder.Append(indent).AppendLine("return;");
+                return;
+
             case SupportedLifecycleIfReturnStatement ifReturn:
                 AppendLifecyclePreludeBindings(builder, ifReturn.ConditionPreludeBindings, indent);
                 builder.Append(indent).Append("if (").Append(ifReturn.ConditionExpression).AppendLine(") {");
@@ -862,6 +867,15 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                     }
                 }
 
+                builder.Append(indent).AppendLine("}");
+                return;
+
+            case SupportedLifecycleTerminalIfReturnStatement terminalIfReturn:
+                AppendLifecyclePreludeBindings(builder, terminalIfReturn.ConditionPreludeBindings, indent);
+                builder.Append(indent).Append("if (").Append(terminalIfReturn.ConditionExpression).AppendLine(") {");
+                builder.Append(indent).AppendLine("  return;");
+                builder.Append(indent).AppendLine("} else {");
+                builder.Append(indent).AppendLine("  return;");
                 builder.Append(indent).AppendLine("}");
                 return;
 
@@ -921,7 +935,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                     builder.Append(indent).AppendLine("  }");
                 }
 
-                if (!tryCatch.FinallyStatements.IsDefaultOrEmpty)
+                if (tryCatch.HasFinally)
                 {
                     builder.Append(indent).AppendLine("} finally {");
                     AppendLifecycleStatements(builder, tryCatch.FinallyStatements, awaitResult, indent + "  ");
@@ -1849,6 +1863,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
         var builder = ImmutableArray.CreateBuilder<SupportedLifecycleStatement>();
         var sawEmit = false;
+        var canIgnoreControlOnlyStatements = true;
 
         for (var index = startIndex; index < exclusiveEnd; index++)
         {
@@ -1870,6 +1885,34 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
             if (statement is IfStatementSyntax ifStatement)
             {
+                if (TryGetTerminalSetParametersAsyncNoOpReturnStatement(
+                        snapshot,
+                        expressionEmitter,
+                        method,
+                        ifStatement,
+                        state,
+                        index,
+                        exclusiveEnd,
+                        sawEmit))
+                {
+                    break;
+                }
+
+                if (TryGetSetParametersAsyncTerminalIfReturnStatement(
+                        snapshot,
+                        expressionEmitter,
+                        method,
+                        ifStatement,
+                        state,
+                        index,
+                        exclusiveEnd,
+                        sawEmit,
+                        out var terminalIfReturnStatement))
+                {
+                    builder.Add(terminalIfReturnStatement);
+                    break;
+                }
+
                 if (TryGetSetParametersAsyncIfReturnStatement(
                         snapshot,
                         expressionEmitter,
@@ -1894,6 +1937,13 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                     if (index >= exclusiveEnd - 1)
                         return false;
 
+                    canIgnoreControlOnlyStatements &=
+                        CanIgnoreSetParametersAsyncNoOpCondition(
+                            snapshot,
+                            expressionEmitter,
+                            method,
+                            ifStatement.Condition,
+                            state);
                     builder.Add(guardReturnStatement);
                     continue;
                 }
@@ -1975,6 +2025,27 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 continue;
             }
 
+            if (statement is ReturnStatementSyntax { Expression: null } && state.AllowDirectNoOpReturnStatement)
+            {
+                var returnPreludeBuilder = ImmutableArray.CreateBuilder<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>();
+                if (!TryAppendPendingLifecycleLocalPreludes(
+                        snapshot,
+                        expressionEmitter,
+                        method,
+                        state,
+                        returnPreludeBuilder))
+                {
+                    return false;
+                }
+
+                builder.Add(new SupportedLifecycleReturnStatement(
+                    returnPreludeBuilder.Count == 0
+                        ? ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>.Empty
+                        : returnPreludeBuilder.ToImmutable()));
+                sawEmit = true;
+                break;
+            }
+
             if (!TryGetSetParametersAsyncNoOpOrEmit(
                     snapshot,
                     expressionEmitter,
@@ -1997,21 +2068,31 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 return false;
 
             sawEmit = true;
-            if (state.EmittedLocals.Count == 0)
+            var emitPreludeBuilder = ImmutableArray.CreateBuilder<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>();
+            if (!TryAppendPendingLifecycleLocalPreludes(
+                    snapshot,
+                    expressionEmitter,
+                    method,
+                    state,
+                    emitPreludeBuilder))
             {
-                builder.Add(new SupportedLifecycleEmitStatement(emitCall));
-                continue;
+                return false;
             }
 
+            emitPreludeBuilder.AddRange(FilterLifecyclePreludeBindings(emitCall.PreludeBindings, state));
             builder.Add(new SupportedLifecycleEmitStatement(
-                emitCall with
-                {
-                    PreludeBindings = FilterLifecyclePreludeBindings(emitCall.PreludeBindings, state)
-                }));
+                emitPreludeBuilder.Count == 0
+                    ? emitCall with { PreludeBindings = ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>.Empty }
+                    : emitCall with { PreludeBindings = emitPreludeBuilder.ToImmutable() }));
         }
 
         if (!sawEmit)
         {
+            if (builder.Count != 0 && !state.AllowTerminalNoOpControlFlow)
+                return false;
+            if (builder.Count != 0 && !canIgnoreControlOnlyStatements)
+                return false;
+
             lifecycleStatements = ImmutableArray<SupportedLifecycleStatement>.Empty;
             return true;
         }
@@ -2020,30 +2101,84 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         return true;
     }
 
-    private static bool TryGetSetParametersAsyncIfReturnStatement(
+    private static bool TryGetTerminalSetParametersAsyncNoOpReturnStatement(
         RazorVueSemanticSnapshot snapshot,
         RazorVueExpressionEmitter? expressionEmitter,
         IMethodSymbol method,
         IfStatementSyntax ifStatement,
         SetParametersAsyncStatementSequenceState state,
-        out SupportedLifecycleIfReturnStatement lifecycleStatement)
+        int index,
+        int exclusiveEnd,
+        bool sawEmit)
+    {
+        if (!state.AllowTerminalNoOpControlFlow ||
+            sawEmit ||
+            !TerminatesWithNoOpReturn(ifStatement, allowImplicitContinue: index >= exclusiveEnd - 1))
+        {
+            return false;
+        }
+
+        return CanIgnoreSetParametersAsyncNoOpCondition(
+            snapshot,
+            expressionEmitter,
+            method,
+            ifStatement.Condition,
+            state);
+    }
+
+    private static bool TryGetSetParametersAsyncTerminalIfReturnStatement(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter? expressionEmitter,
+        IMethodSymbol method,
+        IfStatementSyntax ifStatement,
+        SetParametersAsyncStatementSequenceState state,
+        int index,
+        int exclusiveEnd,
+        bool sawEmit,
+        out SupportedLifecycleTerminalIfReturnStatement lifecycleStatement)
     {
         lifecycleStatement = default!;
-        if (ifStatement.Else?.Statement is not { } falseStatement)
+        if (!sawEmit ||
+            index != exclusiveEnd - 1 ||
+            ifStatement.Else is null ||
+            !IsGuardReturnStatement(ifStatement.Statement) ||
+            !IsGuardReturnStatement(ifStatement.Else.Statement))
+        {
             return false;
+        }
 
-        var trueStatement = ifStatement.Statement;
-        var trueReturns = IsGuardReturnStatement(trueStatement);
-        var falseReturns = IsGuardReturnStatement(falseStatement);
-        if (trueReturns == falseReturns)
+        if (!TryGetLifecycleConditionEmission(
+                snapshot,
+                expressionEmitter,
+                method,
+                ifStatement.Condition,
+                state,
+                out var conditionExpression,
+                out var conditionPreludeBindings))
+        {
             return false;
+        }
 
-        var continueStatement = trueReturns ? falseStatement : trueStatement;
-        if (ContainsReturnStatement(continueStatement))
-            return false;
+        lifecycleStatement = new SupportedLifecycleTerminalIfReturnStatement(
+            conditionExpression,
+            conditionPreludeBindings);
+        return true;
+    }
 
-        var semanticModel = snapshot.Compilation.GetSemanticModel(ifStatement.Condition.SyntaxTree);
-        var conditionOperation = semanticModel.GetOperation(ifStatement.Condition);
+    private static bool TryGetLifecycleConditionEmission(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter? expressionEmitter,
+        IMethodSymbol method,
+        ExpressionSyntax conditionSyntax,
+        SetParametersAsyncStatementSequenceState state,
+        out string conditionExpression,
+        out ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding> conditionPreludeBindings)
+    {
+        conditionExpression = string.Empty;
+        conditionPreludeBindings = ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>.Empty;
+
+        var semanticModel = snapshot.Compilation.GetSemanticModel(conditionSyntax.SyntaxTree);
+        var conditionOperation = semanticModel.GetOperation(conditionSyntax);
         if (conditionOperation is null ||
             ContainsShouldRenderUnsupportedExpressionConstruct(conditionOperation))
         {
@@ -2084,6 +2219,46 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         }
 
         conditionPreludeBuilder.AddRange(FilterLifecyclePreludeBindings(condition.PreludeBindings, state));
+        conditionExpression = condition.Expression;
+        conditionPreludeBindings = conditionPreludeBuilder.Count == 0
+            ? ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>.Empty
+            : conditionPreludeBuilder.ToImmutable();
+        return true;
+    }
+
+    private static bool TryGetSetParametersAsyncIfReturnStatement(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter? expressionEmitter,
+        IMethodSymbol method,
+        IfStatementSyntax ifStatement,
+        SetParametersAsyncStatementSequenceState state,
+        out SupportedLifecycleIfReturnStatement lifecycleStatement)
+    {
+        lifecycleStatement = default!;
+        if (ifStatement.Else?.Statement is not { } falseStatement)
+            return false;
+
+        var trueStatement = ifStatement.Statement;
+        var trueReturns = IsGuardReturnStatement(trueStatement);
+        var falseReturns = IsGuardReturnStatement(falseStatement);
+        if (trueReturns == falseReturns)
+            return false;
+
+        var continueStatement = trueReturns ? falseStatement : trueStatement;
+        if (ContainsReturnStatement(continueStatement))
+            return false;
+
+        if (!TryGetLifecycleConditionEmission(
+                snapshot,
+                expressionEmitter,
+                method,
+                ifStatement.Condition,
+                state,
+                out var conditionExpression,
+                out var conditionPreludeBindings))
+        {
+            return false;
+        }
 
         if (!TryGetSetParametersAsyncStatementSequence(
                 snapshot,
@@ -2100,10 +2275,8 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         }
 
         lifecycleStatement = new SupportedLifecycleIfReturnStatement(
-            condition.Expression,
-            conditionPreludeBuilder.Count == 0
-                ? ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>.Empty
-                : conditionPreludeBuilder.ToImmutable(),
+            conditionExpression,
+            conditionPreludeBindings,
             ReturnsWhenTrue: trueReturns,
             WhenTrue: trueReturns ? ImmutableArray<SupportedLifecycleStatement>.Empty : continueStatements,
             WhenFalse: trueReturns ? continueStatements : ImmutableArray<SupportedLifecycleStatement>.Empty);
@@ -2438,9 +2611,9 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
     {
         lifecycleStatement = default!;
         if (tryStatement.Catches.Count != 1 ||
-            ContainsDirectUnsupportedLifecycleReturnStatement(tryStatement.Block) ||
-            ContainsDirectUnsupportedLifecycleReturnStatement(tryStatement.Catches[0].Block) ||
-            (tryStatement.Finally is not null && ContainsDirectUnsupportedLifecycleReturnStatement(tryStatement.Finally.Block)) ||
+            ContainsDirectUnsupportedLifecycleReturnStatement(tryStatement.Block, allowDirectNoOpReturnStatement: true) ||
+            ContainsDirectUnsupportedLifecycleReturnStatement(tryStatement.Catches[0].Block, allowDirectNoOpReturnStatement: false) ||
+            (tryStatement.Finally is not null && ContainsDirectUnsupportedLifecycleReturnStatement(tryStatement.Finally.Block, allowDirectNoOpReturnStatement: false)) ||
             ContainsThrowStatement(tryStatement))
         {
             return false;
@@ -2476,9 +2649,8 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 tryStatement.Block.Statements,
                 0,
                 endExclusive: null,
-                state.CloneForBranch(),
-                out var tryStatements) ||
-            tryStatements.IsDefaultOrEmpty)
+                state.CloneForDirectNoOpReturnBody(),
+                out var tryStatements))
         {
             return false;
         }
@@ -2491,24 +2663,39 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 0,
                 endExclusive: null,
                 state.CloneForBranch(),
-                out var catchStatements) ||
-            catchStatements.IsDefaultOrEmpty)
+                out var catchStatements))
         {
             return false;
         }
 
         var finallyStatements = ImmutableArray<SupportedLifecycleStatement>.Empty;
-        if (tryStatement.Finally is not null &&
-            (!TryGetSetParametersAsyncStatementSequence(
+        var hasFinally = false;
+        if (tryStatement.Finally is { } finallyClause)
+        {
+            hasFinally = true;
+            if (!TryGetSetParametersAsyncStatementSequence(
                 snapshot,
                 expressionEmitter,
                 method,
-                tryStatement.Finally.Block.Statements,
+                finallyClause.Block.Statements,
                 0,
                 endExclusive: null,
                 state.CloneForBranch(),
-                out finallyStatements) ||
-            finallyStatements.IsDefaultOrEmpty))
+                out finallyStatements))
+            {
+                return false;
+            }
+        }
+
+        if (tryStatements.IsDefaultOrEmpty &&
+            catchStatements.IsDefaultOrEmpty &&
+            finallyStatements.IsDefaultOrEmpty)
+        {
+            return false;
+        }
+
+        if (ContainsLifecycleDirectReturnStatement(tryStatements) &&
+            finallyStatements.IsDefaultOrEmpty)
         {
             return false;
         }
@@ -2521,6 +2708,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             catchStatements,
             catchFilterExpression,
             catchFilterPreludeBindings,
+            hasFinally,
             finallyStatements);
         return true;
     }
@@ -2536,8 +2724,8 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         lifecycleStatement = null;
         if (tryStatement.Catches.Count != 0 ||
             tryStatement.Finally is null ||
-            ContainsDirectUnsupportedLifecycleReturnStatement(tryStatement.Block) ||
-            ContainsDirectUnsupportedLifecycleReturnStatement(tryStatement.Finally.Block) ||
+            ContainsDirectUnsupportedLifecycleReturnStatement(tryStatement.Block, allowDirectNoOpReturnStatement: true) ||
+            ContainsDirectUnsupportedLifecycleReturnStatement(tryStatement.Finally.Block, allowDirectNoOpReturnStatement: false) ||
             ContainsThrowStatement(tryStatement))
         {
             return false;
@@ -2561,7 +2749,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 tryStatement.Block.Statements,
                 0,
                 endExclusive: null,
-                state.CloneForBranch(),
+                state.CloneForDirectNoOpReturnBody(),
                 out var tryStatements))
         {
             return false;
@@ -2582,6 +2770,12 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
         if (tryStatements.IsDefaultOrEmpty && finallyStatements.IsDefaultOrEmpty)
             return false;
+
+        if (ContainsLifecycleDirectReturnStatement(tryStatements) &&
+            finallyStatements.IsDefaultOrEmpty)
+        {
+            return false;
+        }
 
         lifecycleStatement = new SupportedLifecycleTryFinallyStatement(
             tryPreludeBuilder.Count == 0
@@ -2649,6 +2843,102 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
         return false;
     }
+
+    private static bool CanIgnoreSetParametersAsyncNoOpCondition(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter? expressionEmitter,
+        IMethodSymbol method,
+        ExpressionSyntax conditionSyntax,
+        SetParametersAsyncStatementSequenceState state)
+    {
+        _ = expressionEmitter;
+        if (!CanIgnoreSetParametersAsyncPendingLocals(
+                snapshot,
+                method,
+                state))
+        {
+            return false;
+        }
+
+        var semanticModel = snapshot.Compilation.GetSemanticModel(conditionSyntax.SyntaxTree);
+        var operation = semanticModel.GetOperation(conditionSyntax);
+        if (operation is null ||
+            ContainsSetParametersAsyncNoOpIgnoredSideEffect(operation))
+        {
+            return false;
+        }
+
+        try
+        {
+            var condition = RazorVueExpressionEmitter.EmitLifecyclePayload(snapshot, method, operation, allowFirstRenderPayload: false);
+
+            return !condition.UsesFirstRender &&
+                   !string.IsNullOrWhiteSpace(condition.Expression);
+        }
+        catch (RazorVueCompilationIssueException)
+        {
+            return false;
+        }
+        catch (NotSupportedException)
+        {
+            return false;
+        }
+    }
+
+    private static bool CanIgnoreSetParametersAsyncPendingLocals(
+        RazorVueSemanticSnapshot snapshot,
+        IMethodSymbol method,
+        SetParametersAsyncStatementSequenceState state)
+    {
+        foreach (var local in OrderLifecycleLocalsBySource(state.EmittedLocals))
+        {
+            if (state.MaterializedLocals.Contains(local))
+                continue;
+            if (!state.LocalInitializers.TryGetValue(local, out var initializer))
+                return false;
+            if (ContainsSetParametersAsyncNoOpIgnoredSideEffect(initializer))
+                return false;
+
+            try
+            {
+                _ = RazorVueExpressionEmitter.EmitLifecyclePayload(snapshot, method, initializer, allowFirstRenderPayload: false);
+            }
+            catch (RazorVueCompilationIssueException)
+            {
+                return false;
+            }
+            catch (NotSupportedException)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool ContainsSetParametersAsyncNoOpIgnoredSideEffect(IOperation operation)
+    {
+        foreach (var current in EnumerateShouldRenderExpressionScopedOperations(operation))
+        {
+            if (RazorVueOperationNormalizer.Unwrap(current) is
+                IAnonymousFunctionOperation or
+                ILocalFunctionOperation or
+                IInvocationOperation or
+                IMethodReferenceOperation or
+                ISimpleAssignmentOperation or
+                ICompoundAssignmentOperation or
+                IIncrementOrDecrementOperation)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool ContainsLifecycleDirectReturnStatement(ImmutableArray<SupportedLifecycleStatement> statements)
+        => !statements.IsDefaultOrEmpty &&
+           statements.Any(static statement => statement is SupportedLifecycleReturnStatement);
 
     private static ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding> FilterLifecyclePreludeBindings(
         ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding> bindings,
@@ -2746,15 +3036,26 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             ? block.Statements.ToArray()
             : new[] { statement };
 
+    private static bool TerminatesWithNoOpReturn(IfStatementSyntax ifStatement, bool allowImplicitContinue)
+    {
+        if (ifStatement.Else is null)
+            return allowImplicitContinue && IsGuardReturnStatement(ifStatement.Statement);
+
+        return IsGuardReturnStatement(ifStatement.Statement) &&
+               IsGuardReturnStatement(ifStatement.Else.Statement);
+    }
+
     private static bool ContainsReturnStatement(StatementSyntax statement)
         => statement.DescendantNodesAndSelf().OfType<ReturnStatementSyntax>().Any();
 
-    private static bool ContainsDirectUnsupportedLifecycleReturnStatement(BlockSyntax block)
+    private static bool ContainsDirectUnsupportedLifecycleReturnStatement(
+        BlockSyntax block,
+        bool allowDirectNoOpReturnStatement)
     {
         foreach (var statement in block.Statements)
         {
             if (statement is ReturnStatementSyntax)
-                return true;
+                return !allowDirectNoOpReturnStatement || statement is not ReturnStatementSyntax { Expression: null };
 
             switch (statement)
             {
@@ -2780,17 +3081,17 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                     return true;
 
                 case TryStatementSyntax tryStatement:
-                    if (ContainsDirectUnsupportedLifecycleReturnStatement(tryStatement.Block))
+                    if (ContainsDirectUnsupportedLifecycleReturnStatement(tryStatement.Block, allowDirectNoOpReturnStatement: false))
                         return true;
 
                     foreach (var catchClause in tryStatement.Catches)
                     {
-                        if (ContainsDirectUnsupportedLifecycleReturnStatement(catchClause.Block))
+                        if (ContainsDirectUnsupportedLifecycleReturnStatement(catchClause.Block, allowDirectNoOpReturnStatement: false))
                             return true;
                     }
 
                     if (tryStatement.Finally is not null &&
-                        ContainsDirectUnsupportedLifecycleReturnStatement(tryStatement.Finally.Block))
+                        ContainsDirectUnsupportedLifecycleReturnStatement(tryStatement.Finally.Block, allowDirectNoOpReturnStatement: false))
                     {
                         return true;
                     }
@@ -4906,6 +5207,9 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 DescribeLifecyclePreludeBindingsShape(guardReturn.ConditionPreludeBindings) +
                 "|" +
                 guardReturn.ConditionExpression,
+            SupportedLifecycleReturnStatement returnStatement =>
+                "return|prelude:" +
+                DescribeLifecyclePreludeBindingsShape(returnStatement.PreludeBindings),
             SupportedLifecycleIfReturnStatement ifReturn =>
                 "if-return|" +
                 DescribeLifecyclePreludeBindingsShape(ifReturn.ConditionPreludeBindings) +
@@ -4917,6 +5221,11 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 DescribeLifecycleStatementSequenceShape(ifReturn.WhenTrue) +
                 "|else:" +
                 DescribeLifecycleStatementSequenceShape(ifReturn.WhenFalse),
+            SupportedLifecycleTerminalIfReturnStatement terminalIfReturn =>
+                "terminal-if-return|" +
+                DescribeLifecyclePreludeBindingsShape(terminalIfReturn.ConditionPreludeBindings) +
+                "|" +
+                terminalIfReturn.ConditionExpression,
             SupportedLifecycleSwitchStatement switchStatement =>
                 "switch|" + switchStatement.ValueExpression + "|" +
                 string.Join(
@@ -4946,6 +5255,8 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 (tryCatch.CatchFilterExpression ?? string.Empty) +
                 "|filter-prelude:" +
                 DescribeLifecyclePreludeBindingsShape(tryCatch.CatchFilterPreludeBindings) +
+                "|has-finally:" +
+                tryCatch.HasFinally +
                 "|finally:" +
                 DescribeLifecycleStatementSequenceShape(tryCatch.FinallyStatements),
             _ => "unsupported"
@@ -5207,12 +5518,19 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         string ConditionExpression,
         ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding> ConditionPreludeBindings) : SupportedLifecycleStatement;
 
+    internal sealed record SupportedLifecycleReturnStatement(
+        ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding> PreludeBindings) : SupportedLifecycleStatement;
+
     internal sealed record SupportedLifecycleIfReturnStatement(
         string ConditionExpression,
         ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding> ConditionPreludeBindings,
         bool ReturnsWhenTrue,
         ImmutableArray<SupportedLifecycleStatement> WhenTrue,
         ImmutableArray<SupportedLifecycleStatement> WhenFalse) : SupportedLifecycleStatement;
+
+    internal sealed record SupportedLifecycleTerminalIfReturnStatement(
+        string ConditionExpression,
+        ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding> ConditionPreludeBindings) : SupportedLifecycleStatement;
 
     internal sealed record SupportedLifecycleSwitchStatement(
         string ValueExpression,
@@ -5236,16 +5554,21 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         ImmutableArray<SupportedLifecycleStatement> CatchStatements,
         string? CatchFilterExpression,
         ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding> CatchFilterPreludeBindings,
+        bool HasFinally,
         ImmutableArray<SupportedLifecycleStatement> FinallyStatements) : SupportedLifecycleStatement;
 
     private sealed class SetParametersAsyncStatementSequenceState
     {
         public SetParametersAsyncStatementSequenceState(
             SemanticModel semanticModel,
-            IReadOnlyDictionary<ILocalSymbol, IOperation> localInitializers)
+            IReadOnlyDictionary<ILocalSymbol, IOperation> localInitializers,
+            bool allowTerminalNoOpControlFlow = true,
+            bool allowDirectNoOpReturnStatement = false)
         {
             SemanticModel = semanticModel;
             LocalInitializers = localInitializers;
+            AllowTerminalNoOpControlFlow = allowTerminalNoOpControlFlow;
+            AllowDirectNoOpReturnStatement = allowDirectNoOpReturnStatement;
             EmittedLocals = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
             MaterializedLocals = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
             MaterializedPreludeAliases = new HashSet<string>(StringComparer.Ordinal);
@@ -5255,6 +5578,8 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         private SetParametersAsyncStatementSequenceState(
             SemanticModel semanticModel,
             IReadOnlyDictionary<ILocalSymbol, IOperation> localInitializers,
+            bool allowTerminalNoOpControlFlow,
+            bool allowDirectNoOpReturnStatement,
             HashSet<ILocalSymbol> emittedLocals,
             HashSet<ILocalSymbol> materializedLocals,
             HashSet<string> materializedPreludeAliases,
@@ -5262,6 +5587,8 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         {
             SemanticModel = semanticModel;
             LocalInitializers = localInitializers;
+            AllowTerminalNoOpControlFlow = allowTerminalNoOpControlFlow;
+            AllowDirectNoOpReturnStatement = allowDirectNoOpReturnStatement;
             EmittedLocals = emittedLocals;
             MaterializedLocals = materializedLocals;
             MaterializedPreludeAliases = materializedPreludeAliases;
@@ -5270,6 +5597,8 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
         public SemanticModel SemanticModel { get; }
         public IReadOnlyDictionary<ILocalSymbol, IOperation> LocalInitializers { get; }
+        public bool AllowTerminalNoOpControlFlow { get; }
+        public bool AllowDirectNoOpReturnStatement { get; }
         public HashSet<ILocalSymbol> EmittedLocals { get; }
         public HashSet<ILocalSymbol> MaterializedLocals { get; }
         public HashSet<string> MaterializedPreludeAliases { get; }
@@ -5279,6 +5608,19 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             => new(
                 SemanticModel,
                 LocalInitializers,
+                allowTerminalNoOpControlFlow: false,
+                allowDirectNoOpReturnStatement: false,
+                new HashSet<ILocalSymbol>(EmittedLocals, SymbolEqualityComparer.Default),
+                new HashSet<ILocalSymbol>(MaterializedLocals, SymbolEqualityComparer.Default),
+                new HashSet<string>(MaterializedPreludeAliases, StringComparer.Ordinal),
+                new Dictionary<ILocalSymbol, string>(LocalAliases, SymbolEqualityComparer.Default));
+
+        public SetParametersAsyncStatementSequenceState CloneForDirectNoOpReturnBody()
+            => new(
+                SemanticModel,
+                LocalInitializers,
+                allowTerminalNoOpControlFlow: false,
+                allowDirectNoOpReturnStatement: true,
                 new HashSet<ILocalSymbol>(EmittedLocals, SymbolEqualityComparer.Default),
                 new HashSet<ILocalSymbol>(MaterializedLocals, SymbolEqualityComparer.Default),
                 new HashSet<string>(MaterializedPreludeAliases, StringComparer.Ordinal),
