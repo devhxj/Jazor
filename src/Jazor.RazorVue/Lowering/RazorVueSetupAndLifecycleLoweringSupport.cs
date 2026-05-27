@@ -1233,6 +1233,9 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         if (methodSyntax.Body.Statements.Count == 0)
             return null;
 
+        if (IsNoOpLocalOnlyLifecycleBody(snapshot.Compilation, method, methodSyntax.Body))
+            return null;
+
         if (methodSyntax.Body.Statements.Count == 1 &&
             TryExtractBaseLifecycleEmitCall(snapshot, expressionEmitter, method, methodSyntax.Body.Statements[0], allowFirstRenderPayload, visitedMethods, out var passThroughEmitCall))
         {
@@ -1435,6 +1438,95 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             compilation,
             syntax,
             allowBareDefaultLiteral: IsNonGenericValueTaskType(compilation, method.ReturnType));
+    }
+
+    private static bool IsNoOpLocalOnlyLifecycleBody(
+        Compilation compilation,
+        IMethodSymbol method,
+        BlockSyntax body)
+    {
+        if (body.Statements.Count == 0)
+            return true;
+
+        var semanticModel = compilation.GetSemanticModel(body.SyntaxTree);
+        for (var index = 0; index < body.Statements.Count; index++)
+        {
+            var statement = body.Statements[index];
+            switch (statement)
+            {
+                case EmptyStatementSyntax:
+                    continue;
+
+                case LocalDeclarationStatementSyntax localDeclaration
+                    when IsNoOpLifecycleLocalDeclaration(localDeclaration, semanticModel):
+                    continue;
+
+                case ReturnStatementSyntax returnStatement
+                    when index == body.Statements.Count - 1 &&
+                         (returnStatement.Expression is null ||
+                          IsNoOpLifecycleExpression(compilation, method, returnStatement.Expression)):
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsNoOpLifecycleLocalDeclaration(
+        LocalDeclarationStatementSyntax statement,
+        SemanticModel semanticModel)
+    {
+        if (statement.UsingKeyword != default ||
+            statement.AwaitKeyword != default ||
+            statement.Declaration.Type is RefTypeSyntax)
+        {
+            return false;
+        }
+
+        foreach (var variable in statement.Declaration.Variables)
+        {
+            if (variable.Initializer?.Value is null)
+                continue;
+
+            if (variable.Initializer.Value is RefExpressionSyntax)
+                return false;
+
+            var initializer = semanticModel.GetOperation(variable.Initializer.Value);
+            if (!IsIgnorableNoOpLifecycleLocalInitializer(initializer))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool IsIgnorableNoOpLifecycleLocalInitializer(IOperation? operation)
+    {
+        var current = RazorVueOperationNormalizer.Unwrap(operation);
+        if (current is null)
+            return false;
+
+        if (current.ConstantValue.HasValue)
+            return true;
+
+        return current switch
+        {
+            IDefaultValueOperation => true,
+            ITypeOfOperation => true,
+            ILocalReferenceOperation => true,
+            IParameterReferenceOperation => true,
+            IConversionOperation conversion
+                when conversion.OperatorMethod is null =>
+                IsIgnorableNoOpLifecycleLocalInitializer(conversion.Operand),
+            IUnaryOperation unary
+                when unary.OperatorMethod is null =>
+                IsIgnorableNoOpLifecycleLocalInitializer(unary.Operand),
+            ITupleOperation tuple =>
+                tuple.Elements.All(IsIgnorableNoOpLifecycleLocalInitializer),
+            _ => false
+        };
     }
 
     private static bool IsNoOpAwaitableExpression(

@@ -13620,7 +13620,7 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithInheritedUnsupportedLifecycleLowering_ReportsJAZORVGA005()
+    public void GenerateCatalog_WithInheritedSourceStableLocalOnlyOnInitializedLifecycle_DoesNotReportJAZORVGA005()
     {
         var compilation = CreateCompilation(
             "RazorVue.InheritedUnsupportedLifecycle.Generated",
@@ -13673,17 +13673,17 @@ public sealed class ESGeneratorTests
             .ToArray();
 
         Assert.AreEqual(
-            1,
+            0,
             diagnostics.Length,
             string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         Assert.AreEqual(0, fallbackDiagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
-        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        Assert.IsFalse(generatedSource.Contains("onMounted", StringComparison.Ordinal), generatedSource);
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithInheritedUnsupportedAsyncLifecycleLowering_ReportsJAZORVGA005()
+    public void GenerateCatalog_WithInheritedSourceStableLocalOnlyOnInitializedAsyncLifecycle_DoesNotReportJAZORVGA005()
     {
         var compilation = CreateCompilation(
             "RazorVue.InheritedUnsupportedAsyncLifecycle.Generated",
@@ -13738,17 +13738,17 @@ public sealed class ESGeneratorTests
             .ToArray();
 
         Assert.AreEqual(
-            1,
+            0,
             diagnostics.Length,
             string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         Assert.AreEqual(0, fallbackDiagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitializedAsync");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
-        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        Assert.IsFalse(generatedSource.Contains("onMounted", StringComparison.Ordinal), generatedSource);
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithInheritedUnsupportedAsyncAfterRenderLifecycleLowering_ReportsJAZORVGA005()
+    public void GenerateCatalog_WithInheritedSourceStableLocalOnlyOnAfterRenderAsyncLifecycle_DoesNotReportJAZORVGA005()
     {
         var compilation = CreateCompilation(
             "RazorVue.InheritedUnsupportedAsyncAfterRenderLifecycle.Generated",
@@ -13811,17 +13811,18 @@ public sealed class ESGeneratorTests
             .ToArray();
 
         Assert.AreEqual(
-            1,
+            0,
             diagnostics.Length,
             string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         Assert.AreEqual(0, fallbackDiagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "OnAfterRenderAsync");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
-        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        Assert.IsFalse(generatedSource.Contains("onMounted", StringComparison.Ordinal), generatedSource);
+        Assert.IsFalse(generatedSource.Contains("onUpdated", StringComparison.Ordinal), generatedSource);
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithInheritedUnsupportedAfterRenderLifecycleLowering_ReportsJAZORVGA005()
+    public void GenerateCatalog_WithInheritedSourceStableLocalOnlyOnAfterRenderLifecycle_DoesNotReportJAZORVGA005()
     {
         var compilation = CreateCompilation(
             "RazorVue.InheritedUnsupportedAfterRenderLifecycle.Generated",
@@ -13882,17 +13883,18 @@ public sealed class ESGeneratorTests
             .ToArray();
 
         Assert.AreEqual(
-            1,
+            0,
             diagnostics.Length,
             string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         Assert.AreEqual(0, fallbackDiagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "OnAfterRender");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
-        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        Assert.IsFalse(generatedSource.Contains("onMounted", StringComparison.Ordinal), generatedSource);
+        Assert.IsFalse(generatedSource.Contains("onUpdated", StringComparison.Ordinal), generatedSource);
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithInheritedUnsupportedParametersSetLifecycleLowering_ReportsJAZORVGA005()
+    public void GenerateCatalog_WithInheritedSourceStableLocalOnlyOnParametersSetLifecycle_DoesNotReportJAZORVGA005()
     {
         var compilation = CreateCompilation(
             "RazorVue.InheritedUnsupportedParametersSetLifecycle.Generated",
@@ -13953,17 +13955,17 @@ public sealed class ESGeneratorTests
             .ToArray();
 
         Assert.AreEqual(
-            1,
+            0,
             diagnostics.Length,
             string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         Assert.AreEqual(0, fallbackDiagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "OnParametersSet");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
-        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        Assert.IsFalse(generatedSource.Contains("watch(() =>", StringComparison.Ordinal), generatedSource);
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithInheritedUnsupportedParametersSetAsyncLifecycleLowering_ReportsJAZORVGA005()
+    public void GenerateCatalog_WithInheritedSourceStableLocalOnlyOnParametersSetAsyncLifecycle_DoesNotReportJAZORVGA005()
     {
         var compilation = CreateCompilation(
             "RazorVue.InheritedUnsupportedParametersSetAsyncLifecycle.Generated",
@@ -14026,13 +14028,13 @@ public sealed class ESGeneratorTests
             .ToArray();
 
         Assert.AreEqual(
-            1,
+            0,
             diagnostics.Length,
             string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         Assert.AreEqual(0, fallbackDiagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "OnParametersSetAsync");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
-        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        Assert.IsFalse(generatedSource.Contains("watch(() =>", StringComparison.Ordinal), generatedSource);
     }
 
     [TestMethod]
@@ -16526,7 +16528,12 @@ public sealed class ESGeneratorTests
                 {
                     protected override void OnInitialized()
                     {
-                        var count = 1;
+                        var count = GetCount();
+                    }
+
+                    private int GetCount()
+                    {
+                        return 1;
                     }
                 }
             }
