@@ -91,6 +91,23 @@ public static class RazorVueManifestDiffer
         if (descriptorChanged)
             return CreateFullReloadDiff(current, "Public component descriptor changed.", descriptorChanged, templateChanged, logicChanged, contentChanged, styleChanged);
 
+        if (CanClassifyStylePatch(previous, current, descriptorChanged, templateChanged, logicChanged, styleChanged))
+        {
+            return new RazorVueManifestModuleDiff(
+                current.AssemblyName,
+                current.ComponentId,
+                current.ModuleId,
+                current.ComponentName,
+                current.RelativeModulePath,
+                RazorVueHotUpdateAction.StylePatch,
+                "Style block content changed while descriptor, template, and logic stayed stable.",
+                descriptorChanged,
+                templateChanged,
+                logicChanged,
+                contentChanged,
+                styleChanged);
+        }
+
         if (current.HmrBoundaryKind is RazorVueHmrBoundaryKind.FullReloadRequired or RazorVueHmrBoundaryKind.Unknown ||
             previous.HmrBoundaryKind is RazorVueHmrBoundaryKind.FullReloadRequired or RazorVueHmrBoundaryKind.Unknown)
         {
@@ -153,6 +170,20 @@ public static class RazorVueManifestDiffer
         return CreateFullReloadDiff(current, "Module content changed outside split hash classification.", descriptorChanged, templateChanged, logicChanged, contentChanged, styleChanged);
     }
 
+    private static bool CanClassifyStylePatch(
+        RazorVueManifestEntry previous,
+        RazorVueManifestEntry current,
+        bool descriptorChanged,
+        bool templateChanged,
+        bool logicChanged,
+        bool styleChanged)
+        => styleChanged &&
+           !descriptorChanged &&
+           !templateChanged &&
+           !logicChanged &&
+           !string.IsNullOrWhiteSpace(previous.StyleHash) &&
+           !string.IsNullOrWhiteSpace(current.StyleHash);
+
     private static bool HasIdentityOrContractDrift(RazorVueManifestEntry previous, RazorVueManifestEntry current)
         => !StringComparer.Ordinal.Equals(previous.AssemblyName, current.AssemblyName) ||
            !StringComparer.Ordinal.Equals(previous.ComponentId, current.ComponentId) ||
@@ -213,6 +244,9 @@ public static class RazorVueManifestDiffer
         if (moduleDiffs.Any(static diff => diff.Action == RazorVueHotUpdateAction.TemplatePatch))
             return RazorVueHotUpdateAction.TemplatePatch;
 
+        if (moduleDiffs.Any(static diff => diff.Action == RazorVueHotUpdateAction.StylePatch))
+            return RazorVueHotUpdateAction.StylePatch;
+
         return RazorVueHotUpdateAction.None;
     }
 
@@ -246,5 +280,6 @@ public enum RazorVueHotUpdateAction
     None,
     TemplatePatch,
     LogicPatch,
-    FullReload
+    FullReload,
+    StylePatch
 }

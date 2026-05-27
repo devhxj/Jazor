@@ -36,6 +36,7 @@
 
 - 没有 props / emits / slots 的纯静态/template render 组件仍可归类为 `TemplateOnly`；当 manifest diff 发现 descriptor 与 logic hash 稳定、只有 template hash 变化时，可产出 `TemplatePatch`。
 - 同样没有 public hot contract 但包含受支持 lifecycle lowering、动态 `ShouldRender`、setup property / field / method 等运行时逻辑的组件继续归类为 `FullReloadRequired`。这条边界只放开纯模板热补丁，不把无公共响应式契约的运行时逻辑变化降级为安全 HMR。
+- 当 manifest diff 发现 descriptor / template / logic hash 全部稳定、且前后 manifest 都有可靠 `StyleHash` 时，只有 SFC style block 内容变化会产出 `StylePatch`；这条路径不依赖组件 JS HMR 边界。top-level style dependency 列表变化、缺失 style hash 的 content drift、或 style block 属性等未进入 `StyleHash` 的内容漂移仍保持 full reload。
 
 ## Template Frontend Rule
 

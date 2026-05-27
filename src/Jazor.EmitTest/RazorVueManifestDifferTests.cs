@@ -90,17 +90,33 @@ public sealed class RazorVueManifestDifferTests
     }
 
     [TestMethod]
-    public void RazorVueManifestDiffer_ClassifiesFullReload_WhenOnlyStyleHashChanges()
+    public void RazorVueManifestDiffer_ClassifiesStylePatch_WhenOnlyStyleHashChanges()
     {
         var previous = CreateManifest(CreateEntry(styleHash: "style-a", contentHash: "content-a", boundaryKind: RazorVueHmrBoundaryKind.LogicSafe));
         var current = CreateManifest(CreateEntry(styleHash: "style-b", contentHash: "content-b", boundaryKind: RazorVueHmrBoundaryKind.LogicSafe));
 
         var diff = RazorVueManifestDiffer.Diff(previous, current);
 
-        Assert.AreEqual(RazorVueHotUpdateAction.FullReload, diff.Action);
-        Assert.AreEqual(RazorVueHotUpdateAction.FullReload, diff.Modules[0].Action);
+        Assert.AreEqual(RazorVueHotUpdateAction.StylePatch, diff.Action);
+        Assert.AreEqual(RazorVueHotUpdateAction.StylePatch, diff.Modules[0].Action);
         Assert.IsTrue(diff.Modules[0].StyleChanged);
         StringAssert.Contains(diff.Modules[0].Reason, "Style block content changed");
+    }
+
+    [TestMethod]
+    public void RazorVueManifestDiffer_ClassifiesStylePatch_WhenOnlyStyleHashChangesOutsideHotSafeBoundary()
+    {
+        var previous = CreateManifest(CreateEntry(styleHash: "style-a", contentHash: "content-a", boundaryKind: RazorVueHmrBoundaryKind.FullReloadRequired));
+        var current = CreateManifest(CreateEntry(styleHash: "style-b", contentHash: "content-b", boundaryKind: RazorVueHmrBoundaryKind.FullReloadRequired));
+
+        var diff = RazorVueManifestDiffer.Diff(previous, current);
+
+        Assert.AreEqual(RazorVueHotUpdateAction.StylePatch, diff.Action);
+        Assert.AreEqual(RazorVueHotUpdateAction.StylePatch, diff.Modules[0].Action);
+        Assert.IsTrue(diff.Modules[0].StyleChanged);
+        Assert.IsFalse(diff.Modules[0].DescriptorChanged);
+        Assert.IsFalse(diff.Modules[0].TemplateChanged);
+        Assert.IsFalse(diff.Modules[0].LogicChanged);
     }
 
     [TestMethod]
