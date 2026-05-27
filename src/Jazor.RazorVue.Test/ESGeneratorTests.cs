@@ -3980,6 +3980,82 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithTerminalNoOpReturnLifecycle_DoesNotEmitLifecycleHooks()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.TerminalNoOpReturnLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/terminal-noop-card")]
+                public class TerminalNoOpCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnParametersSet()
+                    {
+                        if (Ready)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+
+                    protected override void OnAfterRender(bool firstRender)
+                    {
+                        if (!firstRender)
+                        {
+                            return;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var lifecycleDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+
+        Assert.AreEqual(0, lifecycleDiagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.IsFalse(generatedSource.Contains("onMounted", StringComparison.Ordinal), generatedSource);
+        Assert.IsFalse(generatedSource.Contains("watch", StringComparison.Ordinal), generatedSource);
+        Assert.IsFalse(generatedSource.Contains("onUpdated", StringComparison.Ordinal), generatedSource);
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.TemplateOnly");
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithDisposeLifecycleLowering_EmitsOnUnmountedWithoutJAZORVGA005()
     {
         var compilation = CreateCompilation(

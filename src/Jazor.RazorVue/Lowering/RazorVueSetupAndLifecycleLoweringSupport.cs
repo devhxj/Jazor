@@ -1458,8 +1458,13 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                     continue;
 
                 case LocalDeclarationStatementSyntax localDeclaration
-                    when IsNoOpLifecycleLocalDeclaration(localDeclaration, semanticModel):
+                    when IsNoOpLifecycleLocalDeclaration(compilation, method, localDeclaration, semanticModel):
                     continue;
+
+                case IfStatementSyntax ifStatement
+                    when index == body.Statements.Count - 1 &&
+                         IsNoOpLifecycleTerminalIfReturnStatement(compilation, method, ifStatement, semanticModel):
+                    return true;
 
                 case ReturnStatementSyntax returnStatement
                     when index == body.Statements.Count - 1 &&
@@ -1476,6 +1481,8 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
     }
 
     private static bool IsNoOpLifecycleLocalDeclaration(
+        Compilation compilation,
+        IMethodSymbol method,
         LocalDeclarationStatementSyntax statement,
         SemanticModel semanticModel)
     {
@@ -1495,14 +1502,30 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 return false;
 
             var initializer = semanticModel.GetOperation(variable.Initializer.Value);
-            if (!IsIgnorableNoOpLifecycleLocalInitializer(initializer))
+            if (!IsIgnorableNoOpLifecycleValueExpression(compilation, method, initializer))
                 return false;
         }
 
         return true;
     }
 
-    private static bool IsIgnorableNoOpLifecycleLocalInitializer(IOperation? operation)
+    private static bool IsNoOpLifecycleTerminalIfReturnStatement(
+        Compilation compilation,
+        IMethodSymbol method,
+        IfStatementSyntax ifStatement,
+        SemanticModel semanticModel)
+    {
+        if (!TerminatesWithNoOpReturn(ifStatement, allowImplicitContinue: true))
+            return false;
+
+        var condition = semanticModel.GetOperation(ifStatement.Condition);
+        return IsIgnorableNoOpLifecycleValueExpression(compilation, method, condition);
+    }
+
+    private static bool IsIgnorableNoOpLifecycleValueExpression(
+        Compilation compilation,
+        IMethodSymbol method,
+        IOperation? operation)
     {
         var current = RazorVueOperationNormalizer.Unwrap(operation);
         if (current is null)
@@ -1517,16 +1540,60 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             ITypeOfOperation => true,
             ILocalReferenceOperation => true,
             IParameterReferenceOperation => true,
+            IPropertyReferenceOperation property
+                when IsCurrentComponentParameterProperty(method, property) => true,
             IConversionOperation conversion
                 when conversion.OperatorMethod is null =>
-                IsIgnorableNoOpLifecycleLocalInitializer(conversion.Operand),
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conversion.Operand),
             IUnaryOperation unary
                 when unary.OperatorMethod is null =>
-                IsIgnorableNoOpLifecycleLocalInitializer(unary.Operand),
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, unary.Operand),
+            IBinaryOperation binary
+                when binary.OperatorMethod is null =>
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, binary.LeftOperand) &&
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, binary.RightOperand),
+            IConditionalOperation conditional
+                when conditional.WhenTrue is not null && conditional.WhenFalse is not null =>
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conditional.Condition) &&
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conditional.WhenTrue) &&
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conditional.WhenFalse),
+            ICoalesceOperation coalesce =>
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, coalesce.Value) &&
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, coalesce.WhenNull),
             ITupleOperation tuple =>
-                tuple.Elements.All(IsIgnorableNoOpLifecycleLocalInitializer),
+                tuple.Elements.All(element => IsIgnorableNoOpLifecycleValueExpression(compilation, method, element)),
             _ => false
         };
+    }
+
+    private static bool IsCurrentComponentParameterProperty(
+        IMethodSymbol method,
+        IPropertyReferenceOperation propertyReference)
+    {
+        var property = propertyReference.Property;
+        if (property.IsStatic ||
+            property.IsIndexer ||
+            propertyReference.Arguments.Length != 0 ||
+            !IsParameterProperty(property) ||
+            property.ContainingType is null ||
+            !ContainsTypeOrBase(method.ContainingType, property.ContainingType))
+        {
+            return false;
+        }
+
+        var instance = RazorVueOperationNormalizer.Unwrap(propertyReference.Instance);
+        return instance is null or IInstanceReferenceOperation;
+    }
+
+    private static bool ContainsTypeOrBase(INamedTypeSymbol type, INamedTypeSymbol candidate)
+    {
+        for (var current = type; current is not null; current = current.BaseType)
+        {
+            if (SymbolEqualityComparer.Default.Equals(current.OriginalDefinition, candidate.OriginalDefinition))
+                return true;
+        }
+
+        return false;
     }
 
     private static bool IsNoOpAwaitableExpression(
@@ -5363,12 +5430,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         {
             if (current.GetMembers(propertyName)
                 .OfType<IPropertySymbol>()
-                .Any(static property =>
-                    property.GetAttributes().Any(static attribute =>
-                        string.Equals(
-                            attribute.AttributeClass?.ToDisplayString(),
-                            "Microsoft.AspNetCore.Components.ParameterAttribute",
-                            StringComparison.Ordinal))))
+                .Any(IsParameterProperty))
             {
                 return true;
             }
@@ -5376,6 +5438,13 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
         return false;
     }
+
+    private static bool IsParameterProperty(IPropertySymbol property)
+        => property.GetAttributes().Any(static attribute =>
+            string.Equals(
+                attribute.AttributeClass?.ToDisplayString(),
+                "Microsoft.AspNetCore.Components.ParameterAttribute",
+                StringComparison.Ordinal));
 
     private static string ToLifecycleEmitName(IMethodSymbol method, string callbackName)
     {
