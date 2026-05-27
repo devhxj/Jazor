@@ -4733,7 +4733,7 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithDelegateValueUseShouldRender_DoesNotReportJAZORVGA005_AndKeepsFullReloadBoundary()
+    public void GenerateCatalog_WithDelegateNonNullCheckShouldRender_DoesNotReportJAZORVGA005_AndKeepsLogicSafeBoundary()
     {
         var compilation = CreateCompilation(
             "RazorVue.DelegateValueUseShouldRender.Generated",
@@ -4776,9 +4776,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4788,7 +4788,9 @@ public sealed class ESGeneratorTests
 
         Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
-        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.FullReloadRequired");
+        StringAssert.Contains(generatedSource, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(generatedSource, " == null);");
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
     }
 
     [TestMethod]

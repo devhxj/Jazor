@@ -170,7 +170,7 @@
   - 单表达式 / 条件表达式中的 declaration-pattern local，例如 `return Value is int props && props > 0;`
   - 条件表达式中的 recursive/list pattern 顶层声明 local，例如 `if (Value is int { } props) { return props > 0; } return false;` 或 `if (Values is [1, ..] props) { return props.Length > 0; } return false;`
   - 条件表达式中的 `out var` declaration local，例如 `if (int.TryParse(Value, out var props)) { return props > 0; } return false;`
-  - 线性局部声明、局部函数、受控 local lambda delegate 或受控 method-group delegate carrier 前缀后接最终 `return bool`，例如 `var threshold = Value + 1; return threshold > 2;`、`bool IsReady(int value) => value > 2; return IsReady(Value);`、`Func<int, bool> ready = value => value > 0; return ready(Value);` 或 `Func<int, bool> ready = IsReady; return ready(Value);`
+  - 线性局部声明、局部函数、受控 local lambda delegate 或受控 method-group delegate carrier 前缀后接最终 `return bool`，例如 `var threshold = Value + 1; return threshold > 2;`、`bool IsReady(int value) => value > 2; return IsReady(Value);`、`Func<int, bool> ready = value => value > 0; return ready(Value);`、`Func<int, bool> ready = IsReady; return ready(Value);`，或同一受控 delegate local 的 `ready is not null` / `ready != null` 空值判断
   - standalone local-only mutation 表达式语句，例如 `var count = Value; count++; count += 2; return count > 3;`
   - 外层 `if` / `else` 语句体，只要所有实际路径都以 `return bool` 完结，分支内只包含局部声明、local-only mutation statement 和同一受控 `if` 形态，例如 `if (Value > 0) { var count = Value; count--; return count > 0; } return false;`
   - 传统 constant/default `switch` 语句体，case body 继续限制在同一受控语句子集内，例如 `switch (Value) { case 0: return false; default: var count = Value; count++; return count > 1; }`
@@ -180,7 +180,7 @@
   - 受控同步异常分支，例如 `if (Value < 0) { throw new InvalidOperationException("negative"); } return Value > 0;`；`throw` 只作为异常终止路径进入 gate，方法体仍必须存在可证明的正常 `return bool` 路径
 - 动态条件、declaration local、线性前缀语句体、受控 `if`、受控传统 `switch`、guarded pattern `switch`、受控 loop 语句体、受控同步 `try/catch/finally` 和受控同步异常分支都继续交给 `RazorVueExpressionEmitter` / `SemanticWalker` / `Jazor.Compiler` lowering，RazorVue 只负责包裹 cached vnode gate：首次 render 强制通过，后续 `false` 返回上一次 cached vnode。
 - 这条支持是递归受控的，而不是“只要写了 `base.ShouldRender()` 或任意多语句体就接受”：
-  - `await foreach`、纯 `throw` 且无正常 `return bool` 路径、表达式内部 mutation、current-component property/field mutation、任意外部/member mutation、任意 invocation expression statement、除“声明点直接初始化为同步匿名函数或源码可分析 method group、返回 `bool` 并仅作为直接调用目标使用”以外的局部 lambda / delegate state、delegate 重赋值、delegate 值比较/传参/返回、嵌套局部函数、超出受控 block / `if` / loop / `try/catch/finally` 子集的 guarded pattern `switch` 仍不属于当前 `ShouldRender` gate 支持面
+  - `await foreach`、纯 `throw` 且无正常 `return bool` 路径、表达式内部 mutation、current-component property/field mutation、任意外部/member mutation、任意 invocation expression statement、除“声明点直接初始化为同步匿名函数或源码可分析 method group、返回 `bool` 并仅作为直接调用目标或 null/default 空值判断使用”以外的局部 lambda / delegate state、delegate 重赋值、delegate 与 delegate 比较、delegate 传参/返回、嵌套局部函数、超出受控 block / `if` / loop / `try/catch/finally` 子集的 guarded pattern `switch` 仍不属于当前 `ShouldRender` gate 支持面
   - 若 base 链形成循环、缺少源码、外部引用程序集无源码 override，或方法体形状超出上述受控子集，也会继续显式失败
   - 方法体、分支、catch 参数与表达式 declaration local 会通过 compiler host seam 统一重写声明点和引用点，避免与 `props` / `emit` / `slots` / render gate 缓存变量等 setup 名称发生 JavaScript 遮蔽；局部函数声明名和参数名必须本身是安全 binding identifier
 - 普通 lifecycle 的 base-pass-through 现在也对齐接受一个更窄的尾随 no-op 形态：例如 `await base.OnInitializedAsync(); return;` 这类“base 透传后只跟空返回”的方法体，会与纯 pass-through 一样被视为没有新增运行时行为，不再误退回 unsupported。

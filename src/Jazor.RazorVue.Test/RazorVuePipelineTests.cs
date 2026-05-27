@@ -29603,7 +29603,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForDelegateValueUseShouldRender()
+    public void RazorVue_Pipeline_LowersDelegateNonNullCheckShouldRenderConditionIntoCachedRenderGate()
     {
         var context = CreateContext(
             """
@@ -29634,6 +29634,118 @@ public sealed class RazorVuePipelineTests
                     {
                         Func<int, bool> ready = value => value > 0;
                         return ready is not null;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " = value => {");
+        StringAssert.Contains(artifact.ModuleCode, "return value > 0;");
+        StringAssert.Contains(artifact.ModuleCode, "return !(__jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " == null);");
+        StringAssert.Contains(artifact.ModuleCode, "if (__jazorShouldRenderHasRendered && !((() => {");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersMethodGroupDelegateNotEqualsNullShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-method-group-delegate-null-check")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    private bool IsReady(int value)
+                        => value > 0;
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> ready = IsReady;
+                        return ready != null;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "function isReady(value) {");
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " = isReady;");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " !== null;");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForNullInitializedDelegateCheckShouldRender()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-null-delegate-check")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool>? ready = null;
+                        return ready is null;
                     }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)

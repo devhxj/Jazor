@@ -4624,6 +4624,14 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
         switch (current)
         {
+            case IBinaryOperation binaryOperation
+                when IsShouldRenderTrackedDelegateLocalNullComparison(binaryOperation, delegateLocals):
+                return true;
+
+            case IIsPatternOperation isPatternOperation
+                when IsShouldRenderTrackedDelegateLocalNullPattern(isPatternOperation, delegateLocals):
+                return true;
+
             case IInvocationOperation invocation
                 when invocation.TargetMethod.MethodKind == MethodKind.DelegateInvoke &&
                      IsShouldRenderTrackedDelegateLocalReference(invocation.Instance, delegateLocals):
@@ -4651,6 +4659,46 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
                 return true;
         }
+    }
+
+    private static bool IsShouldRenderTrackedDelegateLocalNullComparison(
+        IBinaryOperation operation,
+        ImmutableHashSet<ILocalSymbol> delegateLocals)
+    {
+        if (operation.OperatorKind is not (BinaryOperatorKind.Equals or BinaryOperatorKind.NotEquals))
+            return false;
+
+        return
+            (IsShouldRenderTrackedDelegateLocalReference(operation.LeftOperand, delegateLocals) &&
+             IsNullConstantOperation(operation.RightOperand)) ||
+            (IsShouldRenderTrackedDelegateLocalReference(operation.RightOperand, delegateLocals) &&
+             IsNullConstantOperation(operation.LeftOperand));
+    }
+
+    private static bool IsShouldRenderTrackedDelegateLocalNullPattern(
+        IIsPatternOperation operation,
+        ImmutableHashSet<ILocalSymbol> delegateLocals)
+        => IsShouldRenderTrackedDelegateLocalReference(operation.Value, delegateLocals) &&
+           IsNullConstantPattern(operation.Pattern);
+
+    private static bool IsNullConstantPattern(IPatternOperation pattern)
+    {
+        switch (RazorVueOperationNormalizer.Unwrap(pattern))
+        {
+            case IConstantPatternOperation constantPattern:
+                return IsNullConstantOperation(constantPattern.Value);
+            case INegatedPatternOperation negatedPattern:
+                return IsNullConstantPattern(negatedPattern.Pattern);
+            default:
+                return false;
+        }
+    }
+
+    private static bool IsNullConstantOperation(IOperation? operation)
+    {
+        var current = RazorVueOperationNormalizer.Unwrap(operation);
+        return current?.ConstantValue.HasValue == true &&
+               current.ConstantValue.Value is null;
     }
 
     private static bool IsShouldRenderTrackedDelegateLocalReference(
