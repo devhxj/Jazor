@@ -2377,7 +2377,6 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             sawEmit ||
             tryStatement.Catches.Count != 1 ||
             tryStatement.Finally is not null ||
-            tryStatement.Catches[0].Filter is not null ||
             ContainsThrowStatement(tryStatement) ||
             ContainsDirectUnsupportedLifecycleReturnStatement(tryStatement.Block, allowDirectNoOpReturnStatement: true) ||
             ContainsDirectUnsupportedLifecycleReturnStatement(tryStatement.Catches[0].Block, allowDirectNoOpReturnStatement: false))

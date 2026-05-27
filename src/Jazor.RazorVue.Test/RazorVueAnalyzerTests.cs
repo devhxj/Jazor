@@ -5456,7 +5456,7 @@ public sealed class RazorVueAnalyzerTests
     }
 
     [TestMethod]
-    public async Task RazorVue_Misuse_BaseThenTryCatchBareReturnWithFilterSetParametersAsync_ReportsJAZORVUE006()
+    public async Task RazorVue_Misuse_BaseThenTryCatchBareReturnWithFilterSetParametersAsync_IsAccepted()
     {
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
@@ -5499,7 +5499,7 @@ public sealed class RazorVueAnalyzerTests
             }
             """);
 
-        AssertHasDiagnostic(diagnostics, "JAZORVUE006");
+        AssertNoDiagnostic(diagnostics, "JAZORVUE006");
     }
 
     [TestMethod]

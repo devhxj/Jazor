@@ -28050,7 +28050,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForTryCatchBareReturnWithFilterSetParametersAsyncLifecycle()
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForTryCatchBareReturnWithFilterSetParametersAsyncLifecycle()
     {
         var context = CreateContext(
             """
@@ -28105,7 +28105,9 @@ public sealed class RazorVuePipelineTests
             """);
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
-        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("watch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("await emit(\"readyChanged\", false);", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]
