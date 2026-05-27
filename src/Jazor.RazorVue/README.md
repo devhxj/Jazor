@@ -184,7 +184,7 @@
   - `protected override Task OnInitializedAsync() => default;` 现在会在 analyzer / lowering / generator 三层一致视为 unsupported，因为 `default(Task)` 实际是 `null`，不是 no-op
 - lifecycle payload 当前也已补齐一条更真实但仍受控的 setup 依赖路径：
   - `[Parameter]` property 仍可直接进入 payload lowering
-  - current-component setup value member 现在也可作为 payload 原子参与 lowering，包括 getter-bodied property、source-stable declaration-initialized value-like property/field，以及 private mutable setup carrier auto-property/field
+  - current-component setup value member 现在也可作为 payload 原子参与 lowering，包括 getter-bodied property、source-stable declaration-initialized value-like property/field，以及 private mutable setup carrier auto-property/field；这些 member 可以声明在当前组件或源码可分析 base class 上，只要它们仍满足同一 source-stable / private-carrier 合同
   - 这些 member 仍不是在 lifecycle lowering 内手拼 JS；RazorVue 会把它们先纳入同一 setup/property/field lowering 主线，再在 payload 里引用最终 setup binding / setup function
 - 这条 lifecycle payload 扩面当前刻意只开放受控 current-component member 子集：
   - getter-bodied property 只接受 expression-bodied property、getter accessor 中单个 `return` 的 property，以及同一受控子集内的 getter 链
@@ -229,6 +229,7 @@
   - `readonly` field 或可证明 source-stable 的 declaration initializer member 会作为稳定 `const` binding
   - private mutable field / private-setter auto-property 会作为 setup `let` carrier，允许 later writes；没有 initializer 时会按 CLR 默认值发射，存在 initializer 但无法 lowering 时会 fail-fast
   - direct template expression、setup helper、lifecycle payload 与 imperative render body 引用走同一 setup binding 合同，不分裂成多套语义
+- 上述 setup value member 合同同样覆盖源码可分析 base class 上的受控 member：例如 base class 的 declaration-initialized getter-only property 或 `readonly` field 被 derived component lifecycle payload 引用时，会先发射稳定 setup binding，再在 `watch(..., { immediate: true })` body 中引用该 binding；继承来源不会放宽 public mutable property、setter 写入时序或构造时序模拟。
 - 这条扩面同样保持 fail-fast：
   - property 链一旦出现循环依赖，会在编译期直接报 `UnsupportedSetupLogicLowering`
   - setter 不是 private 的 mutable property、带 private setter 但源码中存在后续 property 写入的 getter property、非 private mutable field、static/indexer/隐式成员、以及存在 initializer 但无法进入 compiler lowering 的 mutable setup carrier 会直接报 `UnsupportedSetupLogicLowering`
