@@ -2353,6 +2353,40 @@ public sealed class RazorVueAnalyzerTests
     }
 
     [TestMethod]
+    public async Task RazorVue_Misuse_SourceStableLocalOnlyAsyncNoOpAwaitLifecycleBody_IsAccepted()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class ValidComponent : ComponentBase, IVueComponent
+            {
+                protected override async Task OnInitializedAsync()
+                {
+                    var count = 1;
+                    await Task.CompletedTask;
+                }
+            }
+            """);
+
+        AssertNoDiagnostic(diagnostics, "JAZORVUE005");
+    }
+
+    [TestMethod]
     public async Task RazorVue_Misuse_TerminalGuardReturnLifecycleBody_IsAccepted()
     {
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
@@ -2459,6 +2493,40 @@ public sealed class RazorVueAnalyzerTests
                 private int GetCount()
                 {
                     return 1;
+                }
+            }
+            """);
+
+        AssertHasDiagnostic(diagnostics, "JAZORVUE005");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_SourceStableLocalOnlyAsyncSideEffectAwaitLifecycleBody_ReportsJAZORVUE005()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class InvalidComponent : ComponentBase, IVueComponent
+            {
+                protected override async Task OnInitializedAsync()
+                {
+                    var count = 1;
+                    await Task.Delay(1);
                 }
             }
             """);

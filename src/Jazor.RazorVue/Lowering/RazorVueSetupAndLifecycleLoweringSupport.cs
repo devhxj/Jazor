@@ -1461,6 +1461,10 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                     when IsNoOpLifecycleLocalDeclaration(compilation, method, localDeclaration, semanticModel):
                     continue;
 
+                case ExpressionStatementSyntax expressionStatement
+                    when IsNoOpLifecycleExpression(compilation, method, expressionStatement.Expression):
+                    continue;
+
                 case IfStatementSyntax ifStatement
                     when index == body.Statements.Count - 1 &&
                          IsNoOpLifecycleTerminalIfReturnStatement(compilation, method, ifStatement, semanticModel):

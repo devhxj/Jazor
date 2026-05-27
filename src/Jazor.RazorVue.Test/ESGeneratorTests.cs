@@ -3980,6 +3980,71 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithSourceStableLocalOnlyAsyncNoOpAwaitLifecycle_DoesNotEmitLifecycleHooks()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.SourceStableLocalOnlyAsyncNoOpAwaitLifecycle.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/async-noop-await-card")]
+                public class AsyncNoOpAwaitCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override async Task OnInitializedAsync()
+                    {
+                        var count = 1;
+                        await Task.CompletedTask;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var lifecycleDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+
+        Assert.AreEqual(0, lifecycleDiagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        StringAssert.Contains(generatedSource, "components/async-noop-await-card.mjs");
+        Assert.IsFalse(generatedSource.Contains("Task.CompletedTask", StringComparison.Ordinal), generatedSource);
+        Assert.IsFalse(generatedSource.Contains("onMounted", StringComparison.Ordinal), generatedSource);
+        Assert.IsFalse(generatedSource.Contains("watch", StringComparison.Ordinal), generatedSource);
+        Assert.IsFalse(generatedSource.Contains("onUpdated", StringComparison.Ordinal), generatedSource);
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.TemplateOnly");
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithTerminalNoOpReturnLifecycle_DoesNotEmitLifecycleHooks()
     {
         var compilation = CreateCompilation(
