@@ -9823,6 +9823,95 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithPrivateMutableSetupCarrierLifecyclePayload_LowersWithoutJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.PrivateMutableSetupCarrierLifecyclePayload.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/private-mutable-lifecycle-card")]
+                public class PrivateMutableLifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ReadyChanged { get; set; }
+
+                    private string Prefix { get; set; } = "Count: ";
+                    private int _readyCode = 7;
+
+                    protected override void OnParametersSet()
+                    {
+                        ValueChanged.InvokeAsync(Prefix + Value);
+                    }
+
+                    protected override Task OnAfterRenderAsync(bool firstRender)
+                    {
+                        return ReadyChanged.InvokeAsync(_readyCode);
+                    }
+
+                    private void Mutate()
+                    {
+                        Prefix = "Changed: ";
+                        _readyCode++;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, Value);
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        StringAssert.Contains(generatedSource, "let prefix = \\\"Count: \\\";");
+        StringAssert.Contains(generatedSource, "let _readyCode = 7;");
+        StringAssert.Contains(generatedSource, "watch(() => [props.value], () => {");
+        StringAssert.Contains(generatedSource, "emit(\\\"update:value\\\", (prefix + props.value));");
+        StringAssert.Contains(generatedSource, "await emit(\\\"readyChanged\\\", _readyCode);");
+        Assert.IsTrue(
+            generatedSource.IndexOf("let prefix = \\\"Count: \\\";", StringComparison.Ordinal) <
+            generatedSource.IndexOf("watch(() => [props.value], () => {", StringComparison.Ordinal),
+            generatedSource);
+        Assert.IsTrue(
+            generatedSource.IndexOf("let _readyCode = 7;", StringComparison.Ordinal) <
+            generatedSource.IndexOf("onMounted(async () => {", StringComparison.Ordinal),
+            generatedSource);
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithHelperCallLifecyclePayload_LowersWithoutJAZORVGA005()
     {
         var compilation = CreateCompilation(

@@ -2899,6 +2899,62 @@ public sealed class RazorVueAnalyzerTests
     }
 
     [TestMethod]
+    public async Task RazorVue_Misuse_PrivateMutableSetupCarrierLifecyclePayload_IsAccepted()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class ValidComponent : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public int Value { get; set; }
+
+                [Parameter]
+                public EventCallback<string> ValueChanged { get; set; }
+
+                [Parameter]
+                public EventCallback<int> ReadyChanged { get; set; }
+
+                private string Prefix { get; set; } = "Count: ";
+                private int _readyCode = 7;
+
+                protected override void OnParametersSet()
+                {
+                    ValueChanged.InvokeAsync(Prefix + Value);
+                }
+
+                protected override Task OnAfterRenderAsync(bool firstRender)
+                {
+                    return ReadyChanged.InvokeAsync(_readyCode);
+                }
+
+                private void Mutate()
+                {
+                    Prefix = "Changed: ";
+                    _readyCode++;
+                }
+            }
+            """);
+
+        AssertNoDiagnostic(diagnostics, "JAZORVUE005");
+    }
+
+    [TestMethod]
     public async Task RazorVue_Misuse_HelperCallLifecyclePayload_IsAccepted()
     {
         var diagnostics = await GetAnalyzerDiagnosticsAsync(

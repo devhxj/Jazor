@@ -15668,6 +15668,127 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersPrivateMutablePropertyOnParametersSetLifecyclePayload()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/private-mutable-lifecycle-card")]
+                public class PrivateMutableLifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string> ValueChanged { get; set; }
+
+                    private string Prefix { get; set; } = "Count: ";
+
+                    protected override void OnParametersSet()
+                    {
+                        ValueChanged.InvokeAsync(Prefix + Value);
+                    }
+
+                    private void Mutate()
+                    {
+                        Prefix = "Changed: ";
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "let prefix = \"Count: \";");
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], () => {");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"update:value\", (prefix + props.value));");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersPrivateMutableFieldOnAfterRenderAsyncLifecyclePayload()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/private-mutable-field-lifecycle-card")]
+                public class PrivateMutableFieldLifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public EventCallback<int> ReadyChanged { get; set; }
+
+                    private int _readyCode = 7;
+
+                    protected override Task OnAfterRenderAsync(bool firstRender)
+                    {
+                        return ReadyChanged.InvokeAsync(_readyCode);
+                    }
+
+                    private void Mutate()
+                    {
+                        _readyCode++;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "let _readyCode = 7;");
+        StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", _readyCode);");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersHelperCallOnParametersSetLifecyclePayload_AndEmitsSetupBeforeWatch()
     {
         var context = CreateContext(
