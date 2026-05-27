@@ -2500,7 +2500,86 @@ public sealed class RazorVueAnalyzerTests
     }
 
     [TestMethod]
-    public async Task RazorVue_Misuse_SideEffectLocalOnlyLifecycleBody_ReportsJAZORVUE005()
+    public async Task RazorVue_Misuse_SourceStableHelperLocalOnlyLifecycleBody_IsAccepted()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class ValidComponent : ComponentBase, IVueComponent
+            {
+                protected override void OnInitialized()
+                {
+                    var count = GetCount();
+                }
+
+                private int GetCount()
+                {
+                    return 1;
+                }
+            }
+            """);
+
+        AssertNoDiagnostic(diagnostics, "JAZORVUE005");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_PartialSourceStableHelperLocalOnlyLifecycleBody_IsAccepted()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public partial class ValidComponent : ComponentBase, IVueComponent
+            {
+                protected override void OnInitialized()
+                {
+                    var count = GetCount();
+                }
+
+                private partial int GetCount();
+            }
+
+            public partial class ValidComponent
+            {
+                private partial int GetCount()
+                {
+                    return 1;
+                }
+            }
+            """);
+
+        AssertNoDiagnostic(diagnostics, "JAZORVUE005");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_MutatingHelperLocalOnlyLifecycleBody_ReportsJAZORVUE005()
     {
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
@@ -2521,6 +2600,8 @@ public sealed class RazorVueAnalyzerTests
             [ECMAScript.ECMAScriptModule]
             public class InvalidComponent : ComponentBase, IVueComponent
             {
+                private int _count;
+
                 protected override void OnInitialized()
                 {
                     var count = GetCount();
@@ -2528,7 +2609,83 @@ public sealed class RazorVueAnalyzerTests
 
                 private int GetCount()
                 {
-                    return 1;
+                    _count++;
+                    return _count;
+                }
+            }
+            """);
+
+        AssertHasDiagnostic(diagnostics, "JAZORVUE005");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_RefReturningHelperLocalOnlyLifecycleBody_ReportsJAZORVUE005()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class InvalidComponent : ComponentBase, IVueComponent
+            {
+                private readonly int _count = 1;
+
+                protected override void OnInitialized()
+                {
+                    var count = GetCount();
+                }
+
+                private ref readonly int GetCount()
+                    => ref _count;
+            }
+            """);
+
+        AssertHasDiagnostic(diagnostics, "JAZORVUE005");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_TaskReturningHelperLocalOnlyLifecycleBody_ReportsJAZORVUE005()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class InvalidComponent : ComponentBase, IVueComponent
+            {
+                protected override void OnInitialized()
+                {
+                    var operation = GetOperation();
+                }
+
+                private Task GetOperation()
+                {
+                    return default!;
                 }
             }
             """);
@@ -2605,7 +2762,7 @@ public sealed class RazorVueAnalyzerTests
     }
 
     [TestMethod]
-    public async Task RazorVue_Misuse_TerminalGuardReturnWithSideEffectConditionLifecycleBody_ReportsJAZORVUE005()
+    public async Task RazorVue_Misuse_TerminalGuardReturnWithSourceStableHelperConditionLifecycleBody_IsAccepted()
     {
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
@@ -2624,7 +2781,7 @@ public sealed class RazorVueAnalyzerTests
             }
 
             [ECMAScript.ECMAScriptModule]
-            public class InvalidComponent : ComponentBase, IVueComponent
+            public class ValidComponent : ComponentBase, IVueComponent
             {
                 protected override void OnInitialized()
                 {
@@ -2641,7 +2798,51 @@ public sealed class RazorVueAnalyzerTests
             }
             """);
 
-        AssertHasDiagnostic(diagnostics, "JAZORVUE005");
+        AssertNoDiagnostic(diagnostics, "JAZORVUE005");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_TerminalGuardReturnWithMultiLevelSourceStableHelperConditionLifecycleBody_IsAccepted()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class ValidComponent : ComponentBase, IVueComponent
+            {
+                protected override void OnInitialized()
+                {
+                    if (IsReady())
+                    {
+                        return;
+                    }
+                }
+
+                private bool IsReady()
+                    => IsStable();
+
+                private bool IsStable()
+                {
+                    var ready = true;
+                    return ready;
+                }
+            }
+            """);
+
+        AssertNoDiagnostic(diagnostics, "JAZORVUE005");
     }
 
     [TestMethod]

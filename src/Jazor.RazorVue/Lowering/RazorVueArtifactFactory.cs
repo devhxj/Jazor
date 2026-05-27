@@ -141,7 +141,6 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
     {
         _ = context;
         _ = renderTree;
-        _ = expressionEmitter;
 
         var descriptor = snapshot.Descriptor;
         var logicShape = new StringBuilder();
@@ -181,7 +180,9 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             logicShape.AppendLine("property:" + property.Name + "|" + property.IsReadOnly + "|" + property.LoweringKind + "|" + DescribeSetupPropertyShape(property.PropertySymbol));
         }
 
+        var requiredMethods = expressionEmitter.GetRequiredSetupMethods();
         foreach (var method in snapshot.Logic.Methods
+                     .Where(method => ShouldIncludeLogicMethodInIdentity(method, requiredMethods))
                      .OrderBy(static method => method.Name, StringComparer.Ordinal)
                      .ThenBy(static method => method.Arity))
         {
@@ -240,7 +241,7 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
              shouldRenderShape.StartsWith("condition:", StringComparison.Ordinal) ||
              snapshot.Logic.Properties.Length > 0 ||
              snapshot.Logic.Fields.Length > 0 ||
-             snapshot.Logic.Methods.Length > 0))
+             HasRuntimeLogicMethodsForHmr(snapshot, expressionEmitter)))
         {
             return HmrBoundaryKind.FullReloadRequired;
         }
@@ -251,7 +252,7 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             shouldRenderShape.StartsWith("condition:", StringComparison.Ordinal) ||
             snapshot.Logic.Properties.Length > 0 ||
             snapshot.Logic.Fields.Length > 0 ||
-            snapshot.Logic.Methods.Length > 0)
+            HasRuntimeLogicMethodsForHmr(snapshot, expressionEmitter))
         {
             return HmrBoundaryKind.LogicSafe;
         }
@@ -260,6 +261,24 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             return HmrBoundaryKind.TemplateOnly;
 
         return HmrBoundaryKind.Unknown;
+    }
+
+    private static bool HasRuntimeLogicMethodsForHmr(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter expressionEmitter)
+    {
+        var requiredMethods = expressionEmitter.GetRequiredSetupMethods();
+        return snapshot.Logic.Methods.Any(method => ShouldIncludeLogicMethodInIdentity(method, requiredMethods));
+    }
+
+    private static bool ShouldIncludeLogicMethodInIdentity(
+        VueLogicMethodDescriptor method,
+        ImmutableArray<VueLogicMethodDescriptor> requiredMethods)
+    {
+        // Private helpers only affect runtime identity when they are actually
+        // emitted. Public/protected/internal methods remain conservative.
+        return method.MethodSymbol.DeclaredAccessibility != Accessibility.Private ||
+               requiredMethods.Any(required => RazorVueSymbolIdentity.SameMember(required.MethodSymbol, method.MethodSymbol));
     }
 
     internal static HmrBoundaryKind ClassifyHmrBoundaryForSfc(

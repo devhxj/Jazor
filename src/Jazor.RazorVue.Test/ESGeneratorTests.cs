@@ -17063,7 +17063,7 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithUnsupportedLifecycleLowering_ReportsJAZORVGA005()
+    public void GenerateCatalog_WithSourceStableHelperLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
     {
         var compilation = CreateCompilation(
             "RazorVue.UnsupportedLifecycle.Generated",
@@ -17117,14 +17117,11 @@ public sealed class ESGeneratorTests
             .ToArray();
 
         Assert.AreEqual(
-            1,
+            0,
             diagnostics.Length,
             string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         Assert.AreEqual(0, fallbackDiagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Components.LifecycleCard");
-        Assert.AreEqual(16, diagnostics[0].Location.GetLineSpan().StartLinePosition.Line + 1);
-        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
     }
 
     [TestMethod]

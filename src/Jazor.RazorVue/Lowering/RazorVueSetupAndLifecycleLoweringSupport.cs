@@ -1532,7 +1532,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         Compilation compilation,
         IMethodSymbol method,
         IOperation? operation,
-        HashSet<ISymbol> visitedValueMembers)
+        HashSet<ISymbol> visitedSymbols)
     {
         var current = RazorVueOperationNormalizer.Unwrap(operation);
         if (current is null)
@@ -1550,31 +1550,163 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             IPropertyReferenceOperation property
                 when IsCurrentComponentParameterProperty(method, property) => true,
             IPropertyReferenceOperation property
-                when IsCurrentComponentSourceStableValueMember(compilation, method, property, visitedValueMembers) => true,
+                when IsCurrentComponentSourceStableValueMember(compilation, method, property, visitedSymbols) => true,
             IFieldReferenceOperation field
-                when IsCurrentComponentSourceStableValueMember(compilation, method, field, visitedValueMembers) => true,
+                when IsCurrentComponentSourceStableValueMember(compilation, method, field, visitedSymbols) => true,
+            IInvocationOperation invocation
+                when IsIgnorableCurrentComponentNoOpLifecycleHelperInvocation(compilation, method, invocation, visitedSymbols) => true,
             IConversionOperation conversion
                 when conversion.OperatorMethod is null =>
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conversion.Operand, visitedValueMembers),
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conversion.Operand, visitedSymbols),
             IUnaryOperation unary
                 when unary.OperatorMethod is null =>
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, unary.Operand, visitedValueMembers),
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, unary.Operand, visitedSymbols),
             IBinaryOperation binary
                 when binary.OperatorMethod is null =>
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, binary.LeftOperand, visitedValueMembers) &&
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, binary.RightOperand, visitedValueMembers),
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, binary.LeftOperand, visitedSymbols) &&
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, binary.RightOperand, visitedSymbols),
             IConditionalOperation conditional
                 when conditional.WhenTrue is not null && conditional.WhenFalse is not null =>
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conditional.Condition, visitedValueMembers) &&
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conditional.WhenTrue, visitedValueMembers) &&
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conditional.WhenFalse, visitedValueMembers),
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conditional.Condition, visitedSymbols) &&
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conditional.WhenTrue, visitedSymbols) &&
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conditional.WhenFalse, visitedSymbols),
             ICoalesceOperation coalesce =>
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, coalesce.Value, visitedValueMembers) &&
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, coalesce.WhenNull, visitedValueMembers),
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, coalesce.Value, visitedSymbols) &&
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, coalesce.WhenNull, visitedSymbols),
             ITupleOperation tuple =>
-                tuple.Elements.All(element => IsIgnorableNoOpLifecycleValueExpression(compilation, method, element, visitedValueMembers)),
+                tuple.Elements.All(element => IsIgnorableNoOpLifecycleValueExpression(compilation, method, element, visitedSymbols)),
             _ => false
         };
+    }
+
+    private static bool IsIgnorableCurrentComponentNoOpLifecycleHelperInvocation(
+        Compilation compilation,
+        IMethodSymbol lifecycleMethod,
+        IInvocationOperation invocation,
+        HashSet<ISymbol> visitedSymbols)
+    {
+        var helperMethod = invocation.TargetMethod;
+        if (helperMethod.MethodKind != MethodKind.Ordinary ||
+            helperMethod.DeclaredAccessibility != Accessibility.Private ||
+            helperMethod.IsStatic ||
+            helperMethod.IsAsync ||
+            helperMethod.ReturnsVoid ||
+            helperMethod.ReturnsByRef ||
+            helperMethod.ReturnsByRefReadonly ||
+            IsTaskLikeType(compilation, helperMethod.ReturnType) ||
+            helperMethod.Parameters.Length != 0 ||
+            helperMethod.TypeParameters.Length != 0 ||
+            invocation.Arguments.Length != 0 ||
+            helperMethod.ContainingType is null ||
+            !SymbolEqualityComparer.Default.Equals(helperMethod.ContainingType, lifecycleMethod.ContainingType))
+        {
+            return false;
+        }
+
+        var instance = RazorVueOperationNormalizer.Unwrap(invocation.Instance);
+        if (instance is not null and not IInstanceReferenceOperation)
+            return false;
+
+        return IsIgnorableNoOpLifecycleHelperMethod(compilation, lifecycleMethod, helperMethod, visitedSymbols);
+    }
+
+    private static bool IsIgnorableNoOpLifecycleHelperMethod(
+        Compilation compilation,
+        IMethodSymbol lifecycleMethod,
+        IMethodSymbol helperMethod,
+        HashSet<ISymbol> visitedSymbols)
+    {
+        if (helperMethod.DeclaringSyntaxReferences.Length == 0 ||
+            !visitedSymbols.Add(helperMethod))
+        {
+            return false;
+        }
+
+        try
+        {
+            if (!TryGetMethodDeclarationWithBody(helperMethod, out var methodSyntax))
+                return false;
+
+            var semanticModel = compilation.GetSemanticModel(methodSyntax.SyntaxTree);
+            if (methodSyntax.ExpressionBody is not null)
+            {
+                var expressionOperation = semanticModel.GetOperation(methodSyntax.ExpressionBody.Expression);
+                return IsIgnorableNoOpLifecycleValueExpression(
+                    compilation,
+                    lifecycleMethod,
+                    expressionOperation,
+                    visitedSymbols);
+            }
+
+            if (methodSyntax.Body is null ||
+                methodSyntax.Body.Statements.Count == 0)
+            {
+                return false;
+            }
+
+            for (var index = 0; index < methodSyntax.Body.Statements.Count - 1; index++)
+            {
+                if (methodSyntax.Body.Statements[index] is not LocalDeclarationStatementSyntax localDeclaration ||
+                    !IsNoOpLifecycleLocalDeclaration(compilation, lifecycleMethod, localDeclaration, semanticModel))
+                {
+                    return false;
+                }
+            }
+
+            if (methodSyntax.Body.Statements[methodSyntax.Body.Statements.Count - 1] is not ReturnStatementSyntax { Expression: not null } returnStatement)
+                return false;
+
+            var returnOperation = semanticModel.GetOperation(returnStatement.Expression);
+            return IsIgnorableNoOpLifecycleValueExpression(
+                compilation,
+                lifecycleMethod,
+                returnOperation,
+                visitedSymbols);
+        }
+        finally
+        {
+            visitedSymbols.Remove(helperMethod);
+        }
+    }
+
+    private static bool TryGetMethodDeclarationWithBody(
+        IMethodSymbol method,
+        out MethodDeclarationSyntax methodSyntax)
+    {
+        if (TryGetMethodDeclarationWithBody(method.DeclaringSyntaxReferences, out methodSyntax))
+            return true;
+
+        if (method.PartialImplementationPart is not null &&
+            TryGetMethodDeclarationWithBody(method.PartialImplementationPart.DeclaringSyntaxReferences, out methodSyntax))
+        {
+            return true;
+        }
+
+        if (method.PartialDefinitionPart is not null &&
+            TryGetMethodDeclarationWithBody(method.PartialDefinitionPart.DeclaringSyntaxReferences, out methodSyntax))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryGetMethodDeclarationWithBody(
+        ImmutableArray<SyntaxReference> syntaxReferences,
+        out MethodDeclarationSyntax methodSyntax)
+    {
+        foreach (var syntaxReference in syntaxReferences)
+        {
+            if (syntaxReference.GetSyntax() is MethodDeclarationSyntax candidate &&
+                (candidate.ExpressionBody is not null || candidate.Body is not null))
+            {
+                methodSyntax = candidate;
+                return true;
+            }
+        }
+
+        methodSyntax = null!;
+        return false;
     }
 
     private static bool IsCurrentComponentSourceStableValueMember(
@@ -3711,6 +3843,21 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                type is not null &&
                SymbolEqualityComparer.Default.Equals(type.OriginalDefinition, valueTaskType);
     }
+
+    private static bool IsTaskLikeType(Compilation compilation, ITypeSymbol? type)
+    {
+        if (type is null)
+            return false;
+
+        return IsSameOriginalDefinition(type, compilation.GetTypeByMetadataName("System.Threading.Tasks.Task")) ||
+               IsSameOriginalDefinition(type, compilation.GetTypeByMetadataName("System.Threading.Tasks.Task`1")) ||
+               IsSameOriginalDefinition(type, compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask")) ||
+               IsSameOriginalDefinition(type, compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask`1"));
+    }
+
+    private static bool IsSameOriginalDefinition(ITypeSymbol type, INamedTypeSymbol? candidate)
+        => candidate is not null &&
+           SymbolEqualityComparer.Default.Equals(type.OriginalDefinition, candidate);
 
     private static bool ReturnNoBaseLifecycleEmitCall(out SupportedEmitCall? emitCall)
     {
