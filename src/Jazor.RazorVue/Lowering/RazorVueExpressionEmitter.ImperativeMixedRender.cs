@@ -79,6 +79,7 @@ internal sealed partial class RazorVueExpressionEmitter
             RazorVueElementNode element => EmitImperativeCompatibleElementNode(element, allowedLocalSymbols, allowedParameterSymbols),
             RazorVueComponentNode component => EmitImperativeCompatibleComponentNode(component, allowedLocalSymbols, allowedParameterSymbols),
             RazorVueConditionalNode conditional => EmitImperativeCompatibleConditionalNode(conditional, allowedLocalSymbols, allowedParameterSymbols),
+            RazorVueRecoveredSwitchConditionalNode conditional => EmitImperativeCompatibleRecoveredSwitchConditionalNode(conditional, allowedLocalSymbols, allowedParameterSymbols),
             RazorVueForEachNode loop => EmitImperativeCompatibleForEachNode(loop, allowedLocalSymbols, allowedParameterSymbols),
             RazorVueForNode loop => EmitImperativeCompatibleForNode(loop, allowedLocalSymbols, allowedParameterSymbols),
             RazorVueTemplateScopeNode templateScope => EmitImperativeCompatibleTemplateScopeNode(templateScope, allowedLocalSymbols, allowedParameterSymbols),
@@ -155,6 +156,14 @@ internal sealed partial class RazorVueExpressionEmitter
         ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
         ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
         => "(" + EmitScopedExpression(conditional.Condition, allowedLocalSymbols, allowedParameterSymbols) + " ? " +
+           EmitImperativeCompatibleFragmentExpression(conditional.WhenTrue, allowedLocalSymbols, allowedParameterSymbols) + " : " +
+           EmitImperativeCompatibleFragmentExpression(conditional.WhenFalse, allowedLocalSymbols, allowedParameterSymbols) + ")";
+
+    private string EmitImperativeCompatibleRecoveredSwitchConditionalNode(
+        RazorVueRecoveredSwitchConditionalNode conditional,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+        => "(" + conditional.ConditionExpressionText + " ? " +
            EmitImperativeCompatibleFragmentExpression(conditional.WhenTrue, allowedLocalSymbols, allowedParameterSymbols) + " : " +
            EmitImperativeCompatibleFragmentExpression(conditional.WhenFalse, allowedLocalSymbols, allowedParameterSymbols) + ")";
 
@@ -857,6 +866,9 @@ internal sealed partial class RazorVueExpressionEmitter
                 component.SlotTemplates.Any(static slot => ContainsImperativeRenderBodyCore(slot.Children)) ||
                 component.ImplicitDefaultSlotAssignments.Any(static assignment => ContainsImperativeRenderBodyCore(assignment.Children)),
             RazorVueConditionalNode conditional =>
+                ContainsImperativeRenderBodyCore(conditional.WhenTrue) ||
+                ContainsImperativeRenderBodyCore(conditional.WhenFalse),
+            RazorVueRecoveredSwitchConditionalNode conditional =>
                 ContainsImperativeRenderBodyCore(conditional.WhenTrue) ||
                 ContainsImperativeRenderBodyCore(conditional.WhenFalse),
             RazorVueTemplateScopeNode templateScope => ContainsImperativeRenderBodyCore(templateScope.Children),

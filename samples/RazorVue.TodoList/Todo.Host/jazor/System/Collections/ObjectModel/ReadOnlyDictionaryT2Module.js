@@ -1,6 +1,6 @@
 import { markAsReadOnlyDictionaryCarrier } from "System/RuntimeModule.js";
 function ensureInstance(instance) {
-  if (instance === null)
+  if (instance == null)
     throw new Error("NullReferenceException: instance is null.");
 }
 export function _b22e987e1be225aa(dictionary) {

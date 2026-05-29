@@ -3,9 +3,9 @@ function ensureWholeNumber(value, parameterName) {
     throw new Error(`ArgumentOutOfRangeException: ${parameterName} must be a whole number.`);
 }
 export function _5d3d00c3ee9d4076(instance, array, index) {
-  if (instance === null)
+  if (instance == null)
     throw new Error("NullReferenceException: instance is null.");
-  if (array === null)
+  if (array == null)
     throw new Error("ArgumentNullException: array is null");
   ensureWholeNumber(index, "index");
   if (index < 0 || index > array.length)

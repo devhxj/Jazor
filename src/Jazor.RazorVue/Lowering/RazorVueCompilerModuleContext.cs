@@ -80,7 +80,10 @@ internal sealed class RazorVueCompilerModuleContext
             _helperTypeNames.ContainsKey(namedType.OriginalDefinition))
         {
             _requiredHelperTypes.Add(namedType.OriginalDefinition);
+            return;
         }
+
+        ThrowIfUnsupportedSameArtifactRuntimeHelperType(operation, operation.Type, "object creation");
     }
 
     public void RecordTypeReference(ITypeSymbol type)
@@ -89,7 +92,10 @@ internal sealed class RazorVueCompilerModuleContext
             _helperTypeNames.ContainsKey(namedType.OriginalDefinition))
         {
             _requiredHelperTypes.Add(namedType.OriginalDefinition);
+            return;
         }
+
+        ThrowIfUnsupportedSameArtifactRuntimeHelperType(null, type, "runtime type reference");
     }
 
     public void AppendRequiredHelperTypeDeclarations(StringBuilder builder, string indent)
@@ -260,7 +266,7 @@ internal sealed class RazorVueCompilerModuleContext
         return builder.ToImmutable();
     }
 
-    private static bool IsSameArtifactModuleType(INamedTypeSymbol componentType, INamedTypeSymbol type)
+    internal static bool IsSameArtifactModuleType(INamedTypeSymbol componentType, INamedTypeSymbol type)
     {
         for (var containingType = type.ContainingType; containingType is not null; containingType = containingType.ContainingType)
         {
@@ -275,11 +281,39 @@ internal sealed class RazorVueCompilerModuleContext
         return SymbolEqualityComparer.Default.Equals(topLevelType.ContainingNamespace, componentType.ContainingNamespace);
     }
 
-    private static bool IsRuntimeHelperTypeCandidate(INamedTypeSymbol type)
+    internal static bool IsRuntimeHelperTypeCandidate(INamedTypeSymbol type)
         => type.TypeKind == TypeKind.Class &&
            !type.IsRecord &&
            type.TypeParameters.Length == 0 &&
            !HasDirectECMAScriptSupportMarker(type);
+
+    private void ThrowIfUnsupportedSameArtifactRuntimeHelperType(IOperation? operation, ITypeSymbol? typeSymbol, string usage)
+    {
+        if (typeSymbol is not INamedTypeSymbol namedType ||
+            namedType.TypeKind != TypeKind.Class ||
+            namedType.IsRecord ||
+            !IsSameArtifactModuleType(_snapshot.ComponentSymbol, namedType) ||
+            IsRuntimeHelperTypeCandidate(namedType))
+        {
+            return;
+        }
+
+        if (HasDirectECMAScriptSupportMarker(namedType) &&
+            !RazorVueComponentTypeCarrierHelper.IsVueComponentType(_snapshot.Compilation, namedType))
+        {
+            return;
+        }
+
+        var reason = namedType.TypeParameters.Length > 0
+            ? "generic helper classes are not supported"
+            : namedType.IsRecord
+                ? "record helper types lower structurally and do not produce runtime class declarations"
+                : HasDirectECMAScriptSupportMarker(namedType)
+                    ? "ECMAScript/RazorVue component types are not same-artifact runtime helper classes"
+                    : "the type is not eligible for same-artifact runtime helper class lowering";
+
+        throw CreateUnsupportedSetupHelperTypeException(namedType, operation, usage, reason);
+    }
 
     private static bool HasDirectECMAScriptSupportMarker(INamedTypeSymbol type)
         => type.OriginalDefinition.GetAttributes().Any(static attribute =>
@@ -357,15 +391,26 @@ internal sealed class RazorVueCompilerModuleContext
     }
 
     private static RazorVueCompilationIssueException CreateUnsupportedSetupHelperTypeException(INamedTypeSymbol type)
+        => CreateUnsupportedSetupHelperTypeException(
+            type,
+            operation: null,
+            usage: "helper type lowering",
+            reason: "the type could not be converted to a runtime helper class");
+
+    private static RazorVueCompilationIssueException CreateUnsupportedSetupHelperTypeException(
+        INamedTypeSymbol type,
+        IOperation? operation,
+        string usage,
+        string reason)
     {
-        var originLocation = type.Locations.FirstOrDefault(static location => location.IsInSource);
+        var originLocation = operation?.Syntax.GetLocation() ?? type.Locations.FirstOrDefault(static location => location.IsInSource);
         var origin = originLocation is null
             ? null
             : RazorVueSourceOrigin.FromLocation(originLocation, RazorVueOriginKind.Logic);
         var issue = new RazorVueCompilationIssue(
             RazorVueIssueCode.UnsupportedSetupLogicLowering,
             RazorVueIssueSeverity.Error,
-            $"RazorVue setup lowering does not support helper type '{type.ToDisplayString()}' in the same artifact module.",
+            $"RazorVue setup lowering does not support helper type '{type.ToDisplayString()}' for {usage} in the same artifact module: {reason}.",
             ImmutableArray<string>.Empty);
         return new RazorVueCompilationIssueException(issue, type.ToDisplayString(), origin);
     }

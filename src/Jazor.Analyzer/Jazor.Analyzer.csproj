@@ -21,8 +21,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Lib.Harmony" Version="2.4.2" GeneratePathProperty="true" />
-    <None Include="$(PkgLib_Harmony)\lib\net10.0\0Harmony.dll" CopyToOutputDirectory="PreserveNewest" Link="0Harmony.dll" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>

@@ -53,7 +53,6 @@ public sealed class SdkIntegrationTests
             {
                 "analyzers/dotnet/cs/Acornima.Extras.dll",
                 "analyzers/dotnet/cs/Acornima.dll",
-                "analyzers/dotnet/cs/0Harmony.dll",
                 "analyzers/dotnet/cs/Jazor.Analyzer.dll",
                 "analyzers/dotnet/cs/Jazor.Analyzer.pdb",
                 "analyzers/dotnet/cs/ECMAScript.dll",
@@ -77,8 +76,11 @@ public sealed class SdkIntegrationTests
                 entry.Contains("Razor.Compiler", StringComparison.OrdinalIgnoreCase) ||
                 entry.Contains("Razor.Utilities.Shared", StringComparison.OrdinalIgnoreCase) ||
                 entry.Contains("Microsoft.CodeAnalysis.Razor", StringComparison.OrdinalIgnoreCase) ||
-                entry.Contains("Microsoft.AspNetCore.Razor.Language", StringComparison.OrdinalIgnoreCase)),
-            "Jazor package must not carry Razor Compiler or Razor Utilities payloads.");
+                entry.Contains("Microsoft.AspNetCore.Razor.Language", StringComparison.OrdinalIgnoreCase) ||
+                entry.Contains("Harmony", StringComparison.OrdinalIgnoreCase) ||
+                entry.Contains("MonoMod", StringComparison.OrdinalIgnoreCase) ||
+                entry.Contains("Detour", StringComparison.OrdinalIgnoreCase)),
+            "Jazor package must not carry Razor Compiler, Razor Utilities, Harmony, MonoMod, or Detour payloads.");
         CollectionAssert.IsSubsetOf(
             new[]
             {
@@ -503,6 +505,113 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    public async Task Build_LocalJazorPackage_WebSdkHost_WithColocatedConsumer_UsesSdkConsumerBuildForDevelopmentBrowserAssets()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "WebSdkConsumerBuildSample");
+        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var projectPath = CreateWebHostWithColocatedConsumerProject(projectRoot);
+
+        var build = await RunDotNetWithEnvironmentAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}"
+            ],
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["JAZOR_DENO_EXE"] = package.DenoExePath
+            });
+
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
+
+        var sourceDevJazorRoot = Path.Combine(projectRoot, "jazor");
+        var sourceBrowserBundleRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        var consumerDistRoot = Path.Combine(projectRoot, "consumer", "dist");
+
+        Assert.IsTrue(File.Exists(Path.Combine(sourceDevJazorRoot, "jazor-manifest.json")));
+        Assert.IsTrue(File.Exists(Path.Combine(sourceDevJazorRoot, "components", "catalog-page.vue")));
+        Assert.IsTrue(File.Exists(Path.Combine(sourceDevJazorRoot, "components", "detail-page.vue")));
+        Assert.IsTrue(File.Exists(Path.Combine(sourceDevJazorRoot, "__jazor", "razorvue-host.mjs")));
+
+        Assert.IsTrue(File.Exists(Path.Combine(sourceBrowserBundleRoot, "client-entry.js")));
+        Assert.IsTrue(File.Exists(Path.Combine(sourceBrowserBundleRoot, "client-entry.css")));
+        Assert.IsFalse(
+            File.Exists(Path.Combine(sourceBrowserBundleRoot, "jazor-manifest.json")),
+            "Build-time consumer browser assets must not materialize compiler-owned RazorVue manifest into wwwroot/jazor.");
+        Assert.IsFalse(
+            Directory.Exists(Path.Combine(sourceBrowserBundleRoot, "components")),
+            "Build-time consumer browser assets must not materialize compiler-owned RazorVue SFCs into wwwroot/jazor.");
+
+        var distHtmlPath = Path.Combine(consumerDistRoot, "index.html");
+        Assert.IsTrue(File.Exists(distHtmlPath), $"Expected colocated consumer dist HTML was not generated: {distHtmlPath}");
+        var distHtml = (await File.ReadAllTextAsync(distHtmlPath)).ReplaceLineEndings("\n");
+        StringAssert.Contains(distHtml, "<script type=\"module\" src=\"./jazor/client-entry.js\"></script>");
+        StringAssert.Contains(distHtml, "<link rel=\"stylesheet\" href=\"./jazor/client-entry.css\" />");
+
+        await AssertSdkConsumerBrowserEntryAsync(
+            Path.Combine(sourceBrowserBundleRoot, "client-entry.js"),
+            "Build-time colocated consumer browser entry should not retain unresolved .vue imports.");
+    }
+
+    [TestMethod]
+    public async Task Build_LocalJazorPackage_WebSdkHost_WithColocatedConsumer_MissingRunnerFailsFast()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "WebSdkConsumerMissingRunnerSample");
+        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var projectPath = CreateWebHostWithColocatedConsumerProject(projectRoot);
+        var expectedRunnerPath = Path.Combine(projectRoot, "consumer", "scripts", "run-deno.cs");
+        File.Delete(expectedRunnerPath);
+
+        var build = await RunDotNetWithEnvironmentAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}"
+            ],
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["JAZOR_DENO_EXE"] = package.DenoExePath
+            });
+
+        Assert.AreNotEqual(0, build.ExitCode, build.ToString());
+        var output = (build.StandardOutput + build.StandardError).ReplaceLineEndings("\n");
+        StringAssert.Contains(output, "Jazor consumer runner was not found:");
+        StringAssert.Contains(output, expectedRunnerPath);
+
+        var sourceDevJazorRoot = Path.Combine(projectRoot, "jazor");
+        var sourceBrowserBundleRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        Assert.IsTrue(
+            File.Exists(Path.Combine(sourceDevJazorRoot, "jazor-manifest.json")),
+            "JazorEmit should complete before the colocated consumer handoff fails.");
+        Assert.IsFalse(
+            File.Exists(Path.Combine(sourceBrowserBundleRoot, "client-entry.js")),
+            "Missing consumer runner must fail before any browser JS bundle is produced.");
+        Assert.IsFalse(
+            File.Exists(Path.Combine(sourceBrowserBundleRoot, "client-entry.css")),
+            "Missing consumer runner must fail before any browser CSS bundle is produced.");
+    }
+
+    [TestMethod]
     public async Task Publish_LocalJazorPackage_WebSdkHost_WithColocatedConsumer_UsesSdkConsumerBuildAndUnifiedJazorPublishRoot()
     {
         var package = await LocalPackage.Value;
@@ -562,15 +671,8 @@ public sealed class SdkIntegrationTests
         CollectionAssert.Contains(modulePaths, "components/catalog-page.vue");
         CollectionAssert.Contains(modulePaths, "components/detail-page.vue");
 
-        var browserEntry = (await File.ReadAllTextAsync(Path.Combine(publishedJazorRoot, "client-entry.js"))).ReplaceLineEndings("\n");
-        StringAssert.Contains(browserEntry, "mountSdkConsumer");
-        StringAssert.Contains(browserEntry, "CatalogPage");
-        StringAssert.Contains(browserEntry, "DetailPage");
-        StringAssert.Contains(browserEntry, "razorVueHostRequirements");
-        StringAssert.Contains(browserEntry, "razorVueConsumerRoutes");
-        StringAssert.Contains(browserEntry, "Array.isArray(routesOrSelector)");
-        Assert.IsFalse(
-            ContainsVueModuleSpecifier(browserEntry),
+        await AssertSdkConsumerBrowserEntryAsync(
+            Path.Combine(publishedJazorRoot, "client-entry.js"),
             "Published colocated consumer browser entry should not retain unresolved .vue imports.");
 
         Assert.IsFalse(
@@ -2343,6 +2445,20 @@ public sealed class SdkIntegrationTests
         Assert.IsTrue(File.Exists(expectedOutputPath), $"Expected publish output was not produced: {expectedOutputPath}");
     }
 
+    private static async Task AssertSdkConsumerBrowserEntryAsync(string browserEntryPath, string unresolvedVueImportMessage)
+    {
+        var browserEntry = (await File.ReadAllTextAsync(browserEntryPath)).ReplaceLineEndings("\n");
+        StringAssert.Contains(browserEntry, "mountSdkConsumer");
+        StringAssert.Contains(browserEntry, "CatalogPage");
+        StringAssert.Contains(browserEntry, "DetailPage");
+        StringAssert.Contains(browserEntry, "razorVueHostRequirements");
+        StringAssert.Contains(browserEntry, "razorVueConsumerRoutes");
+        StringAssert.Contains(browserEntry, "Array.isArray(routesOrSelector)");
+        Assert.IsFalse(
+            ContainsVueModuleSpecifier(browserEntry),
+            unresolvedVueImportMessage);
+    }
+
     private static string EnsureTrailingDirectorySeparator(string path)
         => path.EndsWith(Path.DirectorySeparatorChar)
             ? path
@@ -3149,7 +3265,7 @@ public sealed class SdkIntegrationTests
 
             const cssFiles = (await collectFiles(browserBundleDirectory))
               .filter((file) => file.endsWith(".css"))
-              .map((file) => `./${relative(distRoot, file).replaceAll("\\\\", "/")}`)
+              .map((file) => `./${relative(distRoot, file).replaceAll("\\", "/")}`)
               .sort((left, right) => left.localeCompare(right, "en"));
 
             const template = await Deno.readTextFile(resolve(consumerRoot, "index.html"));
@@ -3158,7 +3274,7 @@ public sealed class SdkIntegrationTests
               .replace("    <!-- razorvue:styles -->", cssMarkup.length === 0 ? "    <!-- razorvue:styles -->" : cssMarkup)
               .replace(
                 "    <!-- razorvue:script -->",
-                `    <script type="module" src="./${relative(distRoot, entryFilePath).replaceAll("\\\\", "/")}"></script>`
+                `    <script type="module" src="./${relative(distRoot, entryFilePath).replaceAll("\\", "/")}"></script>`
               );
 
             await Deno.writeTextFile(resolve(distRoot, "index.html"), outputHtml);

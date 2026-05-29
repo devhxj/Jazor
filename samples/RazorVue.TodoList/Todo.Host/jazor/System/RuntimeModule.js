@@ -11,7 +11,7 @@ function ensureYearAndMonth(year, month) {
     throw new Error("ArgumentOutOfRangeException: Month must be between 1 and 12.");
 }
 function materializeArray(collection, nullMessage) {
-  if (collection === null)
+  if (collection == null)
     throw new Error(nullMessage);
   let result = new Array;
   for (let item of collection)
@@ -21,7 +21,7 @@ function materializeArray(collection, nullMessage) {
 const readOnlyCarrierMarker = "__jazor$readonly";
 const readOnlyCarrierMutationMessage = "NotSupportedException: Collection is read-only.";
 export function isReadOnlySetCarrier(instance) {
-  return !(instance === null) && Object.hasOwn(instance, "__jazor$readonly");
+  return !(instance == null) && Object.hasOwn(instance, "__jazor$readonly");
 }
 function throwReadOnlySetAdd(item) {
   throw new Error("NotSupportedException: Collection is read-only.");
@@ -33,7 +33,7 @@ function throwReadOnlySetClear() {
   throw new Error("NotSupportedException: Collection is read-only.");
 }
 export function markAsReadOnlySetCarrier(instance) {
-  if (instance === null)
+  if (instance == null)
     throw new Error("NullReferenceException: instance is null.");
   if (isReadOnlySetCarrier(instance))
     return instance;
@@ -64,7 +64,7 @@ export function markAsReadOnlySetCarrier(instance) {
   return instance;
 }
 export function isReadOnlyDictionaryCarrier(instance) {
-  return !(instance === null) && Object.hasOwn(instance, "__jazor$readonly");
+  return !(instance == null) && Object.hasOwn(instance, "__jazor$readonly");
 }
 function throwReadOnlyDictionarySet(key, value) {
   throw new Error("NotSupportedException: Collection is read-only.");
@@ -76,7 +76,7 @@ function throwReadOnlyDictionaryClear() {
   throw new Error("NotSupportedException: Collection is read-only.");
 }
 export function markAsReadOnlyDictionaryCarrier(instance) {
-  if (instance === null)
+  if (instance == null)
     throw new Error("NullReferenceException: instance is null.");
   if (isReadOnlyDictionaryCarrier(instance))
     return instance;
@@ -121,18 +121,19 @@ export class JDateTime {
   }
   constructor() {
     let $args = arguments;
-    if ($args.length === 1) {
-      let date = $args[0];
+    let $ctor = $args[0];
+    if ($ctor === "$ctor_5f7a68d76534e272") {
+      let date = $args[1];
       this.$ctor_5f7a68d76534e272(date);
       return;
     }
-    if ($args.length === 2) {
-      let date = $args[0], kind = $args[1];
+    if ($ctor === "$ctor_31a0f1908d992f04") {
+      let date = $args[1], kind = $args[2];
       this.$ctor_31a0f1908d992f04(date, kind);
       return;
     }
-    if ($args.length === 3) {
-      let date = $args[0], kind = $args[1], subMillisecondTicks = $args[2];
+    if ($ctor === "$ctor_9eb10cd821441a68") {
+      let date = $args[1], kind = $args[2], subMillisecondTicks = $args[3];
       this.$ctor_9eb10cd821441a68(date, kind, subMillisecondTicks);
       return;
     }
@@ -183,13 +184,14 @@ export class JDateTimeOffset {
   }
   constructor() {
     let $args = arguments;
-    if ($args.length === 2) {
-      let utcDateTime = $args[0], offsetTicks = $args[1];
+    let $ctor = $args[0];
+    if ($ctor === "$ctor_ec78e151ec26d931") {
+      let utcDateTime = $args[1], offsetTicks = $args[2];
       this.$ctor_ec78e151ec26d931(utcDateTime, offsetTicks);
       return;
     }
-    if ($args.length === 3) {
-      let utcDateTime = $args[0], offsetTicks = $args[1], utcSubMillisecondTicks = $args[2];
+    if ($ctor === "$ctor_edd22711399c52b9") {
+      let utcDateTime = $args[1], offsetTicks = $args[2], utcSubMillisecondTicks = $args[3];
       this.$ctor_edd22711399c52b9(utcDateTime, offsetTicks, utcSubMillisecondTicks);
       return;
     }
@@ -279,12 +281,13 @@ export class JQueue {
   }
   constructor() {
     let $args = arguments;
-    if ($args.length === 0) {
+    let $ctor = $args[0];
+    if ($ctor === "$ctor_83a6b5a077092c33") {
       this.$ctor_83a6b5a077092c33();
       return;
     }
-    if ($args.length === 1) {
-      let collection = $args[0];
+    if ($ctor === "$ctor_a172437de92c387f") {
+      let collection = $args[1];
       this.$ctor_a172437de92c387f(collection);
       return;
     }
@@ -304,7 +307,7 @@ export class JQueue {
     ensureWholeNumber(capacity, "ArgumentOutOfRangeException: capacity must be a whole number.");
     if (capacity < 0)
       throw new Error("ArgumentOutOfRangeException: capacity must be non-negative.");
-    return new JQueue;
+    return new JQueue("$ctor_83a6b5a077092c33");
   }
 }
 export class JStack {
@@ -318,12 +321,13 @@ export class JStack {
   }
   constructor() {
     let $args = arguments;
-    if ($args.length === 0) {
+    let $ctor = $args[0];
+    if ($ctor === "$ctor_0be02918366cee67") {
       this.$ctor_0be02918366cee67();
       return;
     }
-    if ($args.length === 1) {
-      let collection = $args[0];
+    if ($ctor === "$ctor_a657e829623938c5") {
+      let collection = $args[1];
       this.$ctor_a657e829623938c5(collection);
       return;
     }
@@ -341,7 +345,7 @@ export class JStack {
     ensureWholeNumber(capacity, "ArgumentOutOfRangeException: capacity must be a whole number.");
     if (capacity < 0)
       throw new Error("ArgumentOutOfRangeException: capacity must be non-negative.");
-    return new JStack;
+    return new JStack("$ctor_0be02918366cee67");
   }
 }
 export class JTimeOnly {

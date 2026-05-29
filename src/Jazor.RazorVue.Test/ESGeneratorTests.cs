@@ -1227,7 +1227,7 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithGeneratedRazorComponentButNoCarrier_DefaultGenerator_ReportsJAZORVGA001()
+    public void GenerateCatalog_WithGeneratedRazorComponentButNoCarrier_DefaultGenerator_WaitsForTailBridge()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string razorDocumentText = """<section><h1>@Title</h1><p>Hello</p></section>""";
@@ -1256,22 +1256,26 @@ public sealed class ESGeneratorTests
             razorVueOutputMode: null);
         var diagnostics = runResult.Results
             .SelectMany(static result => result.Diagnostics)
-            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
             .ToArray();
 
-        Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
-        StringAssert.Contains(diagnostics[0].GetMessage(), "only falls back to BuildRenderTree for source-authored components");
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static x => x.ToString())));
+        Assert.IsFalse(hints.Any(static hint => hint.StartsWith("Jazor.Generated.RazorVue.Artifact_", StringComparison.Ordinal)));
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithAlignedRazorCarrier_DefaultGenerator_ReportsMissingFormalSgDocument()
+    public void GenerateCatalog_WithAlignedRazorCarrier_DefaultGenerator_WaitsForRazorSgTail()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string razorDocumentText = """<section><h1>@Title</h1><p>Hello</p></section>""";
         var normalizedDocumentPath = documentPath.Replace('\\', '/');
 
         var compilation = CreateAlignedRazorComponentCompilation(
-            assemblyName: "RazorVue.Generator.PreferredFrontend.Sfc.Tests",
+            assemblyName: "RazorVue.Generator.LegacyIrFirstCarrier.Sfc.Tests",
             documentPath: normalizedDocumentPath,
             documentText: razorDocumentText,
             componentSource:
@@ -1294,17 +1298,21 @@ public sealed class ESGeneratorTests
             razorVueOutputMode: "sfc");
         var diagnostics = runResult.Results
             .SelectMany(static result => result.Diagnostics)
-            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
             .ToArray();
-        var hints = runResult.Results.SelectMany(static result => result.GeneratedSources).Select(static source => source.HintName).ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
 
-        Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
-        StringAssert.Contains(diagnostics[0].GetMessage(), "only falls back to BuildRenderTree for source-authored components");
-        Assert.IsFalse(hints.Any(static hint => hint.StartsWith("Jazor.Generated.RazorVue.Artifact_", StringComparison.Ordinal)));
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static x => x.ToString())));
+        Assert.IsFalse(
+            hints.Any(static hint => hint.StartsWith("Jazor.Generated.RazorVue.Artifact_", StringComparison.Ordinal)),
+            "A legacy Razor IR carrier without formal SG document input must not produce an SFC artifact from the normal generator route.");
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithGeneratedRazorComponentButNoCarrier_SfcOutput_ReportsJAZORVGA001()
+    public void GenerateCatalog_WithGeneratedRazorComponentButNoCarrier_SfcOutput_WaitsForTailBridge()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string razorDocumentText = """<section><h1>@Title</h1><p>Hello</p></section>""";
@@ -1333,15 +1341,65 @@ public sealed class ESGeneratorTests
             razorVueOutputMode: "sfc");
         var diagnostics = runResult.Results
             .SelectMany(static result => result.Diagnostics)
-            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
             .ToArray();
 
-        Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
-        StringAssert.Contains(diagnostics[0].GetMessage(), "only falls back to BuildRenderTree for source-authored components");
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static x => x.ToString())));
+        Assert.IsFalse(hints.Any(static hint => hint.StartsWith("Jazor.Generated.RazorVue.Artifact_", StringComparison.Ordinal)));
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithGeneratedRazorComponentButNoCarrier_AndEnabledRazorSgIntegrationWithoutTailRegistration_DoesNotReportBootstrapDiagnostic()
+    public void GenerateCatalog_WithRazorCodeBehindPartialOnly_SfcOutput_WaitsForRazorSgTail()
+    {
+        var compilation = CreateCompilationWithSourcePath(
+            "RazorVue.Generator.RazorCodeBehindPartialOnly.WaitForTail.Tests",
+            "TodoApp.razor.cs",
+            """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """);
+
+        var (_, runResult) = RunAllGeneratorsWithResult(
+            compilation,
+            razorVueOutputMode: "sfc");
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static x => x.ToString())));
+        Assert.IsFalse(hints.Any(static hint => hint.StartsWith("Jazor.Generated.RazorVue.Artifact_", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithGeneratedRazorComponentButNoCarrier_AndEnabledRazorSgIntegrationWithoutTailRegistration_ReportsJAZORVGA018()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string razorDocumentText = """<section><h1>@Title</h1><p>Hello</p></section>""";
@@ -1386,7 +1444,9 @@ public sealed class ESGeneratorTests
             .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
             .ToArray();
 
-        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual("JAZORVGA018", diagnostics[0].Id);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Pages.TodoApp");
         Assert.AreEqual(0, genericDiagnostics.Length, string.Join("\n", genericDiagnostics.Select(static x => x.ToString())));
     }
 
@@ -1472,10 +1532,11 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithRazorVuePartialOnly_AndEnabledRazorSgIntegrationWithoutTailRegistration_DoesNotReportBootstrapDiagnostic()
+    public void GenerateCatalog_WithRazorVuePartialOnly_AndEnabledRazorSgIntegrationWithoutTailRegistration_ReportsJAZORVGA018()
     {
-        var compilation = CreateCompilation(
+        var compilation = CreateCompilationWithSourcePath(
             "RazorVue.Generator.IntegrationEnabled.PartialOnly.Tests",
+            "TodoApp.razor.cs",
             """
             using System;
 
@@ -1516,14 +1577,17 @@ public sealed class ESGeneratorTests
             .Where(static diagnostic => diagnostic.Id is "JAZORVGA018" or "JAZORVGA019")
             .ToArray();
 
-        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual("JAZORVGA018", diagnostics[0].Id);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Pages.TodoApp");
     }
 
     [TestMethod]
     public void GenerateCatalog_WithRazorVuePartialOnly_AndEnabledRazorSgIntegrationWithTailRegistration_DoesNotReportBootstrapDiagnostic()
     {
-        var compilation = CreateCompilation(
+        var compilation = CreateCompilationWithSourcePath(
             "RazorVue.Generator.IntegrationEnabled.PartialOnly.TailRegistered.Tests",
+            "TodoApp.razor.cs",
             """
             using System;
 
@@ -1719,8 +1783,9 @@ public sealed class ESGeneratorTests
     [TestMethod]
     public void GenerateCatalog_WithRazorVuePartialOnly_AndOnlyGlobalTailRegistration_DoesNotReportBootstrapDiagnostic()
     {
-        var compilation = CreateCompilation(
+        var compilation = CreateCompilationWithSourcePath(
             "RazorVue.Generator.IntegrationEnabled.PartialOnly.GlobalTailOnly.Tests",
+            "TodoApp.razor.cs",
             """
             using System;
 
@@ -1768,8 +1833,9 @@ public sealed class ESGeneratorTests
     [TestMethod]
     public void GenerateCatalog_WithRazorVuePartialOnly_AndMissingCurrentContextKey_ReportsJAZORVGA019()
     {
-        var compilation = CreateCompilation(
+        var compilation = CreateCompilationWithSourcePath(
             "RazorVue.Generator.IntegrationEnabled.PartialOnly.MissingCurrentContextKey.Tests",
+            "TodoApp.razor.cs",
             """
             using System;
 
@@ -1819,8 +1885,9 @@ public sealed class ESGeneratorTests
     [TestMethod]
     public void GenerateCatalog_WithRazorVuePartialOnly_AndFailedBootstrapPatch_ReportsJAZORVGA019()
     {
-        var compilation = CreateCompilation(
+        var compilation = CreateCompilationWithSourcePath(
             "RazorVue.Generator.IntegrationEnabled.PartialOnly.PatchFailed.Tests",
+            "TodoApp.razor.cs",
             """
             using System;
 
@@ -1864,6 +1931,57 @@ public sealed class ESGeneratorTests
 
         Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         StringAssert.Contains(diagnostics[0].GetMessage(), "forced bootstrap failure");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithRazorVuePartialOnly_AndUnavailableHookPlatform_ReportsJAZORVGA019()
+    {
+        var compilation = CreateCompilationWithSourcePath(
+            "RazorVue.Generator.IntegrationEnabled.PartialOnly.PatchUnavailable.Tests",
+            "TodoApp.razor.cs",
+            """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """);
+        var generator = CreateRazorSgIntegrationTestGenerator(
+            bootstrapTrace: CreateBootstrapTrace(
+                hasAttempted: true,
+                isInstalled: false,
+                tailOutputRegistered: false,
+                patchUnavailable: true,
+                failure: "RazorVue Razor SG hook supports x64 and arm64 processes only. Current platform: OS: Linux; Architecture: Arm."));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(
+            compilation,
+            razorVueOutputMode: null,
+            razorVueGenerator: generator,
+            enableRazorSgIntegration: true);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA019")
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OS: Linux; Architecture: Arm");
     }
 
     [TestMethod]
@@ -1955,8 +2073,8 @@ public sealed class ESGeneratorTests
 
         compilation = InjectCarrierCompilation(compilation, normalizedDocumentPath, razorDocumentText);
         var generator = new RazorVueGenerator(
-            static () => new RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVuePreferredTemplateFrontend.Instance),
-            static () => new RazorVueSfcPipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVuePreferredTemplateFrontend.Instance),
+            static () => new RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVueLegacyIrFirstTemplateFrontend.Instance),
+            static () => new RazorVueSfcPipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVueLegacyIrFirstTemplateFrontend.Instance),
             static () => RazorSourceGeneratorCompatibilityProbeResult.Fail("Should not be queried when carrier already exists."));
 
         var (_, runResult) = RunAllGeneratorsWithResult(
@@ -4670,6 +4788,68 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithAssignedLocalLambdaDelegateShouldRender_DoesNotReportJAZORVGA005_AndKeepsLogicSafeBoundary()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.AssignedLocalLambdaDelegateShouldRender.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-assigned-local-lambda-delegate")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> ready;
+                        ready = value => value > 0;
+                        return ready(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, " = value => {");
+        StringAssert.Contains(generatedSource, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithMethodGroupDelegateLocalShouldRender_DoesNotReportJAZORVGA005_AndKeepsLogicSafeBoundary()
     {
         var compilation = CreateCompilation(
@@ -4717,6 +4897,70 @@ public sealed class ESGeneratorTests
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "function IsReady(value)");
+        StringAssert.Contains(generatedSource, " = IsReady;");
+        StringAssert.Contains(generatedSource, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithAssignedMethodGroupDelegateLocalShouldRender_DoesNotReportJAZORVGA005_AndKeepsLogicSafeBoundary()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.AssignedMethodGroupDelegateLocalShouldRender.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-assigned-method-group-delegate-local")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        bool IsReady(int value) => value > 0;
+                        Func<int, bool> ready;
+                        ready = IsReady;
+                        return ready(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4790,6 +5034,212 @@ public sealed class ESGeneratorTests
         var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
         StringAssert.Contains(generatedSource, "let __jazorShouldRenderLocal");
         StringAssert.Contains(generatedSource, " == null);");
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithDelegateComparisonShouldRender_DoesNotReportJAZORVGA005_AndKeepsLogicSafeBoundary()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.DelegateComparisonShouldRender.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-delegate-comparison")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    private bool IsReady(int value)
+                        => value > 0;
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> ready = IsReady;
+                        Func<int, bool> duplicate = IsReady;
+                        return ready == duplicate;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "function isReady(value)");
+        StringAssert.Contains(generatedSource, " = isReady;");
+        StringAssert.Contains(generatedSource, " === __jazorShouldRenderLocal");
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithDelegateParameterAndReturnFlowShouldRender_DoesNotReportJAZORVGA005_AndKeepsLogicSafeBoundary()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.DelegateParameterAndReturnFlowShouldRender.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-delegate-parameter-return")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> CreateReady()
+                            => value => value > 0;
+
+                        bool ConsumeReady(Func<int, bool> predicate, int value)
+                            => predicate(value);
+
+                        Func<int, bool> ready = CreateReady();
+                        return ConsumeReady(ready, Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "function CreateReady()");
+        StringAssert.Contains(generatedSource, "return value => {");
+        StringAssert.Contains(generatedSource, "function ConsumeReady(predicate, value)");
+        StringAssert.Contains(generatedSource, " = CreateReady();");
+        StringAssert.Contains(generatedSource, "return ConsumeReady(__jazorShouldRenderLocal");
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithNullOnlyDelegateParameterFlowShouldRender_DoesNotReportJAZORVGA005_AndKeepsLogicSafeBoundary()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.NullOnlyDelegateParameterFlowShouldRender.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-null-only-delegate-parameter")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        bool IsMissing(Func<int, bool>? predicate)
+                            => predicate is null;
+
+                        bool IsDefault(Func<int, bool>? predicate)
+                            => predicate == default;
+
+                        Func<int, bool>? missing = null;
+                        Func<int, bool>? fallback = default;
+                        return IsMissing(missing) && IsDefault(fallback);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "function IsMissing(predicate)");
+        StringAssert.Contains(generatedSource, "function IsDefault(predicate)");
+        StringAssert.Contains(generatedSource, " = null;");
+        StringAssert.Contains(generatedSource, "return IsMissing(__jazorShouldRenderLocal");
         StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
     }
 
@@ -7264,6 +7714,166 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithSupportedSetParametersAsyncBaseThenCatchVariableBodyConditionEmit_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.SupportedSetParametersAsyncCatchVariableBodyConditionEmit.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-catch-variable-body-condition-emit")]
+                public class SetParametersAsyncCatchVariableBodyConditionEmitCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        try
+                        {
+                            await ValueChanged.InvokeAsync(Value);
+                        }
+                        catch (Exception error)
+                        {
+                            if (error is not null)
+                            {
+                                await ReadyChanged.InvokeAsync(true);
+                            }
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var lifecycleDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, lifecycleDiagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "watch(() => [props.value], async () => {");
+        StringAssert.Contains(generatedSource, "} catch {");
+        StringAssert.Contains(generatedSource, "if (true) {");
+        StringAssert.Contains(generatedSource, "await emit(\\\"readyChanged\\\", true);");
+        Assert.IsFalse(generatedSource.Contains("__jazorLifecycleCatch", StringComparison.Ordinal), generatedSource);
+        Assert.IsFalse(generatedSource.Contains("error", StringComparison.Ordinal), generatedSource);
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithSupportedSetParametersAsyncBaseThenCatchVariablePayloadEmit_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.SupportedSetParametersAsyncCatchVariablePayloadEmit.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-catch-variable-payload-emit")]
+                public class SetParametersAsyncCatchVariablePayloadEmitCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        try
+                        {
+                            await ValueChanged.InvokeAsync(Value);
+                        }
+                        catch (Exception error)
+                        {
+                            await ReadyChanged.InvokeAsync(error is not null);
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var lifecycleDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, lifecycleDiagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "watch(() => [props.value], async () => {");
+        StringAssert.Contains(generatedSource, "} catch {");
+        StringAssert.Contains(generatedSource, "await emit(\\\"readyChanged\\\", true);");
+        Assert.IsFalse(generatedSource.Contains("__jazorLifecycleCatch", StringComparison.Ordinal), generatedSource);
+        Assert.IsFalse(generatedSource.Contains("error", StringComparison.Ordinal), generatedSource);
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithSupportedSetParametersAsyncBaseThenTryCatchFinallyEmit_DoesNotReportJAZORVGA005()
     {
         var compilation = CreateCompilation(
@@ -8991,6 +9601,78 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithSetParametersAsyncBaseThenTryCatchBareReturnWithCatchVariableNonNullFilterWithoutRuntimeBeforeReturn_DoesNotReportJAZORVGA005_AndKeepsTemplateOnlyBoundary()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.SetParametersAsyncTryCatchBareReturnCatchVariableFilterNoOp.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-try-catch-bare-return-catch-variable-filter")]
+                public class SetParametersAsyncTryCatchBareReturnCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        try
+                        {
+                            return;
+                        }
+                        catch (Exception error) when (error is not null)
+                        {
+                            await ReadyChanged.InvokeAsync(false);
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        Assert.IsFalse(generatedSource.Contains("watch(() =>", StringComparison.Ordinal), generatedSource);
+        Assert.IsFalse(generatedSource.Contains("await emit(\\\"readyChanged\\\", false);", StringComparison.Ordinal), generatedSource);
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.TemplateOnly");
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithSupportedSetParametersAsyncBaseThenEmitThenDoubleReturnIfElse_DoesNotReportJAZORVGA005()
     {
         var compilation = CreateCompilation(
@@ -9841,6 +10523,68 @@ public sealed class ESGeneratorTests
         var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
         Assert.IsFalse(generatedSource.Contains("onMounted", StringComparison.Ordinal), generatedSource);
         Assert.IsFalse(generatedSource.Contains("Count: ", StringComparison.Ordinal), generatedSource);
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithSourceStableArrayMemberLengthLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.SourceStableArrayMemberLengthLocalNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int[] Values { get; } = new[] { 1, 2 };
+                    private readonly string[] Labels = new[] { "ready" };
+
+                    protected override void OnInitialized()
+                    {
+                        var count = Values.Length;
+                        var labelCount = Labels.Length;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
     }
 
     [TestMethod]
@@ -17204,6 +17948,677 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithUnusedArrayLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.UnusedArrayLocalNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        var values = new[] { 1, Ready ? 2 : 3 };
+                        int[] alternate = [4, Ready ? 5 : 6];
+                        int?[] nullable = [default, null, Ready ? 7 : null];
+                        var pair = (Ready, 8);
+                        var first = Ready;
+                        var second = first;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithUnusedAnonymousObjectLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.UnusedAnonymousObjectLocalNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        var payload = new { Ready, Count = 1, Label = Ready ? "ready" : "idle" };
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithUsedArrayLengthLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.UsedArrayLengthLocalNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var values = new[] { 1, 2 };
+                        var length = values.Length;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithConstantExpressionLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ConstantExpressionLocalNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        const string suffix = "Count";
+                        var name = nameof(OnInitialized);
+                        var label = $"Ready{suffix}";
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithUsedAnonymousObjectPropertyLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.UsedAnonymousObjectPropertyLocalNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var payload = new { Ready = true };
+                        var ready = payload.Ready;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithUsedArrayLengthSideEffectInitializerLocalOnlyLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.UsedArrayLengthSideEffectInitializerLocalNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        var values = new[] { _count++ };
+                        var length = values.Length;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithSourceStableArrayMemberLengthSideEffectInitializerLocalOnlyLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.SourceStableArrayMemberLengthSideEffectInitializerLocalNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private static int s_count;
+                    private int[] Values { get; } = new[] { s_count++ };
+
+                    protected override void OnInitialized()
+                    {
+                        var count = Values.Length;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithUsedAnonymousObjectPropertySideEffectInitializerLocalOnlyLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.UsedAnonymousObjectPropertySideEffectInitializerLocalNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        var payload = new { Ready = true, Count = _count++ };
+                        var ready = payload.Ready;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithSourceStableTupleProjectionLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.TupleProjectionLocalNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        var pair = (Ready, 1);
+                        var first = pair.Item1;
+                        var second = pair.Item2;
+                        var named = (IsReady: Ready, Count: 2);
+                        var isReady = named.IsReady;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithSourceStableTupleProjectionAliasChainLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.TupleProjectionAliasChainLocalNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        var pair = (Ready, 1);
+                        var copy = pair;
+                        var alias = copy;
+                        var first = alias.Item1;
+                        var second = alias.Item2;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithTerminalGuardReturnTupleProjectionLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.TerminalGuardReturnTupleProjectionNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        var pair = (Ready, 1);
+                        if (pair.Item1)
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithSourceStableHelperLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
     {
         var compilation = CreateCompilation(
@@ -17330,6 +18745,5219 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithAssignedLocalSourceStableHelperLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.AssignedLocalNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var count = Normalize(1);
+                    }
+
+                    private int Normalize(int value)
+                    {
+                        int normalized;
+                        var offset = 1;
+                        normalized = value + offset;
+                        return normalized;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithOptionalDefaultSourceStableHelperLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.OptionalDefaultNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var count = Normalize();
+                        Touch();
+                    }
+
+                    private int Normalize(int value = 1)
+                    {
+                        var normalized = value;
+                        return normalized;
+                    }
+
+                    private void Touch(int value = 1)
+                    {
+                        var label = value;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithNamedArgumentOrderSourceStableHelperLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.NamedArgumentOrderNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var count = Normalize(offset: 2, value: 1);
+                        Touch(offset: 2, value: count);
+                    }
+
+                    private int Normalize(int value, int offset)
+                    {
+                        var normalized = value + offset;
+                        return normalized;
+                    }
+
+                    private void Touch(int value, int offset)
+                    {
+                        var label = value + offset;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithHelperUnusedStructuredLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.HelperUnusedStructuredLocalNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        var count = Normalize();
+                        Touch();
+                    }
+
+                    private int Normalize()
+                    {
+                        var values = new[] { 1, Ready ? 2 : 3 };
+                        var payload = new { Ready, Count = 1 };
+                        return 1;
+                    }
+
+                    private void Touch()
+                    {
+                        var values = new[] { 4, Ready ? 5 : 6 };
+                        var payload = new { Ready, Count = 7 };
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithHelperUsedStructuredLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.HelperUsedStructuredLocalNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var count = Normalize();
+                        Touch();
+                    }
+
+                    private int Normalize()
+                    {
+                        var values = new[] { 1, 2 };
+                        return values.Length;
+                    }
+
+                    private void Touch()
+                    {
+                        var values = new[] { 1, 2 };
+                        var payload = new { Ready = true };
+                        var length = values.Length;
+                        var ready = payload.Ready;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithTerminalGuardReturnTupleProjectionAliasChainLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.TerminalGuardReturnTupleProjectionAliasChainNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        var pair = (Ready, 1);
+                        var copy = pair;
+                        var alias = copy;
+                        if (alias.Item1)
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithTerminalDoubleReturnTupleProjectionAliasChainLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.TerminalDoubleReturnTupleProjectionAliasChainNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnParametersSet()
+                    {
+                        var pair = (Ready, 1);
+                        var copy = pair;
+                        var alias = copy;
+                        if (alias.Item1)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithTerminalDoubleReturnPrivateHelperConditionLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.TerminalDoubleReturnPrivateHelperConditionNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnParametersSet()
+                    {
+                        if (IsReady(Ready))
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+
+                    private bool IsReady(bool ready)
+                    {
+                        return ready;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithTerminalDoubleReturnParamsSourceStableHelperConditionLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.TerminalDoubleReturnParamsSourceStableHelperConditionNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnParametersSet()
+                    {
+                        if (IsReady(Ready, true))
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+
+                    private bool IsReady(params bool[] values)
+                    {
+                        return values.Length > 0;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithTerminalDoubleReturnExplicitParamsCarrierHelperConditionLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.TerminalDoubleReturnExplicitParamsCarrierHelperConditionNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnParametersSet()
+                    {
+                        if (IsReady(new[] { Ready, true }) && IsReady([Ready, false]))
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+
+                    private bool IsReady(params bool[] values)
+                    {
+                        return values.Length > 0;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithTerminalDoubleReturnMultiLevelPrivateHelperConditionLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.TerminalDoubleReturnMultiLevelPrivateHelperConditionNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnParametersSet()
+                    {
+                        if (IsReady(Ready))
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+
+                    private bool IsReady(bool ready)
+                    {
+                        return Normalize(ready);
+                    }
+
+                    private bool Normalize(bool value)
+                    {
+                        return value;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithHelperTupleProjectionSourceStableLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.HelperTupleProjectionNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        var count = Normalize();
+                        Touch();
+                    }
+
+                    private int Normalize()
+                    {
+                        var pair = (Ready, 1);
+                        var first = pair.Item1;
+                        return pair.Item2;
+                    }
+
+                    private void Touch()
+                    {
+                        var pair = (Ready, 2);
+                        var first = pair.Item1;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithHelperTupleProjectionAliasChainSourceStableLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.HelperTupleProjectionAliasChainNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        var count = Normalize();
+                        Touch();
+                    }
+
+                    private int Normalize()
+                    {
+                        var pair = (Ready, 1);
+                        var copy = pair;
+                        var first = copy.Item1;
+                        return copy.Item2;
+                    }
+
+                    private void Touch()
+                    {
+                        var pair = (Ready, 2);
+                        var copy = pair;
+                        var first = copy.Item1;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithVoidHelperTerminalGuardReturnTupleProjectionAliasChainLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.VoidHelperTerminalGuardReturnTupleProjectionAliasChainNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch()
+                    {
+                        var pair = (Ready, 1);
+                        var copy = pair;
+                        if (copy.Item1)
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithVoidHelperTerminalGuardReturnParamsArrayLengthLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.VoidHelperTerminalGuardReturnParamsArrayLengthNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch(Ready, true);
+                    }
+
+                    private void Touch(params bool[] values)
+                    {
+                        if (values.Length == 0)
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithVoidHelperTerminalGuardReturnExplicitParamsCarrierLengthLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.VoidHelperTerminalGuardReturnExplicitParamsCarrierLengthNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch(new[] { Ready, true });
+                        Touch([Ready, false]);
+                    }
+
+                    private void Touch(params bool[] values)
+                    {
+                        if (values.Length == 0)
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithVoidHelperTerminalGuardReturnPrivateHelperConditionLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.VoidHelperTerminalGuardReturnPrivateHelperConditionNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch()
+                    {
+                        if (IsReady(Ready))
+                        {
+                            return;
+                        }
+                    }
+
+                    private bool IsReady(bool ready)
+                    {
+                        return ready;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithVoidHelperTerminalDoubleReturnLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.VoidHelperTerminalDoubleReturnNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch()
+                    {
+                        if (Ready)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithVoidHelperTerminalDoubleReturnTupleProjectionAliasChainLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.VoidHelperTerminalDoubleReturnTupleProjectionAliasChainNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch()
+                    {
+                        var pair = (Ready, 1);
+                        var copy = pair;
+                        if (copy.Item1)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithVoidHelperTerminalDoubleReturnPrivateHelperConditionLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.VoidHelperTerminalDoubleReturnPrivateHelperConditionNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch()
+                    {
+                        if (IsReady(Ready))
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+
+                    private bool IsReady(bool ready)
+                    {
+                        return ready;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithVoidHelperTerminalDoubleReturnParamsArrayLengthLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.VoidHelperTerminalDoubleReturnParamsArrayLengthNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch(Ready, true);
+                    }
+
+                    private void Touch(params bool[] values)
+                    {
+                        if (values.Length == 0)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithVoidHelperTerminalDoubleReturnExplicitParamsCarrierLengthLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.VoidHelperTerminalDoubleReturnExplicitParamsCarrierLengthNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch(new[] { Ready, true });
+                        Touch([Ready, false]);
+                    }
+
+                    private void Touch(params bool[] values)
+                    {
+                        if (values.Length == 0)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithVoidSourceStableHelperLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.VoidNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch()
+                    {
+                        var label = "ready";
+                        int normalized;
+                        normalized = 1;
+                        return;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithMultiLevelVoidSourceStableHelperLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.MultiLevelVoidNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch()
+                    {
+                        TouchInner();
+                    }
+
+                    private void TouchInner()
+                    {
+                        var label = "ready";
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithDiscardedReturnValueSourceStableHelperLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.DiscardedReturnValueNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        Normalize(1);
+                        Touch();
+                    }
+
+                    private void Touch()
+                    {
+                        Normalize(2);
+                    }
+
+                    private int Normalize(int value)
+                    {
+                        var offset = 1;
+                        return value + offset;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithVoidHelperTupleAliasSourceStableLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.VoidHelperTupleAliasNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch()
+                    {
+                        var pair = (Ready, 1);
+                        var second = pair;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithPartialExpressionBodiedVoidHelperSideEffectDiscardAssignmentLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.PartialExpressionBodiedVoidHelperSideEffectDiscardAssignmentNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => _ = _count++;
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithExpressionBodiedVoidHelperDiscardAssignmentSourceStableValueLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ExpressionBodiedVoidHelperDiscardAssignmentSourceStableValueNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => _ = Ready;
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithPartialExpressionBodiedVoidHelperDiscardAssignmentSourceStableValueLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.PartialExpressionBodiedVoidHelperDiscardAssignmentSourceStableValueNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => _ = Ready;
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithExpressionBodiedVoidHelperDiscardAssignmentTupleProjectionLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ExpressionBodiedVoidHelperDiscardAssignmentTupleProjectionNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    private (bool Ready, int Count) Pair { get; } = (true, 1);
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => _ = Pair.Ready;
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithExpressionBodiedVoidHelperDiscardAssignmentCustomGetterTupleProjectionLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ExpressionBodiedVoidHelperDiscardAssignmentCustomGetterTupleProjectionNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    private (bool Ready, int Count) Pair => (Ready, 1);
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => _ = Pair.Ready;
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithPartialExpressionBodiedVoidHelperDiscardAssignmentTupleProjectionLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.PartialExpressionBodiedVoidHelperDiscardAssignmentTupleProjectionNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    private (bool Ready, int Count) Pair { get; } = (true, 1);
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => _ = Pair.Ready;
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithPartialExpressionBodiedVoidHelperDiscardAssignmentCustomGetterTupleProjectionLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.PartialExpressionBodiedVoidHelperDiscardAssignmentCustomGetterTupleProjectionNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    private (bool Ready, int Count) Pair { get => (Ready, 1); }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => _ = Pair.Ready;
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithExpressionBodiedVoidHelperDiscardAssignmentSideEffectTupleProjectionLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ExpressionBodiedVoidHelperDiscardAssignmentSideEffectTupleProjectionNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private static int s_count;
+
+                    private (bool Ready, int Count) Pair { get; } = (true, Next());
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => _ = Pair.Ready;
+
+                    private static int Next()
+                    {
+                        s_count++;
+                        return s_count;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithExpressionBodiedVoidHelperDiscardAssignmentSideEffectCustomGetterTupleProjectionLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ExpressionBodiedVoidHelperDiscardAssignmentSideEffectCustomGetterTupleProjectionNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private static int s_count;
+
+                    private (bool Ready, int Count) Pair
+                    {
+                        get { return (true, Next()); }
+                    }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => _ = Pair.Ready;
+
+                    private static int Next()
+                    {
+                        s_count++;
+                        return s_count;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithPartialExpressionBodiedVoidHelperDiscardAssignmentSideEffectTupleProjectionLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.PartialExpressionBodiedVoidHelperDiscardAssignmentSideEffectTupleProjectionNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private static int s_count;
+
+                    private (bool Ready, int Count) Pair { get; } = (true, Next());
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private static int Next()
+                    {
+                        s_count++;
+                        return s_count;
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => _ = Pair.Ready;
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithPartialExpressionBodiedVoidHelperDiscardAssignmentSideEffectCustomGetterTupleProjectionLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.PartialExpressionBodiedVoidHelperDiscardAssignmentSideEffectCustomGetterTupleProjectionNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private static int s_count;
+
+                    private (bool Ready, int Count) Pair
+                    {
+                        get { return (true, Next()); }
+                    }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private static int Next()
+                    {
+                        s_count++;
+                        return s_count;
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => _ = Pair.Ready;
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithExpressionBodiedVoidHelperDiscardingSourceStableValueLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ExpressionBodiedVoidHelperDiscardingSourceStableValueNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => Normalize(Ready);
+
+                    private bool Normalize(bool ready)
+                    {
+                        return ready;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithExpressionBodiedVoidHelperDiscardingParamsSourceStableValueLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ExpressionBodiedVoidHelperDiscardingParamsSourceStableValueNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => Count(Ready, true);
+
+                    private int Count(params bool[] values)
+                    {
+                        return values.Length;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithExpressionBodiedVoidHelperDiscardingParamsArrayGetLengthLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ExpressionBodiedVoidHelperDiscardingParamsArrayGetLengthNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => Count(Ready, true);
+
+                    private int Count(params bool[] values)
+                    {
+                        return values.GetLength(0);
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithExpressionBodiedVoidHelperDiscardingExplicitParamsCarrierLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ExpressionBodiedVoidHelperDiscardingExplicitParamsCarrierNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        TouchArray();
+                        TouchCollection();
+                    }
+
+                    private void TouchArray() => Count(new[] { Ready, true });
+
+                    private void TouchCollection() => Count([Ready, false]);
+
+                    private int Count(params bool[] values)
+                    {
+                        return values.Length;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithExpressionBodiedVoidHelperDiscardingOptionalDefaultNamedArgumentLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ExpressionBodiedVoidHelperDiscardingOptionalDefaultNamedArgumentNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => Normalize(offset: Ready);
+
+                    private bool Normalize(bool ready = false, bool offset = false)
+                    {
+                        return ready || offset;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithExpressionBodiedVoidHelperDiscardingMultiLevelOptionalDefaultNamedArgumentLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ExpressionBodiedVoidHelperDiscardingMultiLevelOptionalDefaultNamedArgumentNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => Normalize(offset: Ready);
+
+                    private bool Normalize(bool ready = false, bool offset = false)
+                    {
+                        return Inner(value: ready || offset);
+                    }
+
+                    private bool Inner(bool value = false)
+                    {
+                        return value;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithExpressionBodiedVoidHelperDiscardingSideEffectParamsLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ExpressionBodiedVoidHelperDiscardingSideEffectParamsNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => Count(_count++);
+
+                    private int Count(params int[] values)
+                    {
+                        return values.Length;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithExpressionBodiedVoidHelperDiscardingRecursiveReturnValueHelperLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ExpressionBodiedVoidHelperDiscardingRecursiveReturnValueHelperNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => Loop(Ready);
+
+                    private bool Loop(bool ready)
+                    {
+                        return Loop(ready);
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithExpressionBodiedVoidHelperDiscardingExternalReturnValueHelperLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ExpressionBodiedVoidHelperDiscardingExternalReturnValueHelperNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                public static class External
+                {
+                    public static bool Normalize(bool ready)
+                    {
+                        return ready;
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => External.Normalize(Ready);
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithExpressionBodiedNonPrivateVoidHelperDiscardingReturnValueHelperLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ExpressionBodiedNonPrivateVoidHelperDiscardingReturnValueHelperNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    protected void Touch() => Normalize(Ready);
+
+                    private bool Normalize(bool ready)
+                    {
+                        return ready;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithExpressionBodiedVoidHelperDiscardingTaskReturningHelperLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ExpressionBodiedVoidHelperDiscardingTaskReturningHelperNoOpLifecycle.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => GetOperation();
+
+                    private Task GetOperation()
+                    {
+                        return Task.CompletedTask;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithExpressionBodiedVoidHelperDiscardingValueTaskReturningHelperLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ExpressionBodiedVoidHelperDiscardingValueTaskReturningHelperNoOpLifecycle.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => GetOperation();
+
+                    private ValueTask GetOperation()
+                    {
+                        return ValueTask.CompletedTask;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithExpressionBodiedVoidHelperDiscardingRefReturningHelperLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ExpressionBodiedVoidHelperDiscardingRefReturningHelperNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private readonly int _count = 1;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => GetCount();
+
+                    private ref readonly int GetCount()
+                    {
+                        return ref _count;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithExpressionBodiedVoidHelperDiscardingByReferenceParameterHelperLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ExpressionBodiedVoidHelperDiscardingByReferenceParameterHelperNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private readonly int _count = 1;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => Normalize(in _count);
+
+                    private int Normalize(in int value)
+                    {
+                        return value;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithExpressionBodiedVoidHelperDiscardingRefParameterHelperLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ExpressionBodiedVoidHelperDiscardingRefParameterHelperNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count = 1;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => Normalize(ref _count);
+
+                    private int Normalize(ref int value)
+                    {
+                        return value;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithExpressionBodiedVoidHelperDiscardingOutParameterHelperLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ExpressionBodiedVoidHelperDiscardingOutParameterHelperNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => Normalize(out _count);
+
+                    private int Normalize(out int value)
+                    {
+                        value = 1;
+                        return value;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithPartialExpressionBodiedVoidHelperDiscardingSourceStableValueLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.PartialExpressionBodiedVoidHelperDiscardingSourceStableValueNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private bool Normalize(bool ready)
+                    {
+                        return ready;
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => Normalize(Ready);
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithPartialExpressionBodiedVoidHelperDiscardingOptionalDefaultNamedArgumentLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.PartialExpressionBodiedVoidHelperDiscardingOptionalDefaultNamedArgumentNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private bool Normalize(bool ready = false, bool offset = false)
+                    {
+                        return ready || offset;
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => Normalize(offset: Ready);
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithPartialExpressionBodiedVoidHelperDiscardingMultiLevelOptionalDefaultNamedArgumentLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.PartialExpressionBodiedVoidHelperDiscardingMultiLevelOptionalDefaultNamedArgumentNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private bool Normalize(bool ready = false, bool offset = false)
+                    {
+                        return Inner(value: ready || offset);
+                    }
+
+                    private bool Inner(bool value = false)
+                    {
+                        return value;
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => Normalize(offset: Ready);
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithPartialExpressionBodiedVoidHelperDiscardingParamsSourceStableValueLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.PartialExpressionBodiedVoidHelperDiscardingParamsSourceStableValueNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private int Count(params bool[] values)
+                    {
+                        return values.Length;
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => Count(Ready, true);
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithPartialExpressionBodiedVoidHelperDiscardingExplicitParamsCarrierLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.PartialExpressionBodiedVoidHelperDiscardingExplicitParamsCarrierNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        TouchArray();
+                        TouchCollection();
+                    }
+
+                    partial void TouchArray();
+                    partial void TouchCollection();
+
+                    private int Count(params bool[] values)
+                    {
+                        return values.Length;
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void TouchArray() => Count(new[] { Ready, true });
+                    partial void TouchCollection() => Count([Ready, false]);
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithPartialExpressionBodiedVoidHelperDiscardingSideEffectParamsLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.PartialExpressionBodiedVoidHelperDiscardingSideEffectParamsNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private int Count(params int[] values)
+                    {
+                        return values.Length;
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => Count(_count++);
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithPartialExpressionBodiedVoidHelperDiscardingRecursiveReturnValueHelperLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.PartialExpressionBodiedVoidHelperDiscardingRecursiveReturnValueHelperNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private bool Loop(bool ready)
+                    {
+                        return Loop(ready);
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => Loop(Ready);
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithPartialExpressionBodiedVoidHelperDiscardingExternalReturnValueHelperLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.PartialExpressionBodiedVoidHelperDiscardingExternalReturnValueHelperNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                public static class External
+                {
+                    public static bool Normalize(bool ready)
+                    {
+                        return ready;
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => External.Normalize(Ready);
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithPartialExpressionBodiedNonPrivateVoidHelperDiscardingReturnValueHelperLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.PartialExpressionBodiedNonPrivateVoidHelperDiscardingReturnValueHelperNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    protected partial void Touch();
+
+                    private bool Normalize(bool ready)
+                    {
+                        return ready;
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    protected partial void Touch() => Normalize(Ready);
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithPartialExpressionBodiedVoidHelperDiscardingTaskReturningHelperLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.PartialExpressionBodiedVoidHelperDiscardingTaskReturningHelperNoOpLifecycle.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private Task GetOperation()
+                    {
+                        return Task.CompletedTask;
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => GetOperation();
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithPartialExpressionBodiedVoidHelperDiscardingValueTaskReturningHelperLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.PartialExpressionBodiedVoidHelperDiscardingValueTaskReturningHelperNoOpLifecycle.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private ValueTask GetOperation()
+                    {
+                        return ValueTask.CompletedTask;
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => GetOperation();
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithPartialExpressionBodiedVoidHelperDiscardingRefReturningHelperLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.PartialExpressionBodiedVoidHelperDiscardingRefReturningHelperNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private readonly int _count = 1;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private ref readonly int GetCount()
+                    {
+                        return ref _count;
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => GetCount();
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithPartialExpressionBodiedVoidHelperDiscardingByReferenceParameterHelperLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.PartialExpressionBodiedVoidHelperDiscardingByReferenceParameterHelperNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private readonly int _count = 1;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private int Normalize(in int value)
+                    {
+                        return value;
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => Normalize(in _count);
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithPartialExpressionBodiedVoidHelperDiscardingRefParameterHelperLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.PartialExpressionBodiedVoidHelperDiscardingRefParameterHelperNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count = 1;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private int Normalize(ref int value)
+                    {
+                        return value;
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => Normalize(ref _count);
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithPartialExpressionBodiedVoidHelperDiscardingOutParameterHelperLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.PartialExpressionBodiedVoidHelperDiscardingOutParameterHelperNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private int Normalize(out int value)
+                    {
+                        value = 1;
+                        return value;
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => Normalize(out _count);
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithVoidHelperRefParameterLocalOnlyLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.VoidHelperRefParameterNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/ref-lifecycle-card")]
+                public class RefLifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var value = 1;
+                        Touch(ref value);
+                    }
+
+                    private void Touch(ref int value)
+                    {
+                        var label = value;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithVoidHelperOutParameterLocalOnlyLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.VoidHelperOutParameterNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/out-lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        Touch(out var value);
+                    }
+
+                    private void Touch(out int value)
+                    {
+                        value = 1;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithVoidHelperInParameterLocalOnlyLifecycleBody_ReportsJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.VoidHelperInParameterNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/in-lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var value = 1;
+                        Touch(in value);
+                    }
+
+                    private void Touch(in int value)
+                    {
+                        var label = value;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(
+            1,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithParamsSourceStableHelperLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ParamsNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var values = Capture(1, 2);
+                        var empty = Capture();
+                    }
+
+                    private int[] Capture(params int[] values)
+                    {
+                        return values;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithExplicitParamsArraySourceStableHelperLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ExplicitParamsArrayNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var values = Capture(new[] { 1, 2 });
+                        var flags = CaptureFlags([true, false]);
+                    }
+
+                    private int[] Capture(params int[] values)
+                    {
+                        return values;
+                    }
+
+                    private bool[] CaptureFlags(params bool[] values)
+                    {
+                        return values;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithExplicitArrayNonParamsHelperLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ExplicitArrayNonParamsNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var count = Capture(new[] { 1, 2 });
+                    }
+
+                    private int Capture(int[] values)
+                    {
+                        return 1;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithParamsArrayLengthSourceStableHelperLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ParamsArrayLengthNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var implicitCount = Count(1, 2);
+                        var explicitCount = Count(new[] { 1, 2 });
+                        var collectionCount = Count([1, 2]);
+                    }
+
+                    private int Count(params int[] values)
+                    {
+                        return values.Length;
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithParamsArrayGetLengthSourceStableHelperLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ParamsArrayGetLengthNoOpLifecycle.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var implicitCount = Count(1, 2);
+                        var explicitCount = Count(new[] { 1, 2 });
+                        var collectionCount = Count([1, 2]);
+                    }
+
+                    private int Count(params int[] values)
+                    {
+                        return values.GetLength(0);
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, fallbackDiagnostics.Length);
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithFieldExpression_LowersIntoSetupScope()
     {
         var compilation = CreateCompilation(
@@ -17395,6 +24023,33 @@ public sealed class ESGeneratorTests
         return CSharpCompilation.Create(
             assemblyName,
             RazorVueMetadataReferences.CreateSyntaxTrees(source),
+            references,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+    }
+
+    private static Compilation CreateCompilationWithSourcePath(
+        string assemblyName,
+        string sourcePath,
+        string source,
+        params MetadataReference[] extraReferences)
+    {
+        var references = RazorVueMetadataReferences.Create(extraReferences);
+        var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
+
+        return CSharpCompilation.Create(
+            assemblyName,
+            [
+                CSharpSyntaxTree.ParseText(
+                    """
+                    global using static ECMAScript.Vue3;
+                    global using ECMAScript.VueContract;
+                    global using ECMAScript.VueContract.Descriptor;
+                    global using Microsoft.AspNetCore.Components;
+                    """,
+                    options: parseOptions,
+                    path: "RazorVueTestGlobalUsings.g.cs"),
+                CSharpSyntaxTree.ParseText(source, options: parseOptions, path: sourcePath)
+            ],
             references,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
     }
@@ -17612,8 +24267,8 @@ public sealed class ESGeneratorTests
         RazorSourceGeneratorBootstrapTrace bootstrapTrace,
         Func<RazorSourceGeneratorCompatibilityProbeResult>? compatibilityProbeFactory = null)
         => new(
-            static () => new RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVuePreferredTemplateFrontend.Instance),
-            static () => new RazorVueSfcPipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVuePreferredTemplateFrontend.Instance),
+            static () => new RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVueLegacyIrFirstTemplateFrontend.Instance),
+            static () => new RazorVueSfcPipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVueLegacyIrFirstTemplateFrontend.Instance),
             compatibilityProbeFactory ?? (static () => RazorSourceGeneratorCompatibilityProbe.CollectCurrent()),
             _ => bootstrapTrace);
 
@@ -17625,6 +24280,7 @@ public sealed class ESGeneratorTests
         bool? tailOutputRegisteredForCurrentContext = null,
         string tailOutputRegistrationKind = "implementation-source-output",
         bool patchFailed = false,
+        bool patchUnavailable = false,
         string? failure = null)
         => new(
             HasAttempted: hasAttempted,
@@ -17636,6 +24292,7 @@ public sealed class ESGeneratorTests
             PostfixMethodFound: isInstalled,
             PatchSucceeded: isInstalled,
             PatchFailed: patchFailed,
+            PatchUnavailable: patchUnavailable,
             PostfixInvoked: tailOutputRegistered,
             HostOutputHookInstalled: tailOutputRegistered,
             HostOutputObserved: tailOutputRegistered,

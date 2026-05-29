@@ -37,6 +37,9 @@ internal sealed partial class RazorVueExpressionEmitter
             RazorVueConditionalNode conditional => "(" + EmitScopedExpression(conditional.Condition, allowedLocalSymbols, allowedParameterSymbols) + " ? " +
                                                   EmitFragment(conditional.WhenTrue, allowedLocalSymbols, allowedParameterSymbols) + " : " +
                                                   EmitFragment(conditional.WhenFalse, allowedLocalSymbols, allowedParameterSymbols) + ")",
+            RazorVueRecoveredSwitchConditionalNode conditional => "(" + conditional.ConditionExpressionText + " ? " +
+                                                                 EmitFragment(conditional.WhenTrue, allowedLocalSymbols, allowedParameterSymbols) + " : " +
+                                                                 EmitFragment(conditional.WhenFalse, allowedLocalSymbols, allowedParameterSymbols) + ")",
             RazorVueForEachNode loop => EmitLoop(loop, allowedLocalSymbols, allowedParameterSymbols),
             RazorVueForNode loop => EmitForLoop(loop, allowedLocalSymbols, allowedParameterSymbols),
             RazorVueImperativeBlockNode imperative => throw CreateAuthoringIssue(

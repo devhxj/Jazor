@@ -225,7 +225,10 @@ internal static class RazorVueSourceStableLocalInitializerHelper
 
         var collected = CollectSourceStableLocalInitializerStates(rootOperation.Operations, isSupportedCarrierType);
         if (!collected.TryGetValue(local, out var resolved))
-            return false;
+        {
+            invalidated = HasMutableLocalWrites(local, declarator, semanticModel);
+            return true;
+        }
 
         invalidated = HasMutableLocalWrites(local, declarator, semanticModel, resolved.AllowedAssignmentSyntax);
         return true;

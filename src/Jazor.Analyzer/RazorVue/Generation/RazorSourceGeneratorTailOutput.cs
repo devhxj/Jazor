@@ -248,6 +248,9 @@ internal static class RazorSourceGeneratorTailOutput
         var catalog = result.Catalog;
         if (catalog.Artifacts.IsDefaultOrEmpty)
         {
+            ReportTailFailure(
+                context,
+                BuildNoArtifactsFailure(compilation, result, documents));
             EmitTraceIfEnabled(
                 context,
                 options,
@@ -275,6 +278,49 @@ internal static class RazorSourceGeneratorTailOutput
             result.GeneratorDocumentCount,
             catalog.Artifacts.Length,
             "emitted");
+    }
+
+    private static string BuildNoArtifactsFailure(
+        Compilation compilation,
+        RazorVueRazorSourceGeneratorTailBridgeResult result,
+        ImmutableArray<ReflectedRazorSourceGeneratorDocument> documents)
+    {
+        var componentSummary = DescribeRazorVueComponents(compilation);
+        var documentSummary = DescribeTailDocuments(documents);
+        return "RazorVue Razor SG tail output produced no SFC artifacts after receiving Razor source generator documents. " +
+               "This usually means the official Razor source generator output did not match any RazorVue component or did not provide a bindable BuildRenderTree semantic baseline. " +
+               "Components: " + componentSummary + ". " +
+               "Tail documents: " + documentSummary + ". " +
+               "Ensure the .razor component is compiled by the official Razor source generator and that RazorVue runs from the SG tail output route after generated C# is available.";
+    }
+
+    private static string DescribeRazorVueComponents(Compilation compilation)
+    {
+        var context = RazorVueCompilationContext.TryCreate(compilation);
+        if (context is null)
+            return "<no RazorVue compilation context>";
+
+        var candidates = context.DiscoverComponentCandidates();
+        if (candidates.IsDefaultOrEmpty)
+            return "<none>";
+
+        return string.Join(
+            ", ",
+            candidates
+                .Select(static candidate => candidate.ComponentSymbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat))
+                .OrderBy(static name => name, StringComparer.Ordinal));
+    }
+
+    private static string DescribeTailDocuments(ImmutableArray<ReflectedRazorSourceGeneratorDocument> documents)
+    {
+        if (documents.IsDefaultOrEmpty)
+            return "<none>";
+
+        return string.Join(
+            ", ",
+            documents
+                .Select(static document => string.IsNullOrWhiteSpace(document.HintName) ? "<unknown>" : document.HintName)
+                .OrderBy(static name => name, StringComparer.Ordinal));
     }
 
     private static bool CompilationRequiresRazorVueTailOutput(Compilation compilation)

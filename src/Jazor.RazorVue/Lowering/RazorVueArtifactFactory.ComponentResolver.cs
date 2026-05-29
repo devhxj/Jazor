@@ -199,6 +199,12 @@ internal sealed partial class RazorVueArtifactFactory
                 foreach (var child in conditional.WhenFalse.Children)
                     CollectComponents(snapshot, child, components);
                 break;
+            case RazorVueRecoveredSwitchConditionalNode conditional:
+                foreach (var child in conditional.WhenTrue.Children)
+                    CollectComponents(snapshot, child, components);
+                foreach (var child in conditional.WhenFalse.Children)
+                    CollectComponents(snapshot, child, components);
+                break;
             case RazorVueTemplateScopeNode templateScope:
                 foreach (var child in templateScope.Children.Children)
                     CollectComponents(snapshot, child, components);

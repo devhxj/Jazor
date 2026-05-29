@@ -1,14 +1,14 @@
 export function ensureComparerInstance(instance) {
-  if (instance === null)
+  if (instance == null)
     throw new Error("NullReferenceException: instance is null.");
 }
 export function compareObjectsCore(x, y) {
   let leftNumber, rightNumber, leftString, rightString, leftBool, rightBool, leftBigInt, rightBigInt;
   if (Object.is(x, y))
     return 0;
-  if (x === null)
+  if (x == null)
     return -1;
-  if (y === null)
+  if (y == null)
     return 1;
   if (typeof x === "number" && (leftNumber = x, true) && (typeof y === "number" && (rightNumber = y, true))) {
     if (isNaN(leftNumber))

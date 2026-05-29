@@ -53,21 +53,21 @@
 - P2 组件契约提取
 - 将 RazorVue 核心语义所有权移入 `Jazor.RazorVue` 并保持 RazorVue analysis lane 为薄 Roslyn 宿主的分层重构；对外命名空间仍为 `Jazor.RazorVue.Analysis`，物理程序集当前并入 `Jazor.Analyzer`
 - 主要语义载体/编排路径：`RazorVueCompilationContext` -> `RazorVueSemanticSnapshot` -> `RazorVuePipeline` -> `RazorVueArtifactFactory` -> `RazorVueCatalog`
-- 默认模板前端切换：Razor 生成组件已优先走 `RazorCodeDocument` / Razor IR；`BuildRenderTree` 仅保留给源码中显式手写的 `BuildRenderTree` authoring
+- 默认组件 lowering 方向订正：RazorVue 组件以 Roslyn 合并后的 partial 组件类和绑定后的 `BuildRenderTree` / `IOperation` 为语义基线；`.razor` 组件在 Razor SG 后接入 `RazorCodeDocument` / Razor IR 作为 SFC 精度增强，纯手写 `BuildRenderTree` 组件由 analysis/source-generator 普通路径触发
 - P6 产物发射
 - 发射侧物化和 `RazorVueCatalog` / `RazorVueSfcCatalog` 的清单过渡
 - P7 的宿主消费切片已部分落地：`Jolt` 已消费共享 `Documents/` / `Protocol/` 契约，并在 DevServer 中接入 RazorVue manifest diff 和 HMR boundary 分类
 
 仓库已部分完成：
 
-- P4 最小模板结构提取与手写 `BuildRenderTree` authoring 前端
-- P4.5 `RazorCodeDocument` / Razor IR 模板前端迁移与默认前端切换
+- P4 最小模板结构提取与 `BuildRenderTree` / Roslyn `IOperation` 组件渲染语义基线
+- P4.5 `RazorCodeDocument` / Razor IR SFC 增强接入
 - P5 Razor -> Vue lowering
 - 结构化生成器诊断（超越回退表面）
 
 当前已证明的 lowering 子集：
 
-- Razor 生成组件默认经过 `RazorCodeDocument` / Razor IR -> render tree -> artifact lowering；手写 `BuildRenderTree` authoring 继续走保留前端
+- Razor 生成组件默认经过 Razor SG 后的 generated C# / `BuildRenderTree` / Roslyn operation 语义基线，再由 `RazorCodeDocument` / Razor IR 增强 SFC 输出；手写 `BuildRenderTree` authoring 只走 analysis/source-generator 普通触发路径
 - HTML 元素
 - 组件正常路径与组件节点 lowering
 - props
@@ -89,7 +89,7 @@
 - 完整的组件实例语义
 - `Dispose*`、`ShouldRender` 和 `SetParametersAsync` 的运行时等效 lowering
 - 更广泛的控制流覆盖验证
-- 更广泛的 Razor IR 形状覆盖验证，以及旧 `BuildRenderTree` 过渡路径的最终受控清理
+- 更广泛的 Razor IR 增强形状覆盖验证，以及旧 “IR 替换主前端” 分叉的最终受控清理
 - 全面的 Razor 语法覆盖验证
 - 最终的 `DenoHost` 构建/运行时端到端闭环
 - 最终的 HMR/sourcemap 输出
@@ -98,21 +98,23 @@
 
 ## 3. P0. 基础和约束
 
-### 3.1.1 明确模板语义前端迁移方向
+### 3.1.1 明确组件整体 lowering 与 IR 增强方向
 
 任务：
 
-- 将 `BuildRenderTree` / `IOperation` 模板提取明确标记为过渡前端，而非长期终态
-- 接受 `RazorCodeDocument` / Razor IR 替代 `BuildRenderTree` 作为正式迁移方向
-- 明确迁移边界：
-  - 优先替换 template frontend
+- 将继承 `ComponentBase`、实现 `IVueComponent` 且带 `[ECMAScriptModule]` 的类型明确为 RazorVue 特殊组件入口，而不是普通 ECMAScript module class
+- 接受 Roslyn 合并后的 partial component symbol、official Razor SG generated render body 和 `BuildRenderTree` / `IOperation` 作为长期语义基线
+- 接受 `RazorCodeDocument` / Razor IR 作为 `.razor` 组件 SFC 增强层，而不是替代 `BuildRenderTree` / Roslyn operation 的主语义来源
+- 明确实现边界：
+  - 优先稳定组件整体 lowering 和 canonical/SFC semantic model
   - 不直接删除现有 descriptor / lifecycle / setup logic / source-origin / HMR identity 链
   - 不将 `Jazor.Analyzer` 变成 Razor SDK 语义宿主
+  - 不把组件 descriptor 成员作为普通运行时代码重复 lower
 
 验收：
 
-- 执行清单明确区分“过渡模板前端”和“长期模板前端”
-- 后续阶段不会再把 `BuildRenderTree` 提取误写为最终架构
+- 执行清单明确区分“组件语义基线”和“Razor IR 增强层”
+- 后续阶段不会再把 Razor IR 误写为替代组件整体 lowering 的最终架构
 - RazorVue 核心语义所有权仍保持在当前核心实现层，而不是回流到薄宿主
 
 ### 3.1 定义语义载体和宿主迁移边界
@@ -425,10 +427,10 @@
 
 - 生命周期/状态/API 提取有覆盖
 
-## 7. P4. 最小模板结构提取（过渡实现）
+## 7. P4. 最小模板结构提取（Roslyn 语义基线）
 
-> Note: 本阶段的 `BuildRenderTree` / `IOperation` 路径是过渡实现，用于先闭合当前可工作的 RazorVue 通道。
-> 它不再被视为 RazorVue 模板语义前端的最终形态。
+> Note: 本阶段的 `BuildRenderTree` / `IOperation` 路径是 RazorVue 组件整体 lowering 的语义基线。
+> Razor IR 可以增强 `.razor` SFC 精度，但不能替代这条 Roslyn 语义基线。
 
 ### 7.1 定义最小渲染树模型
 
@@ -504,15 +506,15 @@
 验收：
 
 - 渲染树提取有回归保护
-- 当前测试可作为后续 Razor IR parity 的基线
+- 当前测试可作为后续 Razor IR 增强 parity 的基线
 
-## 8. P4.5 `RazorCodeDocument` / Razor IR 模板前端迁移
+## 8. P4.5 `RazorCodeDocument` / Razor IR SFC 增强接入
 
 > See also: [RazorVue.RazorIrMigrationPlan.md](./RazorVue.RazorIrMigrationPlan.md)
 
-> Positioning: 这是从当前 `BuildRenderTree` 过渡提取迁移到长期模板语义前端的正式阶段。
-> 它替换 template frontend，但默认保留现有 canonical / SFC / artifact / diagnostics / identity 主链，直到 parity 被证明。
-> Current snapshot (2026-05-09): Razor 生成组件的默认前端已经切到 `RazorCodeDocument` / Razor IR；`BuildRenderTree` 仅保留给源码中显式手写的 `BuildRenderTree` authoring。当前剩余工作是扩大 Razor IR 覆盖、补齐 parity 证明并完成旧过渡路径的受控清理。
+> Positioning: 这是把 SDK Razor SG 持有的 `RazorCodeDocument` / Razor IR 接入为 `.razor` SFC 增强层的正式阶段。
+> 它不替换组件整体 lowering；组件语义仍以 Roslyn 合并 symbol、official Razor SG generated render body 和 `BuildRenderTree` / `IOperation` 为基线。
+> Current snapshot (2026-05-28): 当前实现曾将 Razor 生成组件默认切到 `RazorCodeDocument` / Razor IR 主前端；该方向已订正为“Roslyn/`BuildRenderTree` 基线 + Razor IR 增强”。误导性的 preferred frontend 命名已收敛为 legacy IR-first compatibility route；后续工作是继续扩大 Razor IR 增强覆盖与 parity 证明。
 
 ### 8.1 证明可稳定获取 Razor IR
 
@@ -533,7 +535,7 @@
 
 任务：
 
-- 将 Razor IR 映射到现有模板中间模型，或定义与现有 canonical/template lowering 等价的新中间模型
+- 将 Razor IR 映射为现有模板中间模型 / SFC semantic model 的增强信息，或定义与现有 canonical/template lowering 等价的新中间模型
 - 覆盖至少以下形状：
   - element
   - component
@@ -547,8 +549,8 @@
 
 验收：
 
-- 新前端的输出可以被当前 canonical / SFC / artifact lowering 消费，或有明确的兼容适配层
-- 不需要为 template frontend 迁移同步重写 setup/lifecycle/descriptor lowering
+- IR 增强后的输出可以被当前 canonical / SFC / artifact lowering 消费，或有明确的兼容适配层
+- 不需要为 IR 增强同步重写 setup/lifecycle/descriptor lowering
 
 ### 8.3 保持现有逻辑与元数据主链
 
@@ -557,47 +559,47 @@
 - 保留当前 `RazorVueSemanticSnapshot` 承载的 descriptor / lifecycle / logic carriers
 - 保留当前 source-origin、identity、HMR boundary、generator diagnostics 约定
 - 明确：
-  - 模板前端迁移不等于直接把 `@code` 文本塞进 `<script setup>`
+  - IR 增强接入不等于直接把 `@code` 文本塞进 `<script setup>`
   - setup/lifecycle 继续走现有安全 lowering 路径，直到存在被证明更稳的替代
 
 验收：
 
-- IR 迁移不会导致现有 setup/lifecycle/diagnostic 行为静默退化
-- 迁移后产物身份和 source-origin 仍保持分层、稳定、可测试
+- IR 增强不会导致现有 setup/lifecycle/diagnostic 行为静默退化
+- 增强后产物身份和 source-origin 仍保持分层、稳定、可测试
 
 ### 8.4 建立 parity 测试与切换门
 
 任务：
 
-- 为当前 `BuildRenderTree` 前端与新 Razor IR 前端建立 parity 测试
+- 为当前 Roslyn/`BuildRenderTree` 语义基线与 Razor IR 增强输出建立 parity 测试
 - 至少比较：
   - 模板节点形状
   - `if` / `foreach` 结构
   - 组件与 slot 结构
   - 模板 source-origin
   - 最终 SFC/template 片段或 artifact hash 的稳定性
-- 在 parity 被证明前，不删除旧前端
+- 在 parity 被证明前，不删除 Roslyn/`BuildRenderTree` 语义基线；旧 IR-first 兼容路线只能作为明确的 legacy compatibility 覆盖存在，不能作为默认生产路线
 
 验收：
 
-- 新旧前端对已支持子集的输出差异可见、可审计
-- 存在明确切换门，而不是“一次性替换并删除旧链”
+- 基线/增强对已支持子集的输出差异可见、可审计
+- 存在明确接线门，而不是“一次性替换并删除旧链”
 
-### 8.5 渐进切换与清理
+### 8.5 渐进增强接线与清理
 
 任务：
 
-- 在 parity 通过后，将默认 template frontend 切换到 `RazorCodeDocument` / Razor IR
-- 保留受控的 fallback 或 feature-flag，直到新前端在主测试面上稳定
-- 仅在以下条件满足后才移除旧 `BuildRenderTree` 提取：
+- 在 parity 通过后，将 `.razor` 默认路径接入 `RazorCodeDocument` / Razor IR 增强层
+- 保留受控的 feature-flag 或诊断开关，直到增强层在主测试面上稳定
+- 仅在以下条件满足后才清理旧 “IR 替换主前端” 分叉：
   - 支持子集 parity 已证明
   - 诊断与 source-origin 未退化
-  - SFC / artifact / emit 下游无需再依赖旧前端特有形状
+  - SFC / artifact / emit 下游无需再依赖前端特有形状
 
 验收：
 
-- 仓库的默认长期路线不再依赖 `BuildRenderTree` 恢复模板结构
-- 旧前端的移除发生在验证之后，而不是设计假设阶段
+- 仓库的默认长期路线不再依赖 Razor IR 替代组件整体 lowering
+- 旧分叉的移除发生在验证之后，而不是设计假设阶段
 
 ## 9. P5. Razor -> Vue Lowering
 
@@ -840,8 +842,8 @@
 1. 分析器发现和诊断
 2. 契约提取
 3. 逻辑提取
-4. 过渡模板前端提取（`BuildRenderTree` / `IOperation`）
-5. Razor IR 模板前端 parity 与切换验证
+4. 组件渲染语义基线提取（`BuildRenderTree` / `IOperation`）
+5. Razor IR 增强 parity 与接线验证
 6. Vue lowering
 7. 产物发射
 8. 最小宿主集成
@@ -855,13 +857,13 @@
 1. `[ECMAScriptModule]` RazorVue 组件发现稳定。
 2. `JazorComponent` / `VueComponent` 约束被强制执行。
 3. props/emits/slots/model 元数据已被提取。
-4. 当前模板前端可工作，且长期迁移方向已明确指向 `RazorCodeDocument` / Razor IR。
+4. 当前 Roslyn/`BuildRenderTree` 语义基线可工作，且长期增强方向已明确指向 `RazorCodeDocument` / Razor IR。
 5. Vue `defineComponent + render` ESM 或 `.vue` SFC 已被发出。
 6. `DenoHost` 可以消费清单。
 7. source-origin 元数据在主管线中存活。
 8. 产物身份足够分离以支撑后续 HMR。
 9. 主管线有回归测试覆盖。
-10. 新模板前端替换旧前端之前，已存在明确 parity 验证和切换门。
+10. Razor IR 增强接入默认路径之前，已存在明确 parity 验证和接线门。
 
 ## 15. 结论
 

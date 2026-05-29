@@ -6059,6 +6059,128 @@ public sealed class BuildRenderTreeTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_WithBranchAssignedRenderFragmentLocalCarrier_PreservesImperativeRootBlock()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool UseStrong { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderFragment<int> template;
+                        if (UseStrong)
+                        {
+                            template = item => itemBuilder =>
+                            {
+                                itemBuilder.OpenElement(1, "strong");
+                                itemBuilder.AddContent(2, item);
+                                itemBuilder.CloseElement();
+                            };
+                        }
+                        else
+                        {
+                            template = item => itemBuilder =>
+                            {
+                                itemBuilder.OpenElement(3, "span");
+                                itemBuilder.AddContent(4, item);
+                                itemBuilder.CloseElement();
+                            };
+                        }
+
+                        builder.AddContent(5, template, 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+
+        Assert.AreEqual(1, renderTree.Children.Length);
+        Assert.IsInstanceOfType<RazorVueImperativeBlockNode>(renderTree.Children[0]);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithLocalFunctionMutatedRenderFragmentLocalCarrier_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderFragment<int> template = item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                        void Mutate()
+                        {
+                            template = item => itemBuilder =>
+                            {
+                                itemBuilder.OpenElement(3, "strong");
+                                itemBuilder.AddContent(4, item);
+                                itemBuilder.CloseElement();
+                            };
+                        }
+
+                        builder.AddContent(5, template, 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "RenderFragment local 'template'");
+        StringAssert.Contains(exception.Issue.Message, "later writes");
+    }
+
+    [TestMethod]
     public void CreateRenderTree_WithMixedImperativeDeclarationInitializedRenderFragmentLocalCarrierThenReassigned_ThrowsCanonicalizationFailed()
     {
         var context = CreateContext(
@@ -7312,6 +7434,48 @@ public sealed class BuildRenderTreeTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_WithScriptAddMarkupContent_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddMarkupContent(0, "<script>alert('x')</script>");
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "raw markup execution");
+        StringAssert.Contains(exception.Issue.Message, "script");
+    }
+
+    [TestMethod]
     public void CreateRenderTree_WithImmediatelyAssignedAddMarkupContentCarrierThenReassigned_ThrowsCanonicalizationFailed()
     {
         var context = CreateContext(
@@ -7357,6 +7521,54 @@ public sealed class BuildRenderTreeTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_WithLocalFunctionMutatedAddMarkupContentCarrier_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        string markup = "<section class=\"hero\"><span>safe</span><p>ok</p></section>";
+                        void Mutate()
+                        {
+                            markup = "<section class=\"hero\"><span>changed</span></section>";
+                        }
+
+                        builder.AddMarkupContent(0, markup);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "string local 'markup'");
+        StringAssert.Contains(exception.Issue.Message, "later writes");
+    }
+
+    [TestMethod]
     public void CreateRenderTree_WithReassignedSettableAddMarkupContentPropertyCarrier_ThrowsCanonicalizationFailed()
     {
         var context = CreateContext(
@@ -7384,6 +7596,54 @@ public sealed class BuildRenderTreeTemplateFrontendTests
                     private string HeroMarkup { get; set; } = "<section class=\"hero\"><span>safe</span><p>ok</p></section>";
 
                     public Host()
+                    {
+                        HeroMarkup = "<section class=\"hero\"><span>changed</span></section>";
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddMarkupContent(0, HeroMarkup);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "AddMarkupContent");
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithHelperMutatedSettableAddMarkupContentPropertyCarrier_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    private string HeroMarkup { get; set; } = "<section class=\"hero\"><span>safe</span><p>ok</p></section>";
+
+                    private void MutateMarkup()
                     {
                         HeroMarkup = "<section class=\"hero\"><span>changed</span></section>";
                     }
@@ -7805,6 +8065,177 @@ public sealed class BuildRenderTreeTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_WithDynamicNewMarkupStringAddContent_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, new MarkupString("<section>" + Title + "</section>"));
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "MarkupString");
+        StringAssert.Contains(exception.Issue.Message, "compile-time provable static");
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithInlineEventMarkupStringAddContent_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, (MarkupString)"<section onclick=\"alert('x')\">safe</section>");
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "raw markup execution");
+        StringAssert.Contains(exception.Issue.Message, "onclick");
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithDirectiveMarkupStringAddContent_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, (MarkupString)"<section v-html=\"payload\">safe</section>");
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "raw markup execution");
+        StringAssert.Contains(exception.Issue.Message, "v-html");
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithExecutableUrlMarkupStringAddContent_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, (MarkupString)"<a href=\"java&#x0A;script:alert(1)\">safe</a>");
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "raw markup execution URL");
+        StringAssert.Contains(exception.Issue.Message, "href");
+    }
+
+    [TestMethod]
     public void CreateRenderTree_WithImmediatelyAssignedMarkupStringLocalCarrierThenReassigned_ThrowsCanonicalizationFailed()
     {
         var context = CreateContext(
@@ -7847,6 +8278,101 @@ public sealed class BuildRenderTreeTemplateFrontendTests
         Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "MarkupString local 'markup'");
         StringAssert.Contains(exception.Issue.Message, "later writes");
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithLoopAssignedMarkupStringLocalCarrier_PreservesImperativeRootBlock()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        MarkupString markup = default;
+                        for (var index = 0; index < 1; index++)
+                        {
+                            markup = (MarkupString)"<section class=\"hero\"><span>changed</span></section>";
+                        }
+
+                        builder.AddContent(0, markup);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+
+        Assert.AreEqual(1, renderTree.Children.Length);
+        Assert.IsInstanceOfType<RazorVueImperativeBlockNode>(renderTree.Children[0]);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithRefEscapedMarkupStringLocalCarrier_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        MarkupString markup = (MarkupString)"<section class=\"hero\"><span>safe</span></section>";
+                        Replace(ref markup);
+                        builder.AddContent(0, markup);
+                    }
+
+                    private static void Replace(ref MarkupString markup)
+                    {
+                        markup = (MarkupString)"<section class=\"hero\"><span>changed</span></section>";
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "standalone invocation");
+        StringAssert.Contains(exception.Issue.Message, "Replace(ref MarkupString markup)");
     }
 
     [TestMethod]
@@ -8375,6 +8901,56 @@ public sealed class BuildRenderTreeTemplateFrontendTests
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
                         for (var index = 0; index < Count; index++, Total++)
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, index);
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+        Assert.AreEqual(1, renderTree.Children.Length);
+        var imperative = renderTree.Children[0] as RazorVueImperativeBlockNode;
+        Assert.IsNotNull(imperative);
+        Assert.AreEqual(RazorVueImperativeBlockKind.LoopBlock, imperative.Kind);
+        CollectionAssert.Contains(imperative.VisibleLocals.Select(static local => local.Name).ToArray(), "index");
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithLoopVariableDependentForStep_ProducesImperativeLoopBlockNode()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        for (var index = 1; index < Count; index += index)
                         {
                             builder.OpenElement(0, "section");
                             builder.AddContent(1, index);

@@ -1,6 +1,6 @@
 import { _5ad63706a889c294 } from "System/StringModule.js";
 export function ensureComparerInstance(instance) {
-  if (instance === null)
+  if (instance == null)
     throw new Error("NullReferenceException: instance is null.");
 }
 function hashStringCore(text) {
@@ -19,7 +19,7 @@ export function equalsCore(left, right) {
 }
 export function getHashCodeCore(value) {
   let boolValue, numberValue, stringValue, bigIntValue;
-  if (value === null)
+  if (value == null)
     return 0;
   if (typeof value === "boolean" && (boolValue = value, true))
     return boolValue ? 1 : 0;
@@ -35,7 +35,7 @@ export function getHashCodeCore(value) {
   if (typeof value === "bigint" && (bigIntValue = value, true))
     return hashStringCore(bigIntValue.toString());
   let text = value.toString();
-  return text === null ? 0 : hashStringCore(text);
+  return text == null ? 0 : hashStringCore(text);
 }
 export function _4614e5ce6b42a7ad(instance, x, y) {
   ensureComparerInstance(instance);

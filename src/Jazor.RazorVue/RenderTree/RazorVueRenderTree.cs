@@ -93,6 +93,12 @@ internal sealed record RazorVueConditionalNode(
     RazorVueRenderFragment WhenFalse,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins);
 
+internal sealed record RazorVueRecoveredSwitchConditionalNode(
+    string ConditionExpressionText,
+    RazorVueRenderFragment WhenTrue,
+    RazorVueRenderFragment WhenFalse,
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins);
+
 internal sealed record RazorVueForEachNode(
     string ItemName,
     ILocalSymbol? ItemSymbol,

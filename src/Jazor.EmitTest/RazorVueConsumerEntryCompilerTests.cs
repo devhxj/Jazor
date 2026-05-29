@@ -553,6 +553,27 @@ public sealed class RazorVueConsumerEntryCompilerTests
     }
 
     [TestMethod]
+    public async Task GenerateAsync_WhenRouteTemplateUsesUnknownCustomConstraint_FailsWithActionableError()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue") with
+            {
+                RouteTemplates = ["/events/{value:businessDate}"]
+            });
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(15, result.ExitCode);
+        StringAssert.Contains(result.Error, "route constraint on parameter 'value' is not currently supported for Vue Router conversion");
+        Assert.IsFalse(File.Exists(workspace.ClientEntryPath));
+    }
+
+    [TestMethod]
     public async Task GenerateAsync_WhenRouteTemplateUsesFileNameConstraints_EmitsVueRouteRegexAndConstraintMetadata()
     {
         using var workspace = new TestWorkspace();
@@ -791,6 +812,48 @@ public sealed class RazorVueConsumerEntryCompilerTests
         Assert.IsFalse(result.IsSuccess);
         Assert.AreEqual(15, result.ExitCode);
         StringAssert.Contains(result.Error, "optional parameter must be at the end of the segment");
+        Assert.IsFalse(File.Exists(workspace.ClientEntryPath));
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenRouteTemplateUsesCompositeOptionalWithoutSeparator_FailsWithActionableError()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue") with
+            {
+                RouteTemplates = ["/files/{filename}{ext?}"]
+            });
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(15, result.ExitCode);
+        StringAssert.Contains(result.Error, "optional parameter 'ext' is preceded by an invalid segment");
+        Assert.IsFalse(File.Exists(workspace.ClientEntryPath));
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenRouteTemplateRequiresMultipleOptionalCompositeExpansions_FailsWithActionableError()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue") with
+            {
+                RouteTemplates = ["/files/{name}.{ext?}.{format?}"]
+            });
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(15, result.ExitCode);
+        StringAssert.Contains(result.Error, "optional parameter 'ext' is followed by");
         Assert.IsFalse(File.Exists(workspace.ClientEntryPath));
     }
 

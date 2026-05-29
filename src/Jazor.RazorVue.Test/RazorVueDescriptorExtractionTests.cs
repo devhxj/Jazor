@@ -2964,6 +2964,105 @@ public sealed class RazorVueDescriptorExtractionTests
     }
 
     [TestMethod]
+    public void RazorVue_Snapshot_ComponentBaseline_SeparatesMergedDescriptorRuntimeAndRenderSemantics()
+    {
+        var compilation = CSharpCompilation.Create(
+            assemblyName: "RazorVue.Descriptor.PartialBaseline.Tests",
+            syntaxTrees:
+            [
+                CSharpSyntaxTree.ParseText(
+                    """
+                    global using static ECMAScript.Vue3;
+                    global using ECMAScript.VueContract;
+                    global using Microsoft.AspNetCore.Components;
+                    """,
+                    path: "RazorVueTestGlobalUsings.g.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    using System;
+
+                    namespace ECMAScript
+                    {
+                        [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                        public sealed class ECMAScriptModuleAttribute : Attribute
+                        {
+                            public ECMAScriptModuleAttribute() { }
+                            public ECMAScriptModuleAttribute(string import) { }
+                        }
+                    }
+
+                    namespace Demo.Components
+                    {
+                        [ECMAScript.ECMAScriptModule("./components/partial-card")]
+                        public partial class PartialCard : ComponentBase, IVueComponent
+                        {
+                            [Parameter]
+                            public string? Title { get; set; }
+
+                            private readonly string Prefix = "Title: ";
+
+                            protected override void OnInitialized()
+                            {
+                            }
+
+                            public string FormatTitle()
+                                => Prefix + Title;
+                        }
+                    }
+                    """,
+                    path: "PartialCard.razor.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    using Microsoft.AspNetCore.Components.Rendering;
+
+                    namespace Demo.Components
+                    {
+                        public partial class PartialCard
+                        {
+                            protected override void BuildRenderTree(RenderTreeBuilder __builder)
+                            {
+                                __builder.AddContent(0, Title);
+                            }
+                        }
+                    }
+                    """,
+                    path: "PartialCard.razor.g.cs")
+            ],
+            references: RazorVueMetadataReferences.Create(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var errors = compilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors.Select(static diagnostic => diagnostic.ToString())));
+
+        var context = RazorVueCompilationContext.TryCreate(compilation);
+        Assert.IsNotNull(context);
+
+        var snapshot = context.DiscoverComponentCandidates()
+            .Select(context.CreateSemanticSnapshot)
+            .Single();
+        var baseline = snapshot.ComponentBaseline;
+
+        Assert.IsTrue(SymbolEqualityComparer.Default.Equals(snapshot.ComponentSymbol, baseline.ComponentSymbol));
+        Assert.IsTrue(snapshot.ComponentSymbol.DeclaringSyntaxReferences.Length >= 2);
+
+        var descriptor = baseline.Descriptor.Descriptor;
+        Assert.AreEqual("PartialCard", descriptor.Name);
+        Assert.IsTrue(descriptor.Props.Any(static prop => prop.PublicName == "Title"));
+        Assert.IsFalse(baseline.Runtime.Logic.Properties.Any(static property => property.Name == "Title"));
+
+        Assert.IsTrue(baseline.Runtime.Lifecycle.HasOnInitialized);
+        Assert.IsNotNull(baseline.Runtime.OnInitializedMethod);
+        Assert.AreEqual("Prefix", baseline.Runtime.Logic.Fields.Single().Name);
+        Assert.AreEqual("FormatTitle", baseline.Runtime.Logic.Methods.Single().Name);
+
+        Assert.IsNotNull(baseline.Render.BuildRenderTreeMethod);
+        Assert.IsTrue(SymbolEqualityComparer.Default.Equals(snapshot.BuildRenderTreeMethod, baseline.Render.BuildRenderTreeMethod));
+        Assert.IsNull(baseline.Render.RazorIrCarrier);
+        Assert.IsNull(baseline.Render.RazorSourceGeneratorDocument);
+    }
+
+    [TestMethod]
     public void RazorVue_Snapshot_ContainsSupportedLogicFieldsAndHelpers()
     {
         var snapshot = CreateSingleSnapshot(

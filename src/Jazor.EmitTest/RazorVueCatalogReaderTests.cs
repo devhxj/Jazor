@@ -45,7 +45,7 @@ namespace Jazor.EmitTest
         [TestMethod]
         public void RazorVueCatalogReader_ReadsGeneratedCatalogFromRealGeneratorAssembly()
         {
-            const string sourcePath = "CounterCard.razor";
+            const string sourcePath = "CounterCard.cs";
             var compilation = CreateRazorVueCompilation(
                 "RazorVue.Reader.Integration.Tests",
                 """

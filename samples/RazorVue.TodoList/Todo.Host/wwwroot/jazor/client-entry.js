@@ -1,4 +1,4 @@
-// .deno-build/pid-38648/vue-feature-flags.mjs
+// .deno-build/pid-24732/vue-feature-flags.mjs
 globalThis.__VUE_OPTIONS_API__ = true;
 globalThis.__VUE_PROD_DEVTOOLS__ = false;
 globalThis.__VUE_PROD_HYDRATION_MISMATCH_DETAILS__ = false;
@@ -38014,7 +38014,7 @@ var VValidation = genericComponent()({
   }
 });
 
-// .deno-build/pid-38648/generated-browser/components/todo-summary-card.mjs
+// .deno-build/pid-24732/generated-browser/components/todo-summary-card.mjs
 var _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "todo-summary-card",
   props: {
@@ -38029,9 +38029,51 @@ var _sfc_main = /* @__PURE__ */ defineComponent({
   },
   setup(__props, { expose: __expose, emit: __emit }) {
     __expose();
-    const props = __props;
+    const __jazorRawProps = __props;
+    const __jazorPropDefaultCache = /* @__PURE__ */ Object.create(null);
+    const props = new Proxy(__jazorRawProps, {
+      get(target, key, receiver) {
+        if (typeof key === "string") {
+          if (key === "totalText") {
+            const value = Reflect.get(target, key, receiver);
+            if (value !== void 0) return value;
+            if (Object.prototype.hasOwnProperty.call(__jazorPropDefaultCache, key)) return __jazorPropDefaultCache[key];
+            const defaultValue = "";
+            __jazorPropDefaultCache[key] = defaultValue;
+            return defaultValue;
+          }
+          if (key === "completedText") {
+            const value = Reflect.get(target, key, receiver);
+            if (value !== void 0) return value;
+            if (Object.prototype.hasOwnProperty.call(__jazorPropDefaultCache, key)) return __jazorPropDefaultCache[key];
+            const defaultValue = "";
+            __jazorPropDefaultCache[key] = defaultValue;
+            return defaultValue;
+          }
+          if (key === "openText") {
+            const value = Reflect.get(target, key, receiver);
+            if (value !== void 0) return value;
+            if (Object.prototype.hasOwnProperty.call(__jazorPropDefaultCache, key)) return __jazorPropDefaultCache[key];
+            const defaultValue = "";
+            __jazorPropDefaultCache[key] = defaultValue;
+            return defaultValue;
+          }
+          if (key === "pinnedText") {
+            const value = Reflect.get(target, key, receiver);
+            if (value !== void 0) return value;
+            if (Object.prototype.hasOwnProperty.call(__jazorPropDefaultCache, key)) return __jazorPropDefaultCache[key];
+            const defaultValue = "";
+            __jazorPropDefaultCache[key] = defaultValue;
+            return defaultValue;
+          }
+        }
+        return Reflect.get(target, key, receiver);
+      }
+    });
     const emit2 = __emit;
     const __returned__ = {
+      __jazorRawProps,
+      __jazorPropDefaultCache,
       props,
       emit: emit2,
       get VCard() {
@@ -38119,7 +38161,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 _sfc_main.render = render;
 
-// .deno-build/pid-38648/generated-browser/components/todo-app.mjs
+// .deno-build/pid-24732/generated-browser/components/todo-app.mjs
 var _sfc_main2 = /* @__PURE__ */ defineComponent({
   __name: "todo-app",
   props: {
@@ -38144,11 +38186,39 @@ var _sfc_main2 = /* @__PURE__ */ defineComponent({
   ],
   setup(__props, { expose: __expose, emit: __emit }) {
     __expose();
-    const props = __props;
+    const __jazorRawProps = __props;
+    const __jazorPropDefaultCache = /* @__PURE__ */ Object.create(null);
+    const props = new Proxy(__jazorRawProps, {
+      get(target, key, receiver) {
+        if (typeof key === "string") {
+          if (key === "tasks") {
+            const value = Reflect.get(target, key, receiver);
+            if (value !== void 0) return value;
+            if (Object.prototype.hasOwnProperty.call(__jazorPropDefaultCache, key)) return __jazorPropDefaultCache[key];
+            const defaultValue = [];
+            __jazorPropDefaultCache[key] = defaultValue;
+            return defaultValue;
+          }
+        }
+        return Reflect.get(target, key, receiver);
+      }
+    });
     const emit2 = __emit;
+    const __jazor$0 = computed2(() => (__value) => emit2("update:draftTitle", __value));
+    const __jazor$1 = computed2(() => (__value) => emit2("update:draftCategory", __value));
+    const __jazor$2 = computed2(() => (__value) => emit2("update:draftPinned", __value));
+    const __jazor$3 = computed2(() => (__value) => emit2("update:showCompleted", __value));
+    const __jazor$4 = computed2(() => () => emit2("addRequested"));
     const __returned__ = {
+      __jazorRawProps,
+      __jazorPropDefaultCache,
       props,
       emit: emit2,
+      __jazor$0,
+      __jazor$1,
+      __jazor$2,
+      __jazor$3,
+      __jazor$4,
       TodoSummaryCardComponent: _sfc_main,
       get VAlert() {
         return VAlert;
@@ -38232,7 +38302,7 @@ function render2(_ctx, _cache, $props, $setup, $data, $options) {
                         default: withCtx(() => [
                           createVNode($setup["VCardTitle"], null, {
                             default: withCtx(() => [
-                              ..._cache[5] || (_cache[5] = [
+                              ..._cache[0] || (_cache[0] = [
                                 createTextVNode(
                                   " RazorVue Todo Workspace ",
                                   -1
@@ -38255,9 +38325,10 @@ function render2(_ctx, _cache, $props, $setup, $data, $options) {
                                       createVNode($setup["VTextField"], {
                                         label: "New task title",
                                         modelValue: $setup.props.draftTitle,
-                                        "onUpdate:modelValue": _cache[0] || (_cache[0] = (__value) => $setup.emit("update:draftTitle", __value))
+                                        "onUpdate:modelValue": $setup.__jazor$0
                                       }, null, 8, [
-                                        "modelValue"
+                                        "modelValue",
+                                        "onUpdate:modelValue"
                                       ])
                                     ]),
                                     _: 1
@@ -38271,9 +38342,10 @@ function render2(_ctx, _cache, $props, $setup, $data, $options) {
                                       createVNode($setup["VTextField"], {
                                         label: "Category",
                                         modelValue: $setup.props.draftCategory,
-                                        "onUpdate:modelValue": _cache[1] || (_cache[1] = (__value) => $setup.emit("update:draftCategory", __value))
+                                        "onUpdate:modelValue": $setup.__jazor$1
                                       }, null, 8, [
-                                        "modelValue"
+                                        "modelValue",
+                                        "onUpdate:modelValue"
                                       ])
                                     ]),
                                     _: 1
@@ -38293,9 +38365,10 @@ function render2(_ctx, _cache, $props, $setup, $data, $options) {
                                       createVNode($setup["VCheckbox"], {
                                         label: "Create pinned task",
                                         modelValue: $setup.props.draftPinned,
-                                        "onUpdate:modelValue": _cache[2] || (_cache[2] = (__value) => $setup.emit("update:draftPinned", __value))
+                                        "onUpdate:modelValue": $setup.__jazor$2
                                       }, null, 8, [
-                                        "modelValue"
+                                        "modelValue",
+                                        "onUpdate:modelValue"
                                       ])
                                     ]),
                                     _: 1
@@ -38309,9 +38382,10 @@ function render2(_ctx, _cache, $props, $setup, $data, $options) {
                                       createVNode($setup["VSwitch"], {
                                         label: "Show completed",
                                         modelValue: $setup.props.showCompleted,
-                                        "onUpdate:modelValue": _cache[3] || (_cache[3] = (__value) => $setup.emit("update:showCompleted", __value))
+                                        "onUpdate:modelValue": $setup.__jazor$3
                                       }, null, 8, [
-                                        "modelValue"
+                                        "modelValue",
+                                        "onUpdate:modelValue"
                                       ])
                                     ]),
                                     _: 1
@@ -38324,8 +38398,10 @@ function render2(_ctx, _cache, $props, $setup, $data, $options) {
                                     default: withCtx(() => [
                                       createVNode($setup["VBtn"], {
                                         text: "Add task",
-                                        onClick: _cache[4] || (_cache[4] = () => $setup.emit("addRequested"))
-                                      })
+                                        onClick: $setup.__jazor$4
+                                      }, null, 8, [
+                                        "onClick"
+                                      ])
                                     ]),
                                     _: 1
                                     /* STABLE */
@@ -38408,7 +38484,7 @@ function render2(_ctx, _cache, $props, $setup, $data, $options) {
                         default: withCtx(() => [
                           createVNode($setup["VCardTitle"], null, {
                             default: withCtx(() => [
-                              ..._cache[6] || (_cache[6] = [
+                              ..._cache[1] || (_cache[1] = [
                                 createTextVNode(
                                   " Tasks ",
                                   -1
@@ -38439,13 +38515,13 @@ function render2(_ctx, _cache, $props, $setup, $data, $options) {
                                         Fragment,
                                         null,
                                         [
-                                          $setup.props.showCompleted || !item.IsDone ? (openBlock(), createBlock($setup["VListItem"], {
+                                          $setup.props.showCompleted || !item.isDone ? (openBlock(), createBlock($setup["VListItem"], {
                                             key: 0,
-                                            title: item.Title,
-                                            subtitle: item.Category + " | " + (item.IsDone ? "Completed" : "Active")
+                                            title: item.title,
+                                            subtitle: item.category + " | " + (item.isDone ? "Completed" : "Active")
                                           }, {
                                             default: withCtx(() => [
-                                              item.IsPinned ? (openBlock(), createBlock($setup["VChip"], {
+                                              item.isPinned ? (openBlock(), createBlock($setup["VChip"], {
                                                 key: 0,
                                                 text: "Pinned",
                                                 color: "primary"
@@ -38501,8 +38577,8 @@ function render2(_ctx, _cache, $props, $setup, $data, $options) {
 _sfc_main2.render = render2;
 
 // ../jazor/__jazor/razorvue-host.mjs
-var razorVueHostAssemblyName = "Todo.Library";
-var razorVueHostGeneratedAtUtc = "2026-05-13T15:04:49.3822753Z";
+var razorVueHostAssemblyName = "Todo.Host";
+var razorVueHostGeneratedAtUtc = "2026-05-28T11:26:50.2932398Z";
 var razorVueStyles = Object.freeze([
   "vuetify/styles"
 ]);
@@ -38515,6 +38591,7 @@ var razorVueHostModules = Object.freeze([
     "componentId": "Todo.Library.TodoApp",
     "moduleId": "components/todo-app.vue",
     "componentName": "TodoApp",
+    "routeTemplates": [],
     "relativeModulePath": "components/todo-app.vue",
     "sourceMapPath": "components/todo-app.vue.map",
     "originMapPath": "components/todo-app.vue.origins.json",
@@ -38524,12 +38601,12 @@ var razorVueHostModules = Object.freeze([
     "pluginRequirements": [
       "vuetify"
     ],
-    "descriptorHash": "CFA06F2B1992F6CC41900EDAEE989F6BAE551E116408F3D08572BBE46E88BA97",
-    "templateHash": "9B32FEEEF5F760A2E22B4024317C35275CA75BCFD98DD1CD3D655C7E3654D931",
-    "logicHash": "E8597831B1442007A501BE095A453F816AFF8AC02105BEABCB56BBB7F85DFF87",
-    "contentHash": "8D3D00C6C3535B6D8EBA02B416904BB8A2F27A9ED7D3F5080B0A152BFB4054C7",
+    "descriptorHash": "1FC0390D39CC525571FE72012031AC0FFC48EF6E66C93C9961F34AED3F69598E",
+    "templateHash": "6D3263AFD0D82AD3CCA74FD12CF483A46E16F715908B4266EA31140858CCDFCE",
+    "logicHash": "9B5A3F2C6943DBB2794784619F68AE11EEE68298B6349AEDA1F995F467A1A592",
+    "contentHash": "385453AB340930995B2B28730883D8D2C134DA7A856F708662E828847FDC4159",
     "styleHash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
-    "hmrBoundaryKind": 1,
+    "hmrBoundaryKind": 2,
     "requiresHydration": false,
     "supportsSsr": true
   },
@@ -38538,6 +38615,7 @@ var razorVueHostModules = Object.freeze([
     "componentId": "Todo.Library.TodoSummaryCard",
     "moduleId": "components/todo-summary-card.vue",
     "componentName": "TodoSummaryCard",
+    "routeTemplates": [],
     "relativeModulePath": "components/todo-summary-card.vue",
     "sourceMapPath": "components/todo-summary-card.vue.map",
     "originMapPath": "components/todo-summary-card.vue.origins.json",
@@ -38547,10 +38625,10 @@ var razorVueHostModules = Object.freeze([
     "pluginRequirements": [
       "vuetify"
     ],
-    "descriptorHash": "70F8B3CCA999CA2D23DCF0ADDEA7DCA37AC80FBFF9E44271D795D09CCDAE2F89",
+    "descriptorHash": "F2D37B547658B270BC3CED28168B2AE3A8289C8C9C0A7C7AF01963E0A90CC602",
     "templateHash": "2000C0BD686EEF613BF6637F0529A89F31EC97CE3B5FC0B14D614C3969256252",
-    "logicHash": "AEA6674229E008F38FC9B1944A42A61A63EDC2C7610055084D5F12E5025E4CF0",
-    "contentHash": "1D423EAC7511F42D882857FE0FC749928F254BD5E2A5C55FFFC645867CE0300D",
+    "logicHash": "8867B838A5E1428F1FFD0A36A1B9F298E8F4D2CE43068EE3ACE3EA3047ACAB2D",
+    "contentHash": "F7F5F1E3AC32297CDD907777350830647A577F1238118D4C1FC1FA7AC5F63766",
     "styleHash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
     "hmrBoundaryKind": 1,
     "requiresHydration": false,
@@ -38693,44 +38771,44 @@ function createTodoState() {
     statusMessage: "Library mode emits Vue SFC artifacts during design time.",
     tasks: [
       {
-        Id: 1,
-        Title: "Define per-component SFC topology",
-        Category: "Compiler",
-        IsDone: false,
-        IsPinned: true
+        id: 1,
+        title: "Define per-component SFC topology",
+        category: "Compiler",
+        isDone: false,
+        isPinned: true
       },
       {
-        Id: 2,
-        Title: "Wire host requirements into consumer bootstrap",
-        Category: "Host",
-        IsDone: true,
-        IsPinned: false
+        id: 2,
+        title: "Wire host requirements into consumer bootstrap",
+        category: "Host",
+        isDone: true,
+        isPinned: false
       },
       {
-        Id: 3,
-        Title: "Verify generated .vue imports stay stable",
-        Category: "Emit",
-        IsDone: false,
-        IsPinned: false
+        id: 3,
+        title: "Verify generated .vue imports stay stable",
+        category: "Emit",
+        isDone: false,
+        isPinned: false
       }
     ]
   });
 }
 function createTodoRootComponent(TodoApp, state = createTodoState()) {
   const totalCount = computed2(() => state.tasks.length);
-  const completedCount = computed2(() => state.tasks.filter((task) => task.IsDone).length);
-  const openCount = computed2(() => state.tasks.filter((task) => !task.IsDone).length);
-  const pinnedCount = computed2(() => state.tasks.filter((task) => task.IsPinned).length);
-  const visibleCount = computed2(() => state.tasks.filter((task) => state.showCompleted || !task.IsDone).length);
+  const completedCount = computed2(() => state.tasks.filter((task) => task.isDone).length);
+  const openCount = computed2(() => state.tasks.filter((task) => !task.isDone).length);
+  const pinnedCount = computed2(() => state.tasks.filter((task) => task.isPinned).length);
+  const visibleCount = computed2(() => state.tasks.filter((task) => state.showCompleted || !task.isDone).length);
   function addTask() {
     const title = state.draftTitle && state.draftTitle.trim() ? state.draftTitle.trim() : "Untitled task";
     const category = state.draftCategory && state.draftCategory.trim() ? state.draftCategory.trim() : "General";
     state.tasks.unshift({
-      Id: state.nextId++,
-      Title: title,
-      Category: category,
-      IsDone: false,
-      IsPinned: state.draftPinned
+      id: state.nextId++,
+      title,
+      category,
+      isDone: false,
+      isPinned: state.draftPinned
     });
     state.statusMessage = `Added "${title}" to the top of the workspace.`;
     state.draftTitle = "";
@@ -38772,25 +38850,29 @@ function createTodoRootComponent(TodoApp, state = createTodoState()) {
 }
 
 // src/runtime-client.js
-function mountTodoConsumer(components, hostRequirements, selector = "#app") {
+function mountTodoConsumer(components, hostRequirements, routesOrSelector = "#app", maybeSelector = "#app") {
   assertHostRequirements(hostRequirements);
   const TodoApp = components?.TodoApp;
   if (typeof TodoApp !== "object" && typeof TodoApp !== "function") {
     throw new Error("RazorVue Todo consumer expected a TodoApp component export.");
   }
+  const hasExplicitRoutes = Array.isArray(routesOrSelector);
+  const selector = hasExplicitRoutes ? maybeSelector : routesOrSelector;
   const app = createApp(createTodoRootComponent(TodoApp));
   app.use(createVuetify());
   app.mount(selector);
   return app;
 }
 
-// .deno-build/pid-38648/client-entry.mjs
+// .deno-build/pid-24732/client-entry.mjs
 var razorVueConsumerComponents = Object.freeze({
   TodoApp: _sfc_main2
 });
-mountTodoConsumer(razorVueConsumerComponents, razorVueHostRequirements);
+var razorVueConsumerRoutes = Object.freeze([]);
+mountTodoConsumer(razorVueConsumerComponents, razorVueHostRequirements, razorVueConsumerRoutes);
 export {
   razorVueConsumerComponents,
+  razorVueConsumerRoutes,
   razorVueHostRequirements
 };
 /*! Bundled license information:

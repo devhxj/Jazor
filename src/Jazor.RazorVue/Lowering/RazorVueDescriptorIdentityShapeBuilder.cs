@@ -74,6 +74,11 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
                 AppendRenderTreeKeyShape(builder, conditional.WhenTrue);
                 AppendRenderTreeKeyShape(builder, conditional.WhenFalse);
                 break;
+            case RazorVueRecoveredSwitchConditionalNode conditional:
+                builder.AppendLine("render:recovered-switch-if:" + conditional.ConditionExpressionText);
+                AppendRenderTreeKeyShape(builder, conditional.WhenTrue);
+                AppendRenderTreeKeyShape(builder, conditional.WhenFalse);
+                break;
             case RazorVueForEachNode loop:
                 AppendRenderTreeKeyShape(builder, loop.Body);
                 break;
@@ -281,6 +286,10 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
                 CollectFromRenderTree(ownerComponentSymbol, compilation, templateScope.Children, resolvedComponents, usageByComponent);
                 break;
             case RazorVueConditionalNode conditional:
+                CollectFromRenderTree(ownerComponentSymbol, compilation, conditional.WhenTrue, resolvedComponents, usageByComponent);
+                CollectFromRenderTree(ownerComponentSymbol, compilation, conditional.WhenFalse, resolvedComponents, usageByComponent);
+                break;
+            case RazorVueRecoveredSwitchConditionalNode conditional:
                 CollectFromRenderTree(ownerComponentSymbol, compilation, conditional.WhenTrue, resolvedComponents, usageByComponent);
                 CollectFromRenderTree(ownerComponentSymbol, compilation, conditional.WhenFalse, resolvedComponents, usageByComponent);
                 break;

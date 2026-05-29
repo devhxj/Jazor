@@ -47,7 +47,12 @@ internal sealed class RazorVueRenderTreeExtractor
 
         var method = snapshot.BuildRenderTreeMethod;
         if (method is null)
+        {
+            if (RequiresGeneratedRazorBaseline(snapshot))
+                throw CreateMissingBuildRenderTreeIssue(snapshot, "did not resolve a BuildRenderTree method");
+
             return RazorVueRenderFragment.Empty;
+        }
 
         var builderParameters = method.Parameters
             .Where(static parameter => string.Equals(parameter.Name, "builder", StringComparison.Ordinal) ||
@@ -99,7 +104,54 @@ internal sealed class RazorVueRenderTreeExtractor
             }
         }
 
-        return RazorVueRenderFragment.Empty;
+        throw CreateMissingBuildRenderTreeIssue(snapshot, "resolved BuildRenderTree but could not bind an analyzable method body");
+    }
+
+    private static RazorVueCompilationIssueException CreateMissingBuildRenderTreeIssue(
+        RazorVueSemanticSnapshot snapshot,
+        string reason)
+    {
+        var routeHint = snapshot.RazorSourceGeneratorDocument is not null
+            ? "Razor SG tail input must include the official generated C# containing BuildRenderTree for this .razor component."
+            : snapshot.BuildRenderTreeMethod is not null
+                ? "BuildRenderTree must have a source-authored or generated C# body that Roslyn can bind."
+                : "For .razor components, run RazorVue after Razor SG tail output has provided official generated C#; Razor IR may enhance the SFC but cannot replace the Roslyn/BuildRenderTree semantic baseline. Handwritten component authoring must provide a BuildRenderTree body.";
+        var issue = new RazorVueCompilationIssue(
+            RazorVueIssueCode.CanonicalizationFailed,
+            RazorVueIssueSeverity.Error,
+            $"RazorVue could not create a render semantic baseline for component '{snapshot.Descriptor.FullName}': {reason}. {routeHint}",
+            ImmutableArray<string>.Empty);
+        return new RazorVueCompilationIssueException(
+            issue,
+            snapshot.Descriptor.FullName,
+            snapshot.Origins.FirstOrDefault());
+    }
+
+    private static bool RequiresGeneratedRazorBaseline(RazorVueSemanticSnapshot snapshot)
+    {
+        if (snapshot.RazorSourceGeneratorDocument is not null)
+            return true;
+
+        if (snapshot.RazorIrCarrier is not null)
+            return false;
+
+        foreach (var syntaxReference in snapshot.ComponentSymbol.DeclaringSyntaxReferences)
+        {
+            if (syntaxReference.GetSyntax() is not ClassDeclarationSyntax classDeclaration ||
+                !classDeclaration.Modifiers.Any(SyntaxKind.PartialKeyword))
+            {
+                continue;
+            }
+
+            var path = classDeclaration.SyntaxTree.FilePath;
+            if (path is not null &&
+                path.EndsWith(".razor.cs", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     internal static bool TryParseTemplateCarrier(
@@ -412,6 +464,43 @@ internal sealed class RazorVueRenderTreeExtractor
     private readonly record struct RenderHelperValueBinding(
         IParameterSymbol ParameterSymbol,
         IOperation Initializer);
+
+    internal static RazorVueRenderFragment ParseSupportedOperations(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        IEnumerable<IOperation> operations,
+        IEnumerable<ILocalSymbol>? accessibleTemplateLocals = null,
+        IEnumerable<IParameterSymbol>? accessibleTemplateParameters = null)
+    {
+        if (context is null)
+            throw new ArgumentNullException(nameof(context));
+        if (snapshot is null)
+            throw new ArgumentNullException(nameof(snapshot));
+        if (operations is null)
+            throw new ArgumentNullException(nameof(operations));
+
+        var templateParameters = accessibleTemplateParameters?.ToImmutableArray() ?? ImmutableArray<IParameterSymbol>.Empty;
+        var builderParameters = templateParameters
+            .Where(static parameter => IsRenderTreeBuilderParameterType(parameter.Type))
+            .ToImmutableHashSet<IParameterSymbol>(SymbolEqualityComparer.Default);
+        var nonBuilderTemplateParameters = templateParameters
+            .Where(static parameter => !IsRenderTreeBuilderParameterType(parameter.Type))
+            .ToImmutableArray();
+        return new Parser(
+            snapshot,
+            context.Compilation,
+            context.Symbols,
+            builderParameters,
+            accessibleTemplateLocals: accessibleTemplateLocals,
+            accessibleTemplateParameters: nonBuilderTemplateParameters,
+            allowTemplateScopedLocals: true).Parse(operations);
+    }
+
+    private static bool IsRenderTreeBuilderParameterType(ITypeSymbol? typeSymbol)
+        => string.Equals(
+            typeSymbol?.ToDisplayString(),
+            "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder",
+            StringComparison.Ordinal);
 
     private sealed class Parser(
         RazorVueSemanticSnapshot snapshot,
@@ -881,6 +970,12 @@ internal sealed class RazorVueRenderTreeExtractor
             var value = GetInvocationArgument(invocation, 2);
             ThrowIfComponentTypeCarrierUsedAsRuntimeValue(value, invocation);
             var currentNode = GetRequiredOpenNodeBuilder(invocation);
+            if (string.Equals(name, "@key", StringComparison.Ordinal))
+            {
+                currentNode.SetKey(value, ToCapturedValueBindings(_activeCapturedBindings), CreateOrigins(invocation, RazorVueOriginKind.Template));
+                return;
+            }
+
             if (TryHandleComponentSlotValue(currentNode, name!, value, invocation))
                 return;
 
@@ -967,6 +1062,12 @@ internal sealed class RazorVueRenderTreeExtractor
             var value = GetInvocationArgument(invocation, 2);
             ThrowIfComponentTypeCarrierUsedAsRuntimeValue(value, invocation);
             var currentNode = GetRequiredOpenComponentBuilder(invocation);
+            if (string.Equals(name, "@key", StringComparison.Ordinal))
+            {
+                currentNode.SetKey(value, ToCapturedValueBindings(_activeCapturedBindings), CreateOrigins(invocation, RazorVueOriginKind.Template));
+                return;
+            }
+
             if (TryHandleComponentSlotValue(currentNode, name!, value, invocation))
                 return;
 
@@ -2567,6 +2668,11 @@ internal sealed class RazorVueRenderTreeExtractor
                     Children = StripCapturedBindings(component.Children, capturedBindings)
                 },
                 RazorVueConditionalNode conditional => conditional with
+                {
+                    WhenTrue = StripCapturedBindings(conditional.WhenTrue, capturedBindings),
+                    WhenFalse = StripCapturedBindings(conditional.WhenFalse, capturedBindings)
+                },
+                RazorVueRecoveredSwitchConditionalNode conditional => conditional with
                 {
                     WhenTrue = StripCapturedBindings(conditional.WhenTrue, capturedBindings),
                     WhenFalse = StripCapturedBindings(conditional.WhenFalse, capturedBindings)

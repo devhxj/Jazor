@@ -1441,6 +1441,15 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             return true;
 
         var semanticModel = compilation.GetSemanticModel(body.SyntaxTree);
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? localInitializers = null;
+        if (semanticModel.GetOperation(body) is IBlockOperation blockOperation)
+        {
+            localInitializers = RazorVueSourceStableLocalInitializerHelper.CollectSourceStableLocalInitializers(
+                compilation,
+                blockOperation.Operations,
+                RazorVueSourceStableLocalInitializerHelper.CanParticipateInLifecycleCompilerFallback);
+        }
+
         for (var index = 0; index < body.Statements.Count; index++)
         {
             var statement = body.Statements[index];
@@ -1450,16 +1459,42 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                     continue;
 
                 case LocalDeclarationStatementSyntax localDeclaration
-                    when IsNoOpLifecycleLocalDeclaration(compilation, method, localDeclaration, semanticModel):
+                    when IsNoOpLifecycleLocalDeclaration(
+                        compilation,
+                        method,
+                        localDeclaration,
+                        semanticModel,
+                        body,
+                        allowProjectedStructuredLocalInitializer: true,
+                        sourceStableLocalInitializers: localInitializers):
                     continue;
 
                 case ExpressionStatementSyntax expressionStatement
                     when IsNoOpLifecycleExpression(compilation, method, expressionStatement.Expression):
                     continue;
 
+                case ExpressionStatementSyntax expressionStatement
+                    when IsIgnorableNoOpLifecycleDiscardedValueHelperInvocation(
+                        compilation,
+                        method,
+                        expressionStatement,
+                        semanticModel,
+                        paramsArrayLengthParameters: null,
+                        sourceStableLocalInitializers: null,
+                        new HashSet<ISymbol>(SymbolEqualityComparer.Default)):
+                    continue;
+
+                case ExpressionStatementSyntax expressionStatement
+                    when IsIgnorableCurrentComponentNoOpLifecycleVoidHelperInvocation(
+                        compilation,
+                        method,
+                        expressionStatement,
+                        semanticModel):
+                    continue;
+
                 case IfStatementSyntax ifStatement
                     when index == body.Statements.Count - 1 &&
-                         IsNoOpLifecycleTerminalIfReturnStatement(compilation, method, ifStatement, semanticModel):
+                         IsNoOpLifecycleTerminalIfReturnStatement(compilation, method, ifStatement, semanticModel, localInitializers):
                     return true;
 
                 case ReturnStatementSyntax returnStatement
@@ -1480,7 +1515,11 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         Compilation compilation,
         IMethodSymbol method,
         LocalDeclarationStatementSyntax statement,
-        SemanticModel semanticModel)
+        SemanticModel semanticModel,
+        BlockSyntax? containingBody = null,
+        bool allowProjectedStructuredLocalInitializer = false,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters = null,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers = null)
     {
         if (statement.UsingKeyword != default ||
             statement.AwaitKeyword != default ||
@@ -1498,24 +1537,277 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 return false;
 
             var initializer = semanticModel.GetOperation(variable.Initializer.Value);
-            if (!IsIgnorableNoOpLifecycleValueExpression(compilation, method, initializer))
+            if (!IsIgnorableNoOpLifecycleValueExpression(
+                    compilation,
+                    method,
+                    initializer,
+                    new HashSet<ISymbol>(SymbolEqualityComparer.Default),
+                    paramsArrayLengthParameters,
+                    sourceStableLocalInitializers) &&
+                !IsIgnorableNoOpLifecycleUnusedArrayLocalInitializer(
+                    compilation,
+                    method,
+                    statement,
+                    variable,
+                    initializer,
+                    semanticModel,
+                    containingBody,
+                    paramsArrayLengthParameters) &&
+                !IsIgnorableNoOpLifecycleUnusedAnonymousObjectLocalInitializer(
+                    compilation,
+                    method,
+                    statement,
+                    variable,
+                    initializer,
+                    semanticModel,
+                    containingBody,
+                    paramsArrayLengthParameters) &&
+                !(allowProjectedStructuredLocalInitializer &&
+                  IsIgnorableNoOpLifecycleProjectedStructuredLocalInitializer(
+                    compilation,
+                    method,
+                    statement,
+                    variable,
+                    initializer,
+                    semanticModel,
+                    containingBody,
+                    paramsArrayLengthParameters,
+                    sourceStableLocalInitializers)))
+            {
                 return false;
+            }
         }
 
         return true;
+    }
+
+    private static bool IsIgnorableNoOpLifecycleUnusedArrayLocalInitializer(
+        Compilation compilation,
+        IMethodSymbol method,
+        LocalDeclarationStatementSyntax declaration,
+        VariableDeclaratorSyntax variable,
+        IOperation? initializer,
+        SemanticModel semanticModel,
+        BlockSyntax? containingBody,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters)
+    {
+        if (containingBody is null ||
+            declaration.Declaration.Variables.Count != 1 ||
+            semanticModel.GetDeclaredSymbol(variable) is not ILocalSymbol local ||
+            local.Type is not IArrayTypeSymbol ||
+            semanticModel.GetOperation(containingBody) is not IBlockOperation blockOperation ||
+            IsNoOpLifecycleLocalReferencedOutsideInitializer(blockOperation, local, initializer))
+        {
+            return false;
+        }
+
+        return IsIgnorableNoOpLifecycleArrayCarrier(
+            compilation,
+            method,
+            initializer,
+            paramsArrayLengthParameters,
+            sourceStableLocalInitializers: null,
+            new HashSet<ISymbol>(SymbolEqualityComparer.Default));
+    }
+
+    private static bool IsIgnorableNoOpLifecycleUnusedAnonymousObjectLocalInitializer(
+        Compilation compilation,
+        IMethodSymbol method,
+        LocalDeclarationStatementSyntax declaration,
+        VariableDeclaratorSyntax variable,
+        IOperation? initializer,
+        SemanticModel semanticModel,
+        BlockSyntax? containingBody,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters)
+    {
+        if (containingBody is null ||
+            declaration.Declaration.Variables.Count != 1 ||
+            semanticModel.GetDeclaredSymbol(variable) is not ILocalSymbol local ||
+            local.Type is not INamedTypeSymbol { IsAnonymousType: true } ||
+            semanticModel.GetOperation(containingBody) is not IBlockOperation blockOperation ||
+            IsNoOpLifecycleLocalReferencedOutsideInitializer(blockOperation, local, initializer))
+        {
+            return false;
+        }
+
+        return IsIgnorableNoOpLifecycleAnonymousObjectCarrier(
+            compilation,
+            method,
+            initializer,
+            paramsArrayLengthParameters,
+            sourceStableLocalInitializers: null,
+            new HashSet<ISymbol>(SymbolEqualityComparer.Default));
+    }
+
+    private static bool IsIgnorableNoOpLifecycleProjectedStructuredLocalInitializer(
+        Compilation compilation,
+        IMethodSymbol method,
+        LocalDeclarationStatementSyntax declaration,
+        VariableDeclaratorSyntax variable,
+        IOperation? initializer,
+        SemanticModel semanticModel,
+        BlockSyntax? containingBody,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers)
+    {
+        if (containingBody is null ||
+            declaration.Declaration.Variables.Count != 1 ||
+            semanticModel.GetDeclaredSymbol(variable) is not ILocalSymbol local ||
+            semanticModel.GetOperation(containingBody) is not IBlockOperation blockOperation)
+        {
+            return false;
+        }
+
+        return local.Type switch
+        {
+            IArrayTypeSymbol => AreNoOpLifecycleLocalReferencesOnlySafeProjections(blockOperation, local, initializer) &&
+                IsIgnorableNoOpLifecycleArrayCarrier(
+                    compilation,
+                    method,
+                    initializer,
+                    paramsArrayLengthParameters,
+                    sourceStableLocalInitializers,
+                    new HashSet<ISymbol>(SymbolEqualityComparer.Default)),
+            INamedTypeSymbol { IsAnonymousType: true } => AreNoOpLifecycleLocalReferencesOnlySafeProjections(blockOperation, local, initializer) &&
+                IsIgnorableNoOpLifecycleAnonymousObjectCarrier(
+                    compilation,
+                    method,
+                    initializer,
+                    paramsArrayLengthParameters,
+                    sourceStableLocalInitializers,
+                    new HashSet<ISymbol>(SymbolEqualityComparer.Default)),
+            _ => false
+        };
+    }
+
+    private static bool AreNoOpLifecycleLocalReferencesOnlySafeProjections(
+        IOperation root,
+        ILocalSymbol local,
+        IOperation? initializer)
+    {
+        var sawReference = false;
+        foreach (var current in EnumerateNoOpLifecycleOperations(root))
+        {
+            if (RazorVueOperationNormalizer.Unwrap(current) is not ILocalReferenceOperation localReference ||
+                !SymbolEqualityComparer.Default.Equals(localReference.Local, local))
+            {
+                continue;
+            }
+
+            if (initializer is not null && IsOperationWithin(current, initializer))
+                continue;
+
+            sawReference = true;
+            if (!IsNoOpLifecycleSafeStructuredLocalProjection(localReference))
+                return false;
+        }
+
+        return sawReference;
+    }
+
+    private static bool IsNoOpLifecycleSafeStructuredLocalProjection(ILocalReferenceOperation localReference)
+    {
+        var parent = RazorVueOperationNormalizer.Unwrap(localReference.Parent);
+        return parent switch
+        {
+            IPropertyReferenceOperation property
+                when IsNoOpLifecycleArrayLengthProjection(localReference, property) => true,
+            IPropertyReferenceOperation property
+                when IsNoOpLifecycleAnonymousObjectProjection(localReference, property) => true,
+            _ => false
+        };
+    }
+
+    private static bool IsNoOpLifecycleArrayLengthProjection(
+        ILocalReferenceOperation localReference,
+        IPropertyReferenceOperation propertyReference)
+        => localReference.Local.Type is IArrayTypeSymbol &&
+           string.Equals(propertyReference.Property.Name, "Length", StringComparison.Ordinal) &&
+           propertyReference.Arguments.Length == 0 &&
+           ReferenceEquals(RazorVueOperationNormalizer.Unwrap(propertyReference.Instance), localReference);
+
+    private static bool IsNoOpLifecycleAnonymousObjectProjection(
+        ILocalReferenceOperation localReference,
+        IPropertyReferenceOperation propertyReference)
+        => localReference.Local.Type is INamedTypeSymbol { IsAnonymousType: true } localType &&
+           propertyReference.Arguments.Length == 0 &&
+           propertyReference.Property.ContainingType is not null &&
+           SymbolEqualityComparer.Default.Equals(propertyReference.Property.ContainingType, localType) &&
+           ReferenceEquals(RazorVueOperationNormalizer.Unwrap(propertyReference.Instance), localReference);
+
+    private static bool IsNoOpLifecycleLocalReferencedOutsideInitializer(
+        IOperation root,
+        ILocalSymbol local,
+        IOperation? initializer)
+    {
+        foreach (var current in EnumerateNoOpLifecycleOperations(root))
+        {
+            if (RazorVueOperationNormalizer.Unwrap(current) is not ILocalReferenceOperation localReference ||
+                !SymbolEqualityComparer.Default.Equals(localReference.Local, local))
+            {
+                continue;
+            }
+
+            if (initializer is not null && IsOperationWithin(current, initializer))
+                continue;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsOperationWithin(IOperation operation, IOperation root)
+    {
+        for (var current = operation; current is not null; current = current.Parent)
+        {
+            if (ReferenceEquals(current, root))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static IEnumerable<IOperation> EnumerateNoOpLifecycleOperations(IOperation operation)
+    {
+        var current = RazorVueOperationNormalizer.Unwrap(operation);
+        if (current is null)
+            yield break;
+
+        yield return current;
+
+        if (current is IAnonymousFunctionOperation or ILocalFunctionOperation)
+            yield break;
+
+        foreach (var child in current.ChildOperations)
+        {
+            if (child is null)
+                continue;
+
+            foreach (var nested in EnumerateNoOpLifecycleOperations(child))
+                yield return nested;
+        }
     }
 
     private static bool IsNoOpLifecycleTerminalIfReturnStatement(
         Compilation compilation,
         IMethodSymbol method,
         IfStatementSyntax ifStatement,
-        SemanticModel semanticModel)
+        SemanticModel semanticModel,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers = null,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters = null)
     {
         if (!TerminatesWithNoOpReturn(ifStatement, allowImplicitContinue: true))
             return false;
 
         var condition = semanticModel.GetOperation(ifStatement.Condition);
-        return IsIgnorableNoOpLifecycleValueExpression(compilation, method, condition);
+        return IsIgnorableNoOpLifecycleValueExpression(
+            compilation,
+            method,
+            condition,
+            new HashSet<ISymbol>(SymbolEqualityComparer.Default),
+            paramsArrayLengthParameters,
+            sourceStableLocalInitializers);
     }
 
     private static bool IsIgnorableNoOpLifecycleValueExpression(
@@ -1532,7 +1824,9 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         Compilation compilation,
         IMethodSymbol method,
         IOperation? operation,
-        HashSet<ISymbol> visitedSymbols)
+        HashSet<ISymbol> visitedSymbols,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters = null,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers = null)
     {
         var current = RazorVueOperationNormalizer.Unwrap(operation);
         if (current is null)
@@ -1545,45 +1839,540 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         {
             IDefaultValueOperation => true,
             ITypeOfOperation => true,
+            ILocalReferenceOperation localReference
+                when IsIgnorableNoOpLifecycleSourceStableLocalReference(
+                    compilation,
+                    method,
+                    localReference,
+                    visitedSymbols,
+                    paramsArrayLengthParameters,
+                    sourceStableLocalInitializers) => true,
             ILocalReferenceOperation => true,
             IParameterReferenceOperation => true,
             IPropertyReferenceOperation property
+                when IsIgnorableNoOpLifecycleParamsArrayLength(property, paramsArrayLengthParameters) => true,
+            IPropertyReferenceOperation property
+                when IsIgnorableNoOpLifecycleSourceStableArrayLengthProjection(compilation, method, property, visitedSymbols, paramsArrayLengthParameters, sourceStableLocalInitializers) => true,
+            IPropertyReferenceOperation property
+                when IsIgnorableNoOpLifecycleSourceStableMemberArrayLengthProjection(compilation, method, property, visitedSymbols, paramsArrayLengthParameters, sourceStableLocalInitializers) => true,
+            IPropertyReferenceOperation property
+                when IsIgnorableNoOpLifecycleSourceStableAnonymousObjectProjection(compilation, method, property, visitedSymbols, paramsArrayLengthParameters, sourceStableLocalInitializers) => true,
+            IPropertyReferenceOperation property
                 when IsCurrentComponentParameterProperty(method, property) => true,
             IPropertyReferenceOperation property
-                when IsCurrentComponentSourceStableValueMember(compilation, method, property, visitedSymbols) => true,
+                when IsCurrentComponentSourceStableValueMember(compilation, method, property, visitedSymbols, paramsArrayLengthParameters, sourceStableLocalInitializers) => true,
             IFieldReferenceOperation field
-                when IsCurrentComponentSourceStableValueMember(compilation, method, field, visitedSymbols) => true,
+                when IsIgnorableNoOpLifecycleSourceStableTupleProjection(compilation, method, field, visitedSymbols, paramsArrayLengthParameters, sourceStableLocalInitializers) => true,
+            IFieldReferenceOperation field
+                when IsIgnorableNoOpLifecycleSourceStableMemberTupleProjection(compilation, method, field, visitedSymbols, paramsArrayLengthParameters, sourceStableLocalInitializers) => true,
+            IFieldReferenceOperation field
+                when IsCurrentComponentSourceStableValueMember(compilation, method, field, visitedSymbols, paramsArrayLengthParameters, sourceStableLocalInitializers) => true,
             IInvocationOperation invocation
-                when IsIgnorableCurrentComponentNoOpLifecycleHelperInvocation(compilation, method, invocation, visitedSymbols) => true,
+                when IsIgnorableNoOpLifecycleParamsArrayGetLength(invocation, paramsArrayLengthParameters) => true,
+            IInvocationOperation invocation
+                when IsIgnorableCurrentComponentNoOpLifecycleHelperInvocation(compilation, method, invocation, visitedSymbols, paramsArrayLengthParameters, sourceStableLocalInitializers) => true,
             IConversionOperation conversion
                 when conversion.OperatorMethod is null =>
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conversion.Operand, visitedSymbols),
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conversion.Operand, visitedSymbols, paramsArrayLengthParameters, sourceStableLocalInitializers),
             IUnaryOperation unary
                 when unary.OperatorMethod is null =>
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, unary.Operand, visitedSymbols),
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, unary.Operand, visitedSymbols, paramsArrayLengthParameters, sourceStableLocalInitializers),
             IBinaryOperation binary
                 when binary.OperatorMethod is null =>
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, binary.LeftOperand, visitedSymbols) &&
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, binary.RightOperand, visitedSymbols),
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, binary.LeftOperand, visitedSymbols, paramsArrayLengthParameters, sourceStableLocalInitializers) &&
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, binary.RightOperand, visitedSymbols, paramsArrayLengthParameters, sourceStableLocalInitializers),
             IConditionalOperation conditional
                 when conditional.WhenTrue is not null && conditional.WhenFalse is not null =>
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conditional.Condition, visitedSymbols) &&
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conditional.WhenTrue, visitedSymbols) &&
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conditional.WhenFalse, visitedSymbols),
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conditional.Condition, visitedSymbols, paramsArrayLengthParameters, sourceStableLocalInitializers) &&
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conditional.WhenTrue, visitedSymbols, paramsArrayLengthParameters, sourceStableLocalInitializers) &&
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, conditional.WhenFalse, visitedSymbols, paramsArrayLengthParameters, sourceStableLocalInitializers),
             ICoalesceOperation coalesce =>
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, coalesce.Value, visitedSymbols) &&
-                IsIgnorableNoOpLifecycleValueExpression(compilation, method, coalesce.WhenNull, visitedSymbols),
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, coalesce.Value, visitedSymbols, paramsArrayLengthParameters, sourceStableLocalInitializers) &&
+                IsIgnorableNoOpLifecycleValueExpression(compilation, method, coalesce.WhenNull, visitedSymbols, paramsArrayLengthParameters, sourceStableLocalInitializers),
             ITupleOperation tuple =>
-                tuple.Elements.All(element => IsIgnorableNoOpLifecycleValueExpression(compilation, method, element, visitedSymbols)),
+                tuple.Elements.All(element => IsIgnorableNoOpLifecycleValueExpression(compilation, method, element, visitedSymbols, paramsArrayLengthParameters, sourceStableLocalInitializers)),
             _ => false
         };
+    }
+
+    private static bool IsIgnorableNoOpLifecycleSourceStableArrayLengthProjection(
+        Compilation compilation,
+        IMethodSymbol method,
+        IPropertyReferenceOperation propertyReference,
+        HashSet<ISymbol> visitedSymbols,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers)
+    {
+        if (sourceStableLocalInitializers is null ||
+            RazorVueOperationNormalizer.Unwrap(propertyReference.Instance) is not ILocalReferenceOperation localReference ||
+            !IsNoOpLifecycleArrayLengthProjection(localReference, propertyReference) ||
+            !sourceStableLocalInitializers.TryGetValue(localReference.Local, out var initializer) ||
+            !visitedSymbols.Add(localReference.Local))
+        {
+            return false;
+        }
+
+        try
+        {
+            return IsIgnorableNoOpLifecycleArrayCarrier(
+                compilation,
+                method,
+                initializer,
+                paramsArrayLengthParameters,
+                sourceStableLocalInitializers,
+                visitedSymbols);
+        }
+        finally
+        {
+            visitedSymbols.Remove(localReference.Local);
+        }
+    }
+
+    private static bool IsIgnorableNoOpLifecycleSourceStableMemberArrayLengthProjection(
+        Compilation compilation,
+        IMethodSymbol method,
+        IPropertyReferenceOperation propertyReference,
+        HashSet<ISymbol> visitedSymbols,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers)
+    {
+        if (!string.Equals(propertyReference.Property.Name, "Length", StringComparison.Ordinal) ||
+            propertyReference.Arguments.Length != 0 ||
+            RazorVueOperationNormalizer.Unwrap(propertyReference.Instance) is not { } instance)
+        {
+            return false;
+        }
+
+        if (!TryGetCurrentComponentSourceStableValueMember(method, instance, out var sourceMember) ||
+            !TryGetNoOpLifecycleArrayProjectionSourceInitializer(compilation, sourceMember, out var initializer) ||
+            initializer is null ||
+            !visitedSymbols.Add(sourceMember))
+        {
+            return false;
+        }
+
+        try
+        {
+            return IsIgnorableNoOpLifecycleArrayCarrier(
+                compilation,
+                method,
+                initializer,
+                paramsArrayLengthParameters,
+                sourceStableLocalInitializers,
+                visitedSymbols);
+        }
+        finally
+        {
+            visitedSymbols.Remove(sourceMember);
+        }
+    }
+
+    private static bool IsIgnorableNoOpLifecycleSourceStableAnonymousObjectProjection(
+        Compilation compilation,
+        IMethodSymbol method,
+        IPropertyReferenceOperation propertyReference,
+        HashSet<ISymbol> visitedSymbols,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers)
+    {
+        if (sourceStableLocalInitializers is null ||
+            RazorVueOperationNormalizer.Unwrap(propertyReference.Instance) is not ILocalReferenceOperation localReference ||
+            !IsNoOpLifecycleAnonymousObjectProjection(localReference, propertyReference) ||
+            !sourceStableLocalInitializers.TryGetValue(localReference.Local, out var initializer) ||
+            !visitedSymbols.Add(localReference.Local))
+        {
+            return false;
+        }
+
+        try
+        {
+            return IsIgnorableNoOpLifecycleAnonymousObjectCarrier(
+                compilation,
+                method,
+                initializer,
+                paramsArrayLengthParameters,
+                sourceStableLocalInitializers,
+                visitedSymbols);
+        }
+        finally
+        {
+            visitedSymbols.Remove(localReference.Local);
+        }
+    }
+
+    private static bool IsIgnorableNoOpLifecycleSourceStableLocalReference(
+        Compilation compilation,
+        IMethodSymbol method,
+        ILocalReferenceOperation localReference,
+        HashSet<ISymbol> visitedSymbols,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers)
+    {
+        if (sourceStableLocalInitializers is null ||
+            !sourceStableLocalInitializers.TryGetValue(localReference.Local, out var initializer) ||
+            !visitedSymbols.Add(localReference.Local))
+        {
+            return false;
+        }
+
+        try
+        {
+            return IsIgnorableNoOpLifecycleValueExpression(
+                compilation,
+                method,
+                initializer,
+                visitedSymbols,
+                paramsArrayLengthParameters,
+                sourceStableLocalInitializers);
+        }
+        finally
+        {
+            visitedSymbols.Remove(localReference.Local);
+        }
+    }
+
+    private static bool IsIgnorableNoOpLifecycleSourceStableTupleProjection(
+        Compilation compilation,
+        IMethodSymbol method,
+        IFieldReferenceOperation fieldReference,
+        HashSet<ISymbol> visitedSymbols,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers)
+    {
+        if (sourceStableLocalInitializers is null ||
+            !TryGetNoOpLifecycleTupleFieldIndex(fieldReference.Field, out var fieldIndex) ||
+            RazorVueOperationNormalizer.Unwrap(fieldReference.Instance) is not ILocalReferenceOperation localReference ||
+            !sourceStableLocalInitializers.TryGetValue(localReference.Local, out var initializer) ||
+            !visitedSymbols.Add(localReference.Local))
+        {
+            return false;
+        }
+
+        var resolvedAliasLocals = new List<ISymbol>();
+        try
+        {
+            if (!TryGetNoOpLifecycleTupleElement(
+                    initializer,
+                    fieldIndex,
+                    sourceStableLocalInitializers,
+                    visitedSymbols,
+                    resolvedAliasLocals,
+                    out var element))
+            {
+                return false;
+            }
+
+            return IsIgnorableNoOpLifecycleValueExpression(
+                compilation,
+                method,
+                element,
+                visitedSymbols,
+                paramsArrayLengthParameters,
+                sourceStableLocalInitializers);
+        }
+        finally
+        {
+            foreach (var aliasLocal in resolvedAliasLocals)
+                visitedSymbols.Remove(aliasLocal);
+
+            visitedSymbols.Remove(localReference.Local);
+        }
+    }
+
+    private static bool IsIgnorableNoOpLifecycleSourceStableMemberTupleProjection(
+        Compilation compilation,
+        IMethodSymbol method,
+        IFieldReferenceOperation fieldReference,
+        HashSet<ISymbol> visitedSymbols,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers)
+    {
+        if (!TryGetNoOpLifecycleTupleFieldIndex(fieldReference.Field, out var fieldIndex))
+            return false;
+
+        var instance = RazorVueOperationNormalizer.Unwrap(fieldReference.Instance);
+        if (instance is null)
+            return false;
+
+        if (!TryGetCurrentComponentSourceStableValueMember(
+                method,
+                instance,
+                out var sourceMember))
+        {
+            return false;
+        }
+
+        if (!TryGetNoOpLifecycleTupleProjectionSourceInitializer(compilation, sourceMember, out var initializer) ||
+            initializer is null ||
+            !visitedSymbols.Add(sourceMember))
+        {
+            return false;
+        }
+
+        try
+        {
+            var normalized = RazorVueOperationNormalizer.Unwrap(initializer) ?? initializer;
+            if (normalized is not ITupleOperation tuple ||
+                fieldIndex < 0 ||
+                fieldIndex >= tuple.Elements.Length ||
+                !tuple.Elements.All(element =>
+                    IsIgnorableNoOpLifecycleValueExpression(
+                        compilation,
+                        method,
+                        element,
+                        visitedSymbols,
+                        paramsArrayLengthParameters,
+                        sourceStableLocalInitializers)))
+            {
+                return false;
+            }
+
+            var element = RazorVueOperationNormalizer.Unwrap(tuple.Elements[fieldIndex]) ?? tuple.Elements[fieldIndex];
+            return IsIgnorableNoOpLifecycleValueExpression(
+                compilation,
+                method,
+                element,
+                visitedSymbols,
+                paramsArrayLengthParameters,
+                sourceStableLocalInitializers);
+        }
+        finally
+        {
+            visitedSymbols.Remove(sourceMember);
+        }
+    }
+
+    private static bool TryGetNoOpLifecycleTupleProjectionSourceInitializer(
+        Compilation compilation,
+        ISymbol sourceMember,
+        out IOperation? initializer)
+    {
+        if (RazorVueCurrentComponentValueMemberHelper.TryGetValueMemberInitializer(compilation, sourceMember, out initializer))
+            return initializer is not null;
+
+        if (sourceMember is IPropertySymbol property &&
+            RazorVueCurrentComponentValueMemberHelper.TryGetSupportedPropertyLoweringKind(compilation, property, out var loweringKind) &&
+            loweringKind == VueLogicPropertyLoweringKind.GetterFunction &&
+            TryGetNoOpLifecycleGetterValueOperation(compilation, property, out initializer))
+        {
+            return initializer is not null;
+        }
+
+        initializer = null;
+        return false;
+    }
+
+    private static bool TryGetNoOpLifecycleArrayProjectionSourceInitializer(
+        Compilation compilation,
+        ISymbol sourceMember,
+        out IOperation? initializer)
+    {
+        if (RazorVueCurrentComponentValueMemberHelper.TryGetValueMemberInitializer(compilation, sourceMember, out initializer) &&
+            sourceMember switch
+            {
+                IPropertySymbol property => property.Type is IArrayTypeSymbol,
+                IFieldSymbol field => field.Type is IArrayTypeSymbol,
+                _ => false
+            })
+        {
+            return initializer is not null;
+        }
+
+        initializer = null;
+        return false;
+    }
+
+    private static bool TryGetNoOpLifecycleGetterValueOperation(
+        Compilation compilation,
+        IPropertySymbol property,
+        out IOperation? operation)
+    {
+        operation = null;
+        foreach (var syntaxReference in property.DeclaringSyntaxReferences)
+        {
+            if (syntaxReference.GetSyntax() is not PropertyDeclarationSyntax declaration ||
+                declaration.Initializer?.Value is not null)
+            {
+                continue;
+            }
+
+            var semanticModel = compilation.GetSemanticModel(declaration.SyntaxTree);
+            if (RazorVuePropertyInitializerHelper.TryGetPropertyValueOperation(semanticModel, declaration, out var propertyOperation) &&
+                RazorVueOperationNormalizer.Unwrap(propertyOperation) is { } valueOperation)
+            {
+                operation = valueOperation;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TryGetCurrentComponentSourceStableValueMember(
+        IMethodSymbol method,
+        IOperation instance,
+        out ISymbol member)
+    {
+        member = default!;
+        switch (instance)
+        {
+            case IPropertyReferenceOperation propertyReference:
+                var property = propertyReference.Property;
+                if (property.IsStatic ||
+                    property.IsIndexer ||
+                    propertyReference.Arguments.Length != 0 ||
+                    property.ContainingType is null ||
+                    !ContainsTypeOrBase(method.ContainingType, property.ContainingType))
+                {
+                    return false;
+                }
+
+                var propertyInstance = RazorVueOperationNormalizer.Unwrap(propertyReference.Instance);
+                if (propertyInstance is not null and not IInstanceReferenceOperation)
+                    return false;
+
+                member = property;
+                return true;
+
+            case IFieldReferenceOperation fieldReference:
+                var field = fieldReference.Field;
+                if (field.IsStatic ||
+                    field.ContainingType is null ||
+                    !ContainsTypeOrBase(method.ContainingType, field.ContainingType))
+                {
+                    return false;
+                }
+
+                var fieldInstance = RazorVueOperationNormalizer.Unwrap(fieldReference.Instance);
+                if (fieldInstance is not null and not IInstanceReferenceOperation)
+                    return false;
+
+                member = field;
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    private static bool TryGetNoOpLifecycleTupleFieldIndex(IFieldSymbol field, out int fieldIndex)
+    {
+        fieldIndex = -1;
+        var tupleField = field.CorrespondingTupleField ?? field;
+        if (field.CorrespondingTupleField is null &&
+            field.ContainingType is not { IsTupleType: true })
+        {
+            return false;
+        }
+
+        var name = tupleField.Name;
+        if (!name.StartsWith("Item", StringComparison.Ordinal) ||
+            name.Length <= 4 ||
+            !int.TryParse(name.Substring(4), out var oneBasedIndex) ||
+            oneBasedIndex <= 0)
+        {
+            return false;
+        }
+
+        fieldIndex = oneBasedIndex - 1;
+        return true;
+    }
+
+    private static bool TryGetNoOpLifecycleTupleElement(
+        IOperation initializer,
+        int fieldIndex,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers,
+        HashSet<ISymbol> visitedSymbols,
+        List<ISymbol> resolvedAliasLocals,
+        out IOperation element)
+    {
+        element = default!;
+        var current = RazorVueOperationNormalizer.Unwrap(initializer) ?? initializer;
+
+        while (current is ILocalReferenceOperation localReference)
+        {
+            if (sourceStableLocalInitializers is null ||
+                !sourceStableLocalInitializers.TryGetValue(localReference.Local, out var aliasInitializer) ||
+                !visitedSymbols.Add(localReference.Local))
+            {
+                return false;
+            }
+
+            resolvedAliasLocals.Add(localReference.Local);
+            current = RazorVueOperationNormalizer.Unwrap(aliasInitializer) ?? aliasInitializer;
+        }
+
+        if (current is not ITupleOperation tuple ||
+            fieldIndex < 0 ||
+            fieldIndex >= tuple.Elements.Length)
+        {
+            return false;
+        }
+
+        element = RazorVueOperationNormalizer.Unwrap(tuple.Elements[fieldIndex]) ?? tuple.Elements[fieldIndex];
+        return true;
+    }
+
+    private static bool IsIgnorableNoOpLifecycleParamsArrayLength(
+        IPropertyReferenceOperation propertyReference,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters)
+    {
+        if (paramsArrayLengthParameters is null ||
+            paramsArrayLengthParameters.Count == 0 ||
+            !string.Equals(propertyReference.Property.Name, "Length", StringComparison.Ordinal) ||
+            propertyReference.Arguments.Length != 0)
+        {
+            return false;
+        }
+
+        return RazorVueOperationNormalizer.Unwrap(propertyReference.Instance) is IParameterReferenceOperation parameterReference &&
+               parameterReference.Parameter.Type is IArrayTypeSymbol &&
+               paramsArrayLengthParameters.Contains(parameterReference.Parameter);
+    }
+
+    private static bool IsIgnorableNoOpLifecycleParamsArrayGetLength(
+        IInvocationOperation invocation,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters)
+    {
+        if (paramsArrayLengthParameters is null ||
+            paramsArrayLengthParameters.Count == 0 ||
+            !string.Equals(invocation.TargetMethod.Name, "GetLength", StringComparison.Ordinal) ||
+            invocation.TargetMethod.MethodKind != MethodKind.Ordinary ||
+            invocation.TargetMethod.Parameters.Length != 1 ||
+            invocation.TargetMethod.Parameters[0].Type.SpecialType != SpecialType.System_Int32 ||
+            invocation.TargetMethod.ReturnType.SpecialType != SpecialType.System_Int32 ||
+            invocation.Arguments.Length != 1)
+        {
+            return false;
+        }
+
+        if (RazorVueOperationNormalizer.Unwrap(invocation.Instance) is not IParameterReferenceOperation parameterReference ||
+            parameterReference.Parameter.Type is not IArrayTypeSymbol { Rank: 1 } ||
+            !paramsArrayLengthParameters.Contains(parameterReference.Parameter))
+        {
+            return false;
+        }
+
+        var dimensionArgument = invocation.Arguments[0];
+        if (dimensionArgument.Parameter is null ||
+            dimensionArgument.Parameter.RefKind != RefKind.None ||
+            dimensionArgument.ArgumentKind != ArgumentKind.Explicit)
+        {
+            return false;
+        }
+
+        var dimensionValue = RazorVueOperationNormalizer.Unwrap(dimensionArgument.Value);
+        return dimensionValue?.ConstantValue is { HasValue: true, Value: int dimension } &&
+               dimension == 0;
     }
 
     private static bool IsIgnorableCurrentComponentNoOpLifecycleHelperInvocation(
         Compilation compilation,
         IMethodSymbol lifecycleMethod,
         IInvocationOperation invocation,
-        HashSet<ISymbol> visitedSymbols)
+        HashSet<ISymbol> visitedSymbols,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers)
     {
         var helperMethod = invocation.TargetMethod;
         if (helperMethod.MethodKind != MethodKind.Ordinary ||
@@ -1595,7 +2384,15 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             helperMethod.ReturnsByRefReadonly ||
             IsTaskLikeType(compilation, helperMethod.ReturnType) ||
             helperMethod.TypeParameters.Length != 0 ||
-            !AreIgnorableNoOpLifecycleHelperArguments(compilation, lifecycleMethod, helperMethod, invocation, visitedSymbols) ||
+            !AreIgnorableNoOpLifecycleHelperArguments(
+                compilation,
+                lifecycleMethod,
+                helperMethod,
+                invocation,
+                visitedSymbols,
+                paramsArrayLengthParameters,
+                sourceStableLocalInitializers,
+                out var helperParamsArrayLengthParameters) ||
             helperMethod.ContainingType is null ||
             !SymbolEqualityComparer.Default.Equals(helperMethod.ContainingType, lifecycleMethod.ContainingType))
         {
@@ -1606,7 +2403,94 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         if (instance is not null and not IInstanceReferenceOperation)
             return false;
 
-        return IsIgnorableNoOpLifecycleHelperMethod(compilation, lifecycleMethod, helperMethod, visitedSymbols);
+        return IsIgnorableNoOpLifecycleHelperMethod(
+            compilation,
+            lifecycleMethod,
+            helperMethod,
+            visitedSymbols,
+            helperParamsArrayLengthParameters);
+    }
+
+    private static bool IsIgnorableCurrentComponentNoOpLifecycleVoidHelperInvocation(
+        Compilation compilation,
+        IMethodSymbol lifecycleMethod,
+        ExpressionStatementSyntax expressionStatement,
+        SemanticModel semanticModel)
+    {
+        if (semanticModel.GetOperation(expressionStatement.Expression) is not IInvocationOperation invocation)
+            return false;
+
+        var helperMethod = invocation.TargetMethod;
+        if (helperMethod.MethodKind != MethodKind.Ordinary ||
+            helperMethod.DeclaredAccessibility != Accessibility.Private ||
+            helperMethod.IsStatic ||
+            helperMethod.IsAsync ||
+            !helperMethod.ReturnsVoid ||
+            helperMethod.ReturnsByRef ||
+            helperMethod.ReturnsByRefReadonly ||
+            helperMethod.TypeParameters.Length != 0 ||
+            helperMethod.ContainingType is null ||
+            !SymbolEqualityComparer.Default.Equals(helperMethod.ContainingType, lifecycleMethod.ContainingType))
+        {
+            return false;
+        }
+
+        var instance = RazorVueOperationNormalizer.Unwrap(invocation.Instance);
+        if (instance is not null and not IInstanceReferenceOperation)
+            return false;
+
+        var visitedSymbols = new HashSet<ISymbol>(SymbolEqualityComparer.Default);
+        return IsIgnorableCurrentComponentNoOpLifecycleVoidHelperInvocation(
+            compilation,
+            lifecycleMethod,
+            invocation,
+            visitedSymbols,
+            paramsArrayLengthParameters: null,
+            sourceStableLocalInitializers: null);
+    }
+
+    private static bool IsIgnorableCurrentComponentNoOpLifecycleVoidHelperInvocation(
+        Compilation compilation,
+        IMethodSymbol lifecycleMethod,
+        IInvocationOperation invocation,
+        HashSet<ISymbol> visitedSymbols,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers)
+    {
+        var helperMethod = invocation.TargetMethod;
+        if (helperMethod.MethodKind != MethodKind.Ordinary ||
+            helperMethod.DeclaredAccessibility != Accessibility.Private ||
+            helperMethod.IsStatic ||
+            helperMethod.IsAsync ||
+            !helperMethod.ReturnsVoid ||
+            helperMethod.ReturnsByRef ||
+            helperMethod.ReturnsByRefReadonly ||
+            helperMethod.TypeParameters.Length != 0 ||
+            helperMethod.ContainingType is null ||
+            !SymbolEqualityComparer.Default.Equals(helperMethod.ContainingType, lifecycleMethod.ContainingType))
+        {
+            return false;
+        }
+
+        var instance = RazorVueOperationNormalizer.Unwrap(invocation.Instance);
+        if (instance is not null and not IInstanceReferenceOperation)
+            return false;
+
+        return AreIgnorableNoOpLifecycleHelperArguments(
+                compilation,
+                lifecycleMethod,
+                helperMethod,
+                invocation,
+                visitedSymbols,
+                paramsArrayLengthParameters,
+                sourceStableLocalInitializers,
+                out var helperParamsArrayLengthParameters) &&
+            IsIgnorableNoOpLifecycleVoidHelperMethod(
+                compilation,
+                lifecycleMethod,
+                helperMethod,
+                visitedSymbols,
+                helperParamsArrayLengthParameters);
     }
 
     private static bool AreIgnorableNoOpLifecycleHelperArguments(
@@ -1614,12 +2498,15 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         IMethodSymbol lifecycleMethod,
         IMethodSymbol helperMethod,
         IInvocationOperation invocation,
-        HashSet<ISymbol> visitedSymbols)
+        HashSet<ISymbol> visitedSymbols,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers,
+        out HashSet<IParameterSymbol>? helperParamsArrayLengthParameters)
     {
+        helperParamsArrayLengthParameters = null;
         foreach (var parameter in helperMethod.Parameters)
         {
-            if (parameter.RefKind != RefKind.None ||
-                parameter.IsParams)
+            if (parameter.RefKind != RefKind.None)
             {
                 return false;
             }
@@ -1628,13 +2515,51 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         foreach (var argument in invocation.Arguments)
         {
             if (argument.Parameter is null ||
-                argument.Parameter.RefKind != RefKind.None ||
-                argument.ArgumentKind == ArgumentKind.ParamArray ||
-                !IsIgnorableNoOpLifecycleValueExpression(
+                argument.Parameter.RefKind != RefKind.None)
+            {
+                return false;
+            }
+
+            if (argument.Parameter.IsParams)
+            {
+                if (!IsIgnorableNoOpLifecycleParamsArgument(
+                        compilation,
+                        lifecycleMethod,
+                        argument,
+                        paramsArrayLengthParameters,
+                        sourceStableLocalInitializers,
+                        visitedSymbols))
+                {
+                    return false;
+                }
+
+                helperParamsArrayLengthParameters ??= new HashSet<IParameterSymbol>(SymbolEqualityComparer.Default);
+                helperParamsArrayLengthParameters.Add(argument.Parameter);
+                continue;
+            }
+
+            if (argument.ArgumentKind == ArgumentKind.ParamArray)
+                return false;
+
+            if (argument.Parameter.Type is IArrayTypeSymbol &&
+                IsIgnorableNoOpLifecycleExplicitArrayArgument(
                     compilation,
                     lifecycleMethod,
-                    argument.Value,
+                    argument,
+                    paramsArrayLengthParameters,
+                    sourceStableLocalInitializers,
                     visitedSymbols))
+            {
+                continue;
+            }
+
+            if (!IsIgnorableNoOpLifecycleValueExpression(
+                compilation,
+                lifecycleMethod,
+                argument.Value,
+                visitedSymbols,
+                paramsArrayLengthParameters,
+                sourceStableLocalInitializers))
             {
                 return false;
             }
@@ -1643,11 +2568,216 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         return true;
     }
 
+    private static bool IsIgnorableNoOpLifecycleExplicitArrayArgument(
+        Compilation compilation,
+        IMethodSymbol lifecycleMethod,
+        IArgumentOperation argument,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers,
+        HashSet<ISymbol> visitedSymbols)
+    {
+        if (argument.ArgumentKind != ArgumentKind.Explicit)
+            return false;
+
+        return IsIgnorableNoOpLifecycleArrayCarrier(
+            compilation,
+            lifecycleMethod,
+            argument.Value,
+            paramsArrayLengthParameters,
+            sourceStableLocalInitializers,
+            visitedSymbols);
+    }
+
+    private static bool IsIgnorableNoOpLifecycleParamsArgument(
+        Compilation compilation,
+        IMethodSymbol lifecycleMethod,
+        IArgumentOperation argument,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers,
+        HashSet<ISymbol> visitedSymbols)
+    {
+        if (argument.Parameter?.Type is not IArrayTypeSymbol)
+            return false;
+
+        var value = RazorVueOperationNormalizer.Unwrap(argument.Value);
+        return argument.ArgumentKind switch
+        {
+            ArgumentKind.ParamArray => IsIgnorableNoOpLifecycleParamsArrayCarrier(
+                compilation,
+                lifecycleMethod,
+                value,
+                requireImplicitArrayCarrier: true,
+                paramsArrayLengthParameters,
+                sourceStableLocalInitializers,
+                visitedSymbols),
+            ArgumentKind.Explicit => IsIgnorableNoOpLifecycleParamsArrayCarrier(
+                compilation,
+                lifecycleMethod,
+                value,
+                requireImplicitArrayCarrier: false,
+                paramsArrayLengthParameters,
+                sourceStableLocalInitializers,
+                visitedSymbols),
+            _ => false
+        };
+    }
+
+    private static bool IsIgnorableNoOpLifecycleParamsArrayCarrier(
+        Compilation compilation,
+        IMethodSymbol lifecycleMethod,
+        IOperation? value,
+        bool requireImplicitArrayCarrier,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers,
+        HashSet<ISymbol> visitedSymbols)
+        => value switch
+        {
+            IArrayCreationOperation { Initializer: not null } arrayCreation
+                when !requireImplicitArrayCarrier || arrayCreation.IsImplicit =>
+                IsIgnorableNoOpLifecycleParamsElementList(
+                    compilation,
+                    lifecycleMethod,
+                    arrayCreation.Initializer.ElementValues,
+                    paramsArrayLengthParameters,
+                    sourceStableLocalInitializers,
+                    visitedSymbols),
+            IArrayInitializerOperation arrayInitializer
+                when !requireImplicitArrayCarrier || arrayInitializer.IsImplicit =>
+                IsIgnorableNoOpLifecycleParamsElementList(
+                    compilation,
+                    lifecycleMethod,
+                    arrayInitializer.ElementValues,
+                    paramsArrayLengthParameters,
+                    sourceStableLocalInitializers,
+                    visitedSymbols),
+            ICollectionExpressionOperation collectionExpression
+                when !requireImplicitArrayCarrier =>
+                IsIgnorableNoOpLifecycleParamsElementList(
+                    compilation,
+                    lifecycleMethod,
+                    collectionExpression.Elements,
+                    paramsArrayLengthParameters,
+                    sourceStableLocalInitializers,
+                    visitedSymbols),
+            _ => false
+        };
+
+    private static bool IsIgnorableNoOpLifecycleArrayCarrier(
+        Compilation compilation,
+        IMethodSymbol lifecycleMethod,
+        IOperation? value,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers,
+        HashSet<ISymbol> visitedSymbols)
+        => RazorVueOperationNormalizer.Unwrap(value) switch
+        {
+            IArrayCreationOperation { Initializer: not null } arrayCreation
+                when IsArrayCreationNoOpLifecycleElementOnly(arrayCreation) =>
+                IsIgnorableNoOpLifecycleParamsElementList(
+                    compilation,
+                    lifecycleMethod,
+                    arrayCreation.Initializer.ElementValues,
+                    paramsArrayLengthParameters,
+                    sourceStableLocalInitializers,
+                    visitedSymbols),
+            IArrayInitializerOperation arrayInitializer =>
+                IsIgnorableNoOpLifecycleParamsElementList(
+                    compilation,
+                    lifecycleMethod,
+                    arrayInitializer.ElementValues,
+                    paramsArrayLengthParameters,
+                    sourceStableLocalInitializers,
+                    visitedSymbols),
+            ICollectionExpressionOperation collectionExpression =>
+                IsIgnorableNoOpLifecycleParamsElementList(
+                    compilation,
+                    lifecycleMethod,
+                    collectionExpression.Elements,
+                    paramsArrayLengthParameters,
+                    sourceStableLocalInitializers,
+                    visitedSymbols),
+            _ => false
+        };
+
+    private static bool IsIgnorableNoOpLifecycleAnonymousObjectCarrier(
+        Compilation compilation,
+        IMethodSymbol lifecycleMethod,
+        IOperation? value,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers,
+        HashSet<ISymbol> visitedSymbols)
+        => RazorVueOperationNormalizer.Unwrap(value) is IAnonymousObjectCreationOperation anonymousObject &&
+           anonymousObject.Initializers.All(initializer =>
+               IsIgnorableNoOpLifecycleAnonymousObjectInitializer(
+                   compilation,
+                   lifecycleMethod,
+                   initializer,
+                   paramsArrayLengthParameters,
+                   sourceStableLocalInitializers,
+                   visitedSymbols));
+
+    private static bool IsIgnorableNoOpLifecycleAnonymousObjectInitializer(
+        Compilation compilation,
+        IMethodSymbol lifecycleMethod,
+        IOperation initializer,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers,
+        HashSet<ISymbol> visitedSymbols)
+    {
+        var current = RazorVueOperationNormalizer.Unwrap(initializer);
+        if (current is ISimpleAssignmentOperation assignment)
+        {
+            return IsIgnorableNoOpLifecycleValueExpression(
+                compilation,
+                lifecycleMethod,
+                assignment.Value,
+                visitedSymbols,
+                paramsArrayLengthParameters,
+                sourceStableLocalInitializers);
+        }
+
+        return IsIgnorableNoOpLifecycleValueExpression(
+            compilation,
+            lifecycleMethod,
+            current,
+            visitedSymbols,
+            paramsArrayLengthParameters,
+            sourceStableLocalInitializers);
+    }
+
+    private static bool IsArrayCreationNoOpLifecycleElementOnly(IArrayCreationOperation arrayCreation)
+    {
+        if (arrayCreation.DimensionSizes.Length != 1)
+            return false;
+
+        var dimensionSize = RazorVueOperationNormalizer.Unwrap(arrayCreation.DimensionSizes[0]);
+        return dimensionSize is null ||
+               dimensionSize.ConstantValue.HasValue ||
+               dimensionSize is IInvalidOperation;
+    }
+
+    private static bool IsIgnorableNoOpLifecycleParamsElementList(
+        Compilation compilation,
+        IMethodSymbol lifecycleMethod,
+        ImmutableArray<IOperation> elements,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers,
+        HashSet<ISymbol> visitedSymbols)
+        => elements.All(element =>
+            IsIgnorableNoOpLifecycleValueExpression(
+                compilation,
+                lifecycleMethod,
+                element,
+                visitedSymbols,
+                paramsArrayLengthParameters,
+                sourceStableLocalInitializers));
+
     private static bool IsIgnorableNoOpLifecycleHelperMethod(
         Compilation compilation,
         IMethodSymbol lifecycleMethod,
         IMethodSymbol helperMethod,
-        HashSet<ISymbol> visitedSymbols)
+        HashSet<ISymbol> visitedSymbols,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters)
     {
         if (helperMethod.DeclaringSyntaxReferences.Length == 0 ||
             !visitedSymbols.Add(helperMethod))
@@ -1668,7 +2798,8 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                     compilation,
                     lifecycleMethod,
                     expressionOperation,
-                    visitedSymbols);
+                    visitedSymbols,
+                    paramsArrayLengthParameters);
             }
 
             if (methodSyntax.Body is null ||
@@ -1677,10 +2808,25 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 return false;
             }
 
+            IReadOnlyDictionary<ILocalSymbol, IOperation>? helperLocalInitializers = null;
+            if (semanticModel.GetOperation(methodSyntax.Body) is IBlockOperation blockOperation)
+            {
+                helperLocalInitializers = RazorVueSourceStableLocalInitializerHelper.CollectSourceStableLocalInitializers(
+                    compilation,
+                    blockOperation.Operations,
+                    RazorVueSourceStableLocalInitializerHelper.CanParticipateInLifecycleCompilerFallback);
+            }
+
             for (var index = 0; index < methodSyntax.Body.Statements.Count - 1; index++)
             {
-                if (methodSyntax.Body.Statements[index] is not LocalDeclarationStatementSyntax localDeclaration ||
-                    !IsNoOpLifecycleLocalDeclaration(compilation, lifecycleMethod, localDeclaration, semanticModel))
+                if (!IsIgnorableNoOpLifecycleHelperPrefixStatement(
+                        compilation,
+                        lifecycleMethod,
+                        methodSyntax.Body.Statements[index],
+                        semanticModel,
+                        methodSyntax.Body,
+                        paramsArrayLengthParameters,
+                        helperLocalInitializers))
                 {
                     return false;
                 }
@@ -1694,12 +2840,303 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 compilation,
                 lifecycleMethod,
                 returnOperation,
-                visitedSymbols);
+                visitedSymbols,
+                paramsArrayLengthParameters,
+                helperLocalInitializers);
         }
         finally
         {
             visitedSymbols.Remove(helperMethod);
         }
+    }
+
+    private static bool IsIgnorableNoOpLifecycleHelperPrefixStatement(
+        Compilation compilation,
+        IMethodSymbol lifecycleMethod,
+        StatementSyntax statement,
+        SemanticModel semanticModel,
+        BlockSyntax containingBody,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers)
+    {
+        switch (statement)
+        {
+            case LocalDeclarationStatementSyntax localDeclaration:
+                return IsNoOpLifecycleLocalDeclaration(
+                    compilation,
+                    lifecycleMethod,
+                    localDeclaration,
+                    semanticModel,
+                    containingBody,
+                    allowProjectedStructuredLocalInitializer: true,
+                    paramsArrayLengthParameters: paramsArrayLengthParameters,
+                    sourceStableLocalInitializers: sourceStableLocalInitializers);
+            case ExpressionStatementSyntax expressionStatement:
+                return IsIgnorableNoOpLifecycleHelperPrefixAssignment(
+                    compilation,
+                    lifecycleMethod,
+                    semanticModel,
+                    expressionStatement,
+                    paramsArrayLengthParameters,
+                    sourceStableLocalInitializers) ||
+                    IsIgnorableNoOpLifecycleHelperPrefixVoidInvocation(
+                        compilation,
+                        lifecycleMethod,
+                        semanticModel,
+                        expressionStatement,
+                        paramsArrayLengthParameters,
+                        sourceStableLocalInitializers,
+                        visitedSymbols: null);
+            default:
+                return false;
+        }
+    }
+
+    private static bool IsIgnorableNoOpLifecycleHelperPrefixStatement(
+        Compilation compilation,
+        IMethodSymbol lifecycleMethod,
+        StatementSyntax statement,
+        SemanticModel semanticModel,
+        BlockSyntax containingBody,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers,
+        HashSet<ISymbol> visitedSymbols)
+    {
+        switch (statement)
+        {
+            case LocalDeclarationStatementSyntax localDeclaration:
+                return IsNoOpLifecycleLocalDeclaration(
+                    compilation,
+                    lifecycleMethod,
+                    localDeclaration,
+                    semanticModel,
+                    containingBody,
+                    allowProjectedStructuredLocalInitializer: true,
+                    paramsArrayLengthParameters: paramsArrayLengthParameters,
+                    sourceStableLocalInitializers: sourceStableLocalInitializers);
+            case ExpressionStatementSyntax expressionStatement:
+                return IsIgnorableNoOpLifecycleHelperPrefixAssignment(
+                    compilation,
+                    lifecycleMethod,
+                    semanticModel,
+                    expressionStatement,
+                    paramsArrayLengthParameters,
+                    sourceStableLocalInitializers) ||
+                    IsIgnorableNoOpLifecycleDiscardedValueHelperInvocation(
+                        compilation,
+                        lifecycleMethod,
+                        expressionStatement,
+                        semanticModel,
+                        paramsArrayLengthParameters,
+                        sourceStableLocalInitializers,
+                        visitedSymbols) ||
+                    IsIgnorableNoOpLifecycleHelperPrefixVoidInvocation(
+                        compilation,
+                        lifecycleMethod,
+                        semanticModel,
+                        expressionStatement,
+                        paramsArrayLengthParameters,
+                        sourceStableLocalInitializers,
+                        visitedSymbols);
+            default:
+                return false;
+        }
+    }
+
+    private static bool IsIgnorableNoOpLifecycleHelperPrefixVoidInvocation(
+        Compilation compilation,
+        IMethodSymbol lifecycleMethod,
+        SemanticModel semanticModel,
+        ExpressionStatementSyntax expressionStatement,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers,
+        HashSet<ISymbol>? visitedSymbols)
+        => visitedSymbols is not null &&
+           semanticModel.GetOperation(expressionStatement.Expression) is IInvocationOperation invocation &&
+           IsIgnorableCurrentComponentNoOpLifecycleVoidHelperInvocation(
+               compilation,
+               lifecycleMethod,
+               invocation,
+               visitedSymbols,
+               paramsArrayLengthParameters,
+               sourceStableLocalInitializers);
+
+    private static bool IsIgnorableNoOpLifecycleDiscardedValueHelperInvocation(
+        Compilation compilation,
+        IMethodSymbol lifecycleMethod,
+        ExpressionStatementSyntax expressionStatement,
+        SemanticModel semanticModel,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers,
+        HashSet<ISymbol> visitedSymbols)
+    {
+        var operation = semanticModel.GetOperation(expressionStatement.Expression);
+        if (RazorVueOperationNormalizer.Unwrap(operation) is not IInvocationOperation invocation ||
+            invocation.TargetMethod.ReturnsVoid)
+        {
+            return false;
+        }
+
+        return IsIgnorableNoOpLifecycleValueExpression(
+            compilation,
+            lifecycleMethod,
+            operation,
+            visitedSymbols,
+            paramsArrayLengthParameters,
+            sourceStableLocalInitializers);
+    }
+
+    private static bool IsIgnorableNoOpLifecycleHelperPrefixAssignment(
+        Compilation compilation,
+        IMethodSymbol lifecycleMethod,
+        SemanticModel semanticModel,
+        ExpressionStatementSyntax expressionStatement,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers)
+    {
+        if (sourceStableLocalInitializers is null ||
+            sourceStableLocalInitializers.Count == 0 ||
+            semanticModel.GetOperation(expressionStatement.Expression) is not ISimpleAssignmentOperation assignment ||
+            assignment.Target is not ILocalReferenceOperation localReference ||
+            !sourceStableLocalInitializers.TryGetValue(localReference.Local, out var initializer))
+        {
+            return false;
+        }
+
+        var assignedValue = RazorVueOperationNormalizer.Unwrap(assignment.Value) ?? assignment.Value;
+        return OperationSyntaxEquals(initializer, assignedValue) &&
+               IsIgnorableNoOpLifecycleValueExpression(
+                   compilation,
+                   lifecycleMethod,
+                   assignedValue,
+                   new HashSet<ISymbol>(SymbolEqualityComparer.Default),
+                   paramsArrayLengthParameters,
+                   sourceStableLocalInitializers);
+    }
+
+    private static bool OperationSyntaxEquals(IOperation left, IOperation right)
+        => left.Syntax.SyntaxTree == right.Syntax.SyntaxTree &&
+           left.Syntax.Span.Equals(right.Syntax.Span);
+
+    private static bool IsIgnorableNoOpLifecycleVoidHelperMethod(
+        Compilation compilation,
+        IMethodSymbol lifecycleMethod,
+        IMethodSymbol helperMethod,
+        HashSet<ISymbol> visitedSymbols,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters)
+    {
+        if (helperMethod.DeclaringSyntaxReferences.Length == 0 ||
+            !visitedSymbols.Add(helperMethod))
+        {
+            return false;
+        }
+
+        try
+        {
+            if (!TryGetMethodDeclarationWithBody(helperMethod, out var methodSyntax))
+            {
+                return false;
+            }
+
+            var semanticModel = compilation.GetSemanticModel(methodSyntax.SyntaxTree);
+            if (methodSyntax.ExpressionBody is not null)
+            {
+                return IsIgnorableNoOpLifecycleExpressionBodiedVoidHelperMethod(
+                    compilation,
+                    lifecycleMethod,
+                    methodSyntax.ExpressionBody.Expression,
+                    semanticModel,
+                    paramsArrayLengthParameters,
+                    visitedSymbols);
+            }
+
+            if (methodSyntax.Body is null)
+            {
+                return false;
+            }
+
+            IReadOnlyDictionary<ILocalSymbol, IOperation>? helperLocalInitializers = null;
+            if (semanticModel.GetOperation(methodSyntax.Body) is IBlockOperation blockOperation)
+            {
+                helperLocalInitializers = RazorVueSourceStableLocalInitializerHelper.CollectSourceStableLocalInitializers(
+                    compilation,
+                    blockOperation.Operations,
+                    RazorVueSourceStableLocalInitializerHelper.CanParticipateInLifecycleCompilerFallback);
+            }
+
+            for (var index = 0; index < methodSyntax.Body.Statements.Count; index++)
+            {
+                var statement = methodSyntax.Body.Statements[index];
+                if (statement is ReturnStatementSyntax { Expression: null })
+                    continue;
+
+                if (statement is IfStatementSyntax ifStatement &&
+                    index == methodSyntax.Body.Statements.Count - 1 &&
+                    IsNoOpLifecycleTerminalIfReturnStatement(
+                        compilation,
+                        lifecycleMethod,
+                        ifStatement,
+                        semanticModel,
+                        helperLocalInitializers,
+                        paramsArrayLengthParameters))
+                {
+                    return true;
+                }
+
+                if (!IsIgnorableNoOpLifecycleHelperPrefixStatement(
+                        compilation,
+                        lifecycleMethod,
+                        statement,
+                        semanticModel,
+                        methodSyntax.Body,
+                        paramsArrayLengthParameters,
+                        helperLocalInitializers,
+                        visitedSymbols))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        finally
+        {
+            visitedSymbols.Remove(helperMethod);
+        }
+    }
+
+    private static bool IsIgnorableNoOpLifecycleExpressionBodiedVoidHelperMethod(
+        Compilation compilation,
+        IMethodSymbol lifecycleMethod,
+        ExpressionSyntax expression,
+        SemanticModel semanticModel,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters,
+        HashSet<ISymbol> visitedSymbols)
+    {
+        var operation = semanticModel.GetOperation(expression);
+        var normalized = RazorVueOperationNormalizer.Unwrap(operation);
+        if (normalized is ISimpleAssignmentOperation { Target: IDiscardOperation } assignment)
+        {
+            return IsIgnorableNoOpLifecycleValueExpression(
+                compilation,
+                lifecycleMethod,
+                assignment.Value,
+                visitedSymbols,
+                paramsArrayLengthParameters);
+        }
+
+        if (normalized is not IInvocationOperation invocation ||
+            invocation.TargetMethod.ReturnsVoid)
+        {
+            return false;
+        }
+
+        return IsIgnorableNoOpLifecycleValueExpression(
+            compilation,
+            lifecycleMethod,
+            normalized,
+            visitedSymbols,
+            paramsArrayLengthParameters);
     }
 
     private static bool TryGetMethodDeclarationWithBody(
@@ -1746,7 +3183,9 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         Compilation compilation,
         IMethodSymbol method,
         IPropertyReferenceOperation propertyReference,
-        HashSet<ISymbol> visitedValueMembers)
+        HashSet<ISymbol> visitedValueMembers,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters = null,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers = null)
     {
         var property = propertyReference.Property;
         if (property.IsStatic ||
@@ -1766,14 +3205,18 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             compilation,
             method,
             property,
-            visitedValueMembers);
+            visitedValueMembers,
+            paramsArrayLengthParameters,
+            sourceStableLocalInitializers);
     }
 
     private static bool IsCurrentComponentSourceStableValueMember(
         Compilation compilation,
         IMethodSymbol method,
         IFieldReferenceOperation fieldReference,
-        HashSet<ISymbol> visitedValueMembers)
+        HashSet<ISymbol> visitedValueMembers,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters = null,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers = null)
     {
         var field = fieldReference.Field;
         if (field.IsStatic ||
@@ -1791,14 +3234,18 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             compilation,
             method,
             field,
-            visitedValueMembers);
+            visitedValueMembers,
+            paramsArrayLengthParameters,
+            sourceStableLocalInitializers);
     }
 
     private static bool IsIgnorableSourceStableValueMemberInitializer(
         Compilation compilation,
         IMethodSymbol method,
         ISymbol member,
-        HashSet<ISymbol> visitedValueMembers)
+        HashSet<ISymbol> visitedValueMembers,
+        HashSet<IParameterSymbol>? paramsArrayLengthParameters = null,
+        IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers = null)
     {
         if (!RazorVueCurrentComponentValueMemberHelper.TryGetValueMemberInitializer(compilation, member, out var initializer))
             return false;
@@ -1812,7 +3259,9 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 compilation,
                 method,
                 initializer,
-                visitedValueMembers);
+                visitedValueMembers,
+                paramsArrayLengthParameters,
+                sourceStableLocalInitializers);
         }
         finally
         {
@@ -2208,6 +3657,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         RazorVueExpressionEmitter? expressionEmitter,
         IMethodSymbol method,
         StatementSyntax statement,
+        SetParametersAsyncStatementSequenceState state,
         out SupportedEmitCall? emitCall)
     {
         emitCall = null;
@@ -2221,8 +3671,13 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
                 try
                 {
-                    emitCall = ExtractSupportedEmitCall(snapshot, expressionEmitter, method, returnStatement.Expression, allowFirstRenderPayload: false);
-                    return emitCall is not null;
+                    return TryExtractSetParametersAsyncSupportedEmitCall(
+                        snapshot,
+                        expressionEmitter,
+                        method,
+                        returnStatement.Expression,
+                        state,
+                        out emitCall);
                 }
                 catch (RazorVueCompilationIssueException)
                 {
@@ -2234,8 +3689,13 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
                 try
                 {
-                    emitCall = ExtractSupportedEmitCall(snapshot, expressionEmitter, method, expressionStatement.Expression, allowFirstRenderPayload: false);
-                    return emitCall is not null;
+                    return TryExtractSetParametersAsyncSupportedEmitCall(
+                        snapshot,
+                        expressionEmitter,
+                        method,
+                        expressionStatement.Expression,
+                        state,
+                        out emitCall);
                 }
                 catch (RazorVueCompilationIssueException)
                 {
@@ -2244,6 +3704,77 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             default:
                 return false;
         }
+    }
+
+    private static bool TryExtractSetParametersAsyncSupportedEmitCall(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter? expressionEmitter,
+        IMethodSymbol method,
+        ExpressionSyntax expression,
+        SetParametersAsyncStatementSequenceState state,
+        out SupportedEmitCall? emitCall)
+    {
+        emitCall = null;
+        try
+        {
+            emitCall = ExtractSupportedEmitCall(snapshot, expressionEmitter, method, expression, allowFirstRenderPayload: false);
+            return emitCall is not null;
+        }
+        catch (RazorVueCompilationIssueException)
+        {
+            return TryExtractSetParametersAsyncCatchLocalPayloadEmitCall(
+                snapshot,
+                method,
+                expression,
+                state,
+                out emitCall);
+        }
+    }
+
+    private static bool TryExtractSetParametersAsyncCatchLocalPayloadEmitCall(
+        RazorVueSemanticSnapshot snapshot,
+        IMethodSymbol method,
+        ExpressionSyntax expression,
+        SetParametersAsyncStatementSequenceState state,
+        out SupportedEmitCall? emitCall)
+    {
+        emitCall = null;
+        if (state.FoldableCatchLocals.Count == 0)
+            return false;
+
+        expression = UnwrapLifecycleExpression(expression);
+        if (expression is AwaitExpressionSyntax awaitExpression)
+            expression = UnwrapLifecycleExpression(awaitExpression.Expression);
+        if (TryUnwrapValueTaskCreation(snapshot.Compilation, expression, out var wrappedExpression))
+            expression = wrappedExpression;
+
+        if (expression is not InvocationExpressionSyntax invocation ||
+            invocation.Expression is not MemberAccessExpressionSyntax memberAccess ||
+            !string.Equals(memberAccess.Name.Identifier.ValueText, "InvokeAsync", StringComparison.Ordinal) ||
+            TryGetLifecycleCallbackName(memberAccess.Expression) is not string callbackName ||
+            invocation.ArgumentList.Arguments.Count != 1)
+        {
+            return false;
+        }
+
+        var payloadSyntax = UnwrapLifecycleExpression(invocation.ArgumentList.Arguments[0].Expression);
+        var semanticModel = snapshot.Compilation.GetSemanticModel(payloadSyntax.SyntaxTree);
+        var payloadOperation = semanticModel.GetOperation(payloadSyntax);
+        if (payloadOperation is null ||
+            !TryFoldSetParametersAsyncCatchBodyNullCondition(
+                payloadOperation,
+                state,
+                out var payloadExpression))
+        {
+            return false;
+        }
+
+        emitCall = new SupportedEmitCall(
+            ToLifecycleEmitName(method, callbackName),
+            payloadExpression,
+            false,
+            ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>.Empty);
+        return true;
     }
 
     private static bool TryGetSetParametersAsyncStatementSequence(
@@ -2476,11 +4007,12 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             }
 
             if (!TryGetSetParametersAsyncNoOpOrEmit(
-                    snapshot,
-                    expressionEmitter,
-                    method,
-                    statement,
-                    out var emitCall))
+                snapshot,
+                expressionEmitter,
+                method,
+                statement,
+                state,
+                out var emitCall))
             {
                 return false;
             }
@@ -2555,6 +4087,8 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 method,
                 tryStatement.Catches[0],
                 state.CloneForBranch(),
+                allowCatchBodyNullConditionFolding: false,
+                out _,
                 out _,
                 out _))
         {
@@ -2691,8 +4225,32 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
         var semanticModel = snapshot.Compilation.GetSemanticModel(conditionSyntax.SyntaxTree);
         var conditionOperation = semanticModel.GetOperation(conditionSyntax);
-        if (conditionOperation is null ||
-            ContainsShouldRenderUnsupportedExpressionConstruct(conditionOperation))
+        if (conditionOperation is null)
+            return false;
+
+        if (TryFoldSetParametersAsyncCatchBodyNullCondition(
+                conditionOperation,
+                state,
+                out conditionExpression))
+        {
+            var foldedPreludeBuilder = ImmutableArray.CreateBuilder<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>();
+            if (!TryAppendPendingLifecycleLocalPreludes(
+                    snapshot,
+                    expressionEmitter,
+                    method,
+                    state,
+                    foldedPreludeBuilder))
+            {
+                return false;
+            }
+
+            conditionPreludeBindings = foldedPreludeBuilder.Count == 0
+                ? ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>.Empty
+                : foldedPreludeBuilder.ToImmutable();
+            return true;
+        }
+
+        if (ContainsShouldRenderUnsupportedExpressionConstruct(conditionOperation))
         {
             return false;
         }
@@ -2810,53 +4368,21 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             return false;
         }
 
-        var semanticModel = snapshot.Compilation.GetSemanticModel(ifStatement.Condition.SyntaxTree);
-        var conditionOperation = semanticModel.GetOperation(ifStatement.Condition);
-        if (conditionOperation is null ||
-            ContainsShouldRenderUnsupportedExpressionConstruct(conditionOperation))
-        {
-            return false;
-        }
-
-        RazorVueExpressionEmitter.LifecyclePayloadEmission condition;
-        try
-        {
-            condition = expressionEmitter is null
-                ? RazorVueExpressionEmitter.EmitLifecyclePayload(snapshot, method, conditionOperation, allowFirstRenderPayload: false)
-                : expressionEmitter.EmitLifecyclePayload(method, conditionOperation, allowFirstRenderPayload: false);
-        }
-        catch (RazorVueCompilationIssueException)
-        {
-            return false;
-        }
-        catch (NotSupportedException)
-        {
-            return false;
-        }
-
-        if (condition.UsesFirstRender ||
-            string.IsNullOrWhiteSpace(condition.Expression))
-        {
-            return false;
-        }
-
-        var conditionPreludeBuilder = ImmutableArray.CreateBuilder<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>();
-        if (!TryAppendPendingLifecycleLocalPreludes(
+        if (!TryGetLifecycleConditionEmission(
                 snapshot,
                 expressionEmitter,
                 method,
+                ifStatement.Condition,
                 state,
-                conditionPreludeBuilder))
+                out var conditionExpression,
+                out var conditionPreludeBindings))
         {
             return false;
         }
 
-        conditionPreludeBuilder.AddRange(FilterLifecyclePreludeBindings(condition.PreludeBindings, state));
         lifecycleStatement = new SupportedLifecycleGuardReturnStatement(
-            condition.Expression,
-            conditionPreludeBuilder.Count == 0
-                ? ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>.Empty
-                : conditionPreludeBuilder.ToImmutable());
+            conditionExpression,
+            conditionPreludeBindings);
         return true;
     }
 
@@ -2875,48 +4401,17 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             return false;
         }
 
-        var semanticModel = snapshot.Compilation.GetSemanticModel(ifStatement.Condition.SyntaxTree);
-        var conditionOperation = semanticModel.GetOperation(ifStatement.Condition);
-        if (conditionOperation is null ||
-            ContainsShouldRenderUnsupportedExpressionConstruct(conditionOperation))
-        {
-            return false;
-        }
-
-        RazorVueExpressionEmitter.LifecyclePayloadEmission condition;
-        try
-        {
-            condition = expressionEmitter is null
-                ? RazorVueExpressionEmitter.EmitLifecyclePayload(snapshot, method, conditionOperation, allowFirstRenderPayload: false)
-                : expressionEmitter.EmitLifecyclePayload(method, conditionOperation, allowFirstRenderPayload: false);
-        }
-        catch (RazorVueCompilationIssueException)
-        {
-            return false;
-        }
-        catch (NotSupportedException)
-        {
-            return false;
-        }
-
-        if (condition.UsesFirstRender ||
-            string.IsNullOrWhiteSpace(condition.Expression))
-        {
-            return false;
-        }
-
-        var conditionPreludeBuilder = ImmutableArray.CreateBuilder<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>();
-        if (!TryAppendPendingLifecycleLocalPreludes(
+        if (!TryGetLifecycleConditionEmission(
                 snapshot,
                 expressionEmitter,
                 method,
+                ifStatement.Condition,
                 state,
-                conditionPreludeBuilder))
+                out var conditionExpression,
+                out var conditionPreludeBindings))
         {
             return false;
         }
-
-        conditionPreludeBuilder.AddRange(FilterLifecyclePreludeBindings(condition.PreludeBindings, state));
 
         if (!TryGetSetParametersAsyncStatementSequence(
                 snapshot,
@@ -2950,10 +4445,8 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             return false;
 
         lifecycleStatement = new SupportedLifecycleIfStatement(
-            condition.Expression,
-            conditionPreludeBuilder.Count == 0
-                ? ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>.Empty
-                : conditionPreludeBuilder.ToImmutable(),
+            conditionExpression,
+            conditionPreludeBindings,
             whenTrue,
             whenFalse);
         return true;
@@ -3148,8 +4641,10 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 method,
                 tryStatement.Catches[0],
                 state,
+                allowCatchBodyNullConditionFolding: true,
                 out var catchFilterExpression,
-                out var catchFilterPreludeBindings))
+                out var catchFilterPreludeBindings,
+                out var catchLocal))
         {
             return false;
         }
@@ -3174,7 +4669,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 tryStatement.Catches[0].Block.Statements,
                 0,
                 endExclusive: null,
-                state.CloneForBranch(),
+                state.CloneForCatchBody(catchLocal),
                 out var catchStatements))
         {
             return false;
@@ -3657,14 +5152,16 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         IMethodSymbol method,
         CatchClauseSyntax catchClause,
         SetParametersAsyncStatementSequenceState state,
+        bool allowCatchBodyNullConditionFolding,
         out string? filterExpression,
-        out ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding> filterPreludeBindings)
+        out ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding> filterPreludeBindings,
+        out ILocalSymbol? catchLocal)
     {
         filterExpression = null;
         filterPreludeBindings = ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>.Empty;
+        catchLocal = null;
 
         var semanticModel = snapshot.Compilation.GetSemanticModel(catchClause.SyntaxTree);
-        ILocalSymbol? catchLocal = null;
         if (catchClause.Declaration is null)
         {
             // catch-all
@@ -3686,8 +5183,11 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                     return false;
 
                 catchLocal = declaredCatchLocal;
-                if (ReferencesLocal(catchClause.Block, semanticModel, catchLocal))
+                if (!allowCatchBodyNullConditionFolding &&
+                    ReferencesLocal(catchClause.Block, semanticModel, catchLocal))
+                {
                     return false;
+                }
             }
         }
 
@@ -3744,6 +5244,47 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         return true;
     }
 
+    private static bool TryFoldSetParametersAsyncCatchBodyNullCondition(
+        IOperation conditionOperation,
+        SetParametersAsyncStatementSequenceState state,
+        out string conditionExpression)
+    {
+        conditionExpression = string.Empty;
+        if (state.FoldableCatchLocals.Count == 0)
+            return false;
+
+        ILocalSymbol? referencedCatchLocal = null;
+        foreach (var current in conditionOperation.DescendantsAndSelf())
+        {
+            if (RazorVueOperationNormalizer.Unwrap(current) is not ILocalReferenceOperation localReference ||
+                !state.FoldableCatchLocals.Contains(localReference.Local))
+            {
+                continue;
+            }
+
+            if (referencedCatchLocal is null)
+            {
+                referencedCatchLocal = localReference.Local;
+                continue;
+            }
+
+            if (!SymbolEqualityComparer.Default.Equals(referencedCatchLocal, localReference.Local))
+                return false;
+        }
+
+        if (referencedCatchLocal is null ||
+            !TryEvaluateSetParametersAsyncCatchLocalNullCheck(
+                conditionOperation,
+                referencedCatchLocal,
+                out var result))
+        {
+            return false;
+        }
+
+        conditionExpression = result ? "true" : "false";
+        return true;
+    }
+
     private static bool TryFoldSetParametersAsyncCatchLocalNullFilter(
         ExpressionSyntax filterSyntax,
         SemanticModel semanticModel,
@@ -3780,6 +5321,11 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 when binaryOperation.OperatorKind is BinaryOperatorKind.Equals or BinaryOperatorKind.NotEquals &&
                      IsSetParametersAsyncCatchLocalNullComparison(binaryOperation, catchLocal):
                 result = binaryOperation.OperatorKind == BinaryOperatorKind.NotEquals;
+                return true;
+
+            case IUnaryOperation { OperatorKind: UnaryOperatorKind.Not } unaryOperation
+                when TryEvaluateSetParametersAsyncCatchLocalNullCheck(unaryOperation.Operand, catchLocal, out var nestedResult):
+                result = !nestedResult;
                 return true;
 
             default:
@@ -4013,9 +5559,17 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 return ShouldRenderAnalysis.Unsupported;
             }
 
+            if (!TryCollectShouldRenderAssignedDelegateLocalInitializers(
+                    blockOperation.Operations,
+                    out var assignedDelegateInitializers))
+            {
+                return ShouldRenderAnalysis.Unsupported;
+            }
+
             if (!TryValidateShouldRenderStatementSequence(
                     blockOperation.Operations,
                     ShouldRenderStatementScope.MethodBody,
+                    assignedDelegateInitializers,
                     out var bodyAlwaysReturns,
                     out var containsConditional) ||
                 !bodyAlwaysReturns ||
@@ -4040,12 +5594,13 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
             if (!TryCreateShouldRenderLocalAliases(
                     blockOperation.Operations,
+                    assignedDelegateInitializers,
                     out var localAliases))
             {
                 return ShouldRenderAnalysis.Unsupported;
             }
 
-            if (!ValidateShouldRenderDelegateLocalUsage(blockOperation.Operations))
+            if (!ValidateShouldRenderDelegateLocalUsage(blockOperation.Operations, assignedDelegateInitializers))
                 return ShouldRenderAnalysis.Unsupported;
 
             var capture = expressionEmitter.CaptureSetupDependencies(
@@ -4101,6 +5656,19 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         ShouldRenderStatementScope scope,
         out bool alwaysReturns,
         out bool containsConditional)
+        => TryValidateShouldRenderStatementSequence(
+            operations,
+            scope,
+            EmptyShouldRenderDelegateLocalUsages,
+            out alwaysReturns,
+            out containsConditional);
+
+    private static bool TryValidateShouldRenderStatementSequence(
+        ImmutableArray<IOperation> operations,
+        ShouldRenderStatementScope scope,
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> assignedDelegateInitializers,
+        out bool alwaysReturns,
+        out bool containsConditional)
     {
         alwaysReturns = false;
         containsConditional = false;
@@ -4115,6 +5683,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             if (!TryValidateShouldRenderStatement(
                     operations[index],
                     scope,
+                    assignedDelegateInitializers,
                     out var statementAlwaysReturns,
                     out var statementContainsConditional))
             {
@@ -4134,6 +5703,19 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         ShouldRenderStatementScope scope,
         out bool alwaysReturns,
         out bool containsConditional)
+        => TryValidateShouldRenderStatement(
+            operation,
+            scope,
+            EmptyShouldRenderDelegateLocalUsages,
+            out alwaysReturns,
+            out containsConditional);
+
+    private static bool TryValidateShouldRenderStatement(
+        IOperation operation,
+        ShouldRenderStatementScope scope,
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> assignedDelegateInitializers,
+        out bool alwaysReturns,
+        out bool containsConditional)
     {
         alwaysReturns = false;
         containsConditional = false;
@@ -4144,6 +5726,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 return TryValidateShouldRenderStatementSequence(
                     block.Operations,
                     CreateShouldRenderNestedStatementScope(scope),
+                    assignedDelegateInitializers,
                     out alwaysReturns,
                     out containsConditional);
 
@@ -4168,13 +5751,17 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 return true;
 
             case IVariableDeclarationGroupOperation declarationGroup:
-                if (!TryValidateShouldRenderVariableDeclarationGroup(declarationGroup))
+                if (!TryValidateShouldRenderVariableDeclarationGroup(declarationGroup, assignedDelegateInitializers))
                     return false;
 
                 return true;
 
             case IExpressionStatementOperation expressionStatement:
-                return TryValidateShouldRenderLocalMutationExpressionStatement(expressionStatement);
+                return TryValidateShouldRenderLocalMutationExpressionStatement(expressionStatement) ||
+                    (scope == ShouldRenderStatementScope.MethodBody &&
+                     TryValidateShouldRenderAssignedDelegateInitializerExpressionStatement(
+                         expressionStatement,
+                         assignedDelegateInitializers));
 
             case IBranchOperation { BranchKind: BranchKind.Break } when IsShouldRenderSwitchCaseScope(scope) || IsShouldRenderLoopScope(scope):
                 return true;
@@ -4195,6 +5782,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 if (!TryValidateShouldRenderStatement(
                         conditional.WhenTrue,
                         CreateShouldRenderNestedStatementScope(scope),
+                        assignedDelegateInitializers,
                         out var trueAlwaysReturns,
                         out var trueContainsConditional))
                 {
@@ -4207,6 +5795,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                     !TryValidateShouldRenderStatement(
                         conditional.WhenFalse,
                         CreateShouldRenderNestedStatementScope(scope),
+                        assignedDelegateInitializers,
                         out falseAlwaysReturns,
                         out falseContainsConditional))
                 {
@@ -4547,7 +6136,179 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         => RazorVueOperationNormalizer.Unwrap(operation) is ILocalReferenceOperation localReference &&
            localReference.Local.Type.TypeKind != TypeKind.Delegate;
 
+    private static bool TryCollectShouldRenderAssignedDelegateLocalInitializers(
+        ImmutableArray<IOperation> operations,
+        out ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> assignedDelegateInitializers)
+    {
+        assignedDelegateInitializers = EmptyShouldRenderDelegateLocalUsages;
+        if (operations.IsDefaultOrEmpty)
+            return true;
+
+        var uninitializedDelegateLocals = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
+        var assignedDelegates = ImmutableDictionary.CreateBuilder<ILocalSymbol, ShouldRenderDelegateLocalUsageKind>(SymbolEqualityComparer.Default);
+        var executablePrefixClosed = false;
+
+        foreach (var operation in operations)
+        {
+            switch (RazorVueOperationNormalizer.Unwrap(operation))
+            {
+                case ILocalFunctionOperation:
+                    continue;
+
+                case IVariableDeclarationGroupOperation declarationGroup:
+                    if (executablePrefixClosed &&
+                        ContainsUninitializedShouldRenderDelegateLocalDeclaration(declarationGroup))
+                    {
+                        return false;
+                    }
+
+                    if (!executablePrefixClosed &&
+                        !TryCollectUninitializedShouldRenderDelegateLocalDeclarations(
+                            declarationGroup,
+                            uninitializedDelegateLocals,
+                            assignedDelegates))
+                    {
+                        return false;
+                    }
+
+                    continue;
+
+                case IExpressionStatementOperation expressionStatement
+                    when TryGetShouldRenderDelegateInitializerAssignment(
+                        expressionStatement,
+                        out var local,
+                        out var usageKind):
+                    if (executablePrefixClosed ||
+                        !uninitializedDelegateLocals.Contains(local) ||
+                        assignedDelegates.ContainsKey(local))
+                    {
+                        return false;
+                    }
+
+                    assignedDelegates[local] = usageKind;
+                    continue;
+
+                default:
+                    executablePrefixClosed = true;
+                    continue;
+            }
+        }
+
+        foreach (var local in uninitializedDelegateLocals)
+        {
+            if (!assignedDelegates.ContainsKey(local))
+                return false;
+        }
+
+        assignedDelegateInitializers = assignedDelegates.ToImmutable();
+        return true;
+    }
+
+    private static bool TryCollectUninitializedShouldRenderDelegateLocalDeclarations(
+        IVariableDeclarationGroupOperation declarationGroup,
+        HashSet<ILocalSymbol> uninitializedDelegateLocals,
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind>.Builder assignedDelegates)
+    {
+        foreach (var declaration in declarationGroup.Declarations)
+        {
+            foreach (var declarator in declaration.Declarators)
+            {
+                if (declarator.Symbol.Type.TypeKind != TypeKind.Delegate ||
+                    declarator.Initializer is not null)
+                {
+                    continue;
+                }
+
+                if (assignedDelegates.ContainsKey(declarator.Symbol) ||
+                    !uninitializedDelegateLocals.Add(declarator.Symbol))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private static bool ContainsUninitializedShouldRenderDelegateLocalDeclaration(IVariableDeclarationGroupOperation declarationGroup)
+    {
+        foreach (var declaration in declarationGroup.Declarations)
+        {
+            foreach (var declarator in declaration.Declarators)
+            {
+                if (declarator.Symbol.Type.TypeKind == TypeKind.Delegate &&
+                    declarator.Initializer is null)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TryValidateShouldRenderAssignedDelegateInitializerExpressionStatement(
+        IExpressionStatementOperation expressionStatement,
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> assignedDelegateInitializers)
+        => TryGetShouldRenderDelegateInitializerAssignment(expressionStatement, out var local, out var usageKind) &&
+           assignedDelegateInitializers.TryGetValue(local, out var expectedUsageKind) &&
+           usageKind == expectedUsageKind;
+
+    private static bool TryGetShouldRenderDelegateInitializerAssignment(
+        IExpressionStatementOperation expressionStatement,
+        out ILocalSymbol local,
+        out ShouldRenderDelegateLocalUsageKind usageKind)
+    {
+        local = default!;
+        usageKind = default;
+
+        return RazorVueOperationNormalizer.Unwrap(expressionStatement.Operation) is ISimpleAssignmentOperation assignment &&
+               TryGetShouldRenderDelegateInitializerAssignment(assignment, out local, out usageKind);
+    }
+
+    private static bool TryGetShouldRenderDelegateInitializerAssignment(
+        ISimpleAssignmentOperation assignment,
+        out ILocalSymbol local,
+        out ShouldRenderDelegateLocalUsageKind usageKind)
+    {
+        local = default!;
+        usageKind = default;
+
+        if (RazorVueOperationNormalizer.Unwrap(assignment.Target) is not ILocalReferenceOperation localReference ||
+            localReference.Local.Type.TypeKind != TypeKind.Delegate)
+        {
+            return false;
+        }
+
+        if (TryGetShouldRenderAnonymousFunction(assignment.Value, out var anonymousFunction))
+        {
+            if (!CanLowerShouldRenderLocalAnonymousFunction(anonymousFunction))
+                return false;
+
+            local = localReference.Local;
+            usageKind = ShouldRenderDelegateLocalUsageKind.Callable;
+            return true;
+        }
+
+        if (TryGetShouldRenderMethodGroup(assignment.Value, out var methodReference) &&
+            CanLowerShouldRenderMethodGroupDelegateInitializer(
+                methodReference,
+                assignment.SemanticModel ?? methodReference.SemanticModel))
+        {
+            local = localReference.Local;
+            usageKind = ShouldRenderDelegateLocalUsageKind.Callable;
+            return true;
+        }
+
+        return false;
+    }
+
     private static bool TryValidateShouldRenderVariableDeclarationGroup(IVariableDeclarationGroupOperation declarationGroup)
+        => TryValidateShouldRenderVariableDeclarationGroup(declarationGroup, EmptyShouldRenderDelegateLocalUsages);
+
+    private static bool TryValidateShouldRenderVariableDeclarationGroup(
+        IVariableDeclarationGroupOperation declarationGroup,
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> assignedDelegateInitializers)
     {
         foreach (var declaration in declarationGroup.Declarations)
         {
@@ -4555,6 +6316,12 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             {
                 if (declarator.Symbol.Type.TypeKind == TypeKind.Delegate)
                 {
+                    if (assignedDelegateInitializers.ContainsKey(declarator.Symbol) &&
+                        declarator.Initializer is null)
+                    {
+                        continue;
+                    }
+
                     if (TryGetShouldRenderLocalAnonymousFunctionInitializer(declarator, out var anonymousFunction))
                     {
                         if (!CanLowerShouldRenderLocalAnonymousFunction(
@@ -4568,6 +6335,12 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
                     if (IsNullConstantOperation(declarator.Initializer?.Value))
                         continue;
+
+                    if (TryGetShouldRenderLocalFunctionDelegateFactoryInitializer(declarator, out var factoryInvocation) &&
+                        CanLowerShouldRenderLocalFunctionDelegateFactoryInitializer(factoryInvocation))
+                    {
+                        continue;
+                    }
 
                     if (!TryGetShouldRenderLocalMethodGroupInitializer(declarator, out var methodReference, out var semanticModel) ||
                         !CanLowerShouldRenderMethodGroupDelegateInitializer(methodReference, semanticModel))
@@ -4588,6 +6361,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
     private static bool TryCreateShouldRenderLocalAliases(
         ImmutableArray<IOperation> operations,
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> assignedDelegateInitializers,
         out IReadOnlyDictionary<ILocalSymbol, string> localAliases)
     {
         localAliases = ImmutableDictionary<ILocalSymbol, string>.Empty.WithComparers(SymbolEqualityComparer.Default);
@@ -4599,6 +6373,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         if (!TryValidateShouldRenderStatementSequence(
                 operations,
                 ShouldRenderStatementScope.MethodBody,
+                assignedDelegateInitializers,
                 out var alwaysReturns,
                 out _) ||
             !alwaysReturns ||
@@ -4678,7 +6453,9 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         return true;
     }
 
-    private static bool ValidateShouldRenderDelegateLocalUsage(ImmutableArray<IOperation> operations)
+    private static bool ValidateShouldRenderDelegateLocalUsage(
+        ImmutableArray<IOperation> operations,
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> assignedDelegateInitializers)
     {
         var delegateLocals = ImmutableDictionary.CreateBuilder<ILocalSymbol, ShouldRenderDelegateLocalUsageKind>(SymbolEqualityComparer.Default);
         foreach (var operation in EnumerateShouldRenderMethodScopedOperations(operations))
@@ -4686,8 +6463,17 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             if (RazorVueOperationNormalizer.Unwrap(operation) is IVariableDeclaratorOperation declarator &&
                 declarator.Symbol.Type.TypeKind == TypeKind.Delegate)
             {
+                if (assignedDelegateInitializers.TryGetValue(declarator.Symbol, out var assignedUsageKind) &&
+                    declarator.Initializer is null)
+                {
+                    delegateLocals[declarator.Symbol] = assignedUsageKind;
+                    continue;
+                }
+
                 if (TryGetShouldRenderLocalAnonymousFunctionInitializer(declarator, out _) ||
-                    TryGetShouldRenderLocalMethodGroupInitializer(declarator, out _, out _))
+                    TryGetShouldRenderLocalMethodGroupInitializer(declarator, out _, out _) ||
+                    (TryGetShouldRenderLocalFunctionDelegateFactoryInitializer(declarator, out var factoryInvocation) &&
+                     CanLowerShouldRenderLocalFunctionDelegateFactoryInitializer(factoryInvocation)))
                 {
                     delegateLocals[declarator.Symbol] = ShouldRenderDelegateLocalUsageKind.Callable;
                     continue;
@@ -4704,25 +6490,33 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         }
 
         return delegateLocals.Count == 0 ||
-            ValidateShouldRenderDelegateLocalUsage(operations, delegateLocals.ToImmutable());
+            ValidateShouldRenderDelegateUsage(
+                operations,
+                delegateLocals.ToImmutable(),
+                EmptyShouldRenderDelegateParameterUsages,
+                assignedDelegateInitializers);
     }
 
-    private static bool ValidateShouldRenderDelegateLocalUsage(
+    private static bool ValidateShouldRenderDelegateUsage(
         ImmutableArray<IOperation> operations,
-        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> delegateLocals)
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> delegateLocals,
+        ImmutableDictionary<IParameterSymbol, ShouldRenderDelegateLocalUsageKind> delegateParameters,
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> assignedDelegateInitializers)
     {
         foreach (var operation in operations)
         {
-            if (!ValidateShouldRenderDelegateLocalUsage(operation, delegateLocals))
+            if (!ValidateShouldRenderDelegateUsage(operation, delegateLocals, delegateParameters, assignedDelegateInitializers))
                 return false;
         }
 
         return true;
     }
 
-    private static bool ValidateShouldRenderDelegateLocalUsage(
+    private static bool ValidateShouldRenderDelegateUsage(
         IOperation operation,
-        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> delegateLocals)
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> delegateLocals,
+        ImmutableDictionary<IParameterSymbol, ShouldRenderDelegateLocalUsageKind> delegateParameters,
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> assignedDelegateInitializers)
     {
         var current = RazorVueOperationNormalizer.Unwrap(operation);
         if (current is null)
@@ -4731,20 +6525,36 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         switch (current)
         {
             case IBinaryOperation binaryOperation
-                when IsShouldRenderTrackedDelegateLocalNullComparison(binaryOperation, delegateLocals):
+                when IsShouldRenderTrackedDelegateNullComparison(binaryOperation, delegateLocals, delegateParameters):
+                return true;
+
+            case IBinaryOperation binaryOperation
+                when IsShouldRenderTrackedDelegateComparison(binaryOperation, delegateLocals, delegateParameters):
                 return true;
 
             case IIsPatternOperation isPatternOperation
-                when IsShouldRenderTrackedDelegateLocalNullPattern(isPatternOperation, delegateLocals):
+                when IsShouldRenderTrackedDelegateNullPattern(isPatternOperation, delegateLocals, delegateParameters):
+                return true;
+
+            case ISimpleAssignmentOperation assignment
+                when TryValidateShouldRenderTrackedDelegateAssignment(assignment, assignedDelegateInitializers):
+                return true;
+
+            case IInvocationOperation invocation
+                when TryValidateShouldRenderTrackedDelegateLocalFunctionInvocation(
+                    invocation,
+                    delegateLocals,
+                    delegateParameters,
+                    assignedDelegateInitializers):
                 return true;
 
             case IInvocationOperation invocation
                 when invocation.TargetMethod.MethodKind == MethodKind.DelegateInvoke &&
-                     TryGetShouldRenderTrackedDelegateLocalReference(invocation.Instance, delegateLocals, out var usageKind) &&
+                     TryGetShouldRenderTrackedDelegateReference(invocation.Instance, delegateLocals, delegateParameters, out var usageKind) &&
                      usageKind == ShouldRenderDelegateLocalUsageKind.Callable:
                 foreach (var argument in invocation.Arguments)
                 {
-                    if (!ValidateShouldRenderDelegateLocalUsage(argument, delegateLocals))
+                    if (!ValidateShouldRenderDelegateUsage(argument, delegateLocals, delegateParameters, assignedDelegateInitializers))
                         return false;
                 }
 
@@ -4754,13 +6564,17 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 when delegateLocals.ContainsKey(localReference.Local):
                 return false;
 
+            case IParameterReferenceOperation parameterReference
+                when delegateParameters.ContainsKey(parameterReference.Parameter):
+                return false;
+
             default:
                 foreach (var child in current.ChildOperations)
                 {
                     if (child is null)
                         continue;
 
-                    if (!ValidateShouldRenderDelegateLocalUsage(child, delegateLocals))
+                    if (!ValidateShouldRenderDelegateUsage(child, delegateLocals, delegateParameters, assignedDelegateInitializers))
                         return false;
                 }
 
@@ -4768,24 +6582,108 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         }
     }
 
-    private static bool IsShouldRenderTrackedDelegateLocalNullComparison(
+    private static bool TryValidateShouldRenderTrackedDelegateAssignment(
+        ISimpleAssignmentOperation assignment,
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> assignedDelegateInitializers)
+        => TryGetShouldRenderDelegateInitializerAssignment(assignment, out var local, out var usageKind) &&
+           assignedDelegateInitializers.TryGetValue(local, out var expectedUsageKind) &&
+           usageKind == expectedUsageKind;
+
+    private static bool TryValidateShouldRenderTrackedDelegateLocalFunctionInvocation(
+        IInvocationOperation invocation,
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> delegateLocals,
+        ImmutableDictionary<IParameterSymbol, ShouldRenderDelegateLocalUsageKind> delegateParameters,
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> assignedDelegateInitializers)
+    {
+        if (invocation.Instance is not null ||
+            invocation.TargetMethod.MethodKind != MethodKind.LocalFunction)
+        {
+            return false;
+        }
+
+        if (!TryGetShouldRenderLocalFunctionOperation(
+                invocation.TargetMethod,
+                invocation.SemanticModel,
+                out var localFunctionOperation) ||
+            localFunctionOperation.Body is not { } localFunctionBody ||
+            !CanLowerShouldRenderLocalFunction(
+                localFunctionOperation,
+                CreateShouldRenderChildReservedLocalNames()))
+        {
+            return false;
+        }
+
+        var hasTrackedDelegateArgument = false;
+        var delegateParameterUsages = ImmutableDictionary.CreateBuilder<IParameterSymbol, ShouldRenderDelegateLocalUsageKind>(SymbolEqualityComparer.Default);
+        foreach (var argument in invocation.Arguments)
+        {
+            if (argument.Parameter is not { } parameter ||
+                argument.ArgumentKind != ArgumentKind.Explicit ||
+                parameter.RefKind != RefKind.None)
+            {
+                return false;
+            }
+
+            if (parameter.Type.TypeKind == TypeKind.Delegate)
+            {
+                if (!TryGetShouldRenderTrackedDelegateReference(
+                        argument.Value,
+                        delegateLocals,
+                        delegateParameters,
+                        out var usageKind))
+                {
+                    return false;
+                }
+
+                delegateParameterUsages[parameter] = usageKind;
+                hasTrackedDelegateArgument = true;
+                continue;
+            }
+
+            if (!ValidateShouldRenderDelegateUsage(argument, delegateLocals, delegateParameters, assignedDelegateInitializers))
+                return false;
+        }
+
+        return hasTrackedDelegateArgument &&
+            ValidateShouldRenderDelegateUsage(
+                localFunctionBody.Operations,
+                EmptyShouldRenderDelegateLocalUsages,
+                delegateParameterUsages.ToImmutable(),
+                EmptyShouldRenderDelegateLocalUsages);
+    }
+
+    private static bool IsShouldRenderTrackedDelegateNullComparison(
         IBinaryOperation operation,
-        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> delegateLocals)
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> delegateLocals,
+        ImmutableDictionary<IParameterSymbol, ShouldRenderDelegateLocalUsageKind> delegateParameters)
     {
         if (operation.OperatorKind is not (BinaryOperatorKind.Equals or BinaryOperatorKind.NotEquals))
             return false;
 
         return
-            (IsShouldRenderTrackedDelegateLocalReference(operation.LeftOperand, delegateLocals) &&
+            (IsShouldRenderTrackedDelegateReference(operation.LeftOperand, delegateLocals, delegateParameters) &&
              IsNullConstantOperation(operation.RightOperand)) ||
-            (IsShouldRenderTrackedDelegateLocalReference(operation.RightOperand, delegateLocals) &&
+            (IsShouldRenderTrackedDelegateReference(operation.RightOperand, delegateLocals, delegateParameters) &&
              IsNullConstantOperation(operation.LeftOperand));
     }
 
-    private static bool IsShouldRenderTrackedDelegateLocalNullPattern(
+    private static bool IsShouldRenderTrackedDelegateComparison(
+        IBinaryOperation operation,
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> delegateLocals,
+        ImmutableDictionary<IParameterSymbol, ShouldRenderDelegateLocalUsageKind> delegateParameters)
+    {
+        if (operation.OperatorKind is not (BinaryOperatorKind.Equals or BinaryOperatorKind.NotEquals))
+            return false;
+
+        return IsShouldRenderTrackedDelegateReference(operation.LeftOperand, delegateLocals, delegateParameters) &&
+               IsShouldRenderTrackedDelegateReference(operation.RightOperand, delegateLocals, delegateParameters);
+    }
+
+    private static bool IsShouldRenderTrackedDelegateNullPattern(
         IIsPatternOperation operation,
-        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> delegateLocals)
-        => IsShouldRenderTrackedDelegateLocalReference(operation.Value, delegateLocals) &&
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> delegateLocals,
+        ImmutableDictionary<IParameterSymbol, ShouldRenderDelegateLocalUsageKind> delegateParameters)
+        => IsShouldRenderTrackedDelegateReference(operation.Value, delegateLocals, delegateParameters) &&
            IsNullConstantPattern(operation.Pattern);
 
     private static bool IsNullConstantPattern(IPatternOperation pattern)
@@ -4808,20 +6706,27 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                current.ConstantValue.Value is null;
     }
 
-    private static bool IsShouldRenderTrackedDelegateLocalReference(
-        IOperation? operation,
-        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> delegateLocals)
-        => TryGetShouldRenderTrackedDelegateLocalReference(operation, delegateLocals, out _);
-
-    private static bool TryGetShouldRenderTrackedDelegateLocalReference(
+    private static bool IsShouldRenderTrackedDelegateReference(
         IOperation? operation,
         ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> delegateLocals,
+        ImmutableDictionary<IParameterSymbol, ShouldRenderDelegateLocalUsageKind> delegateParameters)
+        => TryGetShouldRenderTrackedDelegateReference(operation, delegateLocals, delegateParameters, out _);
+
+    private static bool TryGetShouldRenderTrackedDelegateReference(
+        IOperation? operation,
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> delegateLocals,
+        ImmutableDictionary<IParameterSymbol, ShouldRenderDelegateLocalUsageKind> delegateParameters,
         out ShouldRenderDelegateLocalUsageKind usageKind)
     {
-        if (RazorVueOperationNormalizer.Unwrap(operation) is ILocalReferenceOperation localReference &&
-            delegateLocals.TryGetValue(localReference.Local, out usageKind))
+        switch (RazorVueOperationNormalizer.Unwrap(operation))
         {
-            return true;
+            case ILocalReferenceOperation localReference
+                when delegateLocals.TryGetValue(localReference.Local, out usageKind):
+                return true;
+
+            case IParameterReferenceOperation parameterReference
+                when delegateParameters.TryGetValue(parameterReference.Parameter, out usageKind):
+                return true;
         }
 
         usageKind = default;
@@ -4833,6 +6738,12 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         Callable,
         NullOnly
     }
+
+    private static readonly ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> EmptyShouldRenderDelegateLocalUsages =
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind>.Empty.WithComparers(SymbolEqualityComparer.Default);
+
+    private static readonly ImmutableDictionary<IParameterSymbol, ShouldRenderDelegateLocalUsageKind> EmptyShouldRenderDelegateParameterUsages =
+        ImmutableDictionary<IParameterSymbol, ShouldRenderDelegateLocalUsageKind>.Empty.WithComparers(SymbolEqualityComparer.Default);
 
     private static bool TryCreateShouldRenderExpressionLocalAliases(
         IOperation operation,
@@ -5069,6 +6980,67 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         return true;
     }
 
+    private static bool TryGetShouldRenderLocalFunctionDelegateFactoryInitializer(
+        IVariableDeclaratorOperation declarator,
+        out IInvocationOperation invocation)
+    {
+        invocation = default!;
+        if (declarator.Symbol.Type.TypeKind != TypeKind.Delegate)
+            return false;
+
+        return TryGetShouldRenderLocalFunctionInvocation(declarator.Initializer?.Value, out invocation) &&
+               invocation.TargetMethod.ReturnType.TypeKind == TypeKind.Delegate;
+    }
+
+    private static bool TryGetShouldRenderLocalFunctionInvocation(
+        IOperation? operation,
+        out IInvocationOperation invocation)
+    {
+        switch (RazorVueOperationNormalizer.Unwrap(operation))
+        {
+            case IInvocationOperation directInvocation
+                when directInvocation.TargetMethod.MethodKind == MethodKind.LocalFunction:
+                invocation = directInvocation;
+                return true;
+
+            case IConversionOperation conversion:
+                return TryGetShouldRenderLocalFunctionInvocation(conversion.Operand, out invocation);
+
+            default:
+                invocation = default!;
+                return false;
+        }
+    }
+
+    private static bool CanLowerShouldRenderLocalFunctionDelegateFactoryInitializer(
+        IInvocationOperation invocation)
+    {
+        if (invocation.Instance is not null ||
+            invocation.TargetMethod.MethodKind != MethodKind.LocalFunction ||
+            invocation.TargetMethod.ReturnType.TypeKind != TypeKind.Delegate)
+        {
+            return false;
+        }
+
+        foreach (var argument in invocation.Arguments)
+        {
+            if (argument.Parameter is not { RefKind: RefKind.None } ||
+                argument.ArgumentKind != ArgumentKind.Explicit ||
+                ContainsShouldRenderUnsupportedExpressionConstruct(argument.Value))
+            {
+                return false;
+            }
+        }
+
+        return TryGetShouldRenderLocalFunctionOperation(
+                invocation.TargetMethod,
+                invocation.SemanticModel,
+                out var localFunctionOperation) &&
+            CanLowerShouldRenderLocalFunction(
+                localFunctionOperation,
+                CreateShouldRenderChildReservedLocalNames());
+    }
+
     private static bool TryCreateShouldRenderLocalAlias(
         ILocalSymbol local,
         HashSet<string> reservedNames,
@@ -5133,7 +7105,180 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             }
         }
 
-        return TryReserveShouldRenderLocalFunctionBodyBindings(operation, functionScopeNames);
+        if (method.ReturnType.TypeKind == TypeKind.Delegate &&
+            !CanLowerShouldRenderDelegateReturningLocalFunction(operation))
+        {
+            return false;
+        }
+
+        return TryReserveShouldRenderLocalFunctionBodyBindings(operation, functionScopeNames) &&
+            ValidateShouldRenderDelegateParameterUsage(operation);
+    }
+
+    private static bool CanLowerShouldRenderDelegateReturningLocalFunction(
+        ILocalFunctionOperation operation)
+    {
+        if (operation.Symbol.ReturnType.TypeKind != TypeKind.Delegate ||
+            operation.Body is null ||
+            operation.Body.Operations.IsDefaultOrEmpty)
+        {
+            return false;
+        }
+
+        return TryValidateShouldRenderDelegateFactoryStatementSequence(
+                operation.Body.Operations,
+                out var alwaysReturns,
+                out var hasDelegateReturn) &&
+            alwaysReturns &&
+            hasDelegateReturn;
+    }
+
+    private static bool TryValidateShouldRenderDelegateFactoryStatementSequence(
+        ImmutableArray<IOperation> operations,
+        out bool alwaysReturns,
+        out bool hasDelegateReturn)
+    {
+        alwaysReturns = false;
+        hasDelegateReturn = false;
+        if (operations.IsDefaultOrEmpty)
+            return true;
+
+        for (var index = 0; index < operations.Length; index++)
+        {
+            if (alwaysReturns)
+                return false;
+
+            if (!TryValidateShouldRenderDelegateFactoryStatement(
+                    operations[index],
+                    out var statementAlwaysReturns,
+                    out var statementHasDelegateReturn))
+            {
+                return false;
+            }
+
+            hasDelegateReturn |= statementHasDelegateReturn;
+            if (statementAlwaysReturns)
+                alwaysReturns = true;
+        }
+
+        return true;
+    }
+
+    private static bool TryValidateShouldRenderDelegateFactoryStatement(
+        IOperation operation,
+        out bool alwaysReturns,
+        out bool hasDelegateReturn)
+    {
+        alwaysReturns = false;
+        hasDelegateReturn = false;
+        var current = RazorVueOperationNormalizer.Unwrap(operation);
+        switch (current)
+        {
+            case IBlockOperation block:
+                return TryValidateShouldRenderDelegateFactoryStatementSequence(
+                    block.Operations,
+                    out alwaysReturns,
+                    out hasDelegateReturn);
+
+            case IReturnOperation { ReturnedValue: not null } returnOperation:
+                if (!TryGetShouldRenderAnonymousFunction(returnOperation.ReturnedValue, out var anonymousFunction) ||
+                    !CanLowerShouldRenderLocalAnonymousFunction(anonymousFunction))
+                {
+                    return false;
+                }
+
+                alwaysReturns = true;
+                hasDelegateReturn = true;
+                return true;
+
+            case IThrowOperation throwOperation:
+                if (throwOperation.Exception is null &&
+                    throwOperation.Syntax.FirstAncestorOrSelf<CatchClauseSyntax>() is null)
+                {
+                    return false;
+                }
+
+                if (ContainsShouldRenderUnsupportedExpressionConstruct(throwOperation.Exception))
+                    return false;
+
+                alwaysReturns = true;
+                return true;
+
+            case IVariableDeclarationGroupOperation declarationGroup:
+                return TryValidateShouldRenderDelegateFactoryVariableDeclarationGroup(declarationGroup);
+
+            case IExpressionStatementOperation expressionStatement:
+                return TryValidateShouldRenderLocalMutationExpressionStatement(expressionStatement);
+
+            case IConditionalOperation conditional when conditional.Syntax is IfStatementSyntax:
+                if (ContainsShouldRenderUnsupportedExpressionConstruct(conditional.Condition))
+                    return false;
+
+                if (!TryValidateShouldRenderDelegateFactoryStatement(
+                        conditional.WhenTrue,
+                        out var trueAlwaysReturns,
+                        out var trueHasDelegateReturn))
+                {
+                    return false;
+                }
+
+                var falseAlwaysReturns = false;
+                var falseHasDelegateReturn = false;
+                if (conditional.WhenFalse is not null &&
+                    !TryValidateShouldRenderDelegateFactoryStatement(
+                        conditional.WhenFalse,
+                        out falseAlwaysReturns,
+                        out falseHasDelegateReturn))
+                {
+                    return false;
+                }
+
+                alwaysReturns = trueAlwaysReturns && falseAlwaysReturns;
+                hasDelegateReturn = trueHasDelegateReturn || falseHasDelegateReturn;
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    private static bool TryValidateShouldRenderDelegateFactoryVariableDeclarationGroup(
+        IVariableDeclarationGroupOperation declarationGroup)
+    {
+        foreach (var declaration in declarationGroup.Declarations)
+        {
+            foreach (var declarator in declaration.Declarators)
+            {
+                if (declarator.Symbol.Type.TypeKind == TypeKind.Delegate ||
+                    ContainsShouldRenderUnsupportedExpressionConstruct(declarator))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private static bool ValidateShouldRenderDelegateParameterUsage(
+        ILocalFunctionOperation operation)
+    {
+        if (operation.Body is null)
+            return false;
+
+        var delegateParameters = ImmutableDictionary.CreateBuilder<IParameterSymbol, ShouldRenderDelegateLocalUsageKind>(SymbolEqualityComparer.Default);
+        foreach (var parameter in operation.Symbol.Parameters)
+        {
+            if (parameter.Type.TypeKind == TypeKind.Delegate)
+                delegateParameters[parameter] = ShouldRenderDelegateLocalUsageKind.Callable;
+        }
+
+        return delegateParameters.Count == 0 ||
+            ValidateShouldRenderDelegateUsage(
+                operation.Body.Operations,
+                EmptyShouldRenderDelegateLocalUsages,
+                delegateParameters.ToImmutable(),
+                EmptyShouldRenderDelegateLocalUsages);
     }
 
     private static bool CanLowerShouldRenderLocalAnonymousFunction(
@@ -5223,10 +7368,16 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
     {
         foreach (var current in operation.DescendantsAndSelf())
         {
+            if (IsInsideShouldRenderDelegateFactoryReturnedAnonymousFunction(current, operation))
+                continue;
+
             switch (RazorVueOperationNormalizer.Unwrap(current))
             {
-                case IAnonymousFunctionOperation:
-                    return false;
+                case IAnonymousFunctionOperation anonymousFunction:
+                    if (!IsShouldRenderDelegateFactoryReturnedAnonymousFunction(operation, anonymousFunction))
+                        return false;
+
+                    break;
 
                 case ILocalFunctionOperation localFunction when !ReferenceEquals(localFunction, operation):
                     return false;
@@ -5315,6 +7466,48 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         }
 
         return true;
+    }
+
+    private static bool IsInsideShouldRenderDelegateFactoryReturnedAnonymousFunction(
+        IOperation operation,
+        ILocalFunctionOperation localFunction)
+    {
+        var parent = operation.Parent;
+        while (parent is not null)
+        {
+            if (RazorVueOperationNormalizer.Unwrap(parent) is IAnonymousFunctionOperation anonymousFunction &&
+                IsShouldRenderDelegateFactoryReturnedAnonymousFunction(localFunction, anonymousFunction))
+            {
+                return true;
+            }
+
+            parent = parent.Parent;
+        }
+
+        return false;
+    }
+
+    private static bool IsShouldRenderDelegateFactoryReturnedAnonymousFunction(
+        ILocalFunctionOperation localFunction,
+        IAnonymousFunctionOperation anonymousFunction)
+    {
+        if (localFunction.Symbol.ReturnType.TypeKind != TypeKind.Delegate ||
+            localFunction.Body is null)
+        {
+            return false;
+        }
+
+        foreach (var current in EnumerateShouldRenderMethodScopedOperations(localFunction.Body.Operations))
+        {
+            if (RazorVueOperationNormalizer.Unwrap(current) is IReturnOperation { ReturnedValue: not null } returnOperation &&
+                TryGetShouldRenderAnonymousFunction(returnOperation.ReturnedValue, out var returnedAnonymousFunction) &&
+                ReferenceEquals(returnedAnonymousFunction, anonymousFunction))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static bool TryReserveShouldRenderAnonymousFunctionBodyBindings(
@@ -6304,6 +8497,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             MaterializedLocals = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
             MaterializedPreludeAliases = new HashSet<string>(StringComparer.Ordinal);
             LocalAliases = new Dictionary<ILocalSymbol, string>(SymbolEqualityComparer.Default);
+            FoldableCatchLocals = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
         }
 
         private SetParametersAsyncStatementSequenceState(
@@ -6314,7 +8508,8 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             HashSet<ILocalSymbol> emittedLocals,
             HashSet<ILocalSymbol> materializedLocals,
             HashSet<string> materializedPreludeAliases,
-            Dictionary<ILocalSymbol, string> localAliases)
+            Dictionary<ILocalSymbol, string> localAliases,
+            HashSet<ILocalSymbol> foldableCatchLocals)
         {
             SemanticModel = semanticModel;
             LocalInitializers = localInitializers;
@@ -6324,6 +8519,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             MaterializedLocals = materializedLocals;
             MaterializedPreludeAliases = materializedPreludeAliases;
             LocalAliases = localAliases;
+            FoldableCatchLocals = foldableCatchLocals;
         }
 
         public SemanticModel SemanticModel { get; }
@@ -6334,6 +8530,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         public HashSet<ILocalSymbol> MaterializedLocals { get; }
         public HashSet<string> MaterializedPreludeAliases { get; }
         public Dictionary<ILocalSymbol, string> LocalAliases { get; }
+        public HashSet<ILocalSymbol> FoldableCatchLocals { get; }
 
         public SetParametersAsyncStatementSequenceState CloneForBranch()
             => new(
@@ -6344,7 +8541,8 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 new HashSet<ILocalSymbol>(EmittedLocals, SymbolEqualityComparer.Default),
                 new HashSet<ILocalSymbol>(MaterializedLocals, SymbolEqualityComparer.Default),
                 new HashSet<string>(MaterializedPreludeAliases, StringComparer.Ordinal),
-                new Dictionary<ILocalSymbol, string>(LocalAliases, SymbolEqualityComparer.Default));
+                new Dictionary<ILocalSymbol, string>(LocalAliases, SymbolEqualityComparer.Default),
+                new HashSet<ILocalSymbol>(FoldableCatchLocals, SymbolEqualityComparer.Default));
 
         public SetParametersAsyncStatementSequenceState CloneForDirectNoOpReturnBody()
             => new(
@@ -6355,7 +8553,26 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 new HashSet<ILocalSymbol>(EmittedLocals, SymbolEqualityComparer.Default),
                 new HashSet<ILocalSymbol>(MaterializedLocals, SymbolEqualityComparer.Default),
                 new HashSet<string>(MaterializedPreludeAliases, StringComparer.Ordinal),
-                new Dictionary<ILocalSymbol, string>(LocalAliases, SymbolEqualityComparer.Default));
+                new Dictionary<ILocalSymbol, string>(LocalAliases, SymbolEqualityComparer.Default),
+                new HashSet<ILocalSymbol>(FoldableCatchLocals, SymbolEqualityComparer.Default));
+
+        public SetParametersAsyncStatementSequenceState CloneForCatchBody(ILocalSymbol? catchLocal)
+        {
+            var foldableCatchLocals = new HashSet<ILocalSymbol>(FoldableCatchLocals, SymbolEqualityComparer.Default);
+            if (catchLocal is not null)
+                foldableCatchLocals.Add(catchLocal);
+
+            return new(
+                SemanticModel,
+                LocalInitializers,
+                allowTerminalNoOpControlFlow: false,
+                allowDirectNoOpReturnStatement: false,
+                new HashSet<ILocalSymbol>(EmittedLocals, SymbolEqualityComparer.Default),
+                new HashSet<ILocalSymbol>(MaterializedLocals, SymbolEqualityComparer.Default),
+                new HashSet<string>(MaterializedPreludeAliases, StringComparer.Ordinal),
+                new Dictionary<ILocalSymbol, string>(LocalAliases, SymbolEqualityComparer.Default),
+                foldableCatchLocals);
+        }
     }
 
     private sealed record SetParametersAsyncAnalysis(

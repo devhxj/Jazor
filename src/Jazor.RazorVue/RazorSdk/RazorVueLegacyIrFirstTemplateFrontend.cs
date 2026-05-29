@@ -6,17 +6,17 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Jazor.RazorVue.RazorSdk;
 
-internal sealed class RazorVuePreferredTemplateFrontend : IRazorVueTemplateFrontend
+internal sealed class RazorVueLegacyIrFirstTemplateFrontend : IRazorVueTemplateFrontend
 {
     private readonly RazorVueRazorIrTemplateFrontend _razorIrFrontend = new();
 
-    public static RazorVuePreferredTemplateFrontend Instance { get; } = new();
+    public static RazorVueLegacyIrFirstTemplateFrontend Instance { get; } = new();
 
-    private RazorVuePreferredTemplateFrontend()
+    private RazorVueLegacyIrFirstTemplateFrontend()
     {
     }
 
-    public string Name => "Jazor.RazorVue.RazorSdk.RazorVuePreferredTemplateFrontend";
+    public string Name => "Jazor.RazorVue.RazorSdk.RazorVueLegacyIrFirstTemplateFrontend";
 
     public RazorVueRenderFragment CreateRenderTree(
         Jazor.RazorVue.RazorVueCompilationContext context,
@@ -37,7 +37,7 @@ internal sealed class RazorVuePreferredTemplateFrontend : IRazorVueTemplateFront
             return BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
 
         throw new InvalidOperationException(
-            $"RazorVue preferred template frontend only falls back to BuildRenderTree for source-authored components. " +
+            $"RazorVue legacy IR-first compatibility frontend only falls back to BuildRenderTree for source-authored components. " +
             $"Component '{snapshot.Descriptor.FullName}' did not resolve a Razor document and was not classified as handwritten BuildRenderTree authoring.");
     }
 }

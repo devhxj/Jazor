@@ -14,6 +14,7 @@ namespace Jazor.RazorVue.Canonical;
 
 internal sealed class RazorVueCanonicalHModelFactory
 {
+    private const string RecoveredSwitchValueName = "__jazorSwitchValue";
     private readonly IRazorVueTemplateFrontend _templateFrontend;
     private static readonly ImmutableHashSet<ILocalSymbol> EmptyLocalScope =
         ImmutableHashSet<ILocalSymbol>.Empty.WithComparer(SymbolEqualityComparer.Default);
@@ -50,7 +51,13 @@ internal sealed class RazorVueCanonicalHModelFactory
 
         var resolvedComponents = ResolveComponents(context, snapshot, renderTree);
         var expressionEmitter = CreateExpressionEmitter(snapshot, resolvedComponents);
-        var imperativeRootProgram = TryCreateImperativeRootProgram(snapshot, renderTree, expressionEmitter);
+        var imperativeRootProgram = TryCreateImperativeRootProgram(context, snapshot, ref renderTree, expressionEmitter);
+        if (imperativeRootProgram is null)
+        {
+            resolvedComponents = ResolveComponents(context, snapshot, renderTree);
+            expressionEmitter = CreateExpressionEmitter(snapshot, resolvedComponents);
+        }
+
         var template = imperativeRootProgram is null
             ? CreateTemplateFragment(
                 snapshot,
@@ -231,6 +238,27 @@ internal sealed class RazorVueCanonicalHModelFactory
                 TemplateExpressionSafety: ClassifyTemplateExpressionSafety(snapshot, conditional.Condition),
                 SideEffectClassification: ClassifySideEffects(conditional.Condition),
                 SourceOrigins: conditional.Origins),
+            RazorVueRecoveredSwitchConditionalNode conditional => new RazorVueCanonicalConditionalNode(
+                ConditionExpressionText: conditional.ConditionExpressionText,
+                BindingKind: RazorVueExpressionBindingKind.RuntimeExpression,
+                WhenTrue: CreateTemplateFragment(
+                    snapshot,
+                    expressionEmitter,
+                    resolvedComponents,
+                    conditional.WhenTrue,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols),
+                WhenFalse: CreateTemplateFragment(
+                    snapshot,
+                    expressionEmitter,
+                    resolvedComponents,
+                    conditional.WhenFalse,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols),
+                TemplateEncodability: RazorVueTemplateEncodability.DirectTemplate,
+                TemplateExpressionSafety: RazorVueTemplateExpressionSafety.DirectTemplateSafe,
+                SideEffectClassification: RazorVueSideEffectClassification.None,
+                SourceOrigins: conditional.Origins),
             RazorVueForEachNode loop => new RazorVueCanonicalForEachNode(
                 ItemName: loop.ItemName,
                 SourceExpressionText: EmitTemplateExpression(
@@ -301,8 +329,9 @@ internal sealed class RazorVueCanonicalHModelFactory
         };
 
     private static RazorVueCanonicalImperativeRootProgram? TryCreateImperativeRootProgram(
+        RazorVueCompilationContext context,
         RazorVueSemanticSnapshot snapshot,
-        RazorVueRenderFragment renderTree,
+        ref RazorVueRenderFragment renderTree,
         RazorVueExpressionEmitter expressionEmitter)
     {
         if (RequiresRenderFunctionForShouldRenderGate(snapshot, expressionEmitter))
@@ -326,6 +355,12 @@ internal sealed class RazorVueCanonicalHModelFactory
         var imperativeNodes = EnumerateImperativeNodes(renderTree).ToImmutableArray();
         if (imperativeNodes.IsDefaultOrEmpty)
             return null;
+
+        if (TryRecoverCanonicalTemplateFragmentFromImperativeRoot(context, snapshot, renderTree, out var recoveredRenderTree))
+        {
+            renderTree = recoveredRenderTree;
+            return null;
+        }
 
         var isRootOnly = renderTree.Children.Length == 1 &&
                          renderTree.Children[0] is RazorVueImperativeBlockNode;
@@ -375,6 +410,7 @@ internal sealed class RazorVueCanonicalHModelFactory
                 component.ImplicitDefaultSlotAssignments.Any(static assignment => RequiresImperativeScopedReplay(assignment.Children)),
             RazorVueTemplateScopeNode templateScope => RequiresImperativeScopedReplay(templateScope.Children),
             RazorVueConditionalNode conditional => RequiresImperativeScopedReplay(conditional.WhenTrue) || RequiresImperativeScopedReplay(conditional.WhenFalse),
+            RazorVueRecoveredSwitchConditionalNode conditional => RequiresImperativeScopedReplay(conditional.WhenTrue) || RequiresImperativeScopedReplay(conditional.WhenFalse),
             RazorVueForEachNode loop => RequiresImperativeScopedReplay(loop.Body),
             RazorVueForNode loop => RequiresImperativeScopedReplay(loop.Body),
             _ => false
@@ -420,6 +456,12 @@ internal sealed class RazorVueCanonicalHModelFactory
                     foreach (var nested in EnumerateImperativeNodes(conditional.WhenFalse))
                         yield return nested;
                     break;
+                case RazorVueRecoveredSwitchConditionalNode conditional:
+                    foreach (var nested in EnumerateImperativeNodes(conditional.WhenTrue))
+                        yield return nested;
+                    foreach (var nested in EnumerateImperativeNodes(conditional.WhenFalse))
+                        yield return nested;
+                    break;
                 case RazorVueTemplateScopeNode templateScope:
                     foreach (var nested in EnumerateImperativeNodes(templateScope.Children))
                         yield return nested;
@@ -435,6 +477,1186 @@ internal sealed class RazorVueCanonicalHModelFactory
             }
         }
     }
+
+    private static bool TryRecoverCanonicalTemplateFragmentFromImperativeRoot(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueRenderFragment renderTree,
+        out RazorVueRenderFragment recoveredRenderTree)
+    {
+        recoveredRenderTree = renderTree;
+        if (renderTree.Children.Length != 1 ||
+            renderTree.Children[0] is not RazorVueImperativeBlockNode imperative)
+        {
+            return false;
+        }
+
+        var recovered = imperative.Kind switch
+        {
+            RazorVueImperativeBlockKind.SwitchBlock
+                when imperative.Operations.Length == 1 &&
+                     Unwrap(imperative.Operations[0]) is ISwitchOperation switchOperation =>
+                TryCreateCanonicalSwitchTemplateFragment(context, snapshot, switchOperation, imperative, out recoveredRenderTree),
+            RazorVueImperativeBlockKind.TryBlock
+                when imperative.Operations.Length == 1 &&
+                     Unwrap(imperative.Operations[0]) is ITryOperation tryOperation =>
+                TryCreateCanonicalTryTemplateFragment(context, snapshot, tryOperation, imperative, out recoveredRenderTree),
+            RazorVueImperativeBlockKind.TryBlock
+                when imperative.Operations.Length == 1 &&
+                     Unwrap(imperative.Operations[0]) is IUsingOperation usingOperation =>
+                TryCreateCanonicalUsingTemplateFragment(context, snapshot, usingOperation, imperative, out recoveredRenderTree),
+            RazorVueImperativeBlockKind.LockBlock
+                when imperative.Operations.Length == 1 &&
+                     Unwrap(imperative.Operations[0]) is ILockOperation lockOperation =>
+                TryCreateCanonicalLockTemplateFragment(context, snapshot, lockOperation, imperative, out recoveredRenderTree),
+            RazorVueImperativeBlockKind.LoopBlock
+                when imperative.Operations.Length == 1 &&
+                     Unwrap(imperative.Operations[0]) is IWhileLoopOperation whileLoop =>
+                TryCreateCanonicalDoWhileFalseTemplateFragment(context, snapshot, whileLoop, imperative, out recoveredRenderTree),
+            RazorVueImperativeBlockKind.MethodBody
+                when imperative.Operations.Length == 1 &&
+                     Unwrap(imperative.Operations[0]) is ILabeledOperation labeledOperation =>
+                TryCreateCanonicalLabeledTemplateFragment(context, snapshot, labeledOperation, imperative, out recoveredRenderTree),
+            RazorVueImperativeBlockKind.MethodBody =>
+                TryCreateCanonicalGuardReturnTemplateFragment(context, snapshot, imperative, out recoveredRenderTree),
+            _ => false
+        };
+        if (!recovered)
+            return false;
+
+        return !EnumerateImperativeNodes(recoveredRenderTree).Any() &&
+               !RequiresImperativeScopedReplay(recoveredRenderTree) &&
+               CanCreateCanonicalTemplateFragment(context, snapshot, recoveredRenderTree);
+    }
+
+    private static bool CanCreateCanonicalTemplateFragment(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueRenderFragment renderTree)
+    {
+        try
+        {
+            var resolvedComponents = ResolveComponents(context, snapshot, renderTree);
+            var expressionEmitter = CreateExpressionEmitter(snapshot, resolvedComponents);
+            var canonicalFragment = CreateTemplateFragment(
+                snapshot,
+                expressionEmitter,
+                resolvedComponents,
+                renderTree,
+                EmptyLocalScope,
+                EmptyParameterScope);
+            return !EnumerateCanonicalTemplateNodes(canonicalFragment)
+                .Any(static node => node.TemplateEncodability == RazorVueTemplateEncodability.NotTemplateEncodable);
+        }
+        catch (RazorVueCompilationIssueException)
+        {
+            return false;
+        }
+        catch (NotSupportedException)
+        {
+            return false;
+        }
+    }
+
+    private static IEnumerable<RazorVueCanonicalTemplateNode> EnumerateCanonicalTemplateNodes(
+        RazorVueCanonicalTemplateFragment fragment)
+    {
+        if (fragment.Children.IsDefaultOrEmpty)
+            yield break;
+
+        foreach (var child in fragment.Children)
+        {
+            yield return child;
+            foreach (var nested in EnumerateCanonicalTemplateNodes(child))
+                yield return nested;
+        }
+    }
+
+    private static IEnumerable<RazorVueCanonicalTemplateNode> EnumerateCanonicalTemplateNodes(
+        RazorVueCanonicalTemplateNode node)
+    {
+        switch (node)
+        {
+            case RazorVueCanonicalElementNode element:
+                foreach (var nested in EnumerateCanonicalTemplateNodes(element.Children))
+                    yield return nested;
+                break;
+            case RazorVueCanonicalComponentNode component:
+                foreach (var nested in EnumerateCanonicalTemplateNodes(component.Children))
+                    yield return nested;
+                foreach (var slot in component.Slots)
+                {
+                    foreach (var nested in EnumerateCanonicalTemplateNodes(slot.Children))
+                        yield return nested;
+                }
+                break;
+            case RazorVueCanonicalTemplateScopeNode templateScope:
+                foreach (var nested in EnumerateCanonicalTemplateNodes(templateScope.Children))
+                    yield return nested;
+                break;
+            case RazorVueCanonicalConditionalNode conditional:
+                foreach (var nested in EnumerateCanonicalTemplateNodes(conditional.WhenTrue))
+                    yield return nested;
+                foreach (var nested in EnumerateCanonicalTemplateNodes(conditional.WhenFalse))
+                    yield return nested;
+                break;
+            case RazorVueCanonicalForEachNode loop:
+                foreach (var nested in EnumerateCanonicalTemplateNodes(loop.Body))
+                    yield return nested;
+                break;
+            case RazorVueCanonicalForNode loop:
+                foreach (var nested in EnumerateCanonicalTemplateNodes(loop.Body))
+                    yield return nested;
+                break;
+        }
+    }
+
+    private static bool TryCreateCanonicalGuardReturnTemplateFragment(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueImperativeBlockNode imperative,
+        out RazorVueRenderFragment fragment)
+    {
+        fragment = RazorVueRenderFragment.Empty;
+        return TryRecoverGuardReturnOperations(
+            context,
+            snapshot,
+            imperative.Operations,
+            imperative,
+            out fragment);
+    }
+
+    private static bool TryRecoverGuardReturnOperations(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        ImmutableArray<IOperation> operations,
+        RazorVueImperativeBlockNode imperative,
+        out RazorVueRenderFragment fragment)
+        => TryRecoverGuardReturnOperationList(
+            context,
+            snapshot,
+            operations
+                .Select(Unwrap)
+                .Where(static operation => operation is not null and not IEmptyOperation)
+                .Cast<IOperation>(),
+            imperative,
+            out fragment);
+
+    private static bool TryRecoverGuardReturnOperationList(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        IEnumerable<IOperation> operations,
+        RazorVueImperativeBlockNode imperative,
+        out RazorVueRenderFragment fragment)
+    {
+        fragment = RazorVueRenderFragment.Empty;
+        var operationList = operations.ToImmutableArray();
+        if (operationList.IsDefaultOrEmpty)
+            return false;
+
+        if (TryParseCanonicalTemplateOperations(context, snapshot, operationList, imperative, out var templateFragment))
+        {
+            fragment = templateFragment;
+            return true;
+        }
+
+        for (var index = operationList.Length - 1; index >= 0; index--)
+        {
+            if (Unwrap(operationList[index]) is not IConditionalOperation guard ||
+                !IsCanonicalGuardCondition(guard.Condition))
+            {
+                continue;
+            }
+
+            var prefix = operationList.Take(index).ToImmutableArray();
+            if (!prefix.IsDefaultOrEmpty &&
+                !TryParseCanonicalTemplateOperations(context, snapshot, prefix, imperative, out _))
+            {
+                return false;
+            }
+
+            var tailOperations = operationList.Skip(index + 1).ToImmutableArray();
+            if (!TryRecoverGuardReturnConditional(
+                    context,
+                    snapshot,
+                    guard,
+                    tailOperations,
+                    imperative,
+                    out var recoveredGuard))
+            {
+                return false;
+            }
+
+            if (prefix.IsDefaultOrEmpty)
+            {
+                fragment = recoveredGuard;
+                return true;
+            }
+
+            if (!TryParseCanonicalTemplateOperations(context, snapshot, prefix, imperative, out var prefixFragment))
+                return false;
+
+            fragment = CombineCanonicalTemplateFragments(prefixFragment, recoveredGuard);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryRecoverGuardReturnConditional(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        IConditionalOperation guard,
+        ImmutableArray<IOperation> tailOperations,
+        RazorVueImperativeBlockNode imperative,
+        out RazorVueRenderFragment fragment)
+    {
+        fragment = RazorVueRenderFragment.Empty;
+        var trueReturns = TryIsBareReturnBranch(guard.WhenTrue);
+        var falseReturns = TryIsBareReturnBranch(guard.WhenFalse);
+
+        if (trueReturns == falseReturns)
+        {
+            if (trueReturns ||
+                !tailOperations.IsDefaultOrEmpty)
+            {
+                return false;
+            }
+
+            return TryRecoverNestedGuardReturnConditional(
+                context,
+                snapshot,
+                guard,
+                imperative,
+                out fragment);
+        }
+
+        var tail = RazorVueRenderFragment.Empty;
+        if (!tailOperations.IsDefaultOrEmpty &&
+            !TryParseCanonicalTemplateOperations(context, snapshot, tailOperations, imperative, out tail))
+        {
+            return false;
+        }
+
+        if (!TryRecoverGuardReturnBranch(
+                context,
+                snapshot,
+                guard.WhenTrue,
+                trueReturns,
+                tail,
+                imperative,
+                out var recoveredWhenTrue) ||
+            !TryRecoverGuardReturnBranch(
+                context,
+                snapshot,
+                guard.WhenFalse,
+                falseReturns,
+                tail,
+                imperative,
+                out var recoveredWhenFalse))
+        {
+            return false;
+        }
+
+        if (recoveredWhenTrue.Children.IsDefaultOrEmpty &&
+            recoveredWhenFalse.Children.IsDefaultOrEmpty)
+        {
+            return false;
+        }
+
+        fragment = new RazorVueRenderFragment(
+        [
+            new RazorVueConditionalNode(
+                guard.Condition,
+                recoveredWhenTrue,
+                recoveredWhenFalse,
+                CreateGuardReturnOrigins(guard, recoveredWhenTrue, recoveredWhenFalse))
+        ]);
+        return true;
+    }
+
+    private static bool TryRecoverNestedGuardReturnConditional(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        IConditionalOperation guard,
+        RazorVueImperativeBlockNode imperative,
+        out RazorVueRenderFragment fragment)
+    {
+        fragment = RazorVueRenderFragment.Empty;
+        if (!TryRecoverGuardReturnBranch(
+                context,
+                snapshot,
+                guard.WhenTrue,
+                branchReturns: false,
+                RazorVueRenderFragment.Empty,
+                imperative,
+                out var recoveredWhenTrue) ||
+            !TryRecoverGuardReturnBranch(
+                context,
+                snapshot,
+                guard.WhenFalse,
+                branchReturns: false,
+                RazorVueRenderFragment.Empty,
+                imperative,
+                out var recoveredWhenFalse))
+        {
+            return false;
+        }
+
+        if (recoveredWhenTrue.Children.IsDefaultOrEmpty &&
+            recoveredWhenFalse.Children.IsDefaultOrEmpty)
+        {
+            return false;
+        }
+
+        fragment = new RazorVueRenderFragment(
+        [
+            new RazorVueConditionalNode(
+                guard.Condition,
+                recoveredWhenTrue,
+                recoveredWhenFalse,
+                CreateGuardReturnOrigins(guard, recoveredWhenTrue, recoveredWhenFalse))
+        ]);
+        return true;
+    }
+
+    private static bool TryRecoverGuardReturnBranch(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        IOperation? branch,
+        bool branchReturns,
+        RazorVueRenderFragment tail,
+        RazorVueImperativeBlockNode imperative,
+        out RazorVueRenderFragment fragment)
+    {
+        fragment = RazorVueRenderFragment.Empty;
+        if (branchReturns)
+            return true;
+
+        var current = Unwrap(branch);
+        if (current is null || IsEmptyBranch(current))
+        {
+            fragment = tail;
+            return true;
+        }
+
+        var operations = current is IBlockOperation block
+            ? block.Operations
+            : ImmutableArray.Create(current);
+        if (!TryRecoverGuardReturnOperations(
+                context,
+                snapshot,
+                operations,
+                imperative,
+                out var branchFragment))
+        {
+            return false;
+        }
+
+        fragment = CombineCanonicalTemplateFragments(branchFragment, tail);
+        return true;
+    }
+
+    private static bool TryParseCanonicalTemplateBranch(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        IOperation? operation,
+        RazorVueImperativeBlockNode imperative,
+        out RazorVueRenderFragment fragment)
+    {
+        fragment = RazorVueRenderFragment.Empty;
+        var current = Unwrap(operation);
+        if (current is null || IsEmptyBranch(current))
+            return true;
+
+        var operations = current is IBlockOperation block
+            ? block.Operations
+            : ImmutableArray.Create(current);
+        return TryParseCanonicalTemplateOperations(context, snapshot, operations, imperative, out fragment);
+    }
+
+    private static bool TryParseCanonicalTemplateOperations(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        IEnumerable<IOperation> operations,
+        RazorVueImperativeBlockNode imperative,
+        out RazorVueRenderFragment fragment)
+    {
+        try
+        {
+            fragment = RazorVueRenderTreeExtractor.ParseSupportedOperations(
+                context,
+                snapshot,
+                operations,
+                imperative.VisibleLocals,
+                imperative.VisibleParameters);
+        }
+        catch (RazorVueCompilationIssueException)
+        {
+            fragment = RazorVueRenderFragment.Empty;
+            return false;
+        }
+        catch (NotSupportedException)
+        {
+            fragment = RazorVueRenderFragment.Empty;
+            return false;
+        }
+
+        if (EnumerateImperativeNodes(fragment).Any() ||
+            RequiresImperativeScopedReplay(fragment))
+        {
+            fragment = RazorVueRenderFragment.Empty;
+            return false;
+        }
+
+        return true;
+    }
+
+    private static RazorVueRenderFragment CombineCanonicalTemplateFragments(
+        RazorVueRenderFragment branch,
+        RazorVueRenderFragment tail)
+    {
+        if (branch.Children.IsDefaultOrEmpty)
+            return tail;
+        if (tail.Children.IsDefaultOrEmpty)
+            return branch;
+
+        return new RazorVueRenderFragment(branch.Children.AddRange(tail.Children));
+    }
+
+    private static bool TryCreateCanonicalTryTemplateFragment(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        ITryOperation tryOperation,
+        RazorVueImperativeBlockNode imperative,
+        out RazorVueRenderFragment fragment)
+    {
+        fragment = RazorVueRenderFragment.Empty;
+        if (CanEraseTryRecoveryOrCleanup(tryOperation))
+        {
+            return TryParseCanonicalTemplateBranch(
+                    context,
+                    snapshot,
+                    tryOperation.Body,
+                    imperative,
+                    out fragment) &&
+                   !fragment.Children.IsDefaultOrEmpty;
+        }
+
+        return TryRecoverStaticTryFinallyTemplateFragment(
+            context,
+            snapshot,
+            tryOperation,
+            imperative,
+            out fragment);
+    }
+
+    private static bool CanEraseTryRecoveryOrCleanup(ITryOperation tryOperation)
+    {
+        if (!IsEmptyBranch(tryOperation.Finally))
+            return false;
+
+        if (tryOperation.Catches.IsEmpty)
+            return true;
+
+        if (tryOperation.Catches.Length != 1)
+            return false;
+
+        var catchOperation = tryOperation.Catches[0];
+        return catchOperation.Filter is null &&
+               catchOperation.ExceptionDeclarationOrExpression is null &&
+               IsEmptyBranch(catchOperation.Handler);
+    }
+
+    private static bool TryRecoverStaticTryFinallyTemplateFragment(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        ITryOperation tryOperation,
+        RazorVueImperativeBlockNode imperative,
+        out RazorVueRenderFragment fragment)
+    {
+        fragment = RazorVueRenderFragment.Empty;
+        if (!tryOperation.Catches.IsEmpty ||
+            IsEmptyBranch(tryOperation.Finally) ||
+            ContainsImperativeBranchIfPresent(tryOperation.Body) ||
+            ContainsImperativeBranchIfPresent(tryOperation.Finally))
+        {
+            return false;
+        }
+
+        var bodyParsed = TryParseCanonicalTemplateBranch(
+            context,
+            snapshot,
+            tryOperation.Body,
+            imperative,
+            out var body);
+        var cleanupParsed = TryParseCanonicalTemplateBranch(
+            context,
+            snapshot,
+            tryOperation.Finally,
+            imperative,
+            out var cleanup);
+        if (!bodyParsed ||
+            !cleanupParsed ||
+            !IsPureStaticTemplateFragment(body) ||
+            !IsPureStaticTemplateFragment(cleanup))
+        {
+            return false;
+        }
+
+        fragment = CombineCanonicalTemplateFragments(body, cleanup);
+        return !fragment.Children.IsDefaultOrEmpty;
+    }
+
+    private static bool IsPureStaticTemplateFragment(RazorVueRenderFragment fragment)
+        => fragment.Children.IsDefaultOrEmpty ||
+           fragment.Children.All(IsPureStaticTemplateNode);
+
+    private static bool IsPureStaticTemplateNode(RazorVueRenderNode node)
+        => node switch
+        {
+            RazorVueTextNode => true,
+            RazorVueElementNode element =>
+                element.Key is null &&
+                IsPureStaticTemplateReplay(element.ReplayOperations) &&
+                element.Attributes.All(IsPureStaticTemplateAttribute) &&
+                IsPureStaticTemplateFragment(element.Children),
+            _ => false
+        };
+
+    private static bool IsPureStaticTemplateReplay(ImmutableArray<RazorVueOpenNodeReplayOperation> operations)
+        => operations.IsDefaultOrEmpty ||
+           operations.All(IsPureStaticTemplateReplayOperation);
+
+    private static bool IsPureStaticTemplateReplayOperation(RazorVueOpenNodeReplayOperation operation)
+        => operation switch
+        {
+            RazorVueOpenNodeAttributeReplayOperation attributeOperation =>
+                IsPureStaticTemplateAttribute(attributeOperation.Attribute),
+            RazorVueOpenNodeChildReplayOperation childOperation =>
+                IsPureStaticTemplateNode(childOperation.Child),
+            _ => false
+        };
+
+    private static bool IsPureStaticTemplateAttribute(RazorVueAttributeEntry attributeEntry)
+    {
+        if (attributeEntry is not RazorVueAttributeNode attribute ||
+            !attribute.CapturedBindings.IsDefaultOrEmpty ||
+            attribute.EventModifiers.HasAny)
+        {
+            return false;
+        }
+
+        if (attribute.Value is null)
+            return true;
+
+        return TryGetStableTemplateScalarLiteral(attribute.Value, out var literal) &&
+               ClassifyStableTemplateScalarLiteralKind(literal) is not RazorVueLiteralValueKind.Other;
+    }
+
+    private static bool TryCreateCanonicalLockTemplateFragment(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        ILockOperation lockOperation,
+        RazorVueImperativeBlockNode imperative,
+        out RazorVueRenderFragment fragment)
+    {
+        fragment = RazorVueRenderFragment.Empty;
+        if (Unwrap(lockOperation.LockedValue) is not IInstanceReferenceOperation)
+            return false;
+        if (ContainsSameArtifactRuntimeHelperTypeReference(snapshot, lockOperation.Body))
+            return false;
+
+        return TryParseCanonicalTemplateBranch(
+                context,
+                snapshot,
+                lockOperation.Body,
+                imperative,
+                out fragment) &&
+               !fragment.Children.IsDefaultOrEmpty;
+    }
+
+    private static bool TryCreateCanonicalUsingTemplateFragment(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        IUsingOperation usingOperation,
+        RazorVueImperativeBlockNode imperative,
+        out RazorVueRenderFragment fragment)
+    {
+        fragment = RazorVueRenderFragment.Empty;
+        if (usingOperation.IsAsynchronous ||
+            !IsStableNullUsingResource(usingOperation.Resources) ||
+            ContainsImperativeBranch(usingOperation.Body))
+        {
+            return false;
+        }
+
+        return TryParseCanonicalTemplateBranch(
+                context,
+                snapshot,
+                usingOperation.Body,
+                imperative,
+                out fragment) &&
+               !fragment.Children.IsDefaultOrEmpty;
+    }
+
+    private static bool IsStableNullUsingResource(IOperation? operation)
+    {
+        var current = Unwrap(operation);
+        if (current is null)
+            return false;
+
+        if (TryGetStableTemplateScalarLiteral(current, out var literal))
+            return literal is null;
+
+        if (current is IConversionOperation { OperatorMethod: null } conversion)
+            return IsStableNullUsingResource(conversion.Operand);
+
+        return current is IDefaultValueOperation defaultValue && IsNullDefaultValue(defaultValue);
+    }
+
+    private static bool TryCreateCanonicalLabeledTemplateFragment(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        ILabeledOperation labeledOperation,
+        RazorVueImperativeBlockNode imperative,
+        out RazorVueRenderFragment fragment)
+    {
+        fragment = RazorVueRenderFragment.Empty;
+        var body = Unwrap(labeledOperation.Operation);
+        if (body is null ||
+            ContainsImperativeBranch(body))
+        {
+            return false;
+        }
+
+        return TryParseCanonicalTemplateBranch(
+                context,
+                snapshot,
+                body,
+                imperative,
+                out fragment) &&
+               !fragment.Children.IsDefaultOrEmpty;
+    }
+
+    private static bool TryCreateCanonicalDoWhileFalseTemplateFragment(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        IWhileLoopOperation whileLoop,
+        RazorVueImperativeBlockNode imperative,
+        out RazorVueRenderFragment fragment)
+    {
+        fragment = RazorVueRenderFragment.Empty;
+        var condition = whileLoop.Condition;
+        if (condition is null ||
+            !IsStableFalseCondition(condition) ||
+            ContainsImperativeBranch(whileLoop.Body))
+        {
+            return false;
+        }
+
+        if (!TryParseCanonicalTemplateBranch(
+                context,
+                snapshot,
+                whileLoop.Body,
+                imperative,
+                out var body) ||
+            body.Children.IsDefaultOrEmpty)
+        {
+            return false;
+        }
+
+        if (!whileLoop.ConditionIsTop)
+        {
+            fragment = body;
+            return true;
+        }
+
+        fragment = new RazorVueRenderFragment(
+        [
+            new RazorVueConditionalNode(
+                condition,
+                body,
+                RazorVueRenderFragment.Empty,
+                imperative.Origins)
+        ]);
+        return true;
+    }
+
+    private static bool IsStableFalseCondition(IOperation? operation)
+    {
+        var current = Unwrap(operation);
+        if (current is null)
+            return false;
+
+        if (TryGetStableTemplateScalarLiteral(current, out var literal))
+            return literal is bool value && !value;
+
+        return current is IConversionOperation { OperatorMethod: null } conversion &&
+               IsStableFalseCondition(conversion.Operand);
+    }
+
+    private static bool ContainsImperativeBranchIfPresent(IOperation? operation)
+    {
+        var current = Unwrap(operation);
+        return current is not null && ContainsImperativeBranch(current);
+    }
+
+    private static bool ContainsImperativeBranch(IOperation operation)
+    {
+        foreach (var current in RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(
+                     operation,
+                     includeLocalFunctionBodies: true))
+        {
+            if (current is IBranchOperation or IReturnOperation { IsImplicit: false } or IThrowOperation)
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool ContainsSameArtifactRuntimeHelperTypeReference(
+        RazorVueSemanticSnapshot snapshot,
+        IOperation? operation)
+    {
+        var current = Unwrap(operation);
+        if (current is null)
+            return false;
+
+        if (IsSameArtifactRuntimeHelperType(snapshot, current.Type))
+            return true;
+
+        switch (current)
+        {
+            case ITypeOfOperation typeOfOperation:
+                if (IsSameArtifactRuntimeHelperType(snapshot, typeOfOperation.TypeOperand))
+                    return true;
+                break;
+            case IMemberReferenceOperation memberReference:
+                if (IsSameArtifactRuntimeHelperType(snapshot, memberReference.Member.ContainingType))
+                    return true;
+                break;
+            case IObjectCreationOperation objectCreation:
+                if (IsSameArtifactRuntimeHelperType(snapshot, objectCreation.Constructor?.ContainingType))
+                    return true;
+                break;
+            case IInvocationOperation invocation:
+                if (IsSameArtifactRuntimeHelperType(snapshot, invocation.TargetMethod.ContainingType))
+                    return true;
+                break;
+        }
+
+        foreach (var child in current.ChildOperations)
+        {
+            if (ContainsSameArtifactRuntimeHelperTypeReference(snapshot, child))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsSameArtifactRuntimeHelperType(
+        RazorVueSemanticSnapshot snapshot,
+        ITypeSymbol? typeSymbol)
+    {
+        if (typeSymbol is not INamedTypeSymbol namedType)
+            return false;
+
+        return RazorVueCompilerModuleContext.IsSameArtifactModuleType(snapshot.ComponentSymbol, namedType) &&
+               RazorVueCompilerModuleContext.IsRuntimeHelperTypeCandidate(namedType);
+    }
+
+    private static bool TryCreateCanonicalSwitchTemplateFragment(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        ISwitchOperation switchOperation,
+        RazorVueImperativeBlockNode imperative,
+        out RazorVueRenderFragment fragment)
+    {
+        fragment = RazorVueRenderFragment.Empty;
+        if (!IsCanonicalSwitchValue(switchOperation.Value))
+            return false;
+
+        var switchValueName = RazorVueSlotParameterNames.CreateImplicitDefaultSlotParameterName(
+            RecoveredSwitchValueName,
+            EmptyLocalScope,
+            EmptyParameterScope);
+        var sectionsBuilder = ImmutableArray.CreateBuilder<RecoveredSwitchSection>();
+        RazorVueRenderFragment? defaultBody = null;
+        foreach (var section in switchOperation.Cases)
+        {
+            if (!TryGetRecoverableSwitchSection(context, snapshot, section, switchValueName, imperative, out var recoveredSection))
+                return false;
+
+            if (recoveredSection.IsDefault)
+            {
+                if (defaultBody is not null || !recoveredSection.Conditions.IsDefaultOrEmpty)
+                    return false;
+
+                defaultBody = recoveredSection.Body;
+                continue;
+            }
+
+            sectionsBuilder.Add(recoveredSection);
+        }
+
+        var sections = sectionsBuilder.ToImmutable();
+        if (sections.IsDefaultOrEmpty && defaultBody is null)
+            return false;
+
+        var body = CreateSwitchConditionalFragment(
+            switchValueName,
+            sections,
+            defaultBody ?? RazorVueRenderFragment.Empty,
+            0);
+        fragment = new RazorVueRenderFragment(
+        [
+            new RazorVueTemplateScopeNode(
+                switchValueName,
+                ScopeParameterSymbol: null,
+                switchOperation.Value,
+                body,
+                imperative.Origins)
+        ]);
+
+        return true;
+    }
+
+    private static RazorVueRenderFragment CreateSwitchConditionalFragment(
+        string switchValueName,
+        ImmutableArray<RecoveredSwitchSection> sections,
+        RazorVueRenderFragment defaultBody,
+        int index)
+    {
+        if (index >= sections.Length)
+            return defaultBody;
+
+        var section = sections[index];
+        var whenFalse = CreateSwitchConditionalFragment(switchValueName, sections, defaultBody, index + 1);
+        return new RazorVueRenderFragment(
+        [
+            new RazorVueRecoveredSwitchConditionalNode(
+                CreateSwitchSectionCondition(section.Conditions),
+                section.Body,
+                whenFalse,
+                section.Origins)
+        ]);
+    }
+
+    private static string CreateSwitchSectionCondition(ImmutableArray<RecoveredSwitchCondition> conditions)
+    {
+        if (conditions.IsDefaultOrEmpty)
+            throw new InvalidOperationException("A recovered switch case section requires at least one value.");
+
+        return conditions.Length == 1
+            ? conditions[0].ExpressionText
+            : string.Join(" || ", conditions.Select(static condition =>
+                condition.RequiresGrouping ? "(" + condition.ExpressionText + ")" : condition.ExpressionText));
+    }
+
+    private static string CreateSwitchCaseComparisonExpressionText(
+        string switchValueName,
+        IOperation value)
+        => switchValueName + " === " + CreateStableLiteralExpressionText(value);
+
+    private static bool TryGetRecoverableSwitchSection(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        ISwitchCaseOperation section,
+        string switchValueName,
+        RazorVueImperativeBlockNode imperative,
+        out RecoveredSwitchSection recoveredSection)
+    {
+        recoveredSection = default;
+        var conditionsBuilder = ImmutableArray.CreateBuilder<RecoveredSwitchCondition>();
+        var isDefault = false;
+        foreach (var clause in section.Clauses)
+        {
+            switch (clause)
+            {
+                case IDefaultCaseClauseOperation:
+                    isDefault = true;
+                    break;
+                case ISingleValueCaseClauseOperation singleValue when IsStableSwitchCaseValue(singleValue.Value):
+                    conditionsBuilder.Add(new RecoveredSwitchCondition(
+                        CreateSwitchCaseComparisonExpressionText(
+                            switchValueName,
+                            singleValue.Value),
+                        RequiresGrouping: false));
+                    break;
+                case IPatternCaseClauseOperation patternCase when CanRecoverSwitchPatternCase(patternCase):
+                    conditionsBuilder.Add(new RecoveredSwitchCondition(
+                        CreateSwitchPatternCaseCondition(context, snapshot, patternCase, switchValueName),
+                        RequiresGrouping: true));
+                    break;
+                default:
+                    return false;
+            }
+        }
+
+        if (isDefault && conditionsBuilder.Count != 0)
+            return false;
+        if (!isDefault && conditionsBuilder.Count == 0)
+            return false;
+
+        var operations = StripTerminalBreak(section.Body);
+        if (operations.IsDefault)
+            return false;
+
+        RazorVueRenderFragment body;
+        try
+        {
+            body = RazorVueRenderTreeExtractor.ParseSupportedOperations(
+                context,
+                snapshot,
+                operations,
+                imperative.VisibleLocals,
+                imperative.VisibleParameters);
+        }
+        catch (RazorVueCompilationIssueException)
+        {
+            return false;
+        }
+        catch (NotSupportedException)
+        {
+            return false;
+        }
+        if (body.Children.IsDefaultOrEmpty ||
+            EnumerateImperativeNodes(body).Any() ||
+            RequiresImperativeScopedReplay(body))
+        {
+            return false;
+        }
+
+        recoveredSection = new RecoveredSwitchSection(
+            conditionsBuilder.ToImmutable(),
+            isDefault,
+            body,
+            CreateSwitchSectionOrigins(section, body));
+        return true;
+    }
+
+    private static bool CanRecoverSwitchPatternCase(IPatternCaseClauseOperation patternCase)
+    {
+        if (ClassifySideEffects(patternCase.Guard) != RazorVueSideEffectClassification.None)
+            return false;
+
+        foreach (var descendant in RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(
+                     patternCase.Pattern,
+                     includeLocalFunctionBodies: false))
+        {
+            switch (descendant)
+            {
+                case IDeclarationPatternOperation { DeclaredSymbol: not null }:
+                case IRecursivePatternOperation { DeclaredSymbol: not null }:
+                case IListPatternOperation { DeclaredSymbol: not null }:
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static string CreateSwitchPatternCaseCondition(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        IPatternCaseClauseOperation patternCase,
+        string switchValueName)
+    {
+        var resolvedComponents = ResolveComponents(context, snapshot, RazorVueRenderFragment.Empty);
+        var expressionEmitter = CreateExpressionEmitter(snapshot, resolvedComponents);
+        return expressionEmitter.EmitSwitchPatternCaseCondition(patternCase, switchValueName);
+    }
+
+    private static ImmutableArray<IOperation> StripTerminalBreak(ImmutableArray<IOperation> operations)
+    {
+        if (operations.IsDefaultOrEmpty)
+            return ImmutableArray<IOperation>.Empty;
+
+        if (Unwrap(operations[operations.Length - 1]) is not IBranchOperation { BranchKind: BranchKind.Break })
+            return default;
+
+        for (var index = 0; index < operations.Length - 1; index++)
+        {
+            if (Unwrap(operations[index]) is IBranchOperation)
+                return default;
+        }
+
+        return operations.RemoveAt(operations.Length - 1);
+    }
+
+    private static bool IsCanonicalSwitchValue(IOperation? operation)
+    {
+        var current = Unwrap(operation);
+        if (current is null)
+            return false;
+
+        if (ClassifySideEffects(current) != RazorVueSideEffectClassification.None)
+            return false;
+
+        return ClassifyTemplateEncodability(current) != RazorVueTemplateEncodability.NotTemplateEncodable &&
+               IsTemplateSafeSwitchValue(current);
+    }
+
+    private static bool IsCanonicalGuardCondition(IOperation? operation)
+    {
+        var current = Unwrap(operation);
+        if (current?.Type?.SpecialType != SpecialType.System_Boolean)
+            return false;
+
+        return IsCanonicalSwitchValue(current);
+    }
+
+    private static bool TryIsBareReturnBranch(IOperation? operation)
+    {
+        var current = Unwrap(operation);
+        if (current is null)
+            return false;
+
+        if (current is IReturnOperation { IsImplicit: false, ReturnedValue: null })
+            return true;
+
+        if (current is not IBlockOperation block)
+            return false;
+
+        var foundReturn = false;
+        foreach (var child in block.Operations)
+        {
+            var unwrapped = Unwrap(child);
+            if (unwrapped is null or IEmptyOperation)
+                continue;
+
+            if (!foundReturn &&
+                unwrapped is IReturnOperation { IsImplicit: false, ReturnedValue: null })
+            {
+                foundReturn = true;
+                continue;
+            }
+
+            return false;
+        }
+
+        return foundReturn;
+    }
+
+    private static bool IsEmptyBranch(IOperation? operation)
+    {
+        var current = Unwrap(operation);
+        if (current is null or IEmptyOperation)
+            return true;
+
+        if (current is IBlockOperation block)
+            return block.Operations.All(IsEmptyBranch);
+
+        return false;
+    }
+
+    private static bool IsStableSwitchCaseValue(IOperation? operation)
+    {
+        var current = Unwrap(operation);
+        if (current is null)
+            return false;
+
+        return TryGetStableTemplateScalarLiteral(current, out var literal) &&
+               ClassifyStableTemplateScalarLiteralKind(literal) is not RazorVueLiteralValueKind.Other;
+    }
+
+    private static string CreateStableLiteralExpressionText(IOperation operation)
+    {
+        if (!TryGetStableTemplateScalarLiteral(operation, out var literal))
+            throw new InvalidOperationException("Expected a stable switch literal.");
+
+        return literal switch
+        {
+            null => "null",
+            string text => "\"" + EscapeJavaScriptStringLiteral(text) + "\"",
+            char ch => "\"" + EscapeJavaScriptStringLiteral(ch.ToString()) + "\"",
+            bool value => value ? "true" : "false",
+            sbyte or byte or short or ushort or int or uint or long or ulong or float or double or decimal =>
+                Convert.ToString(literal, System.Globalization.CultureInfo.InvariantCulture) ?? "0",
+            _ => throw new InvalidOperationException("Unsupported switch literal kind.")
+        };
+    }
+
+    private static string EscapeJavaScriptStringLiteral(string text)
+        => text.Replace("\\", "\\\\")
+            .Replace("\"", "\\\"")
+            .Replace("\r", "\\r")
+            .Replace("\n", "\\n");
+
+    private static bool IsTemplateSafeSwitchValue(IOperation operation)
+    {
+        var current = Unwrap(operation);
+        if (current is null)
+            return false;
+
+        if (TryGetStableTemplateScalarLiteral(current, out _))
+            return true;
+
+        return current switch
+        {
+            IInstanceReferenceOperation => true,
+            ILiteralOperation => true,
+            IDefaultValueOperation => true,
+            INameOfOperation => true,
+            ILocalReferenceOperation => true,
+            IParameterReferenceOperation => true,
+            IFieldReferenceOperation => true,
+            IPropertyReferenceOperation property => property.Arguments.Length == 0 &&
+                                                    !property.Property.IsStatic &&
+                                                    !property.Property.IsIndexer &&
+                                                    (property.Instance is null || IsTemplateSafeSwitchValue(property.Instance)),
+            IUnaryOperation unary => IsTemplateSafeSwitchValue(unary.Operand),
+            IBinaryOperation binary => IsTemplateSafeSwitchValue(binary.LeftOperand) &&
+                                       IsTemplateSafeSwitchValue(binary.RightOperand),
+            IConditionalOperation conditional => conditional.WhenTrue is not null &&
+                                                 conditional.WhenFalse is not null &&
+                                                 IsTemplateSafeSwitchValue(conditional.Condition) &&
+                                                 IsTemplateSafeSwitchValue(conditional.WhenTrue) &&
+                                                 IsTemplateSafeSwitchValue(conditional.WhenFalse),
+            _ => false
+        };
+    }
+
+    private static ImmutableArray<RazorVueSourceOrigin> CreateSwitchSectionOrigins(
+        ISwitchCaseOperation section,
+        RazorVueRenderFragment body)
+    {
+        var origins = body.Children.SelectMany(static child => child.Origins).ToImmutableArray();
+        if (!origins.IsDefaultOrEmpty)
+            return origins;
+
+        return section.Syntax is null
+            ? ImmutableArray<RazorVueSourceOrigin>.Empty
+            : [RazorVueSourceOrigin.FromLocation(section.Syntax.GetLocation(), RazorVueOriginKind.Template)];
+    }
+
+    private static ImmutableArray<RazorVueSourceOrigin> CreateGuardReturnOrigins(
+        IConditionalOperation guard,
+        RazorVueRenderFragment whenTrue,
+        RazorVueRenderFragment whenFalse)
+    {
+        var origins = whenTrue.Children
+            .Concat(whenFalse.Children)
+            .SelectMany(static child => child.Origins)
+            .ToImmutableArray();
+        if (!origins.IsDefaultOrEmpty)
+            return origins;
+
+        return guard.Syntax is null
+            ? ImmutableArray<RazorVueSourceOrigin>.Empty
+            : [RazorVueSourceOrigin.FromLocation(guard.Syntax.GetLocation(), RazorVueOriginKind.Template)];
+    }
+
+    private readonly record struct RecoveredSwitchCondition(
+        string ExpressionText,
+        bool RequiresGrouping);
+
+    private readonly record struct RecoveredSwitchSection(
+        ImmutableArray<RecoveredSwitchCondition> Conditions,
+        bool IsDefault,
+        RazorVueRenderFragment Body,
+        ImmutableArray<RazorVueSourceOrigin> Origins);
 
     private static RazorVueCanonicalComponentNode CreateComponentNode(
         RazorVueSemanticSnapshot snapshot,

@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Immutable;
 using Jazor.RazorVue.Artifacts;
+using Jazor.RazorVue.Extensibility;
+using Jazor.RazorVue.RenderTree;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -38,19 +40,23 @@ internal static class RazorVueRazorSourceGeneratorTailBridge
             generatorDocuments.Add(generatorDocument!);
         }
 
-        var context = RazorVueCompilationContext.TryCreate(compilation);
+        var immutableGeneratorDocuments = generatorDocuments.ToImmutable();
+        var boundCompilation = BindGeneratedRazorSources(compilation, immutableGeneratorDocuments);
+        var context = RazorVueCompilationContext.TryCreate(boundCompilation);
         if (context is null)
         {
             return RazorVueRazorSourceGeneratorTailBridgeResult.Succeed(
                 new RazorVueSfcCatalog(
-                    compilation.AssemblyName ?? "Jazor.Assembly",
+                    boundCompilation.AssemblyName ?? "Jazor.Assembly",
                     ImmutableArray<VueSfcArtifact>.Empty),
                 generatorDocuments.Count);
         }
 
         var pipeline = new RazorVueSfcPipeline(
-            new RazorVueRazorSourceGeneratorSemanticFrontend(generatorDocuments.ToImmutable()),
-            RazorVuePreferredTemplateFrontend.Instance);
+            new RazorVueRazorSourceGeneratorSemanticFrontend(immutableGeneratorDocuments),
+            new RazorVueBaselineFirstTemplateFrontend(
+                BuildRenderTreeTemplateFrontend.Instance,
+                new RazorVueRazorIrTemplateFrontend()));
         return RazorVueRazorSourceGeneratorTailBridgeResult.Succeed(
             pipeline.Execute(context),
             generatorDocuments.Count);
@@ -71,6 +77,40 @@ internal static class RazorVueRazorSourceGeneratorTailBridge
             input.CSharpDocument,
             out document,
             out failure);
+    }
+
+    private static Compilation BindGeneratedRazorSources(
+        Compilation compilation,
+        ImmutableArray<RazorVueRazorSourceGeneratorDocument> documents)
+    {
+        if (documents.IsDefaultOrEmpty)
+            return compilation;
+
+        var parseOptions = compilation.SyntaxTrees
+            .Select(static tree => tree.Options)
+            .OfType<CSharpParseOptions>()
+            .FirstOrDefault();
+        var trees = ImmutableArray.CreateBuilder<SyntaxTree>(documents.Length);
+        var existingTexts = compilation.SyntaxTrees
+            .Select(static tree => tree.GetText())
+            .ToImmutableArray();
+
+        foreach (var document in documents)
+        {
+            if (existingTexts.Any(text => text.ContentEquals(document.CSharpText)))
+                continue;
+
+            trees.Add(CSharpSyntaxTree.ParseText(
+                document.CSharpText,
+                options: parseOptions,
+                path: string.IsNullOrWhiteSpace(document.HintName)
+                    ? document.PrimaryDocument.Path + ".g.cs"
+                    : document.HintName));
+        }
+
+        return trees.Count == 0
+            ? compilation
+            : compilation.AddSyntaxTrees(trees);
     }
 
     private static string? TryReadGeneratedNamespace(object? csharpDocument)

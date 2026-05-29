@@ -1,13 +1,13 @@
 {
-  "rootAssemblyPath": "D:\\repository\\own\\jazor\\Jazor\\.tmp\\sample-out-migrate\\Todo.Host\\bin\\Debug\\net11.0\\Todo.Host.dll",
-  "generatedAtUtc": "2026-05-13T15:04:49.4273808Z",
+  "rootAssemblyPath": "D:\\repository\\own\\jazor\\Jazor\\.tmp\\razorvue-todolist-out\\Todo.Host\\bin\\Debug\\net11.0\\Todo.Host.dll",
+  "generatedAtUtc": "2026-05-28T11:26:50.2932398Z",
   "modules": [
     {
       "assemblyName": "Todo.Library",
       "typeName": "TodoApp",
       "id": "Todo.Library.TodoApp",
       "relativePath": "components/todo-app.vue",
-      "hash": "8D3D00C6C3535B6D8EBA02B416904BB8A2F27A9ED7D3F5080B0A152BFB4054C7",
+      "hash": "385453AB340930995B2B28730883D8D2C134DA7A856F708662E828847FDC4159",
       "sourceMapPath": "components/todo-app.vue.map",
       "kind": "vue",
       "component": {
@@ -15,6 +15,7 @@
         "componentId": "Todo.Library.TodoApp",
         "moduleId": "components/todo-app.vue",
         "componentName": "TodoApp",
+        "routeTemplates": [],
         "originMapPath": "components/todo-app.vue.origins.json",
         "imports": [
           "./todo-summary-card.vue",
@@ -27,11 +28,11 @@
         "pluginRequirements": [
           "vuetify"
         ],
-        "descriptorHash": "CFA06F2B1992F6CC41900EDAEE989F6BAE551E116408F3D08572BBE46E88BA97",
-        "templateHash": "9B32FEEEF5F760A2E22B4024317C35275CA75BCFD98DD1CD3D655C7E3654D931",
-        "logicHash": "E8597831B1442007A501BE095A453F816AFF8AC02105BEABCB56BBB7F85DFF87",
-        "contentHash": "8D3D00C6C3535B6D8EBA02B416904BB8A2F27A9ED7D3F5080B0A152BFB4054C7",
-        "hmrBoundaryKind": 1,
+        "descriptorHash": "1FC0390D39CC525571FE72012031AC0FFC48EF6E66C93C9961F34AED3F69598E",
+        "templateHash": "6D3263AFD0D82AD3CCA74FD12CF483A46E16F715908B4266EA31140858CCDFCE",
+        "logicHash": "9B5A3F2C6943DBB2794784619F68AE11EEE68298B6349AEDA1F995F467A1A592",
+        "contentHash": "385453AB340930995B2B28730883D8D2C134DA7A856F708662E828847FDC4159",
+        "hmrBoundaryKind": 2,
         "requiresHydration": false,
         "supportsSsr": true,
         "styleHash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
@@ -42,7 +43,7 @@
       "typeName": "TodoSummaryCard",
       "id": "Todo.Library.TodoSummaryCard",
       "relativePath": "components/todo-summary-card.vue",
-      "hash": "1D423EAC7511F42D882857FE0FC749928F254BD5E2A5C55FFFC645867CE0300D",
+      "hash": "F7F5F1E3AC32297CDD907777350830647A577F1238118D4C1FC1FA7AC5F63766",
       "sourceMapPath": "components/todo-summary-card.vue.map",
       "kind": "vue",
       "component": {
@@ -50,6 +51,7 @@
         "componentId": "Todo.Library.TodoSummaryCard",
         "moduleId": "components/todo-summary-card.vue",
         "componentName": "TodoSummaryCard",
+        "routeTemplates": [],
         "originMapPath": "components/todo-summary-card.vue.origins.json",
         "imports": [
           "vue",
@@ -61,10 +63,10 @@
         "pluginRequirements": [
           "vuetify"
         ],
-        "descriptorHash": "70F8B3CCA999CA2D23DCF0ADDEA7DCA37AC80FBFF9E44271D795D09CCDAE2F89",
+        "descriptorHash": "F2D37B547658B270BC3CED28168B2AE3A8289C8C9C0A7C7AF01963E0A90CC602",
         "templateHash": "2000C0BD686EEF613BF6637F0529A89F31EC97CE3B5FC0B14D614C3969256252",
-        "logicHash": "AEA6674229E008F38FC9B1944A42A61A63EDC2C7610055084D5F12E5025E4CF0",
-        "contentHash": "1D423EAC7511F42D882857FE0FC749928F254BD5E2A5C55FFFC645867CE0300D",
+        "logicHash": "8867B838A5E1428F1FFD0A36A1B9F298E8F4D2CE43068EE3ACE3EA3047ACAB2D",
+        "contentHash": "F7F5F1E3AC32297CDD907777350830647A577F1238118D4C1FC1FA7AC5F63766",
         "hmrBoundaryKind": 1,
         "requiresHydration": false,
         "supportsSsr": true,
@@ -86,7 +88,7 @@
       "typeName": "Jazor.CLR.ArrayModule\u003CT\u003E",
       "id": "Jazor.CLR.ArrayModule\u003CT\u003E",
       "relativePath": "System/ArrayModule.js",
-      "hash": "bb10f98907480eb260c888c8351367532cabcaf3a3daff006a8fd05633f23868",
+      "hash": "365f49883c1f8dcc086e108ee30f824db17ae1922626a0bc812e88bdb8daad2c",
       "kind": "mjs"
     },
     {
@@ -118,7 +120,7 @@
       "typeName": "Jazor.CLR.ComparerT1Module\u003CT\u003E",
       "id": "Jazor.CLR.ComparerT1Module\u003CT\u003E",
       "relativePath": "System/Collections/Generic/ComparerT1Module.js",
-      "hash": "e2a9db4eb389aa75ec9c17208f91b683225b93750f69d94c4b4e9b4c4cbf0ffe",
+      "hash": "ef4efca6a64b78005e75208481045a1f017b0361a81dc172f9dbd176e909eb60",
       "kind": "mjs"
     },
     {
@@ -126,7 +128,7 @@
       "typeName": "Jazor.CLR.DictionaryT2Module\u003CTKey, TValue\u003E",
       "id": "Jazor.CLR.DictionaryT2Module\u003CTKey, TValue\u003E",
       "relativePath": "System/Collections/Generic/DictionaryT2Module.js",
-      "hash": "b94ea6d6291f70cad63408037b6eb5584e856f47b4c962c182dd524db71739fd",
+      "hash": "f1c0a32206057b461861ffee9722e99f814ca22b8dea8720a03026969eaf247a",
       "kind": "mjs"
     },
     {
@@ -134,7 +136,7 @@
       "typeName": "Jazor.CLR.EqualityComparerT1Module\u003CT\u003E",
       "id": "Jazor.CLR.EqualityComparerT1Module\u003CT\u003E",
       "relativePath": "System/Collections/Generic/EqualityComparerT1Module.js",
-      "hash": "620b19cec43b4afc049178d2a72b4f0f6e52889ba839ce215fdeda30d277bb90",
+      "hash": "da1ae1e8e70894be35ff5f2729589abcc40cebc4e733167a7313570fe27d5bad",
       "kind": "mjs"
     },
     {
@@ -142,7 +144,7 @@
       "typeName": "Jazor.CLR.HashSetT1Module\u003CT\u003E",
       "id": "Jazor.CLR.HashSetT1Module\u003CT\u003E",
       "relativePath": "System/Collections/Generic/HashSetT1Module.js",
-      "hash": "725ead551c51545f01e6ca2663f86073e4cc9f0ca95e850eb4ae603e54bc34f0",
+      "hash": "2f95bca9e5a558b12ec26219b8f9449a305d5360dc99d1f5e7a5345e197f4e5c",
       "kind": "mjs"
     },
     {
@@ -150,7 +152,7 @@
       "typeName": "Jazor.CLR.ICollectionT1Module\u003CT\u003E",
       "id": "Jazor.CLR.ICollectionT1Module\u003CT\u003E",
       "relativePath": "System/Collections/Generic/ICollectionT1Module.js",
-      "hash": "f668e6326a8a9a0c8e9a13ab7a4448843edaaeb3cf5474b64dfccd41a775329d",
+      "hash": "330c4011ea42e7127a33d0c6b893a187f031ce8316b2b7031995a95d9d46d715",
       "kind": "mjs"
     },
     {
@@ -166,7 +168,7 @@
       "typeName": "Jazor.CLR.IDictionaryT2Module\u003CTKey, TValue\u003E",
       "id": "Jazor.CLR.IDictionaryT2Module\u003CTKey, TValue\u003E",
       "relativePath": "System/Collections/Generic/IDictionaryT2Module.js",
-      "hash": "904f11876f07ee66e060560901257db36aa5fb107d9c13775b10a335d321081d",
+      "hash": "351216f308cb18ae6f90f33101412534ecd634cbb971fa616377160d523ef623",
       "kind": "mjs"
     },
     {
@@ -182,7 +184,15 @@
       "typeName": "Jazor.CLR.IListT1Module\u003CT\u003E",
       "id": "Jazor.CLR.IListT1Module\u003CT\u003E",
       "relativePath": "System/Collections/Generic/IListT1Module.js",
-      "hash": "25e5c5764ad05f39d632b047ebbd9c50f826d457e2e1587cfe38dac61b3bb212",
+      "hash": "40152447262e79e7c03f5b008ae6019ef7d72507152319f148909c81950a8247",
+      "kind": "mjs"
+    },
+    {
+      "assemblyName": "ECMAScript",
+      "typeName": "Jazor.CLR.IReadOnlyListT1Module\u003CT\u003E",
+      "id": "Jazor.CLR.IReadOnlyListT1Module\u003CT\u003E",
+      "relativePath": "System/Collections/Generic/IReadOnlyListT1Module.js",
+      "hash": "5ecdafa6981019ba6e2603950ed771837c1b46d35d7a1eb4e89120dc167fad32",
       "kind": "mjs"
     },
     {
@@ -190,7 +200,7 @@
       "typeName": "Jazor.CLR.ISetT1Module\u003CT\u003E",
       "id": "Jazor.CLR.ISetT1Module\u003CT\u003E",
       "relativePath": "System/Collections/Generic/ISetT1Module.js",
-      "hash": "fd94050d7e6706869d10e496e0d40f3661f1b87ec169efcc3451bd155e8ebc8d",
+      "hash": "822aabd087a064a56a79435bb09fbbee61d4cd9de10182bc6cfae3fd4f8fea35",
       "kind": "mjs"
     },
     {
@@ -198,7 +208,7 @@
       "typeName": "Jazor.CLR.ListT1Module\u003CT\u003E",
       "id": "Jazor.CLR.ListT1Module\u003CT\u003E",
       "relativePath": "System/Collections/Generic/ListT1Module.js",
-      "hash": "5e864c9960b07d7b8f897bbd2c110b4b973c08164e71c98d1ad48194821abb1f",
+      "hash": "a696ab18ba897635dfde12f668f4c6e7430d0db68e74e976a411e762eddeed53",
       "kind": "mjs"
     },
     {
@@ -222,7 +232,7 @@
       "typeName": "Jazor.CLR.ICollectionModule",
       "id": "Jazor.CLR.ICollectionModule",
       "relativePath": "System/Collections/ICollectionModule.js",
-      "hash": "5e9a0f8c0d29f74a5b8e74d27f76e9cdcf48b6366ccbea7cf958cb7691472a01",
+      "hash": "d00c3d85e7c0af7ef99b9aa55782146cb59e2e883e396efa35d293711fe59128",
       "kind": "mjs"
     },
     {
@@ -246,7 +256,7 @@
       "typeName": "Jazor.CLR.IListModule",
       "id": "Jazor.CLR.IListModule",
       "relativePath": "System/Collections/IListModule.js",
-      "hash": "83e9fd73bc990620807609adb2c1ae1bfbf6e514dd09385dcd96f880545de65e",
+      "hash": "abbe957131087029a38ae7fa54597b1b376c343a3e751d643f88c75539a60c7d",
       "kind": "mjs"
     },
     {
@@ -254,7 +264,7 @@
       "typeName": "Jazor.CLR.ReadOnlyCollectionT1Module\u003CT\u003E",
       "id": "Jazor.CLR.ReadOnlyCollectionT1Module\u003CT\u003E",
       "relativePath": "System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js",
-      "hash": "2b116f58e837b45eb43b18892b9f5e2faf37b0972153de040bb989ea0c473f8a",
+      "hash": "fba23f56b6d4a77f46b0734af36b7d9645b111db88a80b830fb7b1bbdabc32cd",
       "kind": "mjs"
     },
     {
@@ -262,7 +272,7 @@
       "typeName": "Jazor.CLR.ReadOnlyDictionaryT2Module\u003CTKey, TValue\u003E",
       "id": "Jazor.CLR.ReadOnlyDictionaryT2Module\u003CTKey, TValue\u003E",
       "relativePath": "System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js",
-      "hash": "ac16d5e30dc4b719cf433410e06261e3c2b280902580451225ce0f967c56dbce",
+      "hash": "4f11e519dd337f0a6743ec56aea36c16f937653a2ef8269b84cba32840ab0c80",
       "kind": "mjs"
     },
     {
@@ -339,10 +349,18 @@
     },
     {
       "assemblyName": "ECMAScript",
+      "typeName": "Jazor.CLR.IAsyncDisposableModule",
+      "id": "Jazor.CLR.IAsyncDisposableModule",
+      "relativePath": "System/IAsyncDisposableModule.js",
+      "hash": "6bae9bb00b962a15aa702a40bab4428ea67e360c12091d0f76257df89800652b",
+      "kind": "mjs"
+    },
+    {
+      "assemblyName": "ECMAScript",
       "typeName": "Jazor.CLR.IComparableModule",
       "id": "Jazor.CLR.IComparableModule",
       "relativePath": "System/IComparableModule.js",
-      "hash": "56aa8130d9284872024c831ded9c75d62e1d49c33aacded8ccca8a9514f0e58c",
+      "hash": "32a9beb1b4f0367285efbab4a31e35d48b2728dcddb769fa5bd5705ec48cbd6a",
       "kind": "mjs"
     },
     {
@@ -350,7 +368,15 @@
       "typeName": "Jazor.CLR.IComparableT1Module\u003CT\u003E",
       "id": "Jazor.CLR.IComparableT1Module\u003CT\u003E",
       "relativePath": "System/IComparableT1Module.js",
-      "hash": "b2fe96dfecc0f585bd6e827d7c63303174d4d707d1082ba7be2a9e89a629112d",
+      "hash": "b9fd61b24712a863a4debbf819d5ef313225fa2d0d20f5f30f0cbc3138e4063c",
+      "kind": "mjs"
+    },
+    {
+      "assemblyName": "ECMAScript",
+      "typeName": "Jazor.CLR.IDisposableModule",
+      "id": "Jazor.CLR.IDisposableModule",
+      "relativePath": "System/IDisposableModule.js",
+      "hash": "73f2e1d3784c4dd84be5a2c3eff103772797bb1a4d9a99b7f3f6a2974105bee1",
       "kind": "mjs"
     },
     {
@@ -398,7 +424,7 @@
       "typeName": "Jazor.CLR.BigIntegerModule",
       "id": "Jazor.CLR.BigIntegerModule",
       "relativePath": "System/Numerics/BigIntegerModule.js",
-      "hash": "021f1955d8639cd26934829db724c09319ae9c7763a079493719a7102955b419",
+      "hash": "174156b45048cc5ee7c9c367d0fa21e1b3ef534e9a2b91d658976f0a80333d55",
       "kind": "mjs"
     },
     {
@@ -414,7 +440,7 @@
       "typeName": "Jazor.CLR.RuntimeModule",
       "id": "Jazor.CLR.RuntimeModule",
       "relativePath": "System/RuntimeModule.js",
-      "hash": "0b42e2f4326cb2b2a054d2cb5f3ba1c5edb62fa16916f3eb78ed2c305bd72025",
+      "hash": "50744fa3c7b6b56b0abbe99532aa6e711a8ae26e49582638ecbf56b55e0077f8",
       "kind": "mjs"
     },
     {
@@ -438,7 +464,7 @@
       "typeName": "Jazor.CLR.StringModule",
       "id": "Jazor.CLR.StringModule",
       "relativePath": "System/StringModule.js",
-      "hash": "03083aca2a1266d64f37b8a2414c4c02751067650700ca2ae16b61b53aa92fb5",
+      "hash": "a9fc7fd976682307c0e8f151f62abb34fce7ae5ae4a910339b0ab2b5979919f5",
       "kind": "mjs"
     },
     {

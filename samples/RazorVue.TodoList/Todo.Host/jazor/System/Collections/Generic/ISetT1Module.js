@@ -1,7 +1,7 @@
 import { _e1d2ba750a2788cb, exceptWithCore, intersectWithCore, isProperSubsetOfCore, isProperSupersetOfCore, isSubsetOfCore, isSupersetOfCore, overlapsCore, setEqualsCore, symmetricExceptWithCore, unionWithCore } from "System/Collections/Generic/HashSetT1Module.js";
 import { isReadOnlySetCarrier } from "System/RuntimeModule.js";
 function ensureWritable(instance) {
-  if (instance === null)
+  if (instance == null)
     throw new Error("NullReferenceException: instance is null.");
   if (isReadOnlySetCarrier(instance))
     throw new Error("NotSupportedException: Collection is read-only.");

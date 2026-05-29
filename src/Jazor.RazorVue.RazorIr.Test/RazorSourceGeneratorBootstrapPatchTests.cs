@@ -69,32 +69,12 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
             Assert.IsFalse(string.IsNullOrWhiteSpace(generatedTracePath), "The bootstrap host-output hook did not emit the trace generated source.");
             var generatedTrace = File.ReadAllText(generatedTracePath!);
             StringAssert.Contains(generatedTrace, "internal const bool CurrentContextKeyAvailable = true;");
-            if (IsRuntimeDetourSupported())
-            {
-                StringAssert.Contains(generatedTrace, "internal const bool HostOutputHookInstalled = true;");
-                StringAssert.Contains(generatedTrace, "internal const bool HostOutputObserved = true;");
-                StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegistered = true;");
-                StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegisteredForCurrentContext = true;");
-                StringAssert.Contains(generatedTrace, "internal const string TailOutputRegistrationKind = \"implementation-source-output\";");
-                StringAssert.Contains(generatedTrace, "internal const bool PatchFailed = false;");
-            }
-            else
-            {
-                StringAssert.Contains(generatedTrace, "internal const bool HostOutputHookInstalled = false;");
-                StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegistered = false;");
-                StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegisteredForCurrentContext = false;");
-                StringAssert.Contains(generatedTrace, "internal const bool PatchFailed = true;");
-                StringAssert.Contains(generatedTrace, RazorSourceGeneratorFallbackOutput.FallbackRequiredFailureMarker);
-
-                var generatedFallbackTracePath = Directory
-                    .EnumerateFiles(generatedRoot, "Jazor.RazorVue.RazorSgFallbackTrace.g.cs", SearchOption.AllDirectories)
-                    .FirstOrDefault();
-                Assert.IsFalse(string.IsNullOrWhiteSpace(generatedFallbackTracePath), "The RazorVue fallback output did not emit its test trace.");
-                var generatedFallbackTrace = File.ReadAllText(generatedFallbackTracePath!);
-                TestContext.WriteLine("Fallback trace:");
-                TestContext.WriteLine(generatedFallbackTrace);
-                StringAssert.Contains(generatedFallbackTrace, "internal const string State = \"fallback-collected\";");
-            }
+            StringAssert.Contains(generatedTrace, "internal const bool HostOutputHookInstalled = true;");
+            StringAssert.Contains(generatedTrace, "internal const bool HostOutputObserved = true;");
+            StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegistered = true;");
+            StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegisteredForCurrentContext = true;");
+            StringAssert.Contains(generatedTrace, "internal const string TailOutputRegistrationKind = \"implementation-source-output\";");
+            StringAssert.Contains(generatedTrace, "internal const bool PatchFailed = false;");
 
             var generatedTailTracePath = Directory
                 .EnumerateFiles(generatedRoot, "Jazor.RazorVue.RazorSgTailTrace.g.cs", SearchOption.AllDirectories)
@@ -176,28 +156,12 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
             Assert.IsFalse(string.IsNullOrWhiteSpace(generatedTracePath), "The bootstrap trace source was not emitted.");
             var generatedTrace = File.ReadAllText(generatedTracePath!);
             StringAssert.Contains(generatedTrace, "internal const bool CurrentContextKeyAvailable = true;");
-            if (IsRuntimeDetourSupported())
-            {
-                StringAssert.Contains(generatedTrace, "internal const bool HostOutputHookInstalled = true;");
-                StringAssert.Contains(generatedTrace, "internal const bool HostOutputObserved = true;");
-                StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegistered = true;");
-                StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegisteredForCurrentContext = true;");
-                StringAssert.Contains(generatedTrace, "internal const string TailOutputRegistrationKind = \"implementation-source-output\";");
-                StringAssert.Contains(generatedTrace, "internal const bool PatchFailed = false;");
-            }
-            else
-            {
-                StringAssert.Contains(generatedTrace, "internal const bool HostOutputHookInstalled = false;");
-                StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegistered = false;");
-                StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegisteredForCurrentContext = false;");
-                StringAssert.Contains(generatedTrace, "internal const bool PatchFailed = true;");
-                StringAssert.Contains(generatedTrace, RazorSourceGeneratorFallbackOutput.FallbackRequiredFailureMarker);
-
-                var generatedFallbackTracePath = Directory
-                    .EnumerateFiles(generatedRoot, "Jazor.RazorVue.RazorSgFallbackTrace.g.cs", SearchOption.AllDirectories)
-                    .FirstOrDefault();
-                Assert.IsTrue(string.IsNullOrWhiteSpace(generatedFallbackTracePath), "Disabling RazorVue integration must not emit fallback tail output.");
-            }
+            StringAssert.Contains(generatedTrace, "internal const bool HostOutputHookInstalled = true;");
+            StringAssert.Contains(generatedTrace, "internal const bool HostOutputObserved = true;");
+            StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegistered = true;");
+            StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegisteredForCurrentContext = true;");
+            StringAssert.Contains(generatedTrace, "internal const string TailOutputRegistrationKind = \"implementation-source-output\";");
+            StringAssert.Contains(generatedTrace, "internal const bool PatchFailed = false;");
         }
         finally
         {
@@ -313,10 +277,20 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
             "The official Razor source generator output was not found.");
     }
 
-    public TestContext TestContext { get; set; } = default!;
+    private static void AssertNoExternalGeneratedSource(string generatedRoot, string searchPattern)
+    {
+        if (!Directory.Exists(generatedRoot))
+            return;
 
-    private static bool IsRuntimeDetourSupported()
-        => (typeof(object).Assembly.GetName().Version?.Major ?? 0) <= 10;
+        var generatedPath = Directory
+            .EnumerateFiles(generatedRoot, searchPattern, SearchOption.AllDirectories)
+            .FirstOrDefault();
+        Assert.IsTrue(
+            string.IsNullOrWhiteSpace(generatedPath),
+            "Generated source '" + searchPattern + "' was not expected: " + generatedPath);
+    }
+
+    public TestContext TestContext { get; set; } = default!;
 
     private static void WriteProjectFiles(
         string projectDirectory,
@@ -430,7 +404,6 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
             "ECMAScript.Vue3.dll",
             "Acornima.dll",
             "Acornima.Extras.dll",
-            "0Harmony.dll",
         };
 
         foreach (var payloadFile in payloadFiles)

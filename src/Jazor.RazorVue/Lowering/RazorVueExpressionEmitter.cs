@@ -176,6 +176,27 @@ internal sealed partial class RazorVueExpressionEmitter
     internal string EmitTemplateExpression(IOperation operation)
         => EmitExpression(operation);
 
+    internal string EmitSwitchPatternCaseCondition(
+        IPatternCaseClauseOperation operation,
+        string patternInputExpression)
+    {
+        if (operation is null)
+            throw new ArgumentNullException(nameof(operation));
+        if (string.IsNullOrWhiteSpace(patternInputExpression))
+            throw new ArgumentException("A switch pattern case condition requires a pattern input expression.", nameof(patternInputExpression));
+
+        var patternInput = ParseJavaScriptExpression(patternInputExpression);
+        var argument = _compilerArgument.WithPatternInput(patternInput);
+        var node = _semanticWalker.Visit(operation, argument);
+        if (node is not Expression expression)
+        {
+            throw new NotSupportedException(
+                $"RazorVue switch pattern case lowering expected an expression but received '{node?.Type.ToString() ?? "<null>"}'.");
+        }
+
+        return MaterializeCompilerExpression(expression, argument);
+    }
+
     private OptionalJsArgument EmitFragmentArgument(RazorVueRenderFragment fragment)
     {
         return EmitFragmentArgument(fragment, EmptyLocalScope, EmptyParameterScope);
@@ -706,6 +727,14 @@ internal sealed partial class RazorVueExpressionEmitter
                     yield return childOrigin;
                 break;
             case RazorVueConditionalNode conditional:
+                foreach (var childOrigin in CollectOrigins(conditional.WhenTrue))
+                    yield return childOrigin;
+                foreach (var childOrigin in CollectOrigins(conditional.WhenFalse))
+                    yield return childOrigin;
+                break;
+            case RazorVueRecoveredSwitchConditionalNode conditional:
+                foreach (var origin in conditional.Origins)
+                    yield return origin;
                 foreach (var childOrigin in CollectOrigins(conditional.WhenTrue))
                     yield return childOrigin;
                 foreach (var childOrigin in CollectOrigins(conditional.WhenFalse))

@@ -15,7 +15,7 @@ using static Jazor.RazorVue.RazorVueOperationNormalizer;
 
 namespace Jazor.RazorVue.RazorSdk;
 
-internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFrontend
+internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFrontend, IRazorVueRenderEnhancement
 {
     public string Name => "Jazor.RazorVue.RazorSdk.RazorVueRazorIrTemplateFrontend";
 
@@ -35,6 +35,41 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         }
 
         return renderTree;
+    }
+
+    public bool TryEnhanceRenderTree(
+        Jazor.RazorVue.RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueRenderFragment baselineRenderTree,
+        out RazorVueRenderFragment enhancedRenderTree)
+    {
+        if (context is null)
+            throw new ArgumentNullException(nameof(context));
+        if (snapshot is null)
+            throw new ArgumentNullException(nameof(snapshot));
+        if (baselineRenderTree is null)
+            throw new ArgumentNullException(nameof(baselineRenderTree));
+
+        enhancedRenderTree = baselineRenderTree;
+        RazorVueRenderFragment razorIrRenderTree;
+        try
+        {
+            if (!TryCreateRenderTree(context, snapshot, out razorIrRenderTree))
+                return false;
+        }
+        catch (RazorVueCompilationIssueException)
+        {
+            return false;
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
+
+        return RazorVueRazorIrRenderEnhancer.TryEnhance(
+            baselineRenderTree,
+            razorIrRenderTree,
+            out enhancedRenderTree);
     }
 
     internal bool TryCreateRenderTree(
@@ -459,6 +494,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 if (!RazorVueImperativeRenderPromotionAnalyzer.ShouldPromoteBody(block.Operations))
                     return false;
 
+                ThrowIfComponentTypeCarrierUsedAsRuntimeValue(
+                    block.Operations,
+                    GetBestSourceSpan(nodes.FirstOrDefault()));
                 fragment = CreateImperativeBodyFragment(
                     block.Operations,
                     RazorVueImperativeRenderPromotionAnalyzer.ClassifyBodyKind(block.Operations),
@@ -469,6 +507,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             if (!RazorVueImperativeRenderPromotionAnalyzer.ShouldPromoteBody([bodyOperation]))
                 return false;
 
+            ThrowIfComponentTypeCarrierUsedAsRuntimeValue(
+                [bodyOperation],
+                GetBestSourceSpan(nodes.FirstOrDefault()));
             fragment = CreateImperativeBodyFragment(
                 [bodyOperation],
                 RazorVueImperativeRenderPromotionAnalyzer.ClassifyBodyKind([bodyOperation]),
@@ -517,6 +558,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     .Skip(segmentStartIndex)
                     .Take(segmentEndExclusive - segmentStartIndex)
                     .ToArray();
+                ThrowIfComponentTypeCarrierUsedAsRuntimeValue(
+                    segmentOperations,
+                    GetBestSourceSpan(coveredNodes.FirstOrDefault()));
 
                 var imperativeNode = CreateImperativeBlockNode(
                     segmentOperations,
@@ -986,6 +1030,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         {
             var sourceSpan = GetRequiredSourceSpan(node, "CSharpExpressionIntermediateNode");
             var operation = _resolver.ResolveRequiredOperation(sourceSpan, "Razor IR body expression");
+            ThrowIfComponentTypeCarrierUsedAsRuntimeValue(operation, sourceSpan);
             return new RazorVueExpressionNode(operation, CreateOrigins(sourceSpan));
         }
 
@@ -1062,6 +1107,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 node,
                 builderMethodName: "AddAttribute",
                 builderAttributeOrdinal: GetNextElementAttributeOrdinal(attributeName));
+            ThrowIfComponentTypeCarrierUsedAsRuntimeValue(value, node.Source ?? GetBestSourceSpan(node));
             return new RazorVueAttributeNode(
                 attributeName,
                 value,
@@ -1080,6 +1126,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     ?? throw CreateUnsupportedAttributeException(
                         node.Source,
                         $"RazorVue Razor IR frontend requires an expression value for '@attributes' in component '{_snapshot.Descriptor.FullName}'.");
+                ThrowIfComponentTypeCarrierUsedAsRuntimeValue(value, node.Source ?? GetBestSourceSpan(node));
                 attributes.Add(new RazorVueAttributeSpreadNode(
                     value,
                     ImmutableArray<RazorVueCapturedValueBinding>.Empty,
@@ -1145,6 +1192,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 builderMethodName: null,
                 builderAttributeOrdinal: -1)
                 ?? CreateLiteralBoolOperation(true);
+            ThrowIfComponentTypeCarrierUsedAsRuntimeValue(value, node.Source ?? GetBestSourceSpan(node));
             origins = CreateOrigins(node.Source);
             modifierBinding = new RazorVueEventModifierBinding(
                 value,
@@ -1423,6 +1471,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 node,
                 builderMethodName: "AddComponentParameter",
                 builderAttributeOrdinal: GetNextComponentAttributeOrdinal(attributeName));
+            ThrowIfComponentTypeCarrierUsedAsRuntimeValue(value, node.Source ?? GetBestSourceSpan(node));
             return new RazorVueAttributeNode(
                 attributeName,
                 value,
@@ -1434,6 +1483,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         {
             var sourceSpan = GetRequiredSourceSpan(node, "SplatIntermediateNode");
             var operation = _resolver.ResolveRequiredOperation(sourceSpan, "Razor IR splat attribute");
+            ThrowIfComponentTypeCarrierUsedAsRuntimeValue(operation, sourceSpan);
             return new RazorVueAttributeSpreadNode(
                 operation,
                 ImmutableArray<RazorVueCapturedValueBinding>.Empty,
@@ -1838,7 +1888,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 throw CreateUnsupportedNodeException(first, detail);
         }
 
-        private RazorVueNodeKey? ResolveSetKeyValue(ImmutableArray<RazorVueRazorIrNode> setKeys)
+        private RazorVueNodeKey? ResolveSetKeyValue(
+            ImmutableArray<RazorVueRazorIrNode> setKeys,
+            bool isComponent)
         {
             if (setKeys.IsDefaultOrEmpty)
                 return null;
@@ -1854,6 +1906,14 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             var sourceSpan = GetBestSourceSpan(setKeyNode) ??
                              TryGetBestSourceSpan(setKeyNode.Children.FirstOrDefault()) ??
                              throw new InvalidOperationException("The Razor IR node 'SetKeyIntermediateNode' did not expose a source span.");
+            var sourceExpression = TryResolveSourceKeyOperation(setKeyNode, isComponent);
+            if (sourceExpression is not null)
+            {
+                return new RazorVueNodeKey(
+                    sourceExpression,
+                    ImmutableArray<RazorVueCapturedValueBinding>.Empty,
+                    CreateOrigins(sourceSpan));
+            }
 
             if (setKeyNode.Children.Length == 1)
             {
@@ -1871,10 +1931,13 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                         child,
                         sourceSpan,
                         setKeyNode),
-                    RazorVueRazorIrNodeKind.HtmlContent => CreateLiteralStringOperation(ResolveLiteralText(child)),
-                    RazorVueRazorIrNodeKind.IntermediateToken => CreateLiteralStringOperation(ResolveLiteralText(child)),
+                    RazorVueRazorIrNodeKind.HtmlContent => ResolveKeyLiteralOrExpressionOperation(ResolveLiteralText(child)),
+                    RazorVueRazorIrNodeKind.IntermediateToken => ResolveKeyLiteralOrExpressionOperation(ResolveLiteralText(child)),
                     _ => _resolver.ResolveRequiredOperation(sourceSpan, "Razor IR @key expression")
                 };
+                ThrowIfComponentTypeCarrierUsedAsRuntimeValue(
+                    expression,
+                    GetBestSourceSpan(child) ?? sourceSpan);
 
                 return new RazorVueNodeKey(
                     expression,
@@ -1883,7 +1946,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             }
 
             return new RazorVueNodeKey(
-                    _resolver.ResolveRequiredOperation(sourceSpan, "Razor IR @key expression"),
+                    ResolveAndValidateKeyExpression(sourceSpan),
                     ImmutableArray<RazorVueCapturedValueBinding>.Empty,
                     CreateOrigins(sourceSpan));
         }
@@ -1899,7 +1962,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             ImmutableArray<RazorVueRazorIrNode> attributes,
             bool isComponent)
         {
-            var keyFromSetKey = ResolveSetKeyValue(setKeys);
+            var keyFromSetKey = ResolveSetKeyValue(setKeys, isComponent);
             if (keyFromSetKey is not null)
                 return keyFromSetKey;
 
@@ -1921,6 +1984,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                         ?? throw CreateUnsupportedAttributeException(
                             sourceSpan,
                             $"RazorVue Razor IR frontend requires an expression or literal value for '@key' in component '{_snapshot.Descriptor.FullName}'.");
+            ThrowIfComponentTypeCarrierUsedAsRuntimeValue(value, sourceSpan);
 
             return new RazorVueNodeKey(
                 value,
@@ -1938,7 +2002,34 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             if (mappedOperation is not null)
                 return mappedOperation;
 
+            if (attribute.Children.Length == 1 &&
+                attribute.Children[0] is { } child &&
+                (child.Kind == RazorVueRazorIrNodeKind.HtmlContent ||
+                 (child.Kind == RazorVueRazorIrNodeKind.IntermediateToken && !IsCSharpIntermediateToken(child))))
+            {
+                return ResolveKeyLiteralOrExpressionOperation(ResolveLiteralText(child));
+            }
+
             return ResolveAttributeValue("@key", attribute.Children, attribute.Source, attribute);
+        }
+
+        private IOperation ResolveKeyLiteralOrExpressionOperation(string text)
+        {
+            var expressionText = text.Trim();
+            if (IsQuotedStringLiteral(expressionText))
+            {
+                expressionText = UnquoteStringLiteral(expressionText).Trim();
+                if (IsQuotedStringLiteral(expressionText))
+                    return CreateLiteralStringOperation(UnquoteStringLiteral(expressionText));
+            }
+
+            if (_resolver.TryResolveComponentExpression(expressionText, out var operation))
+                return operation;
+
+            if (IsQuotedStringLiteral(expressionText))
+                return CreateLiteralStringOperation(UnquoteStringLiteral(expressionText));
+
+            return CreateLiteralStringOperation(expressionText);
         }
 
         private IOperation? TryResolveMappedKeyOperation(RazorVueRazorIrNode attribute)
@@ -1974,7 +2065,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             if (!TryExtractKeyExpressionText(sourceText, out var expressionText, out var isStringLiteral))
                 return null;
 
-            if (isStringLiteral)
+            if (IsSingleQuotedStringLiteral(expressionText))
                 return CreateLiteralStringOperation(UnquoteStringLiteral(expressionText));
 
             if (_resolver.TryResolveRewrittenSourceExpression(expressionText, sourceSpan, out var rewrittenOperation))
@@ -1994,7 +2085,20 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             if (_resolver.TryResolveGeneratedExpression(expressionText, sourceSpan, out var generatedOperation))
                 return generatedOperation;
 
+            if (isStringLiteral)
+                return CreateLiteralStringOperation(UnquoteStringLiteral(expressionText));
+
+            if (_resolver.TryResolveComponentExpression(expressionText, out var componentOperation))
+                return componentOperation;
+
             return null;
+        }
+
+        private IOperation ResolveAndValidateKeyExpression(RazorVueRazorSourceSpan sourceSpan)
+        {
+            var operation = _resolver.ResolveRequiredOperation(sourceSpan, "Razor IR @key expression");
+            ThrowIfComponentTypeCarrierUsedAsRuntimeValue(operation, sourceSpan);
+            return operation;
         }
 
         private bool TryReadSourceSpanText(RazorVueRazorSourceSpan sourceSpan, out string text)
@@ -2026,18 +2130,16 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             expressionText = string.Empty;
             isStringLiteral = false;
 
-            var equalsIndex = sourceText.IndexOf('=');
+            var keyIndex = sourceText.IndexOf("@key", StringComparison.Ordinal);
+            var valueStart = keyIndex < 0
+                ? 0
+                : keyIndex + "@key".Length;
+            var equalsIndex = sourceText.IndexOf('=', valueStart);
             var valueText = equalsIndex < 0
-                ? sourceText.Trim()
-                : sourceText.Substring(equalsIndex + 1).Trim();
+                ? sourceText.Substring(valueStart).Trim()
+                : ExtractAttributeValueText(sourceText, equalsIndex + 1);
             if (valueText.Length == 0)
                 return false;
-
-            if ((valueText[0] == '"' && valueText[valueText.Length - 1] == '"') ||
-                (valueText[0] == '\'' && valueText[valueText.Length - 1] == '\''))
-            {
-                valueText = valueText.Substring(1, valueText.Length - 2);
-            }
 
             valueText = valueText.Trim();
             if (valueText.Length == 0)
@@ -2048,10 +2150,45 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return true;
         }
 
+        private static string ExtractAttributeValueText(string sourceText, int startIndex)
+        {
+            var index = startIndex;
+            while (index < sourceText.Length && char.IsWhiteSpace(sourceText[index]))
+                index++;
+
+            if (index >= sourceText.Length)
+                return string.Empty;
+
+            var quote = sourceText[index];
+            if (quote == '"' || quote == '\'')
+            {
+                var end = sourceText.IndexOf(quote, index + 1);
+                return end < 0
+                    ? sourceText.Substring(index + 1).Trim()
+                    : sourceText.Substring(index + 1, end - index - 1).Trim();
+            }
+
+            var valueEnd = index;
+            while (valueEnd < sourceText.Length &&
+                   !char.IsWhiteSpace(sourceText[valueEnd]) &&
+                   sourceText[valueEnd] != '>' &&
+                   sourceText[valueEnd] != '/')
+            {
+                valueEnd++;
+            }
+
+            return sourceText.Substring(index, valueEnd - index).Trim();
+        }
+
         private static bool IsQuotedStringLiteral(string text)
             => text.Length >= 2 &&
                ((text[0] == '"' && text[text.Length - 1] == '"') ||
                 (text[0] == '\'' && text[text.Length - 1] == '\''));
+
+        private static bool IsSingleQuotedStringLiteral(string text)
+            => text.Length >= 2 &&
+               text[0] == '\'' &&
+               text[text.Length - 1] == '\'';
 
         private static string UnquoteStringLiteral(string text)
             => IsQuotedStringLiteral(text)
@@ -2061,8 +2198,33 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         private static RazorVueRazorSourceSpan? TryGetBestSourceSpan(RazorVueRazorIrNode? node)
             => node is null ? null : GetBestSourceSpan(node);
 
-        private static bool IsKeyAttribute(RazorVueRazorIrNode attribute)
-            => string.Equals(attribute.AttributeName, "@key", StringComparison.Ordinal);
+        private bool IsKeyAttribute(RazorVueRazorIrNode attribute)
+        {
+            if (string.Equals(attribute.AttributeName, "@key", StringComparison.Ordinal))
+                return true;
+
+            var sourceSpan = attribute.Source ?? GetBestSourceSpan(attribute);
+            if (sourceSpan is null || !TryReadSourceSpanText(sourceSpan.Value, out var sourceText))
+                return false;
+
+            return IsKeyAttributeSourceText(sourceText);
+        }
+
+        private static bool IsKeyAttributeSourceText(string sourceText)
+        {
+            if (string.IsNullOrWhiteSpace(sourceText))
+                return false;
+
+            var index = sourceText.IndexOf("@key", StringComparison.Ordinal);
+            if (index < 0)
+                return false;
+
+            var before = index == 0 ? ' ' : sourceText[index - 1];
+            var afterIndex = index + "@key".Length;
+            var after = afterIndex >= sourceText.Length ? ' ' : sourceText[afterIndex];
+            return char.IsWhiteSpace(before) &&
+                   (char.IsWhiteSpace(after) || after == '=' || after == '>' || after == '/');
+        }
 
         private RazorVueCompilationIssueException CreateUnsupportedNodeException(RazorVueRazorIrNode node, string detail)
             => CreateUnsupportedAttributeException(
@@ -2595,6 +2757,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
                     var whenTrue = ConvertTemplateMethodBody(whenTrueNodes, allowImperativePromotion: false, allowedLocalSymbols, allowedParameterSymbols);
                     var whenFalse = ConvertTemplateMethodBody(whenFalseNodes, allowImperativePromotion: false, allowedLocalSymbols, allowedParameterSymbols);
+                    ThrowIfComponentTypeCarrierUsedAsRuntimeValue(
+                        resolvedConditional.Operation.Condition,
+                        pending.SourceSpan);
 
                     index = bodyEnd;
                     renderNode = new RazorVueConditionalNode(
@@ -2633,12 +2798,16 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                             ? allowedLocalSymbols.Add(resolvedLoop.Operation.Locals[0])
                             : allowedLocalSymbols,
                         allowedParameterSymbols);
+                    var collection = Unwrap(resolvedLoop.Operation.Collection) ?? resolvedLoop.Operation.Collection;
+                    ThrowIfComponentTypeCarrierUsedAsRuntimeValue(
+                        collection,
+                        pending.SourceSpan);
 
                     index = bodyEnd;
                     renderNode = new RazorVueForEachNode(
                         resolvedLoop.Operation.Locals.Length > 0 ? resolvedLoop.Operation.Locals[0].Name : "item",
                         resolvedLoop.Operation.Locals.Length > 0 ? resolvedLoop.Operation.Locals[0] : null,
-                        Unwrap(resolvedLoop.Operation.Collection) ?? resolvedLoop.Operation.Collection,
+                        collection,
                         body,
                         CreateOrigins(pending.SourceSpan));
                     return true;
@@ -2714,6 +2883,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     var coveredNodes = bodyEnd > index
                         ? nodes.Skip(index).Take(bodyEnd - index).ToArray()
                         : [];
+                    ThrowIfComponentTypeCarrierUsedAsRuntimeValue(
+                        operations,
+                        pending.SourceSpan);
 
                     renderNode = CreateImperativeBlockNode(
                         operations,
@@ -2800,6 +2972,13 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     RegisterStaticMarkupLocalCarrier(declarator);
                     encounteredStaticMarkupCarrier = true;
                     continue;
+                }
+
+                if (RazorVueComponentTypeCarrierHelper.IsSystemType(declarator.Symbol.Type))
+                {
+                    ThrowTemplateScopedComponentTypeLocalCarrierUnsupported(
+                        declarator,
+                        immediateAssignedInitializers.ContainsKey(declarator.Symbol));
                 }
 
                 if (declarator.Initializer?.Value is not { } initializer)
@@ -3167,9 +3346,19 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     CollectDeclarators([declarationOperation], builder);
                     return builder.Count > 0;
                 case ILocalFunctionOperation localFunctionOperation:
-                    _lastTemplateDeclarationScanEncounteredSupplementalDeclarations = true;
-                    MarkConsumedTemplateNodesForOperation(localFunctionOperation);
-                    return true;
+                    if (IsTemplateSupplementalLocalFunction(localFunctionOperation))
+                    {
+                        _lastTemplateDeclarationScanEncounteredSupplementalDeclarations = true;
+                        MarkConsumedTemplateNodesForOperation(localFunctionOperation);
+                        return true;
+                    }
+
+                    return TryCreatePendingTemplateImperativeNode(
+                        codeNode,
+                        [localFunctionOperation],
+                        localFunctionOperation,
+                        out pendingControlNode,
+                        RazorVueImperativeBlockKind.LocalBlock);
                 case IBlockOperation blockOperation:
                     var encounteredNonDeclaration = false;
                     var pendingDeclarators = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
@@ -3202,7 +3391,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                                 CollectDeclarators([childDeclaration], builder);
                                 RegisterPendingTemplateDeclarators([childDeclaration], pendingDeclarators);
                                 continue;
-                            case ILocalFunctionOperation:
+                            case ILocalFunctionOperation localFunctionOperation:
                                 if (encounteredNonDeclaration)
                                 {
                                     throw CreateUnsupportedAttributeException(
@@ -3210,9 +3399,30 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                                         $"RazorVue Razor IR frontend only supports template code blocks whose immutable local declarations appear before any control-flow statement in component '{_snapshot.Descriptor.FullName}'.");
                                 }
 
-                                _lastTemplateDeclarationScanEncounteredSupplementalDeclarations = true;
-                                MarkConsumedTemplateNodesForOperation(child);
-                                continue;
+                                if (IsTemplateSupplementalLocalFunction(localFunctionOperation))
+                                {
+                                    _lastTemplateDeclarationScanEncounteredSupplementalDeclarations = true;
+                                    MarkConsumedTemplateNodesForOperation(child);
+                                    continue;
+                                }
+
+                                if (!encounteredNonDeclaration &&
+                                    pendingControlNode is null &&
+                                    TryCreatePendingTemplateImperativeNode(
+                                        codeNode,
+                                        blockOperation.Operations,
+                                        child,
+                                        out pendingControlNode,
+                                        RazorVueImperativeBlockKind.LocalBlock))
+                                {
+                                    return builder.Count > 0 ||
+                                           pendingControlNode is not null ||
+                                           _lastTemplateDeclarationScanEncounteredSupplementalDeclarations;
+                                }
+
+                                throw CreateUnsupportedAttributeException(
+                                    GetBestSourceSpan(codeNode),
+                                    $"RazorVue Razor IR frontend only supports template code blocks whose callable local state can be lowered through the imperative render bridge in component '{_snapshot.Descriptor.FullName}'.");
                             case IExpressionStatementOperation expressionStatement
                                 when TryConsumePendingTemplateDeclarationAssignment(expressionStatement, pendingDeclarators, out var assignedLocal, out var assignedInitializer):
                                 immediateAssignedInitializers[assignedLocal] = assignedInitializer;
@@ -3293,6 +3503,8 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                                     continue;
                                 }
 
+                                ThrowIfInvalidatedTemplateLocalCarrierDeclarators(builder);
+
                                 throw CreateUnsupportedAttributeException(
                                     GetBestSourceSpan(codeNode),
                                     $"RazorVue Razor IR frontend only supports template code blocks that contain immutable local declarations in component '{_snapshot.Descriptor.FullName}'.");
@@ -3306,6 +3518,38 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     return false;
             }
         }
+
+        private void ThrowIfInvalidatedTemplateLocalCarrierDeclarators(
+            IEnumerable<IVariableDeclaratorOperation> declarators)
+        {
+            foreach (var declarator in declarators)
+            {
+                if (RazorVueStaticMarkupValueHelper.IsMarkupStringType(declarator.Symbol.Type) &&
+                    IsSourceStableLocalMarkupStringInitializerInvalidatedByLaterWrites(declarator.Symbol))
+                {
+                    throw CreateUnsupportedAttributeException(
+                        CreateSourceSpanFromSyntax(declarator.Syntax),
+                        declarator.Initializer?.Value is null
+                            ? $"RazorVue MarkupString local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once within the same linear local-declaration prefix by a simple assignment statement and cannot be observed through later writes."
+                            : $"RazorVue MarkupString local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Declaration-initialized local carriers must remain source-stable.");
+                }
+
+                if (IsRenderFragment(declarator.Symbol.Type) &&
+                    RazorVueImperativeRenderFragmentCarrierHelper.IsSourceStableLocalRenderFragmentInitializerInvalidatedByLaterWrites(
+                        _context.Compilation,
+                        declarator.Symbol))
+                {
+                    throw CreateUnsupportedAttributeException(
+                        CreateSourceSpanFromSyntax(declarator.Syntax),
+                        declarator.Initializer?.Value is null
+                            ? $"RazorVue RenderFragment local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once within the same linear local-declaration prefix by a simple assignment statement and cannot be observed through later writes."
+                            : $"RazorVue RenderFragment local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Declaration-initialized local carriers must remain source-stable.");
+                }
+            }
+        }
+
+        private bool IsTemplateSupplementalLocalFunction(ILocalFunctionOperation operation)
+            => IsRenderFragment(operation.Symbol.ReturnType);
 
         private void RegisterPendingTemplateDeclarators(
             IEnumerable<IVariableDeclarationOperation> declarations,
@@ -3395,7 +3639,8 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             RazorVueRazorIrNode codeNode,
             ImmutableArray<IOperation> siblingOperations,
             IOperation startingOperation,
-            out PendingTemplateControlNode? pendingControlNode)
+            out PendingTemplateControlNode? pendingControlNode,
+            RazorVueImperativeBlockKind? forcedKind = null)
         {
             pendingControlNode = null;
             var sourceSpan = GetRequiredSourceSpan(codeNode, "CSharpCodeIntermediateNode template imperative code block");
@@ -3417,13 +3662,16 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             if (tailOperations.All(operation => IsIgnorableGeneratedTemplateTailOperation(codeNode, operation)))
                 return false;
 
-            if (!RazorVueImperativeRenderPromotionAnalyzer.ShouldPromoteBody(tailOperations))
+            if (forcedKind is null &&
+                !RazorVueImperativeRenderPromotionAnalyzer.ShouldPromoteBody(tailOperations))
+            {
                 return false;
+            }
 
             pendingControlNode = PendingTemplateControlNode.CreateImperative(
                 sourceSpan,
                 tailOperations,
-                RazorVueImperativeRenderPromotionAnalyzer.ClassifyBodyKind(tailOperations));
+                forcedKind ?? RazorVueImperativeRenderPromotionAnalyzer.ClassifyBodyKind(tailOperations));
             return true;
         }
 
@@ -3536,6 +3784,101 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                             $"RazorVue template-scoped local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be an immutable value/cache initializer without nested write or callable template state.");
                 }
             }
+        }
+
+        private void ThrowTemplateScopedComponentTypeLocalCarrierUnsupported(
+            IVariableDeclaratorOperation declarator,
+            bool hasImmediateAssignedInitializer)
+        {
+            var sourceSpan = CreateSourceSpanFromSyntax(declarator.Syntax);
+            var message = RazorVueSourceStableLocalInitializerHelper.IsSourceStableLocalInitializerInvalidatedByLaterWrites(
+                    _context.Compilation,
+                    declarator.Symbol,
+                    RazorVueComponentTypeCarrierHelper.IsSystemType)
+                ? hasImmediateAssignedInitializer || declarator.Initializer?.Value is null
+                    ? $"RazorVue System.Type local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be assigned exactly once within the same linear local-declaration prefix by a simple assignment statement and cannot be observed through later writes. Razor IR template locals cannot be used as OpenComponent(Type) carriers."
+                    : $"RazorVue System.Type local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. OpenComponent(Type) carriers must remain source-stable."
+                : $"RazorVue System.Type local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be used as a runtime render value. System.Type locals are only supported as source-stable OpenComponent(Type) carriers.";
+
+            throw CreateUnsupportedAttributeException(sourceSpan, message);
+        }
+
+        private void ThrowIfComponentTypeCarrierUsedAsRuntimeValue(
+            IOperation? operation,
+            RazorVueRazorSourceSpan? sourceSpan)
+        {
+            if (operation is null)
+                return;
+
+            foreach (var candidate in EnumerateSelfAndDescendants(operation))
+            {
+                switch (Unwrap(candidate))
+                {
+                    case ITypeOfOperation:
+                        throw CreateUnsupportedAttributeException(
+                            sourceSpan ?? CreateSourceSpanFromSyntax(candidate.Syntax),
+                            $"RazorVue Razor IR frontend uses typeof(...) as a runtime render value in component '{_snapshot.Descriptor.FullName}'. RazorVue only supports System.Type values as source-stable OpenComponent(Type) carriers.");
+                    case ILocalReferenceOperation localReference
+                        when RazorVueSourceStableLocalInitializerHelper.IsSourceStableLocalInitializerInvalidatedByLaterWrites(
+                            _context.Compilation,
+                            localReference.Local,
+                            RazorVueComponentTypeCarrierHelper.IsSystemType):
+                        throw CreateUnsupportedAttributeException(
+                            sourceSpan ?? CreateSourceSpanFromSyntax(candidate.Syntax),
+                            $"RazorVue System.Type local '{localReference.Local.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. OpenComponent(Type) carriers must remain source-stable.");
+                    case ILocalReferenceOperation localReference
+                        when RazorVueComponentTypeCarrierHelper.TryResolveSourceStableVueComponentTypeLocal(
+                            _context.Compilation,
+                            _snapshot.ComponentSymbol,
+                            localReference.Local,
+                            out _):
+                        throw CreateUnsupportedAttributeException(
+                            sourceSpan ?? CreateSourceSpanFromSyntax(candidate.Syntax),
+                            $"RazorVue System.Type local '{localReference.Local.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be used as a runtime render value. System.Type locals are only supported as source-stable OpenComponent(Type) carriers.");
+                    case ILocalReferenceOperation localReference
+                        when RazorVueComponentTypeCarrierHelper.IsSystemType(localReference.Local.Type):
+                        throw CreateUnsupportedAttributeException(
+                            sourceSpan ?? CreateSourceSpanFromSyntax(candidate.Syntax),
+                            $"RazorVue System.Type local '{localReference.Local.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be used as a runtime render value or observed through later writes. System.Type locals are only supported as source-stable OpenComponent(Type) carriers.");
+                    case { }
+                        when RazorVueComponentTypeCarrierHelper.TryGetInvalidatedSourceStableComponentTypeMember(
+                            _context.Compilation,
+                            _snapshot.ComponentSymbol,
+                            candidate,
+                            out var invalidatedMemberCarrier):
+                        throw CreateUnsupportedAttributeException(
+                            sourceSpan ?? CreateSourceSpanFromSyntax(candidate.Syntax),
+                            $"RazorVue System.Type member '{invalidatedMemberCarrier.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. OpenComponent(Type) carriers must remain source-stable.");
+                    case IPropertyReferenceOperation or IFieldReferenceOperation
+                        when RazorVueComponentTypeCarrierHelper.TryResolveSourceStableVueComponentTypeMember(
+                            _context.Compilation,
+                            _snapshot.ComponentSymbol,
+                            candidate,
+                            out var memberCarrier,
+                            out _):
+                        throw CreateUnsupportedAttributeException(
+                            sourceSpan ?? CreateSourceSpanFromSyntax(candidate.Syntax),
+                            $"RazorVue System.Type member '{memberCarrier.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be used as a runtime render value. System.Type members are only supported as source-stable OpenComponent(Type) carriers.");
+                    case IPropertyReferenceOperation propertyReference
+                        when RazorVueComponentTypeCarrierHelper.IsSystemType(propertyReference.Property.Type):
+                        throw CreateUnsupportedAttributeException(
+                            sourceSpan ?? CreateSourceSpanFromSyntax(candidate.Syntax),
+                            $"RazorVue System.Type member '{propertyReference.Property.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be used as a runtime render value or observed through later writes. System.Type members are only supported as source-stable OpenComponent(Type) carriers.");
+                    case IFieldReferenceOperation fieldReference
+                        when RazorVueComponentTypeCarrierHelper.IsSystemType(fieldReference.Field.Type):
+                        throw CreateUnsupportedAttributeException(
+                            sourceSpan ?? CreateSourceSpanFromSyntax(candidate.Syntax),
+                            $"RazorVue System.Type member '{fieldReference.Field.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be used as a runtime render value or observed through later writes. System.Type members are only supported as source-stable OpenComponent(Type) carriers.");
+                }
+            }
+        }
+
+        private void ThrowIfComponentTypeCarrierUsedAsRuntimeValue(
+            IEnumerable<IOperation> operations,
+            RazorVueRazorSourceSpan? sourceSpan)
+        {
+            foreach (var operation in operations)
+                ThrowIfComponentTypeCarrierUsedAsRuntimeValue(operation, sourceSpan);
         }
 
         private static IEnumerable<IOperation> EnumerateSelfAndDescendants(IOperation root)
@@ -5574,7 +5917,8 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     CreateLiteralStringOperation,
                     detail => CreateUnsupportedAttributeException(
                         null,
-                        $"RazorVue Razor IR frontend {detail} in component '{_snapshot.Descriptor.FullName}'.")));
+                        $"RazorVue Razor IR frontend {detail} in component '{_snapshot.Descriptor.FullName}'."),
+                    AllowRazorDirectiveAttributes: true));
 
         private ImmutableArray<RazorVueRenderNode> MaterializeStaticMarkupFragment(
             RazorVueStaticMarkupValueHelper.StaticMarkupResolution resolution,

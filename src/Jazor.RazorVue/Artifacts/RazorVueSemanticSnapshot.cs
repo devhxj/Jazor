@@ -13,6 +13,8 @@ namespace Jazor.RazorVue.Artifacts;
 /// 2. lifecycle method symbols，供 lowering 阶段在 setup() 中生成 Vue hooks（onMounted/onUpdated/watch 等），
 ///    避免 lowering 阶段再次重新发现。当方法体是 no-op 或 emit 调用时，
 ///    lowering 会展开实际的 Vue hook 表达式；否则明确抛异常（不做静默降级）。
+/// 3. ComponentBaseline 视图用于表达组件级 lowering 的基线契约：descriptor、runtime、render
+///    三个子集都来自同一个 Roslyn 合并后的组件符号，Razor IR 只能作为 render/SFC 增强输入。
 /// </summary>
 internal sealed record RazorVueSemanticSnapshot(
     Compilation Compilation,
@@ -36,4 +38,8 @@ internal sealed record RazorVueSemanticSnapshot(
     IMethodSymbol? OnAfterRenderMethod = null,
     IMethodSymbol? OnAfterRenderAsyncMethod = null,
     IMethodSymbol? DisposeMethod = null,
-    IMethodSymbol? DisposeAsyncMethod = null);
+    IMethodSymbol? DisposeAsyncMethod = null)
+{
+    public RazorVueComponentSemanticBaseline ComponentBaseline
+        => RazorVueComponentSemanticBaseline.FromSnapshot(this);
+}

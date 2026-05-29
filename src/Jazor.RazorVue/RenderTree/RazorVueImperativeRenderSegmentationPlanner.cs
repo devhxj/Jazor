@@ -19,6 +19,9 @@ internal static class RazorVueImperativeRenderSegmentationPlanner
         if (operations.Count == 0)
             return false;
 
+        if (RequiresWholeBodyPromotion(operations))
+            return false;
+
         var builder = ImmutableArray.CreateBuilder<PlannedSegment>();
         var pendingSupportStart = -1;
 
@@ -136,6 +139,58 @@ internal static class RazorVueImperativeRenderSegmentationPlanner
         }
 
         return segments[segments.Length - 1].EndExclusive < operationCount;
+    }
+
+    private static bool RequiresWholeBodyPromotion(IEnumerable<IOperation> operations)
+    {
+        foreach (var operation in operations)
+        {
+            if (RequiresWholeBodyPromotion(operation))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool RequiresWholeBodyPromotion(IOperation? operation)
+    {
+        var current = RazorVueOperationNormalizer.Unwrap(operation);
+        if (current is null)
+            return false;
+
+        switch (current)
+        {
+            case IAnonymousFunctionOperation:
+            case ILocalFunctionOperation:
+                return false;
+            case IReturnOperation { IsImplicit: false }:
+            case IThrowOperation:
+            case IAwaitOperation:
+            case IBranchOperation { BranchKind: BranchKind.GoTo }:
+                return true;
+            case IBlockOperation block:
+                return RequiresWholeBodyPromotion(block.Operations);
+            case IConditionalOperation conditional:
+                return RequiresWholeBodyPromotion(conditional.WhenTrue) ||
+                       RequiresWholeBodyPromotion(conditional.WhenFalse);
+            case IForLoopOperation loop:
+                return RequiresWholeBodyPromotion(loop.Body);
+            case IForEachLoopOperation loop:
+                return loop.IsAsynchronous ||
+                       RequiresWholeBodyPromotion(loop.Body);
+            case IWhileLoopOperation loop:
+                return RequiresWholeBodyPromotion(loop.Body);
+            case ILockOperation lockOperation:
+                return RequiresWholeBodyPromotion(lockOperation.Body);
+            case IUsingOperation usingOperation:
+                return RequiresWholeBodyPromotion(usingOperation.Body);
+            case ITryOperation tryOperation:
+                return RequiresWholeBodyPromotion(tryOperation.Body) ||
+                       tryOperation.Catches.Any(static catchOperation => RequiresWholeBodyPromotion(catchOperation.Handler)) ||
+                       RequiresWholeBodyPromotion(tryOperation.Finally);
+            default:
+                return current.ChildOperations.Any(RequiresWholeBodyPromotion);
+        }
     }
 
     private static bool IsImmediateSupportedLocalDeclarationAssignment(

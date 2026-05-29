@@ -14,7 +14,7 @@ namespace Jazor.RazorVue.RazorIr.Test;
 public sealed class RazorVueTemplateFrontendParityTests
 {
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForMarkupAndInterpolation()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForMarkupAndInterpolation()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """<section><h1>@Title</h1><p>Hello</p></section>""";
@@ -25,11 +25,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             documentText,
             RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForAttributes()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForAttributes()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """<div title="@Title" class="hero">Hello</div>""";
@@ -40,11 +40,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             documentText,
             RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForElementSplat()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForElementSplat()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """<div title="@Title" @attributes="AdditionalAttributes">Hello</div>""";
@@ -70,11 +70,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForComponentAndDefaultChildContent()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForComponentAndDefaultChildContent()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """<ChildCard Title="@Title"><p>Body</p></ChildCard>""";
@@ -85,11 +85,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             documentText,
             RazorVueRazorIrTestContextFactory.CreateParentAndChildComponentSource());
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForNamedAndTypedChildContent()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForNamedAndTypedChildContent()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -132,11 +132,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateLocalCodeBlock()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateLocalCodeBlock()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -171,11 +171,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithoutInitializerThenImmediateAssignment()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithoutInitializerThenImmediateAssignment()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -193,11 +193,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             documentText,
             RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithoutInitializerThenAssignmentAfterSiblingLocalDeclaration()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithoutInitializerThenAssignmentAfterSiblingLocalDeclaration()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -216,11 +216,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             documentText,
             RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateLocalCodeBlockWithoutInitializerThenImmediateAssignment()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateLocalCodeBlockWithoutInitializerThenImmediateAssignment()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -256,11 +256,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateLocalCodeBlockWithoutInitializerThenAssignmentAfterSiblingLocalDeclaration()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateLocalCodeBlockWithoutInitializerThenAssignmentAfterSiblingLocalDeclaration()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -297,11 +297,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneIf()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneIf()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -340,11 +340,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneWhileLoop()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneWhileLoop()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -384,11 +384,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneForeachBreak()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneForeachBreak()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -434,11 +434,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneForeachContinue()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneForeachContinue()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -487,11 +487,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneForContinue()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneForContinue()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -538,11 +538,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneForBreak()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneForBreak()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -589,11 +589,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneDoWhileLoop()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneDoWhileLoop()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -634,11 +634,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneUsingStatement()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneUsingStatement()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -683,11 +683,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneLock()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneLock()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -725,11 +725,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneThrowAndTailMarkup()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneThrowAndTailMarkup()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -772,11 +772,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             """,
             importsText: "@using System");
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneSwitch()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneSwitch()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -820,11 +820,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneTryCatchFinally()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneTryCatchFinally()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -870,11 +870,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneFieldMutation()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneFieldMutation()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -910,11 +910,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneConditionalReturnAndTailMarkup()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneConditionalReturnAndTailMarkup()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -954,11 +954,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneUsingDeclarationAndTailMarkup()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedChildContentTemplateCodeBlockWithStandaloneUsingDeclarationAndTailMarkup()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -1001,11 +1001,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithSwitch()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithSwitch()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -1050,11 +1050,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithTryCatchFinally()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithTryCatchFinally()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -1101,11 +1101,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithLock()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithLock()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -1144,11 +1144,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierAssignedToTypedComponentSlot()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierAssignedToTypedComponentSlot()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -1180,11 +1180,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForConstantMarkupStringExpression()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForConstantMarkupStringExpression()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """@((MarkupString)"<section class='hero'><span>safe</span><p>ok</p></section>")""";
@@ -1195,11 +1195,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             documentText,
             RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForUnwrittenSettableMarkupStringPropertyExpression()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForUnwrittenSettableMarkupStringPropertyExpression()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """@HeroMarkup""";
@@ -1219,11 +1219,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForUnwrittenNonReadonlyMarkupStringFieldExpression()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForUnwrittenNonReadonlyMarkupStringFieldExpression()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """@_heroMarkup""";
@@ -1243,11 +1243,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierWithTrailingIfAssignedToTypedComponentSlot()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierWithTrailingIfAssignedToTypedComponentSlot()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -1285,11 +1285,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierWithTrailingForeachAssignedToTypedComponentSlot()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierWithTrailingForeachAssignedToTypedComponentSlot()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -1329,11 +1329,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontend_ForComplexRootTemplateCodeBlock_UsesRazorIrImperativePromotion()
+    public void LegacyIrFirstTemplateFrontend_ForComplexRootTemplateCodeBlock_UsesRazorIrImperativePromotion()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -1363,20 +1363,20 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        var renderTree = RazorVuePreferredTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+        var renderTree = RazorVueLegacyIrFirstTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
 
         Assert.AreEqual(1, renderTree.Children.Length);
         var imperative = renderTree.Children[0] as RazorVueImperativeBlockNode;
         Assert.IsNotNull(imperative);
         Assert.AreEqual(RazorVueImperativeBlockKind.MethodBody, imperative.Kind);
 
-        var artifact = new RazorVueArtifactFactory(RazorVuePreferredTemplateFrontend.Instance).Lower(context, snapshot);
+        var artifact = new RazorVueArtifactFactory(RazorVueLegacyIrFirstTemplateFrontend.Instance).Lower(context, snapshot);
         StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
         StringAssert.Contains(artifact.ModuleCode, "if (props.hide) {");
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierWithTrailingForAssignedToTypedComponentSlot()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierWithTrailingForAssignedToTypedComponentSlot()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -1414,11 +1414,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierWithTrailingConditionalReturnAssignedToTypedComponentSlot()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierWithTrailingConditionalReturnAssignedToTypedComponentSlot()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -1456,11 +1456,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForForLoopWithContinuePromotedToImperativeRender()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForForLoopWithContinuePromotedToImperativeRender()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -1493,11 +1493,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForDoWhileLoopPromotedToImperativeRender()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForDoWhileLoopPromotedToImperativeRender()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -1528,11 +1528,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForDeclarativeSiblingsAroundWhileLoopPromotedLocally()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForDeclarativeSiblingsAroundWhileLoopPromotedLocally()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -1566,11 +1566,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForForEachLoopWithBreakPromotedToImperativeRender()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForForEachLoopWithBreakPromotedToImperativeRender()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -1605,11 +1605,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromFactoryMethodAssignedToTypedComponentSlot()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromFactoryMethodAssignedToTypedComponentSlot()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -1651,11 +1651,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForImmediatelyAssignedRenderFragmentLocalCarrierInitializedFromFactoryMethodAssignedToTypedComponentSlot()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForImmediatelyAssignedRenderFragmentLocalCarrierInitializedFromFactoryMethodAssignedToTypedComponentSlot()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -1698,11 +1698,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromGenericFactoryMethodAssignedToTypedComponentSlot()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromGenericFactoryMethodAssignedToTypedComponentSlot()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -1744,11 +1744,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromFactoryMethodWithOmittedOptionalParameterAssignedToTypedComponentSlot()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromFactoryMethodWithOmittedOptionalParameterAssignedToTypedComponentSlot()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -1787,11 +1787,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromFactoryMethodWithParamsParameterAssignedToTypedComponentSlot()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromFactoryMethodWithParamsParameterAssignedToTypedComponentSlot()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -1833,11 +1833,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromLocalFunctionFactoryMethodAssignedToTypedComponentSlot()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromLocalFunctionFactoryMethodAssignedToTypedComponentSlot()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -1876,11 +1876,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForMultipleRenderFragmentLocalCarriersInitializedFromSameFactoryMethodWithDifferentArgumentsAssignedToDifferentTypedComponentSlots()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForMultipleRenderFragmentLocalCarriersInitializedFromSameFactoryMethodWithDifferentArgumentsAssignedToDifferentTypedComponentSlots()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -1929,11 +1929,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromCurrentComponentFieldCarrierAssignedToTypedComponentSlot()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromCurrentComponentFieldCarrierAssignedToTypedComponentSlot()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -1972,11 +1972,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForImmediatelyAssignedRenderFragmentLocalCarrierInitializedFromCurrentComponentFieldCarrierAssignedToTypedComponentSlot()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForImmediatelyAssignedRenderFragmentLocalCarrierInitializedFromCurrentComponentFieldCarrierAssignedToTypedComponentSlot()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2016,11 +2016,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromCurrentComponentAutoPropertyCarrierAssignedToTypedComponentSlot()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromCurrentComponentAutoPropertyCarrierAssignedToTypedComponentSlot()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2058,11 +2058,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForImmediatelyAssignedRenderFragmentLocalCarrierInitializedFromCurrentComponentPropertyCarrierAssignedToTypedComponentSlot()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForImmediatelyAssignedRenderFragmentLocalCarrierInitializedFromCurrentComponentPropertyCarrierAssignedToTypedComponentSlot()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2107,11 +2107,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromUnwrittenCurrentComponentSettablePropertyCarrierAssignedToTypedComponentSlot()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromUnwrittenCurrentComponentSettablePropertyCarrierAssignedToTypedComponentSlot()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2149,11 +2149,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromUnwrittenCurrentComponentNonReadonlyFieldCarrierAssignedToTypedComponentSlot()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromUnwrittenCurrentComponentNonReadonlyFieldCarrierAssignedToTypedComponentSlot()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2191,11 +2191,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromChainedCurrentComponentPropertyCarrierAssignedToTypedComponentSlot()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentLocalCarrierInitializedFromChainedCurrentComponentPropertyCarrierAssignedToTypedComponentSlot()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2241,11 +2241,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithNestedIf()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithNestedIf()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2277,11 +2277,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForDirectRenderFragmentPropertyExpression()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForDirectRenderFragmentPropertyExpression()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2298,11 +2298,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             documentText,
             RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForImmediateAssignedRenderFragmentLocalExpression()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForImmediateAssignedRenderFragmentLocalExpression()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2320,11 +2320,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             documentText,
             RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentPropertyBackedByFactoryExpression()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRenderFragmentPropertyBackedByFactoryExpression()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2357,11 +2357,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForImmediatelyAssignedLocalRenderFragmentCarrierInitializedFromFactoryMethodExpression()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForImmediatelyAssignedLocalRenderFragmentCarrierInitializedFromFactoryMethodExpression()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2397,11 +2397,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedRenderFragmentPropertyInvocation()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedRenderFragmentPropertyInvocation()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2434,11 +2434,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForDirectRenderFragmentFactoryExpression()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForDirectRenderFragmentFactoryExpression()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2469,11 +2469,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForDirectRenderFragmentZeroArgumentFactoryExpression()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForDirectRenderFragmentZeroArgumentFactoryExpression()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2501,11 +2501,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForDirectRenderFragmentFactoryExpressionUsingNamedArgumentsOutOfDeclarationOrder()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForDirectRenderFragmentFactoryExpressionUsingNamedArgumentsOutOfDeclarationOrder()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2539,11 +2539,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForDirectTypedRenderFragmentFactoryInvocation()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForDirectTypedRenderFragmentFactoryInvocation()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2574,11 +2574,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForDirectTypedRenderFragmentZeroArgumentFactoryInvocation()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForDirectTypedRenderFragmentZeroArgumentFactoryInvocation()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2606,11 +2606,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForDirectTypedRenderFragmentFactoryInvocationUsingNamedArgumentsOutOfDeclarationOrder()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForDirectTypedRenderFragmentFactoryInvocationUsingNamedArgumentsOutOfDeclarationOrder()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2644,11 +2644,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForDirectTypedRenderFragmentLocalFunctionFactoryInvocation()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForDirectTypedRenderFragmentLocalFunctionFactoryInvocation()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2681,11 +2681,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForDirectRenderFragmentLocalFunctionFactoryExpression()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForDirectRenderFragmentLocalFunctionFactoryExpression()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2718,11 +2718,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForImmediatelyAssignedLocalTypedRenderFragmentInvocation()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForImmediatelyAssignedLocalTypedRenderFragmentInvocation()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2758,11 +2758,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedSlotOutletInvocation()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTypedSlotOutletInvocation()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2788,11 +2788,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithNestedIfElse()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithNestedIfElse()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2828,11 +2828,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithNestedForeach()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithNestedForeach()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2866,11 +2866,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithNestedFor()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithNestedFor()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2902,11 +2902,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithSequentialIfs()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithSequentialIfs()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2946,11 +2946,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithIfThenForeach()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithIfThenForeach()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -2992,11 +2992,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithForeachThenIf()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithForeachThenIf()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -3038,11 +3038,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithForThenIf()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithForThenIf()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -3082,11 +3082,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithWhileLoop()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithWhileLoop()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -3127,11 +3127,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithDoWhileLoop()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithDoWhileLoop()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -3173,11 +3173,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithForeachContinue()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithForeachContinue()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -3227,11 +3227,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithForeachBreak()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithForeachBreak()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -3281,11 +3281,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithForBreak()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithForBreak()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -3333,11 +3333,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithForContinue()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithForContinue()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -3385,11 +3385,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithUsingDeclaration()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithUsingDeclaration()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -3433,11 +3433,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithUsingStatement()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithUsingStatement()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -3483,11 +3483,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithConditionalReturnTail()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithConditionalReturnTail()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -3528,11 +3528,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithThrowTail()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithThrowTail()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -3576,11 +3576,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             """,
             importsText: "@using System");
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithFieldMutationTail()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForTemplateLocalCodeBlockWithFieldMutationTail()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -3617,11 +3617,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRootTemplateLocalCodeBlockWithFieldMutationTail()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRootTemplateLocalCodeBlockWithFieldMutationTail()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -3651,11 +3651,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRootTemplateLocalCodeBlockWithConditionalReturnTail()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRootTemplateLocalCodeBlockWithConditionalReturnTail()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -3689,11 +3689,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRootTemplateLocalCodeBlockWithWhileTail()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForRootTemplateLocalCodeBlockWithWhileTail()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -3729,10 +3729,10 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForElseIfChain()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForElseIfChain()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -3769,11 +3769,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForCountStyleForLoop()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForCountStyleForLoop()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -3799,11 +3799,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForCountStyleForLoopWithSimpleAssignmentStep()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForCountStyleForLoopWithSimpleAssignmentStep()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -3835,11 +3835,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForCountStyleForLoopWithDynamicAddAssignStep()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForCountStyleForLoopWithDynamicAddAssignStep()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -3871,11 +3871,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForCountStyleForLoopWithDynamicSimpleAssignmentStep()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForCountStyleForLoopWithDynamicSimpleAssignmentStep()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -3907,11 +3907,11 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForCountStyleForLoopWithCommutativeSimpleAssignmentStep()
+    public void LegacyIrFirstTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForCountStyleForLoopWithCommutativeSimpleAssignmentStep()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -3943,20 +3943,20 @@ public sealed class RazorVueTemplateFrontendParityTests
             }
             """);
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontend_FallsBackToBuildRenderTree_OnlyForHandwrittenBuildRenderTreeComponents()
+    public void LegacyIrFirstTemplateFrontend_FallsBackToBuildRenderTree_OnlyForHandwrittenBuildRenderTreeComponents()
     {
         var context = CreateBuildRenderTreeOnlyContext();
         var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "CounterCard");
 
-        AssertParity(RazorVuePreferredTemplateFrontend.Instance, BuildRenderTreeTemplateFrontend.Instance, context, snapshot);
+        AssertParity(RazorVueLegacyIrFirstTemplateFrontend.Instance, BuildRenderTreeTemplateFrontend.Instance, context, snapshot);
     }
 
     [TestMethod]
-    public void PreferredTemplateFrontend_WithRazorGeneratedBuildRenderTreeButNoBoundRazorDocument_Throws()
+    public void LegacyIrFirstTemplateFrontend_WithRazorGeneratedBuildRenderTreeButNoBoundRazorDocument_Throws()
     {
         var context = CreateGeneratedRazorContextWithoutBoundDocuments();
         var snapshot = RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(context).Single();
@@ -3964,7 +3964,7 @@ public sealed class RazorVueTemplateFrontendParityTests
         Assert.IsNull(snapshot.RazorIrCarrier);
 
         var exception = Assert.ThrowsExactly<InvalidOperationException>(
-            () => RazorVuePreferredTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
+            () => RazorVueLegacyIrFirstTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
 
         StringAssert.Contains(exception.Message, "only falls back to BuildRenderTree for source-authored components");
     }

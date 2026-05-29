@@ -319,7 +319,7 @@ export function _c1393b267008395c(instance, isUnsigned) {
     return isNegative ? Math.max(1, Math.ceil((bitLength + 1) / 8)) : Math.max(1, Math.ceil(bitLength / 8));
 }
 export function _fe4c3211e57446e7(instance, provider) {
-  if (provider === null)
+  if (provider == null)
     return instance.toString();
   let isNegative = instance < 0n;
   let absValue = isNegative ? -instance : instance;
@@ -358,13 +358,13 @@ export function _22a21ffe19479f32(left, right) {
 }
 export function _276680abacb93277(value) {
   if (value === 0n)
-    return BigInt(32);
+    return BigInt(64);
   if (value < 0n)
     return 0n;
-  let remainder = getBitLengthCore(value) % BigInt(32);
+  let remainder = getBitLengthCore(value) % BigInt(64);
   if (remainder === 0n)
     return 0n;
-  return BigInt(32) - remainder;
+  return BigInt(64) - remainder;
 }
 export function _5e476c376aca56ae(value) {
   if (value === 0n)
@@ -474,7 +474,7 @@ export function _8cbca5624f4a6cc0(value) {
   }
   if (typeof value === "boolean" && (bl = value, true))
     return bl ? 1n : 0n;
-  if (value === null)
+  if (value == null)
     throw new RangeError("Value cannot be null or undefined");
   throw new RangeError("Unsupported type for conversion to BigInt");
 }

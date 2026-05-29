@@ -1,7 +1,7 @@
 import { compareCore } from "System/Collections/Generic/ComparerT1Module.js";
 import { _0289dcf579b8a65e } from "System/Collections/Generic/IComparerT1Module.js";
 function ensureInstance(instance) {
-  if (instance === null)
+  if (instance == null)
     throw new Error("NullReferenceException: instance is null.");
 }
 function ensureWholeNumber(value, message) {
@@ -9,7 +9,7 @@ function ensureWholeNumber(value, message) {
     throw new Error(message);
 }
 function ensureTargetArray(array) {
-  if (array === null)
+  if (array == null)
     throw new Error("ArgumentNullException: array is null");
 }
 function ensureTargetIndex(array, arrayIndex) {
@@ -40,7 +40,7 @@ function ensureRemoveRange(instance, index, count) {
     throw new Error("ArgumentException: offset and length were out of bounds for the list.");
 }
 function ensureMatch(match) {
-  if (match === null)
+  if (match == null)
     throw new Error("ArgumentNullException: match is null");
 }
 function ensureForwardSearchStartIndex(instance, startIndex) {
@@ -87,7 +87,7 @@ function equalsForListSearch(left, right) {
 function appendRange(instance, collection) {
   let source;
   ensureInstance(instance);
-  if (collection === null)
+  if (collection == null)
     throw new Error("ArgumentNullException: collection is null");
   if (Array.isArray(collection) && (source = collection, true) && Object.is(instance, source)) {
     let originalLength = source.length;
@@ -236,7 +236,7 @@ export function _0dc538197c677986(instance, index, item) {
 export function _56ef9aefabac7c09(instance, index, collection) {
   let source;
   ensureInsertIndex(instance, index);
-  if (collection === null)
+  if (collection == null)
     throw new Error("ArgumentNullException: collection is null");
   if (Array.isArray(collection) && (source = collection, true) && Object.is(instance, source)) {
     let snapshot = new Array;
@@ -333,7 +333,7 @@ export function _36a478f36b41a6d2(instance) {
 }
 export function _5fa599e721e252ff(instance, comparer) {
   ensureInstance(instance);
-  if (comparer === null)
+  if (comparer == null)
     instance.sort((left, right) => {
       return compareDefault(left, right);
     });

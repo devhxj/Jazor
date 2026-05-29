@@ -1,5 +1,5 @@
 function ensureInstance(instance) {
-  if (instance === null)
+  if (instance == null)
     throw new Error("NullReferenceException: instance is null.");
 }
 export function _e73dbdff85c46ddc(instance, key) {

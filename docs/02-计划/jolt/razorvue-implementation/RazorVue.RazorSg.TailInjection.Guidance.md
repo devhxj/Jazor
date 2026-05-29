@@ -18,7 +18,7 @@
 2. 保留官方 `HostOutputs -> RazorGeneratorResult` 发布逻辑。
 3. 在官方 Razor SG 已经形成最终 Razor/C# document 的增量数据流之后，额外注册一个 RazorVue source output。
 4. 新增 source output 负责生成 RazorVue SFC artifact 与 catalog source。
-5. RazorVue 后续消费侧继续保持“Razor SG 内存结果/IR 输入”模型，不回读 `.razor` 原文。
+5. RazorVue 后续消费侧继续保持“官方 Razor SG 内存结果输入”模型：generated C# / Roslyn operation 作为语义基线，Razor IR 作为 `.razor` SFC 增强信息，不回读 `.razor` 原文。
 
 概念形态如下：
 
@@ -128,19 +128,19 @@ IL 注入必须保持窄边界：
 
 注入的 RazorVue source output 只做以下事情：
 
-1. 读取官方 Razor SG 已产生的 document / IR 内存对象。
+1. 读取官方 Razor SG 已产生的 generated C#、document / IR 内存对象。
 2. 按 full name、属性名、集合 shape 和必要的 node type name 进行反射投影。
 3. 生成 Jazor 自有的中立 `RazorVueRazorSourceGeneratorDocument`，包含 primary/import source、generated C# text、source mappings 和 IR node tree。
 4. 允许静态 Razor 文档没有 source mappings；generated span 的 `FilePath` 必须按 nullable 处理。
-5. 运行 RazorVue SFC pipeline，生成 artifact source 与 `Jazor.Generated.RazorVueCatalog.g.cs`。
+5. 运行 RazorVue SFC pipeline：先使用 Roslyn/`BuildRenderTree` 组件语义基线，再应用可用 Razor IR 增强，生成 artifact source 与 `Jazor.Generated.RazorVueCatalog.g.cs`。
 6. 生成明确、稳定、可诊断的 hint name。
-7. 对无法识别或不支持的 Razor IR shape 产出诊断。
+7. 对无法识别或不支持的 Razor IR shape 产出诊断或保留语义基线，不伪造增强结果。
 
 它不得做以下事情：
 
 1. 重新读取 `.razor` 文件作为语义输入。
 2. 基于文件系统或 `AdditionalText.GetText()` 重新运行 `RazorProjectEngine.Process(...)` 作为生产主线。
-3. 从 `BuildRenderTree` 反推 Razor 组件模板。
+3. 从 `BuildRenderTree` 反推 Razor 原文或伪造 Razor IR。官方 SG 后已绑定的 `BuildRenderTree` / Roslyn `IOperation` 仍是组件语义基线。
 4. 静默降级到空 artifact/catalog 或伪 artifact/catalog。
 5. 改变官方 Razor component class 的 public surface。
 
@@ -152,7 +152,7 @@ IL 注入必须保持窄边界：
 
 1. 绑定 `RazorSourceGenerator.Initialize(...)` 的 IL 指纹和 declared method surface。
 2. 把 assembly path / version / MVID 仅作为测试观测信息，不作为正式兼容门。
-3. Harmony patch 安装前必须先运行同一套兼容校验；校验失败时不 patch 官方 Razor SG，并记录 bootstrap failure。
+3. 自有 native `Initialize` hook 安装前必须先运行同一套兼容校验；校验失败时不 patch 官方 Razor SG，并记录 bootstrap failure。
 4. 校验失败时，在 RazorVue 启用场景下给出明确诊断并停止 RazorVue tail output 生成。
 5. RazorVue 未启用时，不注入、不影响普通 Razor 项目。
 6. SDK 升级必须先更新指纹和 focused tests，再允许进入生产路径。
@@ -186,7 +186,7 @@ Hook 扫描新输出节点时必须优先挂载官方 `RegisterImplementationSou
 
 1. `.razor` 原文回读。
 2. `AdditionalText.GetText()` 重建文档。
-3. `BuildRenderTree` 反推 Razor 组件。
+3. `BuildRenderTree` 反推 Razor 原文或伪造 Razor IR。
 4. classic Razor codegen。
 5. production nested Razor SG run。
 
@@ -211,22 +211,22 @@ Hook 扫描新输出节点时必须优先挂载官方 `RegisterImplementationSou
 
 1. 官方 `.razor.g.cs` 仍正常生成。
 2. RazorVue catalog/artifact source 在同一 generator run 中生成并进入 final compilation。
-3. RazorVue 消费侧能从官方 Razor SG 内存结果 / Razor IR 模型完成模板前端。
+3. RazorVue 消费侧能从官方 Razor SG 内存结果完成组件语义基线构建，并用 Razor IR 模型增强 SFC 输出。
 4. 普通 Razor 项目未启用 RazorVue 时不产生额外 source、diagnostic 或 build 行为变化；启用但没有 RazorVue component candidate 时也不得因为缺少 RazorVue artifact 输入误报。
 5. SDK 指纹不匹配时 diagnostic 清晰，可定位到 RazorVue SG injection 版本不匹配。
 6. focused tests 覆盖成功注入、未启用 no-op、指纹不匹配 fail-fast、RazorVue source 产出和官方 generated source parity。
-7. `dotnet pack src/Jazor/Jazor.csproj -c Release -v minimal` 成功，且 `.nupkg` 的 analyzer/lib payload 不包含 Razor Compiler / Razor Utilities Shared。
+7. `dotnet pack src/Jazor/Jazor.csproj -c Release -v minimal` 成功，且 `.nupkg` 的 analyzer/lib payload 不包含 Razor Compiler / Razor Utilities Shared / Harmony / MonoMod / Detour。
 8. `ProductionRazorCompilerReferenceTests` 保证生产项目和旧桥接项目不会回退到 Razor Compiler 强引用路线。
 9. `RazorSourceGeneratorCompatibilityProbeTests` 覆盖 unsupported SDK shape patch 前拒绝。
 10. `RazorSourceGeneratorTailOutputTests` 覆盖 enabled tail output 在有 RazorVue candidate 时输入缺失/不可读报 `JAZORVGA020`，在无 candidate 时 no-op。
 11. `ESGeneratorTests` 覆盖 integration 启用后 tail 未注册报 `JAZORVGA018`、bootstrap patch 失败报 `JAZORVGA019`、当前 context 已注册 tail 时普通 generator 不误报也不接管输出、只有进程级历史注册但当前 context 未注册时仍报 `JAZORVGA018`、当前 context key 不可用时报 `JAZORVGA019`。
 12. `RazorSourceGeneratorBootstrapPatchTests` 覆盖真实外部构建 trace 中 `TailOutputRegisteredForCurrentContext=true` 且 `TailOutputRegistrationKind="implementation-source-output"`。
 13. `Jazor.EmitTest` RazorVue 过滤切片必须全绿，当前最新验证为 45/45 通过。
-14. `CreateLocalPackage_IncludesRazorVueAuthoringAssets` 必须同时断言当前 analyzer payload 完整、且 `.nupkg` 中不存在 Razor Compiler / Razor Utilities Shared payload。
+14. `CreateLocalPackage_IncludesRazorVueAuthoringAssets` 必须同时断言当前 analyzer payload 完整、且 `.nupkg` 中不存在 Razor Compiler / Razor Utilities Shared / Harmony / MonoMod / Detour payload。
 15. `samples/RazorVue.TodoList/build-local.cs` 必须通过本地 pack 的 `Jazor` / `ECMAScript.Vuetify` 包完成 host rebuild，并生成 SFC artifact、manifest、host requirements module 和 sidecar。
-16. `samples/RazorVue.TodoList/todo-consumer` 必须通过 `dotnet run --file .\scripts\run-deno.cs -- task build`，证明生成 `.vue` 可被纯 Deno SFC 预编译 + `deno bundle` production build 消费。
+16. `samples/RazorVue.TodoList/Todo.Host/consumer` 必须通过 `dotnet run --file .\scripts\run-deno.cs -- task build`，证明生成 `.vue` 可被纯 Deno SFC 预编译 + `deno bundle` production build 消费。
 17. `Build_LocalPackages_WithExternalRazorSgSfcConsumer_EmitsVueSfcArtifacts` 必须通过，证明独立临时 consumer 可只通过 NuGet 包、官方 Razor SG 和 `.razor` authoring 生成 SFC artifact。
-18. `samples/RazorVue.TodoList/todo-consumer` 必须通过 `dotnet run --file .\scripts\run-deno.cs -- task smoke:ssr`，证明生成 `.vue` 至少可经纯 Deno 预编译、Vue server renderer 和 Vuetify plugin 做 runtime render，不出现 Vue prop 类型 warning。
+18. `samples/RazorVue.TodoList/Todo.Host/consumer` 必须通过 `dotnet run --file .\scripts\run-deno.cs -- task smoke:ssr`，证明生成 `.vue` 至少可经纯 Deno 预编译、Vue server renderer 和 Vuetify plugin 做 runtime render，不出现 Vue prop 类型 warning。
 19. SFC component prop lowering 必须保留类型语义：字符串 literal 可输出静态属性，Boolean / numeric / null / other 非字符串 literal 必须输出 Vue bound prop，避免把 library component props 统一降成字符串。
 20. `Build_LocalPackages_WithExternalRazorSgSfcConsumer_PureDenoPipeline_PassesInIsolatedWorkspace` 与 `Build_LocalPackages_RazorVueTodoListSample_PureDenoPipeline_PassesInIsolatedWorkspace` 必须通过，覆盖独立外部纯 Deno consumer、TodoList sample consumer、`deno bundle`、`Deno.bundle()`、SSR smoke 和真实浏览器 smoke。
 
@@ -242,12 +242,12 @@ Hook 扫描新输出节点时必须优先挂载官方 `RegisterImplementationSou
 
 1. `dotnet run --file ./samples/RazorVue.TodoList/build-local.cs` 已通过，输出包含 `razorvueSfcArtifacts=2`。
 2. `samples/RazorVue.TodoList/Todo.Host/wwwroot/jazor/components/todo-app.vue` 已包含完整 nested Vuetify template、component import 和 DTO 属性投影，并对 `VContainer` / `VCol` 等 Boolean / numeric props 输出 `:fluid="true"`、`:cols="12"` 这类 Vue bound props。
-3. `cd samples/RazorVue.TodoList/todo-consumer && dotnet run --file .\scripts\run-deno.cs -- task build` 已通过，`deno bundle` production build 成功产出浏览器 JS/CSS。
+3. `cd samples/RazorVue.TodoList/Todo.Host/consumer && dotnet run --file .\scripts\run-deno.cs -- task build` 已通过，`deno bundle` production build 成功产出浏览器 JS/CSS。
 4. `Build_LocalPackages_WithExternalRazorSgSfcConsumer_EmitsVueSfcArtifacts` 已通过，覆盖独立临时 `.razor` consumer、NuGet 包消费、官方 Razor SG integration、SFC manifest/source map/origins 输出。
-5. `cd samples/RazorVue.TodoList/todo-consumer && dotnet run --file .\scripts\run-deno.cs -- task smoke:ssr` 已通过，SSR smoke 经纯 Deno 预编译加载生成 SFC、渲染 DTO 投影文本并验证 host requirements。
-6. `cd samples/RazorVue.TodoList/todo-consumer && dotnet run --file .\scripts\run-deno.cs -- task smoke:browser` 已通过，真实浏览器 smoke 覆盖挂载、生成 CSS/JS、Vuetify `.v-application` root、关键文本、TodoList 交互、console warning/error、runtime exception 和 network failure。
+5. `cd samples/RazorVue.TodoList/Todo.Host/consumer && dotnet run --file .\scripts\run-deno.cs -- task smoke:ssr` 已通过，SSR smoke 经纯 Deno 预编译加载生成 SFC、渲染 DTO 投影文本并验证 host requirements。
+6. `cd samples/RazorVue.TodoList/Todo.Host/consumer && dotnet run --file .\scripts\run-deno.cs -- task smoke:browser` 已通过，真实浏览器 smoke 覆盖挂载、生成 CSS/JS、Vuetify `.v-application` root、关键文本、TodoList 交互、console warning/error、runtime exception 和 network failure。
 7. `Build_LocalPackages_WithExternalRazorSgSfcConsumer_PureDenoPipeline_PassesInIsolatedWorkspace` 已通过，独立临时 `.NET + Razor SG + SFC` consumer 生成 `.vue` 后，由独立纯 Deno consumer 完成 SSR、bundle API、browser build 和 browser smoke。
 
 ## 11. 一句话结论
 
-当前最优解是：**HostOutput 用作 Razor SG 末端 IR 结果锚点，受控 IL 尾部注入新增并列 source output，用同一条官方 Razor SG 数据流生成 RazorVue SFC artifact/catalog。**
+当前最优解是：**HostOutput 用作 Razor SG 末端 IR 结果锚点，受控 IL 尾部注入新增并列 source output，用同一条官方 Razor SG 数据流获取 generated C# / Roslyn 语义基线和 IR 增强信息，生成 RazorVue SFC artifact/catalog。**

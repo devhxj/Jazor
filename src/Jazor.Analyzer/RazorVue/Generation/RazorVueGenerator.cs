@@ -1,7 +1,9 @@
 using Jazor.Analyzer.RazorVue.Generation;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
+using Jazor.RazorVue.Extensibility;
 using Jazor.RazorVue.RazorSdk;
+using Jazor.RazorVue.RenderTree;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -187,8 +189,12 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
 
     public RazorVueGenerator()
         : this(
-            static () => new RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVuePreferredTemplateFrontend.Instance),
-            static () => new RazorVueSfcPipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVuePreferredTemplateFrontend.Instance),
+            static () => new RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVueLegacyIrFirstTemplateFrontend.Instance),
+            static () => new RazorVueSfcPipeline(
+                RazorVueRazorDocumentSemanticFrontend.Instance,
+                new RazorVueBaselineFirstTemplateFrontend(
+                    BuildRenderTreeTemplateFrontend.Instance,
+                    new RazorVueRazorIrTemplateFrontend())),
             static () => RazorSourceGeneratorCompatibilityProbe.CollectCurrent(),
             static contextKey => RazorSourceGeneratorBootstrapState.CreateTrace(contextKey))
     {
@@ -221,6 +227,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         RazorSourceGeneratorBootstrap.Initialize();
+        var tailOutputRegistrationVersionBeforeInitialize = RazorSourceGeneratorBootstrapState.GetTailOutputRegistrationVersion();
         RazorSourceGeneratorFallbackOutput.Register(context);
         var contextKey = RazorSourceGeneratorInitializationContextState.GetContextKey(context);
         var bootstrapTraceFactory = _bootstrapTraceFactory;
@@ -228,7 +235,18 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         var testHookEnabled = context.AnalyzerConfigOptionsProvider.Select(
             static (optionsProvider, _) => RazorSourceGeneratorHostOutputHookOptions.IsTestHookEnabled(optionsProvider));
         var bootstrapTrace = context.CompilationProvider.Select(
-            (_, _) => bootstrapTraceFactory(contextKey));
+            (_, _) =>
+            {
+                var trace = bootstrapTraceFactory(contextKey);
+                if (!RazorSourceGeneratorBootstrapState.HasTailOutputRegistrationAfter(tailOutputRegistrationVersionBeforeInitialize))
+                    return trace;
+
+                return trace with
+                {
+                    TailOutputRegistered = true,
+                    TailOutputRegisteredForCurrentContext = true
+                };
+            });
         context.RegisterSourceOutput(
             testHookEnabled.Combine(bootstrapTrace),
             static (outputContext, input) =>
@@ -304,11 +322,16 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             return;
 
         var candidate = candidates.FirstOrDefault(static candidate => candidate is not null);
-        ImmutableArray<RazorVueSemanticSnapshot> integrationHandwrittenSnapshots = ImmutableArray<RazorVueSemanticSnapshot>.Empty;
 
         try
         {
+            var normalGeneratorSnapshots = GetNormalGeneratorSnapshots(
+                razorVueContext,
+                generatorOptions.EnableRazorSgIntegration,
+                ResolveOutputMode(generatorOptions.OutputModeText));
+
             if (generatorOptions.EnableRazorSgIntegration &&
+                normalGeneratorSnapshots.IsDefaultOrEmpty &&
                 TryCreateRazorSgIntegrationDiagnostic(
                     razorVueContext,
                     candidate,
@@ -320,16 +343,8 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
                 return;
             }
 
-            if (generatorOptions.EnableRazorSgIntegration)
-            {
-                integrationHandwrittenSnapshots = GetIntegrationEligibleHandwrittenBuildRenderTreeSnapshots(razorVueContext);
-            }
-
-            if (generatorOptions.EnableRazorSgIntegration)
-            {
-                if (integrationHandwrittenSnapshots.IsDefaultOrEmpty)
-                    return;
-            }
+            if (normalGeneratorSnapshots.IsDefaultOrEmpty)
+                return;
 
             // Keep generator diagnostics aligned with the analyzer by validating
             // descriptor-only library stubs before any consuming component resolves them.
@@ -338,7 +353,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             {
                 case RazorVueGeneratorOutputMode.Legacy:
                 {
-                    var catalog = legacyPipelineFactory().Execute(razorVueContext);
+                    var catalog = legacyPipelineFactory().Execute(razorVueContext, normalGeneratorSnapshots);
                     if (catalog.Artifacts.IsDefaultOrEmpty)
                         return;
 
@@ -348,7 +363,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
                 case RazorVueGeneratorOutputMode.Sfc:
                 {
                     var catalog = generatorOptions.EnableRazorSgIntegration
-                        ? sfcPipelineFactory().Execute(razorVueContext, integrationHandwrittenSnapshots)
+                        ? sfcPipelineFactory().Execute(razorVueContext, normalGeneratorSnapshots)
                         : sfcPipelineFactory().Execute(razorVueContext);
                     if (catalog.Artifacts.IsDefaultOrEmpty)
                         return;
@@ -403,28 +418,30 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
     {
         diagnostic = default!;
         var snapshots = RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(context);
-        var requiresTailInjection = snapshots.Any(static snapshot =>
-            snapshot.RazorIrCarrier is null &&
-            snapshot.RazorSourceGeneratorDocument is null &&
-            (snapshot.BuildRenderTreeMethod is null ||
-             !RazorVueBuildRenderTreeAuthoringClassifier.IsHandwrittenBuildRenderTree(snapshot)));
+        var tailRequiredSnapshots = snapshots
+            .Where(IsRazorSgTailRequired)
+            .ToImmutableArray();
 
-        if (!requiresTailInjection)
+        if (tailRequiredSnapshots.IsDefaultOrEmpty)
         {
             return false;
         }
 
-        if (bootstrapTrace.PatchFailed)
+        if (bootstrapTrace.PatchFailed || bootstrapTrace.PatchUnavailable)
         {
-            if (RazorSourceGeneratorFallbackOutput.IsFallbackRequiredFailure(bootstrapTrace.Failure))
+            var failure = string.IsNullOrWhiteSpace(bootstrapTrace.Failure)
+                ? (bootstrapTrace.PatchUnavailable
+                    ? "RazorVue Razor SG hook backend is unavailable on the current platform."
+                    : "RazorVue Razor SG bootstrap patch failed.")
+                : bootstrapTrace.Failure!;
+            if (RazorSourceGeneratorFallbackOutput.IsFallbackRequiredFailure(failure))
             {
-                return false;
+                failure += " RazorVue does not run a private Razor source generator fallback inside the analyzer; .razor component SFC generation requires official Razor SG tail output after Razor IR and generated C# are available.";
             }
-
             diagnostic = Diagnostic.Create(
                 RazorVueRazorSgIntegrationIncompatible,
                 candidate?.Location ?? Location.None,
-                string.IsNullOrWhiteSpace(bootstrapTrace.Failure) ? "RazorVue Razor SG bootstrap patch failed." : bootstrapTrace.Failure);
+                failure);
             return true;
         }
 
@@ -437,7 +454,8 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             return true;
         }
 
-        if (bootstrapTrace.TailOutputRegisteredForCurrentContext)
+        if (bootstrapTrace.TailOutputRegisteredForCurrentContext ||
+            bootstrapTrace.TailOutputRegistered)
             return false;
 
         var compatibilityProbe = compatibilityProbeFactory();
@@ -452,11 +470,94 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             return true;
         }
 
+        diagnostic = Diagnostic.Create(
+            RazorVueRazorSgIntegrationNotActive,
+            candidate?.Location ?? Location.None,
+            DescribeTailRequiredComponents(tailRequiredSnapshots));
+        return true;
+    }
+
+    private static string DescribeTailRequiredComponents(ImmutableArray<RazorVueSemanticSnapshot> snapshots)
+        => snapshots.IsDefaultOrEmpty
+            ? "<unknown>"
+            : string.Join(
+                ", ",
+                snapshots
+                    .Select(static snapshot => snapshot.Descriptor.FullName)
+                    .OrderBy(static name => name, StringComparer.Ordinal));
+
+    internal static bool IsRazorSgTailRequired(RazorVueSemanticSnapshot snapshot)
+        => snapshot.RazorIrCarrier is null &&
+           snapshot.RazorSourceGeneratorDocument is null &&
+           (snapshot.BuildRenderTreeMethod is null ||
+            !RazorVueBuildRenderTreeAuthoringClassifier.IsHandwrittenBuildRenderTree(snapshot)) &&
+           IsLikelyRazorAuthoredComponentSnapshot(snapshot);
+
+    private static bool IsLikelyRazorAuthoredComponentSnapshot(RazorVueSemanticSnapshot snapshot)
+        => HasRazorSourceIdentity(snapshot.ComponentSymbol) ||
+           (snapshot.BuildRenderTreeMethod is not null &&
+            HasGeneratedRazorBuildRenderTreeSource(snapshot.BuildRenderTreeMethod));
+
+    private static bool HasGeneratedRazorBuildRenderTreeSource(IMethodSymbol buildRenderTreeMethod)
+    {
+        foreach (var syntaxReference in buildRenderTreeMethod.DeclaringSyntaxReferences)
+        {
+            if (HasRazorSourcePath(syntaxReference.SyntaxTree.FilePath))
+                return true;
+        }
+
+        foreach (var location in buildRenderTreeMethod.Locations)
+        {
+            if (!location.IsInSource)
+                continue;
+
+            var lineSpan = location.GetLineSpan();
+            if (HasRazorSourcePath(lineSpan.Path))
+                return true;
+
+            var mappedLineSpan = location.GetMappedLineSpan();
+            if (mappedLineSpan.HasMappedPath && HasRazorSourcePath(mappedLineSpan.Path))
+                return true;
+        }
+
         return false;
     }
 
-    private static ImmutableArray<RazorVueSemanticSnapshot> GetIntegrationEligibleHandwrittenBuildRenderTreeSnapshots(
-        RazorVueCompilationContext context)
+    private static bool HasRazorSourceIdentity(INamedTypeSymbol componentSymbol)
+    {
+        foreach (var syntaxReference in componentSymbol.DeclaringSyntaxReferences)
+        {
+            if (HasRazorSourcePath(syntaxReference.SyntaxTree.FilePath))
+                return true;
+        }
+
+        foreach (var location in componentSymbol.Locations)
+        {
+            if (!location.IsInSource)
+                continue;
+
+            var lineSpan = location.GetLineSpan();
+            if (HasRazorSourcePath(lineSpan.Path))
+                return true;
+
+            var mappedLineSpan = location.GetMappedLineSpan();
+            if (mappedLineSpan.HasMappedPath && HasRazorSourcePath(mappedLineSpan.Path))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool HasRazorSourcePath(string? path)
+        => !string.IsNullOrWhiteSpace(path) &&
+           (path!.EndsWith(".razor", StringComparison.OrdinalIgnoreCase) ||
+            path.EndsWith(".razor.cs", StringComparison.OrdinalIgnoreCase) ||
+            path.EndsWith(".razor.g.cs", StringComparison.OrdinalIgnoreCase));
+
+    private static ImmutableArray<RazorVueSemanticSnapshot> GetNormalGeneratorSnapshots(
+        RazorVueCompilationContext context,
+        bool enableRazorSgIntegration,
+        RazorVueGeneratorOutputMode outputMode)
     {
         var snapshots = RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(context);
         if (snapshots.IsDefaultOrEmpty)
@@ -465,14 +566,25 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         var builder = ImmutableArray.CreateBuilder<RazorVueSemanticSnapshot>();
         foreach (var snapshot in snapshots)
         {
-            if (snapshot.RazorSourceGeneratorDocument is not null || snapshot.RazorIrCarrier is not null)
+            if (snapshot.RazorSourceGeneratorDocument is not null)
                 continue;
 
-            if (snapshot.BuildRenderTreeMethod is not null &&
-                RazorVueBuildRenderTreeAuthoringClassifier.IsHandwrittenBuildRenderTree(snapshot))
+            if (snapshot.RazorIrCarrier is not null)
             {
-                builder.Add(snapshot);
+                if (!enableRazorSgIntegration &&
+                    outputMode == RazorVueGeneratorOutputMode.Legacy)
+                {
+                    builder.Add(snapshot);
+                }
+
+                continue;
             }
+
+            if (IsRazorSgTailRequired(snapshot))
+                continue;
+
+            if (!enableRazorSgIntegration || RazorVueBuildRenderTreeAuthoringClassifier.IsHandwrittenBuildRenderTree(snapshot))
+                builder.Add(snapshot);
         }
 
         return builder.ToImmutable();
@@ -505,6 +617,14 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             _ => RazorVueGenerationFailed
         };
         var location = TryCreateLocation(issueException.Origin) ?? candidate?.Location ?? Location.None;
+        if (descriptor == RazorVueGenerationFailed)
+        {
+            var owner = string.IsNullOrWhiteSpace(issueException.OwnerComponentFullName)
+                ? candidate?.ClassSymbol.ToDisplayString() ?? "RazorVue component"
+                : issueException.OwnerComponentFullName;
+            return Diagnostic.Create(descriptor, location, owner, issueException.Issue.Message);
+        }
+
         return Diagnostic.Create(descriptor, location, issueException.Issue.Message);
     }
 
@@ -1307,6 +1427,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         builder.Append("        internal const bool PostfixMethodFound = ").Append(ToCSharpBool(trace.PostfixMethodFound)).AppendLine(";");
         builder.Append("        internal const bool PatchSucceeded = ").Append(ToCSharpBool(trace.PatchSucceeded)).AppendLine(";");
         builder.Append("        internal const bool PatchFailed = ").Append(ToCSharpBool(trace.PatchFailed)).AppendLine(";");
+        builder.Append("        internal const bool PatchUnavailable = ").Append(ToCSharpBool(trace.PatchUnavailable)).AppendLine(";");
         builder.Append("        internal const bool PostfixInvoked = ").Append(ToCSharpBool(trace.PostfixInvoked)).AppendLine(";");
         builder.Append("        internal const bool HostOutputHookInstalled = ").Append(ToCSharpBool(trace.HostOutputHookInstalled)).AppendLine(";");
         builder.Append("        internal const bool HostOutputObserved = ").Append(ToCSharpBool(trace.HostOutputObserved)).AppendLine(";");

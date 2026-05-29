@@ -308,6 +308,10 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
                     if (HasTemplateShape(conditional.WhenTrue) || HasTemplateShape(conditional.WhenFalse))
                         return true;
                     break;
+                case RazorVueRecoveredSwitchConditionalNode conditional:
+                    if (HasTemplateShape(conditional.WhenTrue) || HasTemplateShape(conditional.WhenFalse))
+                        return true;
+                    break;
                 case RazorVueTemplateScopeNode templateScope:
                     if (HasTemplateShape(templateScope.Children))
                         return true;
@@ -341,6 +345,10 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             switch (child)
             {
                 case RazorVueConditionalNode conditional:
+                    if (HasUnsupportedTemplateNode(conditional.WhenTrue) || HasUnsupportedTemplateNode(conditional.WhenFalse))
+                        return true;
+                    break;
+                case RazorVueRecoveredSwitchConditionalNode conditional:
                     if (HasUnsupportedTemplateNode(conditional.WhenTrue) || HasUnsupportedTemplateNode(conditional.WhenFalse))
                         return true;
                     break;
@@ -398,6 +406,7 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
                 component.ImplicitDefaultSlotAssignments.Any(static assignment => RequiresImperativeScopedReplay(assignment.Children)),
             RazorVueTemplateScopeNode templateScope => RequiresImperativeScopedReplay(templateScope.Children),
             RazorVueConditionalNode conditional => RequiresImperativeScopedReplay(conditional.WhenTrue) || RequiresImperativeScopedReplay(conditional.WhenFalse),
+            RazorVueRecoveredSwitchConditionalNode conditional => RequiresImperativeScopedReplay(conditional.WhenTrue) || RequiresImperativeScopedReplay(conditional.WhenFalse),
             RazorVueForEachNode loop => RequiresImperativeScopedReplay(loop.Body),
             RazorVueForNode loop => RequiresImperativeScopedReplay(loop.Body),
             _ => false
@@ -452,6 +461,9 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
                     break;
                 case RazorVueConditionalNode conditional when ContainsComponentName(conditional.WhenTrue, snapshot, componentName) ||
                                                              ContainsComponentName(conditional.WhenFalse, snapshot, componentName):
+                    return true;
+                case RazorVueRecoveredSwitchConditionalNode conditional when ContainsComponentName(conditional.WhenTrue, snapshot, componentName) ||
+                                                                            ContainsComponentName(conditional.WhenFalse, snapshot, componentName):
                     return true;
                 case RazorVueTemplateScopeNode templateScope when ContainsComponentName(templateScope.Children, snapshot, componentName):
                     return true;

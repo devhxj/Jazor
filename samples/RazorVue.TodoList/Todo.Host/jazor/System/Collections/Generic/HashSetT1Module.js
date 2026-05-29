@@ -1,9 +1,9 @@
 function ensureInstance(instance) {
-  if (instance === null)
+  if (instance == null)
     throw new Error("NullReferenceException: instance is null.");
 }
 function ensureOther(other) {
-  if (other === null)
+  if (other == null)
     throw new Error("ArgumentNullException: other is null");
 }
 export function createLookupSet(values) {

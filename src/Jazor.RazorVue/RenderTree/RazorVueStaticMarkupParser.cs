@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Jazor.RazorVue.Artifacts;
 
@@ -8,7 +9,8 @@ internal static class RazorVueStaticMarkupParser
 {
     public sealed record Dependencies(
         Func<string, IOperation> CreateLiteralStringOperation,
-        Func<string, Exception> CreateParseError);
+        Func<string, Exception> CreateParseError,
+        bool AllowRazorDirectiveAttributes = false);
 
     public static ImmutableArray<RazorVueRenderNode> Parse(
         string markup,
@@ -71,6 +73,7 @@ internal static class RazorVueStaticMarkupParser
                 index++;
                 SkipWhitespace(markup, ref index);
                 var startTagName = ReadName(markup, ref index);
+                ValidateStaticElementName(startTagName);
                 var attributes = ImmutableArray.CreateBuilder<RazorVueAttributeEntry>();
                 var selfClosing = false;
 
@@ -94,6 +97,7 @@ internal static class RazorVueStaticMarkupParser
                     }
 
                     var attributeName = ReadName(markup, ref index);
+                    ValidateStaticAttributeName(attributeName, dependencies);
                     SkipWhitespace(markup, ref index);
 
                     IOperation? attributeValue = null;
@@ -101,7 +105,9 @@ internal static class RazorVueStaticMarkupParser
                     {
                         index++;
                         SkipWhitespace(markup, ref index);
-                        attributeValue = dependencies.CreateLiteralStringOperation(ReadAttributeValue(markup, ref index));
+                        var attributeText = ReadAttributeValue(markup, ref index);
+                        ValidateStaticAttributeValue(attributeName, attributeText);
+                        attributeValue = dependencies.CreateLiteralStringOperation(attributeText);
                     }
 
                     attributes.Add(new RazorVueAttributeNode(
@@ -171,6 +177,106 @@ internal static class RazorVueStaticMarkupParser
         "track",
         "wbr"
     };
+
+    private static readonly HashSet<string> UnsupportedRawMarkupElementNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "applet",
+        "base",
+        "embed",
+        "iframe",
+        "link",
+        "meta",
+        "noembed",
+        "noframes",
+        "noscript",
+        "object",
+        "plaintext",
+        "script",
+        "style",
+        "template",
+        "textarea",
+        "title",
+        "xmp"
+    };
+
+    private static readonly HashSet<string> UnsupportedRawMarkupAttributeNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "formaction",
+        "srcdoc",
+        "v-html"
+    };
+
+    private static void ValidateStaticElementName(string tagName)
+    {
+        if (UnsupportedRawMarkupElementNames.Contains(tagName))
+        {
+            throw new InvalidOperationException(
+                $"RazorVue static markup does not support raw markup execution element '<{tagName}>'.");
+        }
+    }
+
+    private static void ValidateStaticAttributeName(
+        string attributeName,
+        Dependencies dependencies)
+    {
+        if (dependencies.AllowRazorDirectiveAttributes &&
+            IsRazorDirectiveAttributeName(attributeName))
+        {
+            return;
+        }
+
+        if ((attributeName.Length > 2 &&
+             attributeName.StartsWith("on", StringComparison.OrdinalIgnoreCase)) ||
+            IsVueDirectiveAttributeName(attributeName) ||
+            UnsupportedRawMarkupAttributeNames.Contains(attributeName))
+        {
+            throw new InvalidOperationException(
+                $"RazorVue static markup does not support raw markup execution attribute '{attributeName}'.");
+        }
+    }
+
+    private static void ValidateStaticAttributeValue(string attributeName, string attributeValue)
+    {
+        var normalized = NormalizeExecutableUrlCandidate(attributeValue);
+        if (StartsWithDangerousProtocol(normalized) ||
+            StartsWithExecutableDataUri(normalized))
+        {
+            throw new InvalidOperationException(
+                $"RazorVue static markup does not support raw markup execution URL in attribute '{attributeName}'.");
+        }
+    }
+
+    private static bool IsRazorDirectiveAttributeName(string attributeName)
+        => attributeName.Length > 1 &&
+           attributeName.StartsWith("@", StringComparison.Ordinal);
+
+    private static bool IsVueDirectiveAttributeName(string attributeName)
+        => attributeName.StartsWith("@", StringComparison.Ordinal) ||
+           attributeName.StartsWith(":", StringComparison.Ordinal) ||
+           attributeName.StartsWith("#", StringComparison.Ordinal) ||
+           attributeName.StartsWith("v-", StringComparison.OrdinalIgnoreCase);
+
+    private static string NormalizeExecutableUrlCandidate(string value)
+    {
+        var decoded = System.Net.WebUtility.HtmlDecode(value) ?? value;
+        var builder = new StringBuilder(decoded.Length);
+        foreach (var ch in decoded)
+        {
+            if (ch > ' ')
+                builder.Append(ch);
+        }
+
+        return builder.ToString();
+    }
+
+    private static bool StartsWithDangerousProtocol(string value)
+        => value.StartsWith("javascript:", StringComparison.OrdinalIgnoreCase) ||
+           value.StartsWith("vbscript:", StringComparison.OrdinalIgnoreCase);
+
+    private static bool StartsWithExecutableDataUri(string value)
+        => value.StartsWith("data:text/html", StringComparison.OrdinalIgnoreCase) ||
+           value.StartsWith("data:application/xhtml+xml", StringComparison.OrdinalIgnoreCase) ||
+           value.StartsWith("data:image/svg+xml", StringComparison.OrdinalIgnoreCase);
 
     private static void SkipWhitespace(string text, ref int index)
     {

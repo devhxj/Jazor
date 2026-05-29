@@ -14,10 +14,12 @@ internal static class RazorSourceGeneratorBootstrapState
     private static int _postfixMethodFound;
     private static int _patchSucceeded;
     private static int _patchFailed;
+    private static int _patchUnavailable;
     private static int _postfixInvoked;
     private static int _hostOutputHookInstalled;
     private static int _hostOutputObserved;
     private static int _tailOutputRegistered;
+    private static int _tailOutputRegistrationVersion;
     private static int _testHookObserved;
     private static string? _failure;
     private static string? _tailOutputRegistrationKind;
@@ -60,6 +62,12 @@ internal static class RazorSourceGeneratorBootstrapState
         Interlocked.Exchange(ref _patchFailed, 1);
     }
 
+    internal static void MarkPatchUnavailable(string failure)
+    {
+        _failure = failure;
+        Interlocked.Exchange(ref _patchUnavailable, 1);
+    }
+
     internal static void MarkPostfixInvoked()
         => Interlocked.Exchange(ref _postfixInvoked, 1);
 
@@ -72,6 +80,7 @@ internal static class RazorSourceGeneratorBootstrapState
     internal static void MarkTailOutputRegistered(object? contextKey = null, string? registrationKind = null)
     {
         Interlocked.Exchange(ref _tailOutputRegistered, 1);
+        Interlocked.Increment(ref _tailOutputRegistrationVersion);
         if (!string.IsNullOrWhiteSpace(registrationKind))
             _tailOutputRegistrationKind = registrationKind;
 
@@ -90,7 +99,15 @@ internal static class RazorSourceGeneratorBootstrapState
     internal static bool WasTestHookObserved()
         => Volatile.Read(ref _testHookObserved) != 0;
 
+    internal static int GetTailOutputRegistrationVersion()
+        => Volatile.Read(ref _tailOutputRegistrationVersion);
+
     internal static RazorSourceGeneratorBootstrapTrace CreateTrace(object? contextKey = null)
+        => CreateTrace(contextKey, tailOutputRegistrationVersionBeforeInitialize: null);
+
+    internal static RazorSourceGeneratorBootstrapTrace CreateTrace(
+        object? contextKey,
+        int? tailOutputRegistrationVersionBeforeInitialize)
         => new(
             HasAttempted: Volatile.Read(ref _attempted) != 0,
             IsInstalled: Volatile.Read(ref _installed) != 0,
@@ -101,18 +118,29 @@ internal static class RazorSourceGeneratorBootstrapState
             PostfixMethodFound: Volatile.Read(ref _postfixMethodFound) != 0,
             PatchSucceeded: Volatile.Read(ref _patchSucceeded) != 0,
             PatchFailed: Volatile.Read(ref _patchFailed) != 0,
+            PatchUnavailable: Volatile.Read(ref _patchUnavailable) != 0,
             PostfixInvoked: Volatile.Read(ref _postfixInvoked) != 0,
             HostOutputHookInstalled: Volatile.Read(ref _hostOutputHookInstalled) != 0,
             HostOutputObserved: Volatile.Read(ref _hostOutputObserved) != 0,
             TailOutputRegistered: Volatile.Read(ref _tailOutputRegistered) != 0,
             CurrentContextKeyAvailable: contextKey is not null,
-            TailOutputRegisteredForCurrentContext: IsTailOutputRegisteredForContext(contextKey),
+            TailOutputRegisteredForCurrentContext: IsTailOutputRegisteredForContext(
+                contextKey,
+                tailOutputRegistrationVersionBeforeInitialize),
             TailOutputRegistrationKind: GetTailOutputRegistrationKind(contextKey),
             TestHookObserved: Volatile.Read(ref _testHookObserved) != 0,
             Failure: _failure);
 
-    private static bool IsTailOutputRegisteredForContext(object? contextKey)
+    internal static bool HasTailOutputRegistrationAfter(int version)
+        => Volatile.Read(ref _tailOutputRegistrationVersion) > version;
+
+    private static bool IsTailOutputRegisteredForContext(
+        object? contextKey,
+        int? tailOutputRegistrationVersionBeforeInitialize)
     {
+        if (tailOutputRegistrationVersionBeforeInitialize is int version)
+            return HasTailOutputRegistrationAfter(version);
+
         if (contextKey is null)
             return false;
 
@@ -148,10 +176,12 @@ internal static class RazorSourceGeneratorBootstrapState
         Interlocked.Exchange(ref _postfixMethodFound, 0);
         Interlocked.Exchange(ref _patchSucceeded, 0);
         Interlocked.Exchange(ref _patchFailed, 0);
+        Interlocked.Exchange(ref _patchUnavailable, 0);
         Interlocked.Exchange(ref _postfixInvoked, 0);
         Interlocked.Exchange(ref _hostOutputHookInstalled, 0);
         Interlocked.Exchange(ref _hostOutputObserved, 0);
         Interlocked.Exchange(ref _tailOutputRegistered, 0);
+        Interlocked.Exchange(ref _tailOutputRegistrationVersion, 0);
         Interlocked.Exchange(ref _testHookObserved, 0);
         lock (ContextSync)
         {
@@ -191,6 +221,7 @@ internal sealed record RazorSourceGeneratorBootstrapTrace(
     bool PostfixMethodFound,
     bool PatchSucceeded,
     bool PatchFailed,
+    bool PatchUnavailable,
     bool PostfixInvoked,
     bool HostOutputHookInstalled,
     bool HostOutputObserved,

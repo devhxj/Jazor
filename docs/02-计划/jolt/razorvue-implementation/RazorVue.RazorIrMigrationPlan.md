@@ -1,13 +1,13 @@
-# RazorVue Razor IR 迁移计划
+# RazorVue Razor IR 增强计划
 
 > Status: 活跃计划
-> Positioning: RazorVue 模板语义前端从 `BuildRenderTree` / `IOperation` 过渡到 SDK Razor SG 内存 IR / Jazor 中立 Razor IR DTO 的专门执行计划。
-> Note: 本计划只负责 template frontend 迁移，不默认重写现有 descriptor、setup/lifecycle lowering、artifact identity 或宿主交接主链。
+> Positioning: RazorVue 组件整体 lowering 以 Roslyn / Razor SG 生成语义为基线，SDK Razor SG 内存 IR / Jazor 中立 Razor IR DTO 作为 `.razor` SFC 精度增强层。
+> Note: 本计划负责纠正“IR 替换 BuildRenderTree 主语义前端”的旧方向；它不默认重写现有 descriptor、setup/lifecycle lowering、artifact identity 或宿主交接主链。
 
-本文档将 RazorVue 的模板前端迁移拆成可执行阶段。
+本文档将 RazorVue 的 Razor IR 增强路线拆成可执行阶段。
 
-它不把 “改用 Razor IR” 视为一次性替换。
-它要求先证明接线、语义等价和分层边界，再推动默认前端切换。
+它不把 “改用 Razor IR” 视为一次性替换，也不再把 Razor IR 设定为取代 Roslyn / `BuildRenderTree` 的主语义来源。
+它要求先证明接线、语义基线、增强边界和分层边界，再推动实现收敛。
 
 相关文档：
 
@@ -18,40 +18,43 @@
 - [RazorVue.RazorSg.TailInjection.Guidance.md](./RazorVue.RazorSg.TailInjection.Guidance.md)
 - [zazzy-whistling-lemon.md](../../../03-完成/razorvue/zazzy-whistling-lemon.md)
 
-## 1. 迁移目标
+## 1. 增强目标
 
-本迁移只在以下目标上达成一致：
+本计划只在以下目标上达成一致：
 
-1. 不再把 `BuildRenderTree` 恢复视为 RazorVue 模板语义前端的长期路线
-2. 使用 SDK Razor SG 已持有的内存 IR，并在生产侧投影到 Jazor 自有中立 IR DTO，获取更直接的模板结构信息
-3. 保留现有 RazorVue 下游主链：
+1. 把继承 `ComponentBase`、实现 `IVueComponent` 且带 `[ECMAScriptModule]` 的类型视为 RazorVue 特殊组件入口，并以合并后的 `INamedTypeSymbol` / partial component class 作为整体 lowering 单元
+2. 以 Roslyn symbol / `IOperation` 和官方 Razor SG 生成的 `BuildRenderTree` 作为组件渲染语义基线；手写 `.cs` `BuildRenderTree` 组件同样使用该基线，但由 analysis/source-generator 普通路径触发
+3. 使用 SDK Razor SG 已持有的内存 IR，并在生产侧投影到 Jazor 自有中立 IR DTO，作为 `.razor` 组件的 SFC 增强信息，而不是替代组件整体语义
+4. 保留现有 RazorVue 下游主链：
    - descriptor 提取
    - lifecycle / setup logic lowering
    - source-origin
    - identity / HMR boundary
    - catalog / emit / host handoff
-4. 在 parity 证明前，不删除旧前端
+5. 在 IR 增强路径证明前，不删除 Roslyn/`BuildRenderTree` 语义基线
 
 ## 2. 非目标
 
-本迁移默认不做以下事情：
+本计划默认不做以下事情：
 
 1. 不把 `@code` 文本直接拼进 `<script setup>`
 2. 不把 `Jazor.Analyzer` 变成脱离当前 SDK Razor SG 主线的“自建 RazorCompile/classic phase 宿主”
 3. 不因为引入 IR 就同步删除 canonical / SFC / artifact lowering
 4. 不在第一步就承诺覆盖所有 Razor 语法形状
 5. 不把“不确定如何映射”的节点静默降级成看起来合理的模板字符串
+6. 不把 Razor IR 当成组件语义权威；参数、生命周期、helper method/class、partial `.razor.cs` 和 `@code` 成员仍以 Roslyn 合并后的组件 symbol / `IOperation` 为准
+7. 不把组件 descriptor 成员作为普通运行时代码重复 lower；descriptor surface 是整体组件类中的受控子集
 
 ## 3. 前置条件
 
-在以下条件成立之前，不要开始真正的默认前端切换：
+在以下条件成立之前，不要开始真正的 IR 增强默认接线：
 
-1. 当前 `BuildRenderTree` 前端已覆盖仓库主测试面中的已支持子集
+1. 当前 Roslyn/`BuildRenderTree` 语义基线已覆盖仓库主测试面中的已支持子集
 2. 现有 RazorVue SFC / artifact 路径具备稳定测试基线
-3. 有明确的 Razor SG tail 注入与 HostOutput 锚点可以承载官方内存 IR 获取
-4. 团队接受 template frontend 替换优先于全链路重写
+3. 有明确的 Razor SG tail 注入与 HostOutput / implementation source-output 锚点可以承载官方 generated C#、source mapping 和内存 IR 获取
+4. 团队接受 “组件整体 lowering + IR 增强” 优先于 “IR 替换 template frontend”
 
-如果这些前提不成立，IR 迁移将变成边做边猜。
+如果这些前提不成立，IR 增强将变成边做边猜。
 
 ## 4. 阶段 1. 宿主接线证明
 
@@ -158,7 +161,7 @@
   - `ProductionRazorCompilerReferenceTests` 覆盖 `Jazor.Analyzer` / `Jazor.RazorVue` / `Jazor` 包装项目不得引用或打包 Razor Compiler / Razor Utilities Shared
   - `dotnet pack src/Jazor/Jazor.csproj -c Release -v minimal` 已成功，生成包的 analyzer/lib payload 未包含 Razor Compiler / Razor Utilities Shared
 - 本轮 fail-fast 边界进一步收口：
-  - `RazorSourceGeneratorInitializeHookInstaller` 在 Harmony patch 官方 Razor SG 前先执行 `Initialize(...)` IL hash 与 declared method surface 校验
+  - `RazorSourceGeneratorInitializeHookInstaller` 在自有 native `Initialize` hook 安装前先执行 `Initialize(...)` IL hash 与 declared method surface 校验
   - assembly path / version / MVID 只保留为观测信息，不作为正式兼容门
   - unsupported SDK shape 会在 patch 前被拒绝，并通过 bootstrap trace 记录 failure
   - tail output 启用且当前 compilation 存在 RazorVue component candidate 时，如果读不懂官方 output shape、没有收到 Razor SG document 或只收到 suppressed document，必须报告 `JAZORVGA020`
@@ -182,9 +185,9 @@
   - `Jazor.EmitTest` RazorVue 过滤切片 45/45 通过
   - `CreateLocalPackage_IncludesRazorVueAuthoringAssets` 已覆盖当前 analyzer payload，并加入 Razor Compiler / Razor Utilities Shared 负向包内容守卫
   - `samples/RazorVue.TodoList/build-local.cs` 已通过本地 pack 样例验证，当前输出 `razorvueSfcArtifacts=2`
-  - `samples/RazorVue.TodoList/todo-consumer` 已通过 `dotnet run --file .\scripts\run-deno.cs -- task build`，底层调用仓库内 bundled `deno.exe`，证明生成 SFC 可被纯 Deno SFC 预编译 + `deno bundle` production build 消费
-  - `samples/RazorVue.TodoList/todo-consumer` 已通过 `dotnet run --file .\scripts\run-deno.cs -- task smoke:ssr`，证明生成 SFC 可经纯 Deno 预编译、Vue server renderer 和 Vuetify plugin 做 runtime render
-  - `samples/RazorVue.TodoList/todo-consumer` 已通过 `dotnet run --file .\scripts\run-deno.cs -- task smoke:bundle-api`，证明同一预编译入口也可被 `Deno.bundle()` API 消费
+  - `samples/RazorVue.TodoList/Todo.Host/consumer` 已通过 `dotnet run --file .\scripts\run-deno.cs -- task build`，底层调用仓库内 bundled `deno.exe`，证明生成 SFC 可被纯 Deno SFC 预编译 + `deno bundle` production build 消费
+  - `samples/RazorVue.TodoList/Todo.Host/consumer` 已通过 `dotnet run --file .\scripts\run-deno.cs -- task smoke:ssr`，证明生成 SFC 可经纯 Deno 预编译、Vue server renderer 和 Vuetify plugin 做 runtime render
+  - `samples/RazorVue.TodoList/Todo.Host/consumer` 已通过 `dotnet run --file .\scripts\run-deno.cs -- task smoke:bundle-api`，证明同一预编译入口也可被 `Deno.bundle()` API 消费
   - SFC component prop lowering 已保留 literal 类型语义：字符串 literal 继续静态输出，Boolean / numeric 等非字符串 literal 输出 Vue bound prop，当前 TodoList 中 `VContainer :fluid="true"`、`VCol :cols="12"` 不再触发 Vue prop 类型 warning
   - `Build_LocalPackages_WithExternalRazorSgSfcConsumer_EmitsVueSfcArtifacts` 已通过，证明独立临时 consumer 可只通过 NuGet 包、官方 Razor SG 和 `.razor` authoring 生成 SFC artifact
   - 最新 `dotnet pack src/Jazor/Jazor.csproj -c Release -v minimal` 仍需在 sample/consumer smoke 前复跑；包 payload 不得回退携带 Razor Compiler / Razor Utilities Shared
@@ -240,18 +243,18 @@
   - 它更适合用于 IR 形状盘点和辅助验证
   - 正式生产主线需要继续收敛到当前 SDK Razor source generator 已持有的内存 IR 结果和 Jazor 中立 IR DTO 上
 
-## 6. 阶段 3. IR 到模板中间模型映射
+## 6. 阶段 3. IR 增强到模板中间模型
 
 目标：
 
-- 用 Razor IR 替换旧 template frontend，而不是直接生成最终 SFC 文本
+- 用 Razor IR 完善 Roslyn/`BuildRenderTree` 语义基线生成的 canonical/SFC semantic model，而不是直接生成最终 SFC 文本，也不是替换组件整体 lowering
 
 任务：
 
-- 选择迁移目标：
-  - 复用现有 `RazorVueRenderFragment` / canonical template 输入形状
-  - 或定义新模板中间模型，并提供显式适配层
-- 为以下形状建立映射：
+- 选择增强目标：
+  - 优先在现有 `RazorVueRenderFragment` / canonical template / SFC semantic model 上附加或修正信息
+  - 只有现有模型无法承载真实语义时，才定义新中间模型，并提供显式适配层
+- 为以下形状建立增强映射：
   - HTML element
   - component
   - text / interpolation
@@ -260,28 +263,28 @@
   - foreach
   - slot / child content
 - 显式处理 source-origin 采集
-- 对无法可靠映射的节点抛出结构化失败，而不是直接拼模板文本
+- 对无法可靠增强的节点保留 Roslyn/`BuildRenderTree` 基线，或在基线也不可用时抛出结构化失败；不得直接拼模板文本
 
 验收：
 
-- 新前端输出可以被当前 canonical / SFC / artifact lowering 消费
-- 下游不需要为前端迁移重写 setup/lifecycle/descriptor 主链
-- source-origin 不因为前端迁移丢失
+- IR 增强后的模型可以被当前 canonical / SFC / artifact lowering 消费
+- 下游不需要为 IR 增强重写 setup/lifecycle/descriptor 主链
+- source-origin 不因为增强路径丢失
 
 验证：
 
 - 针对每种已支持节点形状有单元测试
-- 新前端能驱动至少一个真实组件走完当前 template lowering 主链
+- 至少一个真实 `.razor` 组件能在 Roslyn/`BuildRenderTree` 基线 + IR 增强路径下走完当前 SFC 主链
 
-## 7. 阶段 4. parity 测试
+## 7. 阶段 4. 基线/增强 parity 测试
 
 目标：
 
-- 证明新旧前端在已支持子集上语义等价
+- 证明 IR 增强不会改变已支持子集的运行语义，只提升 source-origin、template fidelity 或 SFC 输出精度
 
 任务：
 
-- 建立新旧前端双跑测试
+- 建立 Roslyn/`BuildRenderTree` 基线与 IR 增强输出双跑测试
 - 至少比较：
   - 模板节点形状
   - `if` / `foreach` 结构
@@ -296,41 +299,41 @@
 验收：
 
 - 已支持子集的语义差异是显式可见的
-- 不存在“默认切换后再看哪里坏了”的盲切
+- 不存在“启用增强后再看哪里坏了”的盲切
 
 验证：
 
 - 有专门的 parity 测试类
 - parity 报告能指出具体组件/节点形状差异
 
-## 8. 阶段 5. 默认切换
+## 8. 阶段 5. 默认增强接线
 
 目标：
 
-- 在验证通过后，将 Razor IR 前端设为默认模板前端
+- 在验证通过后，将 `.razor` 组件默认接入 Razor IR 增强层，同时保留 Roslyn/`BuildRenderTree` 语义基线
 
 任务：
 
 - 引入受控切换方式：
   - feature flag
   - 配置
-  - 或默认新前端 + 仅限手写 `BuildRenderTree` 的显式 fallback
-- 将主 pipeline 默认指向新前端
-- 不保留“IR 失败就静默回退旧前端”的保守策略
-- 明确唯一允许回退的边界：
-  - 当前组件没有可绑定的 Razor 文档
-  - 且 `BuildRenderTree` 被判定为源码手写 authoring，而不是 Razor 生成产物
-- 其余 Razor 组件一律要求 SDK Razor SG document / 中立 IR 投影成功；失败直接报错
+  - 或默认启用 `.razor` IR 增强 + 基线保底
+- 主 pipeline 默认先构建组件整体语义和 Roslyn/`BuildRenderTree` 基线，再应用可用的 Razor IR 增强
+- 不保留“IR 失败就静默伪造更精确 SFC”的保守策略
+- 明确触发边界：
+  - 纯 hand-written `.cs` `BuildRenderTree` 组件没有 Razor 文档，只走 analysis/source-generator 普通路径和 Roslyn/`BuildRenderTree` 基线
+  - `.razor` 组件必须在 Razor SG 后触发，使用官方 generated C# / `BuildRenderTree` 语义基线，并消费 SDK Razor SG document / 中立 IR 作为增强输入
+- `.razor` 组件无法取得 Razor SG document / 中立 IR 时，可以保留 Roslyn/`BuildRenderTree` 基线输出，但必须标记增强缺失并保持诊断可定位；如果连 generated render body / Roslyn operation 也不可用，则直接报错
 
 验收：
 
-- 默认构建路径不再依赖 `BuildRenderTree` 恢复模板结构
-- 切换策略是显式的，不依赖隐式异常吞掉后换路
+- 默认构建路径以组件整体语义和 Roslyn/`BuildRenderTree` 语义基线为主，Razor IR 只提升 `.razor` SFC 精度
+- 接线策略是显式的，不依赖隐式异常吞掉后换路
 
 验证：
 
-- RazorVue 主测试面在默认新前端下通过
-- 有针对“手写 `BuildRenderTree` 才允许 fallback”和“Razor 组件缺文档直接报错”的测试
+- RazorVue 主测试面在默认增强接线下通过
+- 有针对“纯手写 `BuildRenderTree` 只能 analysis 触发”和“.razor 组件 Razor SG 后触发并应用可用增强”的测试
 
 当前已落地的阶段 5 边界收敛：
 
@@ -348,31 +351,31 @@
   - 保持官方 `.razor.g.cs` 与 HostOutput 行为原样
   - 生产侧通过反射中立 IR 投影消费官方结果，不引用 Razor Compiler
 
-## 9. 阶段 6. 旧前端清理
+## 9. 阶段 6. 旧分叉清理
 
 目标：
 
-- 在默认路线稳定后清理过渡实现
+- 在默认路线稳定后清理把 Razor IR 当成独立主前端的分叉实现
 
 任务：
 
-- 统计旧 `BuildRenderTree` 前端的剩余依赖点
-- 仅在以下条件全部满足后才删除旧前端：
+- 统计旧 “IR frontend 替换 BuildRenderTree frontend” 分叉的剩余依赖点
+- 仅在以下条件全部满足后才删除或合并旧分叉：
   - parity 已证明
   - 主测试面稳定
   - source-origin / diagnostics / identity 未退化
-  - 下游无旧前端特有耦合
-- 删除或 obsolete 旧前端类型，并更新文档
+  - 下游无前端特有耦合
+- 删除、obsolete 或重命名误导性的前端类型，并更新文档
 
 验收：
 
-- 仓库默认路线不再以 `BuildRenderTree` 为模板语义前端
+- 仓库默认路线不再把 Razor IR 作为替代组件整体 lowering 的主语义前端
 - 清理发生在验证之后，而不是设计预期阶段
 
 验证：
 
-- 删除旧前端后，主 RazorVue 测试面仍通过
-- 相关文档不再把 `BuildRenderTree` 提取写成长期架构
+- 清理旧分叉后，主 RazorVue 测试面仍通过
+- 相关文档不再把 Razor IR 写成取代 Roslyn/`BuildRenderTree` 语义基线的长期架构
 
 ## 10. 推荐的 PR 顺序
 
@@ -403,35 +406,35 @@
 - 最小 RazorVue SFC artifact/catalog 同轮进入 final compilation
 - package / analyzer 装载最小验证
 
-### PR4. IR 节点盘点与最小映射
+### PR4. IR 节点盘点与最小增强映射
 
 包含：
 
 - IR 节点样例
-- 最小 template 中间模型映射
+- 最小 canonical/SFC semantic 增强映射
 - 单元测试
 
-### PR5. parity 测试框架
+### PR5. 基线/增强 parity 测试框架
 
 包含：
 
-- 新旧前端双跑
+- Roslyn/`BuildRenderTree` 基线与 IR 增强双跑
 - 差异报告
 - 已支持子集基线
 
-### PR6. 默认前端切换
+### PR6. 默认增强接线
 
 包含：
 
-- 切换策略
-- 仅限手写 `BuildRenderTree` 的 fallback
+- `.razor` SG 后触发 + IR 增强接线策略
+- 纯手写 `BuildRenderTree` analysis/source-generator 触发边界
 - 主测试面验证
 
-### PR7. 旧前端清理
+### PR7. 旧分叉清理
 
 包含：
 
-- obsolete / 删除旧提取器
+- obsolete / 删除或重命名误导性的 IR-first 主前端分叉；当前旧 preferred frontend 已重命名为 legacy compatibility route
 - 文档更新
 - 最终回归验证
 
@@ -440,23 +443,22 @@
 建议的测试分层：
 
 1. SDK Razor SG document / 中立 IR 投影测试
-2. IR 节点映射测试
+2. IR 节点增强映射测试
 3. template source-origin 测试
-4. 新旧前端 parity 测试
-5. 默认切换测试
-6. 旧前端清理后的回归测试
+4. 基线/增强 parity 测试
+5. 默认增强接线测试
+6. 旧分叉清理后的回归测试
 7. Razor SG tail injection 指纹与 fail-fast 测试
 
 建议的早期测试名称：
 
 - `RazorVue_RazorDocumentProvider_ComponentDocument_CreatesCodeDocument`
-- `RazorVue_RazorIr_ElementNode_MapsToTemplateElement`
-- `RazorVue_RazorIr_ComponentNode_MapsToTemplateComponent`
-- `RazorVue_RazorIr_IfForeach_MapToStructuredTemplateNodes`
-- `RazorVue_TemplateFrontends_BuildRenderTreeAndIr_AgreeOnSupportedSubset`
-- `RazorVue_TemplateFrontend_DefaultsToRazorIr_WhenParityGatePasses`
-- `RazorVue_TemplateFrontend_FallsBackOnlyForHandwrittenBuildRenderTree`
-- `RazorVue_TemplateFrontend_RazorGeneratedComponentWithoutBoundDocument_FailsFast`
+- `RazorVue_RazorIr_ElementNode_EnhancesTemplateElement`
+- `RazorVue_RazorIr_ComponentNode_EnhancesTemplateComponent`
+- `RazorVue_RazorIr_IfForeach_EnhancesStructuredTemplateNodes`
+- `RazorVue_TemplateBaseline_BuildRenderTreeAndIrEnhanced_AgreeOnRuntimeSemantics`
+- `RazorVue_TemplateBaseline_HandwrittenBuildRenderTree_EmitsFromAnalyzerPath`
+- `RazorVue_TemplateBaseline_RazorComponent_EmitsFromRazorSgTailPath`
 - `RazorVue_Generator_SameDriverRun_DoesNotSeeCarrierPartialFromAnotherGenerator`
 - `RazorVue_RazorSourceGenerator_HostOutput_ExposesCodeDocument_ForPhysicalPath`
 - `RazorVue_RazorSourceGenerator_TailInjection_AddsRazorVueSourceOutput`
@@ -474,31 +476,32 @@
 | Razor Compiler 被重新引入生产项目 | 高 | `ProductionRazorCompilerReferenceTests` 锁定 Analyzer/RazorVue/Jazor 包装项目不得引用或打包 Razor Compiler / Razor Utilities Shared；旧 RazorExtension 项目已删除 |
 | Tail output 静默丢失 catalog/artifact | 高 | enabled + RazorVue candidate 场景下输入不可读、无 Razor SG document、suppressed-only、bridge failed 均报告 `JAZORVGA020`；无 candidate 场景 no-op 防误报 |
 | IR 形状与预期不一致 | 高 | 先做节点盘点和样例归档，再做正式映射 |
-| 新前端破坏 setup/lifecycle/source-origin | 高 | 迁移只替换 template frontend，保留下游主链，强制 parity 测试 |
-| 切换后回归难定位 | 中 | 建双跑 parity 报告，并把 fallback 严格限制为手写 `BuildRenderTree` authoring |
-| 过早删除旧前端 | 中 | 把清理延后到默认切换稳定之后 |
+| IR 增强破坏 setup/lifecycle/source-origin | 高 | 增强只补 canonical/SFC 信息，保留下游主链和 Roslyn/`BuildRenderTree` 基线，强制 parity 测试 |
+| 增强接线后回归难定位 | 中 | 建双跑 parity 报告，并把手写 `.cs` 与 `.razor` SG 后触发边界分开测试 |
+| 过早删除基线或旧分叉 | 中 | 不删除 Roslyn/`BuildRenderTree` 语义基线；旧 IR-first 兼容路线只能保留为显式 legacy coverage，不能回到默认生产路线 |
 
 ## 13. 完成门
 
-Razor IR 模板前端迁移仅在以下条件全部满足时才算完成：
+Razor IR 增强计划仅在以下条件全部满足时才算完成：
 
 1. SDK Razor SG document / 中立 IR 投影路径稳定
-2. IR 到模板中间模型的已支持映射完成
-3. 新旧前端 parity 在主支持子集上已证明
-4. 默认前端已切换到 Razor IR
+2. IR 到 canonical/SFC semantic model 的已支持增强映射完成
+3. 基线/增强 parity 在主支持子集上已证明
+4. `.razor` 默认路径已接入 SG 后 IR 增强，纯手写 `BuildRenderTree` 默认路径仍由 analysis/source-generator 触发
 5. source-origin / diagnostics / identity 未退化
-6. 旧 `BuildRenderTree` 前端已删除或降为非默认且有明确清理计划
+6. 旧 “IR 替换主前端” 分叉已删除、obsolete 或有明确清理计划，Roslyn/`BuildRenderTree` 语义基线保留
 
 ## 14. 结论
 
-使用 SDK Razor SG 内存 IR / Jazor 中立 IR DTO 代替 `BuildRenderTree` 是必要方向。
+使用 SDK Razor SG 内存 IR / Jazor 中立 IR DTO 增强 `.razor` SFC 输出是必要方向；用它代替 Roslyn/`BuildRenderTree` 作为组件主语义来源不是正确方向。
 
 正确吸收当前补充方案的方式是：
 
-1. 接受 SDK Razor SG 内存 IR / Jazor 中立 IR DTO 取代 `BuildRenderTree` 作为长期 template frontend
-2. 接受“通过当前 SDK Razor SG 已持有的内存 IR 结果接入，而不是自建 classic / path 回读主线”
-3. 接受“受控 IL 尾部注入 + 并列 source output”作为当前源码阅读和实际测试后的正式 SG 接入方案
-4. 不接受“直接从 IR 拼最终 SFC 文本，并把 `@code` 文本直接并入 `<script setup>`，同时绕过现有 descriptor / lifecycle / setup / artifact 主链”的一步到位切法
+1. 接受 Roslyn 合并后的组件类和官方 Razor SG generated render body 作为长期语义基线
+2. 接受 SDK Razor SG 内存 IR / Jazor 中立 IR DTO 作为 `.razor` SFC 增强层，而不是组件主语义替代品
+3. 接受“通过当前 SDK Razor SG 已持有的内存 IR 结果接入，而不是自建 classic / path 回读主线”
+4. 接受“受控 IL 尾部注入 + 并列 source output”作为当前源码阅读和实际测试后的正式 SG 接入方案
+5. 不接受“直接从 IR 拼最终 SFC 文本，并把 `@code` 文本直接并入 `<script setup>`，同时绕过现有 descriptor / lifecycle / setup / artifact 主链”的一步到位切法
 
 因此，正确的做法不是直接跳到“从 IR 拼 SFC 文本并删除旧链”，
-而是把 template frontend 迁移当成一个有 Razor SG 尾部注入、Razor IR document 输入、结构映射、parity 验证和默认切换门的独立工程任务。
+而是把 `.razor` IR 接入当成一个有 Razor SG 尾部注入、Razor IR document 输入、canonical/SFC 增强映射、parity 验证和默认增强接线门的独立工程任务。

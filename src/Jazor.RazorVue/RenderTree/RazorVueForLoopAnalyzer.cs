@@ -73,11 +73,17 @@ internal static class RazorVueForLoopAnalyzer
             limitOperand = binaryCondition.LeftOperand;
         }
 
+        if (ContainsLoopVariable(limitOperand, declarator.Symbol, unwrap))
+            return false;
+
         if (operation.AtLoopBottom.Length != 1 ||
             !TryAnalyzeForStep(unwrap(operation.AtLoopBottom[0]), declarator.Symbol, unwrap, out var stepKind, out var stepValue))
         {
             return false;
         }
+
+        if (ContainsLoopVariable(stepValue, declarator.Symbol, unwrap))
+            return false;
 
         analyzedLoop = new AnalyzedForLoop(
             declarator.Symbol.Name,
@@ -222,6 +228,21 @@ internal static class RazorVueForLoopAnalyzer
         var current = unwrap(operation);
         return current is ILocalReferenceOperation localReference &&
                SymbolEqualityComparer.Default.Equals(localReference.Local, loopVariable);
+    }
+
+    private static bool ContainsLoopVariable(
+        IOperation? operation,
+        ILocalSymbol loopVariable,
+        Func<IOperation?, IOperation?> unwrap)
+    {
+        var current = unwrap(operation);
+        if (current is null)
+            return false;
+
+        if (TryMatchLoopVariable(current, loopVariable, unwrap))
+            return true;
+
+        return current.Descendants().Any(descendant => TryMatchLoopVariable(descendant, loopVariable, unwrap));
     }
 
     internal static void ValidateStaticLoopProgressIfProvable(

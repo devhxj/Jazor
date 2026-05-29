@@ -77,12 +77,25 @@ internal sealed partial class RazorVueExpressionEmitter
                                     imperative.VisibleParameters.Select(static parameter => parameter.Name).ToArray(),
                                     () =>
                                     {
-                                        var statements = _semanticWalker.TranslateStatementSequence(imperative.Operations, bodyArgument);
-                                        var functionBody = NormalizeImperativeFunctionBody(
-                                            new FunctionBody(NodeList.From(statements), strict: true),
-                                            builderAlias,
-                                            appendTerminalReturn: false);
-                                        return NormalizeImperativeFunctionText(functionBody.ToKnRECMAScript());
+                                        try
+                                        {
+                                            var statements = _semanticWalker.TranslateStatementSequence(imperative.Operations, bodyArgument);
+                                            var functionBody = NormalizeImperativeFunctionBody(
+                                                new FunctionBody(NodeList.From(statements), strict: true),
+                                                builderAlias,
+                                                appendTerminalReturn: false);
+                                            return NormalizeImperativeFunctionText(functionBody.ToKnRECMAScript());
+                                        }
+                                        catch (RazorVueCompilationIssueException)
+                                        {
+                                            throw;
+                                        }
+                                        catch (Exception ex) when (ex is NotSupportedException or OperationTransformationException)
+                                        {
+                                            throw CreateUnsupportedImperativeRenderCompilerBoundaryException(
+                                                imperative.Operations,
+                                                ex);
+                                        }
                                     })))))));
     }
 
@@ -172,7 +185,7 @@ internal sealed partial class RazorVueExpressionEmitter
     private void EnsureSupportedImperativeOperation(IOperation operation)
     {
         if (TryGetUnsupportedImperativeGotoOperation(operation, out var unsupportedGotoOperation))
-            throw CreateUnsupportedImperativeRenderLoweringException(unsupportedGotoOperation);
+            throw CreateUnsupportedImperativeGotoLoweringException(unsupportedGotoOperation);
 
         if (TryGetUnsupportedImperativeAsyncOperation(operation, out var unsupportedOperation))
             throw CreateUnsupportedImperativeRenderLoweringException(unsupportedOperation);
@@ -199,6 +212,11 @@ internal sealed partial class RazorVueExpressionEmitter
 
         return false;
     }
+
+    private RazorVueCompilationIssueException CreateUnsupportedImperativeGotoLoweringException(IOperation operation)
+        => CreateUnsupportedImperativeRenderLoweringException(
+            operation,
+            $"RazorVue imperative render lowering does not support 'goto' in component '{_snapshot.Descriptor.FullName}' because Jazor.Compiler does not provide an equivalent JavaScript lowering for arbitrary jump control flow.");
 
     private static bool TryGetUnsupportedImperativeAsyncOperation(
         IOperation? operation,
@@ -262,6 +280,30 @@ internal sealed partial class RazorVueExpressionEmitter
             detail,
             ImmutableArray<string>.Empty);
         return new RazorVueCompilationIssueException(issue, _snapshot.Descriptor.FullName, origin);
+    }
+
+    private RazorVueCompilationIssueException CreateUnsupportedImperativeRenderCompilerBoundaryException(
+        IReadOnlyList<IOperation> operations,
+        Exception exception)
+    {
+        var originOperation = operations.FirstOrDefault(static operation => operation.Syntax is not null) ??
+                              operations.FirstOrDefault();
+        var detail = $"RazorVue imperative render lowering could not translate component '{_snapshot.Descriptor.FullName}' through Jazor.Compiler. The render-function `.vue` artifact contract only supports compiler-lowerable synchronous render statements.";
+        if (!string.IsNullOrWhiteSpace(exception.Message))
+            detail += " " + exception.Message;
+
+        if (originOperation is not null)
+            return CreateUnsupportedImperativeRenderLoweringException(originOperation, detail);
+
+        var issue = new RazorVueCompilationIssue(
+            RazorVueIssueCode.UnsupportedImperativeRenderLowering,
+            RazorVueIssueSeverity.Error,
+            detail,
+            ImmutableArray<string>.Empty);
+        return new RazorVueCompilationIssueException(
+            issue,
+            _snapshot.Descriptor.FullName,
+            _snapshot.Origins.FirstOrDefault());
     }
 
     private static string DescribeUnsupportedImperativeOperation(IOperation operation)
@@ -433,7 +475,7 @@ internal sealed partial class RazorVueExpressionEmitter
                             $"RazorVue imperative render lowering only supports compile-time provable static MarkupString AddContent(...) in component '{_snapshot.Descriptor.FullName}'.");
                     }
 
-                    expression = builderTarget + ".append(" + EmitStaticMarkupExpression(staticMarkup, argument) + ")";
+                    expression = builderTarget + ".append(" + EmitStaticMarkupExpression(staticMarkup, argument, invocation) + ")";
                     return true;
                 }
 
@@ -449,7 +491,7 @@ internal sealed partial class RazorVueExpressionEmitter
                         $"RazorVue imperative render lowering only supports compile-time provable static AddMarkupContent(...) in component '{_snapshot.Descriptor.FullName}'.");
                 }
 
-                expression = builderTarget + ".append(" + EmitStaticMarkupExpression(markup, argument) + ")";
+                expression = builderTarget + ".append(" + EmitStaticMarkupExpression(markup, argument, invocation) + ")";
                 return true;
             case "AddAttribute":
                 expression = builderTarget + ".setAttribute(" + EmitImperativeArgument(invocation, argument, 1) + ", " + EmitImperativeComponentParameterValue(invocation, argument, builderTarget, 2) + ")";
@@ -1038,6 +1080,17 @@ internal sealed partial class RazorVueExpressionEmitter
         out string expression)
     {
         expression = string.Empty;
+        if (_isShouldRenderStatementRewriteScopeActive &&
+            _scopedLocalAliases is not null &&
+            RazorVueOperationNormalizer.Unwrap(operation.Target) is ILocalReferenceOperation shouldRenderLocalReference &&
+            _scopedLocalAliases.TryGetValue(shouldRenderLocalReference.Local, out var shouldRenderLocalAlias) &&
+            TryEmitShouldRenderMethodGroupDelegateInitializer(operation.Value, out var methodGroupExpression))
+        {
+            _ = argument;
+            expression = shouldRenderLocalAlias + " = " + methodGroupExpression;
+            return true;
+        }
+
         if (_imperativeBuilderAlias is null ||
             operation.Target is not ILocalReferenceOperation localReference)
         {
@@ -1100,7 +1153,10 @@ internal sealed partial class RazorVueExpressionEmitter
                 operation.Symbol,
                 RazorVueStaticMarkupValueHelper.IsMarkupStringType))
         {
-            return false;
+            throw CreateUnsupportedImperativeStaticMarkupLocalCarrierInvalidatedException(
+                operation,
+                operation.Symbol,
+                "MarkupString AddContent(...)");
         }
 
         var current = TryGetNormalizedImperativeVariableInitializer(operation) ??
@@ -1130,7 +1186,10 @@ internal sealed partial class RazorVueExpressionEmitter
                 localReference.Local,
                 RazorVueStaticMarkupValueHelper.IsMarkupStringType))
         {
-            return false;
+            throw CreateUnsupportedImperativeStaticMarkupLocalCarrierInvalidatedException(
+                operation,
+                localReference.Local,
+                "MarkupString AddContent(...)");
         }
 
         if (TryResolveImperativeStaticMarkupCarrierValue(operation.Value) is not { } resolution)
@@ -1282,6 +1341,19 @@ internal sealed partial class RazorVueExpressionEmitter
             $"RazorVue RenderFragment local '{local.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Declaration-initialized local carriers must remain source-stable.",
             ImmutableArray<string>.Empty);
         return new RazorVueCompilationIssueException(issue, _snapshot.Descriptor.FullName, origin);
+    }
+
+    private RazorVueCompilationIssueException CreateUnsupportedImperativeStaticMarkupLocalCarrierInvalidatedException(
+        IOperation operation,
+        ILocalSymbol local,
+        string api)
+    {
+        var carrierKind = RazorVueStaticMarkupValueHelper.IsMarkupStringType(local.Type)
+            ? "MarkupString"
+            : "static markup";
+        return CreateUnsupportedImperativeRenderLoweringException(
+            operation,
+            $"RazorVue imperative render lowering only supports compile-time provable static {api} in component '{_snapshot.Descriptor.FullName}'. RazorVue {carrierKind} local '{local.Name}' cannot be observed through later writes. Local carriers must remain source-stable.");
     }
 
     private RazorVueCompilationIssueException CreateImperativeComponentTypeCarrierInvalidatedException(
@@ -1934,19 +2006,31 @@ internal sealed partial class RazorVueExpressionEmitter
     private string EmitStaticMarkupExpression(string markup)
         => EmitStaticMarkupExpression(
             RazorVueStaticMarkupValueHelper.StaticMarkupResolution.Create(markup),
-            _compilerArgument);
+            _compilerArgument,
+            originOperation: null);
 
     private string EmitStaticMarkupExpression(
         RazorVueStaticMarkupValueHelper.StaticMarkupResolution resolution,
-        SenseArgument compilerArgument)
+        SenseArgument compilerArgument,
+        IOperation? originOperation)
     {
-        var nodes = RazorVueStaticMarkupParser.Parse(
-            resolution.Markup,
-            ImmutableArray<RazorVueSourceOrigin>.Empty,
-            new RazorVueStaticMarkupParser.Dependencies(
-                CreateImperativeLiteralStringOperation,
-                detail => new NotSupportedException(
-                    $"RazorVue imperative render lowering could not parse static markup block '{resolution.Markup}' in component '{_snapshot.Descriptor.FullName}': {detail}")));
+        ImmutableArray<RazorVueRenderNode> nodes;
+        try
+        {
+            nodes = RazorVueStaticMarkupParser.Parse(
+                resolution.Markup,
+                ImmutableArray<RazorVueSourceOrigin>.Empty,
+                new RazorVueStaticMarkupParser.Dependencies(
+                    CreateImperativeLiteralStringOperation,
+                    detail => new NotSupportedException(detail)));
+        }
+        catch (NotSupportedException exception)
+        {
+            throw CreateUnsupportedImperativeStaticMarkupException(
+                originOperation ?? resolution.CapturedBindings.FirstOrDefault().Initializer,
+                $"RazorVue imperative render lowering could not parse compile-time provable static raw markup in component '{_snapshot.Descriptor.FullName}': {exception.Message}");
+        }
+
         var fragmentExpression = EmitStaticMarkupFragment(nodes);
         if (resolution.CapturedBindings.IsDefaultOrEmpty)
             return fragmentExpression;
@@ -1982,6 +2066,24 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         return currentExpression;
+    }
+
+    private RazorVueCompilationIssueException CreateUnsupportedImperativeStaticMarkupException(
+        IOperation? operation,
+        string detail)
+    {
+        if (operation is not null)
+            return CreateUnsupportedImperativeRenderLoweringException(operation, detail);
+
+        var issue = new RazorVueCompilationIssue(
+            RazorVueIssueCode.UnsupportedImperativeRenderLowering,
+            RazorVueIssueSeverity.Error,
+            detail,
+            ImmutableArray<string>.Empty);
+        return new RazorVueCompilationIssueException(
+            issue,
+            _snapshot.Descriptor.FullName,
+            _snapshot.Origins.FirstOrDefault());
     }
 
     private string EmitStaticMarkupCapturedBindingInitializer(IOperation initializer, SenseArgument compilerArgument)

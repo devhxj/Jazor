@@ -19391,6 +19391,53 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_TreatsConstantExpressionLocalOnlyLifecycleBodyAsNoOp()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        const string suffix = "Count";
+                        var name = nameof(OnInitialized);
+                        var label = $"Ready{suffix}";
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_TreatsSourceStableValueMemberLocalOnlyLifecycleBodyAsNoOp()
     {
         var context = CreateContext(
@@ -19442,6 +19489,470 @@ public sealed class RazorVuePipelineTests
         Assert.IsFalse(artifact.ModuleCode.Contains("onMounted", StringComparison.Ordinal), artifact.ModuleCode);
         Assert.IsFalse(artifact.ModuleCode.Contains("Count: ", StringComparison.Ordinal), artifact.ModuleCode);
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_TreatsSourceStableArrayMemberLengthLocalOnlyLifecycleBodyAsNoOp()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    private int[] Values { get; } = new[] { 1, 2 };
+                    private readonly string[] Labels = new[] { "ready" };
+
+                    protected override void OnInitialized()
+                    {
+                        var count = Values.Length;
+                        var labelCount = Labels.Length;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("values", StringComparison.OrdinalIgnoreCase), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("labels", StringComparison.OrdinalIgnoreCase), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_TreatsUnusedArrayLocalOnlyLifecycleBodyAsNoOp()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        var values = new[] { 1, Ready ? 2 : 3 };
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("values", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_TreatsUnusedAnonymousObjectLocalOnlyLifecycleBodyAsNoOp()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        var payload = new { Ready, Count = 1, Label = Ready ? "ready" : "idle" };
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("payload", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_TreatsUnusedCollectionExpressionArrayLocalOnlyLifecycleBodyAsNoOp()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        int[] values = [1, Ready ? 2 : 3];
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("values", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_TreatsUnusedNullableArrayLocalOnlyLifecycleBodyAsNoOp()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        int?[] values = [default, null, Ready ? 1 : null];
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("values", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_TreatsUnusedTupleLocalOnlyLifecycleBodyAsNoOp()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        var pair = (Ready, 1);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("pair", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_TreatsSourceStableTupleProjectionLocalOnlyLifecycleBodyAsNoOp()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        var pair = (Ready, 1);
+                        var first = pair.Item1;
+                        var second = pair.Item2;
+                        var named = (IsReady: Ready, Count: 2);
+                        var isReady = named.IsReady;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("pair", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_TreatsSourceStableTupleProjectionAliasChainLocalOnlyLifecycleBodyAsNoOp()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        var pair = (Ready, 1);
+                        var copy = pair;
+                        var alias = copy;
+                        var first = alias.Item1;
+                        var second = alias.Item2;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("pair", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_TreatsUnusedAliasChainLocalOnlyLifecycleBodyAsNoOp()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        var first = Ready;
+                        var second = first;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("second", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]
@@ -19549,6 +20060,118 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_TreatsTerminalGuardReturnWithTupleProjectionLifecycleBodyAsNoOp()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        var pair = (Ready, 1);
+                        if (pair.Item1)
+                        {
+                            return;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("pair", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_TreatsTerminalGuardReturnWithTupleProjectionAliasChainLifecycleBodyAsNoOp()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        var pair = (Ready, 1);
+                        var copy = pair;
+                        var alias = copy;
+                        if (alias.Item1)
+                        {
+                            return;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("pair", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("copy", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("alias", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_TreatsTerminalDoubleReturnLifecycleBodyAsNoOp()
     {
         var context = CreateContext(
@@ -19601,6 +20224,324 @@ public sealed class RazorVuePipelineTests
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         Assert.IsFalse(artifact.ModuleCode.Contains("watch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_TreatsTerminalDoubleReturnWithTupleProjectionAliasChainLifecycleBodyAsNoOp()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnParametersSet()
+                    {
+                        var pair = (Ready, 1);
+                        var copy = pair;
+                        var alias = copy;
+                        if (alias.Item1)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("watch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("pair", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("copy", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("alias", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_TreatsTerminalDoubleReturnWithPrivateHelperConditionLifecycleBodyAsNoOp()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnParametersSet()
+                    {
+                        if (IsReady(Ready))
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+
+                    private bool IsReady(bool ready)
+                    {
+                        return ready;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("watch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function isReady(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_TreatsTerminalDoubleReturnWithParamsSourceStableHelperConditionLifecycleBodyAsNoOp()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnParametersSet()
+                    {
+                        if (IsReady(Ready, true))
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+
+                    private bool IsReady(params bool[] values)
+                    {
+                        return values.Length > 0;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("watch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function isReady(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("values", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_TreatsTerminalDoubleReturnWithExplicitParamsCarrierHelperConditionLifecycleBodyAsNoOp()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnParametersSet()
+                    {
+                        if (IsReady(new[] { Ready, true }) && IsReady([Ready, false]))
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+
+                    private bool IsReady(params bool[] values)
+                    {
+                        return values.Length > 0;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("watch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function isReady(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("values", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_TreatsTerminalDoubleReturnWithMultiLevelPrivateHelperConditionLifecycleBodyAsNoOp()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnParametersSet()
+                    {
+                        if (IsReady(Ready))
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+
+                    private bool IsReady(bool ready)
+                    {
+                        return Normalize(ready);
+                    }
+
+                    private bool Normalize(bool value)
+                    {
+                        return value;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("watch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function isReady(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function normalize(", StringComparison.Ordinal), artifact.ModuleCode);
         Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -19765,6 +20706,1329 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForOptionalDefaultSourceStableHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var count = Normalize();
+                        Touch();
+                    }
+
+                    private int Normalize(int value = 1)
+                    {
+                        var normalized = value;
+                        return normalized;
+                    }
+
+                    private void Touch(int value = 1)
+                    {
+                        var label = value;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function normalize(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForNamedArgumentOrderSourceStableHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var count = Normalize(offset: 2, value: 1);
+                        Touch(offset: 2, value: count);
+                    }
+
+                    private int Normalize(int value, int offset)
+                    {
+                        var normalized = value + offset;
+                        return normalized;
+                    }
+
+                    private void Touch(int value, int offset)
+                    {
+                        var label = value + offset;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function normalize(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForAssignedLocalSourceStableHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var count = Normalize(1);
+                    }
+
+                    private int Normalize(int value)
+                    {
+                        int normalized;
+                        var offset = 1;
+                        normalized = value + offset;
+                        return normalized;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function normalize(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForVoidSourceStableHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch()
+                    {
+                        var label = "ready";
+                        int normalized;
+                        normalized = 1;
+                        return;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForMultiLevelVoidSourceStableHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch()
+                    {
+                        TouchInner();
+                    }
+
+                    private void TouchInner()
+                    {
+                        var label = "ready";
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touchInner(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForDiscardedReturnValueSourceStableHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        Normalize(1);
+                    }
+
+                    private int Normalize(int value)
+                    {
+                        var offset = 1;
+                        return value + offset;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function normalize(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForVoidHelperWithDiscardedReturnValueSourceStableHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch()
+                    {
+                        Normalize(1);
+                    }
+
+                    private int Normalize(int value)
+                    {
+                        return value;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function normalize(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForVoidHelperWithTupleAliasSourceStableLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch()
+                    {
+                        var pair = (Ready, 1);
+                        var second = pair;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForHelperWithUnusedStructuredLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        var count = Normalize();
+                        Touch();
+                    }
+
+                    private int Normalize()
+                    {
+                        var values = new[] { 1, Ready ? 2 : 3 };
+                        var payload = new { Ready, Count = 1 };
+                        return 1;
+                    }
+
+                    private void Touch()
+                    {
+                        var values = new[] { 4, Ready ? 5 : 6 };
+                        var payload = new { Ready, Count = 7 };
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function normalize(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForHelperWithTupleProjectionSourceStableLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        var count = Normalize();
+                        Touch();
+                    }
+
+                    private int Normalize()
+                    {
+                        var pair = (Ready, 1);
+                        var first = pair.Item1;
+                        return pair.Item2;
+                    }
+
+                    private void Touch()
+                    {
+                        var pair = (Ready, 2);
+                        var first = pair.Item1;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function normalize(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForHelperWithTupleProjectionAliasChainSourceStableLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        var count = Normalize();
+                        Touch();
+                    }
+
+                    private int Normalize()
+                    {
+                        var pair = (Ready, 1);
+                        var copy = pair;
+                        var first = copy.Item1;
+                        return copy.Item2;
+                    }
+
+                    private void Touch()
+                    {
+                        var pair = (Ready, 2);
+                        var copy = pair;
+                        var first = copy.Item1;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function normalize(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForVoidHelperWithTerminalGuardReturnTupleProjectionAliasChainLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch()
+                    {
+                        var pair = (Ready, 1);
+                        var copy = pair;
+                        if (copy.Item1)
+                        {
+                            return;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("pair", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("copy", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForVoidHelperWithTerminalGuardReturnParamsArrayLengthLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch(Ready, true);
+                    }
+
+                    private void Touch(params bool[] values)
+                    {
+                        if (values.Length == 0)
+                        {
+                            return;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("values", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForVoidHelperWithTerminalGuardReturnExplicitParamsCarrierLengthLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch(new[] { Ready, true });
+                        Touch([Ready, false]);
+                    }
+
+                    private void Touch(params bool[] values)
+                    {
+                        if (values.Length == 0)
+                        {
+                            return;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("values", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForVoidHelperWithTerminalGuardReturnPrivateHelperConditionLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch()
+                    {
+                        if (IsReady(Ready))
+                        {
+                            return;
+                        }
+                    }
+
+                    private bool IsReady(bool ready)
+                    {
+                        return ready;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function isReady(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForVoidHelperWithTerminalDoubleReturnLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch()
+                    {
+                        if (Ready)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForVoidHelperWithTerminalDoubleReturnTupleProjectionAliasChainLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch()
+                    {
+                        var pair = (Ready, 1);
+                        var copy = pair;
+                        if (copy.Item1)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("pair", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("copy", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForVoidHelperWithTerminalDoubleReturnPrivateHelperConditionLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch()
+                    {
+                        if (IsReady(Ready))
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+
+                    private bool IsReady(bool ready)
+                    {
+                        return ready;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function isReady(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForVoidHelperWithTerminalDoubleReturnParamsArrayLengthLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch(Ready, true);
+                    }
+
+                    private void Touch(params bool[] values)
+                    {
+                        if (values.Length == 0)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("values", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForVoidHelperWithTerminalDoubleReturnExplicitParamsCarrierLengthLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch(new[] { Ready, true });
+                        Touch([Ready, false]);
+                    }
+
+                    private void Touch(params bool[] values)
+                    {
+                        if (values.Length == 0)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("values", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForParamsSourceStableHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var values = Capture(1, 2);
+                        var empty = Capture();
+                    }
+
+                    private int[] Capture(params int[] values)
+                    {
+                        return values;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function capture(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForTerminalGuardReturnWithParamsSourceStableHelperConditionLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnParametersSet()
+                    {
+                        if (IsReady(Ready, true))
+                        {
+                            return;
+                        }
+                    }
+
+                    private bool IsReady(params bool[] values)
+                    {
+                        return true;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("watch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function isReady(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_ThrowsCompilationIssueForMutatingHelperLocalOnlyLifecycleBody()
     {
         var context = CreateContext(
@@ -19866,6 +22130,3566 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForSideEffectArgumentDiscardedReturnValueHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        Normalize(_count++);
+                    }
+
+                    private int Normalize(int value)
+                        => value;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForRecursiveDiscardedReturnValueHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        Normalize(1);
+                    }
+
+                    private int Normalize(int value)
+                    {
+                        return Normalize(value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForMutatingVoidHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch()
+                    {
+                        _count++;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForExpressionBodiedVoidHelperSideEffectDiscardAssignmentLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => _ = _count++;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForExpressionBodiedVoidHelperDiscardAssignmentSourceStableValueLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => _ = Ready;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForExpressionBodiedVoidHelperDiscardAssignmentTupleProjectionLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    private (bool Ready, int Count) Pair { get; } = (true, 1);
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => _ = Pair.Ready;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("pair", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesLogicSafeBoundaryForExpressionBodiedVoidHelperDiscardAssignmentCustomGetterTupleProjectionLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    private (bool Ready, int Count) Pair => (Ready, 1);
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => _ = Pair.Ready;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function pair(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForExpressionBodiedVoidHelperDiscardAssignmentSideEffectTupleProjectionLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private static int s_count;
+
+                    private (bool Ready, int Count) Pair { get; } = (true, Next());
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => _ = Pair.Ready;
+
+                    private static int Next()
+                    {
+                        s_count++;
+                        return s_count;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForExpressionBodiedVoidHelperDiscardAssignmentSideEffectCustomGetterTupleProjectionLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private static int s_count;
+
+                    private (bool Ready, int Count) Pair
+                    {
+                        get { return (true, Next()); }
+                    }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => _ = Pair.Ready;
+
+                    private static int Next()
+                    {
+                        s_count++;
+                        return s_count;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForExpressionBodiedVoidHelperDiscardingSourceStableValueLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => Normalize(Ready);
+
+                    private bool Normalize(bool ready)
+                    {
+                        return ready;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function normalize(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForExpressionBodiedVoidHelperDiscardingOptionalDefaultNamedArgumentLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => Normalize(offset: Ready);
+
+                    private bool Normalize(bool ready = false, bool offset = false)
+                    {
+                        return ready || offset;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function normalize(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForExpressionBodiedVoidHelperDiscardingMultiLevelOptionalDefaultNamedArgumentLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => Normalize(offset: Ready);
+
+                    private bool Normalize(bool ready = false, bool offset = false)
+                    {
+                        return Inner(value: ready || offset);
+                    }
+
+                    private bool Inner(bool value = false)
+                    {
+                        return value;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function normalize(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function inner(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForExpressionBodiedVoidHelperDiscardingParamsSourceStableValueLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => Count(Ready, true);
+
+                    private int Count(params bool[] values)
+                    {
+                        return values.Length;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function count(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("values", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForExpressionBodiedVoidHelperDiscardingParamsArrayGetLengthLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => Count(Ready, true);
+
+                    private int Count(params bool[] values)
+                    {
+                        return values.GetLength(0);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function count(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("values", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForExpressionBodiedVoidHelperDiscardingExplicitParamsCarrierLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        TouchArray();
+                        TouchCollection();
+                    }
+
+                    private void TouchArray() => Count(new[] { Ready, true });
+
+                    private void TouchCollection() => Count([Ready, false]);
+
+                    private int Count(params bool[] values)
+                    {
+                        return values.Length;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touchArray(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touchCollection(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function count(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("values", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForExpressionBodiedVoidHelperDiscardingSideEffectParamsLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => Count(_count++);
+
+                    private int Count(params int[] values)
+                    {
+                        return values.Length;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForExpressionBodiedVoidHelperDiscardingRecursiveReturnValueHelperLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => Loop(Ready);
+
+                    private bool Loop(bool ready)
+                    {
+                        return Loop(ready);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForExpressionBodiedVoidHelperDiscardingExternalReturnValueHelperLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                public static class External
+                {
+                    public static bool Normalize(bool ready)
+                    {
+                        return ready;
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => External.Normalize(Ready);
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForExpressionBodiedNonPrivateVoidHelperDiscardingReturnValueHelperLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    protected void Touch() => Normalize(Ready);
+
+                    private bool Normalize(bool ready)
+                    {
+                        return ready;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForExpressionBodiedVoidHelperDiscardingTaskReturningHelperLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => GetOperation();
+
+                    private Task GetOperation()
+                    {
+                        return Task.CompletedTask;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForExpressionBodiedVoidHelperDiscardingValueTaskReturningHelperLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => GetOperation();
+
+                    private ValueTask GetOperation()
+                    {
+                        return ValueTask.CompletedTask;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForExpressionBodiedVoidHelperDiscardingRefReturningHelperLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private readonly int _count = 1;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => GetCount();
+
+                    private ref readonly int GetCount()
+                    {
+                        return ref _count;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForExpressionBodiedVoidHelperDiscardingByReferenceParameterHelperLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private readonly int _count = 1;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => Normalize(in _count);
+
+                    private int Normalize(in int value)
+                    {
+                        return value;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForExpressionBodiedVoidHelperDiscardingRefParameterHelperLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count = 1;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => Normalize(ref _count);
+
+                    private int Normalize(ref int value)
+                    {
+                        return value;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForExpressionBodiedVoidHelperDiscardingOutParameterHelperLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch() => Normalize(out _count);
+
+                    private int Normalize(out int value)
+                    {
+                        value = 1;
+                        return value;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForPartialExpressionBodiedVoidHelperSideEffectDiscardAssignmentLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => _ = _count++;
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForPartialExpressionBodiedVoidHelperDiscardAssignmentSourceStableValueLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => _ = Ready;
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForPartialExpressionBodiedVoidHelperDiscardAssignmentTupleProjectionLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    private (bool Ready, int Count) Pair { get; } = (true, 1);
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => _ = Pair.Ready;
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("pair", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesLogicSafeBoundaryForPartialExpressionBodiedVoidHelperDiscardAssignmentCustomGetterTupleProjectionLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    private (bool Ready, int Count) Pair { get => (Ready, 1); }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => _ = Pair.Ready;
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function pair(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForPartialExpressionBodiedVoidHelperDiscardAssignmentSideEffectTupleProjectionLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private static int s_count;
+
+                    private (bool Ready, int Count) Pair { get; } = (true, Next());
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private static int Next()
+                    {
+                        s_count++;
+                        return s_count;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => _ = Pair.Ready;
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForPartialExpressionBodiedVoidHelperDiscardAssignmentSideEffectCustomGetterTupleProjectionLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private static int s_count;
+
+                    private (bool Ready, int Count) Pair
+                    {
+                        get { return (true, Next()); }
+                    }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private static int Next()
+                    {
+                        s_count++;
+                        return s_count;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => _ = Pair.Ready;
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForPartialExpressionBodiedVoidHelperDiscardingSourceStableValueLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private bool Normalize(bool ready)
+                    {
+                        return ready;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => Normalize(Ready);
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function normalize(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForPartialExpressionBodiedVoidHelperDiscardingOptionalDefaultNamedArgumentLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private bool Normalize(bool ready = false, bool offset = false)
+                    {
+                        return ready || offset;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => Normalize(offset: Ready);
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function normalize(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForPartialExpressionBodiedVoidHelperDiscardingMultiLevelOptionalDefaultNamedArgumentLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private bool Normalize(bool ready = false, bool offset = false)
+                    {
+                        return Inner(value: ready || offset);
+                    }
+
+                    private bool Inner(bool value = false)
+                    {
+                        return value;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => Normalize(offset: Ready);
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function normalize(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function inner(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForPartialExpressionBodiedVoidHelperDiscardingParamsSourceStableValueLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private int Count(params bool[] values)
+                    {
+                        return values.Length;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => Count(Ready, true);
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function count(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("values", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForPartialExpressionBodiedVoidHelperDiscardingExplicitParamsCarrierLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        TouchArray();
+                        TouchCollection();
+                    }
+
+                    partial void TouchArray();
+                    partial void TouchCollection();
+
+                    private int Count(params bool[] values)
+                    {
+                        return values.Length;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void TouchArray() => Count(new[] { Ready, true });
+                    partial void TouchCollection() => Count([Ready, false]);
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touchArray(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touchCollection(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function count(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("values", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForPartialExpressionBodiedVoidHelperDiscardingSideEffectParamsLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private int Count(params int[] values)
+                    {
+                        return values.Length;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => Count(_count++);
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForPartialExpressionBodiedVoidHelperDiscardingRecursiveReturnValueHelperLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private bool Loop(bool ready)
+                    {
+                        return Loop(ready);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => Loop(Ready);
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForPartialExpressionBodiedVoidHelperDiscardingExternalReturnValueHelperLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                public static class External
+                {
+                    public static bool Normalize(bool ready)
+                    {
+                        return ready;
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => External.Normalize(Ready);
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForPartialExpressionBodiedNonPrivateVoidHelperDiscardingReturnValueHelperLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    protected partial void Touch();
+
+                    private bool Normalize(bool ready)
+                    {
+                        return ready;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    protected partial void Touch() => Normalize(Ready);
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForPartialExpressionBodiedVoidHelperDiscardingTaskReturningHelperLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private Task GetOperation()
+                    {
+                        return Task.CompletedTask;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => GetOperation();
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForPartialExpressionBodiedVoidHelperDiscardingValueTaskReturningHelperLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private ValueTask GetOperation()
+                    {
+                        return ValueTask.CompletedTask;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => GetOperation();
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForPartialExpressionBodiedVoidHelperDiscardingRefReturningHelperLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private readonly int _count = 1;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private ref readonly int GetCount()
+                    {
+                        return ref _count;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => GetCount();
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForPartialExpressionBodiedVoidHelperDiscardingByReferenceParameterHelperLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private readonly int _count = 1;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private int Normalize(in int value)
+                    {
+                        return value;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => Normalize(in _count);
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForPartialExpressionBodiedVoidHelperDiscardingRefParameterHelperLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count = 1;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private int Normalize(ref int value)
+                    {
+                        return value;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => Normalize(ref _count);
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForPartialExpressionBodiedVoidHelperDiscardingOutParameterHelperLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public partial class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    partial void Touch();
+
+                    private int Normalize(out int value)
+                    {
+                        value = 1;
+                        return value;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+
+                public partial class LifecycleCard
+                {
+                    partial void Touch() => Normalize(out _count);
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForRecursiveVoidHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch()
+                    {
+                        Touch();
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForHelperWithUsedStructuredLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var count = Normalize();
+                        Touch();
+                    }
+
+                    private int Normalize()
+                    {
+                        var values = new[] { 1, 2 };
+                        return values.Length;
+                    }
+
+                    private void Touch()
+                    {
+                        var values = new[] { 1, 2 };
+                        var payload = new { Ready = true };
+                        var length = values.Length;
+                        var ready = payload.Ready;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForHelperWithSideEffectStructuredLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch()
+                    {
+                        var values = new[] { _count++ };
+                        var payload = new { Count = _count++ };
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForReassignedHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var count = Normalize(1);
+                    }
+
+                    private int Normalize(int value)
+                    {
+                        int normalized;
+                        normalized = value + 1;
+                        normalized = value + 2;
+                        return normalized;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForSideEffectAssignedHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        var count = Normalize();
+                    }
+
+                    private int Normalize()
+                    {
+                        int normalized;
+                        normalized = _count++;
+                        return normalized;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForSideEffectParamsArgumentHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        var count = Capture(_count++);
+                    }
+
+                    private int Capture(params int[] values)
+                        => 1;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForExplicitParamsArrayHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var count = Capture(new[] { 1, 2 });
+                    }
+
+                    private int Capture(params int[] values)
+                        => 1;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function capture(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForCollectionExpressionParamsHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Ready { get; set; }
+
+                    protected override void OnParametersSet()
+                    {
+                        var values = Capture([Ready, true]);
+                    }
+
+                    private bool[] Capture(params bool[] values)
+                    {
+                        return values;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Ready);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("watch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function capture(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForParamsArrayLengthHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override void OnInitialized()
+                    {
+                        var implicitCount = Count(1, 2);
+                        var explicitCount = Count(new[] { 1, 2 });
+                        var collectionCount = Count([Value, 3]);
+                    }
+
+                    private int Count(params int[] values)
+                    {
+                        return values.Length;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function count(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForSideEffectExplicitParamsArrayHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        var count = Capture(new[] { _count++ });
+                    }
+
+                    private int Capture(params int[] values)
+                        => 1;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForSideEffectCollectionExpressionParamsHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        var count = Capture([_count++]);
+                    }
+
+                    private int Capture(params int[] values)
+                        => 1;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForExplicitArrayNonParamsHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var count = Capture(new[] { 1, 2 });
+                    }
+
+                    private int Capture(int[] values)
+                        => 1;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function capture(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForSideEffectExplicitArrayNonParamsHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        var count = Capture(new[] { _count++ });
+                    }
+
+                    private int Capture(int[] values)
+                        => 1;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForParamsArrayIndexerHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var first = First(1, 2);
+                    }
+
+                    private int First(params int[] values)
+                        => values[0];
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForSourceStableArrayMemberIndexerLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int[] Values { get; } = new[] { 1, 2 };
+
+                    protected override void OnInitialized()
+                    {
+                        var first = Values[0];
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForParamsArrayGetLengthHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var count = Count(1, 2);
+                    }
+
+                    private int Count(params int[] values)
+                        => values.GetLength(0);
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function count(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForParamsArrayUpperBoundHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var maxIndex = MaxIndex(1, 2);
+                    }
+
+                    private int MaxIndex(params int[] values)
+                        => values.GetUpperBound(0);
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForSideEffectParamsArrayGetLengthDimensionHelperLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _dimension;
+
+                    protected override void OnInitialized()
+                    {
+                        var count = Count(1, 2);
+                    }
+
+                    private int Count(params int[] values)
+                        => values.GetLength(_dimension++);
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_ThrowsCompilationIssueForByReferenceParameterHelperLocalOnlyLifecycleBody()
     {
         var context = CreateContext(
@@ -19897,6 +25721,155 @@ public sealed class RazorVuePipelineTests
 
                     private int Normalize(in int value)
                         => value;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForVoidHelperWithRefParameterLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var value = 1;
+                        Touch(ref value);
+                    }
+
+                    private void Touch(ref int value)
+                    {
+                        var label = value;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForVoidHelperWithOutParameterLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        Touch(out var value);
+                    }
+
+                    private void Touch(out int value)
+                    {
+                        value = 1;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForVoidHelperWithInParameterLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var value = 1;
+                        Touch(in value);
+                    }
+
+                    private void Touch(in int value)
+                    {
+                        var label = value;
+                    }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -20041,6 +26014,484 @@ public sealed class RazorVuePipelineTests
                     protected override void OnInitialized()
                     {
                         var payload = Payload;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_TreatsUsedArrayLengthLocalOnlyLifecycleBodyAsNoOp()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var values = new[] { 1, 2 };
+                        var length = values.Length;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("values", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_TreatsUsedAnonymousObjectPropertyLocalOnlyLifecycleBodyAsNoOp()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var payload = new { Ready = true };
+                        var ready = payload.Ready;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("payload", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForSideEffectTupleProjectionLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        var pair = (_count++, 1);
+                        var first = pair.Item1;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForSideEffectTupleProjectionAliasChainLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        var pair = (_count++, 1);
+                        var copy = pair;
+                        var first = copy.Item1;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForVoidHelperWithSideEffectTerminalGuardReturnTupleProjectionAliasChainLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        Touch();
+                    }
+
+                    private void Touch()
+                    {
+                        var pair = (_count++ == 0, 1);
+                        var copy = pair;
+                        if (copy.Item1)
+                        {
+                            return;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForSideEffectUnusedArrayLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        var values = new[] { _count++ };
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForSideEffectUnusedAnonymousObjectLocalOnlyLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        var payload = new { Count = _count++ };
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForUsedArrayLengthWithSideEffectInitializerLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        var values = new[] { _count++ };
+                        var length = values.Length;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForSourceStableArrayMemberLengthWithSideEffectInitializerLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private static int s_count;
+                    private int[] Values { get; } = new[] { s_count++ };
+
+                    protected override void OnInitialized()
+                    {
+                        var count = Values.Length;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "OnInitialized");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForUsedAnonymousObjectPropertyWithSideEffectInitializerLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    private int _count;
+
+                    protected override void OnInitialized()
+                    {
+                        var payload = new { Ready = true, Count = _count++ };
+                        var ready = payload.Ready;
                     }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -28114,7 +34565,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForCatchVariableSetParametersAsyncLifecycle()
+    public void RazorVue_Pipeline_LowersBaseThenCatchVariableNonNullPayloadSetParametersAsyncIntoSingleWatchLifecycle()
     {
         var context = CreateContext(
             """
@@ -28136,8 +34587,8 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-catch-variable")]
-                public class SetParametersAsyncUnsupportedCard : ComponentBase, IVueComponent
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-catch-variable-payload")]
+                public class SetParametersAsyncCatchVariablePayloadCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -28172,7 +34623,321 @@ public sealed class RazorVuePipelineTests
             """);
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        var tryIndex = artifact.ModuleCode.IndexOf("try {", StringComparison.Ordinal);
+        var valueEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"update:value\", props.value);", StringComparison.Ordinal);
+        var catchIndex = artifact.ModuleCode.IndexOf("} catch {", StringComparison.Ordinal);
+        var readyEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"readyChanged\", true);", StringComparison.Ordinal);
+
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
+        Assert.IsTrue(tryIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(valueEmitIndex > tryIndex, artifact.ModuleCode);
+        Assert.IsTrue(catchIndex > valueEmitIndex, artifact.ModuleCode);
+        Assert.IsTrue(readyEmitIndex > catchIndex, artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorLifecycleCatch", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("error", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersBaseThenCatchVariableNullPayloadSetParametersAsyncIntoSingleWatchLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-catch-variable-null-payload")]
+                public class SetParametersAsyncCatchVariableNullPayloadCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        try
+                        {
+                            await ValueChanged.InvokeAsync(Value);
+                        }
+                        catch (Exception error)
+                        {
+                            await ReadyChanged.InvokeAsync(error == null);
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        var tryIndex = artifact.ModuleCode.IndexOf("try {", StringComparison.Ordinal);
+        var valueEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"update:value\", props.value);", StringComparison.Ordinal);
+        var catchIndex = artifact.ModuleCode.IndexOf("} catch {", StringComparison.Ordinal);
+        var readyEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"readyChanged\", false);", StringComparison.Ordinal);
+
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
+        Assert.IsTrue(tryIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(valueEmitIndex > tryIndex, artifact.ModuleCode);
+        Assert.IsTrue(catchIndex > valueEmitIndex, artifact.ModuleCode);
+        Assert.IsTrue(readyEmitIndex > catchIndex, artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorLifecycleCatch", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("error", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForCatchVariableMemberPayloadSetParametersAsyncLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-catch-variable-member-payload")]
+                public class SetParametersAsyncUnsupportedCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        try
+                        {
+                            await ValueChanged.InvokeAsync(Value);
+                        }
+                        catch (Exception error)
+                        {
+                            await ReadyChanged.InvokeAsync(error.Message is not null);
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersBaseThenCatchVariableNonNullBodyConditionSetParametersAsyncIntoSingleWatchLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-catch-variable-body-condition")]
+                public class SetParametersAsyncCatchVariableBodyConditionCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        try
+                        {
+                            await ValueChanged.InvokeAsync(Value);
+                        }
+                        catch (Exception error)
+                        {
+                            if (error is not null)
+                            {
+                                await ReadyChanged.InvokeAsync(true);
+                            }
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        var tryIndex = artifact.ModuleCode.IndexOf("try {", StringComparison.Ordinal);
+        var valueEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"update:value\", props.value);", StringComparison.Ordinal);
+        var catchIndex = artifact.ModuleCode.IndexOf("} catch {", StringComparison.Ordinal);
+        var conditionIndex = artifact.ModuleCode.IndexOf("if (true) {", StringComparison.Ordinal);
+        var readyEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"readyChanged\", true);", StringComparison.Ordinal);
+
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
+        Assert.IsTrue(tryIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(valueEmitIndex > tryIndex, artifact.ModuleCode);
+        Assert.IsTrue(catchIndex > valueEmitIndex, artifact.ModuleCode);
+        Assert.IsTrue(conditionIndex > catchIndex, artifact.ModuleCode);
+        Assert.IsTrue(readyEmitIndex > conditionIndex, artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorLifecycleCatch", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("error", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersBaseThenCatchVariableNullBodyConditionElseSetParametersAsyncIntoSingleWatchLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-catch-variable-null-body-condition")]
+                public class SetParametersAsyncCatchVariableNullBodyConditionCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        try
+                        {
+                            await ValueChanged.InvokeAsync(Value);
+                        }
+                        catch (Exception error)
+                        {
+                            if (error == null)
+                            {
+                                await ReadyChanged.InvokeAsync(true);
+                            }
+                            else
+                            {
+                                await ReadyChanged.InvokeAsync(false);
+                            }
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        var tryIndex = artifact.ModuleCode.IndexOf("try {", StringComparison.Ordinal);
+        var valueEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"update:value\", props.value);", StringComparison.Ordinal);
+        var catchIndex = artifact.ModuleCode.IndexOf("} catch {", StringComparison.Ordinal);
+        var conditionIndex = artifact.ModuleCode.IndexOf("if (false) {", StringComparison.Ordinal);
+        var trueEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"readyChanged\", true);", StringComparison.Ordinal);
+        var elseIndex = artifact.ModuleCode.IndexOf("} else {", conditionIndex + 1, StringComparison.Ordinal);
+        var falseEmitIndex = artifact.ModuleCode.IndexOf("await emit(\"readyChanged\", false);", StringComparison.Ordinal);
+
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
+        Assert.IsTrue(tryIndex >= 0, artifact.ModuleCode);
+        Assert.IsTrue(valueEmitIndex > tryIndex, artifact.ModuleCode);
+        Assert.IsTrue(catchIndex > valueEmitIndex, artifact.ModuleCode);
+        Assert.IsTrue(conditionIndex > catchIndex, artifact.ModuleCode);
+        Assert.IsTrue(trueEmitIndex > conditionIndex, artifact.ModuleCode);
+        Assert.IsTrue(elseIndex > trueEmitIndex, artifact.ModuleCode);
+        Assert.IsTrue(falseEmitIndex > elseIndex, artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorLifecycleCatch", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("error", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]
@@ -28755,6 +35520,67 @@ public sealed class RazorVuePipelineTests
                             return;
                         }
                         catch (Exception) when (Value > 0)
+                        {
+                            await ReadyChanged.InvokeAsync(false);
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        Assert.IsFalse(artifact.ModuleCode.Contains("watch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("await emit(\"readyChanged\", false);", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForTryCatchBareReturnWithCatchVariableNonNullFilterSetParametersAsyncLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-try-catch-bare-return-catch-variable-filter")]
+                public class SetParametersAsyncUnsupportedCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        try
+                        {
+                            return;
+                        }
+                        catch (Exception error) when (error is not null)
                         {
                             await ReadyChanged.InvokeAsync(false);
                         }
@@ -29456,6 +36282,63 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersAssignedLocalLambdaDelegateShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-assigned-local-lambda-delegate")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> ready;
+                        ready = value => value > 0;
+                        return ready(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "if (__jazorShouldRenderHasRendered && !((() => {");
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " = value => {");
+        StringAssert.Contains(artifact.ModuleCode, "return value > 0;");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "(props.value);");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForPropertyMutationInsideLocalLambdaShouldRender()
     {
         var context = CreateContext(
@@ -29558,6 +36441,127 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "function IsReady(value) {");
         StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderLocal");
         StringAssert.Contains(artifact.ModuleCode, " = IsReady;");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "(props.value);");
+        StringAssert.Contains(artifact.ModuleCode, "if (__jazorShouldRenderHasRendered && !((() => {");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersAssignedMethodGroupDelegateLocalShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-assigned-method-group-delegate-local")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        bool IsReady(int value) => value > 0;
+                        Func<int, bool> ready;
+                        ready = IsReady;
+                        return ready(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "function IsReady(value) {");
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " = IsReady;");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "(props.value);");
+        StringAssert.Contains(artifact.ModuleCode, "if (__jazorShouldRenderHasRendered && !((() => {");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersAssignedCurrentComponentMethodGroupDelegateLocalShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-assigned-component-method-group-delegate-local")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    private bool IsReady(int value)
+                    {
+                        var next = value + 1;
+                        return next > 1;
+                    }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> ready;
+                        ready = IsReady;
+                        return ready(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "function isReady(value) {");
+        StringAssert.Contains(artifact.ModuleCode, "let next = value + 1;");
+        StringAssert.Contains(artifact.ModuleCode, "return next > 1;");
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " = isReady;");
         StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
         StringAssert.Contains(artifact.ModuleCode, "(props.value);");
         StringAssert.Contains(artifact.ModuleCode, "if (__jazorShouldRenderHasRendered && !((() => {");
@@ -29681,6 +36685,117 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForReassignedDelegateLocalShouldRender()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-reassigned-delegate-local")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> ready;
+                        ready = value => value > 0;
+                        ready = value => value > 1;
+                        return ready(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorShouldRenderHasRendered", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForBranchAssignedDelegateLocalShouldRender()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-branch-assigned-delegate-local")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> ready;
+                        if (Value > 0)
+                        {
+                            ready = value => value > 0;
+                        }
+                        else
+                        {
+                            ready = value => value == 0;
+                        }
+
+                        return ready(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorShouldRenderHasRendered", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersDelegateNonNullCheckShouldRenderConditionIntoCachedRenderGate()
     {
         var context = CreateContext(
@@ -29790,6 +36905,297 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
         StringAssert.Contains(artifact.ModuleCode, " !== null;");
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersDelegateComparisonShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-delegate-comparison")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    private bool IsReady(int value)
+                        => value > 0;
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> ready = IsReady;
+                        Func<int, bool> duplicate = IsReady;
+                        return ready == duplicate;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "function isReady(value) {");
+        StringAssert.Contains(artifact.ModuleCode, " = isReady;");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " === __jazorShouldRenderLocal");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersDelegateParameterAndReturnFlowShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-delegate-parameter-return")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> CreateReady()
+                            => value => value > 0;
+
+                        bool ConsumeReady(Func<int, bool> predicate, int value)
+                            => predicate(value);
+
+                        Func<int, bool> ready = CreateReady();
+                        return ConsumeReady(ready, Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "function CreateReady() {");
+        StringAssert.Contains(artifact.ModuleCode, "function ConsumeReady(predicate, value) {");
+        StringAssert.Contains(artifact.ModuleCode, "return value => {");
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " = CreateReady();");
+        StringAssert.Contains(artifact.ModuleCode, "return ConsumeReady(__jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, ", props.value);");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForDelegateParameterEscapeShouldRender()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-delegate-parameter-escape")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> CreateReady()
+                            => value => value > 0;
+
+                        Func<int, bool> EchoReady(Func<int, bool> predicate)
+                            => predicate;
+
+                        Func<int, bool> ready = CreateReady();
+                        Func<int, bool> escaped = EchoReady(ready);
+                        return escaped(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorShouldRenderHasRendered", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersNullOnlyDelegateParameterFlowShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-null-only-delegate-parameter")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        bool IsMissing(Func<int, bool>? predicate)
+                            => predicate is null;
+
+                        bool IsDefault(Func<int, bool>? predicate)
+                            => predicate == default;
+
+                        Func<int, bool>? missing = null;
+                        Func<int, bool>? fallback = default;
+                        return IsMissing(missing) && IsDefault(fallback);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "function IsMissing(predicate) {");
+        StringAssert.Contains(artifact.ModuleCode, "function IsDefault(predicate) {");
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " = null;");
+        StringAssert.Contains(artifact.ModuleCode, "return IsMissing(__jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " && IsDefault(__jazorShouldRenderLocal");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForNullOnlyDelegateParameterInvocationShouldRender()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-null-only-delegate-parameter-invocation")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        bool Invoke(Func<int, bool>? predicate, int value)
+                            => predicate!(value);
+
+                        Func<int, bool>? ready = null;
+                        return Invoke(ready, Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorShouldRenderHasRendered", StringComparison.Ordinal), artifact.ModuleCode);
     }
 
     [TestMethod]
@@ -32944,6 +40350,63 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_WithHelperMutatedSettableCurrentComponentRenderFragmentPropertyCarrier_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/typed-fragment-card")]
+                public class TypedFragmentCard : ComponentBase, IVueComponent
+                {
+                    private RenderFragment<int> Template { get; set; } = item => itemBuilder =>
+                    {
+                        itemBuilder.OpenElement(1, "span");
+                        itemBuilder.AddContent(2, item);
+                        itemBuilder.CloseElement();
+                    };
+
+                    private void MutateTemplate()
+                    {
+                        Template = item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(3, "strong");
+                            itemBuilder.AddContent(4, item);
+                            itemBuilder.CloseElement();
+                        };
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, Template, 42);
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "RenderFragment shape");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersAnalyzableCurrentComponentRenderFragmentPropertyCarrierIntoVueRenderFunction()
     {
         var context = CreateContext(
@@ -35142,6 +42605,47 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_WithScriptAddMarkupContent_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-card")]
+                public class MarkupCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddMarkupContent(0, "<script>alert('x')</script>");
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "raw markup execution");
+        StringAssert.Contains(exception.Issue.Message, "script");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_WithImmediatelyAssignedAddMarkupContentCarrierThenReassigned_ThrowsCanonicalizationFailed()
     {
         var context = CreateContext(
@@ -35183,6 +42687,106 @@ public sealed class RazorVuePipelineTests
         Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "markup");
         StringAssert.Contains(exception.Issue.Message, "later writes");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithBranchAssignedAddMarkupContentCarrier_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-card")]
+                public class MarkupCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool UseAlternate { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        string markup;
+                        if (UseAlternate)
+                        {
+                            markup = "<section class=\"hero\"><span>alternate</span></section>";
+                        }
+                        else
+                        {
+                            markup = "<section class=\"hero\"><span>safe</span></section>";
+                        }
+
+                        builder.AddMarkupContent(0, markup);
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedImperativeRenderLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "AddMarkupContent");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithLifecycleMutatedSettableAddMarkupContentPropertyCarrier_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-card")]
+                public class MarkupCard : ComponentBase, IVueComponent
+                {
+                    private string HeroMarkup { get; set; } = "<section class=\"hero\"><span>safe</span><p>ok</p></section>";
+
+                    protected override void OnParametersSet()
+                    {
+                        HeroMarkup = "<section class=\"hero\"><span>changed</span></section>";
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddMarkupContent(0, HeroMarkup);
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "AddMarkupContent");
     }
 
     [TestMethod]
@@ -35824,6 +43428,226 @@ public sealed class RazorVuePipelineTests
         Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "MarkupString local 'markup'");
         StringAssert.Contains(exception.Issue.Message, "later writes");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithRefEscapedMarkupStringLocalCarrier_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-string-card")]
+                public class MarkupStringCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        MarkupString markup = (MarkupString)"<section class=\"hero\"><span>safe</span></section>";
+                        Replace(ref markup);
+                        builder.AddContent(0, markup);
+                    }
+
+                    private static void Replace(ref MarkupString markup)
+                    {
+                        markup = (MarkupString)"<section class=\"hero\"><span>changed</span></section>";
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "standalone invocation");
+        StringAssert.Contains(exception.Issue.Message, "Replace(ref MarkupString markup)");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithLoopAssignedMarkupStringLocalCarrier_ThrowsUnsupportedImperativeRenderLowering()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-string-card")]
+                public class MarkupStringCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        MarkupString markup = default;
+                        for (var index = 0; index < 1; index++)
+                        {
+                            markup = (MarkupString)"<section class=\"hero\"><span>changed</span></section>";
+                        }
+
+                        builder.AddContent(0, markup);
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedImperativeRenderLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "compile-time provable static MarkupString AddContent");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithDynamicNewMarkupStringAddContent_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-string-card")]
+                public class MarkupStringCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, new MarkupString("<section>" + Title + "</section>"));
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "MarkupString");
+        StringAssert.Contains(exception.Issue.Message, "compile-time provable static");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithInlineEventMarkupStringAddContent_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-string-card")]
+                public class MarkupStringCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, (MarkupString)"<section onclick=\"alert('x')\">safe</section>");
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "raw markup execution");
+        StringAssert.Contains(exception.Issue.Message, "onclick");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithExecutableUrlMarkupStringAddContent_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-string-card")]
+                public class MarkupStringCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, (MarkupString)"<a href=\"java&#x0A;script:alert(1)\">safe</a>");
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "raw markup execution URL");
+        StringAssert.Contains(exception.Issue.Message, "href");
     }
 
     [TestMethod]
@@ -37346,6 +45170,160 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersNextFunctionForIteratorInBuildRenderTree_UsingImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/for-next-card")]
+                public class ForNextCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    private int Next(int value)
+                        => value + 1;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        for (var index = 0; index < Count; index = Next(index))
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, index);
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
+        StringAssert.Contains(artifact.ModuleCode, "function next(value)");
+        StringAssert.Contains(artifact.ModuleCode, "for (let index = 0; index < props.count; index = next(index))");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorVueForRange", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersMultiplicativeForIteratorInBuildRenderTree_UsingImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/for-multiply-card")]
+                public class ForMultiplyCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    [Parameter]
+                    public int Step { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        for (var index = 1; index < Count; index = index * Step)
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, index);
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
+        StringAssert.Contains(artifact.ModuleCode, "for (let index = 1; index < props.count; index = index * props.step)");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorVueForRange", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersLoopVariableDependentForStepInBuildRenderTree_UsingImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/for-loop-local-step-card")]
+                public class ForLoopLocalStepCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        for (var index = 1; index < Count; index += index)
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, index);
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorRenderContext = __jazorCreateRenderContext(h);");
+        StringAssert.Contains(artifact.ModuleCode, "for (let index = 1; index < props.count; index += index)");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorVueForRange", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersForEachLoopWithBreakInBuildRenderTree_UsingImperativeRenderBridge()
     {
         var context = CreateContext(
@@ -37437,12 +45415,12 @@ public sealed class RazorVuePipelineTests
                                 builder.OpenElement(0, "p");
                                 builder.AddContent(1, "empty");
                                 builder.CloseElement();
-                                break;
+                                return;
                             default:
                                 builder.OpenElement(2, "section");
                                 builder.AddContent(3, Count);
                                 builder.CloseElement();
-                                break;
+                                return;
                         }
                     }
                 }
@@ -38101,6 +46079,8 @@ public sealed class RazorVuePipelineTests
         var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedImperativeRenderLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "goto");
+        StringAssert.Contains(exception.Issue.Message, "Jazor.Compiler");
+        StringAssert.Contains(exception.Issue.Message, "control flow");
     }
 
     [TestMethod]
@@ -39538,6 +47518,57 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_WithScriptAddMarkupContentInsideImperativeRenderBridge_Throws()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-markup-card")]
+                public class ImperativeMarkupCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowMarkup { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (ShowMarkup)
+                        {
+                            builder.AddMarkupContent(0, "<script>alert('x')</script>");
+                            return;
+                        }
+
+                        builder.OpenElement(1, "p");
+                        builder.AddContent(2, "fallback");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedImperativeRenderLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "raw markup execution");
+        StringAssert.Contains(exception.Message, "script");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_WithNonPrivateSettableAddMarkupContentPropertyCarrierInsideImperativeRenderBridge_Throws()
     {
         var context = CreateContext(
@@ -40388,6 +48419,128 @@ public sealed class RazorVuePipelineTests
             """);
 
         var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedImperativeRenderLowering, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "compile-time provable static MarkupString AddContent");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithLocalFunctionMutatedRenderFragmentCarrierInsideImperativeRenderBridge_Throws()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-fragment-card")]
+                public class ImperativeFragmentCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Hide { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (Hide)
+                        {
+                            return;
+                        }
+
+                        RenderFragment<int> template = item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                        void Mutate()
+                        {
+                            template = item => itemBuilder =>
+                            {
+                                itemBuilder.OpenElement(3, "strong");
+                                itemBuilder.AddContent(4, item);
+                                itemBuilder.CloseElement();
+                            };
+                        }
+
+                        Mutate();
+                        builder.AddContent(5, template, 42);
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "RenderFragment local 'template'");
+        StringAssert.Contains(exception.Issue.Message, "later writes");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithLambdaMutatedMarkupStringCarrierInsideImperativeRenderBridge_Throws()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-markup-string-card")]
+                public class ImperativeMarkupStringCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Hide { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (Hide)
+                        {
+                            return;
+                        }
+
+                        MarkupString markup = (MarkupString)"<section class=\"hero\"><span>safe</span></section>";
+                        Action mutate = () =>
+                        {
+                            markup = (MarkupString)"<section class=\"hero\"><span>changed</span></section>";
+                        };
+
+                        mutate();
+                        builder.AddContent(0, markup);
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
 
         Assert.AreEqual(RazorVueIssueCode.UnsupportedImperativeRenderLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "compile-time provable static MarkupString AddContent");
@@ -42017,6 +50170,70 @@ public sealed class RazorVuePipelineTests
                         builder.OpenComponent<ChildCard>(6);
                         builder.AddAttribute(7, nameof(ChildCard.ItemTemplate), template);
                         builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "RenderFragment local 'template'");
+        StringAssert.Contains(exception.Issue.Message, "later writes");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithBranchAssignedRenderFragmentLocalCarrier_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool UseStrong { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderFragment<int> template;
+                        if (UseStrong)
+                        {
+                            template = item => itemBuilder =>
+                            {
+                                itemBuilder.OpenElement(1, "strong");
+                                itemBuilder.AddContent(2, item);
+                                itemBuilder.CloseElement();
+                            };
+                        }
+                        else
+                        {
+                            template = item => itemBuilder =>
+                            {
+                                itemBuilder.OpenElement(3, "span");
+                                itemBuilder.AddContent(4, item);
+                                itemBuilder.CloseElement();
+                            };
+                        }
+
+                        builder.AddContent(5, template, 42);
                     }
                 }
             }

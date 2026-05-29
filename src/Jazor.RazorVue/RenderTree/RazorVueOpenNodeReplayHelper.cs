@@ -30,6 +30,7 @@ internal static class RazorVueOpenNodeReplayHelper
                 component.ImplicitDefaultSlotAssignments.Any(static assignment => ContainsScopedReplay(assignment.Children)),
             RazorVueTemplateScopeNode templateScope => ContainsScopedReplay(templateScope.Children),
             RazorVueConditionalNode conditional => ContainsScopedReplay(conditional.WhenTrue) || ContainsScopedReplay(conditional.WhenFalse),
+            RazorVueRecoveredSwitchConditionalNode conditional => ContainsScopedReplay(conditional.WhenTrue) || ContainsScopedReplay(conditional.WhenFalse),
             RazorVueForEachNode loop => ContainsScopedReplay(loop.Body),
             RazorVueForNode loop => ContainsScopedReplay(loop.Body),
             _ => false

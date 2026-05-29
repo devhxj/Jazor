@@ -655,7 +655,7 @@ public sealed class RazorVueCanonicalSfcSemanticTests
     }
 
     [TestMethod]
-    public void RazorVue_CanonicalModelFactory_CreatesImperativeRootProgram_ForConditionalReturnBuildRenderTree()
+    public void RazorVue_CanonicalModelFactory_RecoversTemplateConditional_ForRootGuardReturnBuildRenderTree()
     {
         var context = CreateContext(
             """
@@ -700,13 +700,18 @@ public sealed class RazorVueCanonicalSfcSemanticTests
         var snapshot = context.CreateSemanticSnapshots().Single();
         var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
 
-        Assert.IsTrue(canonical.ImperativeRootProgram is not null);
-        Assert.AreEqual(RazorVueImperativeBlockKind.MethodBody, canonical.ImperativeRootProgram.Kind);
-        Assert.IsTrue(canonical.Template.Children.IsDefaultOrEmpty);
+        Assert.IsNull(canonical.ImperativeRootProgram);
+        var conditional = AssertNode<RazorVueCanonicalConditionalNode>(canonical.Template.Children.Single());
+        Assert.AreEqual("props.hide", conditional.ConditionExpressionText);
+        Assert.IsTrue(conditional.WhenTrue.Children.IsDefaultOrEmpty);
+        var section = AssertNode<RazorVueCanonicalElementNode>(conditional.WhenFalse.Children.Single());
+        Assert.AreEqual("section", section.TagName);
+        var text = AssertNode<RazorVueCanonicalTextNode>(section.Children.Children.Single());
+        Assert.AreEqual("ready", text.Text);
     }
 
     [TestMethod]
-    public void RazorVue_SfcSemanticModelFactory_CreatesRenderFunctionSemanticModel_ForImperativeRootProgram()
+    public void RazorVue_SfcSemanticModelFactory_CreatesTemplateSemanticModel_ForRecoveredRootGuardReturn()
     {
         var context = CreateContext(
             """
@@ -752,10 +757,9 @@ public sealed class RazorVueCanonicalSfcSemanticTests
         var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
         var sfc = new RazorVueSfcSemanticModelFactory().Create(canonical);
 
-        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, sfc.RenderMode);
-        Assert.IsTrue(sfc.ImperativeRootProgram is not null);
-        Assert.IsTrue(sfc.TemplateBlock.Template.Children.IsDefaultOrEmpty);
-        Assert.IsTrue(sfc.ScriptSetupBlock.LiftedBindings.IsDefaultOrEmpty);
+        Assert.AreEqual(VueSfcArtifactRenderMode.Template, sfc.RenderMode);
+        Assert.IsNull(sfc.ImperativeRootProgram);
+        Assert.IsFalse(sfc.TemplateBlock.Template.Children.IsDefaultOrEmpty);
     }
 
     [TestMethod]

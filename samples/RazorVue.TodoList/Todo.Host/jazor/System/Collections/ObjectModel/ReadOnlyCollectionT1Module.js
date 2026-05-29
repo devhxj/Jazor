@@ -3,11 +3,11 @@ function ensureWholeNumber(value, parameterName) {
     throw new Error(`ArgumentOutOfRangeException: ${parameterName} must be a whole number.`);
 }
 function ensureSource(instance) {
-  if (instance === null)
+  if (instance == null)
     throw new Error("NullReferenceException: instance is null.");
 }
 function ensureTarget(array) {
-  if (array === null)
+  if (array == null)
     throw new Error("ArgumentNullException: array is null");
 }
 function ensureTargetIndex(array, arrayIndex) {

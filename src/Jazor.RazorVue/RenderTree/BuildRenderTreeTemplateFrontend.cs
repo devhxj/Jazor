@@ -3,7 +3,7 @@ using Jazor.RazorVue.Extensibility;
 
 namespace Jazor.RazorVue.RenderTree;
 
-internal sealed class BuildRenderTreeTemplateFrontend : IRazorVueTemplateFrontend
+internal sealed class BuildRenderTreeTemplateFrontend : IRazorVueTemplateFrontend, IRazorVueRenderBaselineExtractor
 {
     private readonly RazorVueRenderTreeExtractor _renderTreeExtractor = new();
 
@@ -16,6 +16,9 @@ internal sealed class BuildRenderTreeTemplateFrontend : IRazorVueTemplateFronten
     public string Name => "Jazor.RazorVue.BuildRenderTreeTemplateFrontend";
 
     public RazorVueRenderFragment CreateRenderTree(RazorVueCompilationContext context, RazorVueSemanticSnapshot snapshot)
+        => CreateRenderBaseline(context, snapshot);
+
+    public RazorVueRenderFragment CreateRenderBaseline(RazorVueCompilationContext context, RazorVueSemanticSnapshot snapshot)
     {
         if (context is null)
             throw new ArgumentNullException(nameof(context));

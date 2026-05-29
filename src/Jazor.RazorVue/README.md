@@ -7,8 +7,8 @@
 
 ## Responsibilities
 
-- 提供 RazorVue 入口分类、descriptor、render tree、canonical model、lowering 与 catalog。
-- 提供 `RazorCodeDocument` / Razor IR 获取、文档定位与 template frontend 选择。
+- 提供 RazorVue 入口分类、组件整体语义、descriptor、render tree、canonical model、lowering 与 catalog。
+- 提供 Razor SG 结果获取、`RazorCodeDocument` / Razor IR 投影、文档定位与 SFC 增强信息。
 - 提供 legacy render artifact 与 design-time SFC artifact 的共享模型。
 - 提供 `Documents/` 与 `Protocol/` 下的 RazorVue/Jolt 宿主协议 DTO。
 - 产出目标是最终 `.vue` / render-function artifact；RazorVue 不是中间 wrapper JS 管线。
@@ -27,8 +27,8 @@
 
 - `Discovery/`: 入口分类与候选发现。
 - `Descriptor/`: props / emits / slots / registry / resolution。
-- `RenderTree/`: 手写 `BuildRenderTree` authoring 前端。
-- `RazorSdk/`: `RazorCodeDocument` / Razor IR 主前端与文档定位。
+- `RenderTree/`: `BuildRenderTree` / Roslyn `IOperation` 组件渲染语义基线。
+- `RazorSdk/`: Razor SG 结果桥接、`RazorCodeDocument` / Razor IR 投影、`.razor` 组件 SFC 增强信息与文档定位。
 - `Canonical/`, `Sfc/`, `Lowering/`, `Artifacts/`, `Emit/`: shared artifact/model pipeline。
 - `Documents/`, `Protocol/`: Jolt 与分析宿主共享文档/RPC 契约。
 
@@ -38,12 +38,25 @@
 - 同样没有 public hot contract 但包含受支持 lifecycle lowering、动态 `ShouldRender`、setup property / field / method 等运行时逻辑的组件继续归类为 `FullReloadRequired`。这条边界只放开纯模板热补丁，不把无公共响应式契约的运行时逻辑变化降级为安全 HMR。
 - 当 manifest diff 发现 descriptor / template / logic hash 全部稳定、且前后 manifest 都有可靠 `StyleHash` 时，只有 SFC style block 内容变化会产出 `StylePatch`；这条路径不依赖组件 JS HMR 边界。top-level style dependency 列表变化、缺失 style hash 的 content drift、或 style block 属性等未进入 `StyleHash` 的内容漂移仍保持 full reload。
 
-## Template Frontend Rule
+## Library-Mode Consumer Handoff
 
-- Razor 生成组件优先走 `RazorCodeDocument` / Razor IR。
-- 只有源码中显式手写的 `BuildRenderTree` 组件才允许走 `BuildRenderTree` 前端。
-- 对于 Razor 生成组件，如果既没有可绑定的 Razor 文档又不是手写 `BuildRenderTree` authoring，应显式失败，而不是静默回退。
-- Razor Source Generator semantic frontend 只接收带 `RazorSourceGeneratorDocument` 的 semantic snapshot；无 SG 文档的 helper component / partial snapshot 不能遮蔽真实 Razor IR canonicalization error。
+- RazorVue library mode 的标准 Web SDK host 是单 ASP.NET Core runtime host。项目内 colocated `consumer/` 目录只表示前端消费构建层，不是第二个 runtime host。
+- compiler-owned 开发期输出根是 host 项目下的 `jazor/`，其中包含 `.vue` / render-function artifacts、统一 `jazor-manifest.json`、source maps、origins sidecars 和 `__jazor/razorvue-host.mjs`。
+- browser-facing build 输出根是 host 项目下的 `wwwroot/jazor/`，由 consumer build 产生，通常包含 `client-entry.js` / `.css` / source maps。普通 build 阶段不得把 compiler-owned `.vue` 或 `jazor-manifest.json` 提前复制到该 browser asset root。
+- host project 通过 `JazorConsumerRoot` 指向 colocated consumer；默认 runner 是 `$(JazorConsumerRoot)\scripts\run-deno.cs`，默认 MSBuild task 是 `build`。`JazorConsumerBuild` 总是在 `JazorEmit` 后执行，并通过环境变量把 `RAZORVUE_HOST_JAZOR_ROOT`、`RAZORVUE_HOST_WWWROOT_ROOT` 与 `JAZOR_EMIT_TOOL_PATH` 传给 runner。
+- consumer 应通过 `Jazor.Emit razorvue-consumer-entry` / `razorvue-sfc-bridge` 消费 SFC artifacts，把 `.vue` default component 转成 named export/import 后再进入 browser / SSR entry。不要在 `Jazor.Compiler` 中放开 `.vue` default import/export，也不要新增 wrapper-JS marker protocol 绕过最终 Vue artifact shape。
+- 若 `JazorConsumerRoot` 已设置但默认 runner 缺失，SDK target 必须 fail-fast，错误文本包含 `Jazor consumer runner was not found: ...`。该失败发生在 `JazorEmit` 完成之后、browser bundle 生成之前；不得回退到 analyzer-private Razor SG fallback，也不得继续沿用旧 `wwwroot/jazor` 产物。
+- publish 形态由 `JazorPublishMaterializeEnabled=true` 收口：先把 compiler-owned `jazor/` materialize 到发布目录的 `wwwroot/jazor/`，再把 host `wwwroot/jazor/` 中 consumer browser assets 覆盖进去。发布结果只能从 `wwwroot/jazor/` 提供 `/jazor/*`，不应留下发布根 `jazor/` shadow 目录或 legacy `wwwroot/assets/` 输出。
+
+## Component Lowering Rule
+
+- 继承 `ComponentBase`、实现 `IVueComponent` 且带 `[ECMAScriptModule]` 的类型是 RazorVue 特殊组件入口。RazorVue 必须把该 `INamedTypeSymbol` 作为一个合并后的 partial 组件类整体翻译，而不是把它当成普通 ECMAScript module class 或单独的 template frontend 输入。
+- 组件类整体语义由 Roslyn 提供：`.razor` generated partial、`.razor.cs` code-behind partial、`@code` / `@functions` 成员、普通 partial、参数、生命周期、helper method、helper class 和嵌套类型都必须先进入同一个 `RazorVueSemanticSnapshot` / 组件语义视图。
+- 组件描述语义是整体组件类中的受控子集：props、emits、slots、model、style/plugin/container 等 descriptor surface 用于生成 Vue component descriptor / HMR identity，不应作为普通运行时代码重复 lower。
+- 渲染语义基线是 Roslyn 绑定后的 `BuildRenderTree` / `IOperation`。纯手写 `.cs` `BuildRenderTree` 组件只能由 `Jazor.Analyzer` / `RazorVueGenerator` 普通 analysis/source-generator 路径触发；`.razor` 组件必须在 Razor SG 产出 Razor IR 与 generated C# / render body 后，由 Razor SG tail output 路径触发。RazorVue 不会在 analyzer 内私有运行 Razor SG 作为 fallback。
+- `RazorCodeDocument` / Razor IR 不是替代组件整体 lowering 的主语义来源。它只用于 `.razor` 组件的增强层：恢复原始 Razor template intent、source mapping、directive/tag-helper metadata、mixed attribute / raw markup 等更精准 SFC 信息。
+- Razor IR 增强必须发生在 canonical render model / SFC semantic model 层，不能通过 patch 最终 `.vue` 文本、绕过 `Jazor.Compiler` / `SemanticWalker` 手拼 JS，或把 `@code` 文本直接塞进 `<script setup>`。
+- 当 Razor IR 增强缺失或无法识别时，只能退回到已绑定的 Roslyn/`BuildRenderTree` 语义基线，或在连该语义基线也不可用时显式失败；不得回读 `.razor` 文件、私跑 Razor SG、或用路径猜测文档身份。
 
 ## `@key` Support
 
@@ -170,7 +183,7 @@
   - 单表达式 / 条件表达式中的 declaration-pattern local，例如 `return Value is int props && props > 0;`
   - 条件表达式中的 recursive/list pattern 顶层声明 local，例如 `if (Value is int { } props) { return props > 0; } return false;` 或 `if (Values is [1, ..] props) { return props.Length > 0; } return false;`
   - 条件表达式中的 `out var` declaration local，例如 `if (int.TryParse(Value, out var props)) { return props > 0; } return false;`
-  - 线性局部声明、局部函数、受控 local lambda delegate 或受控 method-group delegate carrier 前缀后接最终 `return bool`，例如 `var threshold = Value + 1; return threshold > 2;`、`bool IsReady(int value) => value > 2; return IsReady(Value);`、`Func<int, bool> ready = value => value > 0; return ready(Value);`、`Func<int, bool> ready = IsReady; return ready(Value);`，或同一受控 delegate local 的 `ready is not null` / `ready != null` 空值判断
+  - 线性局部声明、局部函数、受控 local lambda delegate、受控 method-group delegate carrier，或同方法局部函数 delegate factory/consumer 前缀后接最终 `return bool`，例如 `var threshold = Value + 1; return threshold > 2;`、`bool IsReady(int value) => value > 2; return IsReady(Value);`、`Func<int, bool> ready = value => value > 0; return ready(Value);`、`Func<int, bool> ready; ready = value => value > 0; return ready(Value);`、`Func<int, bool> ready = IsReady; return ready(Value);`、`Func<int, bool> ready; ready = IsReady; return ready(Value);`、`Func<int, bool> CreateReady() => value => value > 0; bool ConsumeReady(Func<int, bool> predicate, int value) => predicate(value); Func<int, bool> ready = CreateReady(); return ConsumeReady(ready, Value);`，或同一受控 delegate local 的 `ready is not null` / `ready != null` / `ready == other` / `ready != other` 空值与参考比较；声明点直接初始化为 `null` / `default` 的 delegate local 也可传入同方法局部函数 consumer，但该 consumer 内对应 delegate 参数只能做 null/default 空值判断
   - standalone local-only mutation 表达式语句，例如 `var count = Value; count++; count += 2; return count > 3;`
   - 外层 `if` / `else` 语句体，只要所有实际路径都以 `return bool` 完结，分支内只包含局部声明、local-only mutation statement 和同一受控 `if` 形态，例如 `if (Value > 0) { var count = Value; count--; return count > 0; } return false;`
   - 传统 constant/default `switch` 语句体，case body 继续限制在同一受控语句子集内，例如 `switch (Value) { case 0: return false; default: var count = Value; count++; return count > 1; }`
@@ -180,7 +193,7 @@
   - 受控同步异常分支，例如 `if (Value < 0) { throw new InvalidOperationException("negative"); } return Value > 0;`；`throw` 只作为异常终止路径进入 gate，方法体仍必须存在可证明的正常 `return bool` 路径
 - 动态条件、declaration local、线性前缀语句体、受控 `if`、受控传统 `switch`、guarded pattern `switch`、受控 loop 语句体、受控同步 `try/catch/finally` 和受控同步异常分支都继续交给 `RazorVueExpressionEmitter` / `SemanticWalker` / `Jazor.Compiler` lowering，RazorVue 只负责包裹 cached vnode gate：首次 render 强制通过，后续 `false` 返回上一次 cached vnode。
 - 这条支持是递归受控的，而不是“只要写了 `base.ShouldRender()` 或任意多语句体就接受”：
-  - `await foreach`、纯 `throw` 且无正常 `return bool` 路径、表达式内部 mutation、current-component property/field mutation、任意外部/member mutation、任意 invocation expression statement、除“声明点直接初始化为同步匿名函数或源码可分析 method group、返回 `bool` 并仅作为直接调用目标或 null/default 空值判断使用”以外的局部 lambda / delegate state、delegate 重赋值、delegate 与 delegate 比较、delegate 传参/返回、嵌套局部函数、超出受控 block / `if` / loop / `try/catch/finally` 子集的 guarded pattern `switch` 仍不属于当前 `ShouldRender` gate 支持面
+  - `await foreach`、纯 `throw` 且无正常 `return bool` 路径、表达式内部 mutation、current-component property/field mutation、任意外部/member mutation、任意 invocation expression statement、除“声明点直接初始化，或同一线性局部声明前缀内先声明再一次赋值初始化为同步匿名函数或源码可分析 method group、返回 `bool` 并仅作为直接调用目标、null/default 空值判断或受控 delegate compare 使用”、“声明点直接初始化为 `null` / `default` 并仅作为 null/default 空值判断或传入同方法局部函数 consumer 后只作 null/default 空值判断使用”以及“同方法局部函数 factory 返回受控同步匿名函数、consumer 仅直接调用/判空/参考比较 delegate 参数”以外的局部 lambda / delegate state、delegate 多次重赋值、分支赋值、赋值后逃逸、delegate 参数逃逸、返回非匿名函数 delegate、跨 member / 外部 callable 传参返回、嵌套局部函数、超出受控 block / `if` / loop / `try/catch/finally` 子集的 guarded pattern `switch` 仍不属于当前 `ShouldRender` gate 支持面
   - 若 base 链形成循环、缺少源码、外部引用程序集无源码 override，或方法体形状超出上述受控子集，也会继续显式失败
   - 方法体、分支、catch 参数与表达式 declaration local 会通过 compiler host seam 统一重写声明点和引用点，避免与 `props` / `emit` / `slots` / render gate 缓存变量等 setup 名称发生 JavaScript 遮蔽；局部函数声明名和参数名必须本身是安全 binding identifier
 - 普通 lifecycle 的 base-pass-through 现在也对齐接受一个更窄的尾随 no-op 形态：例如 `await base.OnInitializedAsync(); return;` 这类“base 透传后只跟空返回”的方法体，会与纯 pass-through 一样被视为没有新增运行时行为，不再误退回 unsupported。

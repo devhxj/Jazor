@@ -161,7 +161,7 @@ export function _aaa73a4811837ec7(instance, separator, count, options) {
 }
 export function _62c8810ea13dba45(instance, separator) {
   let singleSeparator, separators;
-  if (separator === null)
+  if (separator == null)
     return instance.split(RegExp("\\s+"), null);
   if (typeof separator === "string" && (singleSeparator = separator, true))
     return instance.split(RegExp(buildSplitCharClassPattern(singleSeparator)), null);
@@ -184,7 +184,7 @@ function BuildSplitCharClassPattern(separators) {
   let hasSeparator = false;
   for (let i = 0; i < separators.length; i++) {
     let separator = separators[i];
-    if (separator === null || separator.length === 0)
+    if (separator == null || separator.length === 0)
       continue;
     hasSeparator = true;
     for (let j = 0; j < separator.length; j++)
@@ -273,7 +273,7 @@ function splitByStringsWithLimitAndOptions(instance, separator, count, options) 
     let bestSeparator = null;
     for (let i = 0; i < separators.length; i++) {
       let item = separators[i];
-      if (item === null)
+      if (item == null)
         continue;
       let index = instance.indexOf(item, start);
       if (index < 0)
@@ -283,7 +283,7 @@ function splitByStringsWithLimitAndOptions(instance, separator, count, options) 
         bestSeparator = item;
       }
     }
-    if (bestIndex < 0 || bestSeparator === null)
+    if (bestIndex < 0 || bestSeparator == null)
       break;
     let part = instance.substring(start, start + (bestIndex - start));
     part = trimEntries ? part.trim() : part;
@@ -326,7 +326,7 @@ function normalizeStringSeparators(separator) {
     if (Array.isArray(__swpat$b0aa07bf10fc324d6d779b23) && (many = __swpat$b0aa07bf10fc324d6d779b23, true)) {
       for (let i = 0; i < many.length; i++) {
         let item = many[i];
-        if (!(item === null) && item.length !== 0)
+        if (!(item == null) && item.length !== 0)
           result.push(item);
       }
       return;

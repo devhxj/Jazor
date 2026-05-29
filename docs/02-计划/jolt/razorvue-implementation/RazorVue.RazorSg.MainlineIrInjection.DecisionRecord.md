@@ -17,23 +17,23 @@
 
 ## 1. 当前目标
 
-当前 RazorVue 线路的核心阻塞不再是 packaging，也不再是消费侧模板前端。
+当前 RazorVue 线路的核心阻塞不再是 packaging，也不应被理解为“消费侧必须用 Razor IR 替换 Roslyn/`BuildRenderTree` 前端”。
 
 当前唯一主问题是：
 
 1. 在当前 SDK Razor Source Generator 主线上，为 Razor 组件正式产出 RazorVue SFC catalog/artifact。
-2. 让 `Jazor.Analyzer` / `RazorVueGenerator` 在正式构建中只消费官方 Razor SG 已产生的内存结果，而不是重新猜测 Razor 文档来源。
-3. 保持 Razor 组件始终走 IR 语义，不回退到错误路线。
+2. 让 `Jazor.Analyzer` / `RazorVueGenerator` 在正式构建中消费官方 Razor SG 已产生的 generated C#、source mappings 和内存 IR 结果，而不是重新猜测 Razor 文档来源。
+3. 保持 Razor 组件始终走官方 SG 后的 Roslyn/`BuildRenderTree` 语义基线，并把 IR 作为 `.razor` SFC 增强层，不回退到 path 回读、classic codegen 或自建 RazorCompile 路线。
 
 ## 2. 已锁定的硬约束
 
 以下约束已经明确，后续实现不得违反：
 
-1. Razor 组件必须走 IR 解析。
-2. 注入点是 Roslyn / Razor IR 渠道，不是文件系统回读渠道。
+1. Razor 组件必须走官方 Razor SG 后的 Roslyn / generated `BuildRenderTree` 语义基线；Razor IR 只作为 `.razor` SFC 增强输入。
+2. 注入点是 Roslyn / Razor SG 内存结果渠道，不是文件系统回读渠道。
 3. `path` 最多只能作为 identity metadata，不能变成主输入契约。
-4. 手写 `.cs` / 手写 `IComponent` / source-authored `BuildRenderTree` 可以作为显式 fallback。
-5. Razor 组件没有 Razor IR document 输入时必须报错，不能静默弥合。
+4. 手写 `.cs` / 手写 `IComponent` / source-authored `BuildRenderTree` 由 analysis/source-generator 普通路径触发，不经过 Razor SG tail。
+5. Razor 组件没有 Razor IR document 输入时不得伪造增强信息；如果官方 SG 后 generated render body / Roslyn operation 仍可用，可以保留语义基线输出并报告增强缺失，否则必须报错。
 
 ## 3. 明确禁止的路线
 
@@ -42,7 +42,7 @@
 1. 读取 `.razor` 原文作为实现主线。
 2. 使用 `AdditionalTextsProvider` / `AdditionalFiles` 回读 `.razor` 作为补偿主线。
 3. 基于 `path` 显式回读 `.razor` 后再 `RazorProjectEngine.Process(...)`。
-4. Razor 组件缺原文时 fallback 到 Roslyn 生成的 `BuildRenderTree`。
+4. Razor 组件缺 Razor SG 内存结果时，把 `BuildRenderTree` 当作“反推 Razor 原文/IR”的补偿来源。
 5. 切回 classic Razor codegen / `SdkRazorGenerate` / `ResolvedRazorExtension` 主线。
 6. 把 `ProvideRazorExtensionInitializerAttribute` / 旧 initializer 模型当成正式接入方案。
 
@@ -50,7 +50,7 @@
 
 ## 4. 已完成且不能回滚的改动
 
-当前消费侧已经切到“必须有 Razor IR 输入”的模型，以下改动属于正确方向，不应回退：
+当前消费侧已经切到“必须有官方 Razor SG 内存结果用于 `.razor` 增强”的模型；但这不意味着 IR 是组件主语义来源。以下改动中与 path 回读移除、object-shape bridge、SG tail 接入相关的部分仍属正确方向：
 
 1. 新增 Razor IR carrier 模型，作为旧消费侧过渡输入：
    - `src/Jazor.RazorVue/RazorSdk/RazorVueRazorIrCarrier.cs`
@@ -61,15 +61,16 @@
 4. `RazorVueRazorDocumentSemanticFrontend` 收紧为 carrier / Razor SG document 优先，不再回读 `.razor`。
 5. 删除 `src/Jazor.RazorVue/RazorSdk/RazorVueRazorDocumentLocator.cs`。
 6. `RazorVueRazorCodeDocumentProvider` 只认 `snapshot.RazorIrCarrier`。
-7. `RazorVuePreferredTemplateFrontend` 改成：
-   - 有 carrier 或 Razor SG document 则走 Razor IR frontend。
-   - 无 Razor IR document 输入且 `BuildRenderTree` 为源码手写时允许 fallback。
-   - 无 Razor IR document 输入且属于 Razor 生成组件时明确报错。
+7. 旧 `RazorVuePreferredTemplateFrontend` 实现曾改成 “有 carrier 或 Razor SG document 则走 Razor IR frontend”；该消费侧方向已订正并隔离为 `RazorVueLegacyIrFirstTemplateFrontend` 兼容路线：
+   - 先构建 Roslyn/`BuildRenderTree` 组件语义基线。
+   - 有 carrier 或 Razor SG document 时应用 Razor IR 增强。
+   - 无 Razor IR document 输入且 `BuildRenderTree` 为源码手写时走 analysis/source-generator 普通路径。
+   - 无 Razor IR document 输入且属于 Razor 生成组件时不得伪造增强；若 generated render body 不可用则明确报错。
 8. `src/Jazor.Analyzer/RazorVue/Generation/RazorVueGenerator.cs` 已去掉对 `AdditionalTextsProvider` 的主依赖。
 
 ## 5. 已验证通过的聚焦测试
 
-以下 focused tests 已通过，证明“消费侧要求 Razor IR 输入”当前是稳定的：
+以下 focused tests 已通过，证明“官方 Razor SG document / 中立 IR 输入通道”当前是稳定的；它们不应再被解释为“IR 必须替代 Roslyn/`BuildRenderTree` 语义基线”：
 
 ```powershell
 dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj --filter "FullyQualifiedName~RazorVueRazorCodeDocumentProviderTests|FullyQualifiedName~RazorVueTemplateFrontendParityTests" -v minimal
@@ -83,7 +84,7 @@ dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter "FullyQu
 
 结果：406/406 通过。
 
-这说明当前问题主要不在消费侧，而在正式 Razor SG tail 注入链。
+这说明当前 SG document 接入问题主要不在 object-shape bridge，而在正式 Razor SG tail 注入链；消费侧主语义路线仍需按“Roslyn/`BuildRenderTree` 基线 + IR 增强”订正。
 
 ## 6. SDK 主线调查结论
 
@@ -196,7 +197,7 @@ dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter "FullyQu
 
 1. 不需要读 `.razor` 原文回建文档
 2. 不需要回到 classic Razor codegen
-3. 可以直接站在当前 SDK Razor SG 已生成的 code document / IR 结果上继续产出 RazorVue SFC catalog/artifact
+3. 可以直接站在当前 SDK Razor SG 已生成的 generated C#、code document / IR 结果上继续产出 RazorVue SFC catalog/artifact
 
 ### 8.4 外部编译存在 Razor 类型身份隔离
 
@@ -311,10 +312,10 @@ RazorVue generated sources 必须通过 source output 的 `AddSource(...)` 进�
 
 当前实装还增加了 analyzer/Razor SDK 分层边界：
 
-1. `Jazor.Analyzer` 负责模块初始化、Harmony patch、Roslyn `_outputNodes` 扫描、source output 注册和对象 shape 读取。
+1. `Jazor.Analyzer` 负责模块初始化、自有 native `Initialize` hook、Roslyn `_outputNodes` 扫描、source output 注册和对象 shape 读取。
 2. `Jazor.Analyzer` 不携带 `Microsoft.CodeAnalysis.Razor.Compiler.dll`，避免和官方 Razor SG 产生第二份 Razor 类型身份。
 3. `Jazor.RazorVue` 生产代码不携带 `Microsoft.CodeAnalysis.Razor.Compiler.dll`，避免把 SDK internal 类型身份固化进 Jazor 发布包。
-4. `Jazor.RazorVue` 负责反射读取官方内存对象、投影中立 Razor IR DTO、运行 SFC pipeline。
+4. `Jazor.RazorVue` 负责反射读取官方内存对象、投影中立 Razor IR DTO、结合 Roslyn/`BuildRenderTree` 语义基线运行 SFC pipeline。
 5. 测试项目可以引用 SDK Razor Compiler 构造真实 `RazorCodeDocument` / `RazorCSharpDocument`，但生产路径只接受 object shape，不接受强类型 Razor Compiler surface。
 
 ### 9.4 实现硬边界
@@ -323,7 +324,7 @@ RazorVue generated sources 必须通过 source output 的 `AddSource(...)` 进�
 
 1. 回读 `.razor`
 2. classic codegen
-3. Razor 组件 fallback 到 Razor 生成的 `BuildRenderTree`
+3. Razor 组件缺 Razor SG 内存结果时，把 Razor 生成的 `BuildRenderTree` 当作原文/IR 反推补偿
 4. 生产环境双跑 SDK Razor SG
 5. 改写官方 `.razor.g.cs`
 6. 改写官方 Razor parser / engine passes / tag helper discovery
@@ -336,7 +337,7 @@ RazorVue generated sources 必须通过 source output 的 `AddSource(...)` 进�
 
 1. 绑定 `RazorSourceGenerator.Initialize(...)` IL 指纹与 declared method surface。
 2. assembly path / version / MVID 只作为测试和排查观测信息，不作为正式兼容门。
-3. Harmony patch 安装前必须执行同一套兼容校验；校验失败时不 patch 官方 Razor SG，并记录 bootstrap failure。
+3. 自有 native `Initialize` hook 安装前必须执行同一套兼容校验；校验失败时不 patch 官方 Razor SG，并记录 bootstrap failure。
 4. 校验失败时，如果 RazorVue 已启用，则报告明确诊断并停止 RazorVue tail output 生成。
 5. RazorVue 未启用时，不注入、不影响普通 Razor 项目。
 6. SDK 升级必须先更新指纹和 focused tests。
@@ -349,7 +350,7 @@ RazorVue generated sources 必须通过 source output 的 `AddSource(...)` 进�
 13. 当前 context key 取不到时，RazorVue 无法证明本轮 Roslyn generator context 已被 tail 接管，必须按 `JAZORVGA019` 不兼容处理，不能用进程级注册状态继续构建。
 14. Hook 输出节点选择必须优先绑定官方 implementation source-output 数据流，并通过 bootstrap trace 暴露 `TailOutputRegistrationKind="implementation-source-output"`；HostOutput 只能作为锚点/兜底观测路径，不应成为正常生产通道。
 
-失败时禁止自动退回 `.razor` 原文回读、`BuildRenderTree` 反推、classic codegen 或 production nested run。
+失败时禁止自动退回 `.razor` 原文回读、`BuildRenderTree` 反推原始 Razor/IR、classic codegen 或 production nested run。该禁令不禁止使用官方 SG 后已绑定的 generated `BuildRenderTree` / Roslyn `IOperation` 作为组件语义基线。
 
 ## 10. 当前不建议采用的路线
 
@@ -409,9 +410,9 @@ RazorVue generated sources 必须通过 source output 的 `AddSource(...)` 进�
 
 目标：
 
-1. 从 `RazorCodeDocument` / IR 提取组件 identity。
-2. 补 imports、document boundary、source-origin 以及模板前端所需结构。
-3. 不支持 Razor IR shape 产出显式 diagnostic。
+1. 从 `RazorCodeDocument` / IR 提取组件 identity 和增强 metadata。
+2. 补 imports、document boundary、source-origin 以及 SFC 增强所需结构。
+3. 不支持 Razor IR shape 时产出显式 diagnostic 或保留 Roslyn/`BuildRenderTree` 基线，不伪造增强结果。
 
 ### 第四步：端到端回归与打包补齐
 
@@ -455,4 +456,4 @@ RazorVue generated sources 必须通过 source output 的 `AddSource(...)` 进�
 
 ## 15. 一句话结论
 
-RazorVue 当前已经把消费侧改对了，且本轮已证实 SDK Razor SG 单轮能够同时产出 generated source 与 `HostOutputs -> RazorGeneratorResult -> RazorCodeDocument`；经过源码阅读和实际测试，当前最优解已经锁定为：HostOutput 用作 Razor SG 末端 IR 结果锚点，受控 IL 尾部注入新增并列 source output，用同一条官方 Razor SG 数据流生成 RazorVue SFC artifact/catalog。
+RazorVue 当前已经把官方 Razor SG 内存结果接入链打通，但消费侧主语义路线需要订正为 Roslyn/`BuildRenderTree` 基线 + Razor IR 增强；本轮已证实 SDK Razor SG 单轮能够同时产出 generated source 与 `HostOutputs -> RazorGeneratorResult -> RazorCodeDocument`。经过源码阅读和实际测试，当前最优解仍是：HostOutput 用作 Razor SG 末端 IR 结果锚点，受控 IL 尾部注入新增并列 source output，用同一条官方 Razor SG 数据流生成 RazorVue SFC artifact/catalog。

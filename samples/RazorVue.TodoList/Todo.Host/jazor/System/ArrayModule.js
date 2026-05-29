@@ -429,7 +429,7 @@ export function _ad1c39ab55fe27b9(array, action) {
 export function _cde8d7a78af8dc9a(array, value) {
   if (array === null)
     throw new Error("ArgumentNullException: array is null");
-  if (value === null)
+  if (value == null)
     return -1;
   return array.indexOf(value);
 }
@@ -487,9 +487,9 @@ export function _e3d80b27a67e8a0d(array, value, startIndex, count) {
   return -1;
 }
 export function _85801a2dbc247f17(array, value) {
-  if (array === null)
+  if (array == null)
     throw new Error("ArgumentNullException: array is null");
-  if (value === null)
+  if (value == null)
     return -1;
   return array.lastIndexOf(value);
 }

@@ -85,4 +85,20 @@ internal sealed class RazorVuePipeline
 
         return _catalogBuilder.Build(assemblyName, artifacts);
     }
+
+    public RazorVueCatalog Execute(
+        RazorVueCompilationContext context,
+        ImmutableArray<RazorVueSemanticSnapshot> snapshots)
+    {
+        if (context is null)
+            throw new ArgumentNullException(nameof(context));
+
+        var artifacts = snapshots.IsDefault
+            ? ImmutableArray<VueCompiledArtifact>.Empty
+            : snapshots
+                .Select(snapshot => _artifactLowerer.Lower(context, snapshot))
+                .ToImmutableArray();
+
+        return _catalogBuilder.Build(context.Compilation.AssemblyName ?? "Jazor.Assembly", artifacts);
+    }
 }

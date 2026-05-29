@@ -104,6 +104,11 @@ internal sealed partial class RazorVueExpressionEmitter
                 AppendFragmentShape(builder, conditional.WhenTrue);
                 AppendFragmentShape(builder, conditional.WhenFalse);
                 break;
+            case RazorVueRecoveredSwitchConditionalNode conditional:
+                builder.Append("recovered-switch-if(").Append(conditional.ConditionExpressionText).Append(')');
+                AppendFragmentShape(builder, conditional.WhenTrue);
+                AppendFragmentShape(builder, conditional.WhenFalse);
+                break;
             case RazorVueForEachNode loop:
                 builder.Append("foreach(").Append(loop.ItemName).Append(':').Append(loop.Source.Syntax.ToString()).Append(')');
                 AppendFragmentShape(builder, loop.Body);
