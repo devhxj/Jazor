@@ -32236,6 +32236,65 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersBaseThenAwaitForEachEmitSetParametersAsyncIntoSingleWatchLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-await-foreach")]
+                public class SetParametersAsyncAwaitForEachCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public IAsyncEnumerable<int> Values { get; set; } = default!;
+
+                    [Parameter]
+                    public EventCallback<int> ItemSelected { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        await foreach (var value in Values)
+                        {
+                            await ItemSelected.InvokeAsync(value);
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, 0);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.values], async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "for await (let value of props.values)");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"itemSelected\", value);");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersBaseThenTryFinallyEmitSetParametersAsyncIntoSingleWatchLifecycle()
     {
         var context = CreateContext(
@@ -33287,6 +33346,67 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForAwaitForEachMutationSetParametersAsyncLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-await-foreach-mutation")]
+                public class SetParametersAsyncAwaitForEachMutationCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public IAsyncEnumerable<int> Values { get; set; } = default!;
+
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ItemSelected { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        await foreach (var value in Values)
+                        {
+                            Count++;
+                            await ItemSelected.InvokeAsync(value);
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Count);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("for await", StringComparison.Ordinal), artifact.ModuleCode);
     }
 
     [TestMethod]
@@ -37343,6 +37463,64 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersDelegateParameterDirectInvocationEchoShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-delegate-parameter-direct-invocation-echo")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> CreateReady()
+                            => value => value > 0;
+
+                        Func<int, bool> EchoReady(Func<int, bool> predicate)
+                            => predicate;
+
+                        Func<int, bool> ready = CreateReady();
+                        return EchoReady(ready)(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "function EchoReady(predicate) {");
+        StringAssert.Contains(artifact.ModuleCode, "return EchoReady(__jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "(props.value);");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForNullOnlyDelegateParameterEchoInvocationShouldRender()
     {
         var context = CreateContext(
@@ -37377,6 +37555,1118 @@ public sealed class RazorVuePipelineTests
 
                         Func<int, bool>? ready = null;
                         Func<int, bool>? escaped = EchoReady(ready);
+                        return escaped(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorShouldRenderHasRendered", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersDelegateParameterAliasEchoShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-delegate-parameter-alias-echo")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> CreateReady()
+                            => value => value > 0;
+
+                        Func<int, bool> EchoReady(Func<int, bool> predicate)
+                        {
+                            var alias = predicate;
+                            return alias;
+                        }
+
+                        Func<int, bool> ready = CreateReady();
+                        Func<int, bool> escaped = EchoReady(ready);
+                        return escaped(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "function EchoReady(predicate) {");
+        StringAssert.Contains(artifact.ModuleCode, "let alias = predicate;");
+        StringAssert.Contains(artifact.ModuleCode, "return alias;");
+        StringAssert.Contains(artifact.ModuleCode, " = EchoReady(__jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "(props.value);");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersDelegateParameterNestedBlockAliasEchoShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-delegate-parameter-nested-block-alias-echo")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> CreateReady()
+                            => value => value > 0;
+
+                        Func<int, bool> EchoReady(Func<int, bool> predicate)
+                        {
+                            {
+                                var alias = predicate;
+                                return alias;
+                            }
+                        }
+
+                        Func<int, bool> ready = CreateReady();
+                        Func<int, bool> escaped = EchoReady(ready);
+                        return escaped(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "function EchoReady(predicate) {");
+        StringAssert.Contains(artifact.ModuleCode, "let alias = predicate;");
+        StringAssert.Contains(artifact.ModuleCode, "return alias;");
+        StringAssert.Contains(artifact.ModuleCode, " = EchoReady(__jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "(props.value);");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForNullOnlyDelegateParameterAliasEchoInvocationShouldRender()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-null-only-delegate-parameter-alias-echo-invocation")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool>? EchoReady(Func<int, bool>? predicate)
+                        {
+                            var alias = predicate;
+                            return alias;
+                        }
+
+                        Func<int, bool>? ready = null;
+                        Func<int, bool>? escaped = EchoReady(ready);
+                        return escaped(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorShouldRenderHasRendered", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForNullOnlyDelegateParameterNestedBlockAliasEchoInvocationShouldRender()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-null-only-delegate-parameter-nested-block-alias-echo-invocation")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool>? EchoReady(Func<int, bool>? predicate)
+                        {
+                            {
+                                var alias = predicate;
+                                return alias;
+                            }
+                        }
+
+                        Func<int, bool>? ready = null;
+                        Func<int, bool>? escaped = EchoReady(ready);
+                        return escaped(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorShouldRenderHasRendered", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersDelegateParameterSwitchAliasEchoShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-delegate-parameter-switch-alias-echo")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> CreateReady()
+                            => value => value > 0;
+
+                        Func<int, bool> EchoReady(Func<int, bool> predicate, int mode)
+                        {
+                            var alias = predicate;
+                            switch (mode)
+                            {
+                                case 0:
+                                    return alias;
+                                default:
+                                    return predicate;
+                            }
+                        }
+
+                        Func<int, bool> ready = CreateReady();
+                        Func<int, bool> escaped = EchoReady(ready, Value);
+                        return escaped(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "function EchoReady(predicate, mode) {");
+        StringAssert.Contains(artifact.ModuleCode, "let alias = predicate;");
+        StringAssert.Contains(artifact.ModuleCode, "switch (mode) {");
+        StringAssert.Contains(artifact.ModuleCode, "return alias;");
+        StringAssert.Contains(artifact.ModuleCode, "return predicate;");
+        StringAssert.Contains(artifact.ModuleCode, " = EchoReady(__jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "(props.value);");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForNullOnlyDelegateParameterSwitchAliasEchoInvocationShouldRender()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-null-only-delegate-parameter-switch-alias-echo-invocation")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool>? EchoReady(Func<int, bool>? predicate, int mode)
+                        {
+                            var alias = predicate;
+                            switch (mode)
+                            {
+                                case 0:
+                                    return alias;
+                                default:
+                                    return predicate;
+                            }
+                        }
+
+                        Func<int, bool>? ready = null;
+                        Func<int, bool>? escaped = EchoReady(ready, Value);
+                        return escaped(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorShouldRenderHasRendered", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForDelegateParameterSwitchDifferentSourceEchoShouldRender()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-delegate-parameter-switch-different-source-echo")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> CreateReady()
+                            => value => value > 0;
+
+                        Func<int, bool> EchoReady(Func<int, bool> first, Func<int, bool> second, int mode)
+                        {
+                            switch (mode)
+                            {
+                                case 0:
+                                    return first;
+                                default:
+                                    return second;
+                            }
+                        }
+
+                        Func<int, bool> ready = CreateReady();
+                        Func<int, bool> other = value => value > 1;
+                        Func<int, bool> escaped = EchoReady(ready, other, Value);
+                        return escaped(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorShouldRenderHasRendered", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersDelegateParameterSwitchTrailingReturnAliasEchoShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-delegate-parameter-switch-trailing-return-alias-echo")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> CreateReady()
+                            => value => value > 0;
+
+                        Func<int, bool> EchoReady(Func<int, bool> predicate, int mode)
+                        {
+                            var alias = predicate;
+                            switch (mode)
+                            {
+                                case 0:
+                                    return alias;
+                            }
+
+                            return predicate;
+                        }
+
+                        Func<int, bool> ready = CreateReady();
+                        Func<int, bool> escaped = EchoReady(ready, Value);
+                        return escaped(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "function EchoReady(predicate, mode) {");
+        StringAssert.Contains(artifact.ModuleCode, "let alias = predicate;");
+        StringAssert.Contains(artifact.ModuleCode, "switch (mode) {");
+        StringAssert.Contains(artifact.ModuleCode, "return alias;");
+        StringAssert.Contains(artifact.ModuleCode, "return predicate;");
+        StringAssert.Contains(artifact.ModuleCode, " = EchoReady(__jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "(props.value);");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForNullOnlyDelegateParameterSwitchTrailingReturnAliasEchoInvocationShouldRender()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-null-only-delegate-parameter-switch-trailing-return-alias-echo-invocation")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool>? EchoReady(Func<int, bool>? predicate, int mode)
+                        {
+                            var alias = predicate;
+                            switch (mode)
+                            {
+                                case 0:
+                                    return alias;
+                            }
+
+                            return predicate;
+                        }
+
+                        Func<int, bool>? ready = null;
+                        Func<int, bool>? escaped = EchoReady(ready, Value);
+                        return escaped(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorShouldRenderHasRendered", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForDelegateParameterSwitchTrailingReturnDifferentSourceEchoShouldRender()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-delegate-parameter-switch-trailing-return-different-source-echo")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> CreateReady()
+                            => value => value > 0;
+
+                        Func<int, bool> EchoReady(Func<int, bool> first, Func<int, bool> second, int mode)
+                        {
+                            switch (mode)
+                            {
+                                case 0:
+                                    return first;
+                            }
+
+                            return second;
+                        }
+
+                        Func<int, bool> ready = CreateReady();
+                        Func<int, bool> other = value => value > 1;
+                        Func<int, bool> escaped = EchoReady(ready, other, Value);
+                        return escaped(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorShouldRenderHasRendered", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersDelegateParameterTryCatchAliasEchoShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-delegate-parameter-try-catch-alias-echo")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> CreateReady()
+                            => value => value > 0;
+
+                        Func<int, bool> EchoReady(Func<int, bool> predicate)
+                        {
+                            try
+                            {
+                                var alias = predicate;
+                                return alias;
+                            }
+                            catch (Exception)
+                            {
+                                return predicate;
+                            }
+                        }
+
+                        Func<int, bool> ready = CreateReady();
+                        Func<int, bool> escaped = EchoReady(ready);
+                        return escaped(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "function EchoReady(predicate) {");
+        StringAssert.Contains(artifact.ModuleCode, "try {");
+        StringAssert.Contains(artifact.ModuleCode, "let alias = predicate;");
+        StringAssert.Contains(artifact.ModuleCode, "return alias;");
+        StringAssert.Contains(artifact.ModuleCode, "} catch {");
+        StringAssert.Contains(artifact.ModuleCode, "return predicate;");
+        StringAssert.Contains(artifact.ModuleCode, " = EchoReady(__jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "(props.value);");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForNullOnlyDelegateParameterTryCatchAliasEchoInvocationShouldRender()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-null-only-delegate-parameter-try-catch-alias-echo-invocation")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool>? EchoReady(Func<int, bool>? predicate)
+                        {
+                            try
+                            {
+                                var alias = predicate;
+                                return alias;
+                            }
+                            catch (Exception)
+                            {
+                                return predicate;
+                            }
+                        }
+
+                        Func<int, bool>? ready = null;
+                        Func<int, bool>? escaped = EchoReady(ready);
+                        return escaped(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorShouldRenderHasRendered", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForDelegateParameterTryCatchDifferentSourceEchoShouldRender()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-delegate-parameter-try-catch-different-source-echo")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> CreateReady()
+                            => value => value > 0;
+
+                        Func<int, bool> EchoReady(Func<int, bool> first, Func<int, bool> second)
+                        {
+                            try
+                            {
+                                return first;
+                            }
+                            catch (Exception)
+                            {
+                                return second;
+                            }
+                        }
+
+                        Func<int, bool> ready = CreateReady();
+                        Func<int, bool> other = value => value > 1;
+                        Func<int, bool> escaped = EchoReady(ready, other);
+                        return escaped(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorShouldRenderHasRendered", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersDelegateParameterConditionalAliasEchoShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-delegate-parameter-conditional-alias-echo")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> CreateReady()
+                            => value => value > 0;
+
+                        Func<int, bool> EchoReady(Func<int, bool> predicate, bool useAlias)
+                        {
+                            var alias = predicate;
+                            if (useAlias)
+                            {
+                                return alias;
+                            }
+
+                            return predicate;
+                        }
+
+                        Func<int, bool> ready = CreateReady();
+                        Func<int, bool> escaped = EchoReady(ready, Value > 1);
+                        return escaped(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "function EchoReady(predicate, useAlias) {");
+        StringAssert.Contains(artifact.ModuleCode, "if (useAlias)");
+        StringAssert.Contains(artifact.ModuleCode, "return alias;");
+        StringAssert.Contains(artifact.ModuleCode, "return predicate;");
+        StringAssert.Contains(artifact.ModuleCode, " = EchoReady(__jazorShouldRenderLocal");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForDelegateParameterConditionalDifferentSourceEchoShouldRender()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-delegate-parameter-conditional-different-source-echo")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> CreateReady()
+                            => value => value > 0;
+
+                        Func<int, bool> EchoReady(Func<int, bool> first, Func<int, bool> second, bool useSecond)
+                        {
+                            if (useSecond)
+                            {
+                                return second;
+                            }
+
+                            return first;
+                        }
+
+                        Func<int, bool> ready = CreateReady();
+                        Func<int, bool> other = value => value > 1;
+                        Func<int, bool> escaped = EchoReady(ready, other, Value > 1);
+                        return escaped(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorShouldRenderHasRendered", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersDelegateParameterConditionalExpressionAliasEchoShouldRenderConditionIntoCachedRenderGate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-delegate-parameter-conditional-expression-alias-echo")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> CreateReady()
+                            => value => value > 0;
+
+                        Func<int, bool> EchoReady(Func<int, bool> predicate, bool useAlias)
+                        {
+                            var alias = predicate;
+                            return useAlias ? alias : predicate;
+                        }
+
+                        Func<int, bool> ready = CreateReady();
+                        Func<int, bool> escaped = EchoReady(ready, Value > 1);
+                        return escaped(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "function EchoReady(predicate, useAlias) {");
+        StringAssert.Contains(artifact.ModuleCode, "return useAlias ? alias : predicate;");
+        StringAssert.Contains(artifact.ModuleCode, " = EchoReady(__jazorShouldRenderLocal");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForDelegateParameterConditionalExpressionDifferentSourceEchoShouldRender()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-delegate-parameter-conditional-expression-different-source-echo")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> CreateReady()
+                            => value => value > 0;
+
+                        Func<int, bool> EchoReady(Func<int, bool> first, Func<int, bool> second, bool useSecond)
+                            => useSecond ? second : first;
+
+                        Func<int, bool> ready = CreateReady();
+                        Func<int, bool> other = value => value > 1;
+                        Func<int, bool> escaped = EchoReady(ready, other, Value > 1);
                         return escaped(Value);
                     }
 
@@ -42474,6 +43764,53 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersConcatenatedStaticAddMarkupContentCarriers()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-card")]
+                public class MarkupCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        string open = "<section class=\"hero\">";
+                        string body = "<span>safe</span><p>ok</p>";
+                        string close = "</section>";
+                        builder.AddMarkupContent(0, open + body + close);
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const open = \"<section class=\\\"hero\\\">\";");
+        StringAssert.Contains(artifact.ModuleCode, "const body = \"<span>safe</span><p>ok</p>\";");
+        StringAssert.Contains(artifact.ModuleCode, "const close = \"</section>\";");
+        StringAssert.Contains(artifact.ModuleCode, "h(\"section\", { \"class\": \"hero\" }, [h(\"span\", null, \"safe\"), h(\"p\", null, \"ok\")])");
+        Assert.IsFalse(
+            artifact.ModuleCode.Contains("AddMarkupContent(", StringComparison.Ordinal),
+            artifact.ModuleCode);
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersReadonlyAddMarkupContentPropertyCarrier()
     {
         var context = CreateContext(
@@ -47267,6 +48604,65 @@ public sealed class RazorVuePipelineTests
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "if (props.showMarkup) {");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")));");
+        Assert.IsFalse(
+            artifact.ModuleCode.Contains("AddMarkupContent(", StringComparison.Ordinal),
+            artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersConcatenatedStaticAddMarkupContentCarriersInsideImperativeRenderBridge()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/imperative-markup-card")]
+                public class ImperativeMarkupCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool ShowMarkup { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (ShowMarkup)
+                        {
+                            string open = "<section class=\"hero\">";
+                            string body = "<span>safe</span>";
+                            string close = "</section>";
+                            builder.AddMarkupContent(0, open + body + close);
+                            return;
+                        }
+
+                        builder.OpenElement(1, "p");
+                        builder.AddContent(2, "fallback");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "if (props.showMarkup) {");
+        StringAssert.Contains(artifact.ModuleCode, "let open = \"<section class=\\\"hero\\\">\";");
+        StringAssert.Contains(artifact.ModuleCode, "let body = \"<span>safe</span>\";");
+        StringAssert.Contains(artifact.ModuleCode, "let close = \"</section>\";");
         StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\")));");
         Assert.IsFalse(
             artifact.ModuleCode.Contains("AddMarkupContent(", StringComparison.Ordinal),

@@ -33,6 +33,21 @@ internal static class RazorVueStaticMarkupValueHelper
             builder.AddRange(CapturedBindings);
             return new StaticMarkupResolution(Markup, builder.MoveToImmutable());
         }
+
+        public StaticMarkupResolution Append(StaticMarkupResolution next)
+        {
+            if (next.CapturedBindings.IsDefaultOrEmpty)
+                return new StaticMarkupResolution(Markup + next.Markup, CapturedBindings);
+
+            if (CapturedBindings.IsDefaultOrEmpty)
+                return new StaticMarkupResolution(Markup + next.Markup, next.CapturedBindings);
+
+            var builder = ImmutableArray.CreateBuilder<StaticMarkupCapturedBinding>(
+                CapturedBindings.Length + next.CapturedBindings.Length);
+            builder.AddRange(CapturedBindings);
+            builder.AddRange(next.CapturedBindings);
+            return new StaticMarkupResolution(Markup + next.Markup, builder.MoveToImmutable());
+        }
     }
 
     internal abstract record StaticMarkupRenderResolution;
@@ -361,6 +376,38 @@ internal static class RazorVueStaticMarkupValueHelper
                     visitedMembers,
                     visitedMethods);
 
+            case IBinaryOperation binaryOperation
+                when binaryOperation.OperatorKind == BinaryOperatorKind.Add:
+                var leftResolution = TryResolveStaticMarkupBranch(
+                    binaryOperation.LeftOperand,
+                    compilation,
+                    localInitializerResolver,
+                    propertyInitializerResolver,
+                    fieldInitializerResolver,
+                    methodReturnedValueResolver,
+                    isSupportedMethodInvocation,
+                    visitedLocals,
+                    visitedMembers,
+                    visitedMethods);
+                if (leftResolution is null)
+                    return null;
+
+                var rightResolution = TryResolveStaticMarkupBranch(
+                    binaryOperation.RightOperand,
+                    compilation,
+                    localInitializerResolver,
+                    propertyInitializerResolver,
+                    fieldInitializerResolver,
+                    methodReturnedValueResolver,
+                    isSupportedMethodInvocation,
+                    visitedLocals,
+                    visitedMembers,
+                    visitedMethods);
+                if (rightResolution is null)
+                    return null;
+
+                return leftResolution.Value.Append(rightResolution.Value);
+
             case IInvocationOperation invocation:
                 if (methodReturnedValueResolver is null ||
                     isSupportedMethodInvocation is null ||
@@ -423,6 +470,31 @@ internal static class RazorVueStaticMarkupValueHelper
             default:
                 return null;
         }
+    }
+
+    private static StaticMarkupResolution? TryResolveStaticMarkupBranch(
+        IOperation? operation,
+        Compilation compilation,
+        Func<ILocalSymbol, IOperation?>? localInitializerResolver,
+        Func<IPropertySymbol, IOperation?>? propertyInitializerResolver,
+        Func<IFieldSymbol, IOperation?>? fieldInitializerResolver,
+        Func<IInvocationOperation, IOperation?>? methodReturnedValueResolver,
+        Func<IInvocationOperation, bool>? isSupportedMethodInvocation,
+        HashSet<ILocalSymbol> visitedLocals,
+        HashSet<ISymbol> visitedMembers,
+        HashSet<IMethodSymbol> visitedMethods)
+    {
+        return TryResolveStaticMarkup(
+            operation,
+            compilation,
+            localInitializerResolver,
+            propertyInitializerResolver,
+            fieldInitializerResolver,
+            methodReturnedValueResolver,
+            isSupportedMethodInvocation,
+            new HashSet<ILocalSymbol>(visitedLocals, SymbolEqualityComparer.Default),
+            new HashSet<ISymbol>(visitedMembers, SymbolEqualityComparer.Default),
+            new HashSet<IMethodSymbol>(visitedMethods, SymbolEqualityComparer.Default));
     }
 
     private static StaticMarkupRenderResolution? TryResolveStaticMarkupRender(
@@ -631,6 +703,19 @@ internal static class RazorVueStaticMarkupValueHelper
                            visitedMembers) ||
                        TryGetInvalidatedSourceStableStaticMarkupMemberCore(
                            conditional.WhenFalse,
+                           compilation,
+                           out member,
+                           visitedMembers);
+
+            case IBinaryOperation binaryOperation
+                when binaryOperation.OperatorKind == BinaryOperatorKind.Add:
+                return TryGetInvalidatedSourceStableStaticMarkupMemberCore(
+                           binaryOperation.LeftOperand,
+                           compilation,
+                           out member,
+                           visitedMembers) ||
+                       TryGetInvalidatedSourceStableStaticMarkupMemberCore(
+                           binaryOperation.RightOperand,
                            compilation,
                            out member,
                            visitedMembers);

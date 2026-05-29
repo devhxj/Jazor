@@ -5219,8 +5219,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         switch (RazorVueOperationNormalizer.Unwrap(operation))
         {
             case IForEachLoopOperation forEachLoop:
-                return !forEachLoop.IsAsynchronous &&
-                       !ContainsShouldRenderUnsupportedExpressionConstruct(forEachLoop.Collection) &&
+                return !ContainsShouldRenderUnsupportedExpressionConstruct(forEachLoop.Collection) &&
                        CanLowerSetParametersAsyncLoopBody(snapshot, forEachLoop.Body, out containsEmit);
 
             case IForLoopOperation forLoop:
@@ -7014,6 +7013,12 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                     if (IsNullConstantOperation(declarator.Initializer?.Value))
                         continue;
 
+                    if (TryGetShouldRenderLocalFunctionDelegateIdentityInitializer(declarator, out var identityInvocation) &&
+                        CanLowerShouldRenderLocalFunctionDelegateIdentityInitializer(identityInvocation))
+                    {
+                        continue;
+                    }
+
                     if (TryGetShouldRenderLocalFunctionDelegateFactoryInitializer(declarator, out var factoryInvocation) &&
                         CanLowerShouldRenderLocalFunctionDelegateFactoryInitializer(factoryInvocation))
                     {
@@ -7148,9 +7153,25 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 }
 
                 if (TryGetShouldRenderLocalAnonymousFunctionInitializer(declarator, out _) ||
-                    TryGetShouldRenderLocalMethodGroupInitializer(declarator, out _, out _) ||
-                    (TryGetShouldRenderLocalFunctionDelegateFactoryInitializer(declarator, out var factoryInvocation) &&
-                     CanLowerShouldRenderLocalFunctionDelegateFactoryInitializer(factoryInvocation)))
+                    TryGetShouldRenderLocalMethodGroupInitializer(declarator, out _, out _))
+                {
+                    delegateLocals[declarator.Symbol] = ShouldRenderDelegateLocalUsageKind.Callable;
+                    continue;
+                }
+
+                if (TryGetShouldRenderLocalFunctionDelegateIdentityInitializer(declarator, out var identityInvocation) &&
+                    TryGetShouldRenderLocalFunctionDelegateIdentityInitializerUsageKind(
+                        identityInvocation,
+                        delegateLocals.ToImmutable(),
+                        EmptyShouldRenderDelegateParameterUsages,
+                        out var identityUsageKind))
+                {
+                    delegateLocals[declarator.Symbol] = identityUsageKind;
+                    continue;
+                }
+
+                if (TryGetShouldRenderLocalFunctionDelegateFactoryInitializer(declarator, out var factoryInvocation) &&
+                    CanLowerShouldRenderLocalFunctionDelegateFactoryInitializer(factoryInvocation))
                 {
                     delegateLocals[declarator.Symbol] = ShouldRenderDelegateLocalUsageKind.Callable;
                     continue;
@@ -7227,8 +7248,11 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
             case IInvocationOperation invocation
                 when invocation.TargetMethod.MethodKind == MethodKind.DelegateInvoke &&
-                     TryGetShouldRenderTrackedDelegateReference(invocation.Instance, delegateLocals, delegateParameters, out var usageKind) &&
-                     usageKind == ShouldRenderDelegateLocalUsageKind.Callable:
+                     TryValidateShouldRenderTrackedDelegateInvocationInstance(
+                         invocation.Instance,
+                         delegateLocals,
+                         delegateParameters,
+                         assignedDelegateInitializers):
                 foreach (var argument in invocation.Arguments)
                 {
                     if (!ValidateShouldRenderDelegateUsage(argument, delegateLocals, delegateParameters, assignedDelegateInitializers))
@@ -7303,7 +7327,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
             if (parameter.Type.TypeKind == TypeKind.Delegate)
             {
-                if (!TryGetShouldRenderTrackedDelegateReference(
+                if (!TryGetShouldRenderTrackedDelegateValueUsageKind(
                         argument.Value,
                         delegateLocals,
                         delegateParameters,
@@ -7321,13 +7345,60 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 return false;
         }
 
-        return hasTrackedDelegateArgument &&
-            ValidateShouldRenderDelegateUsage(
+        if (!hasTrackedDelegateArgument)
+            return false;
+
+        if (TryGetShouldRenderDelegateParameterIdentityReturnParameter(
+                localFunctionOperation,
+                out var identityParameter))
+        {
+            return delegateParameterUsages.ContainsKey(identityParameter);
+        }
+
+        return ValidateShouldRenderDelegateUsage(
                 localFunctionBody.Operations,
                 EmptyShouldRenderDelegateLocalUsages,
                 delegateParameterUsages.ToImmutable(),
                 EmptyShouldRenderDelegateLocalUsages);
     }
+
+    private static bool TryValidateShouldRenderTrackedDelegateInvocationInstance(
+        IOperation? operation,
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> delegateLocals,
+        ImmutableDictionary<IParameterSymbol, ShouldRenderDelegateLocalUsageKind> delegateParameters,
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> assignedDelegateInitializers)
+    {
+        if (TryGetShouldRenderTrackedDelegateReference(operation, delegateLocals, delegateParameters, out var usageKind))
+            return usageKind == ShouldRenderDelegateLocalUsageKind.Callable;
+
+        if (!TryGetShouldRenderLocalFunctionDelegateIdentityInitializerUsageKind(
+                operation,
+                delegateLocals,
+                delegateParameters,
+                out usageKind) ||
+            usageKind != ShouldRenderDelegateLocalUsageKind.Callable)
+        {
+            return false;
+        }
+
+        return ValidateShouldRenderDelegateUsage(
+            operation!,
+            delegateLocals,
+            delegateParameters,
+            assignedDelegateInitializers);
+    }
+
+    private static bool TryGetShouldRenderTrackedDelegateValueUsageKind(
+        IOperation? operation,
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> delegateLocals,
+        ImmutableDictionary<IParameterSymbol, ShouldRenderDelegateLocalUsageKind> delegateParameters,
+        out ShouldRenderDelegateLocalUsageKind usageKind)
+        => TryGetShouldRenderTrackedDelegateReference(operation, delegateLocals, delegateParameters, out usageKind) ||
+           TryGetShouldRenderLocalFunctionDelegateIdentityInitializerUsageKind(
+               operation,
+               delegateLocals,
+               delegateParameters,
+               out usageKind);
 
     private static bool IsShouldRenderTrackedDelegateNullComparison(
         IBinaryOperation operation,
@@ -7669,6 +7740,23 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                invocation.TargetMethod.ReturnType.TypeKind == TypeKind.Delegate;
     }
 
+    private static bool TryGetShouldRenderLocalFunctionDelegateIdentityInitializer(
+        IVariableDeclaratorOperation declarator,
+        out IInvocationOperation invocation)
+    {
+        invocation = default!;
+        if (declarator.Symbol.Type.TypeKind != TypeKind.Delegate)
+            return false;
+
+        return TryGetShouldRenderLocalFunctionInvocation(declarator.Initializer?.Value, out invocation) &&
+               invocation.TargetMethod.ReturnType.TypeKind == TypeKind.Delegate &&
+               TryGetShouldRenderLocalFunctionOperation(
+                   invocation.TargetMethod,
+                   invocation.SemanticModel,
+                   out var localFunctionOperation) &&
+               TryGetShouldRenderDelegateParameterIdentityReturnParameter(localFunctionOperation, out _);
+    }
+
     private static bool TryGetShouldRenderLocalFunctionInvocation(
         IOperation? operation,
         out IInvocationOperation invocation)
@@ -7716,6 +7804,72 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             CanLowerShouldRenderLocalFunction(
                 localFunctionOperation,
                 CreateShouldRenderChildReservedLocalNames());
+    }
+
+    private static bool CanLowerShouldRenderLocalFunctionDelegateIdentityInitializer(
+        IInvocationOperation invocation)
+    {
+        if (invocation.Instance is not null ||
+            invocation.TargetMethod.MethodKind != MethodKind.LocalFunction ||
+            invocation.TargetMethod.ReturnType.TypeKind != TypeKind.Delegate)
+        {
+            return false;
+        }
+
+        foreach (var argument in invocation.Arguments)
+        {
+            if (argument.Parameter is not { RefKind: RefKind.None } ||
+                argument.ArgumentKind != ArgumentKind.Explicit ||
+                ContainsShouldRenderUnsupportedExpressionConstruct(argument.Value))
+            {
+                return false;
+            }
+        }
+
+        return TryGetShouldRenderLocalFunctionOperation(
+                invocation.TargetMethod,
+                invocation.SemanticModel,
+                out var localFunctionOperation) &&
+            TryGetShouldRenderDelegateParameterIdentityReturnParameter(localFunctionOperation, out _) &&
+            CanLowerShouldRenderLocalFunction(
+                localFunctionOperation,
+                CreateShouldRenderChildReservedLocalNames());
+    }
+
+    private static bool TryGetShouldRenderLocalFunctionDelegateIdentityInitializerUsageKind(
+        IOperation? operation,
+        ImmutableDictionary<ILocalSymbol, ShouldRenderDelegateLocalUsageKind> delegateLocals,
+        ImmutableDictionary<IParameterSymbol, ShouldRenderDelegateLocalUsageKind> delegateParameters,
+        out ShouldRenderDelegateLocalUsageKind usageKind)
+    {
+        usageKind = default;
+        if (!TryGetShouldRenderLocalFunctionInvocation(operation, out var invocation) ||
+            invocation.TargetMethod.ReturnType.TypeKind != TypeKind.Delegate ||
+            !TryGetShouldRenderLocalFunctionOperation(
+                invocation.TargetMethod,
+                invocation.SemanticModel,
+                out var localFunctionOperation) ||
+            !TryGetShouldRenderDelegateParameterIdentityReturnParameter(localFunctionOperation, out var identityParameter))
+        {
+            return false;
+        }
+
+        foreach (var argument in invocation.Arguments)
+        {
+            if (argument.Parameter is not { } parameter ||
+                !SymbolEqualityComparer.Default.Equals(parameter, identityParameter))
+            {
+                continue;
+            }
+
+            return TryGetShouldRenderTrackedDelegateValueUsageKind(
+                argument.Value,
+                delegateLocals,
+                delegateParameters,
+                out usageKind);
+        }
+
+        return false;
     }
 
     private static bool TryCreateShouldRenderLocalAlias(
@@ -7802,12 +7956,626 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             return false;
         }
 
+        if (TryGetShouldRenderDelegateParameterIdentityReturnParameter(operation, out _))
+            return true;
+
         return TryValidateShouldRenderDelegateFactoryStatementSequence(
                 operation.Body.Operations,
                 out var alwaysReturns,
                 out var hasDelegateReturn) &&
             alwaysReturns &&
             hasDelegateReturn;
+    }
+
+    private static bool TryGetShouldRenderDelegateParameterIdentityReturnParameter(
+        ILocalFunctionOperation operation,
+        out IParameterSymbol parameter)
+    {
+        parameter = default!;
+        if (operation.Symbol.ReturnType.TypeKind != TypeKind.Delegate ||
+            operation.Body is null ||
+            operation.Body.Operations.IsDefaultOrEmpty)
+        {
+            return false;
+        }
+
+        var aliasSources = ImmutableDictionary.CreateBuilder<ILocalSymbol, IParameterSymbol>(SymbolEqualityComparer.Default);
+        var pendingDelegateLocals = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
+        IParameterSymbol? identityParameter = null;
+        var foundReturn = false;
+
+        foreach (var statement in operation.Body.Operations)
+        {
+            if (foundReturn)
+                return false;
+
+            if (!TryProcessShouldRenderDelegateIdentityReturnStatement(
+                    statement,
+                    aliasSources,
+                    pendingDelegateLocals,
+                    ref identityParameter,
+                    out var statementReturns))
+            {
+                return false;
+            }
+
+            if (statementReturns)
+                foundReturn = true;
+        }
+
+        if (!foundReturn ||
+            identityParameter is null ||
+            pendingDelegateLocals.Count != 0)
+        {
+            return false;
+        }
+
+        parameter = identityParameter;
+        return true;
+    }
+
+    private static bool TryProcessShouldRenderDelegateIdentityReturnStatement(
+        IOperation operation,
+        ImmutableDictionary<ILocalSymbol, IParameterSymbol>.Builder aliasSources,
+        HashSet<ILocalSymbol> pendingDelegateLocals,
+        ref IParameterSymbol? identityParameter,
+        out bool statementReturns)
+    {
+        statementReturns = false;
+        var current = RazorVueOperationNormalizer.Unwrap(operation);
+        switch (current)
+        {
+            case IBlockOperation block:
+                return TryProcessShouldRenderDelegateIdentityReturnBlock(
+                    block,
+                    aliasSources,
+                    pendingDelegateLocals,
+                    ref identityParameter,
+                    out statementReturns);
+
+            case IVariableDeclarationGroupOperation declarationGroup:
+                return TryProcessShouldRenderDelegateIdentityReturnDeclarations(
+                    declarationGroup,
+                    aliasSources,
+                    pendingDelegateLocals,
+                    ref identityParameter);
+
+            case IExpressionStatementOperation expressionStatement:
+                if (TryGetShouldRenderDelegateIdentityAssignment(
+                        expressionStatement,
+                        aliasSources,
+                        out var targetLocal,
+                        out var sourceParameter))
+                {
+                    if (!pendingDelegateLocals.Contains(targetLocal) &&
+                        !aliasSources.ContainsKey(targetLocal))
+                    {
+                        return false;
+                    }
+
+                    if (identityParameter is null)
+                    {
+                        identityParameter = sourceParameter;
+                    }
+                    else if (!SymbolEqualityComparer.Default.Equals(identityParameter, sourceParameter))
+                    {
+                        return false;
+                    }
+
+                    aliasSources[targetLocal] = sourceParameter;
+                    pendingDelegateLocals.Remove(targetLocal);
+                    return true;
+                }
+
+                return !ContainsShouldRenderDelegateIdentityEscapeReference(current);
+
+            case IConditionalOperation conditional when conditional.Syntax is IfStatementSyntax:
+                if (ContainsShouldRenderDelegateIdentityEscapeReference(conditional.Condition))
+                    return false;
+
+                return TryProcessShouldRenderDelegateIdentityReturnBranch(
+                    conditional.WhenTrue,
+                    aliasSources,
+                    pendingDelegateLocals,
+                    identityParameter,
+                    out var trueIdentityParameter,
+                    out var trueReturns) &&
+                    TryProcessShouldRenderDelegateIdentityReturnBranch(
+                        conditional.WhenFalse,
+                        aliasSources,
+                        pendingDelegateLocals,
+                        identityParameter,
+                        out var falseIdentityParameter,
+                        out var falseReturns) &&
+                    TryMergeShouldRenderDelegateIdentityReturnBranches(
+                        trueIdentityParameter,
+                        trueReturns,
+                        falseIdentityParameter,
+                        falseReturns,
+                        ref identityParameter,
+                        out statementReturns);
+
+            case ISwitchOperation switchOperation when switchOperation.Syntax is SwitchStatementSyntax:
+                return TryProcessShouldRenderDelegateIdentityReturnSwitchStatement(
+                    switchOperation,
+                    aliasSources,
+                    pendingDelegateLocals,
+                    ref identityParameter,
+                    out statementReturns);
+
+            case ITryOperation tryOperation:
+                return TryProcessShouldRenderDelegateIdentityReturnTryStatement(
+                    tryOperation,
+                    aliasSources,
+                    pendingDelegateLocals,
+                    ref identityParameter,
+                    out statementReturns);
+
+            case IReturnOperation { ReturnedValue: not null } returnOperation:
+                if (!TryGetShouldRenderDelegateIdentitySource(
+                        returnOperation.ReturnedValue,
+                        aliasSources,
+                        identityParameter,
+                        out var returnSourceParameter))
+                {
+                    return false;
+                }
+
+                if (identityParameter is null)
+                {
+                    identityParameter = returnSourceParameter;
+                }
+                else if (!SymbolEqualityComparer.Default.Equals(identityParameter, returnSourceParameter))
+                {
+                    return false;
+                }
+
+                statementReturns = true;
+                return true;
+
+            default:
+                return !ContainsShouldRenderDelegateIdentityEscapeReference(current);
+        }
+    }
+
+    private static bool TryProcessShouldRenderDelegateIdentityReturnSwitchStatement(
+        ISwitchOperation switchOperation,
+        ImmutableDictionary<ILocalSymbol, IParameterSymbol>.Builder aliasSources,
+        HashSet<ILocalSymbol> pendingDelegateLocals,
+        ref IParameterSymbol? identityParameter,
+        out bool statementReturns)
+    {
+        statementReturns = false;
+        if (ContainsShouldRenderUnsupportedExpressionConstruct(switchOperation.Value) ||
+            ContainsShouldRenderDelegateIdentityEscapeReference(switchOperation.Value))
+        {
+            return false;
+        }
+
+        var hasDefaultCase = false;
+        var allCasesReturn = true;
+        foreach (var switchCase in switchOperation.Cases)
+        {
+            if (switchCase.Clauses.IsDefaultOrEmpty)
+                return false;
+
+            foreach (var clause in switchCase.Clauses)
+            {
+                switch (clause)
+                {
+                    case IDefaultCaseClauseOperation:
+                        hasDefaultCase = true;
+                        break;
+
+                    case ISingleValueCaseClauseOperation singleValueClause:
+                        if (ContainsShouldRenderUnsupportedExpressionConstruct(singleValueClause.Value) ||
+                            ContainsShouldRenderDelegateIdentityEscapeReference(singleValueClause.Value))
+                        {
+                            return false;
+                        }
+
+                        break;
+
+                    case IPatternCaseClauseOperation patternClause:
+                        if (ContainsShouldRenderUnsupportedExpressionConstruct(patternClause.Pattern) ||
+                            ContainsShouldRenderUnsupportedExpressionConstruct(patternClause.Guard) ||
+                            ContainsShouldRenderDelegateIdentityEscapeReference(patternClause.Pattern) ||
+                            ContainsShouldRenderDelegateIdentityEscapeReference(patternClause.Guard))
+                        {
+                            return false;
+                        }
+
+                        break;
+
+                    default:
+                        return false;
+                }
+            }
+
+            if (!TryProcessShouldRenderDelegateIdentityReturnStatementSequence(
+                    switchCase.Body,
+                    aliasSources,
+                    pendingDelegateLocals,
+                    identityParameter,
+                    out var caseIdentityParameter,
+                    out var caseReturns))
+            {
+                return false;
+            }
+
+            if (caseReturns &&
+                !TryMergeShouldRenderDelegateIdentityReturnBranchSource(
+                    caseIdentityParameter,
+                    ref identityParameter))
+            {
+                return false;
+            }
+
+            allCasesReturn &= caseReturns;
+        }
+
+        statementReturns = hasDefaultCase && allCasesReturn;
+        return true;
+    }
+
+    private static bool TryProcessShouldRenderDelegateIdentityReturnTryStatement(
+        ITryOperation tryOperation,
+        ImmutableDictionary<ILocalSymbol, IParameterSymbol>.Builder aliasSources,
+        HashSet<ILocalSymbol> pendingDelegateLocals,
+        ref IParameterSymbol? identityParameter,
+        out bool statementReturns)
+    {
+        statementReturns = false;
+        if (!TryProcessShouldRenderDelegateIdentityReturnBranch(
+                tryOperation.Body,
+                aliasSources,
+                pendingDelegateLocals,
+                identityParameter,
+                out var tryIdentityParameter,
+                out var tryReturns) ||
+            !tryReturns ||
+            !TryMergeShouldRenderDelegateIdentityReturnBranchSource(
+                tryIdentityParameter,
+                ref identityParameter))
+        {
+            return false;
+        }
+
+        foreach (var catchClause in tryOperation.Catches)
+        {
+            if (!TryValidateShouldRenderCatchBinding(catchClause) ||
+                ContainsShouldRenderUnsupportedExpressionConstruct(catchClause.Filter) ||
+                ContainsShouldRenderDelegateIdentityEscapeReference(catchClause.ExceptionDeclarationOrExpression) ||
+                ContainsShouldRenderDelegateIdentityEscapeReference(catchClause.Filter))
+            {
+                return false;
+            }
+
+            if (!TryProcessShouldRenderDelegateIdentityReturnBranch(
+                    catchClause.Handler,
+                    aliasSources,
+                    pendingDelegateLocals,
+                    identityParameter,
+                    out var catchIdentityParameter,
+                    out var catchReturns) ||
+                !catchReturns ||
+                !TryMergeShouldRenderDelegateIdentityReturnBranchSource(
+                    catchIdentityParameter,
+                    ref identityParameter))
+            {
+                return false;
+            }
+        }
+
+        if (tryOperation.Finally is not null)
+        {
+            var finallyIdentityParameter = identityParameter;
+            if (!TryProcessShouldRenderDelegateIdentityReturnBranch(
+                    tryOperation.Finally,
+                    aliasSources,
+                    pendingDelegateLocals,
+                    identityParameter,
+                    out _,
+                    out var finallyReturns) ||
+                finallyReturns ||
+                ContainsShouldRenderDelegateIdentityEscapeReference(tryOperation.Finally))
+            {
+                return false;
+            }
+
+            identityParameter = finallyIdentityParameter;
+        }
+
+        statementReturns = true;
+        return true;
+    }
+
+    private static bool TryProcessShouldRenderDelegateIdentityReturnBlock(
+        IBlockOperation block,
+        ImmutableDictionary<ILocalSymbol, IParameterSymbol>.Builder aliasSources,
+        HashSet<ILocalSymbol> pendingDelegateLocals,
+        ref IParameterSymbol? identityParameter,
+        out bool blockReturns)
+    {
+        blockReturns = false;
+        if (!TryProcessShouldRenderDelegateIdentityReturnStatementSequence(
+                block.Operations,
+                aliasSources,
+                pendingDelegateLocals,
+                identityParameter,
+                out var blockIdentityParameter,
+                out blockReturns))
+        {
+            return false;
+        }
+
+        if (!blockReturns)
+            return !ContainsShouldRenderDelegateIdentityEscapeReference(block);
+
+        return TryMergeShouldRenderDelegateIdentityReturnBranchSource(
+            blockIdentityParameter,
+            ref identityParameter);
+    }
+
+    private static bool TryProcessShouldRenderDelegateIdentityReturnBranch(
+        IOperation? operation,
+        ImmutableDictionary<ILocalSymbol, IParameterSymbol>.Builder aliasSources,
+        HashSet<ILocalSymbol> pendingDelegateLocals,
+        IParameterSymbol? identityParameter,
+        out IParameterSymbol? branchIdentityParameter,
+        out bool branchReturns)
+    {
+        branchIdentityParameter = identityParameter;
+        branchReturns = false;
+        if (operation is null)
+            return true;
+
+        switch (RazorVueOperationNormalizer.Unwrap(operation))
+        {
+            case IBlockOperation block:
+                return TryProcessShouldRenderDelegateIdentityReturnStatementSequence(
+                    block.Operations,
+                    aliasSources,
+                    pendingDelegateLocals,
+                    identityParameter,
+                    out branchIdentityParameter,
+                    out branchReturns);
+
+            default:
+                var branchAliasSources = aliasSources.ToImmutable().ToBuilder();
+                var branchPendingDelegateLocals = new HashSet<ILocalSymbol>(pendingDelegateLocals, SymbolEqualityComparer.Default);
+                return TryProcessShouldRenderDelegateIdentityReturnStatement(
+                    operation,
+                    branchAliasSources,
+                    branchPendingDelegateLocals,
+                    ref branchIdentityParameter,
+                    out branchReturns) &&
+                    (branchReturns || branchPendingDelegateLocals.SetEquals(pendingDelegateLocals));
+        }
+    }
+
+    private static bool TryProcessShouldRenderDelegateIdentityReturnStatementSequence(
+        ImmutableArray<IOperation> operations,
+        ImmutableDictionary<ILocalSymbol, IParameterSymbol>.Builder aliasSources,
+        HashSet<ILocalSymbol> pendingDelegateLocals,
+        IParameterSymbol? identityParameter,
+        out IParameterSymbol? sequenceIdentityParameter,
+        out bool sequenceReturns)
+    {
+        sequenceIdentityParameter = identityParameter;
+        sequenceReturns = false;
+        var sequenceAliasSources = aliasSources.ToImmutable().ToBuilder();
+        var sequencePendingDelegateLocals = new HashSet<ILocalSymbol>(pendingDelegateLocals, SymbolEqualityComparer.Default);
+
+        foreach (var statement in operations)
+        {
+            if (sequenceReturns)
+                return false;
+
+            if (!TryProcessShouldRenderDelegateIdentityReturnStatement(
+                    statement,
+                    sequenceAliasSources,
+                    sequencePendingDelegateLocals,
+                    ref sequenceIdentityParameter,
+                    out var statementReturns))
+            {
+                return false;
+            }
+
+            if (statementReturns)
+                sequenceReturns = true;
+        }
+
+        return sequenceReturns || sequencePendingDelegateLocals.SetEquals(pendingDelegateLocals);
+    }
+
+    private static bool TryMergeShouldRenderDelegateIdentityReturnBranches(
+        IParameterSymbol? trueIdentityParameter,
+        bool trueReturns,
+        IParameterSymbol? falseIdentityParameter,
+        bool falseReturns,
+        ref IParameterSymbol? identityParameter,
+        out bool statementReturns)
+    {
+        statementReturns = trueReturns && falseReturns;
+
+        if (trueReturns &&
+            !TryMergeShouldRenderDelegateIdentityReturnBranchSource(trueIdentityParameter, ref identityParameter))
+        {
+            return false;
+        }
+
+        if (falseReturns &&
+            !TryMergeShouldRenderDelegateIdentityReturnBranchSource(falseIdentityParameter, ref identityParameter))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static bool TryMergeShouldRenderDelegateIdentityReturnBranchSource(
+        IParameterSymbol? branchIdentityParameter,
+        ref IParameterSymbol? identityParameter)
+    {
+        if (branchIdentityParameter is null)
+            return false;
+
+        if (identityParameter is null)
+        {
+            identityParameter = branchIdentityParameter;
+            return true;
+        }
+
+        return SymbolEqualityComparer.Default.Equals(identityParameter, branchIdentityParameter);
+    }
+
+    private static bool TryProcessShouldRenderDelegateIdentityReturnDeclarations(
+        IVariableDeclarationGroupOperation declarationGroup,
+        ImmutableDictionary<ILocalSymbol, IParameterSymbol>.Builder aliasSources,
+        HashSet<ILocalSymbol> pendingDelegateLocals,
+        ref IParameterSymbol? identityParameter)
+    {
+        foreach (var declaration in declarationGroup.Declarations)
+        {
+            foreach (var declarator in declaration.Declarators)
+            {
+                if (declarator.Symbol.Type.TypeKind != TypeKind.Delegate)
+                {
+                    if (ContainsShouldRenderDelegateIdentityEscapeReference(declarator.Initializer?.Value))
+                        return false;
+
+                    continue;
+                }
+
+                if (declarator.Initializer is null)
+                {
+                    pendingDelegateLocals.Add(declarator.Symbol);
+                    continue;
+                }
+
+                if (!TryGetShouldRenderDelegateIdentitySource(
+                        declarator.Initializer.Value,
+                        aliasSources,
+                        identityParameter,
+                        out var sourceParameter))
+                {
+                    return false;
+                }
+
+                if (identityParameter is null)
+                {
+                    identityParameter = sourceParameter;
+                }
+                else if (!SymbolEqualityComparer.Default.Equals(identityParameter, sourceParameter))
+                {
+                    return false;
+                }
+
+                aliasSources[declarator.Symbol] = sourceParameter;
+                pendingDelegateLocals.Remove(declarator.Symbol);
+            }
+        }
+
+        return true;
+    }
+
+    private static bool TryGetShouldRenderDelegateIdentityAssignment(
+        IExpressionStatementOperation expressionStatement,
+        ImmutableDictionary<ILocalSymbol, IParameterSymbol>.Builder aliasSources,
+        out ILocalSymbol targetLocal,
+        out IParameterSymbol sourceParameter)
+    {
+        targetLocal = default!;
+        sourceParameter = default!;
+
+        if (RazorVueOperationNormalizer.Unwrap(expressionStatement.Operation) is not ISimpleAssignmentOperation assignment ||
+            RazorVueOperationNormalizer.Unwrap(assignment.Target) is not ILocalReferenceOperation targetReference ||
+            targetReference.Local.Type.TypeKind != TypeKind.Delegate ||
+            !TryGetShouldRenderDelegateIdentitySource(
+                assignment.Value,
+                aliasSources,
+                null,
+                out sourceParameter))
+        {
+            return false;
+        }
+
+        targetLocal = targetReference.Local;
+        return true;
+    }
+
+    private static bool TryGetShouldRenderDelegateIdentitySource(
+        IOperation? operation,
+        IReadOnlyDictionary<ILocalSymbol, IParameterSymbol> aliasSources,
+        IParameterSymbol? identityParameter,
+        out IParameterSymbol sourceParameter)
+    {
+        switch (RazorVueOperationNormalizer.Unwrap(operation))
+        {
+            case IParameterReferenceOperation parameterReference
+                when parameterReference.Parameter.Type.TypeKind == TypeKind.Delegate:
+                if (identityParameter is not null &&
+                    !SymbolEqualityComparer.Default.Equals(identityParameter, parameterReference.Parameter))
+                {
+                    break;
+                }
+
+                sourceParameter = parameterReference.Parameter;
+                return true;
+
+            case ILocalReferenceOperation localReference
+                when localReference.Local.Type.TypeKind == TypeKind.Delegate &&
+                     aliasSources.TryGetValue(localReference.Local, out sourceParameter):
+                if (identityParameter is not null &&
+                    !SymbolEqualityComparer.Default.Equals(identityParameter, sourceParameter))
+                {
+                    break;
+                }
+
+                return true;
+
+            case IConditionalOperation conditional
+                when conditional.WhenTrue is not null &&
+                     conditional.WhenFalse is not null &&
+                     !ContainsShouldRenderDelegateIdentityEscapeReference(conditional.Condition) &&
+                     TryGetShouldRenderDelegateIdentitySource(
+                         conditional.WhenTrue,
+                         aliasSources,
+                         identityParameter,
+                         out var trueSourceParameter) &&
+                     TryGetShouldRenderDelegateIdentitySource(
+                         conditional.WhenFalse,
+                         aliasSources,
+                         identityParameter ?? trueSourceParameter,
+                         out var falseSourceParameter) &&
+                     SymbolEqualityComparer.Default.Equals(trueSourceParameter, falseSourceParameter):
+                sourceParameter = trueSourceParameter;
+                return true;
+        }
+
+        sourceParameter = default!;
+        return false;
+    }
+
+    private static bool ContainsShouldRenderDelegateIdentityEscapeReference(IOperation? operation)
+    {
+        if (operation is null)
+            return false;
+
+        foreach (var current in EnumerateShouldRenderExpressionScopedOperations(operation))
+        {
+            switch (RazorVueOperationNormalizer.Unwrap(current))
+            {
+                case IParameterReferenceOperation parameterReference
+                    when parameterReference.Parameter.Type.TypeKind == TypeKind.Delegate:
+                case ILocalReferenceOperation localReference
+                    when localReference.Local.Type.TypeKind == TypeKind.Delegate:
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     private static bool TryValidateShouldRenderDelegateFactoryStatementSequence(
@@ -7942,6 +8710,9 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
     {
         if (operation.Body is null)
             return false;
+
+        if (TryGetShouldRenderDelegateParameterIdentityReturnParameter(operation, out _))
+            return true;
 
         var delegateParameters = ImmutableDictionary.CreateBuilder<IParameterSymbol, ShouldRenderDelegateLocalUsageKind>(SymbolEqualityComparer.Default);
         foreach (var parameter in operation.Symbol.Parameters)

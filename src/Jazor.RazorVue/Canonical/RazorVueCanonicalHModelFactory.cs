@@ -138,15 +138,13 @@ internal sealed class RazorVueCanonicalHModelFactory
         ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
         => node switch
         {
-            RazorVueElementNode element => new RazorVueCanonicalElementNode(
-                TagName: element.TagName,
-                Key: CreateNodeKey(snapshot, expressionEmitter, element.Key, allowedLocalSymbols, allowedParameterSymbols),
-                Attributes: CreateHtmlAttributeBindings(snapshot, expressionEmitter, element.Attributes, allowedLocalSymbols, allowedParameterSymbols),
-                Children: CreateTemplateFragment(snapshot, expressionEmitter, resolvedComponents, element.Children, allowedLocalSymbols, allowedParameterSymbols),
-                TemplateEncodability: RazorVueTemplateEncodability.DirectTemplate,
-                TemplateExpressionSafety: RazorVueTemplateExpressionSafety.DirectTemplateSafe,
-                SideEffectClassification: RazorVueSideEffectClassification.None,
-                SourceOrigins: element.Origins),
+            RazorVueElementNode element => CreateElementNode(
+                snapshot,
+                expressionEmitter,
+                resolvedComponents,
+                element,
+                allowedLocalSymbols,
+                allowedParameterSymbols),
             RazorVueComponentNode component => CreateComponentNode(
                 snapshot,
                 expressionEmitter,
@@ -329,6 +327,23 @@ internal sealed class RazorVueCanonicalHModelFactory
             _ => throw CreateUnsupportedCanonicalizationException(snapshot, node.GetType().Name, node.Origins)
         };
 
+    private static RazorVueCanonicalElementNode CreateElementNode(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter expressionEmitter,
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
+        RazorVueElementNode element,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+        => new(
+            TagName: element.TagName,
+            Key: CreateNodeKey(snapshot, expressionEmitter, element.Key, allowedLocalSymbols, allowedParameterSymbols),
+            Attributes: CreateHtmlAttributeBindings(snapshot, expressionEmitter, element.Attributes, allowedLocalSymbols, allowedParameterSymbols),
+            Children: CreateTemplateFragment(snapshot, expressionEmitter, resolvedComponents, element.Children, allowedLocalSymbols, allowedParameterSymbols),
+            TemplateEncodability: RazorVueTemplateEncodability.DirectTemplate,
+            TemplateExpressionSafety: RazorVueTemplateExpressionSafety.DirectTemplateSafe,
+            SideEffectClassification: RazorVueSideEffectClassification.None,
+            SourceOrigins: element.Origins);
+
     private static RazorVueCanonicalImperativeRootProgram? TryCreateImperativeRootProgram(
         RazorVueCompilationContext context,
         RazorVueSemanticSnapshot snapshot,
@@ -358,6 +373,12 @@ internal sealed class RazorVueCanonicalHModelFactory
             return null;
 
         if (TryRecoverCanonicalTemplateFragmentFromImperativeRoot(context, snapshot, renderTree, out var recoveredRenderTree))
+        {
+            renderTree = recoveredRenderTree;
+            return null;
+        }
+
+        if (TryRecoverCanonicalTemplateFragmentFromImperativeSubtrees(context, snapshot, renderTree, out recoveredRenderTree))
         {
             renderTree = recoveredRenderTree;
             return null;
@@ -492,35 +513,525 @@ internal sealed class RazorVueCanonicalHModelFactory
             return false;
         }
 
+        return TryRecoverCanonicalTemplateFragmentFromImperativeNode(
+            context,
+            snapshot,
+            imperative,
+            allowRootMethodBodyControlFlow: true,
+            EmptyLocalScope,
+            EmptyParameterScope,
+            out recoveredRenderTree);
+    }
+
+    private static bool TryRecoverCanonicalTemplateFragmentFromImperativeSubtrees(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueRenderFragment renderTree,
+        out RazorVueRenderFragment recoveredRenderTree)
+    {
+        recoveredRenderTree = renderTree;
+        if (!TryRecoverCanonicalTemplateFragmentFromImperativeSubtrees(
+                context,
+                snapshot,
+                renderTree,
+                EmptyLocalScope,
+                EmptyParameterScope,
+                out var candidate,
+                out var changed) ||
+            !changed ||
+            EnumerateImperativeNodes(candidate).Any() ||
+            RequiresImperativeScopedReplay(candidate) ||
+            !CanCreateCanonicalTemplateFragment(context, snapshot, candidate, EmptyLocalScope, EmptyParameterScope))
+        {
+            return false;
+        }
+
+        recoveredRenderTree = candidate;
+        return true;
+    }
+
+    private static bool TryRecoverCanonicalTemplateFragmentFromImperativeSubtrees(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueRenderFragment fragment,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
+        out RazorVueRenderFragment recoveredFragment,
+        out bool changed)
+    {
+        recoveredFragment = fragment;
+        changed = false;
+        if (fragment.Children.IsDefaultOrEmpty)
+            return true;
+
+        var currentLocalScope = allowedLocalSymbols;
+        var currentParameterScope = allowedParameterSymbols;
+        var builder = ImmutableArray.CreateBuilder<RazorVueRenderNode>(fragment.Children.Length);
+        foreach (var node in fragment.Children)
+        {
+            if (!TryRecoverCanonicalTemplateNodeFromImperativeSubtrees(
+                    context,
+                    snapshot,
+                    node,
+                    currentLocalScope,
+                    currentParameterScope,
+                    out var recoveredNodes,
+                    out var nodeChanged))
+            {
+                return false;
+            }
+
+            builder.AddRange(recoveredNodes);
+            changed |= nodeChanged;
+
+            if (node is RazorVueLocalDeclarationNode localDeclaration)
+                currentLocalScope = RazorVueTemplateExpressionScopeValidator.AddIfPresent(currentLocalScope, localDeclaration.LocalSymbol);
+        }
+
+        recoveredFragment = changed
+            ? new RazorVueRenderFragment(builder.ToImmutable())
+            : fragment;
+        return true;
+    }
+
+    private static bool TryRecoverCanonicalTemplateNodeFromImperativeSubtrees(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueRenderNode node,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
+        out ImmutableArray<RazorVueRenderNode> recoveredNodes,
+        out bool changed)
+    {
+        recoveredNodes = [node];
+        changed = false;
+
+        switch (node)
+        {
+            case RazorVueImperativeBlockNode imperative:
+                if (!TryRecoverCanonicalTemplateFragmentFromImperativeNode(
+                        context,
+                        snapshot,
+                        imperative,
+                        allowRootMethodBodyControlFlow: false,
+                        allowedLocalSymbols,
+                        allowedParameterSymbols,
+                        out var recoveredImperative))
+                {
+                    return false;
+                }
+
+                recoveredNodes = recoveredImperative.Children;
+                changed = true;
+                return true;
+
+            case RazorVueElementNode element:
+                if (!TryRecoverCanonicalTemplateFragmentFromImperativeSubtrees(
+                        context,
+                        snapshot,
+                        element.Children,
+                        allowedLocalSymbols,
+                        allowedParameterSymbols,
+                        out var recoveredChildren,
+                        out var childrenChanged))
+                {
+                    return false;
+                }
+
+                if (childrenChanged)
+                {
+                    recoveredNodes = [element with { Children = recoveredChildren }];
+                    changed = true;
+                }
+
+                return true;
+
+            case RazorVueComponentNode component:
+                if (!TryRecoverCanonicalComponentNodeFromImperativeSubtrees(
+                        context,
+                        snapshot,
+                        component,
+                        allowedLocalSymbols,
+                        allowedParameterSymbols,
+                        out var recoveredComponent,
+                        out var componentChanged))
+                {
+                    return false;
+                }
+
+                if (componentChanged)
+                {
+                    recoveredNodes = [recoveredComponent];
+                    changed = true;
+                }
+
+                return true;
+
+            case RazorVueTemplateScopeNode templateScope:
+                if (!TryRecoverCanonicalTemplateFragmentFromImperativeSubtrees(
+                        context,
+                        snapshot,
+                        templateScope.Children,
+                        allowedLocalSymbols,
+                        RazorVueTemplateExpressionScopeValidator.AddIfPresent(allowedParameterSymbols, templateScope.ScopeParameterSymbol),
+                        out var recoveredTemplateScopeChildren,
+                        out var templateScopeChanged))
+                {
+                    return false;
+                }
+
+                if (templateScopeChanged)
+                {
+                    recoveredNodes = [templateScope with { Children = recoveredTemplateScopeChildren }];
+                    changed = true;
+                }
+
+                return true;
+
+            case RazorVueConditionalNode conditional:
+                if (!TryRecoverCanonicalTemplateFragmentFromImperativeSubtrees(
+                        context,
+                        snapshot,
+                        conditional.WhenTrue,
+                        allowedLocalSymbols,
+                        allowedParameterSymbols,
+                        out var recoveredWhenTrue,
+                        out var whenTrueChanged) ||
+                    !TryRecoverCanonicalTemplateFragmentFromImperativeSubtrees(
+                        context,
+                        snapshot,
+                        conditional.WhenFalse,
+                        allowedLocalSymbols,
+                        allowedParameterSymbols,
+                        out var recoveredWhenFalse,
+                        out var whenFalseChanged))
+                {
+                    return false;
+                }
+
+                if (whenTrueChanged || whenFalseChanged)
+                {
+                    recoveredNodes = [conditional with { WhenTrue = recoveredWhenTrue, WhenFalse = recoveredWhenFalse }];
+                    changed = true;
+                }
+
+                return true;
+
+            case RazorVueRecoveredSwitchConditionalNode conditional:
+                if (!TryRecoverCanonicalTemplateFragmentFromImperativeSubtrees(
+                        context,
+                        snapshot,
+                        conditional.WhenTrue,
+                        allowedLocalSymbols,
+                        allowedParameterSymbols,
+                        out var recoveredSwitchWhenTrue,
+                        out var switchWhenTrueChanged) ||
+                    !TryRecoverCanonicalTemplateFragmentFromImperativeSubtrees(
+                        context,
+                        snapshot,
+                        conditional.WhenFalse,
+                        allowedLocalSymbols,
+                        allowedParameterSymbols,
+                        out var recoveredSwitchWhenFalse,
+                        out var switchWhenFalseChanged))
+                {
+                    return false;
+                }
+
+                if (switchWhenTrueChanged || switchWhenFalseChanged)
+                {
+                    recoveredNodes = [conditional with { WhenTrue = recoveredSwitchWhenTrue, WhenFalse = recoveredSwitchWhenFalse }];
+                    changed = true;
+                }
+
+                return true;
+
+            case RazorVueForEachNode loop:
+                if (!TryRecoverCanonicalTemplateFragmentFromImperativeSubtrees(
+                        context,
+                        snapshot,
+                        loop.Body,
+                        RazorVueTemplateExpressionScopeValidator.AddIfPresent(allowedLocalSymbols, loop.ItemSymbol),
+                        allowedParameterSymbols,
+                        out var recoveredForEachBody,
+                        out var forEachChanged))
+                {
+                    return false;
+                }
+
+                if (forEachChanged)
+                {
+                    recoveredNodes = [loop with { Body = recoveredForEachBody }];
+                    changed = true;
+                }
+
+                return true;
+
+            case RazorVueForNode loop:
+                if (!TryRecoverCanonicalTemplateFragmentFromImperativeSubtrees(
+                        context,
+                        snapshot,
+                        loop.Body,
+                        RazorVueTemplateExpressionScopeValidator.AddIfPresent(allowedLocalSymbols, loop.VariableSymbol),
+                        allowedParameterSymbols,
+                        out var recoveredForBody,
+                        out var forChanged))
+                {
+                    return false;
+                }
+
+                if (forChanged)
+                {
+                    recoveredNodes = [loop with { Body = recoveredForBody }];
+                    changed = true;
+                }
+
+                return true;
+
+            default:
+                return true;
+        }
+    }
+
+    private static bool TryRecoverCanonicalComponentNodeFromImperativeSubtrees(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueComponentNode component,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
+        out RazorVueComponentNode recoveredComponent,
+        out bool changed)
+    {
+        recoveredComponent = component;
+        changed = false;
+
+        if (!TryRecoverCanonicalComponentSlotTemplatesFromImperativeSubtrees(
+                context,
+                snapshot,
+                component.SlotTemplates,
+                allowedLocalSymbols,
+                allowedParameterSymbols,
+                out var recoveredSlotTemplates,
+                out var slotTemplatesChanged) ||
+            !TryRecoverCanonicalImplicitDefaultSlotAssignmentsFromImperativeSubtrees(
+                context,
+                snapshot,
+                component.ImplicitDefaultSlotAssignments,
+                allowedLocalSymbols,
+                allowedParameterSymbols,
+                out var recoveredImplicitDefaultSlotAssignments,
+                out var implicitDefaultSlotAssignmentsChanged) ||
+            !TryRecoverCanonicalTemplateFragmentFromImperativeSubtrees(
+                context,
+                snapshot,
+                component.AmbientDefaultSlotChildren,
+                allowedLocalSymbols,
+                allowedParameterSymbols,
+                out var recoveredAmbientDefaultSlotChildren,
+                out var ambientDefaultSlotChildrenChanged) ||
+            !TryRecoverCanonicalTemplateFragmentFromImperativeSubtrees(
+                context,
+                snapshot,
+                component.Children,
+                allowedLocalSymbols,
+                allowedParameterSymbols,
+                out var recoveredChildren,
+                out var childrenChanged))
+        {
+            return false;
+        }
+
+        changed =
+            slotTemplatesChanged ||
+            implicitDefaultSlotAssignmentsChanged ||
+            ambientDefaultSlotChildrenChanged ||
+            childrenChanged;
+        if (changed)
+        {
+            recoveredComponent = component with
+            {
+                SlotTemplates = recoveredSlotTemplates,
+                ImplicitDefaultSlotAssignments = recoveredImplicitDefaultSlotAssignments,
+                AmbientDefaultSlotChildren = recoveredAmbientDefaultSlotChildren,
+                Children = recoveredChildren
+            };
+        }
+
+        return true;
+    }
+
+    private static bool TryRecoverCanonicalComponentSlotTemplatesFromImperativeSubtrees(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        ImmutableArray<RazorVueComponentSlotTemplateNode> slotTemplates,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
+        out ImmutableArray<RazorVueComponentSlotTemplateNode> recoveredSlotTemplates,
+        out bool changed)
+    {
+        recoveredSlotTemplates = slotTemplates;
+        changed = false;
+        if (slotTemplates.IsDefaultOrEmpty)
+            return true;
+
+        var builder = ImmutableArray.CreateBuilder<RazorVueComponentSlotTemplateNode>(slotTemplates.Length);
+        foreach (var slotTemplate in slotTemplates)
+        {
+            var slotParameterScope = string.IsNullOrWhiteSpace(slotTemplate.ParameterName)
+                ? allowedParameterSymbols
+                : RazorVueTemplateExpressionScopeValidator.AddIfPresent(allowedParameterSymbols, slotTemplate.ParameterSymbol);
+            if (!TryRecoverCanonicalTemplateFragmentFromImperativeSubtrees(
+                    context,
+                    snapshot,
+                    slotTemplate.Children,
+                    allowedLocalSymbols,
+                    slotParameterScope,
+                    out var recoveredChildren,
+                    out var childrenChanged))
+            {
+                return false;
+            }
+
+            builder.Add(childrenChanged
+                ? slotTemplate with { Children = recoveredChildren }
+                : slotTemplate);
+            changed |= childrenChanged;
+        }
+
+        if (changed)
+            recoveredSlotTemplates = builder.ToImmutable();
+        return true;
+    }
+
+    private static bool TryRecoverCanonicalImplicitDefaultSlotAssignmentsFromImperativeSubtrees(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        ImmutableArray<RazorVueImplicitDefaultSlotAssignmentNode> assignments,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
+        out ImmutableArray<RazorVueImplicitDefaultSlotAssignmentNode> recoveredAssignments,
+        out bool changed)
+    {
+        recoveredAssignments = assignments;
+        changed = false;
+        if (assignments.IsDefaultOrEmpty)
+            return true;
+
+        var builder = ImmutableArray.CreateBuilder<RazorVueImplicitDefaultSlotAssignmentNode>(assignments.Length);
+        foreach (var assignment in assignments)
+        {
+            if (!TryRecoverCanonicalTemplateFragmentFromImperativeSubtrees(
+                    context,
+                    snapshot,
+                    assignment.Children,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols,
+                    out var recoveredChildren,
+                    out var childrenChanged))
+            {
+                return false;
+            }
+
+            builder.Add(childrenChanged
+                ? assignment with { Children = recoveredChildren }
+                : assignment);
+            changed |= childrenChanged;
+        }
+
+        if (changed)
+            recoveredAssignments = builder.ToImmutable();
+        return true;
+    }
+
+    private static bool TryRecoverCanonicalTemplateFragmentFromImperativeNode(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueImperativeBlockNode imperative,
+        bool allowRootMethodBodyControlFlow,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
+        out RazorVueRenderFragment recoveredRenderTree)
+    {
+        recoveredRenderTree = RazorVueRenderFragment.Empty;
+
         var recovered = imperative.Kind switch
         {
             RazorVueImperativeBlockKind.SwitchBlock
                 when imperative.Operations.Length == 1 &&
                      Unwrap(imperative.Operations[0]) is ISwitchOperation switchOperation =>
-                TryCreateCanonicalSwitchTemplateFragment(context, snapshot, switchOperation, imperative, out recoveredRenderTree),
+                TryCreateCanonicalSwitchTemplateFragment(
+                    context,
+                    snapshot,
+                    switchOperation,
+                    imperative,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols,
+                    out recoveredRenderTree),
             RazorVueImperativeBlockKind.TryBlock
                 when imperative.Operations.Length == 1 &&
                      Unwrap(imperative.Operations[0]) is ITryOperation tryOperation =>
-                TryCreateCanonicalTryTemplateFragment(context, snapshot, tryOperation, imperative, out recoveredRenderTree),
+                TryCreateCanonicalTryTemplateFragment(
+                    context,
+                    snapshot,
+                    tryOperation,
+                    imperative,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols,
+                    out recoveredRenderTree),
             RazorVueImperativeBlockKind.TryBlock
                 when imperative.Operations.Length == 1 &&
                      Unwrap(imperative.Operations[0]) is IUsingOperation usingOperation =>
-                TryCreateCanonicalUsingTemplateFragment(context, snapshot, usingOperation, imperative, out recoveredRenderTree),
+                TryCreateCanonicalUsingTemplateFragment(
+                    context,
+                    snapshot,
+                    usingOperation,
+                    imperative,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols,
+                    out recoveredRenderTree),
             RazorVueImperativeBlockKind.TryBlock =>
-                TryCreateCanonicalUsingDeclarationTemplateFragment(context, snapshot, imperative, out recoveredRenderTree),
+                TryCreateCanonicalUsingDeclarationTemplateFragment(
+                    context,
+                    snapshot,
+                    imperative,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols,
+                    out recoveredRenderTree),
             RazorVueImperativeBlockKind.LockBlock
                 when imperative.Operations.Length == 1 &&
                      Unwrap(imperative.Operations[0]) is ILockOperation lockOperation =>
-                TryCreateCanonicalLockTemplateFragment(context, snapshot, lockOperation, imperative, out recoveredRenderTree),
+                TryCreateCanonicalLockTemplateFragment(
+                    context,
+                    snapshot,
+                    lockOperation,
+                    imperative,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols,
+                    out recoveredRenderTree),
             RazorVueImperativeBlockKind.LoopBlock
                 when imperative.Operations.Length == 1 &&
                      Unwrap(imperative.Operations[0]) is IWhileLoopOperation whileLoop =>
-                TryCreateCanonicalDoWhileFalseTemplateFragment(context, snapshot, whileLoop, imperative, out recoveredRenderTree),
+                TryCreateCanonicalDoWhileFalseTemplateFragment(
+                    context,
+                    snapshot,
+                    whileLoop,
+                    imperative,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols,
+                    out recoveredRenderTree),
             RazorVueImperativeBlockKind.MethodBody
                 when imperative.Operations.Length == 1 &&
                      Unwrap(imperative.Operations[0]) is ILabeledOperation labeledOperation =>
-                TryCreateCanonicalLabeledTemplateFragment(context, snapshot, labeledOperation, imperative, out recoveredRenderTree),
-            RazorVueImperativeBlockKind.MethodBody =>
+                TryCreateCanonicalLabeledTemplateFragment(
+                    context,
+                    snapshot,
+                    labeledOperation,
+                    imperative,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols,
+                    out recoveredRenderTree),
+            RazorVueImperativeBlockKind.MethodBody
+                when allowRootMethodBodyControlFlow =>
                 TryCreateCanonicalGuardReturnTemplateFragment(context, snapshot, imperative, out recoveredRenderTree),
             _ => false
         };
@@ -529,13 +1040,15 @@ internal sealed class RazorVueCanonicalHModelFactory
 
         return !EnumerateImperativeNodes(recoveredRenderTree).Any() &&
                !RequiresImperativeScopedReplay(recoveredRenderTree) &&
-               CanCreateCanonicalTemplateFragment(context, snapshot, recoveredRenderTree);
+               CanCreateCanonicalTemplateFragment(context, snapshot, recoveredRenderTree, allowedLocalSymbols, allowedParameterSymbols);
     }
 
     private static bool CanCreateCanonicalTemplateFragment(
         RazorVueCompilationContext context,
         RazorVueSemanticSnapshot snapshot,
-        RazorVueRenderFragment renderTree)
+        RazorVueRenderFragment renderTree,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
     {
         try
         {
@@ -546,8 +1059,8 @@ internal sealed class RazorVueCanonicalHModelFactory
                 expressionEmitter,
                 resolvedComponents,
                 renderTree,
-                EmptyLocalScope,
-                EmptyParameterScope);
+                allowedLocalSymbols,
+                allowedParameterSymbols);
             return !EnumerateCanonicalTemplateNodes(canonicalFragment)
                 .Any(static node => node.TemplateEncodability == RazorVueTemplateEncodability.NotTemplateEncodable);
         }
@@ -659,7 +1172,14 @@ internal sealed class RazorVueCanonicalHModelFactory
         if (ContainsSameArtifactRuntimeHelperTypeReference(snapshot, operationList))
             return false;
 
-        if (TryParseCanonicalTemplateOperations(context, snapshot, operationList, imperative, out var templateFragment))
+        if (TryParseCanonicalTemplateOperations(
+                context,
+                snapshot,
+                operationList,
+                imperative,
+                EmptyLocalScope,
+                EmptyParameterScope,
+                out var templateFragment))
         {
             fragment = templateFragment;
             return true;
@@ -675,7 +1195,14 @@ internal sealed class RazorVueCanonicalHModelFactory
 
             var prefix = operationList.Take(index).ToImmutableArray();
             if (!prefix.IsDefaultOrEmpty &&
-                !TryParseCanonicalTemplateOperations(context, snapshot, prefix, imperative, out _))
+                !TryParseCanonicalTemplateOperations(
+                    context,
+                    snapshot,
+                    prefix,
+                    imperative,
+                    EmptyLocalScope,
+                    EmptyParameterScope,
+                    out _))
             {
                 return false;
             }
@@ -698,7 +1225,14 @@ internal sealed class RazorVueCanonicalHModelFactory
                 return true;
             }
 
-            if (!TryParseCanonicalTemplateOperations(context, snapshot, prefix, imperative, out var prefixFragment))
+            if (!TryParseCanonicalTemplateOperations(
+                    context,
+                    snapshot,
+                    prefix,
+                    imperative,
+                    EmptyLocalScope,
+                    EmptyParameterScope,
+                    out var prefixFragment))
                 return false;
 
             fragment = CombineCanonicalTemplateFragments(prefixFragment, recoveredGuard);
@@ -738,7 +1272,14 @@ internal sealed class RazorVueCanonicalHModelFactory
 
         var tail = RazorVueRenderFragment.Empty;
         if (!tailOperations.IsDefaultOrEmpty &&
-            !TryParseCanonicalTemplateOperations(context, snapshot, tailOperations, imperative, out tail))
+            !TryParseCanonicalTemplateOperations(
+                context,
+                snapshot,
+                tailOperations,
+                imperative,
+                EmptyLocalScope,
+                EmptyParameterScope,
+                out tail))
         {
             return false;
         }
@@ -867,6 +1408,8 @@ internal sealed class RazorVueCanonicalHModelFactory
         RazorVueSemanticSnapshot snapshot,
         IOperation? operation,
         RazorVueImperativeBlockNode imperative,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
         out RazorVueRenderFragment fragment)
     {
         fragment = RazorVueRenderFragment.Empty;
@@ -877,7 +1420,14 @@ internal sealed class RazorVueCanonicalHModelFactory
         var operations = current is IBlockOperation block
             ? block.Operations
             : ImmutableArray.Create(current);
-        return TryParseCanonicalTemplateOperations(context, snapshot, operations, imperative, out fragment);
+        return TryParseCanonicalTemplateOperations(
+            context,
+            snapshot,
+            operations,
+            imperative,
+            allowedLocalSymbols,
+            allowedParameterSymbols,
+            out fragment);
     }
 
     private static bool TryParseCanonicalTemplateOperations(
@@ -885,6 +1435,8 @@ internal sealed class RazorVueCanonicalHModelFactory
         RazorVueSemanticSnapshot snapshot,
         IEnumerable<IOperation> operations,
         RazorVueImperativeBlockNode imperative,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
         out RazorVueRenderFragment fragment)
     {
         var operationList = operations.ToImmutableArray();
@@ -900,8 +1452,8 @@ internal sealed class RazorVueCanonicalHModelFactory
                 context,
                 snapshot,
                 operationList,
-                imperative.VisibleLocals,
-                imperative.VisibleParameters);
+                allowedLocalSymbols.Concat(imperative.VisibleLocals),
+                allowedParameterSymbols.Concat(imperative.VisibleParameters));
         }
         catch (RazorVueCompilationIssueException)
         {
@@ -941,6 +1493,8 @@ internal sealed class RazorVueCanonicalHModelFactory
         RazorVueSemanticSnapshot snapshot,
         ITryOperation tryOperation,
         RazorVueImperativeBlockNode imperative,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
         out RazorVueRenderFragment fragment)
     {
         fragment = RazorVueRenderFragment.Empty;
@@ -951,6 +1505,8 @@ internal sealed class RazorVueCanonicalHModelFactory
                     snapshot,
                     tryOperation.Body,
                     imperative,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols,
                     out fragment) &&
                    !fragment.Children.IsDefaultOrEmpty;
         }
@@ -960,6 +1516,8 @@ internal sealed class RazorVueCanonicalHModelFactory
             snapshot,
             tryOperation,
             imperative,
+            allowedLocalSymbols,
+            allowedParameterSymbols,
             out fragment);
     }
 
@@ -989,6 +1547,8 @@ internal sealed class RazorVueCanonicalHModelFactory
         RazorVueSemanticSnapshot snapshot,
         ITryOperation tryOperation,
         RazorVueImperativeBlockNode imperative,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
         out RazorVueRenderFragment fragment)
     {
         fragment = RazorVueRenderFragment.Empty;
@@ -1005,12 +1565,16 @@ internal sealed class RazorVueCanonicalHModelFactory
             snapshot,
             tryOperation.Body,
             imperative,
+            allowedLocalSymbols,
+            allowedParameterSymbols,
             out var body);
         var cleanupParsed = TryParseCanonicalTemplateBranch(
             context,
             snapshot,
             tryOperation.Finally,
             imperative,
+            allowedLocalSymbols,
+            allowedParameterSymbols,
             out var cleanup);
         if (!bodyParsed ||
             !cleanupParsed ||
@@ -1075,6 +1639,8 @@ internal sealed class RazorVueCanonicalHModelFactory
         RazorVueSemanticSnapshot snapshot,
         ILockOperation lockOperation,
         RazorVueImperativeBlockNode imperative,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
         out RazorVueRenderFragment fragment)
     {
         fragment = RazorVueRenderFragment.Empty;
@@ -1088,6 +1654,8 @@ internal sealed class RazorVueCanonicalHModelFactory
                 snapshot,
                 lockOperation.Body,
                 imperative,
+                allowedLocalSymbols,
+                allowedParameterSymbols,
                 out fragment) &&
                !fragment.Children.IsDefaultOrEmpty;
     }
@@ -1198,6 +1766,8 @@ internal sealed class RazorVueCanonicalHModelFactory
         RazorVueSemanticSnapshot snapshot,
         IUsingOperation usingOperation,
         RazorVueImperativeBlockNode imperative,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
         out RazorVueRenderFragment fragment)
     {
         fragment = RazorVueRenderFragment.Empty;
@@ -1213,6 +1783,8 @@ internal sealed class RazorVueCanonicalHModelFactory
                 snapshot,
                 usingOperation.Body,
                 imperative,
+                allowedLocalSymbols,
+                allowedParameterSymbols,
                 out fragment) &&
                !fragment.Children.IsDefaultOrEmpty;
     }
@@ -1221,6 +1793,8 @@ internal sealed class RazorVueCanonicalHModelFactory
         RazorVueCompilationContext context,
         RazorVueSemanticSnapshot snapshot,
         RazorVueImperativeBlockNode imperative,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
         out RazorVueRenderFragment fragment)
     {
         fragment = RazorVueRenderFragment.Empty;
@@ -1260,6 +1834,8 @@ internal sealed class RazorVueCanonicalHModelFactory
                 snapshot,
                 tailOperations,
                 imperative,
+                allowedLocalSymbols,
+                allowedParameterSymbols,
                 out fragment) &&
                !fragment.Children.IsDefaultOrEmpty;
     }
@@ -1362,6 +1938,8 @@ internal sealed class RazorVueCanonicalHModelFactory
         RazorVueSemanticSnapshot snapshot,
         ILabeledOperation labeledOperation,
         RazorVueImperativeBlockNode imperative,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
         out RazorVueRenderFragment fragment)
     {
         fragment = RazorVueRenderFragment.Empty;
@@ -1377,6 +1955,8 @@ internal sealed class RazorVueCanonicalHModelFactory
                 snapshot,
                 body,
                 imperative,
+                allowedLocalSymbols,
+                allowedParameterSymbols,
                 out fragment) &&
                !fragment.Children.IsDefaultOrEmpty;
     }
@@ -1386,6 +1966,8 @@ internal sealed class RazorVueCanonicalHModelFactory
         RazorVueSemanticSnapshot snapshot,
         IWhileLoopOperation whileLoop,
         RazorVueImperativeBlockNode imperative,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
         out RazorVueRenderFragment fragment)
     {
         fragment = RazorVueRenderFragment.Empty;
@@ -1403,6 +1985,8 @@ internal sealed class RazorVueCanonicalHModelFactory
                 snapshot,
                 whileLoop.Body,
                 imperative,
+                allowedLocalSymbols,
+                allowedParameterSymbols,
                 out var body) ||
             body.Children.IsDefaultOrEmpty)
         {
@@ -1548,6 +2132,8 @@ internal sealed class RazorVueCanonicalHModelFactory
         RazorVueSemanticSnapshot snapshot,
         ISwitchOperation switchOperation,
         RazorVueImperativeBlockNode imperative,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
         out RazorVueRenderFragment fragment)
     {
         fragment = RazorVueRenderFragment.Empty;
@@ -1557,14 +2143,24 @@ internal sealed class RazorVueCanonicalHModelFactory
 
         var switchValueName = RazorVueSlotParameterNames.CreateImplicitDefaultSlotParameterName(
             RecoveredSwitchValueName,
-            EmptyLocalScope,
-            EmptyParameterScope);
+            allowedLocalSymbols,
+            allowedParameterSymbols);
         var sectionsBuilder = ImmutableArray.CreateBuilder<RecoveredSwitchSection>();
         RazorVueRenderFragment? defaultBody = null;
         foreach (var section in switchOperation.Cases)
         {
-            if (!TryGetRecoverableSwitchSection(context, snapshot, section, switchValueName, imperative, out var recoveredSection))
+            if (!TryGetRecoverableSwitchSection(
+                    context,
+                    snapshot,
+                    section,
+                    switchValueName,
+                    imperative,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols,
+                    out var recoveredSection))
+            {
                 return false;
+            }
 
             if (recoveredSection.IsDefault)
             {
@@ -1643,6 +2239,8 @@ internal sealed class RazorVueCanonicalHModelFactory
         ISwitchCaseOperation section,
         string switchValueName,
         RazorVueImperativeBlockNode imperative,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
         out RecoveredSwitchSection recoveredSection)
     {
         recoveredSection = default;
@@ -1690,8 +2288,8 @@ internal sealed class RazorVueCanonicalHModelFactory
                 context,
                 snapshot,
                 operations,
-                imperative.VisibleLocals,
-                imperative.VisibleParameters);
+                allowedLocalSymbols.Concat(imperative.VisibleLocals),
+                allowedParameterSymbols.Concat(imperative.VisibleParameters));
         }
         catch (RazorVueCompilationIssueException)
         {
