@@ -1423,7 +1423,7 @@ public sealed class RazorVueAnalyzerTests
     }
 
     [TestMethod]
-    public async Task RazorVue_Misuse_ThrowOnlyShouldRender_ReportsJAZORVUE005()
+    public async Task RazorVue_Misuse_ThrowOnlyShouldRender_IsAccepted()
     {
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
@@ -1442,7 +1442,7 @@ public sealed class RazorVueAnalyzerTests
             }
 
             [ECMAScript.ECMAScriptModule]
-            public class InvalidComponent : ComponentBase, IVueComponent
+            public class ValidComponent : ComponentBase, IVueComponent
             {
                 protected override bool ShouldRender()
                 {
@@ -1451,7 +1451,7 @@ public sealed class RazorVueAnalyzerTests
             }
             """);
 
-        AssertHasDiagnostic(diagnostics, "JAZORVUE005");
+        AssertNoDiagnostic(diagnostics, "JAZORVUE005");
     }
 
     [TestMethod]
@@ -2373,7 +2373,7 @@ public sealed class RazorVueAnalyzerTests
     }
 
     [TestMethod]
-    public async Task RazorVue_Misuse_DelegateParameterEscapeShouldRender_ReportsJAZORVUE005()
+    public async Task RazorVue_Misuse_DelegateParameterEchoShouldRender_IsAccepted()
     {
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
@@ -2407,6 +2407,46 @@ public sealed class RazorVueAnalyzerTests
 
                     Func<int, bool> ready = CreateReady();
                     Func<int, bool> escaped = EchoReady(ready);
+                    return escaped(Value);
+                }
+            }
+            """);
+
+        AssertNoDiagnostic(diagnostics, "JAZORVUE005");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_NullOnlyDelegateParameterEchoInvocationShouldRender_ReportsJAZORVUE005()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class InvalidComponent : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public int Value { get; set; }
+
+                protected override bool ShouldRender()
+                {
+                    Func<int, bool>? EchoReady(Func<int, bool>? predicate)
+                        => predicate;
+
+                    Func<int, bool>? ready = null;
+                    Func<int, bool>? escaped = EchoReady(ready);
                     return escaped(Value);
                 }
             }
@@ -7558,7 +7598,7 @@ public sealed class RazorVueAnalyzerTests
     }
 
     [TestMethod]
-    public async Task RazorVue_Misuse_VoidHelperWithInParameterLocalOnlyLifecycleBody_ReportsJAZORVUE005()
+    public async Task RazorVue_Misuse_VoidHelperWithInParameterLocalOnlyLifecycleBody_DoesNotReportJAZORVUE005()
     {
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
@@ -7592,7 +7632,7 @@ public sealed class RazorVueAnalyzerTests
             }
             """);
 
-        AssertHasDiagnostic(diagnostics, "JAZORVUE005");
+        AssertNoDiagnostic(diagnostics, "JAZORVUE005");
     }
 
     [TestMethod]
@@ -9144,6 +9184,200 @@ public sealed class RazorVueAnalyzerTests
     }
 
     [TestMethod]
+    public async Task RazorVue_Misuse_BaseThenPatternSwitchEmitSetParametersAsync_IsAccepted()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class ValidComponent : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public int Value { get; set; }
+
+                [Parameter]
+                public EventCallback<int> ValueChanged { get; set; }
+
+                [Parameter]
+                public EventCallback<bool> ReadyChanged { get; set; }
+
+                public override async Task SetParametersAsync(ParameterView parameters)
+                {
+                    await base.SetParametersAsync(parameters);
+                    switch (Value)
+                    {
+                        case 0 when Value > 1:
+                            await ReadyChanged.InvokeAsync(false);
+                            break;
+                        case > 0:
+                            await ValueChanged.InvokeAsync(Value);
+                            await ReadyChanged.InvokeAsync(true);
+                            break;
+                        default:
+                            await ReadyChanged.InvokeAsync(false);
+                            break;
+                    }
+                }
+            }
+            """);
+
+        AssertNoDiagnostic(diagnostics, "JAZORVUE006");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_BaseThenPatternSwitchDeclaredLocalSetParametersAsync_ReportsJAZORVUE006()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class InvalidComponent : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public object? Value { get; set; }
+
+                [Parameter]
+                public EventCallback<int> ValueChanged { get; set; }
+
+                public override async Task SetParametersAsync(ParameterView parameters)
+                {
+                    await base.SetParametersAsync(parameters);
+                    switch (Value)
+                    {
+                        case int number:
+                            await ValueChanged.InvokeAsync(number);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            """);
+
+        AssertHasDiagnostic(diagnostics, "JAZORVUE006");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_BaseThenForEachEmitSetParametersAsync_IsAccepted()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using System.Collections.Generic;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class ValidComponent : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public IReadOnlyList<int> Values { get; set; } = [];
+
+                [Parameter]
+                public EventCallback<int> ItemSelected { get; set; }
+
+                public override async Task SetParametersAsync(ParameterView parameters)
+                {
+                    await base.SetParametersAsync(parameters);
+                    foreach (var value in Values)
+                    {
+                        await ItemSelected.InvokeAsync(value);
+                    }
+                }
+            }
+            """);
+
+        AssertNoDiagnostic(diagnostics, "JAZORVUE006");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_BaseThenForEachMutationSetParametersAsync_ReportsJAZORVUE006()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using System.Collections.Generic;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class InvalidComponent : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public IReadOnlyList<int> Values { get; set; } = [];
+
+                [Parameter]
+                public int Count { get; set; }
+
+                [Parameter]
+                public EventCallback<int> ItemSelected { get; set; }
+
+                public override async Task SetParametersAsync(ParameterView parameters)
+                {
+                    await base.SetParametersAsync(parameters);
+                    foreach (var value in Values)
+                    {
+                        Count++;
+                        await ItemSelected.InvokeAsync(value);
+                    }
+                }
+            }
+            """);
+
+        AssertHasDiagnostic(diagnostics, "JAZORVUE006");
+    }
+
+    [TestMethod]
     public async Task RazorVue_Misuse_BaseThenTryFinallyEmitSetParametersAsync_IsAccepted()
     {
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
@@ -9702,6 +9936,48 @@ public sealed class RazorVueAnalyzerTests
                         Value++;
                     }
                     await ValueChanged.InvokeAsync(Value);
+                }
+            }
+            """);
+
+        AssertHasDiagnostic(diagnostics, "JAZORVUE006");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_BaseThenNonEmitLoopSetParametersAsync_ReportsJAZORVUE006()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using System.Collections.Generic;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class InvalidComponent : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public IReadOnlyList<int> Values { get; set; } = [];
+
+                public override async Task SetParametersAsync(ParameterView parameters)
+                {
+                    await base.SetParametersAsync(parameters);
+                    var count = 0;
+                    foreach (var value in Values)
+                    {
+                        count++;
+                    }
                 }
             }
             """);

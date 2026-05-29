@@ -25837,7 +25837,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ThrowsCompilationIssueForVoidHelperWithInParameterLocalOnlyLifecycleBody()
+    public void RazorVue_Pipeline_ClassifiesTemplateOnlyBoundaryForVoidHelperWithInParameterLocalOnlyLifecycleBody()
     {
         var context = CreateContext(
             """
@@ -25867,6 +25867,63 @@ public sealed class RazorVuePipelineTests
                     }
 
                     private void Touch(in int value)
+                    {
+                        var label = value;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch(", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ThrowsCompilationIssueForVoidHelperForwardingInParameterByReferenceLifecycleBody()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
+                public class LifecycleCard : ComponentBase, IVueComponent
+                {
+                    protected override void OnInitialized()
+                    {
+                        var value = 1;
+                        Touch(in value);
+                    }
+
+                    private void Touch(in int value)
+                    {
+                        Forward(in value);
+                    }
+
+                    private void Forward(in int value)
                     {
                         var label = value;
                     }
@@ -32039,6 +32096,146 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersBaseThenPatternSwitchEmitSetParametersAsyncIntoSingleWatchLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-pattern-switch")]
+                public class SetParametersAsyncPatternSwitchCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        switch (Value)
+                        {
+                            case 0 when Value > 1:
+                                await ReadyChanged.InvokeAsync(false);
+                                break;
+                            case > 0:
+                                await ValueChanged.InvokeAsync(Value);
+                                await ReadyChanged.InvokeAsync(true);
+                                break;
+                            default:
+                                await ReadyChanged.InvokeAsync(false);
+                                break;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "const __jazorLifecycleSwitchValue");
+        StringAssert.Contains(artifact.ModuleCode, " = props.value;");
+        StringAssert.Contains(artifact.ModuleCode, "if (");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorLifecycleSwitchValue");
+        StringAssert.Contains(artifact.ModuleCode, "=== 0 && props.value > 1");
+        StringAssert.Contains(artifact.ModuleCode, "} else if (");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorLifecycleSwitchValue");
+        StringAssert.Contains(artifact.ModuleCode, " > 0");
+        StringAssert.Contains(artifact.ModuleCode, "} else {");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"update:value\", props.value);");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", true);");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"readyChanged\", false);");
+        Assert.IsFalse(artifact.ModuleCode.Contains("switch (props.value)", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersBaseThenForEachEmitSetParametersAsyncIntoSingleWatchLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-foreach")]
+                public class SetParametersAsyncForEachCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public IReadOnlyList<int> Values { get; set; } = [];
+
+                    [Parameter]
+                    public EventCallback<int> ItemSelected { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        foreach (var value in Values)
+                        {
+                            await ItemSelected.InvokeAsync(value);
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Values.Count);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.values], async () => {");
+        StringAssert.Contains(artifact.ModuleCode, "for (let value of props.values)");
+        StringAssert.Contains(artifact.ModuleCode, "await emit(\"itemSelected\", value);");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersBaseThenTryFinallyEmitSetParametersAsyncIntoSingleWatchLifecycle()
     {
         var context = CreateContext(
@@ -33028,6 +33225,60 @@ public sealed class RazorVuePipelineTests
                     {
                         builder.OpenElement(0, "section");
                         builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForNonEmitLoopSetParametersAsyncLifecycle()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-non-emit-loop")]
+                public class SetParametersAsyncUnsupportedCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public IReadOnlyList<int> Values { get; set; } = [];
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        var count = 0;
+                        foreach (var value in Values)
+                        {
+                            count++;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Values.Count);
                         builder.CloseElement();
                     }
                 }
@@ -37027,7 +37278,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForDelegateParameterEscapeShouldRender()
+    public void RazorVue_Pipeline_LowersDelegateParameterEchoShouldRenderConditionIntoCachedRenderGate()
     {
         var context = CreateContext(
             """
@@ -37064,6 +37315,68 @@ public sealed class RazorVuePipelineTests
 
                         Func<int, bool> ready = CreateReady();
                         Func<int, bool> escaped = EchoReady(ready);
+                        return escaped(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "function CreateReady() {");
+        StringAssert.Contains(artifact.ModuleCode, "function EchoReady(predicate) {");
+        StringAssert.Contains(artifact.ModuleCode, "return predicate;");
+        StringAssert.Contains(artifact.ModuleCode, "let __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, " = CreateReady();");
+        StringAssert.Contains(artifact.ModuleCode, " = EchoReady(__jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "return __jazorShouldRenderLocal");
+        StringAssert.Contains(artifact.ModuleCode, "(props.value);");
+        StringAssert.Contains(artifact.ModuleCode, "if (__jazorShouldRenderHasRendered && !((() => {");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForNullOnlyDelegateParameterEchoInvocationShouldRender()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-null-only-delegate-parameter-echo-invocation")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool>? EchoReady(Func<int, bool>? predicate)
+                            => predicate;
+
+                        Func<int, bool>? ready = null;
+                        Func<int, bool>? escaped = EchoReady(ready);
                         return escaped(Value);
                     }
 
@@ -38585,7 +38898,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_ClassifiesFullReloadBoundaryForThrowOnlyShouldRender()
+    public void RazorVue_Pipeline_LowersThrowOnlyShouldRenderIntoCachedRenderGate()
     {
         var context = CreateContext(
             """
@@ -38609,6 +38922,9 @@ public sealed class RazorVuePipelineTests
                 [ECMAScript.ECMAScriptModule("./components/should-render-throw-only")]
                 public class ShouldRenderCard : ComponentBase, IVueComponent
                 {
+                    [Parameter]
+                    public int Value { get; set; }
+
                     protected override bool ShouldRender()
                     {
                         throw new InvalidOperationException("unsupported");
@@ -38617,7 +38933,7 @@ public sealed class RazorVuePipelineTests
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
                         builder.OpenElement(0, "section");
-                        builder.AddContent(1, "fallback");
+                        builder.AddContent(1, Value);
                         builder.CloseElement();
                     }
                 }
@@ -38625,8 +38941,9 @@ public sealed class RazorVuePipelineTests
             """);
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
-        Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
-        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorShouldRenderHasRendered", StringComparison.Ordinal), artifact.ModuleCode);
+        StringAssert.Contains(artifact.ModuleCode, "if (__jazorShouldRenderHasRendered && !((() => {");
+        StringAssert.Contains(artifact.ModuleCode, "throw new Error(\"unsupported\");");
+        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]

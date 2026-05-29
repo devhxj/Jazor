@@ -5174,6 +5174,75 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithDelegateParameterEchoShouldRender_DoesNotReportJAZORVGA005_AndKeepsLogicSafeBoundary()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.DelegateParameterEchoShouldRender.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-delegate-parameter-echo")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        Func<int, bool> CreateReady()
+                            => value => value > 0;
+
+                        Func<int, bool> EchoReady(Func<int, bool> predicate)
+                            => predicate;
+
+                        Func<int, bool> ready = CreateReady();
+                        Func<int, bool> escaped = EchoReady(ready);
+                        return escaped(Value);
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "function EchoReady(predicate)");
+        StringAssert.Contains(generatedSource, "return predicate;");
+        StringAssert.Contains(generatedSource, " = EchoReady(__jazorShouldRenderLocal");
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithNullOnlyDelegateParameterFlowShouldRender_DoesNotReportJAZORVGA005_AndKeepsLogicSafeBoundary()
     {
         var compilation = CreateCompilation(
@@ -5758,6 +5827,65 @@ public sealed class ESGeneratorTests
         var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
         StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
         StringAssert.Contains(generatedSource, "throw new Error(\\\"negative\\\");");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithThrowOnlyShouldRender_DoesNotReportJAZORVGA005_AndKeepsLogicSafeBoundary()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.ThrowOnlyShouldRender.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/should-render-throw-only")]
+                public class ShouldRenderCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override bool ShouldRender()
+                    {
+                        throw new InvalidOperationException("unsupported");
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
+        StringAssert.Contains(generatedSource, "throw new Error(\\\"unsupported\\\");");
     }
 
     [TestMethod]
@@ -6860,6 +6988,164 @@ public sealed class ESGeneratorTests
         StringAssert.Contains(generatedSource, "await emit(\\\"readyChanged\\\", true);");
         StringAssert.Contains(generatedSource, "default:");
         StringAssert.Contains(generatedSource, "await emit(\\\"readyChanged\\\", (props.value > 0));");
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithSupportedSetParametersAsyncBaseThenPatternSwitchEmit_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.SupportedSetParametersAsyncPatternSwitchEmit.Generated",
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-pattern-switch-emit")]
+                public class SetParametersAsyncPatternSwitchEmitCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        switch (Value)
+                        {
+                            case 0 when Value > 1:
+                                await ReadyChanged.InvokeAsync(false);
+                                break;
+                            case > 0:
+                                await ValueChanged.InvokeAsync(Value);
+                                await ReadyChanged.InvokeAsync(true);
+                                break;
+                            default:
+                                await ReadyChanged.InvokeAsync(false);
+                                break;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var lifecycleDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, lifecycleDiagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "watch(() => [props.value], async () => {");
+        StringAssert.Contains(generatedSource, "const __jazorLifecycleSwitchValue");
+        StringAssert.Contains(generatedSource, " = props.value;");
+        StringAssert.Contains(generatedSource, "=== 0 && props.value > 1");
+        StringAssert.Contains(generatedSource, "} else if (");
+        StringAssert.Contains(generatedSource, " > 0");
+        StringAssert.Contains(generatedSource, "} else {");
+        StringAssert.Contains(generatedSource, "await emit(\\\"update:value\\\", props.value);");
+        StringAssert.Contains(generatedSource, "await emit(\\\"readyChanged\\\", true);");
+        StringAssert.Contains(generatedSource, "await emit(\\\"readyChanged\\\", false);");
+        StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithSupportedSetParametersAsyncBaseThenForEachEmit_DoesNotReportJAZORVGA005()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.SupportedSetParametersAsyncForEachEmit.Generated",
+            """
+            using System;
+            using System.Collections.Generic;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-foreach-emit")]
+                public class SetParametersAsyncForEachEmitCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public IReadOnlyList<int> Values { get; set; } = [];
+
+                    [Parameter]
+                    public EventCallback<int> ItemSelected { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        foreach (var value in Values)
+                        {
+                            await ItemSelected.InvokeAsync(value);
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Values.Count);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var lifecycleDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA005")
+            .ToArray();
+
+        Assert.AreEqual(0, lifecycleDiagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "watch(() => [props.values], async () => {");
+        StringAssert.Contains(generatedSource, "for (let value of props.values)");
+        StringAssert.Contains(generatedSource, "await emit(\\\"itemSelected\\\", value);");
         StringAssert.Contains(generatedSource, "hmrBoundaryKind: GeneratedHmrBoundaryKind.LogicSafe");
     }
 
@@ -23578,7 +23864,7 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithVoidHelperInParameterLocalOnlyLifecycleBody_ReportsJAZORVGA005()
+    public void GenerateCatalog_WithVoidHelperInParameterLocalOnlyLifecycleBody_DoesNotReportJAZORVGA005()
     {
         var compilation = CreateCompilation(
             "RazorVue.VoidHelperInParameterNoOpLifecycle.Generated",
@@ -23629,11 +23915,10 @@ public sealed class ESGeneratorTests
             .ToArray();
 
         Assert.AreEqual(
-            1,
+            0,
             diagnostics.Length,
             string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         Assert.AreEqual(0, fallbackDiagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "OnInitialized");
     }
 
     [TestMethod]

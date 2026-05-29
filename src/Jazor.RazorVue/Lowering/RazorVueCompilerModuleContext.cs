@@ -6,6 +6,7 @@ using Jazor.Compiler;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -284,8 +285,116 @@ internal sealed class RazorVueCompilerModuleContext
     internal static bool IsRuntimeHelperTypeCandidate(INamedTypeSymbol type)
         => type.TypeKind == TypeKind.Class &&
            !type.IsRecord &&
-           type.TypeParameters.Length == 0 &&
+           (type.TypeParameters.Length == 0 || IsErasedGenericRuntimeHelperTypeCandidate(type)) &&
            !HasDirectECMAScriptSupportMarker(type);
+
+    private static bool IsErasedGenericRuntimeHelperTypeCandidate(INamedTypeSymbol type)
+    {
+        if (type.TypeParameters.Length == 0)
+            return true;
+
+        if (type.BaseType is { SpecialType: not SpecialType.System_Object } ||
+            type.AllInterfaces.Length > 0)
+        {
+            return false;
+        }
+
+        if (type.TypeParameters.Any(static parameter =>
+                parameter.HasConstructorConstraint ||
+                parameter.HasReferenceTypeConstraint ||
+                parameter.HasUnmanagedTypeConstraint ||
+                parameter.HasValueTypeConstraint ||
+                parameter.ConstraintTypes.Length > 0))
+        {
+            return false;
+        }
+
+        foreach (var member in type.GetMembers())
+        {
+            if (member.IsStatic && !member.IsImplicitlyDeclared)
+                return false;
+
+            switch (member)
+            {
+                case IFieldSymbol field when !field.IsImplicitlyDeclared &&
+                    IsRuntimeSensitiveGenericHelperTypeUsage(type, field.Type):
+                case IPropertySymbol property when
+                    (IsRuntimeSensitiveGenericHelperTypeUsage(type, property.Type) ||
+                     property.Parameters.Any(parameter => IsRuntimeSensitiveGenericHelperTypeUsage(type, parameter.Type))):
+                case IMethodSymbol method when method.MethodKind is MethodKind.Ordinary or MethodKind.Constructor &&
+                    (method.TypeParameters.Length > 0 ||
+                     IsRuntimeSensitiveGenericHelperTypeUsage(type, method.ReturnType) ||
+                     method.Parameters.Any(parameter => IsRuntimeSensitiveGenericHelperTypeUsage(type, parameter.Type))):
+                    return false;
+            }
+        }
+
+        foreach (var reference in type.DeclaringSyntaxReferences)
+        {
+            if (reference.GetSyntax() is TypeDeclarationSyntax declaration &&
+                ContainsRuntimeSensitiveGenericHelperTypeSyntax(type, declaration))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsRuntimeSensitiveGenericHelperTypeUsage(
+        INamedTypeSymbol genericHelperType,
+        ITypeSymbol? type)
+    {
+        if (type is null)
+            return false;
+
+        if (type is ITypeParameterSymbol typeParameter)
+            return !typeParameter.ContainingSymbol.Equals(genericHelperType, SymbolEqualityComparer.Default);
+
+        if (type is IArrayTypeSymbol arrayType)
+            return IsRuntimeSensitiveGenericHelperTypeUsage(genericHelperType, arrayType.ElementType);
+
+        if (type is INamedTypeSymbol namedType)
+            return namedType.TypeArguments.Any(argument => IsRuntimeSensitiveGenericHelperTypeUsage(genericHelperType, argument));
+
+        return false;
+    }
+
+    private static bool ContainsRuntimeSensitiveGenericHelperTypeSyntax(
+        INamedTypeSymbol genericHelperType,
+        TypeDeclarationSyntax declaration)
+    {
+        var typeParameterNames = new HashSet<string>(
+            genericHelperType.TypeParameters.Select(static parameter => parameter.Name),
+            StringComparer.Ordinal);
+        if (typeParameterNames.Count == 0)
+            return false;
+
+        foreach (var node in declaration.DescendantNodes())
+        {
+            switch (node)
+            {
+                case TypeOfExpressionSyntax typeOf when ContainsGenericTypeParameterName(typeOf.Type, typeParameterNames):
+                case SizeOfExpressionSyntax sizeOf when ContainsGenericTypeParameterName(sizeOf.Type, typeParameterNames):
+                case DefaultExpressionSyntax defaultExpression when ContainsGenericTypeParameterName(defaultExpression.Type, typeParameterNames):
+                case ObjectCreationExpressionSyntax objectCreation when ContainsGenericTypeParameterName(objectCreation.Type, typeParameterNames):
+                case IsPatternExpressionSyntax isPattern when ContainsGenericTypeParameterPattern(isPattern.Pattern, typeParameterNames):
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool ContainsGenericTypeParameterName(TypeSyntax type, HashSet<string> typeParameterNames)
+        => type.DescendantNodesAndSelf()
+            .OfType<IdentifierNameSyntax>()
+            .Any(identifier => typeParameterNames.Contains(identifier.Identifier.ValueText));
+
+    private static bool ContainsGenericTypeParameterPattern(PatternSyntax pattern, HashSet<string> typeParameterNames)
+        => pattern.DescendantNodesAndSelf()
+            .OfType<IdentifierNameSyntax>()
+            .Any(identifier => typeParameterNames.Contains(identifier.Identifier.ValueText));
 
     private void ThrowIfUnsupportedSameArtifactRuntimeHelperType(IOperation? operation, ITypeSymbol? typeSymbol, string usage)
     {
@@ -305,7 +414,7 @@ internal sealed class RazorVueCompilerModuleContext
         }
 
         var reason = namedType.TypeParameters.Length > 0
-            ? "generic helper classes are not supported"
+            ? "generic helper classes require erased value-only usage with no static generic state or runtime type-parameter semantics"
             : namedType.IsRecord
                 ? "record helper types lower structurally and do not produce runtime class declarations"
                 : HasDirectECMAScriptSupportMarker(namedType)

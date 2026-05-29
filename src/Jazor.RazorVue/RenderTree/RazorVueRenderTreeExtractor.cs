@@ -1144,13 +1144,13 @@ internal sealed class RazorVueRenderTreeExtractor
 
             if (IsMarkupStringAddContent(invocation))
             {
-                if (TryResolveStaticMarkup(value) is { } staticMarkup)
+                if (TryResolveStaticMarkupRender(value) is { } staticMarkup)
                 {
                     AddStaticMarkupContent(invocation, staticMarkup);
                     return;
                 }
 
-                TryThrowInvalidatedStaticMarkupCarrier(value);
+                TryThrowInvalidatedStaticMarkupCarrier(value, "MarkupString AddContent(...)");
                 throw CreateUnsupportedBuilderCall(
                     invocation,
                     $"BuildRenderTree call '{GetBuilderCallDisplayName(invocation)}' uses MarkupString content that is not compile-time provable static markup in component '{_snapshot.Descriptor.FullName}'. RazorVue only supports static MarkupString literals that can be canonicalized into a safe render subtree.");
@@ -1231,9 +1231,9 @@ internal sealed class RazorVueRenderTreeExtractor
             if (value is null || IsConstantNull(value))
                 return;
 
-            if (TryResolveStaticMarkup(value) is not { } staticMarkup)
+            if (TryResolveStaticMarkupRender(value) is not { } staticMarkup)
             {
-                TryThrowInvalidatedStaticMarkupCarrier(value);
+                TryThrowInvalidatedStaticMarkupCarrier(value, "AddMarkupContent(...)");
                 throw CreateUnsupportedBuilderCall(
                     invocation,
                     $"BuildRenderTree call '{GetBuilderCallDisplayName(invocation)}' uses AddMarkupContent(...) content that is not compile-time provable static markup in component '{_snapshot.Descriptor.FullName}'. RazorVue only supports static markup literals/carriers that can be canonicalized into a safe render subtree.");
@@ -1244,7 +1244,7 @@ internal sealed class RazorVueRenderTreeExtractor
 
         private void AddStaticMarkupContent(
             IInvocationOperation invocation,
-            RazorVueStaticMarkupValueHelper.StaticMarkupResolution resolution)
+            RazorVueStaticMarkupValueHelper.StaticMarkupRenderResolution resolution)
         {
             var fragment = CreateStaticMarkupFragment(invocation, resolution);
             foreach (var child in fragment.Children)
@@ -1253,9 +1253,39 @@ internal sealed class RazorVueRenderTreeExtractor
 
         private RazorVueRenderFragment CreateStaticMarkupFragment(
             IInvocationOperation invocation,
+            RazorVueStaticMarkupValueHelper.StaticMarkupRenderResolution resolution)
+        {
+            var origins = CreateOrigins(invocation, RazorVueOriginKind.Template);
+            return resolution switch
+            {
+                RazorVueStaticMarkupValueHelper.StaticMarkupLiteralRenderResolution literal =>
+                    CreateStaticMarkupFragment(invocation, literal.Resolution, origins),
+                RazorVueStaticMarkupValueHelper.StaticMarkupConditionalRenderResolution conditional =>
+                    new RazorVueRenderFragment(
+                    [
+                        new RazorVueConditionalNode(
+                            conditional.Condition,
+                            CreateStaticMarkupFragment(invocation, conditional.WhenTrue),
+                            CreateStaticMarkupFragment(invocation, conditional.WhenFalse),
+                            origins)
+                    ]),
+                _ => RazorVueRenderFragment.Empty
+            };
+        }
+
+        private RazorVueRenderFragment CreateStaticMarkupFragment(
+            IInvocationOperation invocation,
             RazorVueStaticMarkupValueHelper.StaticMarkupResolution resolution)
         {
             var origins = CreateOrigins(invocation, RazorVueOriginKind.Template);
+            return CreateStaticMarkupFragment(invocation, resolution, origins);
+        }
+
+        private RazorVueRenderFragment CreateStaticMarkupFragment(
+            IInvocationOperation invocation,
+            RazorVueStaticMarkupValueHelper.StaticMarkupResolution resolution,
+            ImmutableArray<RazorVueSourceOrigin> origins)
+        {
             var fragment = ParseStaticMarkupFragment(
                 resolution.Markup,
                 origins,
@@ -1317,8 +1347,22 @@ internal sealed class RazorVueRenderTreeExtractor
                 TryGetStaticMarkupFactoryReturnedValue,
                 IsSupportedStaticMarkupFactoryInvocation);
 
-        private void TryThrowInvalidatedStaticMarkupCarrier(IOperation? operation)
+        private RazorVueStaticMarkupValueHelper.StaticMarkupRenderResolution? TryResolveStaticMarkupRender(IOperation? operation)
+            => RazorVueStaticMarkupValueHelper.TryResolveStaticMarkupRender(
+                operation,
+                _compilation,
+                TryGetLocalMarkupStringInitializer,
+                TryGetPropertyMarkupStringInitializer,
+                TryGetFieldMarkupStringInitializer,
+                TryGetStaticMarkupFactoryReturnedValue,
+                IsSupportedStaticMarkupFactoryInvocation);
+
+        private void TryThrowInvalidatedStaticMarkupCarrier(IOperation? operation, string? api = null)
         {
+            var apiPrefix = string.IsNullOrWhiteSpace(api)
+                ? string.Empty
+                : api + " ";
+
             if (Unwrap(operation) is not ILocalReferenceOperation localReference ||
                 !RazorVueStaticMarkupValueHelper.IsStaticMarkupCarrierType(localReference.Local.Type))
             {
@@ -1330,7 +1374,7 @@ internal sealed class RazorVueRenderTreeExtractor
                     var memberKind = GetStaticMarkupMemberCarrierKind(member);
                     throw CreateStructuralIssue(
                         operation!,
-                        $"RazorVue {memberKind} member '{member.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Static markup carriers must remain source-stable.");
+                        $"RazorVue {apiPrefix}{memberKind} member '{member.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Static markup carriers must remain source-stable.");
                 }
 
                 return;
@@ -1346,7 +1390,7 @@ internal sealed class RazorVueRenderTreeExtractor
                     : "string";
                 throw CreateStructuralIssue(
                     localReference,
-                    $"RazorVue {carrierKind} local '{localReference.Local.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Declaration-initialized local carriers must remain source-stable.");
+                    $"RazorVue {apiPrefix}{carrierKind} local '{localReference.Local.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Declaration-initialized local carriers must remain source-stable.");
             }
 
             if (RazorVueStaticMarkupValueHelper.TryGetInvalidatedSourceStableStaticMarkupMember(
@@ -1357,7 +1401,7 @@ internal sealed class RazorVueRenderTreeExtractor
                 var memberKind = GetStaticMarkupMemberCarrierKind(memberCarrier);
                 throw CreateStructuralIssue(
                     operation!,
-                    $"RazorVue {memberKind} member '{memberCarrier.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Static markup carriers must remain source-stable.");
+                    $"RazorVue {apiPrefix}{memberKind} member '{memberCarrier.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Static markup carriers must remain source-stable.");
             }
         }
 
@@ -2019,7 +2063,7 @@ internal sealed class RazorVueRenderTreeExtractor
                 if (parameter.RefKind == RefKind.None)
                     continue;
 
-                if (parameter.RefKind == RefKind.In &&
+                if (parameter.RefKind is RefKind.In or RefKind.Ref &&
                     !SymbolEqualityComparer.Default.Equals(parameter, selectedBuilderParameter))
                 {
                     continue;
@@ -2029,7 +2073,7 @@ internal sealed class RazorVueRenderTreeExtractor
                 {
                     var modifier = GetRefKindModifier(parameter.RefKind);
                     failureMessage =
-                        $"BuildRenderTree helper method '{helperDisplayName}' cannot declare '{modifier}' parameter '{parameter.Name}' in component '{_snapshot.Descriptor.FullName}'. Only ordinary by-value parameters and read-only 'in' value parameters are supported.";
+                        $"BuildRenderTree helper method '{helperDisplayName}' cannot declare '{modifier}' parameter '{parameter.Name}' in component '{_snapshot.Descriptor.FullName}'. Only ordinary by-value parameters, read-only 'in' value parameters, and read-only 'ref' value parameters with no writeback are supported.";
                     return false;
                 }
             }
@@ -2121,12 +2165,12 @@ internal sealed class RazorVueRenderTreeExtractor
             failureMessage = string.Empty;
 
             var expectedRefKind = normalizedParameter.RefKind;
-            if (expectedRefKind is RefKind.None or RefKind.In)
+            if (expectedRefKind is RefKind.None or RefKind.In or RefKind.Ref)
                 return true;
 
             var modifier = GetRefKindModifier(expectedRefKind);
             failureMessage =
-                $"BuildRenderTree helper method '{GetBuilderCallDisplayName(invocation)}' cannot bind '{modifier}' argument for parameter '{normalizedParameter.Name}' in component '{_snapshot.Descriptor.FullName}'. Render helper parameters only support by-value binding and read-only 'in' value binding.";
+                $"BuildRenderTree helper method '{GetBuilderCallDisplayName(invocation)}' cannot bind '{modifier}' argument for parameter '{normalizedParameter.Name}' in component '{_snapshot.Descriptor.FullName}'. Render helper parameters only support by-value binding, read-only 'in' value binding, and read-only 'ref' value binding with no writeback.";
             return false;
         }
 
@@ -2136,6 +2180,41 @@ internal sealed class RazorVueRenderTreeExtractor
                 readOnlyByRefParameters: null,
                 "BuildRenderTree helper parameter",
                 "render helper parameters");
+
+        private void ThrowIfReadOnlyRefParameterWritesOrEscapes(
+            ImmutableArray<IOperation> operations,
+            ImmutableHashSet<IParameterSymbol> readOnlyRefParameters,
+            IInvocationOperation invocation)
+        {
+            if (readOnlyRefParameters.Count == 0)
+                return;
+
+            foreach (var operation in operations)
+            {
+                foreach (var current in EnumerateSelfAndDescendants(operation))
+                {
+                    var unwrapped = Unwrap(current);
+                    if (unwrapped is null)
+                        continue;
+
+                    if (TryGetWrittenReadOnlyRefParameter(unwrapped, readOnlyRefParameters, out var writtenParameter))
+                    {
+                        throw CreateStructuralIssue(
+                            current,
+                            $"BuildRenderTree helper method '{GetBuilderCallDisplayName(invocation)}' declares 'ref' parameter '{writtenParameter.Name}' in component '{_snapshot.Descriptor.FullName}', but RazorVue can only lower 'ref' render helper parameters as read-only captured values. The helper body must not assign, increment, or otherwise require caller writeback.");
+                    }
+
+                    if (unwrapped is IArgumentOperation argument &&
+                        argument.Parameter?.RefKind is RefKind.Ref or RefKind.Out or RefKind.In &&
+                        TryGetReadOnlyRefParameterReference(argument.Value, readOnlyRefParameters, out var escapedParameter))
+                    {
+                        throw CreateStructuralIssue(
+                            argument,
+                            $"BuildRenderTree helper method '{GetBuilderCallDisplayName(invocation)}' declares 'ref' parameter '{escapedParameter.Name}' in component '{_snapshot.Descriptor.FullName}', but RazorVue can only lower 'ref' render helper parameters as read-only captured values. The parameter cannot be forwarded through a by-reference invocation because writeback and by-reference escape semantics are not supported.");
+                    }
+                }
+            }
+        }
 
         private void ThrowIfReadOnlyByRefParameterEscapes(
             IOperation operation,
@@ -2232,6 +2311,52 @@ internal sealed class RazorVueRenderTreeExtractor
                     parameter = parameterReference.Parameter;
                     return true;
                 }
+            }
+
+            return false;
+        }
+
+        private static bool TryGetReadOnlyRefParameterReference(
+            IOperation? operation,
+            ImmutableHashSet<IParameterSymbol> readOnlyRefParameters,
+            out IParameterSymbol parameter)
+        {
+            parameter = default!;
+            if (operation is null)
+                return false;
+
+            foreach (var current in EnumerateSelfAndDescendants(operation))
+            {
+                if (Unwrap(current) is IParameterReferenceOperation parameterReference &&
+                    parameterReference.Parameter.RefKind == RefKind.Ref &&
+                    readOnlyRefParameters.Contains(parameterReference.Parameter))
+                {
+                    parameter = parameterReference.Parameter;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool TryGetWrittenReadOnlyRefParameter(
+            IOperation operation,
+            ImmutableHashSet<IParameterSymbol> readOnlyRefParameters,
+            out IParameterSymbol parameter)
+        {
+            parameter = default!;
+            switch (operation)
+            {
+                case IAssignmentOperation assignment:
+                    return TryGetReadOnlyRefParameterReference(
+                        assignment.Target,
+                        readOnlyRefParameters,
+                        out parameter);
+                case IIncrementOrDecrementOperation incrementOrDecrement:
+                    return TryGetReadOnlyRefParameterReference(
+                        incrementOrDecrement.Target,
+                        readOnlyRefParameters,
+                        out parameter);
             }
 
             return false;
@@ -2384,6 +2509,10 @@ internal sealed class RazorVueRenderTreeExtractor
             try
             {
                 var operations = GetRenderHelperOperations(invocation);
+                ThrowIfReadOnlyRefParameterWritesOrEscapes(
+                    operations,
+                    GetReadOnlyRefParameters(invocation.TargetMethod),
+                    invocation);
                 return action(operations);
             }
             finally
@@ -2424,6 +2553,14 @@ internal sealed class RazorVueRenderTreeExtractor
                 invocation,
                 $"BuildRenderTree helper method '{GetBuilderCallDisplayName(invocation)}' must be source-authored with an analyzable body in component '{_snapshot.Descriptor.FullName}'.");
         }
+
+        private static ImmutableHashSet<IParameterSymbol> GetReadOnlyRefParameters(IMethodSymbol method)
+            => RazorVueMethodSymbolNormalizer.GetCanonicalMethod(method)
+                .Parameters
+                .Where(static parameter =>
+                    parameter.RefKind == RefKind.Ref &&
+                    !IsRenderTreeBuilderType(parameter.Type))
+                .ToImmutableHashSet<IParameterSymbol>(SymbolEqualityComparer.Default);
 
         private void ExecuteWithBuilderScope(
             ImmutableHashSet<IParameterSymbol> builderParameters,
@@ -3956,42 +4093,14 @@ internal sealed class RazorVueRenderTreeExtractor
         }
 
         private IOperation? TryGetPropertyRenderFragmentInitializer(IPropertySymbol property)
-        {
-            foreach (var reference in property.DeclaringSyntaxReferences)
-            {
-                if (reference.GetSyntax() is not PropertyDeclarationSyntax declaration)
-                    continue;
-
-                var semanticModel = _compilation.GetSemanticModel(declaration.SyntaxTree);
-                if (RazorVuePropertyInitializerHelper.TryGetPropertyValueOperation(semanticModel, declaration, out var propertyOperation))
-                    return propertyOperation;
-            }
-
-            return null;
-        }
+            => RazorVueImperativeRenderFragmentCarrierHelper.TryGetPropertyRenderFragmentInitializer(
+                _compilation,
+                property);
 
         private IOperation? TryGetFieldRenderFragmentInitializer(IFieldSymbol field)
-        {
-            foreach (var reference in field.DeclaringSyntaxReferences)
-            {
-                if (reference.GetSyntax() is not VariableDeclaratorSyntax declarator ||
-                    declarator.Initializer?.Value is null)
-                {
-                    continue;
-                }
-
-                var semanticModel = _compilation.GetSemanticModel(declarator.SyntaxTree);
-                if (RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
-                        semanticModel,
-                        declarator.Initializer.Value,
-                        out var initializerOperation))
-                {
-                    return initializerOperation;
-                }
-            }
-
-            return null;
-        }
+            => RazorVueImperativeRenderFragmentCarrierHelper.TryGetFieldRenderFragmentInitializer(
+                _compilation,
+                field);
 
         private bool TryGetParsedSlotTemplateFromCarrierInitializer(IOperation initializer, out ParsedSlotTemplate slotTemplate)
         {

@@ -866,6 +866,136 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_ForTemplateCodeBlockWithCallableLocalInvocation_ProducesImperativeLocalBlockNode()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @{
+                Func<string?, string?> decorate = value => value + "!";
+                var decorated = decorate(Title);
+            }
+
+            <section>@decorated</section>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.TemplateCodeBlock.CallableLocalInvocation.Tree.Tests",
+            documentPath,
+            documentText,
+            """
+            using System;
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """,
+            importsText: "@using System");
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+
+        Assert.AreEqual(1, renderTree.Children.Length, RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot));
+        var imperative = Assert.IsInstanceOfType<RazorVueImperativeBlockNode>(renderTree.Children[0]);
+        Assert.AreEqual(RazorVueImperativeBlockKind.LocalBlock, imperative.Kind);
+        Assert.IsTrue(imperative.Operations.Any(static operation => operation is IVariableDeclarationGroupOperation));
+        Assert.IsTrue(imperative.Operations.Any(static operation =>
+            operation.DescendantsAndSelf().Any(static descendant =>
+                RazorVueOperationNormalizer.Unwrap(descendant) is IAnonymousFunctionOperation or IDelegateCreationOperation)));
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_LowersTemplateCodeBlockWithCallableLocalInvocation_UsingImperativeRenderBridge()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @{
+                Func<string?, string?> decorate = value => value + "!";
+                var decorated = decorate(Title);
+            }
+
+            <section>@decorated</section>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.TemplateCodeBlock.CallableLocalInvocation.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            using System;
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """,
+            importsText: "@using System");
+
+        var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ModuleCode, "let decorate = value =>");
+        StringAssert.Contains(artifact.ModuleCode, "return value + \"!\";");
+        StringAssert.Contains(artifact.ModuleCode, "let decorated = decorate(props.title);");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(decorated);");
+        Assert.IsFalse(artifact.ModuleCode.Contains("const decorate", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithRazorIrTemplateFrontend_LowersTemplateCodeBlockWithCallableLocalInvocation_ToRenderFunctionVueSfc()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @{
+                Func<string?, string?> decorate = value => value + "!";
+                var decorated = decorate(Title);
+            }
+
+            <section>@decorated</section>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.TemplateCodeBlock.CallableLocalInvocation.Sfc.Tests",
+            documentPath,
+            documentText,
+            """
+            using System;
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """,
+            importsText: "@using System");
+
+        var artifact = new RazorVueSfcArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        Assert.IsFalse(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "<script lang=\"ts\">");
+        StringAssert.Contains(artifact.SfcText, "let decorate = value =>");
+        StringAssert.Contains(artifact.SfcText, "return value + \"!\";");
+        StringAssert.Contains(artifact.SfcText, "let decorated = decorate(props.title);");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(decorated);");
+        Assert.IsFalse(artifact.SfcText.Contains("<template v-for=\"(decorate)", StringComparison.Ordinal), artifact.SfcText);
+    }
+
+    [TestMethod]
     public void CreateRenderTree_ForTemplateCodeBlockWithLocalFunctionCall_ProducesImperativeLocalBlockNode()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -6376,6 +6506,117 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_ForRenderFragmentPropertyGetterReturningSourceStableLocalCarrier_ProducesStructuredRenderNodes()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @Template(42)
+
+            @code {
+                private RenderFragment<int> Template
+                {
+                    get
+                    {
+                        RenderFragment<int> template = item => @<section><span>@item</span><p>ok</p></section>;
+                        return template;
+                    }
+                }
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.PropertyGetterSourceStableLocalRenderFragmentCarrier.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+
+        Assert.AreEqual(
+            1,
+            renderTree.Children.Length,
+            RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot) + Environment.NewLine + DescribeStructure(renderTree));
+        var itemScope = Assert.IsInstanceOfType<RazorVueTemplateScopeNode>(renderTree.Children[0]);
+        Assert.AreEqual("item", itemScope.ScopeName);
+        var section = Assert.IsInstanceOfType<RazorVueElementNode>(itemScope.Children.Children.Single());
+        Assert.AreEqual("section", section.TagName);
+        Assert.AreEqual(2, section.Children.Children.Length);
+        Assert.AreEqual("span", Assert.IsInstanceOfType<RazorVueElementNode>(section.Children.Children[0]).TagName);
+        Assert.AreEqual("p", Assert.IsInstanceOfType<RazorVueElementNode>(section.Children.Children[1]).TagName);
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForRenderFragmentPropertyGetterWithSideEffectBeforeReturn_FailsFast()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @Template(42)
+
+            @code {
+                private int _reads;
+
+                private RenderFragment<int> Template
+                {
+                    get
+                    {
+                        _reads++;
+                        return item => @<span>@item</span>;
+                    }
+                }
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.PropertyGetterSideEffectRenderFragmentCarrier.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot));
+
+        Assert.IsTrue(
+            exception.Issue.Code is RazorVueIssueCode.CanonicalizationFailed or RazorVueIssueCode.UnsupportedSetupLogicLowering,
+            exception.Issue.Message);
+        StringAssert.Contains(exception.Issue.Message, "Template");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForRenderFragmentPropertyGetterWithUnusedLocalCarrier_FailsFast()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @Template(42)
+
+            @code {
+                private RenderFragment<int> Template
+                {
+                    get
+                    {
+                        RenderFragment<int> ignored = item => @<em>@item</em>;
+                        RenderFragment<int> template = item => @<span>@item</span>;
+                        return template;
+                    }
+                }
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.PropertyGetterUnusedLocalRenderFragmentCarrier.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot));
+
+        Assert.IsTrue(
+            exception.Issue.Code is RazorVueIssueCode.CanonicalizationFailed or RazorVueIssueCode.UnsupportedSetupLogicLowering,
+            exception.Issue.Message);
+        StringAssert.Contains(exception.Issue.Message, "Template");
+    }
+
+    [TestMethod]
     public void CreateRenderTree_ForImmediatelyAssignedLocalRenderFragmentCarrierExpression_ProducesStructuredRenderNodes()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -7068,6 +7309,84 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_ForDirectTypedRenderFragmentFactoryMultiHopForwarding_PreservesCallSiteAndForwardingOrder()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @using Microsoft.AspNetCore.Components
+
+            @CreateOuter(oSecond: Subtitle, oFirst: Title)(42)
+
+            @code {
+                [Parameter]
+                public string? Title { get; set; }
+
+                [Parameter]
+                public string? Subtitle { get; set; }
+
+                private RenderFragment<int> CreateOuter(string? oFirst, string? oSecond)
+                    => CreateMiddle(mSecond: oSecond, mFirst: oFirst);
+
+                private RenderFragment<int> CreateMiddle(string? mFirst, string? mSecond)
+                    => CreateCore(label: mFirst, suffix: mSecond);
+
+                private RenderFragment<int> CreateCore(string? label, string? suffix)
+                    => item => @<span>@label @suffix @item</span>;
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.DirectFactory.MultiHopForward.Invocation.Typed.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+
+        Assert.AreEqual(
+            1,
+            renderTree.Children.Length,
+            RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot) + Environment.NewLine + DescribeStructure(renderTree));
+
+        var oSecondScope = Assert.IsInstanceOfType<RazorVueTemplateScopeNode>(renderTree.Children[0]);
+        Assert.AreEqual("oSecond", oSecondScope.ScopeName);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(oSecondScope.Initializer);
+
+        var oFirstScope = Assert.IsInstanceOfType<RazorVueTemplateScopeNode>(oSecondScope.Children.Children.Single());
+        Assert.AreEqual("oFirst", oFirstScope.ScopeName);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(oFirstScope.Initializer);
+
+        var mSecondScope = Assert.IsInstanceOfType<RazorVueTemplateScopeNode>(oFirstScope.Children.Children.Single());
+        Assert.AreEqual("mSecond", mSecondScope.ScopeName);
+        Assert.IsInstanceOfType<IParameterReferenceOperation>(mSecondScope.Initializer);
+
+        var mFirstScope = Assert.IsInstanceOfType<RazorVueTemplateScopeNode>(mSecondScope.Children.Children.Single());
+        Assert.AreEqual("mFirst", mFirstScope.ScopeName);
+        Assert.IsInstanceOfType<IParameterReferenceOperation>(mFirstScope.Initializer);
+
+        var labelScope = Assert.IsInstanceOfType<RazorVueTemplateScopeNode>(mFirstScope.Children.Children.Single());
+        Assert.AreEqual("label", labelScope.ScopeName);
+        Assert.IsInstanceOfType<IParameterReferenceOperation>(labelScope.Initializer);
+
+        var suffixScope = Assert.IsInstanceOfType<RazorVueTemplateScopeNode>(labelScope.Children.Children.Single());
+        Assert.AreEqual("suffix", suffixScope.ScopeName);
+        Assert.IsInstanceOfType<IParameterReferenceOperation>(suffixScope.Initializer);
+
+        var itemScope = Assert.IsInstanceOfType<RazorVueTemplateScopeNode>(suffixScope.Children.Children.Single());
+        Assert.AreEqual("item", itemScope.ScopeName);
+        var itemLiteral = Assert.IsInstanceOfType<ILiteralOperation>(itemScope.Initializer);
+        Assert.AreEqual(42, itemLiteral.ConstantValue.Value);
+    }
+
+    [TestMethod]
     public void CreateRenderTree_ForDirectTypedRenderFragmentLocalFunctionFactoryInvocation_ProducesCapturedAndInvocationScopes()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -7123,6 +7442,96 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
         Assert.IsInstanceOfType<RazorVueExpressionNode>(span.Children.Children[0]);
         Assert.AreEqual(" ", Assert.IsInstanceOfType<RazorVueTextNode>(span.Children.Children[1]).Text);
         Assert.IsInstanceOfType<RazorVueExpressionNode>(span.Children.Children[2]);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForDirectTypedRenderFragmentLocalFunctionFactoryForwarding_ProducesCapturedAndInvocationScopes()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @using Microsoft.AspNetCore.Components
+
+            @{
+                RenderFragment<int> CreateTemplate(string? title)
+                    => CreateTemplateCore(title);
+
+                RenderFragment<int> CreateTemplateCore(string? capturedTitle)
+                    => item => @<span>@capturedTitle @item</span>;
+            }
+
+            @CreateTemplate(Title)(42)
+
+            @code {
+                [Parameter]
+                public string? Title { get; set; }
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.DirectFactory.LocalFunctionForward.Invocation.Typed.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+
+        Assert.AreEqual(
+            1,
+            renderTree.Children.Length,
+            RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot) + Environment.NewLine + DescribeStructure(renderTree));
+
+        var titleScope = Assert.IsInstanceOfType<RazorVueTemplateScopeNode>(renderTree.Children[0]);
+        Assert.AreEqual("title", titleScope.ScopeName);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(titleScope.Initializer);
+
+        var capturedTitleScope = Assert.IsInstanceOfType<RazorVueTemplateScopeNode>(titleScope.Children.Children.Single());
+        Assert.AreEqual("capturedTitle", capturedTitleScope.ScopeName);
+        Assert.IsInstanceOfType<IParameterReferenceOperation>(capturedTitleScope.Initializer);
+
+        var itemScope = Assert.IsInstanceOfType<RazorVueTemplateScopeNode>(capturedTitleScope.Children.Children.Single());
+        Assert.AreEqual("item", itemScope.ScopeName);
+        var itemLiteral = Assert.IsInstanceOfType<ILiteralOperation>(itemScope.Initializer);
+        Assert.AreEqual(42, itemLiteral.ConstantValue.Value);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForRecursiveDirectTypedRenderFragmentLocalFunctionFactoryForwarding_ThrowsCanonicalizationFailed()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @using Microsoft.AspNetCore.Components
+
+            @{
+                RenderFragment<int> CreateTemplateA()
+                    => CreateTemplateB();
+
+                RenderFragment<int> CreateTemplateB()
+                    => CreateTemplateA();
+            }
+
+            @CreateTemplateA()(42)
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.DirectFactory.LocalFunctionForward.Recursive.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "recursive");
+        StringAssert.Contains(exception.Issue.Message, "CreateTemplateA");
     }
 
     [TestMethod]
@@ -7712,6 +8121,77 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
         Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "MarkupString");
         StringAssert.Contains(exception.Issue.Message, "compile-time provable static");
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithRazorIrTemplateFrontend_LowersConditionalStaticMarkupStringExpression_ToTemplateConditional()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @((MarkupString)(Featured
+                ? "<section class='featured'><span>featured</span></section>"
+                : "<section class='standard'><span>standard</span></section>"))
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ConditionalStaticMarkupStringExpression.Sfc.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Featured { get; set; }
+                }
+            }
+            """);
+
+        var artifact = new RazorVueSfcArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.Template, artifact.RenderMode);
+        StringAssert.Contains(artifact.TemplateText, "<template v-if=\"props.featured\">");
+        StringAssert.Contains(artifact.TemplateText, "<section class=\"featured\">");
+        StringAssert.Contains(artifact.TemplateText, "featured");
+        StringAssert.Contains(artifact.TemplateText, "<template v-else>");
+        StringAssert.Contains(artifact.TemplateText, "<section class=\"standard\">");
+        StringAssert.Contains(artifact.TemplateText, "standard");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForConditionalUnsafeMarkupStringBranch_ThrowsCanonicalizationFailed()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @((MarkupString)(Featured
+                ? "<section class='featured'>safe</section>"
+                : "<section onclick='alert(1)'>unsafe</section>"))
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ConditionalUnsafeMarkupStringBranch.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Featured { get; set; }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "raw markup execution");
+        StringAssert.Contains(exception.Issue.Message, "onclick");
     }
 
     [TestMethod]

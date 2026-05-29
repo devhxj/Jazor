@@ -897,6 +897,38 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 builder.Append(indent).AppendLine("}");
                 return;
 
+            case SupportedLifecyclePatternSwitchStatement patternSwitchStatement:
+                AppendLifecyclePreludeBindings(builder, patternSwitchStatement.ValuePreludeBindings, indent);
+                for (var index = 0; index < patternSwitchStatement.Sections.Length; index++)
+                {
+                    var section = patternSwitchStatement.Sections[index];
+                    if (index == 0)
+                    {
+                        if (section.IsDefault)
+                            builder.Append(indent).AppendLine("if (true) {");
+                        else
+                            builder.Append(indent).Append("if (").Append(section.ConditionExpression).AppendLine(") {");
+                    }
+                    else if (section.IsDefault)
+                    {
+                        builder.Append(indent).AppendLine("} else {");
+                    }
+                    else
+                    {
+                        builder.Append(indent).Append("} else if (").Append(section.ConditionExpression).AppendLine(") {");
+                    }
+
+                    AppendLifecycleStatements(builder, section.Statements, awaitResult, indent + "  ");
+                }
+
+                builder.Append(indent).AppendLine("}");
+                return;
+
+            case SupportedLifecycleCompilerStatement compilerStatement:
+                AppendLifecyclePreludeBindings(builder, compilerStatement.PreludeBindings, indent);
+                AppendLifecycleCompilerStatement(builder, compilerStatement.StatementText, indent);
+                return;
+
             case SupportedLifecycleTryFinallyStatement tryFinally:
                 AppendLifecyclePreludeBindings(builder, tryFinally.TryPreludeBindings, indent);
                 builder.Append(indent).AppendLine("try {");
@@ -944,6 +976,16 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             default:
                 throw new ArgumentOutOfRangeException(nameof(statement), statement.GetType().FullName, "Unsupported lifecycle statement.");
         }
+    }
+
+    private static void AppendLifecycleCompilerStatement(StringBuilder builder, string statementText, string indent)
+    {
+        var normalized = Util.NormalizeLineEndingsToLf(statementText).Trim();
+        if (string.IsNullOrEmpty(normalized))
+            return;
+
+        foreach (var line in normalized.Split('\n'))
+            builder.Append(indent).AppendLine(line);
     }
 
     private static void AppendEmitPrelude(
@@ -2506,7 +2548,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         helperParamsArrayLengthParameters = null;
         foreach (var parameter in helperMethod.Parameters)
         {
-            if (parameter.RefKind != RefKind.None)
+            if (!CanBindNoOpLifecycleHelperArgument(parameter))
             {
                 return false;
             }
@@ -2515,7 +2557,8 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         foreach (var argument in invocation.Arguments)
         {
             if (argument.Parameter is null ||
-                argument.Parameter.RefKind != RefKind.None)
+                !CanBindNoOpLifecycleHelperArgument(argument.Parameter) ||
+                IsForwardedReadOnlyByRefNoOpLifecycleArgument(argument))
             {
                 return false;
             }
@@ -2566,6 +2609,30 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         }
 
         return true;
+    }
+
+    private static bool CanBindNoOpLifecycleHelperArgument(IParameterSymbol parameter)
+        => parameter.RefKind is RefKind.None or RefKind.In;
+
+    private static bool IsForwardedReadOnlyByRefNoOpLifecycleArgument(IArgumentOperation argument)
+        => argument.Parameter?.RefKind == RefKind.In &&
+           ContainsReadOnlyByRefParameterReference(argument.Value);
+
+    private static bool ContainsReadOnlyByRefParameterReference(IOperation? operation)
+    {
+        if (operation is null)
+            return false;
+
+        foreach (var current in operation.DescendantsAndSelf())
+        {
+            if (RazorVueOperationNormalizer.Unwrap(current) is IParameterReferenceOperation parameterReference &&
+                parameterReference.Parameter.RefKind == RefKind.In)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static bool IsIgnorableNoOpLifecycleExplicitArrayArgument(
@@ -3939,6 +4006,28 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 continue;
             }
 
+            if (IsSetParametersAsyncLoopStatement(statement))
+            {
+                if (!TryGetSetParametersAsyncLoopStatement(
+                        snapshot,
+                        expressionEmitter,
+                        method,
+                        statement,
+                        state,
+                        out var lifecycleLoopStatement))
+                {
+                    return false;
+                }
+
+                if (lifecycleLoopStatement is not null)
+                {
+                    sawEmit = true;
+                    builder.Add(lifecycleLoopStatement);
+                }
+
+                continue;
+            }
+
             if (statement is TryStatementSyntax tryStatement)
             {
                 if (TryGetTerminalSetParametersAsyncNoOpTryCatchStatement(
@@ -4458,57 +4547,37 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         IMethodSymbol method,
         SwitchStatementSyntax switchStatement,
         SetParametersAsyncStatementSequenceState state,
-        out SupportedLifecycleSwitchStatement? lifecycleStatement)
+        out SupportedLifecycleStatement? lifecycleStatement)
     {
         lifecycleStatement = null;
+        if (switchStatement.Sections.Any(static section => section.Labels.Any(static label => label is CasePatternSwitchLabelSyntax)))
+        {
+            return TryGetSetParametersAsyncPatternSwitchStatement(
+                snapshot,
+                expressionEmitter,
+                method,
+                switchStatement,
+                state,
+                out lifecycleStatement);
+        }
+
         if (switchStatement.Sections.Count == 0 ||
             ContainsReturnStatement(switchStatement))
         {
             return false;
         }
 
-        var semanticModel = snapshot.Compilation.GetSemanticModel(switchStatement.Expression.SyntaxTree);
-        var valueOperation = semanticModel.GetOperation(switchStatement.Expression);
-        if (valueOperation is null ||
-            ContainsShouldRenderUnsupportedExpressionConstruct(valueOperation))
-        {
-            return false;
-        }
-
-        RazorVueExpressionEmitter.LifecyclePayloadEmission value;
-        try
-        {
-            value = expressionEmitter is null
-                ? RazorVueExpressionEmitter.EmitLifecyclePayload(snapshot, method, valueOperation, allowFirstRenderPayload: false)
-                : expressionEmitter.EmitLifecyclePayload(method, valueOperation, allowFirstRenderPayload: false);
-        }
-        catch (RazorVueCompilationIssueException)
-        {
-            return false;
-        }
-        catch (NotSupportedException)
-        {
-            return false;
-        }
-
-        if (value.UsesFirstRender ||
-            string.IsNullOrWhiteSpace(value.Expression))
-        {
-            return false;
-        }
-
-        var valuePreludeBuilder = ImmutableArray.CreateBuilder<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>();
-        if (!TryAppendPendingLifecycleLocalPreludes(
+        if (!TryGetSetParametersAsyncSwitchValueEmission(
                 snapshot,
                 expressionEmitter,
                 method,
+                switchStatement,
                 state,
-                valuePreludeBuilder))
+                out var value,
+                out var valuePreludeBindings))
         {
             return false;
         }
-
-        valuePreludeBuilder.AddRange(FilterLifecyclePreludeBindings(value.PreludeBindings, state));
 
         var sectionBuilder = ImmutableArray.CreateBuilder<SupportedLifecycleSwitchSection>();
         foreach (var section in switchStatement.Sections)
@@ -4533,9 +4602,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
         lifecycleStatement = new SupportedLifecycleSwitchStatement(
             value.Expression,
-            valuePreludeBuilder.Count == 0
-                ? ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>.Empty
-                : valuePreludeBuilder.ToImmutable(),
+            valuePreludeBindings,
             sectionBuilder.ToImmutable());
         return true;
     }
@@ -4605,6 +4672,288 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         lifecycleSection = new SupportedLifecycleSwitchSection(labelsBuilder.ToImmutable(), bodyStatements);
         return true;
     }
+
+    private static bool TryGetSetParametersAsyncPatternSwitchStatement(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter? expressionEmitter,
+        IMethodSymbol method,
+        SwitchStatementSyntax switchStatement,
+        SetParametersAsyncStatementSequenceState state,
+        out SupportedLifecycleStatement? lifecycleStatement)
+    {
+        lifecycleStatement = null;
+        if (switchStatement.Sections.Count == 0 ||
+            ContainsReturnStatement(switchStatement))
+        {
+            return false;
+        }
+
+        if (!TryGetSetParametersAsyncSwitchValueEmission(
+                snapshot,
+                expressionEmitter,
+                method,
+                switchStatement,
+                state,
+                out var value,
+                out var valuePreludeBindings))
+        {
+            return false;
+        }
+
+        var valueAlias = CreateLifecycleSwitchValueAlias(switchStatement);
+        var valuePreludeBuilder = valuePreludeBindings.ToBuilder();
+        valuePreludeBuilder.Add(RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding.Const(valueAlias, value.Expression));
+
+        var sectionBuilder = ImmutableArray.CreateBuilder<SupportedLifecyclePatternSwitchSection>();
+        var sawDefault = false;
+        for (var index = 0; index < switchStatement.Sections.Count; index++)
+        {
+            if (!TryGetSetParametersAsyncPatternSwitchSection(
+                    snapshot,
+                    expressionEmitter,
+                    method,
+                    switchStatement.Sections[index],
+                    state,
+                    valueAlias,
+                    isLastSection: index == switchStatement.Sections.Count - 1,
+                    out var lifecycleSection))
+            {
+                return false;
+            }
+
+            if (lifecycleSection is null)
+                continue;
+
+            if (sawDefault)
+                return false;
+            if (lifecycleSection.IsDefault)
+                sawDefault = true;
+
+            sectionBuilder.Add(lifecycleSection);
+        }
+
+        if (sectionBuilder.Count == 0)
+            return false;
+
+        lifecycleStatement = new SupportedLifecyclePatternSwitchStatement(
+            valuePreludeBuilder.ToImmutable(),
+            sectionBuilder.ToImmutable());
+        return true;
+    }
+
+    private static bool TryGetSetParametersAsyncSwitchValueEmission(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter? expressionEmitter,
+        IMethodSymbol method,
+        SwitchStatementSyntax switchStatement,
+        SetParametersAsyncStatementSequenceState state,
+        out RazorVueExpressionEmitter.LifecyclePayloadEmission value,
+        out ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding> valuePreludeBindings)
+    {
+        value = default;
+        valuePreludeBindings = ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>.Empty;
+        var semanticModel = snapshot.Compilation.GetSemanticModel(switchStatement.Expression.SyntaxTree);
+        var valueOperation = semanticModel.GetOperation(switchStatement.Expression);
+        if (valueOperation is null ||
+            ContainsShouldRenderUnsupportedExpressionConstruct(valueOperation))
+        {
+            return false;
+        }
+
+        try
+        {
+            value = expressionEmitter is null
+                ? RazorVueExpressionEmitter.EmitLifecyclePayload(snapshot, method, valueOperation, allowFirstRenderPayload: false)
+                : expressionEmitter.EmitLifecyclePayload(method, valueOperation, allowFirstRenderPayload: false);
+        }
+        catch (RazorVueCompilationIssueException)
+        {
+            return false;
+        }
+        catch (NotSupportedException)
+        {
+            return false;
+        }
+
+        if (value.UsesFirstRender ||
+            string.IsNullOrWhiteSpace(value.Expression))
+        {
+            return false;
+        }
+
+        var valuePreludeBuilder = ImmutableArray.CreateBuilder<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>();
+        if (!TryAppendPendingLifecycleLocalPreludes(
+                snapshot,
+                expressionEmitter,
+                method,
+                state,
+                valuePreludeBuilder))
+        {
+            return false;
+        }
+
+        valuePreludeBuilder.AddRange(FilterLifecyclePreludeBindings(value.PreludeBindings, state));
+        valuePreludeBindings = valuePreludeBuilder.Count == 0
+            ? ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>.Empty
+            : valuePreludeBuilder.ToImmutable();
+        return true;
+    }
+
+    private static bool TryGetSetParametersAsyncPatternSwitchSection(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter? expressionEmitter,
+        IMethodSymbol method,
+        SwitchSectionSyntax section,
+        SetParametersAsyncStatementSequenceState state,
+        string valueAlias,
+        bool isLastSection,
+        out SupportedLifecyclePatternSwitchSection? lifecycleSection)
+    {
+        lifecycleSection = null;
+        if (section.Labels.Count == 0 ||
+            section.Statements.Count == 0)
+        {
+            return false;
+        }
+
+        var isDefault = false;
+        var conditionsBuilder = ImmutableArray.CreateBuilder<string>();
+        foreach (var label in section.Labels)
+        {
+            switch (label)
+            {
+                case DefaultSwitchLabelSyntax:
+                    isDefault = true;
+                    break;
+
+                case CaseSwitchLabelSyntax caseLabel:
+                    if (!TryGetLifecycleSwitchLabelExpression(
+                            snapshot,
+                            expressionEmitter,
+                            method,
+                            state,
+                            caseLabel.Value,
+                            out var labelExpression))
+                    {
+                        return false;
+                    }
+
+                    conditionsBuilder.Add(valueAlias + " === " + labelExpression);
+                    break;
+
+                case CasePatternSwitchLabelSyntax patternLabel:
+                    if (!TryGetLifecyclePatternSwitchLabelCondition(
+                            snapshot,
+                            expressionEmitter,
+                            patternLabel,
+                            valueAlias,
+                            out var conditionExpression))
+                    {
+                        return false;
+                    }
+
+                    conditionsBuilder.Add(conditionExpression);
+                    break;
+
+                default:
+                    return false;
+            }
+        }
+
+        if (isDefault && conditionsBuilder.Count != 0)
+            return false;
+        if (isDefault && !isLastSection)
+            return false;
+        if (!isDefault && conditionsBuilder.Count == 0)
+            return false;
+
+        var statements = section.Statements;
+        if (statements[statements.Count - 1] is not BreakStatementSyntax)
+            return false;
+
+        if (!TryGetSetParametersAsyncStatementSequence(
+                snapshot,
+                expressionEmitter,
+                method,
+                statements,
+                0,
+                statements.Count - 1,
+                state.CloneForBranch(),
+                out var bodyStatements) ||
+            bodyStatements.IsDefaultOrEmpty)
+        {
+            return false;
+        }
+
+        lifecycleSection = new SupportedLifecyclePatternSwitchSection(
+            isDefault
+                ? string.Empty
+                : string.Join(" || ", conditionsBuilder.Select(static condition => "(" + condition + ")")),
+            isDefault,
+            bodyStatements);
+        return true;
+    }
+
+    private static bool TryGetLifecyclePatternSwitchLabelCondition(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter? expressionEmitter,
+        CasePatternSwitchLabelSyntax label,
+        string valueAlias,
+        out string conditionExpression)
+    {
+        conditionExpression = string.Empty;
+        var semanticModel = snapshot.Compilation.GetSemanticModel(label.SyntaxTree);
+        if (semanticModel.GetOperation(label) is not IPatternCaseClauseOperation patternClause)
+            return false;
+        if (!CanLowerSetParametersAsyncPatternSwitchCase(patternClause))
+            return false;
+
+        try
+        {
+            conditionExpression = (expressionEmitter ?? new RazorVueExpressionEmitter(snapshot))
+                .EmitSwitchPatternCaseCondition(patternClause, valueAlias);
+        }
+        catch (RazorVueCompilationIssueException)
+        {
+            return false;
+        }
+        catch (NotSupportedException)
+        {
+            return false;
+        }
+
+        return !string.IsNullOrWhiteSpace(conditionExpression);
+    }
+
+    private static bool CanLowerSetParametersAsyncPatternSwitchCase(IPatternCaseClauseOperation patternClause)
+    {
+        if (ContainsShouldRenderUnsupportedExpressionConstruct(patternClause.Pattern) ||
+            ContainsShouldRenderUnsupportedExpressionConstruct(patternClause.Guard))
+        {
+            return false;
+        }
+
+        foreach (var descendant in EnumerateShouldRenderExpressionScopedOperations(patternClause.Pattern))
+        {
+            switch (RazorVueOperationNormalizer.Unwrap(descendant))
+            {
+                case IDeclarationPatternOperation { DeclaredSymbol: not null }:
+                case IRecursivePatternOperation { DeclaredSymbol: not null }:
+                case IListPatternOperation { DeclaredSymbol: not null }:
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static string CreateLifecycleSwitchValueAlias(SwitchStatementSyntax switchStatement)
+        => "__jazorLifecycleSwitchValue" +
+           Jazor.Common.Format.HashName(
+               (switchStatement.SyntaxTree.FilePath ?? string.Empty) +
+               ":" +
+               switchStatement.SpanStart.ToString(System.Globalization.CultureInfo.InvariantCulture))
+               .TrimStart('_');
 
     private static bool TryGetSetParametersAsyncTryCatchStatement(
         RazorVueSemanticSnapshot snapshot,
@@ -4800,6 +5149,336 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             tryStatements,
             finallyStatements);
         return true;
+    }
+
+    private static bool IsSetParametersAsyncLoopStatement(StatementSyntax statement)
+        => statement is ForEachStatementSyntax or ForStatementSyntax or WhileStatementSyntax or DoStatementSyntax;
+
+    private static bool TryGetSetParametersAsyncLoopStatement(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter? expressionEmitter,
+        IMethodSymbol method,
+        StatementSyntax loopStatement,
+        SetParametersAsyncStatementSequenceState state,
+        out SupportedLifecycleStatement? lifecycleStatement)
+    {
+        lifecycleStatement = null;
+        if (ContainsReturnStatement(loopStatement))
+            return false;
+
+        var semanticModel = snapshot.Compilation.GetSemanticModel(loopStatement.SyntaxTree);
+        var operation = semanticModel.GetOperation(loopStatement);
+        if (operation is null ||
+            !CanLowerSetParametersAsyncLoopOperation(snapshot, operation, out var containsEmit) ||
+            !containsEmit)
+        {
+            return false;
+        }
+
+        var preludeBuilder = ImmutableArray.CreateBuilder<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>();
+        if (!TryAppendPendingLifecycleLocalPreludes(
+                snapshot,
+                expressionEmitter,
+                method,
+                state,
+                preludeBuilder))
+        {
+            return false;
+        }
+
+        try
+        {
+            var statementText = (expressionEmitter ?? new RazorVueExpressionEmitter(snapshot))
+                .EmitSetupLifecycleStatement(operation);
+            if (string.IsNullOrWhiteSpace(statementText))
+                return false;
+
+            lifecycleStatement = new SupportedLifecycleCompilerStatement(
+                statementText,
+                preludeBuilder.Count == 0
+                    ? ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding>.Empty
+                    : preludeBuilder.ToImmutable());
+            return true;
+        }
+        catch (RazorVueCompilationIssueException)
+        {
+            return false;
+        }
+        catch (Exception ex) when (ex is NotSupportedException or OperationTransformationException)
+        {
+            return false;
+        }
+    }
+
+    private static bool CanLowerSetParametersAsyncLoopOperation(
+        RazorVueSemanticSnapshot snapshot,
+        IOperation operation,
+        out bool containsEmit)
+    {
+        containsEmit = false;
+        switch (RazorVueOperationNormalizer.Unwrap(operation))
+        {
+            case IForEachLoopOperation forEachLoop:
+                return !forEachLoop.IsAsynchronous &&
+                       !ContainsShouldRenderUnsupportedExpressionConstruct(forEachLoop.Collection) &&
+                       CanLowerSetParametersAsyncLoopBody(snapshot, forEachLoop.Body, out containsEmit);
+
+            case IForLoopOperation forLoop:
+                return CanLowerSetParametersAsyncForLoopHeader(forLoop) &&
+                       CanLowerSetParametersAsyncLoopBody(snapshot, forLoop.Body, out containsEmit);
+
+            case IWhileLoopOperation whileLoop:
+                return whileLoop.Condition is not null &&
+                       !ContainsShouldRenderUnsupportedExpressionConstruct(whileLoop.Condition) &&
+                       CanLowerSetParametersAsyncLoopBody(snapshot, whileLoop.Body, out containsEmit);
+
+            default:
+                return false;
+        }
+    }
+
+    private static bool CanLowerSetParametersAsyncForLoopHeader(IForLoopOperation forLoop)
+    {
+        if (ContainsShouldRenderUnsupportedExpressionConstruct(forLoop.Condition))
+            return false;
+
+        foreach (var before in forLoop.Before)
+        {
+            if (!CanLowerSetParametersAsyncLoopLocalMutation(before) &&
+                !CanLowerSetParametersAsyncLoopVariableDeclaration(before))
+            {
+                return false;
+            }
+        }
+
+        foreach (var atLoopBottom in forLoop.AtLoopBottom)
+        {
+            if (!CanLowerSetParametersAsyncLoopLocalMutation(atLoopBottom))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool CanLowerSetParametersAsyncLoopBody(
+        RazorVueSemanticSnapshot snapshot,
+        IOperation operation,
+        out bool containsEmit)
+    {
+        containsEmit = false;
+        var current = RazorVueOperationNormalizer.Unwrap(operation);
+        switch (current)
+        {
+            case IBlockOperation block:
+                if (block.Operations.IsDefaultOrEmpty)
+                    return false;
+
+                foreach (var child in block.Operations)
+                {
+                    if (!CanLowerSetParametersAsyncLoopBodyStatement(snapshot, child, out var childContainsEmit))
+                        return false;
+
+                    containsEmit |= childContainsEmit;
+                }
+
+                return true;
+
+            default:
+                return CanLowerSetParametersAsyncLoopBodyStatement(snapshot, current, out containsEmit);
+        }
+    }
+
+    private static bool CanLowerSetParametersAsyncLoopBodyStatement(
+        RazorVueSemanticSnapshot snapshot,
+        IOperation? operation,
+        out bool containsEmit)
+    {
+        containsEmit = false;
+        var current = RazorVueOperationNormalizer.Unwrap(operation);
+        switch (current)
+        {
+            case null:
+                return false;
+
+            case IBlockOperation block:
+                if (block.Operations.IsDefaultOrEmpty)
+                    return false;
+
+                foreach (var child in block.Operations)
+                {
+                    if (!CanLowerSetParametersAsyncLoopBodyStatement(snapshot, child, out var childContainsEmit))
+                        return false;
+
+                    containsEmit |= childContainsEmit;
+                }
+
+                return true;
+
+            case IEmptyOperation:
+                return true;
+
+            case IExpressionStatementOperation expressionStatement:
+                return CanLowerSetParametersAsyncLoopExpressionStatement(
+                    snapshot,
+                    expressionStatement.Operation,
+                    out containsEmit);
+
+            case IConditionalOperation conditional when conditional.Syntax is IfStatementSyntax:
+                if (ContainsShouldRenderUnsupportedExpressionConstruct(conditional.Condition) ||
+                    !CanLowerSetParametersAsyncLoopBodyStatement(snapshot, conditional.WhenTrue, out var trueContainsEmit))
+                {
+                    return false;
+                }
+
+                containsEmit = trueContainsEmit;
+                if (conditional.WhenFalse is null)
+                    return true;
+
+                if (!CanLowerSetParametersAsyncLoopBodyStatement(snapshot, conditional.WhenFalse, out var falseContainsEmit))
+                    return false;
+
+                containsEmit |= falseContainsEmit;
+                return true;
+
+            case IBranchOperation { BranchKind: BranchKind.Break or BranchKind.Continue }:
+                return true;
+
+            case IForEachLoopOperation or IForLoopOperation or IWhileLoopOperation:
+                return CanLowerSetParametersAsyncLoopOperation(snapshot, current, out containsEmit);
+
+            default:
+                return false;
+        }
+    }
+
+    private static bool CanLowerSetParametersAsyncLoopExpressionStatement(
+        RazorVueSemanticSnapshot snapshot,
+        IOperation? operation,
+        out bool containsEmit)
+    {
+        containsEmit = false;
+        var current = RazorVueOperationNormalizer.Unwrap(operation);
+        if (current is IAwaitOperation awaitOperation)
+            current = RazorVueOperationNormalizer.Unwrap(awaitOperation.Operation);
+
+        switch (current)
+        {
+            case IInvocationOperation invocation:
+                containsEmit = true;
+                return IsSetParametersAsyncEmitInvocation(snapshot, invocation);
+
+            case IIncrementOrDecrementOperation incrementOrDecrement:
+                return CanLowerSetParametersAsyncLoopLocalMutation(incrementOrDecrement);
+
+            case ISimpleAssignmentOperation assignment:
+                return CanLowerSetParametersAsyncLoopLocalMutation(assignment);
+
+            case ICompoundAssignmentOperation assignment:
+                return CanLowerSetParametersAsyncLoopLocalMutation(assignment);
+
+            default:
+                return false;
+        }
+    }
+
+    private static bool IsSetParametersAsyncEmitInvocation(
+        RazorVueSemanticSnapshot snapshot,
+        IInvocationOperation invocation)
+    {
+        if (!string.Equals(invocation.TargetMethod.Name, "InvokeAsync", StringComparison.Ordinal))
+            return false;
+
+        var callbackInstance = RazorVueOperationNormalizer.Unwrap(invocation.Instance);
+        if (callbackInstance is not IPropertyReferenceOperation property ||
+            !RazorVueSymbolIdentity.IsCurrentComponentMember(
+                snapshot.ComponentSymbol,
+                property.Property,
+                property.Instance,
+                RazorVueOperationNormalizer.Unwrap) ||
+            !IsComponentParameterProperty(property.Property) ||
+            !IsEventCallbackLike(property.Property.Type))
+        {
+            return false;
+        }
+
+        if (invocation.Arguments.Length > 1)
+            return false;
+
+        foreach (var argument in invocation.Arguments)
+        {
+            if (argument.Parameter is not { RefKind: RefKind.None } ||
+                argument.ArgumentKind != ArgumentKind.Explicit ||
+                ContainsShouldRenderUnsupportedExpressionConstruct(argument.Value))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool CanLowerSetParametersAsyncLoopVariableDeclaration(IOperation? operation)
+    {
+        if (RazorVueOperationNormalizer.Unwrap(operation) is not IVariableDeclarationGroupOperation declarationGroup)
+            return false;
+
+        foreach (var declaration in declarationGroup.Declarations)
+        {
+            foreach (var declarator in declaration.Declarators)
+            {
+                if (declarator.Initializer?.Value is { } initializer &&
+                    ContainsShouldRenderUnsupportedExpressionConstruct(initializer))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private static bool CanLowerSetParametersAsyncLoopLocalMutation(IOperation? operation)
+    {
+        return RazorVueOperationNormalizer.Unwrap(operation) switch
+        {
+            IIncrementOrDecrementOperation incrementOrDecrement =>
+                IsSetParametersAsyncLoopLocalMutationTarget(incrementOrDecrement.Target),
+            ISimpleAssignmentOperation assignment =>
+                IsSetParametersAsyncLoopLocalMutationTarget(assignment.Target) &&
+                !ContainsShouldRenderUnsupportedExpressionConstruct(assignment.Value),
+            ICompoundAssignmentOperation assignment =>
+                IsSetParametersAsyncLoopLocalMutationTarget(assignment.Target) &&
+                !ContainsShouldRenderUnsupportedExpressionConstruct(assignment.Value),
+            _ => false
+        };
+    }
+
+    private static bool IsSetParametersAsyncLoopLocalMutationTarget(IOperation? operation)
+        => RazorVueOperationNormalizer.Unwrap(operation) is ILocalReferenceOperation;
+
+    private static bool IsComponentParameterProperty(IPropertySymbol property)
+        => property.GetAttributes().Any(static attribute =>
+            string.Equals(
+                attribute.AttributeClass?.ToDisplayString(),
+                "Microsoft.AspNetCore.Components.ParameterAttribute",
+                StringComparison.Ordinal));
+
+    private static bool IsEventCallbackLike(ITypeSymbol? type)
+    {
+        if (type is INamedTypeSymbol namedType)
+        {
+            var originalDefinition = namedType.OriginalDefinition.ToDisplayString();
+            return string.Equals(
+                       originalDefinition,
+                       "Microsoft.AspNetCore.Components.EventCallback",
+                       StringComparison.Ordinal) ||
+                   string.Equals(
+                       originalDefinition,
+                       "Microsoft.AspNetCore.Components.EventCallback<TValue>",
+                       StringComparison.Ordinal);
+        }
+
+        return false;
     }
 
     private static bool TryGetLifecycleSwitchLabelExpression(
@@ -5572,8 +6251,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                     assignedDelegateInitializers,
                     out var bodyAlwaysReturns,
                     out var containsConditional) ||
-                !bodyAlwaysReturns ||
-                !ContainsShouldRenderNormalReturn(blockOperation.Operations))
+                !bodyAlwaysReturns)
             {
                 return ShouldRenderAnalysis.Unsupported;
             }
@@ -6376,8 +7054,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 assignedDelegateInitializers,
                 out var alwaysReturns,
                 out _) ||
-            !alwaysReturns ||
-            !ContainsShouldRenderNormalReturn(operations))
+            !alwaysReturns)
         {
             return false;
         }
@@ -8161,6 +8838,22 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                             section.Labels.Select(static label => label.IsDefault ? "default" : label.Expression)) +
                         "|body:" +
                         DescribeLifecycleStatementSequenceShape(section.Statements))),
+            SupportedLifecyclePatternSwitchStatement patternSwitchStatement =>
+                "pattern-switch|prelude:" +
+                DescribeLifecyclePreludeBindingsShape(patternSwitchStatement.ValuePreludeBindings) +
+                "|" +
+                string.Join(
+                    ">",
+                    patternSwitchStatement.Sections.Select(static section =>
+                        "case:" +
+                        (section.IsDefault ? "default" : section.ConditionExpression) +
+                        "|body:" +
+                        DescribeLifecycleStatementSequenceShape(section.Statements))),
+            SupportedLifecycleCompilerStatement compilerStatement =>
+                "compiler|prelude:" +
+                DescribeLifecyclePreludeBindingsShape(compilerStatement.PreludeBindings) +
+                "|" +
+                compilerStatement.StatementText,
             SupportedLifecycleTryFinallyStatement tryFinally =>
                 "try|prelude:" +
                 DescribeLifecyclePreludeBindingsShape(tryFinally.TryPreludeBindings) +
@@ -8466,6 +9159,19 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         ImmutableArray<SupportedLifecycleStatement> Statements);
 
     internal readonly record struct SupportedLifecycleSwitchLabel(bool IsDefault, string Expression);
+
+    internal sealed record SupportedLifecyclePatternSwitchStatement(
+        ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding> ValuePreludeBindings,
+        ImmutableArray<SupportedLifecyclePatternSwitchSection> Sections) : SupportedLifecycleStatement;
+
+    internal sealed record SupportedLifecyclePatternSwitchSection(
+        string ConditionExpression,
+        bool IsDefault,
+        ImmutableArray<SupportedLifecycleStatement> Statements);
+
+    internal sealed record SupportedLifecycleCompilerStatement(
+        string StatementText,
+        ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding> PreludeBindings) : SupportedLifecycleStatement;
 
     internal sealed record SupportedLifecycleTryFinallyStatement(
         ImmutableArray<RazorVueExpressionEmitter.LifecyclePayloadPreludeBinding> TryPreludeBindings,

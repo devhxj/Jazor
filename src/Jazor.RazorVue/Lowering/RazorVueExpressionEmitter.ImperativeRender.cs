@@ -468,7 +468,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 if (invocation.Arguments.Length >= 2 &&
                     RazorVueStaticMarkupValueHelper.IsMarkupStringType(invocation.TargetMethod.Parameters.ElementAtOrDefault(1)?.Type))
                 {
-                    if (TryResolveImperativeStaticMarkupString(invocation.Arguments[1].Value) is not { } staticMarkup)
+                    if (TryResolveImperativeStaticMarkupStringRender(invocation.Arguments[1].Value) is not { } staticMarkup)
                     {
                         ThrowIfInvalidatedImperativeStaticMarkupMemberCarrier(invocation.Arguments[1].Value);
                         throw CreateUnsupportedImperativeRenderLoweringException(
@@ -485,7 +485,7 @@ internal sealed partial class RazorVueExpressionEmitter
                     : builderTarget + ".append(" + EmitImperativeContentValue(invocation, argument, 1) + ")";
                 return true;
             case "AddMarkupContent":
-                if (TryResolveImperativeStaticMarkupContent(invocation.Arguments[1].Value) is not { } markup)
+                if (TryResolveImperativeStaticMarkupContentRender(invocation.Arguments[1].Value) is not { } markup)
                 {
                     ThrowIfInvalidatedImperativeStaticMarkupMemberCarrier(invocation.Arguments[1].Value);
                     throw CreateUnsupportedImperativeRenderLoweringException(
@@ -580,6 +580,21 @@ internal sealed partial class RazorVueExpressionEmitter
             IsSupportedImperativeStaticMarkupFactoryInvocation);
     }
 
+    private RazorVueStaticMarkupValueHelper.StaticMarkupRenderResolution? TryResolveImperativeStaticMarkupStringRender(IOperation? operation)
+    {
+        if (TryResolveImperativeStaticMarkupString(operation) is { } literalResolution)
+            return new RazorVueStaticMarkupValueHelper.StaticMarkupLiteralRenderResolution(literalResolution);
+
+        return RazorVueStaticMarkupValueHelper.TryResolveStaticMarkupRender(
+            operation,
+            _snapshot.Compilation,
+            TryGetImperativeLocalMarkupStringInitializer,
+            TryGetImperativePropertyMarkupStringInitializer,
+            TryGetImperativeFieldMarkupStringInitializer,
+            TryGetImperativeStaticMarkupFactoryReturnedValue,
+            IsSupportedImperativeStaticMarkupFactoryInvocation);
+    }
+
     private string? TryGetImperativeStaticMarkupContent(IOperation? operation)
         => RazorVueStaticMarkupValueHelper.TryGetStaticMarkupValue(
             operation,
@@ -603,6 +618,21 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         return RazorVueStaticMarkupValueHelper.TryResolveStaticMarkup(
+            operation,
+            _snapshot.Compilation,
+            TryGetImperativeLocalStaticMarkupInitializer,
+            TryGetImperativePropertyStaticMarkupInitializer,
+            TryGetImperativeFieldStaticMarkupInitializer,
+            TryGetImperativeStaticMarkupFactoryReturnedValue,
+            IsSupportedImperativeStaticMarkupFactoryInvocation);
+    }
+
+    private RazorVueStaticMarkupValueHelper.StaticMarkupRenderResolution? TryResolveImperativeStaticMarkupContentRender(IOperation? operation)
+    {
+        if (TryResolveImperativeStaticMarkupContent(operation) is { } literalResolution)
+            return new RazorVueStaticMarkupValueHelper.StaticMarkupLiteralRenderResolution(literalResolution);
+
+        return RazorVueStaticMarkupValueHelper.TryResolveStaticMarkupRender(
             operation,
             _snapshot.Compilation,
             TryGetImperativeLocalStaticMarkupInitializer,
@@ -2083,6 +2113,21 @@ internal sealed partial class RazorVueExpressionEmitter
 
         return currentExpression;
     }
+
+    private string EmitStaticMarkupExpression(
+        RazorVueStaticMarkupValueHelper.StaticMarkupRenderResolution resolution,
+        SenseArgument compilerArgument,
+        IOperation? originOperation)
+        => resolution switch
+        {
+            RazorVueStaticMarkupValueHelper.StaticMarkupLiteralRenderResolution literal =>
+                EmitStaticMarkupExpression(literal.Resolution, compilerArgument, originOperation),
+            RazorVueStaticMarkupValueHelper.StaticMarkupConditionalRenderResolution conditional =>
+                "(" + EmitExpression(conditional.Condition, compilerArgument) + " ? " +
+                EmitStaticMarkupExpression(conditional.WhenTrue, compilerArgument, originOperation) + " : " +
+                EmitStaticMarkupExpression(conditional.WhenFalse, compilerArgument, originOperation) + ")",
+            _ => "null"
+        };
 
     private string EmitStaticMarkupCarrierValueExpression(
         RazorVueStaticMarkupValueHelper.StaticMarkupResolution resolution,

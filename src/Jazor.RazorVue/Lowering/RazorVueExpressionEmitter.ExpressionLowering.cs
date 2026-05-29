@@ -75,6 +75,27 @@ internal sealed partial class RazorVueExpressionEmitter
             }));
     }
 
+    internal string EmitSetupLifecycleStatement(IOperation operation, SenseArgument? compilerArgument = null)
+    {
+        if (operation is null)
+            throw new ArgumentNullException(nameof(operation));
+
+        ThrowIfReadOnlyByRefParameterEscapes(operation);
+
+        var argument = (compilerArgument ?? _compilerArgument).With(Sense.FunctionBody);
+        return WithSetupRewriteScope(() =>
+        {
+            var node = _semanticWalker.Visit(operation, argument);
+            if (node is not Statement statement)
+            {
+                throw new NotSupportedException(
+                    $"RazorVue lifecycle statement lowering expected a statement but received '{node?.Type.ToString() ?? "<null>"}'.");
+            }
+
+            return statement.ToKnRECMAScript();
+        });
+    }
+
     private static void RewriteShouldRenderPatternSwitchIifes(
         IReadOnlyList<IOperation> operations,
         IList<Statement> statements)

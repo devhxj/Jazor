@@ -4,6 +4,7 @@ using Jazor.RazorVue.Lowering;
 using Jazor.RazorVue.RenderTree;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Jazor.RazorVue.Test;
 
@@ -11,7 +12,7 @@ namespace Jazor.RazorVue.Test;
 public sealed class RazorVueRenderHelperOpenFrameBoundaryTests
 {
     [TestMethod]
-    public void CreateRenderTree_WithRefParameterRenderHelper_ThrowsCanonicalizationFailed()
+    public void CreateRenderTree_WithWritingRefParameterRenderHelper_ThrowsCanonicalizationFailed()
     {
         var exception = AssertCreateRenderTreeFails(
             RenderHelperSource(
@@ -22,13 +23,14 @@ public sealed class RazorVueRenderHelperOpenFrameBoundaryTests
                 """
                 private void RenderBody(RenderTreeBuilder builder, ref string? title)
                 {
+                    title = "updated";
                     builder.OpenElement(0, "section");
                     builder.AddContent(1, title);
                     builder.CloseElement();
                 }
                 """));
 
-        AssertRenderHelperBoundary(exception, "ref", "parameter");
+        AssertRenderHelperBoundary(exception, "ref", "writeback");
     }
 
     [TestMethod]
@@ -50,6 +52,198 @@ public sealed class RazorVueRenderHelperOpenFrameBoundaryTests
                 """));
 
         AssertRenderHelperBoundary(exception, "out", "parameter");
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithReadOnlyRefParameterRenderHelper_ProducesStructuredNodes()
+    {
+        var context = CreateContext(
+            RenderHelperSource(
+                """
+                var title = Title;
+                RenderBody(builder, ref title);
+                """,
+                """
+                private void RenderBody(RenderTreeBuilder builder, ref string? title)
+                {
+                    builder.OpenElement(0, "section");
+                    builder.AddContent(1, title);
+                    builder.CloseElement();
+                }
+                """));
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "RenderHelperHost");
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+
+        Assert.AreEqual(2, renderTree.Children.Length);
+        var local = renderTree.Children[0] as RazorVueLocalDeclarationNode;
+        Assert.IsNotNull(local);
+        Assert.AreEqual("title", local.LocalSymbol.Name);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(local.Initializer);
+
+        var templateScope = renderTree.Children[1] as RazorVueTemplateScopeNode;
+        Assert.IsNotNull(templateScope);
+        Assert.AreEqual("title", templateScope.ScopeName);
+        Assert.IsInstanceOfType<ILocalReferenceOperation>(templateScope.Initializer);
+
+        var section = templateScope.Children.Children.Single() as RazorVueElementNode;
+        Assert.IsNotNull(section);
+        Assert.AreEqual("section", section.TagName);
+        var expression = section.Children.Children.Single() as RazorVueExpressionNode;
+        Assert.IsNotNull(expression);
+        Assert.IsInstanceOfType<IParameterReferenceOperation>(expression.Expression);
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithReadOnlyRefParameterRenderHelper_LowersTemplateScope()
+    {
+        var context = CreateContext(
+            RenderHelperSource(
+                """
+                var title = Title;
+                RenderBody(builder, ref title);
+                """,
+                """
+                private void RenderBody(RenderTreeBuilder builder, ref string? title)
+                {
+                    builder.OpenElement(0, "section");
+                    builder.AddContent(1, title);
+                    builder.CloseElement();
+                }
+                """));
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "RenderHelperHost");
+        var artifact = new RazorVueSfcArtifactFactory(BuildRenderTreeTemplateFrontend.Instance).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(title) in [title]\">");
+        StringAssert.Contains(artifact.TemplateText, "<section>");
+        StringAssert.Contains(artifact.TemplateText, "{{ title }}");
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithWritingRefParameterRenderHelper_ThrowsCanonicalizationFailed()
+    {
+        var exception = AssertSfcFails(
+            RenderHelperSource(
+                """
+                var title = Title;
+                RenderBody(builder, ref title);
+                """,
+                """
+                private void RenderBody(RenderTreeBuilder builder, ref string? title)
+                {
+                    title = "updated";
+                    builder.OpenElement(0, "section");
+                    builder.AddContent(1, title);
+                    builder.CloseElement();
+                }
+                """));
+
+        AssertRenderHelperBoundary(exception, "ref", "writeback");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithReadOnlyRefParameterRenderHelper_LowersRenderFunction()
+    {
+        var artifact = new RazorVuePipeline(BuildRenderTreeTemplateFrontend.Instance)
+            .Execute(CreateContext(RenderHelperSource(
+                """
+                var title = Title;
+                RenderBody(builder, ref title);
+                """,
+                """
+                private void RenderBody(RenderTreeBuilder builder, ref string? title)
+                {
+                    builder.OpenElement(0, "section");
+                    builder.AddContent(1, title);
+                    builder.CloseElement();
+                }
+                """)))
+            .Artifacts
+            .Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "const title = props.title;");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorNodes.push(((title) => h(\"section\", null, title))(title));");
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithRefParameterRenderHelperForwardingByReference_ThrowsCanonicalizationFailed()
+    {
+        var exception = AssertCreateRenderTreeFails(
+            RenderHelperSource(
+                """
+                var title = Title;
+                RenderBody(builder, ref title);
+                """,
+                """
+                private void RenderBody(RenderTreeBuilder builder, ref string? title)
+                {
+                    ConsumeByRef(ref title);
+                    builder.AddContent(1, title);
+                }
+
+                private static void ConsumeByRef(ref string? value)
+                {
+                }
+                """));
+
+        AssertRenderHelperBoundary(exception, "ref", "by-reference invocation");
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithReadOnlyRefParameterRenderHelperAndUnusedNestedByRefLocalFunction_ProducesStructuredNodes()
+    {
+        var context = CreateContext(
+            RenderHelperSource(
+                """
+                var title = Title;
+                RenderBody(builder, ref title);
+                """,
+                """
+                private void RenderBody(RenderTreeBuilder builder, ref string? title)
+                {
+                    void Unused(ref string? value)
+                    {
+                        ConsumeByRef(ref value);
+                    }
+
+                    builder.OpenElement(0, "section");
+                    builder.AddContent(1, title);
+                    builder.CloseElement();
+                }
+
+                private static void ConsumeByRef(ref string? value)
+                {
+                }
+                """));
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "RenderHelperHost");
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+
+        Assert.AreEqual(2, renderTree.Children.Length);
+        Assert.IsInstanceOfType<RazorVueLocalDeclarationNode>(renderTree.Children[0]);
+        var templateScope = renderTree.Children[1] as RazorVueTemplateScopeNode;
+        Assert.IsNotNull(templateScope);
+        Assert.AreEqual("section", ((RazorVueElementNode)templateScope.Children.Children.Single()).TagName);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithRefParameterRenderHelperIncrement_ThrowsCanonicalizationFailed()
+    {
+        var exception = AssertCreateRenderTreeFails(
+            RenderHelperSource(
+                """
+                var count = 1;
+                RenderBody(builder, ref count);
+                """,
+                """
+                private void RenderBody(RenderTreeBuilder builder, ref int count)
+                {
+                    count++;
+                    builder.AddContent(1, count);
+                }
+                """));
+
+        AssertRenderHelperBoundary(exception, "ref", "writeback");
     }
 
     [TestMethod]
@@ -131,7 +325,7 @@ public sealed class RazorVueRenderHelperOpenFrameBoundaryTests
     }
 
     [TestMethod]
-    public void RazorVuePipeline_WithRefParameterRenderHelper_ThrowsCanonicalizationFailed()
+    public void RazorVuePipeline_WithWritingRefParameterRenderHelper_ThrowsCanonicalizationFailed()
     {
         var exception = AssertPipelineFails(
             RenderHelperSource(
@@ -142,13 +336,14 @@ public sealed class RazorVueRenderHelperOpenFrameBoundaryTests
                 """
                 private void RenderBody(RenderTreeBuilder builder, ref string? title)
                 {
+                    title = "updated";
                     builder.OpenElement(0, "section");
                     builder.AddContent(1, title);
                     builder.CloseElement();
                 }
                 """));
 
-        AssertRenderHelperBoundary(exception, "ref", "parameter");
+        AssertRenderHelperBoundary(exception, "ref", "writeback");
     }
 
     [TestMethod]
@@ -268,6 +463,30 @@ public sealed class RazorVueRenderHelperOpenFrameBoundaryTests
                 """
                 lock (this)
                 {
+                    var helper = new HelperBox<string>();
+                    builder.OpenElement(0, "section");
+                    builder.AddContent(1, HelperBox<string>.Label);
+                    builder.CloseElement();
+                }
+                """,
+                """
+                private sealed class HelperBox<T>
+                {
+                    public static string Label = "generic";
+                }
+                """));
+
+        AssertHelperClassBoundary(exception, "HelperBox", "generic helper classes require erased value-only usage");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithErasedGenericHelperClassInImperativeRender_LowersRuntimeHelperClass()
+    {
+        var artifact = new RazorVuePipeline(BuildRenderTreeTemplateFrontend.Instance)
+            .Execute(CreateContext(RenderHelperSource(
+                """
+                lock (this)
+                {
                     var helper = new HelperBox<string>(Title);
                     builder.OpenElement(0, "section");
                     builder.AddContent(1, helper.Value);
@@ -284,9 +503,107 @@ public sealed class RazorVueRenderHelperOpenFrameBoundaryTests
 
                     public T Value { get; }
                 }
+                """)))
+            .Artifacts
+            .Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "class HelperBox");
+        StringAssert.Contains(artifact.ModuleCode, "new HelperBox(props.title)");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(helper.value);");
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithErasedGenericHelperClassInImperativeRender_LowersRuntimeHelperClass()
+    {
+        var context = CreateContext(RenderHelperSource(
+            """
+            lock (this)
+            {
+                var helper = new HelperBox<string>(Title);
+                builder.OpenElement(0, "section");
+                builder.AddContent(1, helper.Value);
+                builder.CloseElement();
+            }
+            """,
+            """
+            private sealed class HelperBox<T>
+            {
+                public HelperBox(T value)
+                {
+                    Value = value;
+                }
+
+                public T Value { get; }
+            }
+            """));
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "RenderHelperHost");
+        var artifact = new RazorVueSfcArtifactFactory(BuildRenderTreeTemplateFrontend.Instance).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.SfcText, "class HelperBox");
+        StringAssert.Contains(artifact.SfcText, "new HelperBox(props.title)");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(helper.value);");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithGenericHelperClassTypeParameterTokenInImperativeRender_ThrowsUnsupportedSetupLogicLowering()
+    {
+        var exception = AssertPipelineThrows(
+            RenderHelperSource(
+                """
+                lock (this)
+                {
+                    var helper = new HelperBox<string>(Title);
+                    builder.OpenElement(0, "section");
+                    builder.AddContent(1, helper.TypeName);
+                    builder.CloseElement();
+                }
+                """,
+                """
+                private sealed class HelperBox<T>
+                {
+                    public HelperBox(T value)
+                    {
+                        Value = value;
+                    }
+
+                    public T Value { get; }
+
+                    public string TypeName => typeof(T).Name;
+                }
                 """));
 
-        AssertHelperClassBoundary(exception, "HelperBox", "generic helper classes are not supported");
+        AssertHelperClassBoundary(exception, "HelperBox", "generic helper classes require erased value-only usage");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithGenericHelperClassStaticMemberInImperativeRender_ThrowsUnsupportedSetupLogicLowering()
+    {
+        var exception = AssertPipelineThrows(
+            RenderHelperSource(
+                """
+                lock (this)
+                {
+                    var helper = new HelperBox<string>(Title);
+                    builder.OpenElement(0, "section");
+                    builder.AddContent(1, HelperBox<string>.Label);
+                    builder.CloseElement();
+                }
+                """,
+                """
+                private sealed class HelperBox<T>
+                {
+                    public HelperBox(T value)
+                    {
+                        Value = value;
+                    }
+
+                    public T Value { get; }
+
+                    public static string Label = "generic";
+                }
+                """));
+
+        AssertHelperClassBoundary(exception, "HelperBox", "generic helper classes require erased value-only usage");
     }
 
     [TestMethod]
@@ -403,6 +720,86 @@ public sealed class RazorVueRenderHelperOpenFrameBoundaryTests
                 """));
 
         AssertHelperClassBoundary(exception, "HelperComponent");
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithComponentHelperClassInImperativeRender_ThrowsUnsupportedSetupLogicLowering()
+    {
+        var exception = AssertSfcThrows(
+            RenderHelperSource(
+                """
+                lock (this)
+                {
+                    var helper = new HelperComponent();
+                    builder.OpenElement(0, "section");
+                    builder.AddContent(1, helper.GetType().Name);
+                    builder.CloseElement();
+                }
+                """,
+                """
+                [ECMAScript.ECMAScriptModule("./components/helper-component")]
+                private sealed class HelperComponent : ComponentBase, IVueComponent
+                {
+                }
+                """));
+
+        AssertHelperClassBoundary(exception, "HelperComponent", "component types are not same-artifact runtime helper classes");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithComponentHelperInstancePropertyInImperativeRender_ThrowsUnsupportedSetupLogicLowering()
+    {
+        var exception = AssertPipelineThrows(
+            RenderHelperSource(
+                """
+                lock (this)
+                {
+                    var helper = new HelperComponent { Title = Title };
+                    builder.OpenElement(0, "section");
+                    builder.AddContent(1, helper.Title);
+                    builder.CloseElement();
+                }
+                """,
+                """
+                [ECMAScript.ECMAScriptModule("./components/helper-component")]
+                private sealed class HelperComponent : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+                """));
+
+        AssertHelperClassBoundary(exception, "HelperComponent", "component types are not same-artifact runtime helper classes");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithOpenComponentHelperComponentInImperativeRender_LowersComponentReference()
+    {
+        var artifact = new RazorVuePipeline(BuildRenderTreeTemplateFrontend.Instance)
+            .Execute(CreateContext(RenderHelperSource(
+                """
+                lock (this)
+                {
+                    builder.OpenComponent<HelperComponent>(0);
+                    builder.AddComponentParameter(1, "Title", Title);
+                    builder.CloseComponent();
+                }
+                """,
+                """
+                [ECMAScript.ECMAScriptModule("./components/helper-component")]
+                private sealed class HelperComponent : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+                """)))
+            .Artifacts
+            .Single(static artifact => artifact.ComponentName == "RenderHelperHost");
+
+        StringAssert.Contains(artifact.ModuleCode, "HelperComponentComponent");
+        StringAssert.Contains(artifact.ModuleCode, "import HelperComponentComponent from \"./components/helper-component.mjs\";");
+        StringAssert.Contains(artifact.ModuleCode, "enterComponent(HelperComponentComponent");
+        StringAssert.Contains(artifact.ModuleCode, "setComponentParameter(\"Title\", props.title)");
     }
 
     private static RazorVueCompilationIssueException AssertCreateRenderTreeFails(string source)

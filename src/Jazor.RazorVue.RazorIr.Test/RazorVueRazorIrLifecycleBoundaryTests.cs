@@ -60,28 +60,30 @@ public sealed class RazorVueRazorIrLifecycleBoundaryTests
     }
 
     [TestMethod]
-    public void RazorVuePipeline_WithLifecycleHelperInParameter_ThrowsUnsupportedLifecycleLowering()
+    public void RazorVuePipeline_WithLifecycleHelperInParameter_LowersWithoutRuntimeHook()
     {
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
-            LowerPipeline(
-                """
-                <section>@Ready</section>
+        var artifact = LowerPipeline(
+            """
+            <section>@Ready</section>
 
-                @code {
-                    protected override void OnInitialized()
-                    {
-                        var ready = Ready;
-                        Touch(in ready);
-                    }
-
-                    private void Touch(in bool ready)
-                    {
-                        _ = ready;
-                    }
+            @code {
+                protected override void OnInitialized()
+                {
+                    var ready = Ready;
+                    Touch(in ready);
                 }
-                """));
 
-        AssertUnsupportedLifecycle(exception, "OnInitialized");
+                private void Touch(in bool ready)
+                {
+                    var label = ready;
+                }
+            }
+            """);
+
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ModuleCode.Contains("onMounted", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("function touch", StringComparison.Ordinal), artifact.ModuleCode);
+        StringAssert.Contains(artifact.ModuleCode, "props.ready");
     }
 
     [TestMethod]

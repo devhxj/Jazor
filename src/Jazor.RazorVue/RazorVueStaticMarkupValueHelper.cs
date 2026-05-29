@@ -35,6 +35,16 @@ internal static class RazorVueStaticMarkupValueHelper
         }
     }
 
+    internal abstract record StaticMarkupRenderResolution;
+
+    internal sealed record StaticMarkupLiteralRenderResolution(
+        StaticMarkupResolution Resolution) : StaticMarkupRenderResolution;
+
+    internal sealed record StaticMarkupConditionalRenderResolution(
+        IOperation Condition,
+        StaticMarkupRenderResolution WhenTrue,
+        StaticMarkupRenderResolution WhenFalse) : StaticMarkupRenderResolution;
+
     public static bool IsStaticMarkupCarrierType(ITypeSymbol? typeSymbol)
         => IsStringType(typeSymbol) || IsMarkupStringType(typeSymbol);
 
@@ -150,6 +160,28 @@ internal static class RazorVueStaticMarkupValueHelper
         Func<IInvocationOperation, bool>? isSupportedMethodInvocation)
     {
         return TryResolveStaticMarkup(
+            operation,
+            compilation,
+            localInitializerResolver,
+            propertyInitializerResolver,
+            fieldInitializerResolver,
+            methodReturnedValueResolver,
+            isSupportedMethodInvocation,
+            visitedLocals: new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default),
+            visitedMembers: new HashSet<ISymbol>(SymbolEqualityComparer.Default),
+            visitedMethods: new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default));
+    }
+
+    public static StaticMarkupRenderResolution? TryResolveStaticMarkupRender(
+        IOperation? operation,
+        Compilation compilation,
+        Func<ILocalSymbol, IOperation?>? localInitializerResolver,
+        Func<IPropertySymbol, IOperation?>? propertyInitializerResolver,
+        Func<IFieldSymbol, IOperation?>? fieldInitializerResolver,
+        Func<IInvocationOperation, IOperation?>? methodReturnedValueResolver,
+        Func<IInvocationOperation, bool>? isSupportedMethodInvocation)
+    {
+        return TryResolveStaticMarkupRender(
             operation,
             compilation,
             localInitializerResolver,
@@ -393,6 +425,131 @@ internal static class RazorVueStaticMarkupValueHelper
         }
     }
 
+    private static StaticMarkupRenderResolution? TryResolveStaticMarkupRender(
+        IOperation? operation,
+        Compilation compilation,
+        Func<ILocalSymbol, IOperation?>? localInitializerResolver,
+        Func<IPropertySymbol, IOperation?>? propertyInitializerResolver,
+        Func<IFieldSymbol, IOperation?>? fieldInitializerResolver,
+        Func<IInvocationOperation, IOperation?>? methodReturnedValueResolver,
+        Func<IInvocationOperation, bool>? isSupportedMethodInvocation,
+        HashSet<ILocalSymbol> visitedLocals,
+        HashSet<ISymbol> visitedMembers,
+        HashSet<IMethodSymbol> visitedMethods)
+    {
+        var current = RazorVueOperationNormalizer.Unwrap(operation);
+        if (current is null)
+            return null;
+
+        if (TryResolveStaticMarkup(
+                current,
+                compilation,
+                localInitializerResolver,
+                propertyInitializerResolver,
+                fieldInitializerResolver,
+                methodReturnedValueResolver,
+                isSupportedMethodInvocation,
+                visitedLocals,
+                visitedMembers,
+                visitedMethods) is { } literalResolution)
+        {
+            return new StaticMarkupLiteralRenderResolution(literalResolution);
+        }
+
+        switch (current)
+        {
+            case IConditionalOperation conditional:
+                var whenTrue = TryResolveStaticMarkupRenderBranch(
+                    conditional.WhenTrue,
+                    compilation,
+                    localInitializerResolver,
+                    propertyInitializerResolver,
+                    fieldInitializerResolver,
+                    methodReturnedValueResolver,
+                    isSupportedMethodInvocation,
+                    visitedLocals,
+                    visitedMembers,
+                    visitedMethods);
+                if (whenTrue is null)
+                    return null;
+
+                var whenFalse = TryResolveStaticMarkupRenderBranch(
+                    conditional.WhenFalse,
+                    compilation,
+                    localInitializerResolver,
+                    propertyInitializerResolver,
+                    fieldInitializerResolver,
+                    methodReturnedValueResolver,
+                    isSupportedMethodInvocation,
+                    visitedLocals,
+                    visitedMembers,
+                    visitedMethods);
+                if (whenFalse is null)
+                    return null;
+
+                var condition = RazorVueOperationNormalizer.Unwrap(conditional.Condition) ?? conditional.Condition;
+                return new StaticMarkupConditionalRenderResolution(condition, whenTrue, whenFalse);
+
+            case IConversionOperation conversion
+                when !conversion.IsImplicit &&
+                     IsMarkupStringType(conversion.Type):
+                return TryResolveStaticMarkupRender(
+                    conversion.Operand,
+                    compilation,
+                    localInitializerResolver,
+                    propertyInitializerResolver,
+                    fieldInitializerResolver,
+                    methodReturnedValueResolver,
+                    isSupportedMethodInvocation,
+                    visitedLocals,
+                    visitedMembers,
+                    visitedMethods);
+
+            case IObjectCreationOperation objectCreation
+                when IsMarkupStringType(objectCreation.Type) &&
+                     objectCreation.Arguments.Length == 1:
+                return TryResolveStaticMarkupRender(
+                    objectCreation.Arguments[0].Value,
+                    compilation,
+                    localInitializerResolver,
+                    propertyInitializerResolver,
+                    fieldInitializerResolver,
+                    methodReturnedValueResolver,
+                    isSupportedMethodInvocation,
+                    visitedLocals,
+                    visitedMembers,
+                    visitedMethods);
+
+            default:
+                return null;
+        }
+    }
+
+    private static StaticMarkupRenderResolution? TryResolveStaticMarkupRenderBranch(
+        IOperation? operation,
+        Compilation compilation,
+        Func<ILocalSymbol, IOperation?>? localInitializerResolver,
+        Func<IPropertySymbol, IOperation?>? propertyInitializerResolver,
+        Func<IFieldSymbol, IOperation?>? fieldInitializerResolver,
+        Func<IInvocationOperation, IOperation?>? methodReturnedValueResolver,
+        Func<IInvocationOperation, bool>? isSupportedMethodInvocation,
+        HashSet<ILocalSymbol> visitedLocals,
+        HashSet<ISymbol> visitedMembers,
+        HashSet<IMethodSymbol> visitedMethods)
+    {
+        return TryResolveStaticMarkupRender(
+            operation,
+            compilation,
+            localInitializerResolver,
+            propertyInitializerResolver,
+            fieldInitializerResolver,
+            methodReturnedValueResolver,
+            isSupportedMethodInvocation,
+            new HashSet<ILocalSymbol>(visitedLocals, SymbolEqualityComparer.Default),
+            new HashSet<ISymbol>(visitedMembers, SymbolEqualityComparer.Default),
+            new HashSet<IMethodSymbol>(visitedMethods, SymbolEqualityComparer.Default));
+    }
+
     private static bool TryGetInvalidatedSourceStableStaticMarkupMemberCore(
         IOperation? operation,
         Compilation compilation,
@@ -465,6 +622,18 @@ internal static class RazorVueStaticMarkupValueHelper
                     compilation,
                     out member,
                     visitedMembers);
+
+            case IConditionalOperation conditional:
+                return TryGetInvalidatedSourceStableStaticMarkupMemberCore(
+                           conditional.WhenTrue,
+                           compilation,
+                           out member,
+                           visitedMembers) ||
+                       TryGetInvalidatedSourceStableStaticMarkupMemberCore(
+                           conditional.WhenFalse,
+                           compilation,
+                           out member,
+                           visitedMembers);
 
             default:
                 return false;

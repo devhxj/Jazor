@@ -1041,9 +1041,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             nodes = ImmutableArray<RazorVueRenderNode>.Empty;
             var sourceSpan = GetRequiredSourceSpan(node, "CSharpExpressionIntermediateNode");
             var operation = _resolver.ResolveRequiredOperation(sourceSpan, "Razor IR body expression");
-            if (TryResolveStaticMarkup(operation) is { } staticMarkup)
+            if (TryResolveStaticMarkupRender(operation) is { } staticMarkup)
             {
-                nodes = MaterializeStaticMarkupFragment(staticMarkup, CreateOrigins(sourceSpan));
+                nodes = MaterializeStaticMarkupRender(staticMarkup, CreateOrigins(sourceSpan));
                 return true;
             }
 
@@ -2934,8 +2934,17 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             var declarationBuilder = ImmutableArray.CreateBuilder<RazorVueLocalDeclarationNode>(declarators.Count);
             var currentLocalScope = allowedLocalSymbols;
             var continuationIndex = startIndex + 1;
+            var imperativeDeclaredLocals = pendingControlNode is { Kind: PendingTemplateControlKind.Imperative, ImperativeOperations.IsDefaultOrEmpty: false } pendingImperative
+                ? CollectDeclaredLocals(pendingImperative.ImperativeOperations)
+                : null;
             foreach (var declarator in declarators)
             {
+                if (imperativeDeclaredLocals is not null &&
+                    ContainsTemplateLocalSymbol(imperativeDeclaredLocals, declarator.Symbol))
+                {
+                    continue;
+                }
+
                 if (IsRenderTreeBuilderType(declarator.Symbol.Type))
                 {
                     throw CreateUnsupportedAttributeException(
@@ -3414,6 +3423,20 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
                                 CollectDeclarators(childGroup.Declarations, builder);
                                 RegisterPendingTemplateDeclarators(childGroup.Declarations, pendingDeclarators);
+                                if (pendingControlNode is null &&
+                                    ContainsCallableLocalDeclarator(childGroup.Declarations) &&
+                                    TryCreatePendingTemplateImperativeNode(
+                                        codeNode,
+                                        blockOperation.Operations,
+                                        child,
+                                        out pendingControlNode,
+                                        RazorVueImperativeBlockKind.LocalBlock))
+                                {
+                                    return builder.Count > 0 ||
+                                           pendingControlNode is not null ||
+                                           _lastTemplateDeclarationScanEncounteredSupplementalDeclarations;
+                                }
+
                                 continue;
                             case IVariableDeclarationOperation childDeclaration:
                                 if (encounteredNonDeclaration)
@@ -3425,6 +3448,20 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
                                 CollectDeclarators([childDeclaration], builder);
                                 RegisterPendingTemplateDeclarators([childDeclaration], pendingDeclarators);
+                                if (pendingControlNode is null &&
+                                    ContainsCallableLocalDeclarator([childDeclaration]) &&
+                                    TryCreatePendingTemplateImperativeNode(
+                                        codeNode,
+                                        blockOperation.Operations,
+                                        child,
+                                        out pendingControlNode,
+                                        RazorVueImperativeBlockKind.LocalBlock))
+                                {
+                                    return builder.Count > 0 ||
+                                           pendingControlNode is not null ||
+                                           _lastTemplateDeclarationScanEncounteredSupplementalDeclarations;
+                                }
+
                                 continue;
                             case ILocalFunctionOperation localFunctionOperation:
                                 if (encounteredNonDeclaration)
@@ -3585,6 +3622,35 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
         private bool IsTemplateSupplementalLocalFunction(ILocalFunctionOperation operation)
             => IsRenderFragment(operation.Symbol.ReturnType);
+
+        private bool ContainsCallableLocalDeclarator(
+            IEnumerable<IVariableDeclarationOperation> declarations)
+        {
+            foreach (var declaration in declarations)
+            {
+                foreach (var declarator in declaration.Declarators)
+                {
+                    if (IsRenderFragment(declarator.Symbol.Type))
+                        continue;
+
+                    if (declarator.Symbol.Type.TypeKind == TypeKind.Delegate)
+                    {
+                        return true;
+                    }
+
+                    if (declarator.Initializer?.Value is not { } initializer)
+                        continue;
+
+                    foreach (var operation in EnumerateOperationAndDescendants(initializer))
+                    {
+                        if (RazorVueOperationNormalizer.Unwrap(operation) is IAnonymousFunctionOperation or IDelegateCreationOperation)
+                            return true;
+                    }
+                }
+            }
+
+            return false;
+        }
 
         private void RegisterPendingTemplateDeclarators(
             IEnumerable<IVariableDeclarationOperation> declarations,
@@ -5011,19 +5077,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         }
 
         private IOperation? TryGetPropertyRenderFragmentInitializer(IPropertySymbol property)
-        {
-            foreach (var reference in property.DeclaringSyntaxReferences)
-            {
-                if (reference.GetSyntax() is not PropertyDeclarationSyntax declaration)
-                    continue;
-
-                var semanticModel = _context.Compilation.GetSemanticModel(declaration.SyntaxTree);
-                if (RazorVuePropertyInitializerHelper.TryGetPropertyValueOperation(semanticModel, declaration, out var propertyOperation))
-                    return propertyOperation;
-            }
-
-            return null;
-        }
+            => RazorVueImperativeRenderFragmentCarrierHelper.TryGetPropertyRenderFragmentInitializer(
+                _context.Compilation,
+                property);
 
         private IOperation? TryGetSourceStableRenderFragmentInitializer(ILocalSymbol local)
             => RazorVueImperativeRenderFragmentCarrierHelper.TryGetSourceStableLocalRenderFragmentInitializer(
@@ -5034,27 +5090,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 : null;
 
         private IOperation? TryGetFieldRenderFragmentInitializer(IFieldSymbol field)
-        {
-            foreach (var reference in field.DeclaringSyntaxReferences)
-            {
-                if (reference.GetSyntax() is not VariableDeclaratorSyntax declarator ||
-                    declarator.Initializer?.Value is null)
-                {
-                    continue;
-                }
-
-                var semanticModel = _context.Compilation.GetSemanticModel(declarator.SyntaxTree);
-                if (RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
-                        semanticModel,
-                        declarator.Initializer.Value,
-                        out var initializerOperation))
-                {
-                    return initializerOperation;
-                }
-            }
-
-            return null;
-        }
+            => RazorVueImperativeRenderFragmentCarrierHelper.TryGetFieldRenderFragmentInitializer(
+                _context.Compilation,
+                field);
 
         private void ConsumeRenderFragmentCarrierContinuation(
             IReadOnlyList<RazorVueRazorIrNode> nodes,
@@ -5977,8 +6015,42 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return fragment.Children;
         }
 
+        private ImmutableArray<RazorVueRenderNode> MaterializeStaticMarkupRender(
+            RazorVueStaticMarkupValueHelper.StaticMarkupRenderResolution resolution,
+            ImmutableArray<RazorVueSourceOrigin> origins)
+            => MaterializeStaticMarkupRenderFragment(resolution, origins).Children;
+
+        private RazorVueRenderFragment MaterializeStaticMarkupRenderFragment(
+            RazorVueStaticMarkupValueHelper.StaticMarkupRenderResolution resolution,
+            ImmutableArray<RazorVueSourceOrigin> origins)
+            => resolution switch
+            {
+                RazorVueStaticMarkupValueHelper.StaticMarkupLiteralRenderResolution literal =>
+                    new RazorVueRenderFragment(MaterializeStaticMarkupFragment(literal.Resolution, origins)),
+                RazorVueStaticMarkupValueHelper.StaticMarkupConditionalRenderResolution conditional =>
+                    new RazorVueRenderFragment(
+                    [
+                        new RazorVueConditionalNode(
+                            conditional.Condition,
+                            MaterializeStaticMarkupRenderFragment(conditional.WhenTrue, origins),
+                            MaterializeStaticMarkupRenderFragment(conditional.WhenFalse, origins),
+                            origins)
+                    ]),
+                _ => RazorVueRenderFragment.Empty
+            };
+
         private string? TryGetStaticMarkupValue(IOperation? operation)
             => RazorVueStaticMarkupValueHelper.TryGetStaticMarkupValue(
+                operation,
+                _context.Compilation,
+                TryGetLocalMarkupStringInitializer,
+                TryGetPropertyMarkupStringInitializer,
+                TryGetFieldMarkupStringInitializer,
+                TryGetStaticMarkupFactoryReturnedValue,
+                IsSupportedStaticMarkupFactoryInvocation);
+
+        private RazorVueStaticMarkupValueHelper.StaticMarkupRenderResolution? TryResolveStaticMarkupRender(IOperation? operation)
+            => RazorVueStaticMarkupValueHelper.TryResolveStaticMarkupRender(
                 operation,
                 _context.Compilation,
                 TryGetLocalMarkupStringInitializer,
