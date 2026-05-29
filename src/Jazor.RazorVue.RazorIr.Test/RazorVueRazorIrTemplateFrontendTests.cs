@@ -7260,6 +7260,33 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_ForMarkupStringCastFromUnwrittenNonReadonlyStringFieldExpression_ProducesStaticMarkupNodes()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """@((MarkupString)_heroMarkup)""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.StringFieldMarkupStringCastCarrier.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    private string _heroMarkup = "<section class='hero'><span>safe</span><p>ok</p></section>";
+                }
+            }
+            """);
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+
+        Assert.AreEqual(1, renderTree.Children.Length, RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot));
+        Assert.AreEqual("section", Assert.IsInstanceOfType<RazorVueElementNode>(renderTree.Children[0]).TagName);
+    }
+
+    [TestMethod]
     public void RazorVuePipeline_WithRazorIrTemplateFrontend_CanLowerConstantMarkupStringExpression()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -7408,6 +7435,32 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_CanLowerMarkupStringCastFromUnwrittenNonReadonlyStringFieldExpression()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """@((MarkupString)_heroMarkup)""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.StringFieldMarkupStringCastCarrier.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    private string _heroMarkup = "<section class='hero'><span>safe</span><p>ok</p></section>";
+                }
+            }
+            """);
+
+        var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ModuleCode, "h(\"section\", { \"class\": \"hero\" }, [h(\"span\", null, \"safe\"), h(\"p\", null, \"ok\")])");
+    }
+
+    [TestMethod]
     public void RazorVueSfcArtifactFactory_WithRazorIrTemplateFrontend_LowersConstantMarkupStringExpression()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -7522,6 +7575,40 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
         Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "MarkupString");
         StringAssert.Contains(exception.Issue.Message, "compile-time provable static");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForMutatedStringFieldMarkupStringCastCarrier_ThrowsCanonicalizationFailed()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """@((MarkupString)_heroMarkup)""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.MutatedStringFieldMarkupStringCastCarrier.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    private string _heroMarkup = "<section class='hero'><span>safe</span><p>ok</p></section>";
+
+                    protected override void OnParametersSet()
+                    {
+                        _heroMarkup = "<section class='hero'><span>changed</span></section>";
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "_heroMarkup");
+        StringAssert.Contains(exception.Issue.Message, "later writes");
     }
 
     [TestMethod]
@@ -12701,7 +12788,50 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
-    public void CreateRenderTree_ForLoop_WithDynamicAddAssignStepExpression_CreatesCountStyleForNodeWithInvocationStepValue()
+    public void CreateRenderTree_ForLoop_WithStaticLocalStepCarrier_CreatesCountStyleForNodeWithLocalStepValue()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @{
+                const int step = 2;
+            }
+            @for (var i = 0; i < Count; i += step)
+            {
+                <p>@i</p>
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ForLoop.StaticLocalStep.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+                }
+            }
+            """);
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+        Assert.HasCount(2, renderTree.Children);
+        Assert.IsInstanceOfType<RazorVueLocalDeclarationNode>(renderTree.Children[0]);
+        var loop = Assert.IsInstanceOfType<RazorVueForNode>(renderTree.Children[1]);
+        Assert.AreEqual("i", loop.VariableName);
+        Assert.AreEqual(RazorVueForConditionKind.LessThan, loop.ConditionKind);
+        Assert.AreEqual(RazorVueForStepKind.AddAssign, loop.StepKind);
+        Assert.AreEqual("0", loop.InitialValue.Syntax.ToString());
+        Assert.AreEqual("Count", loop.LimitValue.Syntax.ToString());
+        Assert.IsNotNull(loop.StepValue);
+        Assert.AreEqual("step", loop.StepValue.Syntax.ToString());
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForLoop_WithDynamicAddAssignStepExpression_CreatesImperativeLoopBlock()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -12734,18 +12864,14 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
             """);
 
         var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
-        var loop = Assert.IsInstanceOfType<RazorVueForNode>(renderTree.Children[0]);
-        Assert.AreEqual("i", loop.VariableName);
-        Assert.AreEqual(RazorVueForConditionKind.LessThanOrEqual, loop.ConditionKind);
-        Assert.AreEqual(RazorVueForStepKind.AddAssign, loop.StepKind);
-        Assert.AreEqual("Start", loop.InitialValue.Syntax.ToString());
-        Assert.AreEqual("Count", loop.LimitValue.Syntax.ToString());
-        Assert.IsNotNull(loop.StepValue);
-        Assert.AreEqual("GetStep()", loop.StepValue.Syntax.ToString());
+        var loop = Assert.IsInstanceOfType<RazorVueImperativeBlockNode>(renderTree.Children[0]);
+        Assert.AreEqual(RazorVueImperativeBlockKind.LoopBlock, loop.Kind);
+        Assert.HasCount(1, loop.Operations);
+        StringAssert.Contains(loop.Operations[0].Syntax.ToString(), "GetStep()");
     }
 
     [TestMethod]
-    public void CreateRenderTree_ForLoop_WithDynamicSimpleAssignmentAddStep_CreatesCountStyleForNodeWithInvocationStepValue()
+    public void CreateRenderTree_ForLoop_WithDynamicSimpleAssignmentAddStep_CreatesImperativeLoopBlock()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """
@@ -12778,14 +12904,10 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
             """);
 
         var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
-        var loop = Assert.IsInstanceOfType<RazorVueForNode>(renderTree.Children[0]);
-        Assert.AreEqual("i", loop.VariableName);
-        Assert.AreEqual(RazorVueForConditionKind.LessThanOrEqual, loop.ConditionKind);
-        Assert.AreEqual(RazorVueForStepKind.AddAssign, loop.StepKind);
-        Assert.AreEqual("Start", loop.InitialValue.Syntax.ToString());
-        Assert.AreEqual("Count", loop.LimitValue.Syntax.ToString());
-        Assert.IsNotNull(loop.StepValue);
-        Assert.AreEqual("GetStep()", loop.StepValue.Syntax.ToString());
+        var loop = Assert.IsInstanceOfType<RazorVueImperativeBlockNode>(renderTree.Children[0]);
+        Assert.AreEqual(RazorVueImperativeBlockKind.LoopBlock, loop.Kind);
+        Assert.HasCount(1, loop.Operations);
+        StringAssert.Contains(loop.Operations[0].Syntax.ToString(), "GetStep()");
     }
 
     [TestMethod]

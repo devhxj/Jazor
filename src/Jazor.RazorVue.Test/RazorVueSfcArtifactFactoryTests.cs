@@ -1492,7 +1492,59 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
-    public void RazorVue_SfcArtifactFactory_LowersCountStyleForLoopWithDynamicAddAssignStep_IntoTemplateRangeHelperAndSetupBindings()
+    public void RazorVue_SfcArtifactFactory_LowersCountStyleForLoopWithStaticLocalStepCarrier_IntoTemplateRangeHelper()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/list-card")]
+                public class ListCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        const int step = 2;
+                        for (var i = 0; i < Count; i += step)
+                        {
+                            builder.OpenElement(0, "span");
+                            builder.AddContent(1, i);
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.Template, artifact.RenderMode);
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(step) in [2]\">");
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"i in __jazorVueForRange(0, props.count, &quot;&lt;&quot;, &quot;+=&quot;, step)\">");
+        Assert.IsFalse(artifact.SfcText.Contains("for (let i = 0; i < props.count; i += 2)", StringComparison.Ordinal), artifact.SfcText);
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("__jazor$", StringComparison.Ordinal), artifact.ScriptSetupText);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithDynamicAddAssignStep_UsesRenderFunctionToPreservePerIterationEvaluation()
     {
         var context = CreateContext(
             """
@@ -1541,15 +1593,14 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var snapshot = context.CreateSemanticSnapshots().Single();
         var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
-        StringAssert.Contains(artifact.ScriptSetupText, "function getStep()");
-        StringAssert.Contains(artifact.ScriptSetupText, "const __jazor$0 = computed(() => ");
-        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"i in __jazorVueForRange(props.start, props.count, &quot;&lt;=&quot;, &quot;+=&quot;, __jazor$0)\">");
-        Assert.IsFalse(artifact.TemplateText.Contains("getStep(", StringComparison.Ordinal), artifact.TemplateText);
-        StringAssert.Contains(artifact.ScriptSetupText, "const stepDelta = stepOperator === \"++\" ? 1");
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        StringAssert.Contains(artifact.SfcText, "function getStep()");
+        StringAssert.Contains(artifact.SfcText, "for (let i = props.start; i <= props.count; i += getStep())");
+        Assert.IsFalse(artifact.SfcText.Contains("__jazorVueForRange", StringComparison.Ordinal), artifact.SfcText);
     }
 
     [TestMethod]
-    public void RazorVue_SfcArtifactFactory_LowersCountStyleForLoopWithDynamicSimpleAssignmentStep_IntoTemplateRangeHelperAndSetupBindings()
+    public void RazorVue_SfcArtifactFactory_WithDynamicSimpleAssignmentStep_UsesRenderFunctionToPreservePerIterationEvaluation()
     {
         var context = CreateContext(
             """
@@ -1598,11 +1649,10 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var snapshot = context.CreateSemanticSnapshots().Single();
         var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
-        StringAssert.Contains(artifact.ScriptSetupText, "function getStep()");
-        StringAssert.Contains(artifact.ScriptSetupText, "const __jazor$0 = computed(() => ");
-        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"i in __jazorVueForRange(props.start, props.count, &quot;&lt;=&quot;, &quot;+=&quot;, __jazor$0)\">");
-        Assert.IsFalse(artifact.TemplateText.Contains("getStep(", StringComparison.Ordinal), artifact.TemplateText);
-        StringAssert.Contains(artifact.ScriptSetupText, "const stepDelta = stepOperator === \"++\" ? 1");
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        StringAssert.Contains(artifact.SfcText, "function getStep()");
+        StringAssert.Contains(artifact.SfcText, "for (let i = props.start; i <= props.count; i = i + getStep())");
+        Assert.IsFalse(artifact.SfcText.Contains("__jazorVueForRange", StringComparison.Ordinal), artifact.SfcText);
     }
 
     [TestMethod]
@@ -10112,6 +10162,49 @@ public sealed class RazorVueSfcArtifactFactoryTests
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
                         builder.AddMarkupContent(0, _heroMarkup);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<section class=\"hero\">");
+        StringAssert.Contains(artifact.TemplateText, "<span>");
+        StringAssert.Contains(artifact.TemplateText, "<p>");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersMarkupStringCastFromUnwrittenNonReadonlyStringFieldCarrier()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-card")]
+                public class MarkupCard : ComponentBase, IVueComponent
+                {
+                    private string _heroMarkup = "<section class=\"hero\"><span>safe</span><p>ok</p></section>";
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, (MarkupString)_heroMarkup);
                     }
                 }
             }

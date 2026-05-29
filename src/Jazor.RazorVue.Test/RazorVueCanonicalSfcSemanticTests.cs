@@ -398,7 +398,7 @@ public sealed class RazorVueCanonicalSfcSemanticTests
     }
 
     [TestMethod]
-    public void RazorVue_CanonicalModelFactory_ClassifiesCountStyleForWithDynamicAddAssignStep_AsTemplateViaSetupBinding()
+    public void RazorVue_CanonicalModelFactory_WithDynamicAddAssignStep_UsesImperativeRootProgram()
     {
         var context = CreateContext(
             """
@@ -446,28 +446,19 @@ public sealed class RazorVueCanonicalSfcSemanticTests
 
         var snapshot = context.CreateSemanticSnapshots().Single();
         var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
-        var loop = AssertNode<RazorVueCanonicalForNode>(canonical.Template.Children.Single());
-
-        Assert.AreEqual(RazorVueTemplateEncodability.TemplateViaSetupBinding, loop.TemplateEncodability);
-        Assert.AreEqual("props.start", loop.InitialValueExpressionText);
-        Assert.AreEqual("props.count", loop.LimitValueExpressionText);
-        StringAssert.Contains(loop.StepValueExpressionText, "getStep", StringComparison.Ordinal);
-        Assert.AreEqual(RazorVueTemplateExpressionSafety.RequiresSetupBinding, loop.StepValueTemplateExpressionSafety);
-        Assert.AreEqual(RazorVueSideEffectClassification.RepeatedEvaluationRisk, loop.StepValueSideEffectClassification);
-
         var sfc = new RazorVueSfcSemanticModelFactory().Create(canonical);
-        Assert.AreEqual("__jazor$0", sfc.ScriptSetupBlock.LiftedBindings.Single().Name);
-        Assert.AreEqual(loop.StepValueExpressionText, sfc.ScriptSetupBlock.LiftedBindings.Single().ExpressionText);
-        Assert.AreEqual("root/child[0]/for/init", sfc.TemplateBlock.BindingSites[0].SitePath);
-        Assert.AreEqual("props.start", sfc.TemplateBlock.BindingSites[0].TemplateExpressionText);
-        Assert.AreEqual("root/child[0]/for/limit", sfc.TemplateBlock.BindingSites[1].SitePath);
-        Assert.AreEqual("props.count", sfc.TemplateBlock.BindingSites[1].TemplateExpressionText);
-        Assert.AreEqual("root/child[0]/for/step", sfc.TemplateBlock.BindingSites[2].SitePath);
-        Assert.AreEqual("__jazor$0", sfc.TemplateBlock.BindingSites[2].TemplateExpressionText);
+
+        Assert.IsNotNull(canonical.ImperativeRootProgram);
+        Assert.AreEqual(RazorVueImperativeBlockKind.LoopBlock, canonical.ImperativeRootProgram.Kind);
+        Assert.IsTrue(canonical.ImperativeRootProgram.IsRootOnly);
+        Assert.IsTrue(canonical.Template.Children.IsDefaultOrEmpty);
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, sfc.RenderMode);
+        Assert.IsTrue(sfc.TemplateBlock.BindingSites.IsDefaultOrEmpty);
+        Assert.IsTrue(sfc.ScriptSetupBlock.LiftedBindings.IsDefaultOrEmpty);
     }
 
     [TestMethod]
-    public void RazorVue_CanonicalModelFactory_ClassifiesCountStyleForWithDynamicSimpleAssignmentStep_AsTemplateViaSetupBinding()
+    public void RazorVue_CanonicalModelFactory_WithDynamicSimpleAssignmentStep_UsesImperativeRootProgram()
     {
         var context = CreateContext(
             """
@@ -515,24 +506,15 @@ public sealed class RazorVueCanonicalSfcSemanticTests
 
         var snapshot = context.CreateSemanticSnapshots().Single();
         var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
-        var loop = AssertNode<RazorVueCanonicalForNode>(canonical.Template.Children.Single());
-
-        Assert.AreEqual(RazorVueTemplateEncodability.TemplateViaSetupBinding, loop.TemplateEncodability);
-        Assert.AreEqual("props.start", loop.InitialValueExpressionText);
-        Assert.AreEqual("props.count", loop.LimitValueExpressionText);
-        StringAssert.Contains(loop.StepValueExpressionText, "getStep", StringComparison.Ordinal);
-        Assert.AreEqual(RazorVueTemplateExpressionSafety.RequiresSetupBinding, loop.StepValueTemplateExpressionSafety);
-        Assert.AreEqual(RazorVueSideEffectClassification.RepeatedEvaluationRisk, loop.StepValueSideEffectClassification);
-
         var sfc = new RazorVueSfcSemanticModelFactory().Create(canonical);
-        Assert.AreEqual("__jazor$0", sfc.ScriptSetupBlock.LiftedBindings.Single().Name);
-        Assert.AreEqual(loop.StepValueExpressionText, sfc.ScriptSetupBlock.LiftedBindings.Single().ExpressionText);
-        Assert.AreEqual("root/child[0]/for/init", sfc.TemplateBlock.BindingSites[0].SitePath);
-        Assert.AreEqual("props.start", sfc.TemplateBlock.BindingSites[0].TemplateExpressionText);
-        Assert.AreEqual("root/child[0]/for/limit", sfc.TemplateBlock.BindingSites[1].SitePath);
-        Assert.AreEqual("props.count", sfc.TemplateBlock.BindingSites[1].TemplateExpressionText);
-        Assert.AreEqual("root/child[0]/for/step", sfc.TemplateBlock.BindingSites[2].SitePath);
-        Assert.AreEqual("__jazor$0", sfc.TemplateBlock.BindingSites[2].TemplateExpressionText);
+
+        Assert.IsNotNull(canonical.ImperativeRootProgram);
+        Assert.AreEqual(RazorVueImperativeBlockKind.LoopBlock, canonical.ImperativeRootProgram.Kind);
+        Assert.IsTrue(canonical.ImperativeRootProgram.IsRootOnly);
+        Assert.IsTrue(canonical.Template.Children.IsDefaultOrEmpty);
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, sfc.RenderMode);
+        Assert.IsTrue(sfc.TemplateBlock.BindingSites.IsDefaultOrEmpty);
+        Assert.IsTrue(sfc.ScriptSetupBlock.LiftedBindings.IsDefaultOrEmpty);
     }
 
     [TestMethod]

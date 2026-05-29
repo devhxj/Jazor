@@ -470,6 +470,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 {
                     if (TryResolveImperativeStaticMarkupString(invocation.Arguments[1].Value) is not { } staticMarkup)
                     {
+                        ThrowIfInvalidatedImperativeStaticMarkupMemberCarrier(invocation.Arguments[1].Value);
                         throw CreateUnsupportedImperativeRenderLoweringException(
                             invocation,
                             $"RazorVue imperative render lowering only supports compile-time provable static MarkupString AddContent(...) in component '{_snapshot.Descriptor.FullName}'.");
@@ -486,6 +487,7 @@ internal sealed partial class RazorVueExpressionEmitter
             case "AddMarkupContent":
                 if (TryResolveImperativeStaticMarkupContent(invocation.Arguments[1].Value) is not { } markup)
                 {
+                    ThrowIfInvalidatedImperativeStaticMarkupMemberCarrier(invocation.Arguments[1].Value);
                     throw CreateUnsupportedImperativeRenderLoweringException(
                         invocation,
                         $"RazorVue imperative render lowering only supports compile-time provable static AddMarkupContent(...) in component '{_snapshot.Descriptor.FullName}'.");
@@ -1283,6 +1285,17 @@ internal sealed partial class RazorVueExpressionEmitter
         }
     }
 
+    private void ThrowIfInvalidatedImperativeStaticMarkupMemberCarrier(IOperation operation)
+    {
+        if (RazorVueStaticMarkupValueHelper.TryGetInvalidatedSourceStableStaticMarkupMember(
+                operation,
+                _snapshot.Compilation,
+                out var memberCarrier))
+        {
+            throw CreateImperativeStaticMarkupMemberCarrierInvalidatedException(operation, memberCarrier);
+        }
+    }
+
     private RazorVueStaticMarkupValueHelper.StaticMarkupResolution? TryResolveImperativeStaticMarkupCarrierValue(IOperation? operation)
         => RazorVueStaticMarkupValueHelper.TryResolveStaticMarkup(
             operation,
@@ -1354,6 +1367,29 @@ internal sealed partial class RazorVueExpressionEmitter
         return CreateUnsupportedImperativeRenderLoweringException(
             operation,
             $"RazorVue imperative render lowering only supports compile-time provable static {api} in component '{_snapshot.Descriptor.FullName}'. RazorVue {carrierKind} local '{local.Name}' cannot be observed through later writes. Local carriers must remain source-stable.");
+    }
+
+    private RazorVueCompilationIssueException CreateImperativeStaticMarkupMemberCarrierInvalidatedException(
+        IOperation operation,
+        ISymbol member)
+    {
+        var memberKind = GetStaticMarkupMemberCarrierKind(member);
+        return CreateUnsupportedImperativeRenderLoweringException(
+            operation,
+            $"RazorVue imperative render lowering only supports compile-time provable static markup in component '{_snapshot.Descriptor.FullName}'. RazorVue {memberKind} member '{member.Name}' cannot be observed through later writes. Static markup carriers must remain source-stable.");
+    }
+
+    private static string GetStaticMarkupMemberCarrierKind(ISymbol member)
+    {
+        var type = member switch
+        {
+            IPropertySymbol property => property.Type,
+            IFieldSymbol field => field.Type,
+            _ => null
+        };
+        return RazorVueStaticMarkupValueHelper.IsMarkupStringType(type)
+            ? "MarkupString"
+            : "string static-markup";
     }
 
     private RazorVueCompilationIssueException CreateImperativeComponentTypeCarrierInvalidatedException(

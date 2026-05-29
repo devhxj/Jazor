@@ -162,6 +162,22 @@ internal static class RazorVueStaticMarkupValueHelper
             visitedMethods: new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default));
     }
 
+    public static bool TryGetInvalidatedSourceStableStaticMarkupMember(
+        IOperation? operation,
+        Compilation compilation,
+        out ISymbol member)
+    {
+        if (compilation is null)
+            throw new ArgumentNullException(nameof(compilation));
+
+        member = default!;
+        return TryGetInvalidatedSourceStableStaticMarkupMemberCore(
+            operation,
+            compilation,
+            out member,
+            new HashSet<ISymbol>(SymbolEqualityComparer.Default));
+    }
+
     public static bool IsMarkupStringType(ITypeSymbol? typeSymbol)
     {
         if (typeSymbol is null)
@@ -342,9 +358,201 @@ internal static class RazorVueStaticMarkupValueHelper
 
                 return returnedResolution.Value.PrependCapturedBindings(capturedBindings);
 
+            case IConversionOperation conversion
+                when !conversion.IsImplicit &&
+                     IsMarkupStringType(conversion.Type):
+                return TryResolveStaticMarkup(
+                    conversion.Operand,
+                    compilation,
+                    localInitializerResolver,
+                    propertyInitializerResolver,
+                    fieldInitializerResolver,
+                    methodReturnedValueResolver,
+                    isSupportedMethodInvocation,
+                    visitedLocals,
+                    visitedMembers,
+                    visitedMethods);
+
+            case IObjectCreationOperation objectCreation
+                when IsMarkupStringType(objectCreation.Type) &&
+                     objectCreation.Arguments.Length == 1:
+                return TryResolveStaticMarkup(
+                    objectCreation.Arguments[0].Value,
+                    compilation,
+                    localInitializerResolver,
+                    propertyInitializerResolver,
+                    fieldInitializerResolver,
+                    methodReturnedValueResolver,
+                    isSupportedMethodInvocation,
+                    visitedLocals,
+                    visitedMembers,
+                    visitedMethods);
+
             default:
                 return null;
         }
+    }
+
+    private static bool TryGetInvalidatedSourceStableStaticMarkupMemberCore(
+        IOperation? operation,
+        Compilation compilation,
+        out ISymbol member,
+        HashSet<ISymbol> visitedMembers)
+    {
+        member = default!;
+        var current = RazorVueOperationNormalizer.Unwrap(operation);
+        if (current is null)
+            return false;
+
+        switch (current)
+        {
+            case IPropertyReferenceOperation propertyReference
+                when IsStaticMarkupCarrierType(propertyReference.Property.Type):
+                if (TryGetInvalidatedSourceStableStaticMarkupMember(
+                        propertyReference.Property,
+                        compilation,
+                        out member))
+                {
+                    return true;
+                }
+
+                return TryGetStaticMarkupMemberInitializer(
+                           propertyReference.Property,
+                           compilation,
+                           visitedMembers,
+                           out var staticMarkupPropertyInitializer) &&
+                       TryGetInvalidatedSourceStableStaticMarkupMemberCore(
+                           staticMarkupPropertyInitializer,
+                           compilation,
+                           out member,
+                           visitedMembers);
+
+            case IFieldReferenceOperation fieldReference
+                when IsStaticMarkupCarrierType(fieldReference.Field.Type):
+                if (TryGetInvalidatedSourceStableStaticMarkupMember(
+                        fieldReference.Field,
+                        compilation,
+                        out member))
+                {
+                    return true;
+                }
+
+                return TryGetStaticMarkupMemberInitializer(
+                           fieldReference.Field,
+                           compilation,
+                           visitedMembers,
+                           out var staticMarkupFieldInitializer) &&
+                       TryGetInvalidatedSourceStableStaticMarkupMemberCore(
+                           staticMarkupFieldInitializer,
+                           compilation,
+                           out member,
+                           visitedMembers);
+
+            case IConversionOperation conversion
+                when !conversion.IsImplicit &&
+                     IsMarkupStringType(conversion.Type):
+                return TryGetInvalidatedSourceStableStaticMarkupMemberCore(
+                    conversion.Operand,
+                    compilation,
+                    out member,
+                    visitedMembers);
+
+            case IObjectCreationOperation objectCreation
+                when IsMarkupStringType(objectCreation.Type) &&
+                     objectCreation.Arguments.Length == 1:
+                return TryGetInvalidatedSourceStableStaticMarkupMemberCore(
+                    objectCreation.Arguments[0].Value,
+                    compilation,
+                    out member,
+                    visitedMembers);
+
+            default:
+                return false;
+        }
+    }
+
+    private static bool TryGetInvalidatedSourceStableStaticMarkupMember(
+        ISymbol candidate,
+        Compilation compilation,
+        out ISymbol member)
+    {
+        member = default!;
+        if (!RazorVueMemberWriteAnalysis.CanUseSourceStableMutableCarrierMember(candidate) ||
+            !RazorVueMemberWriteAnalysis.HasObservableWritesOutsideDeclarationInitializer(compilation, candidate))
+        {
+            return false;
+        }
+
+        member = candidate;
+        return true;
+    }
+
+    private static bool TryGetStaticMarkupMemberInitializer(
+        ISymbol member,
+        Compilation compilation,
+        HashSet<ISymbol> visitedMembers,
+        out IOperation initializer)
+    {
+        initializer = default!;
+        if (!IsSupportedStaticMarkupCarrierMember(compilation, member) ||
+            !visitedMembers.Add(member))
+        {
+            return false;
+        }
+
+        var resolvedInitializer = member switch
+        {
+            IPropertySymbol property => TryGetPropertyInitializer(property, compilation),
+            IFieldSymbol field => TryGetFieldInitializer(field, compilation),
+            _ => null
+        };
+        if (resolvedInitializer is null)
+            return false;
+
+        initializer = resolvedInitializer;
+        return true;
+    }
+
+    private static IOperation? TryGetPropertyInitializer(
+        IPropertySymbol property,
+        Compilation compilation)
+    {
+        foreach (var reference in property.DeclaringSyntaxReferences)
+        {
+            if (reference.GetSyntax() is not PropertyDeclarationSyntax declaration)
+                continue;
+
+            var semanticModel = compilation.GetSemanticModel(declaration.SyntaxTree);
+            if (RazorVuePropertyInitializerHelper.TryGetPropertyValueOperation(semanticModel, declaration, out var propertyOperation))
+                return propertyOperation;
+        }
+
+        return null;
+    }
+
+    private static IOperation? TryGetFieldInitializer(
+        IFieldSymbol field,
+        Compilation compilation)
+    {
+        foreach (var reference in field.DeclaringSyntaxReferences)
+        {
+            if (reference.GetSyntax() is not VariableDeclaratorSyntax declarator ||
+                declarator.Initializer?.Value is null)
+            {
+                continue;
+            }
+
+            var semanticModel = compilation.GetSemanticModel(declarator.SyntaxTree);
+            if (RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
+                    semanticModel,
+                    declarator.Initializer.Value,
+                    out var initializerOperation))
+            {
+                return initializerOperation;
+            }
+        }
+
+        return null;
     }
 
     private static bool TryGetInvocationCapturedBindings(

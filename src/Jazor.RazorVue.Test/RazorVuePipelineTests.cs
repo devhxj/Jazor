@@ -9887,7 +9887,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_LowersCountStyleForLoopWithDynamicAddAssignStep_WithRangeHelperInModuleCode()
+    public void RazorVue_Pipeline_WithDynamicAddAssignStep_UsesImperativeLoopToPreservePerIterationEvaluation()
     {
         var context = CreateContext(
             """
@@ -9936,12 +9936,12 @@ public sealed class RazorVuePipelineTests
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "function getStep()");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorVueForRange(props.start, props.count, \"<=\", \"+=\", getStep()).map((i) => h(\"li\", null, i))");
-        StringAssert.Contains(artifact.ModuleCode, "const stepDelta = stepOperator === \"++\" ? 1");
+        StringAssert.Contains(artifact.ModuleCode, "for (let i = props.start; i <= props.count; i += getStep())");
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorVueForRange", StringComparison.Ordinal), artifact.ModuleCode);
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_LowersCountStyleForLoopWithDynamicSimpleAssignmentStep_WithRangeHelperInModuleCode()
+    public void RazorVue_Pipeline_WithDynamicSimpleAssignmentStep_UsesImperativeLoopToPreservePerIterationEvaluation()
     {
         var context = CreateContext(
             """
@@ -9990,8 +9990,8 @@ public sealed class RazorVuePipelineTests
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "function getStep()");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorVueForRange(props.start, props.count, \"<=\", \"+=\", getStep()).map((i) => h(\"li\", null, i))");
-        StringAssert.Contains(artifact.ModuleCode, "const stepDelta = stepOperator === \"++\" ? 1");
+        StringAssert.Contains(artifact.ModuleCode, "for (let i = props.start; i <= props.count; i = i + getStep())");
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorVueForRange", StringComparison.Ordinal), artifact.ModuleCode);
     }
 
     [TestMethod]
@@ -43100,6 +43100,45 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersMarkupStringCastFromUnwrittenNonReadonlyStringFieldCarrierAddContent()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-string-card")]
+                public class MarkupStringCard : ComponentBase, IVueComponent
+                {
+                    private string _heroMarkup = "<section class=\"hero\"><span>safe</span><p>ok</p></section>";
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, (MarkupString)_heroMarkup);
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", { \"class\": \"hero\" }, [h(\"span\", null, \"safe\"), h(\"p\", null, \"ok\")]);");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersImmediatelyAssignedMarkupStringLocalCarrierAddContent()
     {
         var context = CreateContext(
@@ -48586,6 +48625,54 @@ public sealed class RazorVuePipelineTests
 
         Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "MarkupString");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithMutatedStringFieldMarkupStringCastCarrierAddContent_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/markup-string-card")]
+                public class MarkupStringCard : ComponentBase, IVueComponent
+                {
+                    private string _heroMarkup = "<section class=\"hero\"><span>safe</span><p>ok</p></section>";
+
+                    protected override void OnParametersSet()
+                    {
+                        _heroMarkup = "<section class=\"hero\"><span>changed</span></section>";
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, (MarkupString)_heroMarkup);
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "_heroMarkup");
+        StringAssert.Contains(exception.Issue.Message, "later writes");
     }
 
     [TestMethod]

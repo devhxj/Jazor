@@ -85,6 +85,9 @@ internal static class RazorVueForLoopAnalyzer
         if (ContainsLoopVariable(stepValue, declarator.Symbol, unwrap))
             return false;
 
+        if (RequiresPerIterationStepEvaluation(stepValue, unwrap))
+            return false;
+
         analyzedLoop = new AnalyzedForLoop(
             declarator.Symbol.Name,
             unwrap(declarator.Initializer.Value) ?? declarator.Initializer.Value,
@@ -189,6 +192,21 @@ internal static class RazorVueForLoopAnalyzer
             default:
                 return false;
         }
+    }
+
+    private static bool RequiresPerIterationStepEvaluation(
+        IOperation? operation,
+        Func<IOperation?, IOperation?> unwrap)
+    {
+        var current = unwrap(operation);
+        if (current is null)
+            return false;
+
+        if (current is IInvocationOperation)
+            return true;
+
+        return current.Descendants().Any(descendant =>
+            RazorVueOperationNormalizer.Unwrap(descendant) is IInvocationOperation);
     }
 
     private static bool TryMapForConditionKind(

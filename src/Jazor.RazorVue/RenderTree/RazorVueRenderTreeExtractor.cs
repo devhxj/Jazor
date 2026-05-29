@@ -1150,6 +1150,7 @@ internal sealed class RazorVueRenderTreeExtractor
                     return;
                 }
 
+                TryThrowInvalidatedStaticMarkupCarrier(value);
                 throw CreateUnsupportedBuilderCall(
                     invocation,
                     $"BuildRenderTree call '{GetBuilderCallDisplayName(invocation)}' uses MarkupString content that is not compile-time provable static markup in component '{_snapshot.Descriptor.FullName}'. RazorVue only supports static MarkupString literals that can be canonicalized into a safe render subtree.");
@@ -1232,7 +1233,7 @@ internal sealed class RazorVueRenderTreeExtractor
 
             if (TryResolveStaticMarkup(value) is not { } staticMarkup)
             {
-                TryThrowInvalidatedStaticMarkupLocalCarrier(value);
+                TryThrowInvalidatedStaticMarkupCarrier(value);
                 throw CreateUnsupportedBuilderCall(
                     invocation,
                     $"BuildRenderTree call '{GetBuilderCallDisplayName(invocation)}' uses AddMarkupContent(...) content that is not compile-time provable static markup in component '{_snapshot.Descriptor.FullName}'. RazorVue only supports static markup literals/carriers that can be canonicalized into a safe render subtree.");
@@ -1316,28 +1317,61 @@ internal sealed class RazorVueRenderTreeExtractor
                 TryGetStaticMarkupFactoryReturnedValue,
                 IsSupportedStaticMarkupFactoryInvocation);
 
-        private void TryThrowInvalidatedStaticMarkupLocalCarrier(IOperation? operation)
+        private void TryThrowInvalidatedStaticMarkupCarrier(IOperation? operation)
         {
             if (Unwrap(operation) is not ILocalReferenceOperation localReference ||
                 !RazorVueStaticMarkupValueHelper.IsStaticMarkupCarrierType(localReference.Local.Type))
             {
+                if (RazorVueStaticMarkupValueHelper.TryGetInvalidatedSourceStableStaticMarkupMember(
+                        operation,
+                        _compilation,
+                        out var member))
+                {
+                    var memberKind = GetStaticMarkupMemberCarrierKind(member);
+                    throw CreateStructuralIssue(
+                        operation!,
+                        $"RazorVue {memberKind} member '{member.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Static markup carriers must remain source-stable.");
+                }
+
                 return;
             }
 
-            if (!RazorVueSourceStableLocalInitializerHelper.IsSourceStableLocalInitializerInvalidatedByLaterWrites(
+            if (RazorVueSourceStableLocalInitializerHelper.IsSourceStableLocalInitializerInvalidatedByLaterWrites(
                     _compilation,
                     localReference.Local,
                     RazorVueStaticMarkupValueHelper.IsStaticMarkupCarrierType))
             {
-                return;
+                var carrierKind = RazorVueStaticMarkupValueHelper.IsMarkupStringType(localReference.Local.Type)
+                    ? "MarkupString"
+                    : "string";
+                throw CreateStructuralIssue(
+                    localReference,
+                    $"RazorVue {carrierKind} local '{localReference.Local.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Declaration-initialized local carriers must remain source-stable.");
             }
 
-            var carrierKind = RazorVueStaticMarkupValueHelper.IsMarkupStringType(localReference.Local.Type)
+            if (RazorVueStaticMarkupValueHelper.TryGetInvalidatedSourceStableStaticMarkupMember(
+                    operation,
+                    _compilation,
+                    out var memberCarrier))
+            {
+                var memberKind = GetStaticMarkupMemberCarrierKind(memberCarrier);
+                throw CreateStructuralIssue(
+                    operation!,
+                    $"RazorVue {memberKind} member '{memberCarrier.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Static markup carriers must remain source-stable.");
+            }
+        }
+
+        private static string GetStaticMarkupMemberCarrierKind(ISymbol member)
+        {
+            var type = member switch
+            {
+                IPropertySymbol property => property.Type,
+                IFieldSymbol field => field.Type,
+                _ => null
+            };
+            return RazorVueStaticMarkupValueHelper.IsMarkupStringType(type)
                 ? "MarkupString"
-                : "string";
-            throw CreateStructuralIssue(
-                localReference,
-                $"RazorVue {carrierKind} local '{localReference.Local.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Declaration-initialized local carriers must remain source-stable.");
+                : "string static-markup";
         }
 
         private RazorVueRenderFragment ParseNestedBranch(IOperation? operation)
