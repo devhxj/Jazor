@@ -5,117 +5,70 @@
 ![今日诗词](https://v2.jinrishici.com/one.svg?font-size=20&spacing=2&color=Chocolate)
 </div>
 
-# Jazor - C# 到 JavaScript 编译器
+# Jazor
 
 [![.NET](https://img.shields.io/badge/.NET-11.0-blue.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE.txt)
 [![NuGet](https://img.shields.io/nuget/v/Jazor.svg)](https://www.nuget.org/packages/Jazor)
 
-> ⚠️ **实验性项目** ⚠️
-> 公共 API、生成的输出形态以及工具链仍在演进中。编译器核心和 ECMAScript 模块发射是项目中最稳定的部分。
+> 实验性项目。公共 API、生成产物形态和工具链仍在演进中。当前最稳定的基础是编译器核心、emit 管线，以及 RazorVue / Jolt 共享契约。
 
-Jazor 是一个基于 Roslyn 的 C# 到 JavaScript 编译器，核心能力是将 `IOperation` 语义降低为 ECMAScript AST。用 `[ECMAScriptModule]` 标注 C# 类，构建时自动生成 `.mjs` 文件。内含 `ECMAScript.Vue3` 提供类型化的 Vue 3 `h()` 渲染函数绑定，也提供 `ECMAScript.Pinia` 的 Pinia store 绑定，以及 `ECMAScript.VueRoute` 的 Vue Router 绑定。
+Jazor 是一套用 C# 和 Razor 编写 JavaScript / Vue 应用的 .NET 工具链。
 
-## 特性
+仓库目前有两条活跃产品线：
 
-- **C# 语法覆盖** — 基本支持 C# 15 全部语言特性：变量声明、基础类型、模式匹配、可空类型、async/await、字符串插值、对象和集合初始化、元组与解构、switch 语句/表达式，以及循环（for/foreach/while/do-while）
-- **Roslyn `IOperation` lowering** — 通过 `IOperation` → ECMAScript AST 的语义驱动编译，而非语法层面的翻译
-- **静态分析安全** — `Jazor.Analyzer` 在编译期强制执行白名单边界，在不支持的类型和成员进入发射之前即诊断报错
-- **CLR 运行时模块** — 常见 BCL 类型（`string`、`int`、`double`、`List<T>`、`Dictionary<TKey, TValue>`、`Task<T>` 等）通过 `Jazor.CLR` 映射到 JavaScript 运行时实现
-- **ECMAScript 模块发射** — `[ECMAScriptModule]` 标注的类编译为 `.mjs` 文件，自动处理跨模块 import 解析和 source map
-- **Vue 3 集成** — `ECMAScript.Vue3` 提供 Vue 3 Composition API 和 `h()` 渲染函数的类型化 C# 绑定，支持纯 C# 编写组件
-- **Pinia 集成** — `ECMAScript.Pinia` 提供 Pinia 根实例和 store authoring 的类型化 C# 绑定，包括 `createPinia()`、`defineStore()`、`storeToRefs()`，以及 `mapState()` / `mapActions()` 等常用 Options API helper
-- **Vue Router 集成** — `ECMAScript.VueRoute` 提供 Vue Router 4 authoring 的类型化 C# 绑定，包括 `createRouter()`、history 创建函数、`useRouter()`、`useRoute()`、`RouterLink` 与 `RouterView`
-- **Vuetify 集成** — `ECMAScript.Vuetify` 提供 Vuetify 3 组件 authoring 的生产级类型化 C# 绑定，包括强类型 props、命名槽、事件绑定和完整运行时导出覆盖
-- **MSBuild 集成** — 通过标准 MSBuild 属性配置发射、打包和输出路径
+| 线路 | 模式 | 主要项目 | 作用 |
+|------|------|----------|------|
+| **RazorVue** | 库模式 | `Jazor.RazorVue`、`Jazor.Analyzer`、`Jazor.Emit` | 构建时分析 Razor 组件，并生成最终 `.vue` / render-function 产物。 |
+| **Jolt** | 完整开发宿主 | `Jolt` | `.jazor` authoring 宿主，提供 LSP、工作区协调、DevServer/HMR、调试、构建和 Deno 前端工具链。 |
 
-## 项目状态
+两条线路共享同一套编译器和运行时基础：`Jazor.Compiler`、`Jazor.CLR`、`Jazor.Analyzer`、`Jazor.Emit`、`Jazor.Common`，以及 ECMAScript / Vue 绑定项目。
 
-<table>
-<tr><th nowrap>层级</th><th>组件</th><th>状态</th></tr>
-<tr><td nowrap><strong>已可用</strong></td><td>编译器核心（SemanticWalker、AstConverter）— 1,891 测试</td><td>稳定 — 仓库中最成熟的部分</td></tr>
-<tr><td nowrap><strong>已可用</strong></td><td>ECMAScript 模块发射（<code>[ECMAScriptModule]</code> → <code>.mjs</code>）— 111 测试</td><td>稳定</td></tr>
-<tr><td nowrap><strong>已可用</strong></td><td>ECMAScript.Vue3 绑定（h、ref、reactive、生命周期、createApp）</td><td>稳定</td></tr>
-<tr><td nowrap><strong>已可用</strong></td><td>MSBuild 集成（JazorEmit、JazorBundle、JazorOutDir）</td><td>稳定</td></tr>
-<tr><td nowrap><strong>已可用</strong></td><td>Jazor.Analyzer（白名单编译时验证）</td><td>稳定</td></tr>
-<tr><td nowrap><strong>已可用</strong></td><td>ECMAScript.Vuetify 绑定（117 个组件，强类型 props/槽/事件）— 117 组件</td><td>稳定 — 生产级 Vuetify 3 authoring</td></tr>
-<tr><td nowrap><strong>已可用</strong></td><td>CLR 运行时模块 — 70 测试</td><td>稳定</td></tr>
-<tr><td nowrap><strong>进行中</strong></td><td>RazorVue（SFC 管线、规范 h() 模型、Vuetify 生产级覆盖）— 772 测试</td><td>生产级 Vuetify authoring、管线验证、槽/fallthrough 支持</td></tr>
-<tr><td nowrap><strong>进行中</strong></td><td>ECMAScript.Pinia + ECMAScript.VueRoute — 205 测试</td><td>API 覆盖持续扩展，Pinia Testing 工具</td></tr>
-<tr><td nowrap><strong>进行中</strong></td><td>SourceMap</td><td>局部可用 — 模块级 <code>.mjs.map</code>，尚未全覆盖</td></tr>
-<tr><td nowrap><strong>进行中</strong></td><td>Deno 打包</td><td><code>JazorBundle</code> 目标支持基本场景</td></tr>
-<tr><td nowrap><strong>进行中</strong></td><td>调试</td><td>设计和里程碑代码已就位，尚未面向用户</td></tr>
-<tr><td nowrap><strong>远期</strong></td><td>Jolt（LSP、HMR、DevServer、调试、构建）— 778 测试</td><td>Phase 1–6 收口中，<a href="docs/01-目标/jolt/README.md">设计文档</a></td></tr>
-</table>
+## 当前重点
 
-当前用户应基于**已可用**层进行开发。32 项目 · ~290K 生产代码 · ~190K 测试代码 · ~3,850+ 总测试。
+- **编译器核心**：Roslyn `IOperation` 到 Acornima ESTree 的 lowering，强调明确支持边界和确定性发射。
+- **RazorVue 库模式**：Razor 组件编译为最终 Vue 产物。公开输出契约是 `.vue` / render-function artifact，不是中间 wrapper-JS 协议。
+- **Jolt 开发模式**：`.jazor` 是作者文档。Jolt 协调 Razor/Roslyn/Volar lane、本地预览、HMR、source map、调试和生产构建。
+- **Emit 与物化**：`Jazor.Emit` 写出 `.mjs`、`.vue`、manifest、source map、bundle 产物和 RazorVue consumer bridge module。
+- **Vue 生态绑定**：Vue 3 核心绑定随 `Jazor` 包提供；Pinia、Vue Router、Vuetify 和其他 UI / 库绑定作为显式生态项目维护。
 
----
+判断当前状态时，优先看 `docs/03-完成/` 下的状态页和当前测试结果，不要依赖 README 中写死的历史测试数量。
 
-## 快速开始
+## 能力概览
 
-### 安装
+- **语义级 C# lowering**：基于 Roslyn `IOperation`，不是语法字符串替换。
+- **fail-fast 宿主边界**：不支持的外部运行时语义会在实际 lowering 使用点显式失败，而不是静默发射近似 JavaScript。
+- **白名单 CLR surface**：常见 CLR API 通过 `Jazor.CLR` 和生成的 whitelist metadata 映射；Analyzer 会提前诊断很多不支持的用法。
+- **ECMAScript 模块输出**：`[ECMAScriptModule]` 类发射为 named-export `.mjs` 模块，并带稳定 import 收集、source-origin 跟踪和 source-map carrier。
+- **RazorVue artifact 生成**：Razor 组件语义按需流经 Razor SG / Roslyn / Razor IR，再降低为 Vue SFC 或 render-function artifact。
+- **类型化 Vue authoring**：`ECMAScript.Vue3` 提供 Vue 3 `defineComponent`、`h`、ref/reactivity、生命周期、props、slots 和组件契约绑定。
+- **面向宿主的构建支持**：MSBuild target 可以发射模块、物化 RazorVue artifact、运行 consumer build、发布资产，并通过内置 Deno runtime 打包。
+- **Jolt 工具链**：Jolt 是活跃的 `.jazor` 开发期边界，提供编辑器服务、预览/HMR、source-map-aware 调试和生产构建。
 
-```
+## 安装
+
+```bash
 dotnet add package Jazor
 ```
 
-该包包含运行时（`ECMAScript`、`ECMAScript.Vue3`、`ECMAScript.Pinia`、`ECMAScript.VueRoute`、`ECMAScript.Vuetify`）、编译器（`Jazor.Compiler`）、静态分析器（`Jazor.Analyzer`）、发射工具（`Jazor.Emit`）以及 MSBuild props/targets。
+`Jazor` 包包含核心运行时契约、`ECMAScript`、`ECMAScript.Vue3`、`ECMAScript.VueContract`、`Jazor.Compiler`、`Jazor.RazorVue`、`Jazor.Analyzer`、ASP.NET Core 集成程序集、emit 工具和 MSBuild props/targets。
 
-### 多项目配置
-
-Jazor 推荐使用多项目布局：库项目声明模块，宿主项目负责发射。
-
-**库项目** — 声明模块，不触发发射：
+按需显式添加生态包：
 
 ```xml
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net11.0</TargetFramework>
-    <JazorEmit>false</JazorEmit>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Jazor" Version="*" />
-  </ItemGroup>
-</Project>
+<ItemGroup>
+  <PackageReference Include="Jazor" Version="0.1.26" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.26" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.26" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.26" />
+</ItemGroup>
 ```
 
-**宿主项目** — 触发发射，输出 `.mjs` 文件：
+## Authoring 路线
 
-```xml
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net11.0</TargetFramework>
-    <JazorEmit>true</JazorEmit>
-    <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Jazor" Version="*" />
-    <ProjectReference Include="..\MyApp.Features\MyApp.Features.csproj" />
-  </ItemGroup>
-</Project>
-```
+### ECMAScript 模块 authoring
 
-宿主项目会扫描自身程序集及所有引用程序集中带有 `[ECMAScriptModule]` 标注的类型，将 `.mjs` 文件输出到 `JazorOutDir`。基线发射示例见 [multi-project sample](samples/Jazor.MultiProject/)，Vue 3 + Pinia 消费示例见 [ECMAScript.Pinia.Counter](samples/ECMAScript.Pinia.Counter/)。
-
-### MSBuild 属性
-
-| 属性 | 默认值 | 说明 |
-|------|--------|------|
-| `JazorCompile` | `true` | 启用 `[ECMAScriptModule]` 类型的编译。 |
-| `JazorEmit` | `Exe` 为 `true`，`Library` 为 `false` | 构建后发射 `.mjs` 文件。 |
-| `JazorOutDir` | `$(IntermediateOutputPath)jazor\$(TargetFramework)\modules\` | 发射的 `.mjs` 文件输出目录。 |
-| `JazorBundle` | `false` | 将所有模块打包为单个 JS 文件（使用内置 Deno 运行时）。 |
-| `JazorBundleOut` | `$(OutDir)jazor\app.js` | 打包后的 JS 文件输出路径。 |
-| `JazorCleanEmit` | `true` | 清理输出目录中的过期 `.mjs` 文件。 |
-| `JazorFailOnPathConflict` | `true` | 两个模块映射到同一路径时构建失败。 |
-
----
-
-## 模块编写
-
-### 基本模块
+用 `[ECMAScriptModule]` 发射普通 C# 到 JavaScript 模块：
 
 ```csharp
 using ECMAScript;
@@ -130,22 +83,11 @@ public static class GreetingModule
 }
 ```
 
-生成 `shared/greetings.mjs`：
+编译器会发射 named-export ECMAScript 模块。其他模块调用 `GreetingModule.Compose(...)` 时，跨模块 import 会自动解析。
 
-```javascript
-export function prefix() {
-  return "Hello";
-}
-export function compose(name) {
-  return `${prefix()}, ${name}`;
-}
-```
+### Vue 3 h() authoring
 
-跨模块引用自动解析 — 当另一个模块调用 `GreetingModule.Compose(name)` 时，编译器自动生成对应的 `import` 语句。
-
-### Vue 3 h() 函数编写
-
-`ECMAScript.Vue3` 提供类型化的 C# 绑定，用于 Vue 3 的 Composition API 和 `h()` 渲染函数：
+直接用 C# 编写 Vue 组件时使用 `ECMAScript.Vue3`：
 
 ```csharp
 using ECMAScript;
@@ -162,130 +104,156 @@ public static class CounterModule
             Setup = () =>
             {
                 var count = Ref(0);
-                return () => H("div", new VueObject { Class = "counter" },
-                [
-                    H("p", $"Count: {count.Value}"),
-                    H("button", new VueObject
+                return () => H("button", new VueObject
+                {
+                    Events = new VueDictionary
                     {
-                        Events = new VueDictionary
-                        {
-                            ["click"] = (Action)(() => count.Value++)
-                        }
-                    }, "Increment")
-                ]);
+                        ["click"] = (Action)(() => count.Value++)
+                    }
+                }, $"Count: {count.Value}");
             }
         });
 }
 ```
 
-### 编译能力
+### RazorVue 库模式
 
-编译器支持变量声明、基础类型、模式匹配、可空类型、async/await、字符串插值、对象和集合初始化、元组与解构、switch 语句/表达式，以及循环（for/foreach/while/do-while）。详见 [编译器文档](src/Jazor.Compiler/README.md)。
+当你想使用 Razor 组件 authoring，并在构建时得到 Vue artifact，使用 RazorVue：
 
----
+- 组件库编写 `.razor` / `.razor.cs` 组件；
+- RazorVue 分析合并后的组件类和 Razor SG 输出；
+- `Jazor.Emit` 物化 `.vue` / render-function artifact、manifest、source map 和 consumer bridge module；
+- 单个 ASP.NET Core host 可以运行 colocated Deno consumer build layer。
 
-## ECMAScript 特性约定
+当前库模式形态可从 [samples/RazorVue.TodoList](samples/RazorVue.TodoList/) 开始。
 
-- `[ECMAScript("npm:vue@3")]` — 声明**运行时导入依赖**。编译器生成 `import { ... } from "npm:vue@3"`。
-- `[ECMAScript("jsr:@scope/pkg")]` 或 `[ECMAScript("https://...")]` — Deno 可解析的导入地址。
-- `[ECMAScriptModule("features/todo/index.mjs")]` — 声明发射后的**输出模块路径**，不是包解析地址。
-- `[Jazor(...)]` — CLR 和宿主映射的生产侧声明。
+### Jolt 开发模式
 
----
-
-## 项目结构
-
-```
-Jazor/
-├── src/
-│   ├── ECMAScript/                  # ECMAScript AST 核心类型与特性
-│   ├── ECMAScript.Contract/         # 最小契约层（JazorAttribute、Op）
-│   ├── ECMAScript.Pinia/            # Pinia 运行时绑定面
-│   ├── ECMAScript.Pinia.Test/       # Pinia 绑定测试
-│   ├── ECMAScript.Vue3/             # Vue 3 运行时绑定面
-│   ├── ECMAScript.VueRoute/         # Vue Router 运行时绑定面
-│   ├── ECMAScript.VueRoute.Test/    # Vue Router 绑定测试
-│   ├── ECMAScript.Vuetify/          # Vuetify 3 生产级组件绑定
-│   ├── Jazor.Compiler/              # C# → JS 编译器核心
-│   ├── Jazor.Analyzer/              # 静态分析器（白名单验证）
-│   ├── Jazor.CLR/                   # CLR 运行时模块支持
-│   ├── Jazor.Emit/                  # 发射管线和打包物化
-│   ├── Jazor.Common/                # 共享契约和工具
-│   ├── Jazor/                       # NuGet 包（打包以上所有内容）
-│   ├── Jolt/                        # 【远期】开发工具链
-│   ├── Wiki/                        # 基于 Jazor 构建的文档站点
-│   └── samples/                     # 可运行的 host / consumer 示例
-├── docs/                            # 文档中心
-└── scripts/                         # 构建与工具脚本
-```
-
-## 文档
-
-| 角色 | 入口 |
-|------|------|
-| **新访客** | [文档中心](docs/README.md) — 项目全貌与导航 |
-| **维护者** | [工作流总览](docs/02-计划/workstream-dashboard.md) — 恢复工作唯一入口 |
-| **架构设计** | [编译器架构](docs/01-目标/compiler/ArchitectureOverview.Simplified.md) · [ECMAScript.Vue3 设计](docs/01-目标/ecmascript.vue3/README.md) · [ECMAScript.Pinia 设计](docs/01-目标/ecmascript.pinia/README.md) · [ECMAScript.VueRoute 设计](docs/01-目标/ecmascript.vueroute/README.md) |
-
-文档按五类组织：[目标](docs/01-目标/README.md) · [计划](docs/02-计划/README.md) · [完成](docs/03-完成/README.md) · [补充](docs/04-补充/README.md) · [遗弃](docs/05-遗弃/README.md)
-
----
-
-## 开发和构建
-
-### 环境要求
-- .NET 11 SDK（预览版）
-- PowerShell 7+（用于测试脚本）
-- Windows、Linux 或 macOS
-
-### 构建步骤
+需要完整 `.jazor` 开发宿主时使用 Jolt：
 
 ```bash
-git clone https://github.com/devhxj/Jazor.git
-cd Jazor
-dotnet restore
-dotnet build
+dotnet run --project src/Jolt/Jolt.csproj -- --lsp
+dotnet run --project src/Jolt/Jolt.csproj -- --dev
+dotnet run --project src/Jolt/Jolt.csproj -- --build
+```
 
-# 运行所有测试
-dotnet run --file ./scripts/csharp/test-dotnet.cs
+Jolt 只拥有编辑器和运行时协调。编译器 lowering 规则仍属于 `Jazor.Compiler`，共享的 RazorVue/Jolt 协议 DTO 位于 `Jazor.RazorVue`。
 
-# 仅运行编译器测试
-dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project compiler
+## MSBuild 属性
 
-# 仅运行 Pinia 绑定测试
-dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project pinia
+| 属性 | 默认值 | 说明 |
+|------|--------|------|
+| `JazorCompile` | `true` | 启用 `[ECMAScriptModule]` 类型编译。 |
+| `JazorEmit` | 可执行宿主为 `true`，库项目为 `false` | 构建后发射生成模块 / artifact。 |
+| `JazorRazorVueOutputMode` | `sfc` | 选择 RazorVue artifact 模式。 |
+| `JazorRazorVueEnableRazorSgIntegration` | `false` | 为显式选择的 RazorVue 路径启用 Razor Source Generator 集成。 |
+| `JazorDevOutDir` | `$(MSBuildProjectDirectory)\jazor\` | compiler-owned artifact 的默认开发期输出根目录。 |
+| `JazorPublishOutDir` | `$(MSBuildProjectDirectory)\wwwroot\jazor\` | 未启用 publish materialization 时的默认发布期浏览器资产根目录。 |
+| `JazorOutDir` | `$(JazorDevOutDir)` | compiler-owned artifact 的当前选定输出目录。 |
+| `JazorBundle` | `false` | 通过内置 Deno runtime 打包已发射模块。 |
+| `JazorBundleOut` | `$(OutDir)jazor\app.js` | 打包 JavaScript 输出路径。 |
+| `JazorCleanEmit` | `true` | 清理输出目录中过期的发射文件。 |
+| `JazorFailOnPathConflict` | `true` | 两个模块声明同一输出路径时构建失败。 |
+| `JazorConsumerRoot` | 空 | RazorVue host 项目的 colocated consumer 根目录。 |
+| `JazorPublishMaterializeEnabled` | `false` | 发布时把 compiler-owned RazorVue 输出物化到发布资产。 |
 
-# 仅运行 Vue Router 绑定测试
-dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project vueroute
+包和 emit 细节见 [src/Jazor/README.md](src/Jazor/README.md) 与 [src/Jazor.Emit/README.md](src/Jazor.Emit/README.md)。
 
-# 运行单个测试类
+## 仓库结构
+
+```text
+Jazor/
+├── src/
+│   ├── Jazor.Compiler/              # C# -> JavaScript 编译器核心
+│   ├── Jazor.CLR/                   # CLR runtime 映射和 JavaScript helper
+│   ├── Jazor.Analyzer/              # Analyzer 与 RazorVue source-generator 宿主
+│   ├── Jazor.RazorVue/              # RazorVue 共享语义、artifact、Razor SDK bridge、协议 DTO
+│   ├── Jazor.Emit/                  # 物化、manifest、打包、RazorVue consumer bridge
+│   ├── Jazor.Common/                # 共享格式化 / source-map 工具和契约
+│   ├── Jazor.AspNetCore*/           # ASP.NET Core runtime 与开发期集成
+│   ├── Jazor/                       # NuGet 包，打包核心 SDK 资产
+│   ├── Jolt/                        # .jazor 开发宿主
+│   ├── ECMAScript*/                 # ECMAScript AST/contract 与 Vue 生态绑定
+│   └── *Test/                       # MSTest 回归项目
+├── samples/
+│   ├── Jazor.MultiProject/          # 多项目模块发射基线示例
+│   ├── ECMAScript.Pinia.Counter/    # Vue 3 + Pinia 示例
+│   └── RazorVue.TodoList/           # RazorVue SFC 库模式示例
+├── docs/                            # 目标、计划、状态快照、补充规则、遗弃材料
+└── scripts/csharp/                  # 仓库自动化脚本
+```
+
+## 开发
+
+环境要求：
+
+- 与 [global.json](global.json) 匹配的 .NET 11 SDK preview
+- Windows、Linux 或 macOS
+- 只有 `src/ECMAScript.WebIDL` 下已归档的 WebIDL TypeScript generator 需要 Node/npm
+
+从仓库根目录运行常用命令：
+
+```bash
+dotnet restore Jazor.slnx
+dotnet build Jazor.slnx
+
+# 仓库主测试入口
+dotnet run --file scripts/csharp/test-dotnet.cs
+
+# 聚焦测试套件
+dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
+dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj
+dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
+dotnet test src/Jolt.Test/Jolt.Test.csproj
+
+# 单个测试类示例
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest"
 ```
 
----
+仓库自动化脚本应使用 `scripts/csharp/` 下的单文件 C# 入口；避免新增 PowerShell build/test wrapper。
+
+## 文档
+
+| 需求 | 入口 |
+|------|------|
+| 仓库文档中心 | [docs/README.md](docs/README.md) |
+| 当前工作流总览 | [docs/02-计划/workstream-dashboard.md](docs/02-%E8%AE%A1%E5%88%92/workstream-dashboard.md) |
+| 编译器实现原则 | [src/Jazor.Compiler/ImplementationPrinciples.md](src/Jazor.Compiler/ImplementationPrinciples.md) |
+| 编译器状态 | [docs/03-完成/compiler/status.md](docs/03-%E5%AE%8C%E6%88%90/compiler/status.md) |
+| RazorVue 设计 | [docs/01-目标/razorvue/README.md](docs/01-%E7%9B%AE%E6%A0%87/razorvue/README.md) |
+| Jolt 设计 | [docs/01-目标/jolt/README.md](docs/01-%E7%9B%AE%E6%A0%87/jolt/README.md) |
+| Jolt 状态 | [docs/03-完成/jolt/status.md](docs/03-%E5%AE%8C%E6%88%90/jolt/status.md) |
+| Emit 状态 | [docs/03-完成/emit/status.md](docs/03-%E5%AE%8C%E6%88%90/emit/status.md) |
+
+文档按以下目录组织：
+
+- `docs/01-目标/`：目标和设计理由
+- `docs/02-计划/`：计划、里程碑和工作拆分
+- `docs/03-完成/`：状态快照和评审结果
+- `docs/04-补充/`：治理规则和补充约束
+- `docs/05-遗弃/`：已遗弃历史材料
+
+`docs/03-完成/compiler/testing/` 应视为历史审计材料。判断当前 compiler 事实时，优先阅读 `src/Jazor.Compiler/ImplementationPrinciples.md`、`docs/03-完成/compiler/status.md` 和当前 compiler / test README。
 
 ## 贡献
 
-欢迎社区贡献。请在提交 Pull Request 前查阅仓库文档并遵循代码库中描述的约定。
+欢迎贡献。请保持改动范围清晰，遵守仓库约定；当工作流边界或公共契约变化时，同步更新相关文档 / 状态页。
 
 ## 许可证
 
-本项目采用 MIT 许可证。详见 [LICENSE.txt](LICENSE.txt) 文件。
+本项目采用 MIT 许可证。详见 [LICENSE.txt](LICENSE.txt)。
 
 ## 致谢
 
 - [Roslyn](https://github.com/dotnet/roslyn) — C# 编译器平台
 - [Acornima](https://github.com/adams85/acornima) — JavaScript 解析器和 AST 库
 - [WebRef](https://github.com/w3c/webref) — Web 规范引用
-- [WootzJs](https://github.com/kswoll/WootzJs) · [h5](https://github.com/curiosity-ai/h5) · [SharpKit](https://github.com/SharpKit/SharpKit) — C# 到 JavaScript 编译器
-- [DenoHost](https://github.com/thomas3577/DenoHost) — .NET 的 Deno 运行时宿主
-- [CSharpToJavaScript](https://github.com/TiLied/CSharpToJavaScript) — C# 到 JavaScript 转译器
-
----
+- [DenoHost](https://github.com/thomas3577/DenoHost) — .NET 的 Deno runtime host
+- [WootzJs](https://github.com/kswoll/WootzJs)、[h5](https://github.com/curiosity-ai/h5)、[SharpKit](https://github.com/SharpKit/SharpKit) — 早期 C# 到 JavaScript 编译器
 
 ## 安全策略
 
-如果你发现安全漏洞，请通过 [GitHub 安全公告](https://github.com/devhxj/Jazor/security/advisories/new)私下报告。不要为安全问题创建公开 Issue。
+如果你发现安全漏洞，请通过 [GitHub Security Advisories](https://github.com/devhxj/Jazor/security/advisories/new) 私下报告。不要为安全问题创建公开 Issue。
 
 ## 反馈
 

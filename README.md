@@ -5,116 +5,70 @@
 ![Today's Verse](https://v2.jinrishici.com/one.svg?font-size=20&spacing=2&color=Chocolate)
 </div>
 
-# Jazor - C# to JavaScript Compiler
+# Jazor
 
 [![.NET](https://img.shields.io/badge/.NET-11.0-blue.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE.txt)
 [![NuGet](https://img.shields.io/nuget/v/Jazor.svg)](https://www.nuget.org/packages/Jazor)
 
-> Experimental. Public APIs, generated output shape, and tooling are still evolving. The compiler core and ECMAScript module emission are the most stable parts of the project.
+> Experimental. Public APIs, generated artifact shape, and tooling are still evolving. The compiler core, emit pipeline, and shared RazorVue/Jolt contracts are the most stable foundations.
 
-Jazor is a Roslyn-based C# to JavaScript compiler centered on `IOperation` to ECMAScript AST lowering. Annotate C# classes with `[ECMAScriptModule]`, get `.mjs` files at build time. Includes typed Vue 3 `h()` render function bindings via `ECMAScript.Vue3`, Pinia store bindings via `ECMAScript.Pinia`, and Vue Router bindings via `ECMAScript.VueRoute`.
+Jazor is a .NET toolchain for authoring JavaScript and Vue applications from C# and Razor.
 
-## Features
+The repository currently has two active product lines:
 
-- **C# syntax coverage** — supports virtually all C# 15 language features: variable declarations, basic types, pattern matching, nullable types, async/await, string interpolation, object and collection initialization, tuples, deconstruction, switch statements/expressions, and loops (for/foreach/while/do-while)
-- **Roslyn `IOperation` lowering** — semantic-driven compilation via `IOperation` → ECMAScript AST, not syntax-level translation
-- **Static analysis safety** — `Jazor.Analyzer` enforces whitelist boundaries at compile time, diagnosing unsupported types and members before emission
-- **CLR runtime modules** — common BCL types (`string`, `int`, `double`, `List<T>`, `Dictionary<TKey, TValue>`, `Task<T>`, etc.) are mapped to JavaScript runtime implementations through `Jazor.CLR`
-- **ECMAScript module emission** — `[ECMAScriptModule]` annotated classes compile to `.mjs` files with automatic cross-module import resolution and source maps
-- **Vue 3 integration** — `ECMAScript.Vue3` provides typed C# bindings for Vue 3's Composition API and `h()` render function, enabling component authoring in pure C#
-- **Pinia integration** — `ECMAScript.Pinia` provides typed C# bindings for Pinia root/store authoring, including `createPinia()`, `defineStore()`, `storeToRefs()`, and common Options API helpers such as `mapState()` / `mapActions()`
-- **Vue Router integration** — `ECMAScript.VueRoute` provides typed C# bindings for Vue Router 4 authoring, including `createRouter()`, history creators, `useRouter()`, `useRoute()`, `RouterLink`, and `RouterView`
-- **Vuetify integration** — `ECMAScript.Vuetify` provides production-grade typed C# bindings for Vuetify 3 component authoring, with strongly typed props, named slots, event bindings, and full runtime export coverage
-- **MSBuild integration** — emit, bundle, and output path configuration through standard MSBuild properties
+| Line | Mode | Main projects | What it does |
+|------|------|---------------|--------------|
+| **RazorVue** | Library mode | `Jazor.RazorVue`, `Jazor.Analyzer`, `Jazor.Emit` | Build-time Razor component analysis and generation of final `.vue` / render-function artifacts. |
+| **Jolt** | Full development host | `Jolt` | `.jazor` authoring host with LSP, workspace coordination, DevServer/HMR, debug, build, and Deno-backed frontend tooling. |
 
-## Status
+Both lines share the same compiler and runtime foundations: `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyzer`, `Jazor.Emit`, `Jazor.Common`, and the ECMAScript/Vue binding assemblies.
 
-<table>
-<tr><th nowrap>Tier</th><th>Component</th><th>Status</th></tr>
-<tr><td nowrap><strong>Working</strong></td><td>Compiler core (SemanticWalker, AstConverter) — 1,891 tests</td><td>Stable — the most mature part</td></tr>
-<tr><td nowrap><strong>Working</strong></td><td>ECMAScript module emission (<code>[ECMAScriptModule]</code> → <code>.mjs</code>) — 111 tests</td><td>Stable</td></tr>
-<tr><td nowrap><strong>Working</strong></td><td>ECMAScript.Vue3 bindings (h, ref, reactive, lifecycle, createApp)</td><td>Stable</td></tr>
-<tr><td nowrap><strong>Working</strong></td><td>MSBuild integration (JazorEmit, JazorBundle, JazorOutDir)</td><td>Stable</td></tr>
-<tr><td nowrap><strong>Working</strong></td><td>Jazor.Analyzer (whitelist compile-time validation)</td><td>Stable</td></tr>
-<tr><td nowrap><strong>Working</strong></td><td>ECMAScript.Vuetify bindings (117 components, typed props/slots/events) — 117 components</td><td>Stable — production-grade Vuetify 3 authoring</td></tr>
-<tr><td nowrap><strong>Working</strong></td><td>CLR runtime modules — 70 tests</td><td>Stable</td></tr>
-<tr><td nowrap><strong>In progress</strong></td><td>RazorVue (SFC pipeline, canonical h() model, Vuetify production coverage) — 772 tests</td><td>Production-grade Vuetify authoring, pipeline validation, slot/fallthrough support</td></tr>
-<tr><td nowrap><strong>In progress</strong></td><td>ECMAScript.Pinia + ECMAScript.VueRoute — 205 tests</td><td>Expanding API coverage, Pinia Testing utilities</td></tr>
-<tr><td nowrap><strong>In progress</strong></td><td>SourceMap</td><td>Narrow lane — module-level <code>.mjs.map</code>, not full coverage yet</td></tr>
-<tr><td nowrap><strong>In progress</strong></td><td>Deno bundling</td><td><code>JazorBundle</code> target works for basic cases</td></tr>
-<tr><td nowrap><strong>In progress</strong></td><td>Debugging</td><td>Design and milestone code exist, not user-facing yet</td></tr>
-<tr><td nowrap><strong>Long-term</strong></td><td>Jolt (LSP, HMR, DevServer, debug, build) — 778 tests</td><td>Phase 1–6 closing, <a href="docs/01-目标/jolt/README.md">Design</a></td></tr>
-</table>
+## Current Focus
 
-Users today should target the **Working** tier. 32 projects · ~290K production LoC · ~190K test LoC · ~3,850+ total tests.
+- **Compiler core**: Roslyn `IOperation` to Acornima ESTree lowering, with explicit support boundaries and deterministic emission.
+- **RazorVue library mode**: Razor components compile to final Vue artifacts. The `.vue` / render-function artifact boundary is the public output contract, not an intermediate wrapper-JS protocol.
+- **Jolt development mode**: `.jazor` remains the authoring document. Jolt coordinates Razor/Roslyn/Volar lanes, local preview, HMR, source maps, debug, and production build.
+- **Emit and materialization**: `Jazor.Emit` writes `.mjs`, `.vue`, manifests, source maps, bundle output, and RazorVue consumer bridge modules.
+- **Vue ecosystem bindings**: Vue 3 core bindings are part of the `Jazor` package; Pinia, Vue Router, Vuetify, and other UI/library bindings are maintained as explicit ecosystem projects.
 
----
+For current status, prefer the status pages under `docs/03-完成/` and local test output over hard-coded counts in README files.
 
-## Getting Started
+## Feature Overview
 
-### Install
+- **Semantic C# lowering**: C# is lowered through Roslyn `IOperation`, not syntax-string rewriting.
+- **Fail-fast host boundary**: unsupported external runtime semantics are rejected at the actual lowering site instead of silently emitting raw JavaScript approximations.
+- **Whitelist-gated CLR surface**: common CLR APIs are mapped through `Jazor.CLR` and generated whitelist metadata; analyzer diagnostics catch many unsupported usages early.
+- **ECMAScript module output**: `[ECMAScriptModule]` classes emit named-export `.mjs` modules with stable import collection, source-origin tracking, and source-map carriers.
+- **RazorVue artifact generation**: Razor component semantics flow through Razor SG / Roslyn / Razor IR where appropriate, then lower to Vue SFC or render-function artifacts.
+- **Typed Vue authoring**: `ECMAScript.Vue3` provides typed bindings for Vue 3 `defineComponent`, `h`, refs/reactivity, lifecycle hooks, props, slots, and component contracts.
+- **Host-facing build support**: MSBuild targets can emit modules, materialize RazorVue artifacts, run consumer builds, publish assets, and bundle through the bundled Deno runtime.
+- **Jolt tooling**: Jolt provides the active `.jazor` development-time boundary for editor services, preview/HMR, source-map-aware debug, and production build.
 
-```
+## Install
+
+```bash
 dotnet add package Jazor
 ```
 
-The package includes runtime (`ECMAScript`, `ECMAScript.Vue3`, `ECMAScript.Pinia`, `ECMAScript.VueRoute`, `ECMAScript.Vuetify`), compiler (`Jazor.Compiler`), static analyzer (`Jazor.Analyzer`), emit tool (`Jazor.Emit`), and MSBuild props/targets.
+The `Jazor` package includes the core runtime contracts, `ECMAScript`, `ECMAScript.Vue3`, `ECMAScript.VueContract`, `Jazor.Compiler`, `Jazor.RazorVue`, `Jazor.Analyzer`, ASP.NET Core integration assemblies, the emit tool, and MSBuild props/targets.
 
-### Multi-project Setup
-
-Jazor works best with a multi-project layout where library projects declare modules and a host project emits them.
-
-**Library project** — declares modules, no emit:
+Add ecosystem packages explicitly when needed:
 
 ```xml
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net11.0</TargetFramework>
-    <JazorEmit>false</JazorEmit>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Jazor" Version="*" />
-  </ItemGroup>
-</Project>
+<ItemGroup>
+  <PackageReference Include="Jazor" Version="0.1.26" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.26" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.26" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.26" />
+</ItemGroup>
 ```
 
-**Host project** — triggers emit and writes `.mjs` files:
+## Authoring Paths
 
-```xml
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net11.0</TargetFramework>
-    <JazorEmit>true</JazorEmit>
-    <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Jazor" Version="*" />
-    <ProjectReference Include="..\MyApp.Features\MyApp.Features.csproj" />
-  </ItemGroup>
-</Project>
-```
+### ECMAScript Module Authoring
 
-The host project scans its own assembly and all referenced assemblies for `[ECMAScriptModule]`-annotated types and emits `.mjs` files to `JazorOutDir`. See the [multi-project sample](samples/Jazor.MultiProject/) for the baseline emit layout, and [ECMAScript.Pinia.Counter](samples/ECMAScript.Pinia.Counter/) for a Vue 3 + Pinia consumption sample.
-
-### MSBuild Properties
-
-| Property | Default | Description |
-|----------|---------|-------------|
-| `JazorCompile` | `true` | Enables compilation of `[ECMAScriptModule]` types. |
-| `JazorEmit` | `true` for `Exe`, `false` for `Library` | Emits `.mjs` files after build. |
-| `JazorOutDir` | `$(IntermediateOutputPath)jazor\$(TargetFramework)\modules\` | Output directory for emitted `.mjs` files. |
-| `JazorBundle` | `false` | Bundles all emitted modules into a single JS file (uses bundled Deno runtime). |
-| `JazorBundleOut` | `$(OutDir)jazor\app.js` | Output path for the bundled JS file. |
-| `JazorCleanEmit` | `true` | Removes stale `.mjs` files from the output directory. |
-| `JazorFailOnPathConflict` | `true` | Fails the build if two modules claim the same output path. |
-
----
-
-## Authoring Modules
-
-### Basic Module
+Use `[ECMAScriptModule]` for plain C# to JavaScript module emission:
 
 ```csharp
 using ECMAScript;
@@ -129,22 +83,11 @@ public static class GreetingModule
 }
 ```
 
-Generates `shared/greetings.mjs`:
+The compiler emits a named-export ECMAScript module and resolves cross-module imports automatically when another module calls `GreetingModule.Compose(...)`.
 
-```javascript
-export function prefix() {
-  return "Hello";
-}
-export function compose(name) {
-  return `${prefix()}, ${name}`;
-}
-```
+### Vue 3 h() Authoring
 
-Cross-module imports are resolved automatically — when another module calls `GreetingModule.Compose(name)`, the compiler generates the corresponding `import` statement.
-
-### Vue 3 h() Function Authoring
-
-`ECMAScript.Vue3` provides typed C# bindings for Vue 3's Composition API and `h()` render function:
+Use `ECMAScript.Vue3` when authoring Vue components directly in C#:
 
 ```csharp
 using ECMAScript;
@@ -161,111 +104,140 @@ public static class CounterModule
             Setup = () =>
             {
                 var count = Ref(0);
-                return () => H("div", new VueObject { Class = "counter" },
-                [
-                    H("p", $"Count: {count.Value}"),
-                    H("button", new VueObject
+                return () => H("button", new VueObject
+                {
+                    Events = new VueDictionary
                     {
-                        Events = new VueDictionary
-                        {
-                            ["click"] = (Action)(() => count.Value++)
-                        }
-                    }, "Increment")
-                ]);
+                        ["click"] = (Action)(() => count.Value++)
+                    }
+                }, $"Count: {count.Value}");
             }
         });
 }
 ```
 
-### Compilation Capabilities
+### RazorVue Library Mode
 
-The compiler supports variable declarations, basic types, pattern matching, nullable types, async/await, string interpolation, object and collection initialization, tuples, deconstruction, switch statements/expressions, and loops (for/foreach/while/do-while). See [Compiler Docs](src/Jazor.Compiler/README.md) for the full feature set.
+Use RazorVue when you want Razor component authoring and build-time Vue artifacts:
 
----
+- component libraries author `.razor` / `.razor.cs` components;
+- RazorVue analyzes the merged component class and Razor SG output;
+- `Jazor.Emit` materializes `.vue` / render-function artifacts, manifests, source maps, and consumer bridge modules;
+- a single ASP.NET Core host can run a colocated Deno consumer build layer.
 
-## ECMAScript Attribute Conventions
+Start from [samples/RazorVue.TodoList](samples/RazorVue.TodoList/) for the current library-mode shape.
 
-- `[ECMAScript("npm:vue@3")]` — declares a **runtime import dependency**. The compiler generates `import { ... } from "npm:vue@3"`.
-- `[ECMAScript("jsr:@scope/pkg")]` or `[ECMAScript("https://...")]` — Deno-resolvable import addresses.
-- `[ECMAScriptModule("features/todo/index.mjs")]` — declares the **output module path** after emission. Not a package resolution address.
-- `[Jazor(...)]` — CLR and host mapping producer-side declarations.
+### Jolt Development Mode
 
----
+Use Jolt when you need the full `.jazor` development host:
 
-## Project Structure
-
+```bash
+dotnet run --project src/Jolt/Jolt.csproj -- --lsp
+dotnet run --project src/Jolt/Jolt.csproj -- --dev
+dotnet run --project src/Jolt/Jolt.csproj -- --build
 ```
+
+Jolt owns editor/runtime coordination only. Compiler lowering rules stay in `Jazor.Compiler`, and shared RazorVue/Jolt protocol DTOs stay in `Jazor.RazorVue`.
+
+## MSBuild Properties
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| `JazorCompile` | `true` | Enables compilation of `[ECMAScriptModule]` types. |
+| `JazorEmit` | `true` for executable hosts, `false` for libraries | Emits generated modules/artifacts after build. |
+| `JazorRazorVueOutputMode` | `sfc` | Selects the RazorVue artifact mode. |
+| `JazorRazorVueEnableRazorSgIntegration` | `false` | Enables Razor Source Generator integration for RazorVue paths that opt in. |
+| `JazorDevOutDir` | `$(MSBuildProjectDirectory)\jazor\` | Default development output root for compiler-owned artifacts. |
+| `JazorPublishOutDir` | `$(MSBuildProjectDirectory)\wwwroot\jazor\` | Default publish-time browser asset root when publish materialization is not enabled. |
+| `JazorOutDir` | `$(JazorDevOutDir)` | Selected output directory for compiler-owned artifacts. |
+| `JazorBundle` | `false` | Bundles emitted modules through the bundled Deno runtime. |
+| `JazorBundleOut` | `$(OutDir)jazor\app.js` | Output path for bundled JavaScript. |
+| `JazorCleanEmit` | `true` | Removes stale emitted files from the output directory. |
+| `JazorFailOnPathConflict` | `true` | Fails the build when two modules claim the same output path. |
+| `JazorConsumerRoot` | empty | RazorVue colocated consumer root for host projects. |
+| `JazorPublishMaterializeEnabled` | `false` | Materializes compiler-owned RazorVue output into publish assets. |
+
+See [src/Jazor/README.md](src/Jazor/README.md) and [src/Jazor.Emit/README.md](src/Jazor.Emit/README.md) for package and emit details.
+
+## Repository Layout
+
+```text
 Jazor/
 ├── src/
-│   ├── ECMAScript/                  # ECMAScript AST core types and attributes
-│   ├── ECMAScript.Contract/         # Minimal contract layer (JazorAttribute, Op)
-│   ├── ECMAScript.Pinia/            # Pinia runtime binding surface
-│   ├── ECMAScript.Pinia.Test/       # Pinia binding tests
-│   ├── ECMAScript.Vue3/             # Vue 3 runtime binding surface
-│   ├── ECMAScript.VueRoute/         # Vue Router runtime binding surface
-│   ├── ECMAScript.VueRoute.Test/    # Vue Router binding tests
-│   ├── ECMAScript.Vuetify/          # Vuetify 3 production-grade component bindings
-│   ├── Jazor.Compiler/              # C# → JS compiler core
-│   ├── Jazor.Analyzer/              # Static analyzer (whitelist validation)
-│   ├── Jazor.CLR/                   # CLR runtime module support
-│   ├── Jazor.Emit/                  # Emit pipeline and bundle materialisation
-│   ├── Jazor.Common/                # Shared contracts and utilities
-│   ├── Jazor/                       # NuGet package (bundles everything above)
-│   ├── Jolt/                        # [Long-term] Dev toolchain
-│   ├── Wiki/                        # Docs site built with Jazor
-│   └── samples/                     # Working host/consumer samples
-├── docs/                            # Documentation hub
-└── scripts/                         # Build and tooling scripts
+│   ├── Jazor.Compiler/              # C# -> JavaScript compiler core
+│   ├── Jazor.CLR/                   # CLR runtime mappings and JavaScript helpers
+│   ├── Jazor.Analyzer/              # Analyzer and RazorVue source-generator host
+│   ├── Jazor.RazorVue/              # Shared RazorVue semantics, artifacts, Razor SDK bridge, protocol DTOs
+│   ├── Jazor.Emit/                  # Materialization, manifests, bundling, RazorVue consumer bridge
+│   ├── Jazor.Common/                # Shared formatting/source-map utilities and contracts
+│   ├── Jazor.AspNetCore*/           # ASP.NET Core runtime and dev integration
+│   ├── Jazor/                       # NuGet package bundling core SDK assets
+│   ├── Jolt/                        # .jazor development host
+│   ├── ECMAScript*/                 # ECMAScript AST/contracts plus Vue ecosystem bindings
+│   └── *Test/                       # MSTest regression projects
+├── samples/
+│   ├── Jazor.MultiProject/          # Baseline multi-project module emission
+│   ├── ECMAScript.Pinia.Counter/    # Vue 3 + Pinia sample
+│   └── RazorVue.TodoList/           # RazorVue SFC library-mode sample
+├── docs/                            # Goals, plans, status snapshots, supplements, retired material
+└── scripts/csharp/                  # Repository automation scripts
 ```
-
-## Documentation
-
-| Audience | Entry |
-|----------|-------|
-| **New visitors** | [Docs Hub](docs/README.md) — project overview and navigation |
-| **Maintainers** | [Workstream Dashboard](docs/02-计划/workstream-dashboard.md) — resume work entry point |
-| **Architecture** | [Compiler Architecture](docs/01-目标/compiler/ArchitectureOverview.Simplified.md) · [ECMAScript.Vue3 Design](docs/01-目标/ecmascript.vue3/README.md) · [ECMAScript.Pinia Design](docs/01-目标/ecmascript.pinia/README.md) · [ECMAScript.VueRoute Design](docs/01-目标/ecmascript.vueroute/README.md) |
-
-Docs are organized into five categories: [Goals](docs/01-目标/README.md) · [Plans](docs/02-计划/README.md) · [Completed](docs/03-完成/README.md) · [Supplements](docs/04-补充/README.md) · [Retired](docs/05-遗弃/README.md)
-
----
 
 ## Development
 
-### Prerequisites
-- .NET 11 SDK (preview)
-- PowerShell 7+ (for test scripts)
-- Windows, Linux, or macOS
+Prerequisites:
 
-### Build Steps
+- .NET 11 SDK preview matching [global.json](global.json)
+- Windows, Linux, or macOS
+- Node/npm only for the archived WebIDL TypeScript generator under `src/ECMAScript.WebIDL`
+
+Common commands from the repository root:
 
 ```bash
-git clone https://github.com/devhxj/Jazor.git
-cd Jazor
-dotnet restore
-dotnet build
+dotnet restore Jazor.slnx
+dotnet build Jazor.slnx
 
-# Run all tests
-dotnet run --file ./scripts/csharp/test-dotnet.cs
+# Main repository test runner
+dotnet run --file scripts/csharp/test-dotnet.cs
 
-# Run compiler tests only
-dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project compiler
+# Focused suites
+dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
+dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj
+dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
+dotnet test src/Jolt.Test/Jolt.Test.csproj
 
-# Run Pinia binding tests only
-dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project pinia
-
-# Run Vue Router binding tests only
-dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project vueroute
-
-# Run a single test class
+# Focused class example
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest"
 ```
 
----
+Repository automation scripts should be single-file C# entrypoints under `scripts/csharp/`; avoid adding new PowerShell build/test wrappers.
+
+## Documentation
+
+| Need | Entry |
+|------|-------|
+| Repository docs hub | [docs/README.md](docs/README.md) |
+| Current workstream dashboard | [docs/02-计划/workstream-dashboard.md](docs/02-%E8%AE%A1%E5%88%92/workstream-dashboard.md) |
+| Compiler implementation principles | [src/Jazor.Compiler/ImplementationPrinciples.md](src/Jazor.Compiler/ImplementationPrinciples.md) |
+| Compiler status | [docs/03-完成/compiler/status.md](docs/03-%E5%AE%8C%E6%88%90/compiler/status.md) |
+| RazorVue design | [docs/01-目标/razorvue/README.md](docs/01-%E7%9B%AE%E6%A0%87/razorvue/README.md) |
+| Jolt design | [docs/01-目标/jolt/README.md](docs/01-%E7%9B%AE%E6%A0%87/jolt/README.md) |
+| Jolt status | [docs/03-完成/jolt/status.md](docs/03-%E5%AE%8C%E6%88%90/jolt/status.md) |
+| Emit status | [docs/03-完成/emit/status.md](docs/03-%E5%AE%8C%E6%88%90/emit/status.md) |
+
+Docs are organized as:
+
+- `docs/01-目标/`: goals and design rationale
+- `docs/02-计划/`: plans, milestones, and work breakdowns
+- `docs/03-完成/`: status snapshots and review results
+- `docs/04-补充/`: governance and supplemental rules
+- `docs/05-遗弃/`: retired historical material
+
+Treat `docs/03-完成/compiler/testing/` as historical audit material. For current compiler truth, prefer `src/Jazor.Compiler/ImplementationPrinciples.md`, `docs/03-完成/compiler/status.md`, and the current compiler/test READMEs.
 
 ## Contributing
 
-Community contributions are welcome. Please review the repository documentation and follow the conventions described in the codebase before submitting a Pull Request.
+Contributions are welcome. Keep changes scoped, follow the repository conventions, and update the relevant docs/status pages when a workstream boundary or public contract changes.
 
 ## License
 
@@ -276,11 +248,8 @@ This project is licensed under the MIT License. See [LICENSE.txt](LICENSE.txt) f
 - [Roslyn](https://github.com/dotnet/roslyn) — C# compiler platform
 - [Acornima](https://github.com/adams85/acornima) — JavaScript parser and AST library
 - [WebRef](https://github.com/w3c/webref) — Web specification references
-- [WootzJs](https://github.com/kswoll/WootzJs) · [h5](https://github.com/curiosity-ai/h5) · [SharpKit](https://github.com/SharpKit/SharpKit) — C# to JavaScript compilers
 - [DenoHost](https://github.com/thomas3577/DenoHost) — Deno runtime host for .NET
-- [CSharpToJavaScript](https://github.com/TiLied/CSharpToJavaScript) — C# to JavaScript transpiler
-
----
+- [WootzJs](https://github.com/kswoll/WootzJs), [h5](https://github.com/curiosity-ai/h5), and [SharpKit](https://github.com/SharpKit/SharpKit) — prior C# to JavaScript compilers
 
 ## Security Policy
 
