@@ -23,7 +23,7 @@
 - 通用 `imperative body -> canonical <template>` 回流仍不支持。当前只接受已实现的 root-level、无副作用、template-safe 窄子集；其它 imperative subtree 保守输出 render-function `.vue` 或 fail-fast。
 - 真正 async render contract 不支持。`await`、`await foreach`、`await using`、`await using var` 不会生成 fire-and-forget async render。
 - `goto` 不支持，因为当前 `Jazor.Compiler` 没有任意 jump control flow 的等价 JS lowering。
-- 声明式 count-style `for` 只接受可归一到 `__jazorVueForRange(...)` 的单 iterator 形态。多 iterator、非加减 iterator、逐轮动态 step 或 loop-local dependent step 不进入声明式 `RazorVueForNode`。
+- 声明式 count-style `for` 只接受可归一到 `__jazorVueForRange(...)` 且不会改变 iterator 求值次数的单 iterator 形态。常量、参数、属性、局部静态 carrier 和其它可按进入 range helper 前一次求值表达的 loop-invariant step 可进入声明式 `RazorVueForNode`；多 iterator、非加减 iterator、逐轮动态 invocation step 或 loop-local dependent step 保守进入 imperative loop/render-function。
 - 需要 runtime-sensitive exception、dispose、lock、loop control、mutation、byref、same-artifact helper type runtime declaration 或动态 raw markup 语义的 template recovery 不做静默擦除。
 
 ### Template Code Block / Markup
@@ -64,7 +64,7 @@
 - component emit modifier 不与 HTML DOM event modifier 共用路径，组件 emits 继续按 descriptor-aware component event lowering。
 - `.vue` default export/import 不作为 Jazor authored module 的编译器边界；SFC default component 仍通过 `razorvue-sfc-bridge` 转成 named export/import。
 - RazorVue library mode 的 colocated `consumer` 是同一 ASP.NET Core 项目内的前端消费构建层，不是第二个 runtime host。`JazorConsumerRoot` 已设置但 runner 缺失时必须由 MSBuild target fail-fast。
-- route template -> Vue Router bridge 继续拒绝无法诚实映射的长尾形态：optional separator 参数位置非法、多层 composite/mixed segment、未知自定义 constraint，以及无法表达为“Vue Router path regex + generated metadata 二次校验”的 constraint 组合。
+- route template -> Vue Router bridge 继续拒绝无法诚实映射的长尾形态：optional separator 参数位置非法、需要多次 optional separator 展开的 composite/mixed segment、未知自定义 constraint，以及无法表达为“Vue Router path regex + generated metadata 二次校验”的 constraint 组合。普通多参数 composite/mixed segment 已由 Emit 回归固化。
 
 ## 已移除缺口摘要
 
@@ -72,6 +72,7 @@
 - Root-level canonical `<template>` recovery 已覆盖受控 `switch`、guard-return、`try/finally` / 空 recovery、`lock(this)` / 受控 readonly object gate、no-op label、null/default `using`、null/default leading `using declaration`、`do while(false)` 和 `while(false)` 子集。
 - Component parameter descriptor、current-component slot forwarding、builder-style `RenderFragment` / `RenderFragment<T>` slot callback、nested component metadata/import 已进入正式路径。
 - Razor IR mixed attribute、lowercase `class` / `style` fallthrough、DOM event modifier、static markup、typed/untyped `RenderFragment` carrier、fragment factory、template local、setup/lifecycle helper 受控 payload、动态 `ShouldRender` cached render gate 已进入支持面。
+- static markup / `MarkupString` 的普通 setup `let` member carrier 已覆盖可证明无后续写入的窄切片：private mutable string carrier 可通过 `(MarkupString)carrier` / `new MarkupString(carrier)` 继续还原为静态 HTML；后续可观察写入仍按 source-stable 合同 fail-fast。
 - RazorVue library-mode colocated consumer build / publish handoff、runner 缺失 fail-fast、SFC bridge default-to-named import/export 和常见 route template bridge 已有回归覆盖。
 
 ## 验证入口
@@ -83,9 +84,9 @@
 - `dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj`
 - `git diff --check`
 
-最近一次记录的 focused 验证在 2026-05-29 覆盖 RazorVue、Razor IR、Emit 相关边界，并通过 `git diff --check`。后续以实际命令输出为准。
+最近一次记录的 focused 验证在 2026-05-29 覆盖 RazorVue、Razor IR、Emit 相关边界，并通过 `git diff --check`。2026-05-29 Emit 全套在 SDK integration 编排优化后为 196/196 通过，耗时 4m38；同日补充的多参数 composite/mixed route bridge 回归单测通过。2026-05-29 count-style `for` focused 验证覆盖静态 local step carrier 继续声明式、dynamic invocation step 降级 imperative loop；同日 MarkupString focused 验证覆盖 private mutable string static-markup carrier 经 `(MarkupString)` 转换的正负边界。后续以实际命令输出为准。
 
 ## 下一步
 
-- 执行 RazorVue / Razor IR / Emit 的宽验证后，将本文标记为当前快照已验证。
+- 下一项：继续推进 Template Code Block / Markup 缺口，优先处理 template code-block 中普通 assignment / increment / decrement 可安全恢复为 imperative render segment 的窄切片；动态 raw markup 与后续可观察写入仍保持 fail-fast。
 - 后续新发现的缺口只补充到“当前缺口”；已完成过程留在测试名、PR/commit 描述和 git 历史中。

@@ -758,6 +758,43 @@ public sealed class RazorVueConsumerEntryCompilerTests
     }
 
     [TestMethod]
+    public async Task GenerateAsync_WhenRouteTemplateUsesMultiParameterCompositeSegment_EmitsVueRouteAndPerParameterMetadata()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue") with
+            {
+                RouteTemplates = ["/archive/{year:int}-{month:int}-{slug:alpha:length(3,16)}"]
+            });
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("path: \"/archive/:year([\\u002B-]?\\\\d{1,})-:month([\\u002B-]?\\\\d{1,})-:slug([A-Za-z]{1,})\"", clientEntry);
+        Assert.Contains("parameterNames: Object.freeze([\"year\", \"month\", \"slug\"])", clientEntry);
+        Assert.Contains(
+            "parameterConstraints: Object.freeze({\"month\":Object.freeze([Object.freeze({kind:\"integerRange\", min:\"-2147483648\", max:\"2147483647\"})]), \"slug\":Object.freeze([Object.freeze({kind:\"alphaText\"}), Object.freeze({kind:\"lengthRange\", min:\"3\", max:\"16\"})]), \"year\":Object.freeze([Object.freeze({kind:\"integerRange\", min:\"-2147483648\", max:\"2147483647\"})])})",
+            clientEntry);
+
+        using var resultDocument = JsonDocument.Parse(await File.ReadAllTextAsync(workspace.ResultPath, TestContext.CancellationTokenSource.Token));
+        var route = resultDocument.RootElement.GetProperty("Routes").EnumerateArray().Single();
+        Assert.AreEqual("/archive/{year:int}-{month:int}-{slug:alpha:length(3,16)}", route.GetProperty("RouteTemplate").GetString());
+        Assert.AreEqual("/archive/:year([+-]?\\d{1,})-:month([+-]?\\d{1,})-:slug([A-Za-z]{1,})", route.GetProperty("Path").GetString());
+        CollectionAssert.AreEqual(
+            new[] { "year", "month", "slug" },
+            route.GetProperty("ParameterNames").EnumerateArray().Select(static item => item.GetString()).OfType<string>().ToArray());
+        var constraints = route.GetProperty("ParameterConstraints");
+        Assert.HasCount(1, constraints.GetProperty("year").EnumerateArray().ToArray());
+        Assert.HasCount(1, constraints.GetProperty("month").EnumerateArray().ToArray());
+        Assert.HasCount(2, constraints.GetProperty("slug").EnumerateArray().ToArray());
+    }
+
+    [TestMethod]
     public async Task GenerateAsync_WhenRouteTemplateUsesOptionalCompositeSeparator_EmitsStableRouteVariants()
     {
         using var workspace = new TestWorkspace();

@@ -2044,36 +2044,33 @@ public sealed class SdkIntegrationTests
         var sampleRoot = Path.Combine(workspace.RootPath, "RazorVue.TodoList");
         var hostJazorRoot = Path.Combine(sampleRoot, "Todo.Host", "jazor");
         var hostBrowserAssetRoot = Path.Combine(sampleRoot, "Todo.Host", "wwwroot", "jazor");
+        var hostProjectPath = Path.Combine(sampleRoot, "Todo.Host", "Todo.Host.csproj");
         var consumerRoot = Path.Combine(sampleRoot, "Todo.Host", "consumer");
         var consumerBuildRoot = Path.Combine(consumerRoot, ".deno-build-test");
         var consumerDistRoot = Path.Combine(consumerRoot, "dist-test");
+        var restorePackagesPath = package.RestorePackagesPath;
 
         CopyDirectory(sampleSourceRoot, sampleRoot);
 
-        var sampleBuildEnvironment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["JAZOR_SAMPLE_REPO_ROOT"] = package.RepoRoot,
-            ["JAZOR_SAMPLE_PACKAGE_OUTPUT"] = Path.Combine(workspace.RootPath, "sample-packages"),
-            ["JAZOR_SAMPLE_RESTORE_PACKAGES_ROOT"] = Path.Combine(workspace.RootPath, "sample-restore-packages")
-        };
-
-        var buildLocal = await RunDotNetWithEnvironmentAsync(
+        var build = await RunDotNetAsync(
             package.RepoRoot,
             [
-                "run",
-                "--file",
-                Path.Combine(sampleRoot, "build-local.cs"),
-                "--",
-                "--configuration",
-                "Debug",
-                "--base-output-path",
-                Path.Combine(workspace.RootPath, "sample-out"),
-                "--base-intermediate-output-path",
-                Path.Combine(workspace.RootPath, "sample-obj")
-            ],
-            sampleBuildEnvironment);
+                "build",
+                hostProjectPath,
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}",
+                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(Path.Combine(workspace.RootPath, "sample-out"))}",
+                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(Path.Combine(workspace.RootPath, "sample-obj"))}",
+                "/nr:false",
+                "-p:UseSharedCompilation=false"
+            ]);
 
-        Assert.AreEqual(0, buildLocal.ExitCode, buildLocal.ToString());
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
 
         var todoAppSfcPath = Path.Combine(hostJazorRoot, "components", "todo-app.vue");
         var todoSummaryCardSfcPath = Path.Combine(hostJazorRoot, "components", "todo-summary-card.vue");
@@ -2184,114 +2181,48 @@ public sealed class SdkIntegrationTests
             jazorPack.ToString().Contains("NU5118", StringComparison.OrdinalIgnoreCase),
             "Jazor package emitted duplicate pack warnings." + Environment.NewLine + jazorPack);
         AssertPackageArtifactOutputs(packageBuildOutputRoot, emitPublishDirectory);
+        var packageVersion = DiscoverPackageVersion(packageOutputDirectory, "Jazor");
 
-        await EnsureProjectBuiltAsync(
+        await PackProjectAndAssertOutputAsync(
             repoRoot,
             Path.Combine(repoRoot, "src", "ECMAScript.Vuetify", "ECMAScript.Vuetify.csproj"),
             Path.Combine(packageBuildOutputRoot, "ECMAScript.Vuetify", "bin", "Debug", "net11.0", "ECMAScript.Vuetify.dll"),
             packageBuildOutputRoot,
-            packageBuildIntermediateRoot);
-        await EnsureProjectBuiltAsync(
+            packageBuildIntermediateRoot,
+            packageOutputDirectory,
+            packageVersion);
+        await PackProjectAndAssertOutputAsync(
             repoRoot,
             Path.Combine(repoRoot, "src", "ECMAScript.VueRoute", "ECMAScript.VueRoute.csproj"),
             Path.Combine(packageBuildOutputRoot, "ECMAScript.VueRoute", "bin", "Debug", "net11.0", "ECMAScript.VueRoute.dll"),
             packageBuildOutputRoot,
-            packageBuildIntermediateRoot);
-        await EnsureProjectBuiltAsync(
+            packageBuildIntermediateRoot,
+            packageOutputDirectory,
+            packageVersion);
+        await PackProjectAndAssertOutputAsync(
             repoRoot,
             Path.Combine(repoRoot, "src", "ECMAScript.Pinia", "ECMAScript.Pinia.csproj"),
             Path.Combine(packageBuildOutputRoot, "ECMAScript.Pinia", "bin", "Debug", "net11.0", "ECMAScript.Pinia.dll"),
             packageBuildOutputRoot,
-            packageBuildIntermediateRoot);
-        await EnsureProjectBuiltAsync(
+            packageBuildIntermediateRoot,
+            packageOutputDirectory,
+            packageVersion);
+        await PackProjectAndAssertOutputAsync(
             repoRoot,
             Path.Combine(repoRoot, "src", "ECMAScript.Pinia.Testing", "ECMAScript.Pinia.Testing.csproj"),
             Path.Combine(packageBuildOutputRoot, "ECMAScript.Pinia.Testing", "bin", "Debug", "net11.0", "ECMAScript.Pinia.Testing.dll"),
             packageBuildOutputRoot,
-            packageBuildIntermediateRoot);
-        await EnsureProjectBuiltAsync(
+            packageBuildIntermediateRoot,
+            packageOutputDirectory,
+            packageVersion);
+        await PackProjectAndAssertOutputAsync(
             repoRoot,
             Path.Combine(repoRoot, "src", "ECMAScript.TDesign", "ECMAScript.TDesign.csproj"),
             Path.Combine(packageBuildOutputRoot, "ECMAScript.TDesign", "bin", "Debug", "net11.0", "ECMAScript.TDesign.dll"),
             packageBuildOutputRoot,
-            packageBuildIntermediateRoot);
-        await RunDotNetAndAssertAsync(
-            repoRoot,
-            [
-                "pack",
-                Path.Combine(repoRoot, "src", "ECMAScript.Vuetify", "ECMAScript.Vuetify.csproj"),
-                "-c",
-                "Debug",
-                "--no-build",
-                "-o",
-                packageOutputDirectory,
-                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
-                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
-                "/nr:false",
-                "-p:UseSharedCompilation=false"
-            ]);
-        await RunDotNetAndAssertAsync(
-            repoRoot,
-            [
-                "pack",
-                Path.Combine(repoRoot, "src", "ECMAScript.VueRoute", "ECMAScript.VueRoute.csproj"),
-                "-c",
-                "Debug",
-                "--no-build",
-                "-o",
-                packageOutputDirectory,
-                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
-                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
-                "/nr:false",
-                "-p:UseSharedCompilation=false"
-            ]);
-        await RunDotNetAndAssertAsync(
-            repoRoot,
-            [
-                "pack",
-                Path.Combine(repoRoot, "src", "ECMAScript.Pinia", "ECMAScript.Pinia.csproj"),
-                "-c",
-                "Debug",
-                "--no-build",
-                "-o",
-                packageOutputDirectory,
-                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
-                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
-                "/nr:false",
-                "-p:UseSharedCompilation=false"
-            ]);
-        await RunDotNetAndAssertAsync(
-            repoRoot,
-            [
-                "pack",
-                Path.Combine(repoRoot, "src", "ECMAScript.Pinia.Testing", "ECMAScript.Pinia.Testing.csproj"),
-                "-c",
-                "Debug",
-                "--no-build",
-                "-o",
-                packageOutputDirectory,
-                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
-                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
-                "/nr:false",
-                "-p:UseSharedCompilation=false"
-            ]);
-        await RunDotNetAndAssertAsync(
-            repoRoot,
-            [
-                "pack",
-                Path.Combine(repoRoot, "src", "ECMAScript.TDesign", "ECMAScript.TDesign.csproj"),
-                "-c",
-                "Debug",
-                "--no-build",
-                "-o",
-                packageOutputDirectory,
-                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
-                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
-                "/nr:false",
-                "-p:UseSharedCompilation=false"
-            ]);
-
-        var packageVersion = DiscoverPackageVersion(packageOutputDirectory, "Jazor");
+            packageBuildIntermediateRoot,
+            packageOutputDirectory,
+            packageVersion);
 
         return new LocalPackageFixture(
             repoRoot,
@@ -2331,23 +2262,28 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, result.ExitCode, result.ToString());
     }
 
-    private static async Task EnsureProjectBuiltAsync(
+    private static async Task PackProjectAndAssertOutputAsync(
         string repoRoot,
         string projectPath,
         string expectedOutputPath,
         string packageBuildOutputRoot,
-        string packageBuildIntermediateRoot)
+        string packageBuildIntermediateRoot,
+        string packageOutputDirectory,
+        string packageVersion)
     {
         // 生产打包验证不能只看 DLL 是否存在；Directory.Build.props 或依赖版本变更时旧产物会污染 nupkg。
         await RunDotNetAndAssertAsync(
             repoRoot,
             [
-                "build",
+                "pack",
                 projectPath,
                 "-c",
                 "Debug",
+                "-o",
+                packageOutputDirectory,
                 "/m:1",
                 "/p:BuildInParallel=false",
+                $"-p:PackageVersion={packageVersion}",
                 $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
                 $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
                 "/nr:false",

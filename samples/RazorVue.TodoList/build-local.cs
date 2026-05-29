@@ -70,6 +70,8 @@ await ScriptHelpers.RunDotNetAsync(
     repoRoot,
     dotnetCliHome);
 
+var packageInfo = ScriptHelpers.ResolveLatestPackage(packageOutput);
+
 await ScriptHelpers.RunDotNetAsync(
     [
         "pack",
@@ -80,6 +82,7 @@ await ScriptHelpers.RunDotNetAsync(
         packageOutput,
         "-v",
         "minimal",
+        $"-p:PackageVersion={packageInfo.Version}",
         .. isolationArguments,
         "/nr:false",
         "-p:UseSharedCompilation=false"
@@ -87,7 +90,6 @@ await ScriptHelpers.RunDotNetAsync(
     repoRoot,
     dotnetCliHome);
 
-var packageInfo = ScriptHelpers.ResolveLatestPackage(packageOutput);
 var restorePackagesPath = Path.Combine(restorePackagesRoot, $"{packageInfo.Version}-{packageInfo.Stamp}");
 
 var buildArguments = new List<string>
