@@ -8,6 +8,7 @@ using Jazor.RazorVue.Extensibility;
 using Jazor.RazorVue.Lowering;
 using Jazor.RazorVue.RenderTree;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Jazor.RazorVue.Canonical;
@@ -505,6 +506,8 @@ internal sealed class RazorVueCanonicalHModelFactory
                 when imperative.Operations.Length == 1 &&
                      Unwrap(imperative.Operations[0]) is IUsingOperation usingOperation =>
                 TryCreateCanonicalUsingTemplateFragment(context, snapshot, usingOperation, imperative, out recoveredRenderTree),
+            RazorVueImperativeBlockKind.TryBlock =>
+                TryCreateCanonicalUsingDeclarationTemplateFragment(context, snapshot, imperative, out recoveredRenderTree),
             RazorVueImperativeBlockKind.LockBlock
                 when imperative.Operations.Length == 1 &&
                      Unwrap(imperative.Operations[0]) is ILockOperation lockOperation =>
@@ -652,6 +655,8 @@ internal sealed class RazorVueCanonicalHModelFactory
         fragment = RazorVueRenderFragment.Empty;
         var operationList = operations.ToImmutableArray();
         if (operationList.IsDefaultOrEmpty)
+            return false;
+        if (ContainsSameArtifactRuntimeHelperTypeReference(snapshot, operationList))
             return false;
 
         if (TryParseCanonicalTemplateOperations(context, snapshot, operationList, imperative, out var templateFragment))
@@ -882,12 +887,19 @@ internal sealed class RazorVueCanonicalHModelFactory
         RazorVueImperativeBlockNode imperative,
         out RazorVueRenderFragment fragment)
     {
+        var operationList = operations.ToImmutableArray();
+        if (ContainsSameArtifactRuntimeHelperTypeReference(snapshot, operationList))
+        {
+            fragment = RazorVueRenderFragment.Empty;
+            return false;
+        }
+
         try
         {
             fragment = RazorVueRenderTreeExtractor.ParseSupportedOperations(
                 context,
                 snapshot,
-                operations,
+                operationList,
                 imperative.VisibleLocals,
                 imperative.VisibleParameters);
         }
@@ -964,9 +976,13 @@ internal sealed class RazorVueCanonicalHModelFactory
 
         var catchOperation = tryOperation.Catches[0];
         return catchOperation.Filter is null &&
+               !HasSourceCatchDeclaration(catchOperation) &&
                catchOperation.ExceptionDeclarationOrExpression is null &&
                IsEmptyBranch(catchOperation.Handler);
     }
+
+    private static bool HasSourceCatchDeclaration(ICatchClauseOperation catchOperation)
+        => catchOperation.Syntax is CatchClauseSyntax { Declaration: not null };
 
     private static bool TryRecoverStaticTryFinallyTemplateFragment(
         RazorVueCompilationContext context,
@@ -1062,7 +1078,7 @@ internal sealed class RazorVueCanonicalHModelFactory
         out RazorVueRenderFragment fragment)
     {
         fragment = RazorVueRenderFragment.Empty;
-        if (Unwrap(lockOperation.LockedValue) is not IInstanceReferenceOperation)
+        if (!CanEraseLockTarget(snapshot, lockOperation.LockedValue))
             return false;
         if (ContainsSameArtifactRuntimeHelperTypeReference(snapshot, lockOperation.Body))
             return false;
@@ -1074,6 +1090,107 @@ internal sealed class RazorVueCanonicalHModelFactory
                 imperative,
                 out fragment) &&
                !fragment.Children.IsDefaultOrEmpty;
+    }
+
+    private static bool CanEraseLockTarget(RazorVueSemanticSnapshot snapshot, IOperation? lockedValue)
+    {
+        var current = Unwrap(lockedValue);
+        if (current is IInstanceReferenceOperation)
+            return true;
+
+        return current is IFieldReferenceOperation fieldReference &&
+               IsCurrentComponentMember(snapshot, fieldReference.Field, fieldReference.Instance) &&
+               IsStableNonNullReadonlyObjectLockField(snapshot, fieldReference.Field);
+    }
+
+    private static bool IsStableNonNullReadonlyObjectLockField(
+        RazorVueSemanticSnapshot snapshot,
+        IFieldSymbol field)
+    {
+        if (field.IsStatic ||
+            !field.IsReadOnly ||
+            field.DeclaredAccessibility != Accessibility.Private ||
+            field.Type.SpecialType != SpecialType.System_Object ||
+            !RazorVueSymbolIdentity.SameType(field.ContainingType, snapshot.ComponentSymbol))
+        {
+            return false;
+        }
+
+        return HasNonNullObjectCreationFieldInitializer(field) &&
+               !HasExplicitInstanceConstructorFieldAssignment(snapshot.Compilation, snapshot.ComponentSymbol, field);
+    }
+
+    private static bool HasNonNullObjectCreationFieldInitializer(IFieldSymbol field)
+    {
+        foreach (var reference in field.DeclaringSyntaxReferences)
+        {
+            if (reference.GetSyntax() is not VariableDeclaratorSyntax declarator ||
+                declarator.Initializer?.Value is not { } initializer)
+            {
+                continue;
+            }
+
+            if (initializer is ObjectCreationExpressionSyntax objectCreation &&
+                objectCreation.Type is PredefinedTypeSyntax predefinedType &&
+                predefinedType.Keyword.ValueText == "object" &&
+                objectCreation.ArgumentList?.Arguments.Count is 0 or null &&
+                objectCreation.Initializer is null)
+            {
+                return true;
+            }
+
+            if (initializer is ImplicitObjectCreationExpressionSyntax implicitCreation &&
+                implicitCreation.ArgumentList?.Arguments.Count is 0 or null &&
+                implicitCreation.Initializer is null)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool HasExplicitInstanceConstructorFieldAssignment(
+        Compilation compilation,
+        INamedTypeSymbol componentSymbol,
+        IFieldSymbol field)
+    {
+        foreach (var constructor in componentSymbol.InstanceConstructors)
+        {
+            if (constructor.IsImplicitlyDeclared)
+                continue;
+
+            foreach (var reference in constructor.DeclaringSyntaxReferences)
+            {
+                if (reference.GetSyntax() is not ConstructorDeclarationSyntax constructorSyntax)
+                    continue;
+
+                foreach (var assignment in constructorSyntax.DescendantNodes().OfType<AssignmentExpressionSyntax>())
+                {
+                    if (TryResolveAssignedField(compilation, assignment.Left, out var assignedField) &&
+                        SymbolEqualityComparer.Default.Equals(assignedField, field))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TryResolveAssignedField(
+        Compilation compilation,
+        ExpressionSyntax target,
+        out IFieldSymbol assignedField)
+    {
+        assignedField = null!;
+        var semanticModel = compilation.GetSemanticModel(target.SyntaxTree);
+        if (semanticModel.GetSymbolInfo(target).Symbol is not IFieldSymbol field)
+            return false;
+
+        assignedField = field;
+        return true;
     }
 
     private static bool TryCreateCanonicalUsingTemplateFragment(
@@ -1100,6 +1217,106 @@ internal sealed class RazorVueCanonicalHModelFactory
                !fragment.Children.IsDefaultOrEmpty;
     }
 
+    private static bool TryCreateCanonicalUsingDeclarationTemplateFragment(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueImperativeBlockNode imperative,
+        out RazorVueRenderFragment fragment)
+    {
+        fragment = RazorVueRenderFragment.Empty;
+        var operations = imperative.Operations
+            .Select(Unwrap)
+            .Where(static operation => operation is not null and not IEmptyOperation)
+            .Cast<IOperation>()
+            .ToImmutableArray();
+        if (operations.IsDefaultOrEmpty)
+            return false;
+
+        var usingLocals = ImmutableArray.CreateBuilder<ILocalSymbol>();
+        var tailStart = 0;
+        while (tailStart < operations.Length &&
+               operations[tailStart] is IUsingDeclarationOperation usingDeclaration)
+        {
+            if (!CanEraseUsingDeclaration(usingDeclaration, usingLocals))
+                return false;
+
+            tailStart++;
+        }
+
+        if (tailStart == 0 ||
+            tailStart >= operations.Length)
+        {
+            return false;
+        }
+
+        var erasedUsingLocals = usingLocals.ToImmutable();
+        var tailOperations = operations.RemoveRange(0, tailStart);
+        if (ReadsAnyLocal(tailOperations, erasedUsingLocals) ||
+            ContainsSameArtifactRuntimeHelperTypeReference(snapshot, tailOperations))
+            return false;
+
+        return TryParseCanonicalTemplateOperations(
+                context,
+                snapshot,
+                tailOperations,
+                imperative,
+                out fragment) &&
+               !fragment.Children.IsDefaultOrEmpty;
+    }
+
+    private static bool CanEraseUsingDeclaration(
+        IUsingDeclarationOperation usingDeclaration,
+        ImmutableArray<ILocalSymbol>.Builder usingLocals)
+    {
+        if (usingDeclaration.IsAsynchronous ||
+            usingDeclaration.DeclarationGroup is null)
+        {
+            return false;
+        }
+
+        var foundDeclarator = false;
+        foreach (var declaration in usingDeclaration.DeclarationGroup.Declarations)
+        {
+            foreach (var declarator in declaration.Declarators)
+            {
+                foundDeclarator = true;
+                if (!IsStableNullUsingDeclarator(declarator))
+                    return false;
+
+                usingLocals.Add(declarator.Symbol);
+            }
+        }
+
+        return foundDeclarator;
+    }
+
+    private static bool IsStableNullUsingDeclarator(IVariableDeclaratorOperation declarator)
+    {
+        if (declarator.Initializer?.Value is { } initializer)
+            return IsStableNullUsingResource(initializer);
+
+        foreach (var reference in declarator.Symbol.DeclaringSyntaxReferences)
+        {
+            if (reference.GetSyntax() is not VariableDeclaratorSyntax syntax ||
+                syntax.Initializer?.Value is null)
+            {
+                continue;
+            }
+
+            var semanticModel = declarator.SemanticModel?.Compilation.GetSemanticModel(syntax.SyntaxTree);
+            if (semanticModel is not null &&
+                RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(
+                    semanticModel,
+                    syntax.Initializer.Value,
+                    out var normalizedInitializer))
+            {
+                return IsStableNullUsingResource(normalizedInitializer);
+            }
+        }
+
+        return false;
+    }
+
     private static bool IsStableNullUsingResource(IOperation? operation)
     {
         var current = Unwrap(operation);
@@ -1113,6 +1330,31 @@ internal sealed class RazorVueCanonicalHModelFactory
             return IsStableNullUsingResource(conversion.Operand);
 
         return current is IDefaultValueOperation defaultValue && IsNullDefaultValue(defaultValue);
+    }
+
+    private static bool ReadsAnyLocal(
+        IEnumerable<IOperation> operations,
+        ImmutableArray<ILocalSymbol> locals)
+    {
+        if (locals.IsDefaultOrEmpty)
+            return false;
+
+        var localSet = locals.ToImmutableHashSet(SymbolEqualityComparer.Default);
+        foreach (var operation in operations)
+        {
+            foreach (var current in RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(
+                         operation,
+                         includeLocalFunctionBodies: true))
+            {
+                if (current is ILocalReferenceOperation localReference &&
+                    localSet.Contains(localReference.Local))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private static bool TryCreateCanonicalLabeledTemplateFragment(
@@ -1150,7 +1392,8 @@ internal sealed class RazorVueCanonicalHModelFactory
         var condition = whileLoop.Condition;
         if (condition is null ||
             !IsStableFalseCondition(condition) ||
-            ContainsImperativeBranch(whileLoop.Body))
+            ContainsLoopTemplateRecoveryMutationOrControl(whileLoop.Body) ||
+            ContainsSameArtifactRuntimeHelperTypeReference(snapshot, whileLoop.Body))
         {
             return false;
         }
@@ -1209,6 +1452,40 @@ internal sealed class RazorVueCanonicalHModelFactory
                      includeLocalFunctionBodies: true))
         {
             if (current is IBranchOperation or IReturnOperation { IsImplicit: false } or IThrowOperation)
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool ContainsLoopTemplateRecoveryMutationOrControl(IOperation operation)
+    {
+        foreach (var current in RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(
+                     operation,
+                     includeLocalFunctionBodies: true))
+        {
+            if (current is IBranchOperation or
+                IReturnOperation { IsImplicit: false } or
+                IThrowOperation or
+                IAwaitOperation or
+                IAssignmentOperation or
+                IDeconstructionAssignmentOperation or
+                IIncrementOrDecrementOperation)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool ContainsSameArtifactRuntimeHelperTypeReference(
+        RazorVueSemanticSnapshot snapshot,
+        IEnumerable<IOperation> operations)
+    {
+        foreach (var operation in operations)
+        {
+            if (ContainsSameArtifactRuntimeHelperTypeReference(snapshot, operation))
                 return true;
         }
 
@@ -1274,7 +1551,8 @@ internal sealed class RazorVueCanonicalHModelFactory
         out RazorVueRenderFragment fragment)
     {
         fragment = RazorVueRenderFragment.Empty;
-        if (!IsCanonicalSwitchValue(switchOperation.Value))
+        if (!IsCanonicalSwitchValue(switchOperation.Value) ||
+            ContainsSameArtifactRuntimeHelperTypeReference(snapshot, switchOperation.Value))
             return false;
 
         var switchValueName = RazorVueSlotParameterNames.CreateImplicitDefaultSlotParameterName(
@@ -1401,6 +1679,8 @@ internal sealed class RazorVueCanonicalHModelFactory
 
         var operations = StripTerminalBreak(section.Body);
         if (operations.IsDefault)
+            return false;
+        if (ContainsSameArtifactRuntimeHelperTypeReference(snapshot, operations))
             return false;
 
         RazorVueRenderFragment body;

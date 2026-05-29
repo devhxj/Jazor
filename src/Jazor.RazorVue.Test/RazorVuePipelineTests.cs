@@ -46554,7 +46554,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_LowersLockStatementInBuildRenderTree_UsingImperativeRenderBridge()
+    public void RazorVue_Pipeline_LowersReadonlyObjectGateLockStatementInBuildRenderTree_UsingImperativeRenderBridge()
     {
         var context = CreateContext(
             """

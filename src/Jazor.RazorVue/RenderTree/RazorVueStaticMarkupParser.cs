@@ -208,6 +208,8 @@ internal static class RazorVueStaticMarkupParser
 
     private static void ValidateStaticElementName(string tagName)
     {
+        ValidateStaticNameSyntax(tagName, "element", IsValidStaticElementName);
+
         if (UnsupportedRawMarkupElementNames.Contains(tagName))
         {
             throw new InvalidOperationException(
@@ -222,6 +224,7 @@ internal static class RazorVueStaticMarkupParser
         if (dependencies.AllowRazorDirectiveAttributes &&
             IsRazorDirectiveAttributeName(attributeName))
         {
+            ValidateStaticNameSyntax(attributeName, "attribute", IsValidRazorDirectiveAttributeName);
             return;
         }
 
@@ -233,6 +236,8 @@ internal static class RazorVueStaticMarkupParser
             throw new InvalidOperationException(
                 $"RazorVue static markup does not support raw markup execution attribute '{attributeName}'.");
         }
+
+        ValidateStaticNameSyntax(attributeName, "attribute", IsValidStaticAttributeName);
     }
 
     private static void ValidateStaticAttributeValue(string attributeName, string attributeValue)
@@ -277,6 +282,87 @@ internal static class RazorVueStaticMarkupParser
         => value.StartsWith("data:text/html", StringComparison.OrdinalIgnoreCase) ||
            value.StartsWith("data:application/xhtml+xml", StringComparison.OrdinalIgnoreCase) ||
            value.StartsWith("data:image/svg+xml", StringComparison.OrdinalIgnoreCase);
+
+    private static void ValidateStaticNameSyntax(
+        string name,
+        string kind,
+        Func<string, bool> isValid)
+    {
+        if (!isValid(name))
+        {
+            throw new InvalidOperationException(
+                $"RazorVue static markup requires a valid static markup {kind} name '{name}'.");
+        }
+    }
+
+    private static bool IsValidStaticElementName(string name)
+    {
+        if (string.IsNullOrEmpty(name) ||
+            !IsAsciiLetter(name[0]))
+        {
+            return false;
+        }
+
+        for (var index = 1; index < name.Length; index++)
+        {
+            var current = name[index];
+            if (!IsAsciiLetterOrDigit(current) &&
+                current is not '-' and not '_')
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsValidStaticAttributeName(string name)
+    {
+        if (string.IsNullOrEmpty(name) ||
+            !IsAsciiAttributeNameStart(name[0]))
+        {
+            return false;
+        }
+
+        for (var index = 1; index < name.Length; index++)
+        {
+            if (!IsAsciiAttributeNamePart(name[index]))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool IsValidRazorDirectiveAttributeName(string name)
+    {
+        if (name.Length < 2 ||
+            name[0] != '@' ||
+            !IsAsciiLetter(name[1]))
+        {
+            return false;
+        }
+
+        for (var index = 2; index < name.Length; index++)
+        {
+            if (!IsAsciiAttributeNamePart(name[index]))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool IsAsciiAttributeNameStart(char ch)
+        => IsAsciiLetter(ch) || ch == '_';
+
+    private static bool IsAsciiAttributeNamePart(char ch)
+        => IsAsciiLetterOrDigit(ch) ||
+           ch is '-' or '_' or ':' or '.';
+
+    private static bool IsAsciiLetterOrDigit(char ch)
+        => IsAsciiLetter(ch) || ch is >= '0' and <= '9';
+
+    private static bool IsAsciiLetter(char ch)
+        => ch is >= 'A' and <= 'Z' or >= 'a' and <= 'z';
 
     private static void SkipWhitespace(string text, ref int index)
     {

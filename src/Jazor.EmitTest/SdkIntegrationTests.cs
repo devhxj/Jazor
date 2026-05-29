@@ -171,7 +171,7 @@ public sealed class SdkIntegrationTests
         using var workspace = new TestWorkspace(package.RepoRoot);
         var sourceSampleRoot = Path.Combine(package.RepoRoot, "samples", "Jazor.MultiProject");
         CopyDirectory(sourceSampleRoot, workspace.SampleRoot);
-        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var restorePackagesPath = package.RestorePackagesPath;
 
         var hostProjectPath = Path.Combine(workspace.SampleRoot, "Sample.Host", "Sample.Host.csproj");
         var build = await RunDotNetAsync(
@@ -262,7 +262,7 @@ public sealed class SdkIntegrationTests
         CopyDirectory(sourceSampleRoot, workspace.SampleRoot);
 
         var hostRoot = Path.Combine(workspace.SampleRoot, "Sample.Host");
-        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var restorePackagesPath = package.RestorePackagesPath;
 
         var wwwroot = Path.Combine(hostRoot, "wwwroot");
         if (Directory.Exists(wwwroot))
@@ -391,7 +391,7 @@ public sealed class SdkIntegrationTests
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "StaticHostDefaultBuildSample");
-        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var restorePackagesPath = package.RestorePackagesPath;
         var projectPath = CreateDefaultOutputStaticHostProject(projectRoot);
 
         var build = await RunDotNetAsync(
@@ -427,7 +427,7 @@ public sealed class SdkIntegrationTests
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "StaticHostDefaultPublishSample");
-        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var restorePackagesPath = package.RestorePackagesPath;
         var projectPath = CreateDefaultOutputStaticHostProject(projectRoot);
 
         var publish = await RunDotNetAsync(
@@ -465,7 +465,7 @@ public sealed class SdkIntegrationTests
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "WebSdkPublishSample");
         var publishOutputRoot = Path.Combine(workspace.RootPath, "publish-output");
-        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var restorePackagesPath = package.RestorePackagesPath;
         var projectPath = CreateDefaultOutputWebHostProject(projectRoot);
 
         var publish = await RunDotNetAsync(
@@ -511,7 +511,7 @@ public sealed class SdkIntegrationTests
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "WebSdkConsumerBuildSample");
-        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var restorePackagesPath = package.RestorePackagesPath;
         var projectPath = CreateWebHostWithColocatedConsumerProject(projectRoot);
 
         var build = await RunDotNetWithEnvironmentAsync(
@@ -570,7 +570,7 @@ public sealed class SdkIntegrationTests
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "WebSdkConsumerMissingRunnerSample");
-        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var restorePackagesPath = package.RestorePackagesPath;
         var projectPath = CreateWebHostWithColocatedConsumerProject(projectRoot);
         var expectedRunnerPath = Path.Combine(projectRoot, "consumer", "scripts", "run-deno.cs");
         File.Delete(expectedRunnerPath);
@@ -619,7 +619,7 @@ public sealed class SdkIntegrationTests
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "WebSdkConsumerPublishSample");
         var publishOutputRoot = Path.Combine(workspace.RootPath, "publish-output");
-        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var restorePackagesPath = package.RestorePackagesPath;
         var projectPath = CreateWebHostWithColocatedConsumerProject(projectRoot);
 
         var publish = await RunDotNetWithEnvironmentAsync(
@@ -689,7 +689,7 @@ public sealed class SdkIntegrationTests
         var package = await LocalPackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
-        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var restorePackagesPath = package.RestorePackagesPath;
         var hostRoot = Path.Combine(workspace.RootPath, "RazorVueDefaultBuild.Host");
         var projectPath = CreateDefaultOutputRazorVueSampleProject(hostRoot, package);
 
@@ -723,7 +723,7 @@ public sealed class SdkIntegrationTests
         var package = await LocalPackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
-        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var restorePackagesPath = package.RestorePackagesPath;
         var hostRoot = Path.Combine(workspace.RootPath, "RazorVueDefaultPublish.Host");
         var projectPath = CreateDefaultOutputRazorVueSampleProject(hostRoot, package);
 
@@ -759,7 +759,7 @@ public sealed class SdkIntegrationTests
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "VueRouteSdkSample");
-        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var restorePackagesPath = package.RestorePackagesPath;
 
         WriteFile(
             Path.Combine(projectRoot, "VueRouteSdkSample.csproj"),
@@ -878,7 +878,7 @@ public sealed class SdkIntegrationTests
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "VueRouteReactiveSdkSample");
-        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var restorePackagesPath = package.RestorePackagesPath;
 
         WriteFile(
             Path.Combine(projectRoot, "VueRouteReactiveSdkSample.csproj"),
@@ -1035,7 +1035,7 @@ public sealed class SdkIntegrationTests
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "VueRouteReactiveBundleSdkSample");
-        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var restorePackagesPath = package.RestorePackagesPath;
 
         WriteFile(
             Path.Combine(projectRoot, "VueRouteReactiveBundleSdkSample.csproj"),
@@ -1218,7 +1218,7 @@ public sealed class SdkIntegrationTests
         var package = await LocalPackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
-        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var restorePackagesPath = package.RestorePackagesPath;
         var hostRoot = Path.Combine(workspace.RootPath, "RazorVueSample.Host");
         var projectPath = CreateRazorVueSampleProject(hostRoot, package);
 
@@ -1339,7 +1339,7 @@ public sealed class SdkIntegrationTests
         var package = await LocalPackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
-        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var restorePackagesPath = package.RestorePackagesPath;
         var hostRoot = Path.Combine(workspace.RootPath, "RazorVueSample.Host");
         var projectPath = CreateRazorVueSampleProject(hostRoot, package);
         var profileFormPath = Path.Combine(hostRoot, "ProfileForm.cs");
@@ -1427,7 +1427,7 @@ public sealed class SdkIntegrationTests
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "RazorVueSdkSample");
-        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var restorePackagesPath = package.RestorePackagesPath;
 
         WriteFile(
             Path.Combine(projectRoot, "RazorVueSdkSample.csproj"),
@@ -1569,7 +1569,7 @@ public sealed class SdkIntegrationTests
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "PackagedCustomRazorVueSample");
         var authoringRoot = Path.Combine(workspace.RootPath, "Demo.Authoring");
-        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var restorePackagesPath = package.RestorePackagesPath;
         const string authoringPackageVersion = "1.0.0";
 
         var authoringProjectPath = CreatePackagedCustomAuthoringLibraryProject(authoringRoot, package.PackageVersion, authoringPackageVersion);
@@ -1698,7 +1698,7 @@ public sealed class SdkIntegrationTests
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "PackagedRazorVueVuetifySample");
-        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var restorePackagesPath = package.RestorePackagesPath;
 
         WriteFile(
             Path.Combine(projectRoot, "PackagedRazorVueVuetifySample.csproj"),
@@ -1877,7 +1877,7 @@ public sealed class SdkIntegrationTests
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorVueSfcConsumer");
-        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var restorePackagesPath = package.RestorePackagesPath;
         var projectPath = CreateExternalRazorVueSfcConsumerProject(projectRoot);
 
         var build = await RunSourceReferencedRazorVueBuildAsync(
@@ -1954,7 +1954,7 @@ public sealed class SdkIntegrationTests
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorVueSfcConsumer");
-        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var restorePackagesPath = package.RestorePackagesPath;
         var projectPath = CreateExternalRazorVueSfcConsumerProject(projectRoot);
 
         var build = await RunSourceReferencedRazorVueBuildAsync(
@@ -2112,7 +2112,7 @@ public sealed class SdkIntegrationTests
             ["JAZOR_EMIT_TOOL_PATH"] = Path.Combine(package.RepoRoot, "src", "Jazor.Emit", "bin", "Debug", "net11.0", "Jazor.Emit.dll")
         };
 
-        var ssrSmoke = await RunDotNetWithEnvironmentAsync(
+        var denoPipeline = await RunDotNetWithEnvironmentAsync(
             consumerRoot,
             [
                 "run",
@@ -2120,53 +2120,10 @@ public sealed class SdkIntegrationTests
                 Path.Combine(consumerRoot, "scripts", "run-deno.cs"),
                 "--",
                 "task",
-                "smoke:ssr"
+                "test"
             ],
             denoEnvironment);
-        Assert.AreEqual(0, ssrSmoke.ExitCode, ssrSmoke.ToString());
-
-        var bundleApiSmoke = await RunDotNetWithEnvironmentAsync(
-            consumerRoot,
-            [
-                "run",
-                "--file",
-                Path.Combine(consumerRoot, "scripts", "run-deno.cs"),
-                "--",
-                "task",
-                "smoke:bundle-api"
-            ],
-            denoEnvironment);
-        Assert.AreEqual(0, bundleApiSmoke.ExitCode, bundleApiSmoke.ToString());
-
-        var browserBuild = await RunDotNetWithEnvironmentAsync(
-            consumerRoot,
-            [
-                "run",
-                "--file",
-                Path.Combine(consumerRoot, "scripts", "run-deno.cs"),
-                "--",
-                "task",
-                "build"
-            ],
-            denoEnvironment);
-        Assert.AreEqual(0, browserBuild.ExitCode, browserBuild.ToString());
-
-        var browserSmokeEnvironment = new Dictionary<string, string>(denoEnvironment, StringComparer.OrdinalIgnoreCase)
-        {
-            ["RAZORVUE_BROWSER_SKIP_BUILD"] = "1"
-        };
-        var browserSmoke = await RunDotNetWithEnvironmentAsync(
-            consumerRoot,
-            [
-                "run",
-                "--file",
-                Path.Combine(consumerRoot, "scripts", "run-deno.cs"),
-                "--",
-                "task",
-                "smoke:browser"
-            ],
-            browserSmokeEnvironment);
-        Assert.AreEqual(0, browserSmoke.ExitCode, browserSmoke.ToString());
+        Assert.AreEqual(0, denoPipeline.ExitCode, denoPipeline.ToString());
 
         var distHtmlPath = Path.Combine(consumerDistRoot, "index.html");
         var distJsPath = Path.Combine(consumerDistRoot, "jazor", "client-entry.js");
@@ -2195,36 +2152,43 @@ public sealed class SdkIntegrationTests
     {
         var repoRoot = FindRepoRoot();
         var packageOutputDirectory = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "nupkg", Guid.NewGuid().ToString("N"));
+        var restorePackagesPath = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "restore-packages", Guid.NewGuid().ToString("N"));
         var packageBuildOutputRoot = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "package-out", Guid.NewGuid().ToString("N"));
         var packageBuildIntermediateRoot = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "package-obj", Guid.NewGuid().ToString("N"));
-        var ecmascriptOutput = Path.Combine(packageBuildOutputRoot, "ECMAScript", "bin", "Debug", "net11.0", "ECMAScript.dll");
-        var contractOutput = Path.Combine(packageBuildOutputRoot, "ECMAScript.Contract", "bin", "Debug", "netstandard2.0", "ECMAScript.Contract.dll");
-        var vuetifyOutput = Path.Combine(packageBuildOutputRoot, "ECMAScript.Vuetify", "bin", "Debug", "net11.0", "ECMAScript.Vuetify.dll");
-        var analyzerOutput = Path.Combine(packageBuildOutputRoot, "Jazor.Analyzer", "bin", "Debug", "netstandard2.0", "Jazor.Analyzer.dll");
         var emitPublishDirectory = Path.Combine(packageBuildOutputRoot, "Jazor.Emit", "bin", "Debug", "net11.0", "publish");
-        var emitPublishOutput = Path.Combine(emitPublishDirectory, "Jazor.Emit.dll");
 
         if (Directory.Exists(packageOutputDirectory))
             Directory.Delete(packageOutputDirectory, recursive: true);
 
         Directory.CreateDirectory(packageOutputDirectory);
+        Directory.CreateDirectory(restorePackagesPath);
+
+        var jazorPack = await RunDotNetAsync(
+            repoRoot,
+            [
+                "pack",
+                Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj"),
+                "-c",
+                "Debug",
+                "-o",
+                packageOutputDirectory,
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                $"-p:NuGetPackageRoot={EnsureTrailingDirectorySeparator(restorePackagesPath)}",
+                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
+                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
+                "/nr:false",
+                "-p:UseSharedCompilation=false"
+            ]);
+        Assert.AreEqual(0, jazorPack.ExitCode, jazorPack.ToString());
+        Assert.IsFalse(
+            jazorPack.ToString().Contains("NU5118", StringComparison.OrdinalIgnoreCase),
+            "Jazor package emitted duplicate pack warnings." + Environment.NewLine + jazorPack);
+        AssertPackageArtifactOutputs(packageBuildOutputRoot, emitPublishDirectory);
 
         await EnsureProjectBuiltAsync(
             repoRoot,
-            Path.Combine(repoRoot, "src", "ECMAScript", "ECMAScript.csproj"),
-            ecmascriptOutput,
-            packageBuildOutputRoot,
-            packageBuildIntermediateRoot);
-        await EnsureProjectBuiltAsync(
-            repoRoot,
-            Path.Combine(repoRoot, "src", "ECMAScript.Contract", "ECMAScript.Contract.csproj"),
-            contractOutput,
-            packageBuildOutputRoot,
-            packageBuildIntermediateRoot);
-        await EnsureProjectBuiltAsync(
-            repoRoot,
             Path.Combine(repoRoot, "src", "ECMAScript.Vuetify", "ECMAScript.Vuetify.csproj"),
-            vuetifyOutput,
+            Path.Combine(packageBuildOutputRoot, "ECMAScript.Vuetify", "bin", "Debug", "net11.0", "ECMAScript.Vuetify.dll"),
             packageBuildOutputRoot,
             packageBuildIntermediateRoot);
         await EnsureProjectBuiltAsync(
@@ -2251,48 +2215,6 @@ public sealed class SdkIntegrationTests
             Path.Combine(packageBuildOutputRoot, "ECMAScript.TDesign", "bin", "Debug", "net11.0", "ECMAScript.TDesign.dll"),
             packageBuildOutputRoot,
             packageBuildIntermediateRoot);
-        await EnsureProjectBuiltAsync(
-            repoRoot,
-            Path.Combine(repoRoot, "src", "Jazor.Analyzer", "Jazor.Analyzer.csproj"),
-            analyzerOutput,
-            packageBuildOutputRoot,
-            packageBuildIntermediateRoot);
-        await EnsureProjectPublishedAsync(
-            repoRoot,
-            Path.Combine(repoRoot, "src", "Jazor.Emit", "Jazor.Emit.csproj"),
-            emitPublishOutput,
-            emitPublishDirectory,
-            packageBuildOutputRoot,
-            packageBuildIntermediateRoot);
-        await RunDotNetAndAssertAsync(
-            repoRoot,
-            [
-                "restore",
-                Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj"),
-                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
-                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
-                "/nr:false",
-                "-p:UseSharedCompilation=false"
-            ]);
-        var jazorPack = await RunDotNetAsync(
-            repoRoot,
-            [
-                "pack",
-                Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj"),
-                "-c",
-                "Debug",
-                "--no-build",
-                "-o",
-                packageOutputDirectory,
-                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
-                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
-                "/nr:false",
-                "-p:UseSharedCompilation=false"
-            ]);
-        Assert.AreEqual(0, jazorPack.ExitCode, jazorPack.ToString());
-        Assert.IsFalse(
-            jazorPack.ToString().Contains("NU5118", StringComparison.OrdinalIgnoreCase),
-            "Jazor package emitted duplicate pack warnings." + Environment.NewLine + jazorPack);
         await RunDotNetAndAssertAsync(
             repoRoot,
             [
@@ -2375,6 +2297,7 @@ public sealed class SdkIntegrationTests
             repoRoot,
             packageVersion,
             packageOutputDirectory,
+            restorePackagesPath,
             GetPackagePath(packageOutputDirectory, packageVersion),
             GetPackagePath(packageOutputDirectory, "ECMAScript.Vuetify", packageVersion),
             GetPackagePath(packageOutputDirectory, "ECMAScript.VueRoute", packageVersion),
@@ -2382,6 +2305,24 @@ public sealed class SdkIntegrationTests
             GetPackagePath(packageOutputDirectory, "ECMAScript.Pinia.Testing", packageVersion),
             GetPackagePath(packageOutputDirectory, "ECMAScript.TDesign", packageVersion),
             GetBundledDenoPath(emitPublishDirectory));
+    }
+
+    private static void AssertPackageArtifactOutputs(
+        string packageBuildOutputRoot,
+        string emitPublishDirectory)
+    {
+        Assert.IsTrue(
+            File.Exists(Path.Combine(packageBuildOutputRoot, "ECMAScript", "bin", "Debug", "net11.0", "ECMAScript.dll")),
+            "Jazor package preparation did not build ECMAScript.");
+        Assert.IsTrue(
+            File.Exists(Path.Combine(packageBuildOutputRoot, "ECMAScript.Contract", "bin", "Debug", "netstandard2.0", "ECMAScript.Contract.dll")),
+            "Jazor package preparation did not build ECMAScript.Contract.");
+        Assert.IsTrue(
+            File.Exists(Path.Combine(packageBuildOutputRoot, "Jazor.Analyzer", "bin", "Debug", "netstandard2.0", "Jazor.Analyzer.dll")),
+            "Jazor package preparation did not build Jazor.Analyzer.");
+        Assert.IsTrue(
+            File.Exists(Path.Combine(emitPublishDirectory, "Jazor.Emit.dll")),
+            "Jazor package preparation did not publish Jazor.Emit.");
     }
 
     private static async Task RunDotNetAndAssertAsync(string workingDirectory, IReadOnlyList<string> arguments)
@@ -2414,35 +2355,6 @@ public sealed class SdkIntegrationTests
             ]);
 
         Assert.IsTrue(File.Exists(expectedOutputPath), $"Expected build output was not produced: {expectedOutputPath}");
-    }
-
-    private static async Task EnsureProjectPublishedAsync(
-        string repoRoot,
-        string projectPath,
-        string expectedOutputPath,
-        string publishDirectory,
-        string packageBuildOutputRoot,
-        string packageBuildIntermediateRoot)
-    {
-        // publish 输出同样走 MSBuild 增量判断，避免复用旧工具导致包内行为和源码不一致。
-        await RunDotNetAndAssertAsync(
-            repoRoot,
-            [
-                "publish",
-                projectPath,
-                "-c",
-                "Debug",
-                "-o",
-                publishDirectory,
-                "/m:1",
-                "/p:BuildInParallel=false",
-                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
-                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
-                "/nr:false",
-                "-p:UseSharedCompilation=false"
-            ]);
-
-        Assert.IsTrue(File.Exists(expectedOutputPath), $"Expected publish output was not produced: {expectedOutputPath}");
     }
 
     private static async Task AssertSdkConsumerBrowserEntryAsync(string browserEntryPath, string unresolvedVueImportMessage)
@@ -3978,6 +3890,7 @@ public sealed class SdkIntegrationTests
         string RepoRoot,
         string PackageVersion,
         string PackageOutputDirectory,
+        string RestorePackagesPath,
         string PackagePath,
         string VuetifyPackagePath,
         string VueRoutePackagePath,
