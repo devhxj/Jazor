@@ -648,6 +648,63 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_ForTemplateCodeBlockWithLocalReassignment_ProducesImperativeLocalBlockNode()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @{
+                var localTitle = Title;
+                localTitle = localTitle + "!";
+            }
+
+            <section>@localTitle</section>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.TemplateCodeBlock.LocalReassignment.Tree.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+
+        Assert.AreEqual(1, renderTree.Children.Length, RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot));
+        var imperative = Assert.IsInstanceOfType<RazorVueImperativeBlockNode>(renderTree.Children[0]);
+        Assert.AreEqual(RazorVueImperativeBlockKind.LocalBlock, imperative.Kind);
+        Assert.IsTrue(imperative.Operations.Any(static operation => operation is IVariableDeclarationGroupOperation));
+        Assert.IsTrue(imperative.Operations.Any(static operation => operation is IExpressionStatementOperation expressionStatement &&
+            RazorVueOperationNormalizer.Unwrap(expressionStatement.Operation) is ISimpleAssignmentOperation));
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_LowersTemplateCodeBlockWithLocalReassignment_UsingImperativeRenderBridge()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @{
+                var localTitle = Title;
+                localTitle = localTitle + "!";
+            }
+
+            <section>@localTitle</section>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.TemplateCodeBlock.LocalReassignment.Pipeline.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ModuleCode, "let localTitle = props.title;");
+        StringAssert.Contains(artifact.ModuleCode, "localTitle = localTitle + \"!\";");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(localTitle);");
+        Assert.IsFalse(artifact.ModuleCode.Contains("const localTitle", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
     public void RazorVueSfcArtifactFactory_WithRazorIrTemplateFrontend_LowersTemplateCodeBlockWithLocalIncrementAndDecrement_ToRenderFunctionVueSfc()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -688,6 +745,86 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
         StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterElement(\"section\");");
         StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.append(index);");
         Assert.IsFalse(artifact.SfcText.Contains("<template v-for=\"(index)", StringComparison.Ordinal), artifact.SfcText);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForTemplateCodeBlockWithLocalIncrementAndDecrement_ProducesImperativeLocalBlockNode()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @{
+                var index = Start;
+                index++;
+                index--;
+            }
+
+            <section>@index</section>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.TemplateCodeBlock.LocalIncrementDecrement.Tree.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Start { get; set; }
+                }
+            }
+            """);
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+
+        Assert.AreEqual(1, renderTree.Children.Length, RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot));
+        var imperative = Assert.IsInstanceOfType<RazorVueImperativeBlockNode>(renderTree.Children[0]);
+        Assert.AreEqual(RazorVueImperativeBlockKind.LocalBlock, imperative.Kind);
+        Assert.IsTrue(imperative.Operations.Any(static operation => operation is IVariableDeclarationGroupOperation));
+        Assert.IsTrue(imperative.Operations.Any(static operation => operation is IExpressionStatementOperation expressionStatement &&
+            RazorVueOperationNormalizer.Unwrap(expressionStatement.Operation) is IIncrementOrDecrementOperation));
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_LowersTemplateCodeBlockWithLocalIncrementAndDecrement_UsingImperativeRenderBridge()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @{
+                var index = Start;
+                index++;
+                index--;
+            }
+
+            <section>@index</section>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.TemplateCodeBlock.LocalIncrementDecrement.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Start { get; set; }
+                }
+            }
+            """);
+
+        var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ModuleCode, "let index = props.start;");
+        StringAssert.Contains(artifact.ModuleCode, "index++;");
+        StringAssert.Contains(artifact.ModuleCode, "index--;");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.enterElement(\"section\");");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorRenderContext.append(index);");
+        Assert.IsFalse(artifact.ModuleCode.Contains("const index", StringComparison.Ordinal), artifact.ModuleCode);
     }
 
     [TestMethod]
