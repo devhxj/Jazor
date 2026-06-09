@@ -4,12 +4,13 @@
 > Positioning: 仓库级文档总入口，负责把目标、计划、状态快照和历史材料分流到正确目录。
 > Note: 判断“现在是什么状态”，优先读 `03-完成/*/status.md`；判断“为什么这样设计、应该如何扩展”，优先读 `01-目标/*`。
 
-## 两条技术线路
+## 技术线路
 
 | 线路 | 模式 | 当前物理落点 | 说明 |
 |------|------|-------------|------|
 | **RazorVue** | 库模式 | `src/Jazor.RazorVue/`（含 `RazorSdk/`） + `src/Jazor.Analyzer/RazorVue/` + `src/ECMAScript.Vuetify/` | 编译时 Razor-to-JS，Source Generator 驱动 |
 | **Jolt** | 全功能模式 | `src/Jolt/` | `.jazor` 开发时宿主，承载编辑器、预览、构建和调试链路 |
+| **Jazor CSX Frontend** | 新独立前端路线 | 待创建 `src/Jazor.CSX/` | TSX-like `.jazor` authoring，输出 `.jsx`；现有 Jolt/RazorVue 代码线冻结，仅作参考 |
 
 ## 导航
 
@@ -34,6 +35,7 @@
 | `01-目标/razor/` | `src/Jazor.Razor/` + `src/Jazor.Compiler.Razor/` |
 | `01-目标/razorvue/` | `src/Jazor.RazorVue/`（含 `RazorSdk/`） + `src/Jazor.Analyzer/RazorVue/` + `src/ECMAScript.Vuetify/` |
 | `01-目标/jolt/` | `src/Jolt/` |
+| `01-目标/csx/` | 待创建 `src/Jazor.CSX/` |
 | `01-目标/common/` | `src/ECMAScript.Contract/` + `src/Jazor.Common/` |
 | `01-目标/webidl/` | `src/ECMAScript.WebIDL.Generator/` |
 | `01-目标/tools/` | `src/Jazor/` + `src/Jolt.VSCodeExtension/` + 相关测试/工具项目 |
@@ -45,6 +47,7 @@
 | `02-计划/ecmascript.pinia/` | `src/ECMAScript.Pinia/` |
 | `02-计划/wiki/` | `src/Wiki/` |
 | `02-计划/jolt/` | `src/Jolt/` |
+| `02-计划/csx/` | 待创建 `src/Jazor.CSX/` |
 | `02-计划/compiler/` | `src/Jazor.Compiler/` |
 | `02-计划/jolt/razorvue-implementation/` | RazorVue 线路 + `src/Jolt/` 的交叉实施材料 |
 | **03-完成** | |
@@ -75,5 +78,7 @@
 - 编译器状态快照 → [03-完成/compiler/status.md](./03-完成/compiler/status.md)
 - RazorVue 设计入口 → [01-目标/razorvue/README.md](./01-目标/razorvue/README.md)
 - Jolt 设计入口 → [01-目标/jolt/README.md](./01-目标/jolt/README.md)
+- Jazor CSX Frontend 目标 → [01-目标/csx/README.md](./01-目标/csx/README.md)
+- Jazor CSX Frontend 计划 → [02-计划/csx/CSX.Frontend.ImplementationPlan.md](./02-计划/csx/CSX.Frontend.ImplementationPlan.md)
 - Jolt 当前状态 → [03-完成/jolt/status.md](./03-完成/jolt/status.md)
 - Emit 当前状态 → [03-完成/emit/status.md](./03-完成/emit/status.md)

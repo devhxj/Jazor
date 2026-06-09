@@ -2,12 +2,13 @@
 
 每个子目录对应仓库中的一个核心模块或一条核心工作线，记录它**为什么存在**、**解决什么问题**、以及**推荐的实现边界**。
 
-## 两条技术线路
+## 技术线路
 
 | 线路 | 模式 | 文档目录 | 当前物理落点 |
 |------|------|---------|-------------|
 | **RazorVue** | 库模式（Source Generator，不以 `.vue` 为 authoring 格式） | `razorvue/` | `src/Jazor.RazorVue/`（含 `RazorSdk/`） + `src/Jazor.Analyzer/RazorVue/` + `src/ECMAScript.Vuetify/` |
 | **Jolt** | 全功能模式（`.jazor` 开发时宿主） | `jolt/` | `src/Jolt/` |
+| **Jazor CSX Frontend** | 独立 `.jazor` TSX-like 前端，输出 `.jsx` | `csx/` | 待创建 `src/Jazor.CSX/` |
 
 ## 按项目结构索引
 
@@ -27,6 +28,7 @@
 | `ecmascript.vueroute/` | `src/ECMAScript.VueRoute/` | ECMAScript.VueRoute 外部库映射目标、Vue Router API 覆盖矩阵与 authoring 边界 |
 | `razorvue/` | `src/Jazor.RazorVue/`（含 `RazorSdk/`） + `src/Jazor.Analyzer/RazorVue/` + `src/ECMAScript.Vuetify/` | 库模式 Razor-to-JS、组件描述、Razor SDK 桥接与 Vuetify authoring |
 | `jolt/` | `src/Jolt/` | `.jazor` LSP、DevServer、Build、Debug、Deno/Volar 集成 |
+| `csx/` | 待创建 `src/Jazor.CSX/` | 新独立 `.jazor` TSX-like 前端路线，生成 `.jsx` artifact；现有 Jolt/RazorVue 冻结，仅作参考 |
 | `common/` | `src/ECMAScript.Contract/` + `src/Jazor.Common/` | 最小契约层与共享实现层 |
 | `webidl/` | `src/ECMAScript.WebIDL.Generator/` | WebIDL 到 C# 绑定生成 |
 | `tools/` | `src/Jazor/` + `src/Jolt.VSCodeExtension/` | NuGet 打包、VS Code 集成与工具侧边界 |

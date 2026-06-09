@@ -1,35 +1,54 @@
-# RazorVue Playground 支持缺口状态（2026-05-29）
+# RazorVue Playground 支持缺口状态（2026-06-09）
 
-本文只记录当前 RazorVue / Playground 仍需明确边界、保守降级或 fail-fast 的能力缺口。历史流水账、单次修复细节和完整命令输出不放在本文中，必要时通过 git 历史、测试名和实现代码追溯。
+本文是 RazorVue / Playground 的当前边界状态页，不记录逐次修复日志。单次修复过程、focused run 输出和完整历史细节应回到测试名、提交记录、PR 描述和实现代码中追溯。
+
+本文只回答四类问题：
+
+- 当前哪些形态仍必须 fail-fast。
+- 当前哪些形态只能保守输出 render-function `.vue`。
+- 哪些能力已经进入支持面，不再作为缺口追踪。
+- 支持面变化后应从哪里验证。
 
 ## 维护规则
 
-- 新增条目必须描述当前仍有效的限制，而不是记录单次修复过程。
-- 一个缺口关闭后，从“当前缺口”移除；只有当它仍帮助理解边界时，才在“已移除缺口摘要”保留一行。
-- 测试命令只保留验证入口，不逐条追加 focused run 日志。
-- 如果无法证明求值顺序、副作用次数、slot/component metadata、HMR identity 或 Vue runtime 语义等价，继续显式 fail-fast 或保留 render-function `.vue`。
+- “当前缺口”只放仍有效的限制、降级条件或 fail-fast 条件。
+- 缺口关闭后，从“当前缺口”移除；只有它仍帮助理解边界时，才在“已固化能力摘要”保留一行。
+- 不在本文追加逐条 focused run 日志。需要证明时，补测试、引用测试名，或在 PR / commit 中记录命令输出。
+- 无法证明求值顺序、副作用次数、slot/component metadata、HMR identity、frame identity/depth 或 Vue runtime 语义等价时，继续显式 fail-fast，或保留 render-function `.vue`。
 
-## 硬边界
+## 不可突破的边界
 
 - RazorVue 的主输出合同是最终 `.vue` / render-function artifact，不引入 wrapper-JS 中间协议。
 - C# 表达式、成员、类型引用、CLR helper、import/reference 语义继续走 `Jazor.Compiler` / `SemanticWalker`。RazorVue 只负责 Vue artifact framing、Razor frontend 还原和组件/slot 描述符桥接。
 - RazorVue 的 `.razor` 输入必须保持官方 Razor Source Generator 可编译，不能引入只有 RazorVue 自己懂的参数或类型形态。
-- analyzer 可以更早、更严；compiler / RazorVue lowering 仍必须在实际 runtime-sensitive 使用点 fail-fast。
+- Analyzer 可以更早、更严；compiler / RazorVue lowering 仍必须在实际 runtime-sensitive 使用点 fail-fast。
+
+## 支持策略总览
+
+| 领域 | 稳定主线 | 保守策略 | 必须 fail-fast 的核心边界 |
+|------|----------|----------|----------------------------|
+| Render / Template | 已实现的 root-level 与 mixed/nested template-safe 子集 | 不能证明 template-safe 时保留 render-function `.vue` | async render、`goto`、需要真实 exception/dispose/lock 语义、mutation/byref/loop control 等不可模板编码语义 |
+| Template code block / raw markup | template local、受控 assignment / increment / decrement、静态可证明 raw markup | 动态 raw HTML 不降级为普通安全 HTML | 运行时生成 HTML、执行型元素/属性/directive、后续可观察写入 carrier |
+| Component / `System.Type` | 可源码证明的静态 `typeof(IVueComponent)` 目标 | 普通 type-token 表达式交回 compiler | 动态 `System.Type` 组件、把 `System.Type` 当普通内容/条件/key/loop source |
+| Fragment / Slot carrier | inline template、source-stable carrier、受控 fragment factory 转发链 | 任意 delegate dataflow 不进入 slot 还原路径 | 递归 factory、副作用 dataflow、无法还原匿名模板 body、`ref` / `out` 转发 |
+| Render helper / open frame | 只读 captured value、受控 open-frame replay、同 artifact helper class | 无法保持 frame identity/depth 时失败 | caller-owned frame 漂移、跨 helper 未闭合 frame、关闭/重开 caller frame、region 逃逸、写回/逃逸 byref |
+| Setup / lifecycle / render control | no-op helper、受控 emit/watch、受控 `ShouldRender` gate | 无源码 base override 或不可证明 delegate identity 时 `FullReloadRequired` 或失败 | async helper、任意外部 invocation、mutation、真实 exception payload、不可证明 delegate escape |
+| DOM / route / consumer build | descriptor-aware emits、SFC bridge、常见 route template bridge、colocated consumer handoff | 无法诚实映射的 route 形态拒绝 | 字符串 `on*` 当事件、SFC default export 直接当 authored module、runner 缺失静默跳过 |
 
 ## 当前缺口
 
 ### Render / Template
 
-- 通用 `imperative body -> canonical <template>` 回流仍不支持。当前只接受已实现的 root-level、无副作用、template-safe 窄子集，以及混合模板树中可证明局部且 template-safe 的 `switch` / `lock` / null-default `using` / no-op `try/catch/finally` / label / `do while(false)` 子树；其它 imperative subtree 保守输出 render-function `.vue` 或 fail-fast。
+- 通用 `imperative body -> canonical <template>` 回流仍不支持。当前只接受已实现的 root-level、无副作用、template-safe 窄子集，以及混合模板树中可证明局部且 template-safe 的 `switch` / `lock` / null-default `using` / no-op `try/catch/finally` / label / `do while(false)` 子树。其它 imperative subtree 保守输出 render-function `.vue` 或 fail-fast。
 - 真正 async render contract 不支持。`await`、`await foreach`、`await using`、`await using var` 不会生成 fire-and-forget async render。
 - `goto` 不支持，因为当前 `Jazor.Compiler` 没有任意 jump control flow 的等价 JS lowering。
-- 声明式 count-style `for` 只接受可归一到 `__jazorVueForRange(...)` 且不会改变 iterator 求值次数的单 iterator 形态。常量、参数、属性、局部静态 carrier 和其它可按进入 range helper 前一次求值表达的 loop-invariant step 可进入声明式 `RazorVueForNode`；多 iterator、非加减 iterator、逐轮动态 invocation step 或 loop-local dependent step 保守进入 imperative loop/render-function。
+- 声明式 count-style `for` 只接受可归一到 `__jazorVueForRange(...)` 且不会改变 iterator 求值次数的单 iterator 形态。常量、参数、属性、局部静态 carrier 和其它 loop-invariant step 可进入声明式 `RazorVueForNode`；多 iterator、非加减 iterator、逐轮动态 invocation step 或 loop-local dependent step 保守进入 imperative loop / render-function。
 - 需要 runtime-sensitive exception、真实 dispose、未知 lock target、loop control、mutation、byref、same-artifact helper type runtime declaration 或动态 raw markup 语义的 template recovery 不做静默擦除。
 
-### Template Code Block / Markup
+### Template Code Block / Raw Markup
 
-- 声明式模板 code-block 不是通用语句执行模型。除 template local initializer、同一线性声明前缀内一次简单赋值、普通 assignment / increment / decrement 的 imperative render segment recovery、同一 code-block 内受控 callable local invocation 的 imperative render segment recovery，以及已定义结构化控制语句外，delegate/callable template state 不进入 canonical template node。
-- 动态 raw markup 不支持运行时生成 HTML。`AddMarkupContent(...)`、`AddContent(..., MarkupString)` 和 Razor template `MarkupString` 只接受源码可分析且可证明为静态 HTML 的子集；静态 carrier / factory / `MarkupString` carrier 的 `+` 拼接仅在每个片段均可证明为静态时支持，运行时条件仅可在多个各自可证明安全的静态 raw-markup 分支之间选择。
+- 声明式模板 code-block 不是通用语句执行模型。除 template local initializer、同一线性声明前缀内一次简单赋值、普通 assignment / increment / decrement 的 imperative render segment recovery、同一 code-block 内受控 callable local invocation，以及已定义结构化控制语句外，delegate/callable template state 不进入 canonical template node。
+- 动态 raw markup 不支持运行时生成 HTML。`AddMarkupContent(...)`、`AddContent(..., MarkupString)` 和 Razor template `MarkupString` 只接受源码可分析且可证明为静态 HTML 的子集；静态 carrier / factory / `MarkupString` carrier 的 `+` 拼接仅在每个片段均可证明为静态时支持。
 - raw execution 元素、inline `on*`、Vue/raw directive attribute、`srcdoc`、`v-html`、`formaction`、畸形 tag/attribute name，以及可执行 `javascript:` / `vbscript:` / `data:` URL 继续 fail-fast。
 - 后续可观察写入的 `RenderFragment` / `MarkupString` / static-markup carrier 不支持；普通 setup `let` carrier 不放宽 source-stable 合同。
 
@@ -41,17 +60,16 @@
 
 ### Fragment / Slot Carrier
 
-- 任意 `RenderFragment` / delegate dataflow 不支持。只接受 inline template、source-stable local/member carrier、受支持 current-component/local function fragment factory，以及 getter 内返回值依赖链可证明只由 source-stable `RenderFragment` local carrier 组成的窄子集。
+- 任意 `RenderFragment` / delegate dataflow 不支持。只接受 inline template、source-stable local/member carrier、受支持 current-component/local function fragment factory，以及 getter / fragment factory block body 内返回值依赖链可证明只由 source-stable `RenderFragment` local carrier 组成的窄子集。
 - current-component fragment factory 之间的非递归只读转发链支持 source-stable 多跳解析，并按调用点/转发点书写顺序保留 captured value scope；任意 delegate 返回/参数传递不进入该路径。
 - local function fragment factory 之间的同作用域非递归转发链支持 source-stable 解析，并与 current-component factory 一样保留 captured value scope；跨作用域逃逸或任意 delegate dataflow 不进入该路径。
-- recursive fragment factory、getter 中无关 local/语句或副作用 dataflow、无法静态还原匿名模板 body 的 callable、fragment factory `ref` / `out` 参数和 by-reference 转发/逃逸继续 fail-fast。
+- recursive fragment factory、getter / fragment factory block body 中无关 local/语句或副作用 dataflow、无法静态还原匿名模板 body 的 callable、fragment factory `ref` / `out` 参数和 by-reference 转发/逃逸继续 fail-fast。
 - `in` 只读值参数只在已支持的 captured value 读取场景成立；继续传入任意 by-reference invocation 不支持。
 
 ### Render Helper / Open Frame
 
 - render helper 非 builder `ref` 参数仅支持可证明只读的 captured value 读取子集：实参必须是 C# 可寻址值，helper body 不得 assign / increment / decrement、不得通过任何 by-reference invocation 转发，且不提供 caller writeback。`out` 参数、`ref` 写回/逃逸和 by-reference forwarding 继续 fail-fast；`RenderTreeBuilder` 参数必须保持 by-value。
-- recursive render helper 不支持。
-- caller-owned open frame helper 只支持受控 replay：attribute/key/spread mutation、slot/default-slot assignment、ambient child emission、helper-local 平衡 `OpenRegion` / `CloseRegion`。跨 helper 留未闭合 frame、关闭/重开 caller-owned frame、active frame 漂移或 region 逃逸继续 fail-fast。
+- caller-owned open frame helper 只支持受控 replay：attribute/key/spread mutation、DOM event modifier mutation、slot/default-slot assignment、ambient child emission、helper-local 平衡 `OpenRegion` / `CloseRegion`，以及能保持 frame identity/depth 的简单条件、guard-return、consecutive guard-return、single-branch terminal-return 和 both-branches terminal-return replay。跨 helper 留未闭合 frame、关闭/重开 caller-owned frame、active frame 漂移或 region 逃逸继续 fail-fast。
 - 同文件 helper class lowering 只接受同步、源码可分析、同 artifact module 内的普通 runtime class、static nested helper class，以及 erased value-only generic helper class。generic helper 的静态泛型状态、`typeof(T)` / `new T()` / type-pattern 等 runtime type-parameter 语义继续 fail-fast。helper component 只能通过 `OpenComponent` / component reference 路径渲染；`new Component()` 当普通对象使用继续 fail-fast。
 
 ### Setup / Lifecycle / Render Control
@@ -68,30 +86,22 @@
 - RazorVue library mode 的 colocated `consumer` 是同一 ASP.NET Core 项目内的前端消费构建层，不是第二个 runtime host。`JazorConsumerRoot` 已设置但 runner 缺失时必须由 MSBuild target fail-fast。
 - route template -> Vue Router bridge 继续拒绝无法诚实映射的长尾形态：optional separator 参数位置非法、需要多次 optional separator 展开的 composite/mixed segment、未知自定义 constraint，以及无法表达为“Vue Router path regex + generated metadata 二次校验”的 constraint 组合。普通多参数 composite/mixed segment 已由 Emit 回归固化。
 
-## 已移除缺口摘要
+## 已固化能力摘要
 
-- Body-level imperative render 主线已覆盖常见 `return`、loop、`switch`、`lock`、`try/catch/finally`、`using` / `using declaration`、无 `goto` labeled statement、局部 mutation、静态 markup / `MarkupString`。
-- Root-level canonical `<template>` recovery 已覆盖受控 `switch`、guard-return、`try/finally` / 空 recovery、`lock(this)` / 受控 readonly object gate、no-op label、null/default `using`、null/default leading `using declaration`、`do while(false)` 和 `while(false)` 子集。
-- Mixed / nested canonical `<template>` recovery 已覆盖局部、template-safe imperative 子树：受控 `switch`、`lock(this)` / 受控 readonly object gate、null/default `using`、无 payload 的空 recovery/cleanup `try/catch/finally`、no-op label、`do while(false)` 可与声明式 sibling / 元素子节点 / 外层 template local 共存并保持模板输出；非局部 control-flow、mutation、scoped replay 或不可模板编码子树仍整体保守走 render-function。
-- Component parameter descriptor、current-component slot forwarding、builder-style `RenderFragment` / `RenderFragment<T>` slot callback、nested component metadata/import 已进入正式路径。
-- Razor IR mixed attribute、lowercase `class` / `style` fallthrough、DOM event modifier、static markup、typed/untyped `RenderFragment` carrier、fragment factory、template local、setup/lifecycle helper 受控 payload、动态 `ShouldRender` cached render gate 已进入支持面。
-- static markup / `MarkupString` 的普通 setup `let` member carrier 已覆盖可证明无后续写入的窄切片：private mutable string carrier 可通过 `(MarkupString)carrier` / `new MarkupString(carrier)` 继续还原为静态 HTML；后续可观察写入仍按 source-stable 合同 fail-fast。
-- Template code-block 中普通 assignment、increment、decrement 已覆盖受控 imperative render segment recovery；tree / pipeline / SFC 回归锁定为 render-function `.vue`，不会伪装成 canonical template local。
-- Template code-block 中同一 code-block 内定义并调用的 ordinary callable local 已覆盖受控 imperative render segment recovery；跨后续模板表达式的 delegate dataflow 仍保持 fail-fast。
-- raw markup / `MarkupString` 已覆盖运行时条件选择静态分支的窄切片；每个分支仍经 static markup parser 校验，unsafe element / inline event / directive / executable URL 任一分支出现都会 fail-fast。
-- raw markup / `MarkupString` 已覆盖可证明静态的 `+` 拼接 carrier：string / `MarkupString` local/member/factory 片段可组合后整体进入 static markup parser；运行时参数拼接、后续可观察写入 carrier、跨片段拼出的 unsafe element 仍保持 fail-fast。
-- RenderFragment getter/dataflow 已覆盖 getter body 中“仅声明/立即赋值返回值依赖链上的 source-stable `RenderFragment` local carrier，随后直接 return”的窄切片；getter 中额外语句、无关 local carrier、普通副作用或无法证明依赖链时仍 fail-fast。
-- current-component fragment factory 多跳转发链已由回归固化：单 return / expression-bodied factory 之间可转发到最终 inline template，并保留 named argument out-of-order 的 captured scope 顺序；递归仍 fail-fast。
-- local function fragment factory 同作用域转发链已由回归固化：可转发到 local/core inline template 并保留 captured scope；递归 local function factory 继续 fail-fast。
-- render helper 非 builder `ref` 参数已覆盖只读 captured value 子集，并由 tree / SFC / pipeline 回归固化；`out`、写回、increment/decrement 和 by-reference 转发继续 fail-fast。
-- 同文件 helper class lowering 已覆盖普通 class、static nested helper class 和 erased value-only generic helper class 的 runtime class 发射；record / struct / ECMAScript host data carrier 保持结构化降低，不发 same-artifact runtime class。
-- helper component imperative render 边界已评估并由回归固化：`OpenComponent<T>` / `OpenComponent(Type)` 继续走 Vue component import / metadata / bridge 路径；`new Component()` 当普通对象、读取组件实例成员或把组件当 helper class 继续 fail-fast。
-- 普通 lifecycle no-op helper 已覆盖只读 `in` 值参数，与 setup/lifecycle helper captured value 读取模型一致；把已有 `in` 参数继续传入任意 by-reference invocation 仍 fail-fast。
-- `SetParametersAsync` 受控 `switch` / pattern switch emit/watch 序列已覆盖：普通 switch 保持 JS `switch`，pattern switch 对 discriminant 单次求值后输出有序 `if` / `else if` / `else`，声明 pattern-local 并让 case body 依赖绑定的形态仍 fail-fast。
-- `SetParametersAsync` 受控 loop emit/watch 序列已覆盖：`foreach` / `await foreach` / `for` / `while` 通过 compiler-owned statement lowering 输出到同一个 watcher，其中 `await foreach` 保留为 `for await`；loop body 必须包含受支持 callback emit，非 emit loop 和组件/参数 mutation 仍 fail-fast。
-- `ShouldRender` 纯同步 `throw` 方法体已覆盖 cached render gate；`try/finally` 中 `finally` 终止 throw 等改变正常返回协议的形态仍保持 fail-fast。
-- `ShouldRender` local function delegate 参数 identity-return 已覆盖 cached render gate：返回值 usage kind 从传入 delegate 传播到接收本地变量或直接调用点；函数体内仅由同一 delegate 参数派生的只读本地别名链、必返回的嵌套 block alias-return、受控 `if` / `switch` / `try/catch` 中所有返回路径同源的形态、非穷尽 `switch` 加同源 trailing return，以及同源 conditional expression 返回同样可还原。null-only delegate 经 identity-return / alias-return 后调用仍 fail-fast，多 delegate 源混用、任意跨 member / 外部 callable / 不可证明 delegate escape 继续保持 `FullReloadRequired`。
-- RazorVue library-mode colocated consumer build / publish handoff、runner 缺失 fail-fast、SFC bridge default-to-named import/export 和常见 route template bridge 已有回归覆盖。
+以下内容已经进入支持面，不再作为当前缺口逐条追踪。具体行为仍以实现和回归测试为准。
+
+| 领域 | 已固化能力 |
+|------|------------|
+| Body-level imperative render | 常见 `return`、loop、`switch`、`lock`、`try/catch/finally`、`using` / using declaration、无 `goto` labeled statement、局部 mutation、静态 markup / `MarkupString`。 |
+| Canonical template recovery | root-level 与 mixed/nested template-safe 子树中的受控 `switch`、guard-return、`try/finally` / 空 recovery、`lock(this)` / 受控 readonly object gate、null/default `using`、no-op label、`do while(false)` / `while(false)` 子集。 |
+| Component / slot metadata | Component parameter descriptor、current-component slot forwarding、builder-style `RenderFragment` / `RenderFragment<T>` slot callback、nested component metadata/import。 |
+| Razor IR frontend | mixed attribute、lowercase `class` / `style` fallthrough、DOM event modifier、typed/untyped `RenderFragment` carrier、fragment factory、template local、受控 setup/lifecycle helper payload、动态 `ShouldRender` cached render gate。 |
+| Raw markup / `MarkupString` | 可证明静态的 carrier、条件静态分支、静态安全 `+` 拼接、显式 `MarkupString` 表达式入口；plain `string` 仍按普通 render content 处理。 |
+| Fragment factory | getter / factory block body 中由 source-stable `RenderFragment` local carrier 组成的返回值依赖链，current-component 与 local function factory 的非递归多跳转发链。 |
+| Render helper / open frame | 只读 `ref` captured value 子集、caller-owned attribute/child replay、DOM event modifier mutation、简单条件 replay、guard-return replay、consecutive guard-return nested replay、single-branch / both-branches terminal-return replay、current-component 与 local function recursive render helper imperative materialization。 |
+| Helper class / component boundary | 同文件普通 class、static nested helper class、erased value-only generic helper class runtime 发射；helper component 继续只通过 `OpenComponent` / component reference 路径渲染。 |
+| Setup / lifecycle / render control | 普通 lifecycle no-op helper 的只读 `in` 值参数、`SetParametersAsync` 受控 switch / pattern switch / loop emit-watch、`ShouldRender` 同源 delegate identity-return / alias-return / control-flow return 与纯同步 `throw`。 |
+| Build / route bridge | RazorVue library-mode colocated consumer build / publish handoff、runner 缺失 fail-fast、SFC bridge default-to-named import/export、普通多参数 composite/mixed route template bridge。 |
 
 ## 验证入口
 
@@ -102,9 +112,15 @@
 - `dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj`
 - `git diff --check`
 
-最近一次记录的 focused 验证在 2026-05-29 覆盖 RazorVue、Razor IR、Emit 相关边界，并通过 `git diff --check`。2026-05-29 Emit 全套在 SDK integration 编排优化后为 196/196 通过，耗时 4m38；同日补充的多参数 composite/mixed route bridge 回归单测通过。2026-05-29 count-style `for` focused 验证覆盖静态 local step carrier 继续声明式、dynamic invocation step 降级 imperative loop；同日 MarkupString focused 验证覆盖 private mutable string static-markup carrier 经 `(MarkupString)` 转换的正负边界；Template code-block focused 验证覆盖普通 assignment / increment / decrement 和同块 callable local invocation 进入 imperative render segment；Render / Template focused 验证覆盖 mixed / nested template-safe `switch` / `lock` / `using` / `try` / label / `do while(false)` imperative subtree 回流、外层 template local 读取、switch 临时名冲突及邻近负向边界；raw markup focused 验证覆盖条件选择静态安全分支、静态安全 `+` 拼接 carrier、factory captured scope 保留、mutation / dynamic concat / unsafe post-concat fail-fast；Fragment/Slot Carrier focused 验证覆盖 getter 返回 source-stable `RenderFragment` local carrier 及 side-effect / unused-local 负边界，并覆盖 current-component/local function fragment factory 转发链 captured scope 顺序与递归 fail-fast；Render Helper focused 验证覆盖只读 `ref` captured value 子集、caller-owned attribute mutation、`out` / 写回 / by-reference 转发 fail-fast、erased generic helper class / static nested helper class runtime lowering 与 runtime type-parameter 语义 fail-fast，以及 helper component `OpenComponent` 正向和 `new Component()` fail-fast 边界；Setup / Lifecycle focused 验证覆盖普通 no-op lifecycle helper `in` 只读值参数正向和 by-reference forwarding 负边界，并覆盖 `SetParametersAsync` 普通 switch / pattern switch / loop emit/watch / `await foreach` emit-watch 正向、pattern-local / non-emit loop / mutation 负向边界；`ShouldRender` focused 验证覆盖纯同步 `throw`、delegate 参数 identity-return / alias-return / 嵌套 block alias-return / 直接调用点 / 同源条件分支 / 同源 switch 和 trailing-return switch、同源 `try/catch` 与条件表达式 return 正向和 `try/finally` terminal throw、null-only delegate identity-return / alias-return 后调用、多 delegate 源混用负向边界。后续以实际命令输出为准。
+最近状态锚点：
+
+- 2026-06-09：focused 验证覆盖 Render Helper / Open Frame 的 caller-owned replay、DOM event modifier mutation、conditional replay、guard-return replay、consecutive guard-return nested replay、single-branch / both-branches terminal-return replay、ordinary conditional child boundary、recursive helper materialization、overload alias 去碰撞，以及 active frame 漂移、recursive caller-owned mutation、component frame DOM event modifier 等负向边界；`RazorVueRenderHelperOpenFrameBoundaryTests` 为 64/64 通过，wider caller-owned 过滤器为 104/104 通过。
+- 2026-06-09：focused 验证覆盖 Razor IR / BuildRenderTree Fragment factory returned-value dependency、getter local-chain、`MarkupString` / static-markup 表达式入口收紧、later-write 负向边界。
+- 2026-05-29：Emit 全套在 SDK integration 编排优化后为 196/196 通过；同日补充普通多参数 composite/mixed route bridge 回归。
+- 2026-05-29：focused 验证覆盖 count-style `for`、Template code-block imperative segment、mixed/nested template-safe recovery、raw markup 静态条件/拼接、render helper 只读 `ref`、helper class、setup/lifecycle 和 `ShouldRender` 受控边界。
 
 ## 下一步
 
-- 下一项：按用户要求，本次 raw markup 静态拼接切片完成后暂停自动推进；恢复时继续按文档顺序推进 Template Code Block / Markup 缺口，优先评估 Razor template `MarkupString` / code-block static-markup carrier 中是否存在可证明为静态安全 HTML 且不改变求值次数的下一批 carrier 或分支形态；任意放宽都必须继续经过 static markup parser 校验并保持 unsafe element / inline event / directive / executable URL fail-fast。
-- 后续新发现的缺口只补充到“当前缺口”；已完成过程留在测试名、PR/commit 描述和 git 历史中。
+- 优先继续评估 Render Helper / Open Frame 的 caller-owned open frame 长尾边界。只有能证明 active frame identity、frame depth、attribute/slot/child replay 顺序和 captured value 求值次数不变的形态，才允许进入支持面。
+- 跨 helper 未闭合 frame、关闭/重开 caller-owned frame、active frame 漂移、region 逃逸、component frame DOM event modifier 和 recursive caller-owned mutation 继续 fail-fast。
+- 后续新发现的缺口只补充到“当前缺口”；完成过程留在测试名、PR/commit 描述和 git 历史中。

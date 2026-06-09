@@ -1,7 +1,7 @@
 # Jazor 工作流总览
 
 > Status: 活跃计划
-> Updated: 2026-05-05
+> Updated: 2026-06-09
 > Positioning: 仓库级恢复入口，用于查看各工作流当前阶段、依赖顺序与下一步行动。
 > Note: 更窄的 active plan 可以覆盖这里的具体执行切片，但不应反向改写这里对工作流边界和先后依赖的判断。
 
@@ -13,7 +13,8 @@
 | ECMAScript.Vue3 外部库线 | 三阶段：Phase 1 完成，Phase 2 收口中 | 收敛 `H(...)` 规范层、在已固定的 slot contract 上扩 parity 覆盖、把 RazorVue 库模式切到 design-time SFC artifact | [详情](../03-完成/ecmascript.vue3/status.md) |
 | ECMAScript.Pinia 外部库线 | 初始落地完成，进入增量补齐 | 补 setup-store helpers 设计、继续沉淀外部库模板与独立测试治理 | [详情](../03-完成/ecmascript.pinia/status.md) |
 | Emit / Materialisation | 持续承接 | 显式化 materialisation / sourcemap 承接职责 | [详情](../03-完成/emit/status.md) |
-| Jolt | Phase 1-6 收口中 | 调试闭环（CDP）、构建收口、Phase 7 扩展系统启动门槛 | [详情](../03-完成/jolt/status.md) |
+| Jolt | 既有代码线冻结（CSX 期间仅参考） | 不承载 CSX 初始实现；后续只在 CSX contract 稳定后评估集成 | [详情](../03-完成/jolt/status.md) |
+| Jazor CSX Frontend | 新独立路线启动 | 建立 `.jazor` TSX-like parser、shadow C#、compiler expression lowering、`.jsx` artifact spike | [详情](./csx/CSX.Frontend.ImplementationPlan.md) |
 | SourceMap | 局部活跃（narrow lane） | 继续补齐调试消费链路与精度提升 | [详情](../03-完成/sourcemap/status.md) |
 
 ## 依赖顺序与并行策略
@@ -22,8 +23,8 @@
 
 1. Compiler mainline stabilisation
 2. Emit / host materialisation consolidation
-3. Jolt phase-one closure
-4. Jolt authoring lane execution
+3. Jazor CSX Frontend contract and spike
+4. CSX integration planning after the independent route proves parser/binding/lowering/artifact contracts
 5. SourceMap partial rollout for active consumers
 6. Broader SourceMap programme
 7. Ongoing documentation governance
@@ -32,12 +33,13 @@
 - Documentation governance 可以持续运行
 - ECMAScript.Vue3 外部库线可与 compiler 主线并行推进（前提是不新增 Vue 命名特路）
 - ECMAScript.Pinia 外部库线可与 compiler 主线并行推进（前提是不新增 Pinia 命名特路）
-- Narrow SourceMap 工作可以和 Jolt / emit 集成并行推进
+- Jazor CSX Frontend 可以和现有 frozen Jolt/RazorVue 代码线并行推进，前提是只读参考旧代码、不把新路径实现塞进旧模块
+- Narrow SourceMap 工作可以和 emit / CSX 后续 artifact mapping 并行推进
 - Emit 可以作为活跃依赖层持续演进（compiler 作为上游基础）
 
 **不允许的并行**：
 - Broad SourceMap 扩张不能超过 compiler / emit 稳定性
-- Authoring 广度不能超过 Jolt phase-one closure
+- CSX authoring 广度不能超过 parser / shadow C# / compiler lowering / `.jsx` artifact 合同闭环
 
 ## 详细工作流说明
 
@@ -141,26 +143,53 @@ Emit 不是单独的大专题，但确实是多个工作流共同的承接层。
 
 ### Jolt
 
-**当前状态**：主链路已进入“能力收口与补齐”阶段，Phase 1/2/3 主路径已落地，Phase 4/5/6 持续推进，Phase 7 仍在规划。
+**当前状态**：既有代码线在 CSX 路线启动期间冻结。它仍可作为工程化参考，但不承载新的 Jazor CSX Frontend 初始实现。
 
-`Jolt` 当前是 `.jazor` 的唯一开发时边界。In-proc Razor/Roslyn、Deno frontend worker、LSP bridge/coordinator、Dev Server/HMR、SourceMap 管线和 build lane 已形成活跃主路径。
+历史上 `Jolt` 是 `.jazor` 的开发时边界，包含 In-proc Razor/Roslyn、Deno frontend worker、LSP bridge/coordinator、Dev Server/HMR、SourceMap 管线和 build lane。新 CSX 路线启动后，这些实现只读参考；不能把 CSX parser、IR、shadow C# 或 `.jsx` artifact 初始实现隐藏到现有 Jolt pipeline 中。
 
 **下一步行动**：
 
-1. **调试闭环补齐（Phase 4）**
-   - 从 DAP fallback 推进到 CDP 实浏览器闭环
-   - 将 SourceMap 服务完整接入断点/调用栈映射路径
+1. **保持冻结边界**
+   - 不继续扩展既有 Jolt `.jazor` authoring lane
+   - 不为 CSX spike 修改 Jolt runtime / LSP / Deno pipeline
 
-2. **构建与 LSP 收口（Phase 5/6）**
-   - 继续巩固 manifest/css/js/source map 产物一致性
-   - 收敛跨 lane supplement 边界，避免“伪造语义结果”
-
-3. **扩展系统启动门槛（Phase 7）**
-   - 先引入最小 provider 抽象（diagnostic/code-action）
-   - 在不破坏当前主线稳定性的前提下逐步扩展
+2. **保留参考价值**
+   - CSX 可以读取 Jolt 的 manifest、SourceMap、DevServer、Deno worker 经验
+   - 复用必须等 CSX contract 稳定后以显式集成任务进行
 
 **深度文档**：
 - [Jolt 状态快照](../03-完成/jolt/status.md)
+
+---
+
+### Jazor CSX Frontend
+
+**当前状态**：新独立路线启动，目标是 TSX-like `.jazor` authoring，输出 `.jsx`。
+
+CSX 是新的 authoring frontend，不是 RazorVue 模式，也不是现有 Jolt pipeline 的扩展。它可以参考现有代码，但必须先独立建立 parser、IR、shadow C#、Roslyn binding、Jazor.Compiler expression lowering、`.jsx` artifact、diagnostic/source map 合同。
+
+**下一步行动**：
+
+1. **Phase 0: Contract and fixtures**
+   - 定义 CSX IR 与 artifact manifest
+   - 所有 IR 节点携带 `.jazor` source span
+   - 不依赖 RazorVue render tree node types
+
+2. **Phase 1: Parser and shadow C#**
+   - 解析 TSX-like 元素、属性、children、C# expression islands
+   - 生成 shadow C# 并把 Roslyn diagnostics 映射回 `.jazor`
+
+3. **Phase 2: Compiler lowering and `.jsx` emission**
+   - `{...}` 内 C# 表达式通过 `Jazor.Compiler` lowering
+   - 输出 deterministic `.jsx`
+
+4. **Phase 3: Component props/events and typed slots**
+   - 覆盖 `<Button text={Title} onClick={Save} />`
+   - 覆盖 slot/lambda child 中 scoped C# binding
+
+**深度文档**：
+- [CSX 目标](../01-目标/csx/README.md)
+- [CSX 实施计划](./csx/CSX.Frontend.ImplementationPlan.md)
 
 ---
 
@@ -197,16 +226,13 @@ SourceMap 当前不是“全 deferred”也不是“全 active”。更准确的
 
 如果 host-facing 交接仍然不清楚，就不能声称下游工作流已经闭环。这个门槛对 Jolt artifact / manifest 流程和 SourceMap writer / bundle chaining 流程都很重要。
 
-### Gate C. Jolt 最小路径优先于 authoring 广度
+### Gate C. CSX 合同优先于 authoring 广度
 
-Authoring 扩张应该建立在已闭环的最小 Jolt 路径上，而不是绕过它。
+CSX authoring 扩张必须建立在 parser、shadow C#、compiler expression lowering、`.jsx` artifact 和 source map/diagnostic 合同闭环之上。
 
-### Gate D. Jolt authoring 不能分叉核心语义
+### Gate D. CSX 不能分叉核心 C# 语义
 
-在跨过 mid-authoring review gate 之前，必须确认：
-- stub-as-truth-source 仍然成立
-- lowering 保持通用
-- 特定包的分支没有渗透进核心
+CSX `{...}` expression islands 必须走 Roslyn semantic binding 和 `Jazor.Compiler` / `SemanticWalker` lowering。禁止通过字符串拼接、JS 近似表达式或第二套 C# lowering 规则实现。
 
 ### Gate E. SourceMap 局部推广只能在稳定上游载体上
 

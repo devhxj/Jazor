@@ -19,5 +19,6 @@ WBS、里程碑、阶段拆分，以及各工作流的当前执行进度。
 | `ecmascript.vuetify/` | `src/ECMAScript.Vuetify/` | ECMAScript.Vuetify 作为 Vuetify 代理层与 RazorVue authoring 层的执行级收口清单与组件覆盖矩阵 |
 | `wiki/` | `src/Wiki/` | `jazor.wiki` sample 的阶段划分、收口计划与产品化分流边界 |
 | `jolt/` | `src/Jolt/` | Phase 计划、切片实施文档、运行模式收口 |
+| `csx/` | 待创建 `src/Jazor.CSX/` | Jazor CSX Frontend 独立路线计划：TSX-like `.jazor` 输入、`.jsx` 输出、shadow C# 和 compiler 复用边界 |
 | `jolt/razorvue-implementation/` | RazorVue 迁移材料（当前按 RazorVue 独立线路理解） | RazorVue 模板前端迁移、HMR/桥接边界与历史交叉材料；当前不应自动解读为 `Jolt` 生产代码所有权 |
 | `compiler/` | `src/Jazor.Compiler/` | 编译管线实施清单、转换路线图、SourceMap 实施清单 |
