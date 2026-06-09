@@ -167,6 +167,12 @@ internal sealed record RazorVueOpenNodeEventModifierReplayOperation(
     RazorVueEventModifiers EventModifiers,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueOpenNodeReplayOperation(Origins);
 
+internal sealed record RazorVueOpenNodeConditionalReplayOperation(
+    IOperation Condition,
+    ImmutableArray<RazorVueOpenNodeReplayOperation> WhenTrue,
+    ImmutableArray<RazorVueOpenNodeReplayOperation> WhenFalse,
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueOpenNodeReplayOperation(Origins);
+
 internal sealed record RazorVueOpenNodeKeyReplayOperation(
     RazorVueNodeKey? Key,
     bool KeyAssigned,

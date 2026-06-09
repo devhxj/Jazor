@@ -2360,6 +2360,9 @@ internal sealed partial class RazorVueExpressionEmitter
         if (TryRewriteImperativeBuilderInvocation(invocation, argument, out expression))
             return true;
 
+        if (TryRewriteImperativeRenderHelperInvocation(invocation, argument, out expression))
+            return true;
+
         var normalizedCallbackFactory = TryNormalizeRazorGeneratedCallbackFactory(invocation);
         if (normalizedCallbackFactory.Length != 0)
         {

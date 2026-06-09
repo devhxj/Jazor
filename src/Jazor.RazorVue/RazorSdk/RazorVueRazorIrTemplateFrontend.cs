@@ -1041,21 +1041,19 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             nodes = ImmutableArray<RazorVueRenderNode>.Empty;
             var sourceSpan = GetRequiredSourceSpan(node, "CSharpExpressionIntermediateNode");
             var operation = _resolver.ResolveRequiredOperation(sourceSpan, "Razor IR body expression");
+            if (!RazorVueStaticMarkupValueHelper.IsMarkupStringType(Unwrap(operation)?.Type))
+                return false;
+
             if (TryResolveStaticMarkupRender(operation) is { } staticMarkup)
             {
                 nodes = MaterializeStaticMarkupRender(staticMarkup, CreateOrigins(sourceSpan));
                 return true;
             }
 
-            if (RazorVueStaticMarkupValueHelper.IsMarkupStringType(Unwrap(operation)?.Type))
-            {
-                TryThrowInvalidStaticMarkupCarrier(sourceSpan, operation);
-                throw CreateUnsupportedAttributeException(
-                    sourceSpan,
-                    $"RazorVue Razor IR frontend only supports compile-time provable static MarkupString template expressions in component '{_snapshot.Descriptor.FullName}'.");
-            }
-
-            return false;
+            TryThrowInvalidStaticMarkupCarrier(sourceSpan, operation);
+            throw CreateUnsupportedAttributeException(
+                sourceSpan,
+                $"RazorVue Razor IR frontend only supports compile-time provable static MarkupString template expressions in component '{_snapshot.Descriptor.FullName}'.");
         }
 
         private void AppendHtmlContent(
@@ -3274,8 +3272,18 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             RazorVueRazorSourceSpan sourceSpan,
             IOperation operation)
         {
+            if (TryGetInvalidatedStaticMarkupLocalCarrier(operation, out var invalidatedLocal))
+            {
+                var carrierKind = RazorVueStaticMarkupValueHelper.IsMarkupStringType(invalidatedLocal.Type)
+                    ? "MarkupString"
+                    : "string static-markup";
+                throw CreateUnsupportedAttributeException(
+                    sourceSpan,
+                    $"RazorVue {carrierKind} local '{invalidatedLocal.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Static markup local carriers must remain source-stable.");
+            }
+
             if (Unwrap(operation) is not ILocalReferenceOperation localReference ||
-                !RazorVueStaticMarkupValueHelper.IsMarkupStringType(localReference.Local.Type))
+                !RazorVueStaticMarkupValueHelper.IsStaticMarkupCarrierType(localReference.Local.Type))
             {
                 if (RazorVueStaticMarkupValueHelper.TryGetInvalidatedSourceStableStaticMarkupMember(
                         operation,
@@ -3291,11 +3299,14 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 return;
             }
 
-            if (IsSourceStableLocalMarkupStringInitializerInvalidatedByLaterWrites(localReference.Local))
+            if (IsSourceStableLocalStaticMarkupInitializerInvalidatedByLaterWrites(localReference.Local))
             {
+                var carrierKind = RazorVueStaticMarkupValueHelper.IsMarkupStringType(localReference.Local.Type)
+                    ? "MarkupString"
+                    : "string static-markup";
                 throw CreateUnsupportedAttributeException(
                     sourceSpan,
-                    $"RazorVue MarkupString local '{localReference.Local.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. MarkupString local carriers must remain source-stable.");
+                    $"RazorVue {carrierKind} local '{localReference.Local.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Static markup local carriers must remain source-stable.");
             }
 
             if (RazorVueStaticMarkupValueHelper.TryGetInvalidatedSourceStableStaticMarkupMember(
@@ -3321,6 +3332,47 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return RazorVueStaticMarkupValueHelper.IsMarkupStringType(type)
                 ? "MarkupString"
                 : "string static-markup";
+        }
+
+        private bool TryGetInvalidatedStaticMarkupLocalCarrier(
+            IOperation? operation,
+            out ILocalSymbol local)
+        {
+            local = default!;
+            var current = Unwrap(operation);
+            if (current is null)
+                return false;
+
+            switch (current)
+            {
+                case ILocalReferenceOperation localReference
+                    when RazorVueStaticMarkupValueHelper.IsStaticMarkupCarrierType(localReference.Local.Type) &&
+                         IsSourceStableLocalStaticMarkupInitializerInvalidatedByLaterWrites(localReference.Local):
+                    local = localReference.Local;
+                    return true;
+
+                case IConversionOperation conversion
+                    when !conversion.IsImplicit &&
+                         RazorVueStaticMarkupValueHelper.IsMarkupStringType(conversion.Type):
+                    return TryGetInvalidatedStaticMarkupLocalCarrier(conversion.Operand, out local);
+
+                case IObjectCreationOperation objectCreation
+                    when RazorVueStaticMarkupValueHelper.IsMarkupStringType(objectCreation.Type) &&
+                         objectCreation.Arguments.Length == 1:
+                    return TryGetInvalidatedStaticMarkupLocalCarrier(objectCreation.Arguments[0].Value, out local);
+
+                case IConditionalOperation conditional:
+                    return TryGetInvalidatedStaticMarkupLocalCarrier(conditional.WhenTrue, out local) ||
+                           TryGetInvalidatedStaticMarkupLocalCarrier(conditional.WhenFalse, out local);
+
+                case IBinaryOperation binaryOperation
+                    when binaryOperation.OperatorKind == BinaryOperatorKind.Add:
+                    return TryGetInvalidatedStaticMarkupLocalCarrier(binaryOperation.LeftOperand, out local) ||
+                           TryGetInvalidatedStaticMarkupLocalCarrier(binaryOperation.RightOperand, out local);
+
+                default:
+                    return false;
+            }
         }
 
         private bool TryResolveImmediateAssignedInitializer(
@@ -5024,57 +5076,10 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         private bool TryGetRenderFragmentFactoryReturnedValue(
             IInvocationOperation invocation,
             out IOperation returnedValue)
-        {
-            returnedValue = default!;
-            foreach (var syntaxReference in RazorVueMethodSymbolNormalizer.GetCanonicalMethod(invocation.TargetMethod).DeclaringSyntaxReferences)
-            {
-                var syntax = syntaxReference.GetSyntax();
-                var semanticModel = _context.Compilation.GetSemanticModel(syntax.SyntaxTree);
-                switch (syntax)
-                {
-                    case MethodDeclarationSyntax methodDeclaration:
-                        if (methodDeclaration.ExpressionBody?.Expression is { } methodExpressionBody &&
-                            RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(semanticModel, methodExpressionBody, out var methodExpressionBodyOperation) &&
-                            methodExpressionBodyOperation is not null)
-                        {
-                            returnedValue = methodExpressionBodyOperation;
-                            return true;
-                        }
-
-                        if (methodDeclaration.Body is not null &&
-                            semanticModel.GetOperation(methodDeclaration.Body) is IBlockOperation methodBlock &&
-                            TryGetSingleReturnedValue(methodBlock, out var methodReturnValue) &&
-                            methodReturnValue is not null)
-                        {
-                            returnedValue = methodReturnValue;
-                            return true;
-                        }
-
-                        break;
-                    case LocalFunctionStatementSyntax localFunction:
-                        if (localFunction.ExpressionBody?.Expression is { } localExpressionBody &&
-                            RazorVuePropertyInitializerHelper.TryGetNormalizedOperation(semanticModel, localExpressionBody, out var localExpressionBodyOperation) &&
-                            localExpressionBodyOperation is not null)
-                        {
-                            returnedValue = localExpressionBodyOperation;
-                            return true;
-                        }
-
-                        if (localFunction.Body is not null &&
-                            semanticModel.GetOperation(localFunction.Body) is IBlockOperation localBlock &&
-                            TryGetSingleReturnedValue(localBlock, out var localReturnValue) &&
-                            localReturnValue is not null)
-                        {
-                            returnedValue = localReturnValue;
-                            return true;
-                        }
-
-                        break;
-                }
-            }
-
-            return false;
-        }
+            => RazorVueImperativeRenderFragmentCarrierHelper.TryGetRenderFragmentFactoryReturnedValue(
+                _context.Compilation,
+                invocation,
+                out returnedValue);
 
         private IOperation? TryGetPropertyRenderFragmentInitializer(IPropertySymbol property)
             => RazorVueImperativeRenderFragmentCarrierHelper.TryGetPropertyRenderFragmentInitializer(
@@ -6074,7 +6079,10 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             if (_localStaticMarkupCarriers.TryGetValue(local, out var initializer))
                 return initializer;
 
-            return TryGetSourceStableLocalMarkupStringInitializer(local);
+            if (RazorVueStaticMarkupValueHelper.IsMarkupStringType(local.Type))
+                return TryGetSourceStableLocalMarkupStringInitializer(local);
+
+            return TryGetSourceStableLocalStringStaticMarkupInitializer(local);
         }
 
         private IOperation? TryGetSourceStableLocalMarkupStringInitializer(ILocalSymbol local)
@@ -6086,11 +6094,43 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 ? initializer
                 : null;
 
+        private IOperation? TryGetSourceStableLocalStringStaticMarkupInitializer(ILocalSymbol local)
+        {
+            if (!RazorVueStaticMarkupValueHelper.IsStringType(local.Type))
+                return null;
+
+            if (!RazorVueSourceStableLocalInitializerHelper.TryGetSourceStableLocalInitializer(
+                    _context.Compilation,
+                    local,
+                    RazorVueStaticMarkupValueHelper.IsStringType,
+                    out var initializer) ||
+                initializer is null)
+            {
+                return null;
+            }
+
+            var staticResolution = RazorVueStaticMarkupValueHelper.TryResolveStaticMarkup(
+                initializer,
+                _context.Compilation,
+                TryGetLocalMarkupStringInitializer,
+                TryGetPropertyMarkupStringInitializer,
+                TryGetFieldMarkupStringInitializer);
+            return staticResolution is null
+                ? null
+                : initializer;
+        }
+
         private bool IsSourceStableLocalMarkupStringInitializerInvalidatedByLaterWrites(ILocalSymbol local)
             => RazorVueSourceStableLocalInitializerHelper.IsSourceStableLocalInitializerInvalidatedByLaterWrites(
                 _context.Compilation,
                 local,
                 RazorVueStaticMarkupValueHelper.IsMarkupStringType);
+
+        private bool IsSourceStableLocalStaticMarkupInitializerInvalidatedByLaterWrites(ILocalSymbol local)
+            => RazorVueSourceStableLocalInitializerHelper.IsSourceStableLocalInitializerInvalidatedByLaterWrites(
+                _context.Compilation,
+                local,
+                RazorVueStaticMarkupValueHelper.IsStaticMarkupCarrierType);
 
         private IOperation? TryGetPropertyMarkupStringInitializer(IPropertySymbol property)
         {

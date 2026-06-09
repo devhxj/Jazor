@@ -515,6 +515,41 @@ internal sealed partial class RazorVueExpressionEmitter
                         allowedParameterSymbols))
                     .AppendLine(");");
                 break;
+            case RazorVueOpenNodeConditionalReplayOperation conditionalOperation:
+                builder.Append("if (")
+                    .Append(EmitScopedExpression(conditionalOperation.Condition, allowedLocalSymbols, allowedParameterSymbols))
+                    .AppendLine(") {");
+                AppendReplayOperationsStatements(
+                    builder,
+                    conditionalOperation.WhenTrue,
+                    builderAlias,
+                    component,
+                    descriptor,
+                    slotsByPublicName,
+                    emitDescriptorsByAlias,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols);
+                if (conditionalOperation.WhenFalse.IsDefaultOrEmpty)
+                {
+                    builder.AppendLine("}");
+                }
+                else
+                {
+                    builder.AppendLine("} else {");
+                    AppendReplayOperationsStatements(
+                        builder,
+                        conditionalOperation.WhenFalse,
+                        builderAlias,
+                        component,
+                        descriptor,
+                        slotsByPublicName,
+                        emitDescriptorsByAlias,
+                        allowedLocalSymbols,
+                        allowedParameterSymbols);
+                    builder.AppendLine("}");
+                }
+
+                break;
             case RazorVueOpenNodeKeyReplayOperation keyOperation:
                 if (!keyOperation.KeyAssigned)
                     break;

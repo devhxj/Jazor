@@ -6475,6 +6475,49 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_ForMarkupStringCastFromLocalStringCarrierExpression_ProducesStaticMarkupNodes()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @{
+                string markup = "<section class='hero'><span>safe</span><p>ok</p></section>";
+            }
+
+            @((MarkupString)markup)
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.LocalStringMarkupStringCastCarrier.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+
+        Assert.AreEqual(2, renderTree.Children.Length, RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot));
+        Assert.IsInstanceOfType<RazorVueLocalDeclarationNode>(renderTree.Children[0]);
+        Assert.AreEqual("section", Assert.IsInstanceOfType<RazorVueElementNode>(renderTree.Children[1]).TagName);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForPlainStringExpression_DoesNotProduceStaticMarkupNodes()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """@("<section class='hero'><span>safe</span></section>")""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.PlainStringExpression.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+
+        Assert.AreEqual(1, renderTree.Children.Length, RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot));
+        Assert.IsInstanceOfType<RazorVueExpressionNode>(renderTree.Children[0]);
+    }
+
+    [TestMethod]
     public void CreateRenderTree_ForRenderFragmentPropertyExpression_ProducesStructuredRenderNodes()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -8007,6 +8050,111 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_CanLowerMarkupStringCastFromStringPropertyExpression()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """@((MarkupString)HeroMarkup)""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.StringPropertyMarkupStringCastCarrier.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    private string HeroMarkup => "<section class='hero'><span>safe</span><p>ok</p></section>";
+                }
+            }
+            """);
+
+        var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ModuleCode, "h(\"section\", { \"class\": \"hero\" }, [h(\"span\", null, \"safe\"), h(\"p\", null, \"ok\")])");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_CanLowerMarkupStringCastFromCurrentComponentStringFactory()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """@((MarkupString)CreateMarkup(Title))""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.StringFactoryMarkupStringCastCarrier.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private string CreateMarkup(string? ignored)
+                        => "<section class='hero'><span>safe</span><p>ok</p></section>";
+                }
+            }
+            """);
+
+        var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ModuleCode, "(ignored) => h(\"section\", { \"class\": \"hero\" }, [h(\"span\", null, \"safe\"), h(\"p\", null, \"ok\")])");
+        StringAssert.Contains(artifact.ModuleCode, "props.title");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_CanLowerMarkupStringCastFromLocalFunctionStringFactory()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @{
+                string CreateMarkup()
+                    => "<section class='hero'><span>safe</span><p>ok</p></section>";
+            }
+
+            @((MarkupString)CreateMarkup())
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.LocalFunctionStringFactoryMarkupStringCastCarrier.Pipeline.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ModuleCode, "h(\"section\", { \"class\": \"hero\" }, [h(\"span\", null, \"safe\"), h(\"p\", null, \"ok\")])");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_CanLowerNewMarkupStringFromLocalStringCarrierExpression()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @{
+                string markup = "<section class='hero'><span>safe</span><p>ok</p></section>";
+            }
+
+            @(new MarkupString(markup))
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.LocalStringNewMarkupStringCarrier.Pipeline.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ModuleCode, "const markup = \"<section class='hero'><span>safe</span><p>ok</p></section>\";");
+        StringAssert.Contains(artifact.ModuleCode, "h(\"section\", { \"class\": \"hero\" }, [h(\"span\", null, \"safe\"), h(\"p\", null, \"ok\")])");
+    }
+
+    [TestMethod]
     public void RazorVueSfcArtifactFactory_WithRazorIrTemplateFrontend_LowersConstantMarkupStringExpression()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -8225,6 +8373,37 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
 
         Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "_heroMarkup");
+        StringAssert.Contains(exception.Issue.Message, "later writes");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForReassignedLocalStringMarkupStringCastCarrier_ThrowsCanonicalizationFailed()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @{
+                string markup = "<section class='hero'><span>safe</span></section>";
+            }
+
+            @((MarkupString)markup)
+
+            @{
+                markup = "<section class='hero'><span>changed</span></section>";
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ReassignedLocalStringMarkupStringCastCarrier.Pipeline.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => RazorVueRazorIrTestContextFactory.CreateSgPipeline(snapshot)
+                .Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "string static-markup local 'markup'");
         StringAssert.Contains(exception.Issue.Message, "later writes");
     }
 

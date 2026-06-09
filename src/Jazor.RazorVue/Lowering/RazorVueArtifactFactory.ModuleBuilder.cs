@@ -27,6 +27,10 @@ internal sealed partial class RazorVueArtifactFactory
             (renderExpression is not null && RazorVueAttributeMergeHelper.ContainsInvocation(renderExpression)) ||
             (renderBody is not null && RazorVueAttributeMergeHelper.ContainsInvocation(renderBody));
         var propDefaultBindings = CollectPropDefaultBindings(snapshot, descriptor, expressionEmitter);
+        var imperativeRenderHelperDeclarationsBuilder = new StringBuilder();
+        if (usesImperativeRenderBody)
+            expressionEmitter.AppendRequiredImperativeRenderHelperDeclarations(imperativeRenderHelperDeclarationsBuilder, "    ");
+        var imperativeRenderHelperDeclarations = imperativeRenderHelperDeclarationsBuilder.ToString();
 
         var setupBodyBuilder = new StringBuilder();
         setupBodyBuilder.AppendLine("  setup(__jazorRawProps, { emit, slots, expose, attrs }) {");
@@ -48,6 +52,8 @@ internal sealed partial class RazorVueArtifactFactory
             lifecyclePlan.RequiredFields,
             lifecyclePlan.RequiredMethods);
         AppendLifecycleLowering(setupBodyBuilder, lifecyclePlan, "    ");
+        if (usesImperativeRenderBody)
+            setupBodyBuilder.Append(imperativeRenderHelperDeclarations);
         if (usesImperativeRenderBody)
         {
             AppendShouldRenderGateState(setupBodyBuilder, lifecyclePlan.ShouldRenderGate, "    ");

@@ -187,6 +187,15 @@ internal sealed partial class RazorVueExpressionEmitter
                 AppendEventModifiersShape(builder, modifierOperation.EventModifiers);
                 builder.Append(')');
                 break;
+            case RazorVueOpenNodeConditionalReplayOperation conditionalOperation:
+                builder.Append("if(")
+                    .Append(conditionalOperation.Condition.Syntax.ToString())
+                    .Append("){");
+                AppendReplayOperationsShape(builder, conditionalOperation.WhenTrue);
+                builder.Append("}else{");
+                AppendReplayOperationsShape(builder, conditionalOperation.WhenFalse);
+                builder.Append('}');
+                break;
             case RazorVueOpenNodeKeyReplayOperation keyOperation:
                 builder.Append("keyop(").Append(keyOperation.KeyAssigned).Append(':');
                 if (keyOperation.Key is not null)

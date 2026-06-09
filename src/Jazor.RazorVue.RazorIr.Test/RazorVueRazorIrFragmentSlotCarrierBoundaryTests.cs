@@ -33,40 +33,92 @@ public sealed class RazorVueRazorIrFragmentSlotCarrierBoundaryTests
     }
 
     [TestMethod]
-    public void CreateRenderTree_WithDataflowGetterFragmentCarrier_ThrowsCanonicalizationFailed()
+    public void CreateRenderTree_WithDataflowGetterFragmentCarrier_ProducesStructuredSlotTemplate()
     {
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
-            CreateRenderTree(
-                """
-                @using Microsoft.AspNetCore.Components
+        var renderTree = CreateRenderTree(
+            """
+            @using Microsoft.AspNetCore.Components
 
-                @{
-                    RenderFragment<int> template = Template;
-                }
+            @{
+                RenderFragment<int> template = Template;
+            }
 
-                <LayoutCard ItemTemplate="template" />
+            <LayoutCard ItemTemplate="template" />
 
-                @code {
-                    private RenderFragment<int> Template
+            @code {
+                private RenderFragment<int> Template
+                {
+                    get
                     {
-                        get
-                        {
-                            var template = CreateTemplate(Title);
-                            return template;
-                        }
+                        var template = CreateTemplate(Title);
+                        return template;
                     }
-
-                    private RenderFragment<int> CreateTemplate(string? title)
-                        => item => @<span>@title @item</span>;
                 }
-                """));
 
-        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "RenderFragment local 'template'");
+                private RenderFragment<int> CreateTemplate(string? title)
+                    => item => @<span>@title @item</span>;
+            }
+            """);
+
+        var component = Assert.IsInstanceOfType<RazorVueComponentNode>(renderTree.Children.Single());
+        var slot = component.SlotTemplates.Single();
+        Assert.AreEqual("ItemTemplate", slot.PublicName);
+
+        var titleScope = Assert.IsInstanceOfType<RazorVueTemplateScopeNode>(slot.Children.Children.Single());
+        Assert.AreEqual("title", titleScope.ScopeName);
+
+        var span = Assert.IsInstanceOfType<RazorVueElementNode>(titleScope.Children.Children.Single());
+        Assert.AreEqual("span", span.TagName);
     }
 
     [TestMethod]
-    public void RazorVueSfcArtifactFactory_WithFragmentFactoryReturningLocalDelegate_ThrowsCanonicalizationFailed()
+    public void RazorVueSfcArtifactFactory_WithFragmentFactoryReturningLocalDelegate_LowersStructuredTemplate()
+    {
+        var artifact = LowerSfc(
+            """
+            @using Microsoft.AspNetCore.Components
+
+            @CreateTemplate(Title)
+
+            @code {
+                private RenderFragment CreateTemplate(string? title)
+                {
+                    RenderFragment template = @<section>@title</section>;
+                    return template;
+                }
+            }
+            """);
+
+        StringAssert.Contains(artifact.SfcText, "section");
+        StringAssert.Contains(artifact.SfcText, "props.title");
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithFragmentFactoryReturningLocalDelegateAliasChain_LowersStructuredTemplate()
+    {
+        var artifact = LowerSfc(
+            """
+            @using Microsoft.AspNetCore.Components
+
+            @{
+                RenderFragment CreateTemplate(string? title)
+                {
+                    RenderFragment template = @<section>@title</section>;
+                    RenderFragment alias;
+                    alias = template;
+                    return alias;
+                }
+            }
+
+            @CreateTemplate(Title)
+            """);
+
+        StringAssert.Contains(artifact.SfcText, "section");
+        StringAssert.Contains(artifact.SfcText, "props.title");
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithSideEffectBeforeReturnedFragmentFactoryLocalDelegate_ThrowsCanonicalizationFailed()
     {
         var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
             LowerSfc(
@@ -78,6 +130,7 @@ public sealed class RazorVueRazorIrFragmentSlotCarrierBoundaryTests
                 @code {
                     private RenderFragment CreateTemplate(string? title)
                     {
+                        _ = title?.Trim();
                         RenderFragment template = @<section>@title</section>;
                         return template;
                     }
@@ -123,10 +176,10 @@ public sealed class RazorVueRazorIrFragmentSlotCarrierBoundaryTests
         return new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
     }
 
-    private static void LowerSfc(string documentText)
+    private static Artifacts.VueSfcArtifact LowerSfc(string documentText)
     {
         var (context, snapshot) = CreateContext(documentText);
-        _ = new RazorVueSfcArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+        return new RazorVueSfcArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
     }
 
     private static void LowerPipeline(string documentText)

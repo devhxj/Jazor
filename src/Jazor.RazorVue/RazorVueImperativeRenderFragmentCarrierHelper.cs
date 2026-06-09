@@ -155,7 +155,7 @@ internal static class RazorVueImperativeRenderFragmentCarrierHelper
 
                     if (methodDeclaration.Body is not null &&
                         semanticModel.GetOperation(methodDeclaration.Body) is IBlockOperation methodBlock &&
-                        TryGetSingleReturnedValue(methodBlock, out var methodReturnValue) &&
+                        TryGetSourceStableBlockReturnedValue(compilation, methodBlock, out var methodReturnValue) &&
                         methodReturnValue is not null)
                     {
                         returnedValue = methodReturnValue;
@@ -178,7 +178,7 @@ internal static class RazorVueImperativeRenderFragmentCarrierHelper
 
                     if (localFunction.Body is not null &&
                         semanticModel.GetOperation(localFunction.Body) is IBlockOperation localBlock &&
-                        TryGetSingleReturnedValue(localBlock, out var localReturnValue) &&
+                        TryGetSourceStableBlockReturnedValue(compilation, localBlock, out var localReturnValue) &&
                         localReturnValue is not null)
                     {
                         returnedValue = localReturnValue;
@@ -190,6 +190,109 @@ internal static class RazorVueImperativeRenderFragmentCarrierHelper
         }
 
         return false;
+    }
+
+    private static bool TryGetSourceStableBlockReturnedValue(
+        Compilation compilation,
+        IBlockOperation block,
+        out IOperation? returnedValue)
+    {
+        if (TryGetSingleReturnedValue(block, out returnedValue))
+            return returnedValue is not null;
+
+        returnedValue = null;
+        var sourceStableLocals = CollectSourceStableLocalRenderFragmentInitializers(
+            compilation,
+            block.Operations);
+        var directInitializers = CollectBlockRenderFragmentLocalInitializersPreservingAliases(block);
+        if (!TryGetReturnedRenderFragmentLocal(block, sourceStableLocals, out var returnedLocal))
+            return false;
+
+        var requiredLocals = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
+        if (!TryCollectRequiredSourceStableRenderFragmentLocals(
+                returnedLocal,
+                sourceStableLocals,
+                directInitializers,
+                requiredLocals))
+        {
+            return false;
+        }
+
+        if (!HasOnlyRequiredSourceStableRenderFragmentLocalCarrierPrefix(block, requiredLocals))
+            return false;
+
+        if (!sourceStableLocals.TryGetValue(returnedLocal, out returnedValue))
+            return false;
+
+        returnedValue = RazorVueOperationNormalizer.Unwrap(returnedValue) ?? returnedValue;
+        return returnedValue is not null;
+    }
+
+    private static Dictionary<ILocalSymbol, IOperation> CollectBlockRenderFragmentLocalInitializersPreservingAliases(
+        IBlockOperation block)
+    {
+        var result = new Dictionary<ILocalSymbol, IOperation>(SymbolEqualityComparer.Default);
+        var pendingAssignments = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
+        for (var index = 0; index < block.Operations.Length - 1; index++)
+        {
+            var operation = RazorVueOperationNormalizer.Unwrap(block.Operations[index]);
+            if (operation is null or IEmptyOperation)
+                continue;
+
+            switch (operation)
+            {
+                case IVariableDeclarationGroupOperation declarationGroup:
+                    RegisterDirectRenderFragmentCarrierInitializers(
+                        declarationGroup.Declarations,
+                        result,
+                        pendingAssignments);
+                    continue;
+
+                case IVariableDeclarationOperation declaration:
+                    RegisterDirectRenderFragmentCarrierInitializers(
+                        [declaration],
+                        result,
+                        pendingAssignments);
+                    continue;
+
+                default:
+                    if (TryGetRenderFragmentCarrierAssignment(
+                            operation,
+                            out var assignedLocal,
+                            out var initializer) &&
+                        pendingAssignments.Remove(assignedLocal))
+                    {
+                        result[assignedLocal] = initializer;
+                    }
+
+                    continue;
+            }
+        }
+
+        return result;
+    }
+
+    private static void RegisterDirectRenderFragmentCarrierInitializers(
+        IEnumerable<IVariableDeclarationOperation> declarations,
+        Dictionary<ILocalSymbol, IOperation> result,
+        HashSet<ILocalSymbol> pendingAssignments)
+    {
+        foreach (var declaration in declarations)
+        {
+            foreach (var declarator in declaration.Declarators)
+            {
+                if (!IsRenderFragmentCarrierType(declarator.Symbol.Type))
+                    continue;
+
+                if (declarator.Initializer?.Value is not { } initializer)
+                {
+                    pendingAssignments.Add(declarator.Symbol);
+                    continue;
+                }
+
+                result[declarator.Symbol] = RazorVueOperationNormalizer.Unwrap(initializer) ?? initializer;
+            }
+        }
     }
 
     public static bool TryEnumerateNestedImperativeRenderFragmentBodies(
@@ -468,24 +571,7 @@ internal static class RazorVueImperativeRenderFragmentCarrierHelper
             return false;
         }
 
-        var sourceStableLocals = CollectSourceStableLocalRenderFragmentInitializers(
-            compilation,
-            getterBlock.Operations);
-        if (!TryGetReturnedRenderFragmentLocal(getterBlock, sourceStableLocals, out var returnedLocal))
-            return false;
-
-        var requiredLocals = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
-        if (!TryCollectRequiredSourceStableRenderFragmentLocals(returnedLocal, sourceStableLocals, requiredLocals))
-            return false;
-
-        if (!HasOnlyRequiredSourceStableRenderFragmentLocalCarrierPrefix(getterBlock, requiredLocals))
-            return false;
-
-        if (!sourceStableLocals.TryGetValue(returnedLocal, out initializer))
-            return false;
-
-        initializer = RazorVueOperationNormalizer.Unwrap(initializer) ?? initializer;
-        return initializer is not null;
+        return TryGetSourceStableBlockReturnedValue(compilation, getterBlock, out initializer);
     }
 
     private static bool TryGetReturnedRenderFragmentLocal(
@@ -517,6 +603,7 @@ internal static class RazorVueImperativeRenderFragmentCarrierHelper
     private static bool TryCollectRequiredSourceStableRenderFragmentLocals(
         ILocalSymbol local,
         IReadOnlyDictionary<ILocalSymbol, IOperation> sourceStableLocals,
+        IReadOnlyDictionary<ILocalSymbol, IOperation> directInitializers,
         HashSet<ILocalSymbol> requiredLocals)
     {
         if (!sourceStableLocals.TryGetValue(local, out var initializer))
@@ -524,6 +611,9 @@ internal static class RazorVueImperativeRenderFragmentCarrierHelper
 
         if (!requiredLocals.Add(local))
             return true;
+
+        if (directInitializers.TryGetValue(local, out var directInitializer))
+            initializer = directInitializer;
 
         foreach (var dependency in CollectRenderFragmentLocalReferences(initializer))
         {
@@ -533,6 +623,7 @@ internal static class RazorVueImperativeRenderFragmentCarrierHelper
             if (!TryCollectRequiredSourceStableRenderFragmentLocals(
                     dependency,
                     sourceStableLocals,
+                    directInitializers,
                     requiredLocals))
             {
                 return false;
@@ -640,7 +731,20 @@ internal static class RazorVueImperativeRenderFragmentCarrierHelper
 
     private static bool TryGetGetterCarrierAssignment(IOperation? operation, out ILocalSymbol local)
     {
+        if (TryGetRenderFragmentCarrierAssignment(operation, out local, out _))
+            return true;
+
         local = default!;
+        return false;
+    }
+
+    private static bool TryGetRenderFragmentCarrierAssignment(
+        IOperation? operation,
+        out ILocalSymbol local,
+        out IOperation initializer)
+    {
+        local = default!;
+        initializer = default!;
         var current = RazorVueOperationNormalizer.Unwrap(operation);
         switch (current)
         {
@@ -648,11 +752,12 @@ internal static class RazorVueImperativeRenderFragmentCarrierHelper
                 when RazorVueOperationNormalizer.Unwrap(assignment.Target) is ILocalReferenceOperation localReference &&
                      IsRenderFragmentCarrierType(localReference.Local.Type):
                 local = localReference.Local;
+                initializer = RazorVueOperationNormalizer.Unwrap(assignment.Value) ?? assignment.Value;
                 return true;
             case IExpressionStatementOperation expressionStatement:
-                return TryGetGetterCarrierAssignment(expressionStatement.Operation, out local);
+                return TryGetRenderFragmentCarrierAssignment(expressionStatement.Operation, out local, out initializer);
             case IBlockOperation block when block.Operations.Length == 1:
-                return TryGetGetterCarrierAssignment(block.Operations[0], out local);
+                return TryGetRenderFragmentCarrierAssignment(block.Operations[0], out local, out initializer);
             default:
                 return false;
         }

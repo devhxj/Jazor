@@ -19,6 +19,9 @@ internal static class RazorVueImperativeSfcModuleBuilder
         var propDefaultBindings = CollectPropDefaultBindings(snapshot, descriptor, expressionEmitter);
         var renderBody = expressionEmitter.EmitImperativeRenderBody(renderTree);
         var requiresAttributeMergeHelper = RazorVueAttributeMergeHelper.ContainsInvocation(renderBody);
+        var imperativeRenderHelperDeclarationsBuilder = new StringBuilder();
+        expressionEmitter.AppendRequiredImperativeRenderHelperDeclarations(imperativeRenderHelperDeclarationsBuilder, "    ");
+        var imperativeRenderHelperDeclarations = imperativeRenderHelperDeclarationsBuilder.ToString();
         var setupBodyBuilder = new StringBuilder();
         setupBodyBuilder.AppendLine("  setup(__jazorRawProps, { emit, slots, expose, attrs }) {");
         AppendPropsBinding(setupBodyBuilder, propDefaultBindings);
@@ -38,6 +41,7 @@ internal static class RazorVueImperativeSfcModuleBuilder
             lifecyclePlan.RequiredMethods,
             "    ");
         RazorVueSetupAndLifecycleLoweringSupport.AppendLifecyclePlan(setupBodyBuilder, lifecyclePlan, "    ");
+        setupBodyBuilder.Append(imperativeRenderHelperDeclarations);
         RazorVueArtifactFactory.AppendShouldRenderGateStateForSfc(setupBodyBuilder, lifecyclePlan.ShouldRenderGate, "    ");
         setupBodyBuilder.AppendLine("    const __jazorComponent = { props, emit, slots, expose, attrs };");
         setupBodyBuilder.AppendLine("    return () => {");

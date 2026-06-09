@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using Acornima;
 using Acornima.Ast;
@@ -22,6 +23,8 @@ internal sealed partial class RazorVueExpressionEmitter
     private Dictionary<ILocalSymbol, IOperation>? _imperativeRenderFragmentLocalInitializers;
     private Dictionary<ILocalSymbol, IOperation>? _imperativeStaticMarkupLocalInitializers;
     private HashSet<IMethodSymbol>? _imperativeMaterializedLocalRenderFragmentFactories;
+    private HashSet<IMethodSymbol> _requiredImperativeRenderHelperMethods = new(SymbolEqualityComparer.Default);
+    private readonly Dictionary<IMethodSymbol, string> _imperativeRenderHelperMethodAliases = new(SymbolEqualityComparer.Default);
 
     private string EmitImperativeBlockBody(
         RazorVueImperativeBlockNode imperative,
@@ -83,6 +86,7 @@ internal sealed partial class RazorVueExpressionEmitter
                                             var functionBody = NormalizeImperativeFunctionBody(
                                                 new FunctionBody(NodeList.From(statements), strict: true),
                                                 builderAlias,
+                                                rewriteTopLevelVoidReturnToFinish: true,
                                                 appendTerminalReturn: false);
                                             return NormalizeImperativeFunctionText(functionBody.ToKnRECMAScript());
                                         }
@@ -343,10 +347,12 @@ internal sealed partial class RazorVueExpressionEmitter
     private static FunctionBody NormalizeImperativeFunctionBody(
         FunctionBody functionBody,
         string builderAlias,
+        bool rewriteTopLevelVoidReturnToFinish,
         bool appendTerminalReturn)
     {
-        var rewriter = new ImperativeTopLevelReturnRewriter(builderAlias);
-        var rewritten = (FunctionBody)(rewriter.Visit(functionBody) ?? functionBody);
+        var rewritten = rewriteTopLevelVoidReturnToFinish
+            ? (FunctionBody)(new ImperativeTopLevelReturnRewriter(builderAlias).Visit(functionBody) ?? functionBody)
+            : functionBody;
         if (appendTerminalReturn && !rewritten.Body.Any(static statement => statement is ReturnStatement))
         {
             var statements = rewritten.Body.ToList();
@@ -727,6 +733,384 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         return null;
+    }
+
+    internal bool TryRewriteImperativeRenderHelperInvocation(
+        IInvocationOperation invocation,
+        SenseArgument argument,
+        out string expression)
+    {
+        expression = string.Empty;
+        if (_imperativeBuilderAlias is null)
+            return false;
+
+        if (!IsCurrentComponentRenderHelperMethod(invocation.TargetMethod, invocation.Instance, out var builderParameter))
+            return false;
+
+        if (!TryCreateImperativeRenderHelperInvocation(
+                invocation,
+                argument,
+                builderParameter,
+                out expression,
+                out var builderTarget))
+        {
+            return false;
+        }
+
+        if (invocation.TargetMethod.MethodKind == MethodKind.LocalFunction)
+        {
+            expression = RewriteLocalFunctionImperativeRenderHelperInvocation(invocation, expression);
+            return true;
+        }
+
+        RecordRequiredImperativeRenderHelperMethod(invocation.TargetMethod);
+
+        return true;
+    }
+
+    internal void AppendRequiredImperativeRenderHelperDeclarations(StringBuilder builder, string indent)
+    {
+        if (_requiredImperativeRenderHelperMethods.Count == 0)
+            return;
+
+        var emitted = new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default);
+        var pending = _requiredImperativeRenderHelperMethods.ToList();
+        for (var index = 0; index < pending.Count; index++)
+        {
+            var method = pending[index];
+            if (!emitted.Add(method))
+                continue;
+
+            AppendImperativeRenderHelperDeclaration(builder, method, indent);
+
+            foreach (var discovered in _requiredImperativeRenderHelperMethods)
+            {
+                if (!emitted.Contains(discovered) && !pending.Contains(discovered, SymbolEqualityComparer.Default))
+                    pending.Add(discovered);
+            }
+        }
+    }
+
+    private void AppendImperativeRenderHelperDeclaration(
+        StringBuilder builder,
+        IMethodSymbol method,
+        string indent)
+    {
+        var canonicalMethod = RazorVueMethodSymbolNormalizer.GetCanonicalMethod(method);
+        if (!TryGetImperativeRenderHelperBodyOperations(canonicalMethod, out var operations))
+            throw CreateUnsupportedImperativeRenderHelperException(
+                method,
+                $"RazorVue recursive render helper lowering requires source-authored analyzable helper method '{method.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}' in component '{_snapshot.Descriptor.FullName}'.");
+
+        if (!TryGetImperativeRenderHelperBuilderParameter(canonicalMethod, out var builderParameter))
+            throw CreateUnsupportedImperativeRenderHelperException(
+                method,
+                $"RazorVue recursive render helper lowering requires exactly one by-value RenderTreeBuilder parameter on helper method '{method.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}' in component '{_snapshot.Descriptor.FullName}'.");
+
+        var extraParameters = canonicalMethod.Parameters
+            .Where(parameter => !SymbolEqualityComparer.Default.Equals(parameter, builderParameter))
+            .ToImmutableArray();
+
+        foreach (var parameter in extraParameters)
+        {
+            if (parameter.RefKind != RefKind.None)
+            {
+                throw CreateUnsupportedImperativeRenderHelperException(
+                    method,
+                    $"RazorVue recursive render helper lowering does not support by-reference parameter '{parameter.Name}' on helper method '{method.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}' in component '{_snapshot.Descriptor.FullName}'.");
+            }
+        }
+
+        foreach (var operation in operations)
+            EnsureSupportedImperativeOperation(operation);
+
+        var builderTargets = new Dictionary<IParameterSymbol, string>(SymbolEqualityComparer.Default)
+        {
+            [builderParameter] = ImperativeRenderContextAlias
+        };
+        var parameterAliases = new Dictionary<IParameterSymbol, string>(SymbolEqualityComparer.Default)
+        {
+            [builderParameter] = ImperativeRenderContextAlias
+        };
+        foreach (var parameter in extraParameters)
+            parameterAliases[parameter] = parameter.Name;
+
+        var bodyArgument = new SenseArgument(Sense.FunctionBody, UseImportAliases: true);
+        string body;
+        try
+        {
+            body = WithImperativeBuilderAlias(
+                ImperativeRenderContextAlias,
+                () => WithImperativeBuilderParameterTargets(
+                    builderTargets,
+                    () => WithScopedParameterAliases(
+                        parameterAliases,
+                        () =>
+                        {
+                            var statements = _semanticWalker.TranslateStatementSequence(operations, bodyArgument);
+                            var functionBody = NormalizeImperativeFunctionBody(
+                                new FunctionBody(NodeList.From(statements), strict: true),
+                                ImperativeRenderContextAlias,
+                                rewriteTopLevelVoidReturnToFinish: false,
+                                appendTerminalReturn: false);
+                            return NormalizeImperativeFunctionText(functionBody.ToKnRECMAScript());
+                        })));
+        }
+        catch (RazorVueCompilationIssueException)
+        {
+            throw;
+        }
+        catch (Exception ex) when (ex is NotSupportedException or OperationTransformationException)
+        {
+            throw CreateUnsupportedImperativeRenderHelperException(
+                method,
+                $"RazorVue recursive render helper lowering could not translate helper method '{method.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}' through Jazor.Compiler in component '{_snapshot.Descriptor.FullName}'. {ex.Message}");
+        }
+
+        builder
+            .Append(indent)
+            .Append("function ")
+            .Append(GetImperativeRenderHelperAlias(canonicalMethod))
+            .Append('(')
+            .Append(ImperativeRenderContextAlias);
+        foreach (var parameter in extraParameters)
+            builder.Append(", ").Append(parameter.Name);
+        builder.AppendLine(") {");
+        AppendIndentedImperativeRenderHelperBody(builder, body, indent);
+        builder.Append(indent).AppendLine("}");
+    }
+
+    private static void AppendIndentedImperativeRenderHelperBody(
+        StringBuilder builder,
+        string body,
+        string indent)
+    {
+        var normalized = Util.NormalizeLineEndingsToLf(body).Trim();
+        if (normalized.Length == 0)
+            return;
+
+        foreach (var line in normalized.Split('\n'))
+        {
+            builder
+                .Append(indent)
+                .Append("  ")
+                .AppendLine(line);
+        }
+    }
+
+    private bool TryCreateImperativeRenderHelperInvocation(
+        IInvocationOperation invocation,
+        SenseArgument argument,
+        IParameterSymbol builderParameter,
+        out string expression,
+        out string? builderTarget)
+    {
+        expression = string.Empty;
+        builderTarget = null;
+        var arguments = new string[invocation.TargetMethod.Parameters.Length];
+        foreach (var invocationArgument in invocation.Arguments)
+        {
+            if (invocationArgument.Parameter is not { } rawParameter)
+                return false;
+
+            var parameter = RazorVueMethodSymbolNormalizer.NormalizeParameter(invocation.TargetMethod, rawParameter);
+            var ordinal = parameter.Ordinal;
+            if (ordinal < 0 || ordinal >= arguments.Length)
+                return false;
+
+            if (SymbolEqualityComparer.Default.Equals(parameter, builderParameter))
+            {
+                builderTarget = ResolveImperativeBuilderTarget(invocationArgument.Value);
+                if (builderTarget is null)
+                    return false;
+
+                arguments[ordinal] = builderTarget;
+                continue;
+            }
+
+            if (parameter.RefKind != RefKind.None)
+                throw CreateUnsupportedImperativeRenderHelperException(
+                    invocation.TargetMethod,
+                    $"RazorVue recursive render helper lowering does not support by-reference argument for parameter '{parameter.Name}' on helper method '{invocation.TargetMethod.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}' in component '{_snapshot.Descriptor.FullName}'.");
+
+            arguments[ordinal] = EmitExpression(invocationArgument.Value, argument);
+        }
+
+        if (arguments.Any(static item => item is null))
+            return false;
+
+        expression = GetImperativeRenderHelperAlias(invocation.TargetMethod) + "(" + string.Join(", ", arguments) + ")";
+        return true;
+    }
+
+    private static string RewriteLocalFunctionImperativeRenderHelperInvocation(
+        IInvocationOperation invocation,
+        string helperInvocation)
+    {
+        var openParen = helperInvocation.IndexOf('(');
+        return openParen < 0
+            ? invocation.TargetMethod.Name + "()"
+            : invocation.TargetMethod.Name + helperInvocation.Substring(openParen);
+    }
+
+    private void RecordRequiredImperativeRenderHelperMethod(IMethodSymbol method)
+    {
+        var canonicalMethod = RazorVueMethodSymbolNormalizer.GetCanonicalMethod(method);
+        _requiredImperativeRenderHelperMethods.Add(canonicalMethod);
+    }
+
+    private string GetImperativeRenderHelperAlias(IMethodSymbol method)
+    {
+        var canonicalMethod = RazorVueMethodSymbolNormalizer.GetCanonicalMethod(method);
+        if (_imperativeRenderHelperMethodAliases.TryGetValue(canonicalMethod, out var alias))
+            return alias;
+
+        var signature = canonicalMethod.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat);
+        alias = "__jazorRenderHelper_" +
+                SanitizeJavaScriptIdentifierPart(ToLowerCamelCase(canonicalMethod.Name)) +
+                "_" +
+                ComputeStableHashSuffix(signature);
+        _imperativeRenderHelperMethodAliases[canonicalMethod] = alias;
+        return alias;
+    }
+
+    private static string SanitizeJavaScriptIdentifierPart(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return "helper";
+
+        var builder = new StringBuilder(value.Length);
+        foreach (var ch in value)
+        {
+            builder.Append(char.IsLetterOrDigit(ch) || ch == '_' ? ch : '_');
+        }
+
+        return builder.Length == 0 ? "helper" : builder.ToString();
+    }
+
+    private static string ComputeStableHashSuffix(string value)
+    {
+        const ulong offsetBasis = 14695981039346656037UL;
+        const ulong prime = 1099511628211UL;
+        var hash = offsetBasis;
+        foreach (var ch in value ?? string.Empty)
+        {
+            hash ^= ch;
+            hash *= prime;
+        }
+
+        return hash.ToString("x16");
+    }
+
+    private bool IsCurrentComponentRenderHelperMethod(
+        IMethodSymbol method,
+        IOperation? instance,
+        out IParameterSymbol builderParameter)
+    {
+        builderParameter = default!;
+
+        if (method.MethodKind == MethodKind.LocalFunction)
+            return instance is null &&
+                   TryGetImperativeRenderHelperBuilderParameter(method.OriginalDefinition, out builderParameter);
+
+        if (!RazorVueSymbolIdentity.IsCurrentComponentMember(_snapshot.ComponentSymbol, method, instance, Unwrap))
+            return false;
+
+        var canonicalMethod = RazorVueMethodSymbolNormalizer.GetCanonicalMethod(method);
+        return TryGetImperativeRenderHelperBuilderParameter(canonicalMethod, out builderParameter);
+    }
+
+    private static bool TryGetImperativeRenderHelperBuilderParameter(
+        IMethodSymbol method,
+        out IParameterSymbol builderParameter)
+    {
+        builderParameter = default!;
+        var builderParameters = method.Parameters
+            .Where(static parameter => IsRenderTreeBuilderType(parameter.Type))
+            .ToArray();
+        if (builderParameters.Length != 1 ||
+            builderParameters[0].RefKind != RefKind.None ||
+            !method.ReturnsVoid)
+        {
+            return false;
+        }
+
+        builderParameter = builderParameters[0];
+        return true;
+    }
+
+    private bool TryGetImperativeRenderHelperBodyOperations(
+        IMethodSymbol method,
+        out ImmutableArray<IOperation> operations)
+    {
+        operations = ImmutableArray<IOperation>.Empty;
+        foreach (var syntaxReference in method.DeclaringSyntaxReferences)
+        {
+            var syntax = syntaxReference.GetSyntax();
+            var semanticModel = _snapshot.Compilation.GetSemanticModel(syntax.SyntaxTree);
+            var operation = syntax switch
+            {
+                MethodDeclarationSyntax methodDeclaration => methodDeclaration.Body is not null
+                    ? semanticModel.GetOperation(methodDeclaration.Body)
+                    : methodDeclaration.ExpressionBody is not null
+                        ? semanticModel.GetOperation(methodDeclaration.ExpressionBody.Expression)
+                        : null,
+                _ => null
+            };
+
+            if (operation is IBlockOperation block)
+            {
+                operations = block.Operations;
+                return true;
+            }
+
+            if (TryGetOperationStatements(operation, out var statements))
+            {
+                operations = statements;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TryGetOperationStatements(
+        IOperation? operation,
+        out ImmutableArray<IOperation> statements)
+    {
+        statements = ImmutableArray<IOperation>.Empty;
+        var current = Unwrap(operation);
+        if (current is null)
+            return false;
+
+        if (current is IBlockOperation block)
+        {
+            statements = block.Operations;
+            return true;
+        }
+
+        if (current is IInvocationOperation invocation)
+        {
+            statements = [invocation];
+            return true;
+        }
+
+        return false;
+    }
+
+    private RazorVueCompilationIssueException CreateUnsupportedImperativeRenderHelperException(
+        IMethodSymbol method,
+        string detail)
+    {
+        var origin = method.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax().GetLocation() is { } location
+            ? RazorVueSourceOrigin.FromLocation(location, RazorVueOriginKind.Template)
+            : _snapshot.Origins.FirstOrDefault();
+        var issue = new RazorVueCompilationIssue(
+            RazorVueIssueCode.UnsupportedImperativeRenderLowering,
+            RazorVueIssueSeverity.Error,
+            detail,
+            ImmutableArray<string>.Empty);
+        return new RazorVueCompilationIssueException(issue, _snapshot.Descriptor.FullName, origin);
     }
 
     private IOperation? TryGetImperativePropertyStaticMarkupInitializer(IPropertySymbol property)
@@ -1826,6 +2210,7 @@ internal sealed partial class RazorVueExpressionEmitter
                             return NormalizeImperativeFunctionBody(
                                 new FunctionBody(NodeList.From(statements), strict: true),
                                 renderContextParameterAlias,
+                                rewriteTopLevelVoidReturnToFinish: true,
                                 appendTerminalReturn: false);
                         }))));
         var body = NormalizeImperativeFunctionText(functionBody.ToKnRECMAScript());
@@ -1924,6 +2309,7 @@ internal sealed partial class RazorVueExpressionEmitter
             return new ReturnStatement(CreateImperativeFinishCall(builderAlias));
         }
 
+        protected override object VisitFunctionDeclaration(FunctionDeclaration node) => node;
         protected override object VisitFunctionExpression(FunctionExpression node) => node;
         protected override object VisitArrowFunctionExpression(ArrowFunctionExpression node) => node;
     }

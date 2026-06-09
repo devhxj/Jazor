@@ -3,6 +3,7 @@ using Jazor.RazorVue.Lowering;
 using Jazor.RazorVue.RenderTree;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Jazor.RazorVue.Test;
 
@@ -121,7 +122,7 @@ public sealed class RazorVueFragmentSlotCarrierBoundaryTests
     }
 
     [TestMethod]
-    public void CreateRenderTree_WithDataflowGetterRenderFragmentCarrier_ThrowsCanonicalizationFailed()
+    public void CreateRenderTree_WithDataflowGetterRenderFragmentCarrier_ProducesStructuredTemplate()
     {
         var context = CreateContext(
             """
@@ -175,15 +176,19 @@ public sealed class RazorVueFragmentSlotCarrierBoundaryTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
-            () => BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
 
-        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "RenderFragment shape");
+        var titleScope = Assert.IsInstanceOfType<RazorVueTemplateScopeNode>(renderTree.Children.Single());
+        Assert.AreEqual("title", titleScope.ScopeName);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(titleScope.Initializer);
+
+        var itemScope = Assert.IsInstanceOfType<RazorVueTemplateScopeNode>(titleScope.Children.Children.Single());
+        Assert.AreEqual("item", itemScope.ScopeName);
+        Assert.IsInstanceOfType<ILiteralOperation>(itemScope.Initializer);
     }
 
     [TestMethod]
-    public void RazorVueSfcArtifactFactory_WithRenderFragmentFactoryReturningLocalDelegate_ThrowsCanonicalizationFailed()
+    public void RazorVueSfcArtifactFactory_WithRenderFragmentFactoryReturningLocalDelegate_LowersStructuredTemplate()
     {
         var context = CreateContext(
             """
@@ -212,6 +217,121 @@ public sealed class RazorVueFragmentSlotCarrierBoundaryTests
 
                     private RenderFragment<int> CreateTemplate(string? title)
                     {
+                        RenderFragment<int> template = item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, title);
+                            itemBuilder.AddContent(3, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                        return template;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, CreateTemplate(Title), 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = new RazorVueSfcArtifactFactory(BuildRenderTreeTemplateFrontend.Instance).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.SfcText, "span");
+        StringAssert.Contains(artifact.SfcText, "props.title");
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithRenderFragmentFactoryReturningLocalDelegateAliasChain_LowersStructuredTemplate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private RenderFragment<int> CreateTemplate(string? title)
+                    {
+                        RenderFragment<int> template = item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, title);
+                            itemBuilder.AddContent(3, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                        RenderFragment<int> alias;
+                        alias = template;
+                        return alias;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, CreateTemplate(Title), 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = new RazorVueSfcArtifactFactory(BuildRenderTreeTemplateFrontend.Instance).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.SfcText, "span");
+        StringAssert.Contains(artifact.SfcText, "props.title");
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithSideEffectBeforeReturnedRenderFragmentFactoryLocalDelegate_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private RenderFragment<int> CreateTemplate(string? title)
+                    {
+                        _ = title?.Trim();
                         RenderFragment<int> template = item => itemBuilder =>
                         {
                             itemBuilder.OpenElement(1, "span");
