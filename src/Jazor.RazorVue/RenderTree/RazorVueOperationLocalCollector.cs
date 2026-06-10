@@ -33,13 +33,22 @@ internal static class RazorVueOperationLocalCollector
     public static IEnumerable<IOperation> EnumerateSelfAndDescendants(
         IOperation operation,
         bool includeLocalFunctionBodies)
+        => EnumerateSelfAndDescendants(
+            operation,
+            includeLocalFunctionBodies,
+            includeAnonymousFunctionBodies: false);
+
+    public static IEnumerable<IOperation> EnumerateSelfAndDescendants(
+        IOperation operation,
+        bool includeLocalFunctionBodies,
+        bool includeAnonymousFunctionBodies)
     {
         var current = RazorVueOperationNormalizer.Unwrap(operation);
         if (current is null)
             yield break;
 
         yield return current;
-        if (current is IAnonymousFunctionOperation ||
+        if ((!includeAnonymousFunctionBodies && current is IAnonymousFunctionOperation) ||
             (current is ILocalFunctionOperation && !includeLocalFunctionBodies))
         {
             yield break;
@@ -50,7 +59,10 @@ internal static class RazorVueOperationLocalCollector
             if (child is null)
                 continue;
 
-            foreach (var nested in EnumerateSelfAndDescendants(child, includeLocalFunctionBodies))
+            foreach (var nested in EnumerateSelfAndDescendants(
+                         child,
+                         includeLocalFunctionBodies,
+                         includeAnonymousFunctionBodies))
                 yield return nested;
         }
     }
@@ -180,6 +192,9 @@ internal static class RazorVueOperationLocalCollector
             case IBlockOperation block:
                 foreach (var child in block.Operations)
                     yield return child;
+                break;
+            case IAnonymousFunctionOperation anonymousFunction:
+                yield return anonymousFunction.Body;
                 break;
             case IConditionalOperation conditional:
                 yield return conditional.Condition;

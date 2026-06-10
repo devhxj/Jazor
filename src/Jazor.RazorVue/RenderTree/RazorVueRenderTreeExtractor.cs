@@ -670,6 +670,10 @@ internal sealed class RazorVueRenderTreeExtractor
                         ParseNestedBranch(conditional.WhenFalse),
                         CreateOrigins(current, RazorVueOriginKind.Template)));
                     break;
+                case ISwitchOperation switchOperation
+                    when _allowCallerOwnedOpenNodeConditionalReplay &&
+                         TryParseCallerOwnedOpenNodeSwitchReplay(switchOperation):
+                    break;
                 case IForEachLoopOperation foreachLoop:
                     ThrowIfComponentTypeCarrierUsedAsRuntimeValue(foreachLoop.Collection, foreachLoop);
                     AddNode(new RazorVueForEachNode(
@@ -812,6 +816,7 @@ internal sealed class RazorVueRenderTreeExtractor
             if (!TryGetRenderHelperInvocationBindings(
                     invocation,
                     builderParameter,
+                    requireCallerOwnedReplaySafeBinding: false,
                     out var builderArgument,
                     out _,
                     out _))
@@ -1691,6 +1696,307 @@ internal sealed class RazorVueRenderTreeExtractor
             return true;
         }
 
+        private bool TryParseCallerOwnedOpenNodeSwitchReplay(ISwitchOperation switchOperation)
+        {
+            if (!TryGetNearestOpenNodeBuilder(out var currentNode) ||
+                _openFrames.Count != 1)
+            {
+                return false;
+            }
+
+            ThrowIfComponentTypeCarrierUsedAsRuntimeValue(switchOperation.Value, switchOperation);
+            var sections = ImmutableArray.CreateBuilder<RazorVueOpenNodeSwitchReplaySection>(switchOperation.Cases.Length);
+            foreach (var switchCase in switchOperation.Cases)
+            {
+                if (!TryParseCallerOwnedOpenNodeSwitchReplaySection(
+                        switchOperation,
+                        currentNode,
+                        switchCase,
+                        out var section))
+                {
+                    return false;
+                }
+
+                sections.Add(section);
+            }
+
+            if (sections.Count == 0)
+                return false;
+
+            currentNode.AddReplayOperation(new RazorVueOpenNodeSwitchReplayOperation(
+                switchOperation.Value,
+                sections.ToImmutable(),
+                CreateOrigins(switchOperation, RazorVueOriginKind.Template)));
+            return true;
+        }
+
+        private bool CanParseCallerOwnedOpenNodeSwitchReplayShape(ISwitchOperation switchOperation)
+        {
+            if (switchOperation.Cases.IsDefaultOrEmpty)
+                return false;
+
+            foreach (var switchCase in switchOperation.Cases)
+            {
+                if (switchCase.Clauses.IsDefaultOrEmpty)
+                    return false;
+
+                foreach (var clause in switchCase.Clauses)
+                {
+                    if (clause is IDefaultCaseClauseOperation or ISingleValueCaseClauseOperation)
+                        continue;
+
+                    if (clause is not IPatternCaseClauseOperation patternClause ||
+                        !CanParseCallerOwnedOpenNodeSwitchPatternReplayLabelShape(patternClause))
+                    {
+                        return false;
+                    }
+                }
+
+                var patternDeclaredLocals = CollectCallerOwnedSwitchPatternDeclaredLocals(switchCase.Clauses);
+                if (!TryGetCallerOwnedSwitchCaseReplayOperations(switchCase.Body, out var replayBodyOperations) ||
+                    ContainsCallerOwnedSwitchCasePatternDeclaredLocalReference(replayBodyOperations, patternDeclaredLocals))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private bool TryParseCallerOwnedOpenNodeSwitchReplaySection(
+            ISwitchOperation switchOperation,
+            OpenNodeBuilder currentNode,
+            ISwitchCaseOperation switchCase,
+            out RazorVueOpenNodeSwitchReplaySection section)
+        {
+            section = default!;
+            var labels = ImmutableArray.CreateBuilder<RazorVueOpenNodeSwitchReplayLabel>(switchCase.Clauses.Length);
+            foreach (var clause in switchCase.Clauses)
+            {
+                switch (clause)
+                {
+                    case IDefaultCaseClauseOperation:
+                        labels.Add(new RazorVueOpenNodeSwitchReplayLabel(
+                            RazorVueOpenNodeSwitchReplayLabelKind.Default,
+                            Value: null));
+                        break;
+                    case ISingleValueCaseClauseOperation singleValueCase:
+                        ThrowIfComponentTypeCarrierUsedAsRuntimeValue(singleValueCase.Value, singleValueCase);
+                        labels.Add(new RazorVueOpenNodeSwitchReplayLabel(
+                            RazorVueOpenNodeSwitchReplayLabelKind.Value,
+                            singleValueCase.Value));
+                        break;
+                    case IPatternCaseClauseOperation patternCase
+                        when CanParseCallerOwnedOpenNodeSwitchPatternReplayLabelShape(patternCase):
+                        ThrowIfComponentTypeCarrierUsedAsRuntimeValue(patternCase.Pattern, patternCase);
+                        if (patternCase.Guard is not null)
+                            ThrowIfComponentTypeCarrierUsedAsRuntimeValue(patternCase.Guard, patternCase);
+
+                        labels.Add(new RazorVueOpenNodeSwitchReplayLabel(
+                            RazorVueOpenNodeSwitchReplayLabelKind.Condition,
+                            patternCase));
+                        break;
+                    default:
+                        return false;
+                }
+            }
+
+            var patternDeclaredLocals = CollectCallerOwnedSwitchPatternDeclaredLocals(switchCase.Clauses);
+            if (labels.Count == 0 ||
+                labels.Any(static label => label.IsDefault) && labels.Count != 1 ||
+                !TryGetCallerOwnedSwitchCaseReplayOperations(switchCase.Body, out var replayBodyOperations) ||
+                ContainsCallerOwnedSwitchCasePatternDeclaredLocalReference(replayBodyOperations, patternDeclaredLocals))
+            {
+                return false;
+            }
+
+            var operations = ParseCallerOwnedOpenNodeConditionalReplayBranch(
+                switchOperation,
+                currentNode,
+                replayBodyOperations,
+                ImmutableArray<IOperation>.Empty);
+            section = new RazorVueOpenNodeSwitchReplaySection(labels.ToImmutable(), operations);
+            return true;
+        }
+
+        private bool CanParseCallerOwnedOpenNodeSwitchPatternReplayLabelShape(
+            IPatternCaseClauseOperation patternClause)
+        {
+            var conditionLocals = CollectCallerOwnedSwitchPatternDeclaredLocals(patternClause);
+            foreach (var local in _accessibleTemplateLocals)
+                conditionLocals.Add(local);
+
+            if (ContainsCallerOwnedSwitchPatternUnsupportedLocalReference(patternClause.Pattern, conditionLocals) ||
+                ContainsCallerOwnedSwitchPatternUnsupportedLocalReference(patternClause.Guard, conditionLocals) ||
+                ContainsCallerOwnedSwitchUnsupportedPatternConditionShape(patternClause.Pattern) ||
+                ContainsCallerOwnedSwitchUnsupportedPatternConditionShape(patternClause.Guard))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool ContainsCallerOwnedSwitchPatternUnsupportedLocalReference(
+            IOperation? operation,
+            ISet<ILocalSymbol> allowedLocals)
+        {
+            if (operation is null)
+                return false;
+
+            foreach (var descendant in RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(operation))
+            {
+                if (descendant is ILocalReferenceOperation localReference &&
+                    !allowedLocals.Contains(localReference.Local))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static HashSet<ILocalSymbol> CollectCallerOwnedSwitchPatternDeclaredLocals(
+            ImmutableArray<ICaseClauseOperation> clauses)
+        {
+            var locals = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
+            foreach (var clause in clauses)
+            {
+                if (clause is IPatternCaseClauseOperation patternCase)
+                    CollectCallerOwnedSwitchPatternDeclaredLocals(patternCase, locals);
+            }
+
+            return locals;
+        }
+
+        private static HashSet<ILocalSymbol> CollectCallerOwnedSwitchPatternDeclaredLocals(
+            IPatternCaseClauseOperation patternClause)
+        {
+            var locals = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
+            CollectCallerOwnedSwitchPatternDeclaredLocals(patternClause, locals);
+            return locals;
+        }
+
+        private static void CollectCallerOwnedSwitchPatternDeclaredLocals(
+            IPatternCaseClauseOperation patternClause,
+            HashSet<ILocalSymbol> locals)
+        {
+            CollectCallerOwnedSwitchPatternDeclaredLocals(patternClause.Pattern, locals);
+            CollectCallerOwnedSwitchPatternDeclaredLocals(patternClause.Guard, locals);
+        }
+
+        private static void CollectCallerOwnedSwitchPatternDeclaredLocals(
+            IOperation? operation,
+            HashSet<ILocalSymbol> locals)
+        {
+            if (operation is null)
+                return;
+
+            foreach (var descendant in RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(operation))
+            {
+                switch (descendant)
+                {
+                    case IDeclarationPatternOperation { DeclaredSymbol: ILocalSymbol declarationLocal }:
+                        locals.Add(declarationLocal);
+                        break;
+                    case IRecursivePatternOperation { DeclaredSymbol: ILocalSymbol recursiveLocal }:
+                        locals.Add(recursiveLocal);
+                        break;
+                    case IListPatternOperation { DeclaredSymbol: ILocalSymbol listLocal }:
+                        locals.Add(listLocal);
+                        break;
+                }
+            }
+        }
+
+        private static bool ContainsCallerOwnedSwitchUnsupportedPatternConditionShape(IOperation? operation)
+        {
+            if (operation is null)
+                return false;
+
+            foreach (var descendant in RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(operation))
+            {
+                switch (descendant)
+                {
+                    case IInvocationOperation:
+                    case IAwaitOperation:
+                    case IAssignmentOperation:
+                    case IIncrementOrDecrementOperation:
+                    case IThrowOperation:
+                    case IAnonymousFunctionOperation:
+                    case ILocalFunctionOperation:
+                    case IVariableDeclaratorOperation:
+                    case IDeclarationExpressionOperation:
+                        return true;
+                }
+
+                if (descendant.Kind is OperationKind.FlowAnonymousFunction or OperationKind.FlowCapture)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static bool ContainsCallerOwnedSwitchCasePatternDeclaredLocalReference(
+            ImmutableArray<IOperation> operations,
+            ISet<ILocalSymbol> patternDeclaredLocals)
+        {
+            if (operations.IsDefaultOrEmpty || patternDeclaredLocals.Count == 0)
+                return false;
+
+            foreach (var operation in operations)
+            {
+                foreach (var descendant in RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(operation))
+                {
+                    if (descendant is ILocalReferenceOperation localReference &&
+                        patternDeclaredLocals.Contains(localReference.Local))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private static bool TryGetCallerOwnedSwitchCaseReplayOperations(
+            ImmutableArray<IOperation> body,
+            out ImmutableArray<IOperation> replayBodyOperations)
+        {
+            replayBodyOperations = ImmutableArray<IOperation>.Empty;
+            if (body.IsDefaultOrEmpty)
+                return false;
+
+            var normalizedBody = ImmutableArray.CreateBuilder<IOperation>(body.Length);
+            foreach (var operation in body)
+            {
+                var current = Unwrap(operation);
+                if (current is null)
+                    continue;
+
+                normalizedBody.Add(current);
+            }
+
+            if (normalizedBody.Count == 0 ||
+                normalizedBody[normalizedBody.Count - 1] is not IBranchOperation { BranchKind: BranchKind.Break })
+            {
+                return false;
+            }
+
+            for (var index = 0; index < normalizedBody.Count - 1; index++)
+            {
+                if (ContainsCallerOwnedSwitchCaseBreak(normalizedBody[index]))
+                    return false;
+            }
+
+            replayBodyOperations = normalizedBody.Take(normalizedBody.Count - 1).ToImmutableArray();
+            return true;
+        }
+
+        private static bool ContainsCallerOwnedSwitchCaseBreak(IOperation operation)
+            => RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(operation)
+                .Any(static current => current is IBranchOperation { BranchKind: BranchKind.Break });
+
         private bool TryParseCallerOwnedOpenNodeGuardReturnReplay(
             IReadOnlyList<IOperation> operations,
             int operationIndex)
@@ -1747,28 +2053,28 @@ internal sealed class RazorVueRenderTreeExtractor
         }
 
         private ImmutableArray<RazorVueOpenNodeReplayOperation> ParseCallerOwnedOpenNodeConditionalReplayBranch(
-            IConditionalOperation conditional,
+            IOperation branchOwner,
             OpenNodeBuilder currentNode,
             IOperation? branch)
             => ParseCallerOwnedOpenNodeConditionalReplayBranch(
-                conditional,
+                branchOwner,
                 currentNode,
                 branch,
                 ImmutableArray<IOperation>.Empty);
 
         private ImmutableArray<RazorVueOpenNodeReplayOperation> ParseCallerOwnedOpenNodeConditionalReplayBranch(
-            IConditionalOperation conditional,
+            IOperation branchOwner,
             OpenNodeBuilder currentNode,
             IOperation? branch,
             ImmutableArray<IOperation> tailOperations)
             => ParseCallerOwnedOpenNodeConditionalReplayBranch(
-                conditional,
+                branchOwner,
                 currentNode,
                 GetBranchOperations(branch),
                 tailOperations);
 
         private ImmutableArray<RazorVueOpenNodeReplayOperation> ParseCallerOwnedOpenNodeConditionalReplayBranch(
-            IConditionalOperation conditional,
+            IOperation branchOwner,
             OpenNodeBuilder currentNode,
             ImmutableArray<IOperation> branchOperations,
             ImmutableArray<IOperation> tailOperations)
@@ -1795,7 +2101,7 @@ internal sealed class RazorVueRenderTreeExtractor
 
             branchParser.EnsureNoPendingImmediateAssignmentDeclarations();
             branchParser.ValidateCallerOwnedOpenNodeMutationPostState(
-                conditional,
+                branchOwner,
                 originalFrameDepth: 1,
                 branchOpenNode);
             return branchOpenNode.CreateSnapshot().ReplayOperations;
@@ -1823,10 +2129,580 @@ internal sealed class RazorVueRenderTreeExtractor
         {
             for (var index = 0; index < operations.Count; index++)
             {
+                if (TryParseCallerOwnedOpenNodeImperativeLoopReplay(operations, index, out var loopReplayOperationCount))
+                {
+                    index += loopReplayOperationCount - 1;
+                    continue;
+                }
+
+                if (TryParseCallerOwnedOpenNodeImperativeTryReplay(operations[index]))
+                    continue;
+
+                if (TryParseCallerOwnedOpenNodeImperativeLockReplay(operations[index]))
+                    continue;
+
+                if (TryParseCallerOwnedOpenNodeImperativeUsingDeclarationReplay(operations, index, out var usingDeclarationReplayOperationCount))
+                {
+                    index += usingDeclarationReplayOperationCount - 1;
+                    continue;
+                }
+
+                if (TryParseCallerOwnedOpenNodeImperativeUsingReplay(operations[index]))
+                    continue;
+
+                if (TryParseCallerOwnedOpenNodeLocalDeclarationReplay(operations, index))
+                    continue;
+
                 if (TryParseCallerOwnedOpenNodeGuardReturnReplay(operations, index))
                     return;
 
+                if (Unwrap(operations[index]) is ISwitchOperation switchOperation &&
+                    TryParseCallerOwnedOpenNodeSwitchReplay(switchOperation))
+                {
+                    continue;
+                }
+
+                ThrowIfUnsupportedCallerOwnedOpenNodeControlFlow(operations[index]);
                 ParseOperation(operations[index]);
+            }
+        }
+
+        private bool TryParseCallerOwnedOpenNodeLocalDeclarationReplay(
+            IReadOnlyList<IOperation> operations,
+            int operationIndex)
+        {
+            if (!_allowCallerOwnedOpenNodeConditionalReplay ||
+                !TryGetNearestOpenNodeBuilder(out var currentNode) ||
+                _openFrames.Count != 1 ||
+                operationIndex < 0 ||
+                operationIndex >= operations.Count ||
+                Unwrap(operations[operationIndex]) is not IVariableDeclarationGroupOperation declarationGroup ||
+                !HasCallerOwnedOpenNodeLocalDeclarationReplayConsumer(operations, operationIndex + 1))
+            {
+                return false;
+            }
+
+            foreach (var declaration in declarationGroup.Declarations)
+            {
+                foreach (var declarator in declaration.Declarators)
+                {
+                    if (IsRenderTreeBuilderType(declarator.Symbol.Type))
+                        return false;
+
+                    if (declarator.Initializer?.Value is not { } initializer)
+                        return false;
+
+                    if (IsCallerOwnedOpenNodeLocalInvalidatedByLaterWrites(declarator.Symbol))
+                    {
+                        throw CreateStructuralIssue(
+                            declarator,
+                            $"BuildRenderTree caller-owned open frame replay local '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be observed through later writes. Caller-owned replay locals must remain source-stable to preserve replay order and captured value evaluation count.");
+                    }
+
+                    ValidateTemplateScopedInitializer(declarator, initializer);
+                }
+            }
+
+            foreach (var declaration in declarationGroup.Declarations)
+            {
+                foreach (var declarator in declaration.Declarators)
+                {
+                    var initializer = declarator.Initializer!.Value;
+                    currentNode.AddReplayOperation(new RazorVueOpenNodeLocalDeclarationReplayOperation(
+                        declarator.Symbol,
+                        initializer,
+                        CreateOrigins(declarator, RazorVueOriginKind.Template)));
+                    _accessibleTemplateLocals.Add(declarator.Symbol);
+                }
+            }
+
+            return true;
+        }
+
+        private bool HasCallerOwnedOpenNodeLocalDeclarationReplayConsumer(
+            IReadOnlyList<IOperation> operations,
+            int startIndex)
+        {
+            for (var index = startIndex; index < operations.Count; index++)
+            {
+                switch (Unwrap(operations[index]))
+                {
+                    case null:
+                    case IEmptyOperation:
+                    case ILocalFunctionOperation:
+                    case IVariableDeclarationGroupOperation:
+                        continue;
+                    case IConditionalOperation:
+                    case ISwitchOperation:
+                        return true;
+                    case IExpressionStatementOperation expressionStatement
+                        when Unwrap(expressionStatement.Operation) is IInvocationOperation invocation &&
+                             IsRenderTreeBuilderInvocation(invocation):
+                        return true;
+                    default:
+                        continue;
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsCallerOwnedOpenNodeLocalInvalidatedByLaterWrites(ILocalSymbol local)
+            => RazorVueSourceStableLocalInitializerHelper.IsSourceStableLocalInitializerInvalidatedByLaterWrites(
+                _compilation,
+                local,
+                static _ => true);
+
+        private bool TryParseCallerOwnedOpenNodeImperativeLoopReplay(
+            IReadOnlyList<IOperation> operations,
+            int operationIndex,
+            out int consumedOperationCount)
+        {
+            consumedOperationCount = 0;
+            if (!_allowCallerOwnedOpenNodeConditionalReplay ||
+                !TryGetNearestOpenNodeBuilder(out var currentNode) ||
+                _openFrames.Count != 1 ||
+                operationIndex < 0 ||
+                operationIndex >= operations.Count)
+            {
+                return false;
+            }
+
+            var replayOperations = ImmutableArray.CreateBuilder<IOperation>();
+            var scanIndex = operationIndex;
+            while (scanIndex < operations.Count &&
+                   Unwrap(operations[scanIndex]) is IVariableDeclarationGroupOperation declarationGroup)
+            {
+                if (!CanIncludeCallerOwnedOpenNodeImperativeLoopPrelude(declarationGroup))
+                    return false;
+
+                replayOperations.Add(operations[scanIndex]);
+                scanIndex++;
+            }
+
+            if (scanIndex >= operations.Count ||
+                Unwrap(operations[scanIndex]) is not ILoopOperation loopOperation)
+            {
+                return false;
+            }
+
+            replayOperations.Add(operations[scanIndex]);
+            if (ContainsUnsupportedCallerOwnedOpenNodeImperativeLoopReplayOperation(loopOperation))
+            {
+                throw CreateStructuralIssue(
+                    loopOperation,
+                    $"BuildRenderTree caller-owned open frame replay does not support loop control flow '{GetOperationDisplay(loopOperation)}' in component '{_snapshot.Descriptor.FullName}'. Caller-owned loop replay must preserve active frame identity and frame depth; loops that open/close frames, jump, throw, dispose, lock, or use exception control flow require a dedicated lowering protocol.");
+            }
+
+            var replayOperationArray = replayOperations.ToImmutable();
+            currentNode.AddReplayOperation(new RazorVueOpenNodeImperativeReplayOperation(
+                replayOperationArray,
+                RazorVueImperativeBlockKind.LoopBlock,
+                CollectVisibleLocals(replayOperationArray),
+                CollectVisibleParameters(replayOperationArray, _builderParameters),
+                CreateOriginsStatic(replayOperationArray, RazorVueOriginKind.Template)));
+            consumedOperationCount = scanIndex - operationIndex + 1;
+            return true;
+        }
+
+        private bool CanIncludeCallerOwnedOpenNodeImperativeLoopPrelude(IVariableDeclarationGroupOperation declarationGroup)
+        {
+            foreach (var declaration in declarationGroup.Declarations)
+            {
+                foreach (var declarator in declaration.Declarators)
+                {
+                    if (IsRenderTreeBuilderType(declarator.Symbol.Type) ||
+                        declarator.Initializer?.Value is null)
+                    {
+                        return false;
+                    }
+
+                    ValidateTemplateScopedInitializer(declarator, declarator.Initializer.Value);
+                }
+            }
+
+            return true;
+        }
+
+        private static bool ContainsUnsupportedCallerOwnedOpenNodeImperativeLoopReplayOperation(IOperation operation)
+        {
+            foreach (var current in RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(operation))
+            {
+                switch (current)
+                {
+                    case ITryOperation:
+                    case IUsingOperation:
+                    case IUsingDeclarationOperation:
+                    case ILockOperation:
+                    case IThrowOperation:
+                    case IReturnOperation { IsImplicit: false }:
+                    case IBranchOperation { BranchKind: BranchKind.GoTo }:
+                    case ILabeledOperation:
+                        return true;
+                    case IInvocationOperation invocation
+                        when IsFrameDepthChangingBuilderInvocation(invocation):
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool IsFrameDepthChangingBuilderInvocation(IInvocationOperation invocation)
+        {
+            if (invocation.Instance is null)
+                return false;
+
+            if (!string.Equals(
+                    invocation.Instance.Type?.ToDisplayString(),
+                    "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder",
+                    StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            return invocation.TargetMethod.Name is
+                "OpenElement" or
+                "CloseElement" or
+                "OpenComponent" or
+                "CloseComponent" or
+                "OpenRegion" or
+                "CloseRegion";
+        }
+
+        private bool TryParseCallerOwnedOpenNodeImperativeTryReplay(IOperation operation)
+        {
+            if (!_allowCallerOwnedOpenNodeConditionalReplay ||
+                !TryGetNearestOpenNodeBuilder(out var currentNode) ||
+                _openFrames.Count != 1 ||
+                Unwrap(operation) is not ITryOperation tryOperation)
+            {
+                return false;
+            }
+
+            if (ContainsUnsupportedCallerOwnedOpenNodeImperativeTryReplayOperation(tryOperation))
+            {
+                throw CreateStructuralIssue(
+                    tryOperation,
+                    $"BuildRenderTree caller-owned open frame replay does not support try/catch/finally control flow '{GetOperationDisplay(tryOperation)}' in component '{_snapshot.Descriptor.FullName}'. Caller-owned try replay must preserve active frame identity, frame depth, replay order, and captured value evaluation count; nested runtime control flow, jump control flow, and frame-depth mutation require a dedicated lowering protocol.");
+            }
+
+            currentNode.AddReplayOperation(new RazorVueOpenNodeImperativeReplayOperation(
+                [tryOperation],
+                RazorVueImperativeBlockKind.TryBlock,
+                CollectVisibleLocals([tryOperation]),
+                CollectVisibleParameters([tryOperation], _builderParameters),
+                CreateOrigins(tryOperation, RazorVueOriginKind.Template)));
+            return true;
+        }
+
+        private static bool ContainsUnsupportedCallerOwnedOpenNodeImperativeTryReplayOperation(ITryOperation operation)
+        {
+            foreach (var current in RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(operation))
+            {
+                switch (current)
+                {
+                    case ITryOperation nestedTry when !ReferenceEquals(nestedTry, operation):
+                    case IUsingOperation:
+                    case IUsingDeclarationOperation:
+                    case ILockOperation:
+                    case IReturnOperation { IsImplicit: false }:
+                    case IBranchOperation:
+                    case ILabeledOperation:
+                        return true;
+                    case IInvocationOperation invocation
+                        when IsFrameDepthChangingBuilderInvocation(invocation):
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool TryParseCallerOwnedOpenNodeImperativeLockReplay(IOperation operation)
+        {
+            if (!_allowCallerOwnedOpenNodeConditionalReplay ||
+                !TryGetNearestOpenNodeBuilder(out var currentNode) ||
+                _openFrames.Count != 1 ||
+                Unwrap(operation) is not ILockOperation lockOperation)
+            {
+                return false;
+            }
+
+            if (ContainsUnsupportedCallerOwnedOpenNodeImperativeLockReplayOperation(lockOperation))
+            {
+                throw CreateStructuralIssue(
+                    lockOperation,
+                    $"BuildRenderTree caller-owned open frame replay does not support lock control flow '{GetOperationDisplay(lockOperation)}' in component '{_snapshot.Descriptor.FullName}'. Caller-owned lock replay must preserve active frame identity and frame depth; nested runtime control flow, throw/jump control flow, and frame-depth mutation require a dedicated lowering protocol.");
+            }
+
+            currentNode.AddReplayOperation(new RazorVueOpenNodeImperativeReplayOperation(
+                [lockOperation],
+                RazorVueImperativeBlockKind.LockBlock,
+                CollectVisibleLocals([lockOperation]),
+                CollectVisibleParameters([lockOperation], _builderParameters),
+                CreateOrigins(lockOperation, RazorVueOriginKind.Template)));
+            return true;
+        }
+
+        private static bool ContainsUnsupportedCallerOwnedOpenNodeImperativeLockReplayOperation(ILockOperation operation)
+        {
+            foreach (var current in RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(operation))
+            {
+                switch (current)
+                {
+                    case ILoopOperation:
+                    case ISwitchOperation:
+                    case ITryOperation:
+                    case IUsingOperation:
+                    case IUsingDeclarationOperation:
+                    case ILockOperation nestedLock when !ReferenceEquals(nestedLock, operation):
+                    case IThrowOperation:
+                    case IReturnOperation { IsImplicit: false }:
+                    case IBranchOperation:
+                    case ILabeledOperation:
+                        return true;
+                    case IInvocationOperation invocation
+                        when IsFrameDepthChangingBuilderInvocation(invocation):
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool TryParseCallerOwnedOpenNodeImperativeUsingReplay(IOperation operation)
+        {
+            if (!_allowCallerOwnedOpenNodeConditionalReplay ||
+                !TryGetNearestOpenNodeBuilder(out var currentNode) ||
+                _openFrames.Count != 1 ||
+                Unwrap(operation) is not IUsingOperation usingOperation)
+            {
+                return false;
+            }
+
+            if (!IsStableNullUsingResource(usingOperation.Resources) ||
+                ContainsUnsupportedCallerOwnedOpenNodeImperativeUsingReplayOperation(usingOperation))
+            {
+                throw CreateStructuralIssue(
+                    usingOperation,
+                    $"BuildRenderTree caller-owned open frame replay does not support using control flow '{GetOperationDisplay(usingOperation)}' in component '{_snapshot.Descriptor.FullName}'. Caller-owned using replay is limited to null/default resources with frame-neutral mutation so active frame identity, frame depth, replay order, and captured value evaluation count stay unchanged; dispose-aware replay requires a dedicated lowering protocol.");
+            }
+
+            currentNode.AddReplayOperation(new RazorVueOpenNodeImperativeReplayOperation(
+                [usingOperation],
+                RazorVueImperativeBlockKind.TryBlock,
+                CollectVisibleLocals([usingOperation]),
+                CollectVisibleParameters([usingOperation], _builderParameters),
+                CreateOrigins(usingOperation, RazorVueOriginKind.Template)));
+            return true;
+        }
+
+        private bool TryParseCallerOwnedOpenNodeImperativeUsingDeclarationReplay(
+            IReadOnlyList<IOperation> operations,
+            int operationIndex,
+            out int consumedOperationCount)
+        {
+            consumedOperationCount = 0;
+            if (!_allowCallerOwnedOpenNodeConditionalReplay ||
+                !TryGetNearestOpenNodeBuilder(out var currentNode) ||
+                _openFrames.Count != 1 ||
+                operationIndex < 0 ||
+                operationIndex >= operations.Count ||
+                Unwrap(operations[operationIndex]) is not IUsingDeclarationOperation usingDeclarationOperation)
+            {
+                return false;
+            }
+
+            var replayOperations = operations
+                .Skip(operationIndex)
+                .ToImmutableArray();
+
+            if (!IsStableNullUsingDeclaration(usingDeclarationOperation) ||
+                ContainsUnsupportedCallerOwnedOpenNodeImperativeUsingDeclarationReplayOperation(replayOperations))
+            {
+                throw CreateStructuralIssue(
+                    usingDeclarationOperation,
+                    $"BuildRenderTree caller-owned open frame replay does not support using declaration control flow '{GetOperationDisplay(usingDeclarationOperation)}' in component '{_snapshot.Descriptor.FullName}'. Caller-owned using declaration replay is limited to null/default resources with frame-neutral mutation through the declaration's full disposal scope so active frame identity, frame depth, replay order, and captured value evaluation count stay unchanged; dispose-aware replay requires a dedicated lowering protocol.");
+            }
+
+            currentNode.AddReplayOperation(new RazorVueOpenNodeImperativeReplayOperation(
+                replayOperations,
+                RazorVueImperativeBlockKind.TryBlock,
+                CollectVisibleLocals(replayOperations),
+                CollectVisibleParameters(replayOperations, _builderParameters),
+                CreateOriginsStatic(replayOperations, RazorVueOriginKind.Template)));
+            consumedOperationCount = operations.Count - operationIndex;
+            return true;
+        }
+
+        private static bool ContainsUnsupportedCallerOwnedOpenNodeImperativeUsingReplayOperation(IUsingOperation operation)
+        {
+            if (operation.IsAsynchronous)
+                return true;
+
+            foreach (var current in RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(operation))
+            {
+                switch (current)
+                {
+                    case IUsingOperation nestedUsing when !ReferenceEquals(nestedUsing, operation):
+                    case IUsingDeclarationOperation:
+                    case ILoopOperation:
+                    case ISwitchOperation:
+                    case ITryOperation:
+                    case ILockOperation:
+                    case IThrowOperation:
+                    case IReturnOperation { IsImplicit: false }:
+                    case IBranchOperation:
+                    case ILabeledOperation:
+                        return true;
+                    case IInvocationOperation invocation
+                        when IsFrameDepthChangingBuilderInvocation(invocation):
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool ContainsUnsupportedCallerOwnedOpenNodeImperativeUsingDeclarationReplayOperation(
+            ImmutableArray<IOperation> operations)
+        {
+            foreach (var operation in operations)
+            {
+                foreach (var current in RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(operation))
+                {
+                    switch (current)
+                    {
+                        case IUsingDeclarationOperation usingDeclaration
+                            when !IsStableNullUsingDeclaration(usingDeclaration):
+                        case IUsingOperation:
+                        case ILoopOperation:
+                        case ISwitchOperation:
+                        case ITryOperation:
+                        case ILockOperation:
+                        case IThrowOperation:
+                        case IReturnOperation { IsImplicit: false }:
+                        case IBranchOperation:
+                        case ILabeledOperation:
+                            return true;
+                        case IInvocationOperation invocation
+                            when IsFrameDepthChangingBuilderInvocation(invocation):
+                            return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private static bool IsStableNullUsingDeclaration(IUsingDeclarationOperation usingDeclaration)
+        {
+            if (usingDeclaration.IsAsynchronous ||
+                usingDeclaration.DeclarationGroup is null)
+            {
+                return false;
+            }
+
+            foreach (var declaration in usingDeclaration.DeclarationGroup.Declarations)
+            {
+                foreach (var declarator in declaration.Declarators)
+                {
+                    if (declarator.Initializer?.Value is not { } initializer ||
+                        !IsStableNullUsingResource(initializer))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private static bool IsStableNullUsingResource(IOperation? operation)
+        {
+            var current = operation;
+            while (true)
+            {
+                current = Unwrap(current);
+                if (current is IConversionOperation { OperatorMethod: null } conversion)
+                {
+                    current = conversion.Operand;
+                    continue;
+                }
+
+                break;
+            }
+
+            return current switch
+            {
+                null => false,
+                IDefaultValueOperation defaultValue => IsNullDefaultValue(defaultValue),
+                _ => current.ConstantValue.HasValue && current.ConstantValue.Value is null
+            };
+        }
+
+        private static bool IsNullDefaultValue(IDefaultValueOperation defaultValue)
+        {
+            var type = defaultValue.Type;
+            if (type is null)
+                return false;
+
+            if (type.IsReferenceType)
+                return true;
+
+            return type is INamedTypeSymbol namedType &&
+                   namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T;
+        }
+
+        private void ThrowIfUnsupportedCallerOwnedOpenNodeControlFlow(IOperation operation)
+        {
+            foreach (var current in RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(operation))
+            {
+                switch (current)
+                {
+                    case ITryOperation tryOperation:
+                        throw CreateStructuralIssue(
+                            tryOperation,
+                            $"BuildRenderTree caller-owned open frame replay does not support try/catch/finally control flow '{GetOperationDisplay(tryOperation)}' in component '{_snapshot.Descriptor.FullName}'. Caller-owned helper mutation must prove active frame identity, frame depth, replay order, and captured value evaluation count; runtime control-flow replay requires a dedicated lowering protocol.");
+                    case IUsingOperation usingOperation:
+                        throw CreateStructuralIssue(
+                            usingOperation,
+                            $"BuildRenderTree caller-owned open frame replay does not support using control flow '{GetOperationDisplay(usingOperation)}' in component '{_snapshot.Descriptor.FullName}'. Caller-owned helper mutation must prove active frame identity, frame depth, replay order, and captured value evaluation count; dispose-aware replay requires a dedicated lowering protocol.");
+                    case IUsingDeclarationOperation usingDeclarationOperation:
+                        throw CreateStructuralIssue(
+                            usingDeclarationOperation,
+                            $"BuildRenderTree caller-owned open frame replay does not support using declaration control flow '{GetOperationDisplay(usingDeclarationOperation)}' in component '{_snapshot.Descriptor.FullName}'. Caller-owned helper mutation must prove active frame identity, frame depth, replay order, and captured value evaluation count; dispose-aware replay requires a dedicated lowering protocol.");
+                    case ILockOperation lockOperation:
+                        throw CreateStructuralIssue(
+                            lockOperation,
+                            $"BuildRenderTree caller-owned open frame replay does not support lock control flow '{GetOperationDisplay(lockOperation)}' in component '{_snapshot.Descriptor.FullName}'. Caller-owned helper mutation must prove active frame identity, frame depth, replay order, and captured value evaluation count; lock-aware replay requires a dedicated lowering protocol.");
+                    case ISwitchOperation switchOperation:
+                        if (!CanParseCallerOwnedOpenNodeSwitchReplayShape(switchOperation))
+                        {
+                            throw CreateStructuralIssue(
+                                switchOperation,
+                                $"BuildRenderTree caller-owned open frame replay does not support switch control flow '{GetOperationDisplay(switchOperation)}' in component '{_snapshot.Descriptor.FullName}'. Caller-owned helper mutation must prove active frame identity, frame depth, replay order, and captured value evaluation count; switch replay requires a dedicated lowering protocol.");
+                        }
+
+                        break;
+                    case ILoopOperation loopOperation:
+                        throw CreateStructuralIssue(
+                            loopOperation,
+                            $"BuildRenderTree caller-owned open frame replay does not support loop control flow '{GetOperationDisplay(loopOperation)}' in component '{_snapshot.Descriptor.FullName}'. Caller-owned helper mutation must prove active frame identity, frame depth, replay order, and captured value evaluation count; loop replay requires a dedicated lowering protocol.");
+                    case IBranchOperation { BranchKind: BranchKind.GoTo } branchOperation:
+                        throw CreateStructuralIssue(
+                            branchOperation,
+                            $"BuildRenderTree caller-owned open frame replay does not support goto control flow '{GetOperationDisplay(branchOperation)}' in component '{_snapshot.Descriptor.FullName}'. Caller-owned helper mutation must prove active frame identity, frame depth, replay order, and captured value evaluation count; jump replay requires a dedicated lowering protocol.");
+                    case ILabeledOperation labeledOperation:
+                        throw CreateStructuralIssue(
+                            labeledOperation,
+                            $"BuildRenderTree caller-owned open frame replay does not support labeled control flow '{GetOperationDisplay(labeledOperation)}' in component '{_snapshot.Descriptor.FullName}'. Caller-owned helper mutation must prove active frame identity, frame depth, replay order, and captured value evaluation count; jump replay requires a dedicated lowering protocol.");
+                    case IThrowOperation throwOperation:
+                        throw CreateStructuralIssue(
+                            throwOperation,
+                            $"BuildRenderTree caller-owned open frame replay does not support throw control flow '{GetOperationDisplay(throwOperation)}' in component '{_snapshot.Descriptor.FullName}'. Caller-owned helper mutation must prove active frame identity, frame depth, replay order, and captured value evaluation count; exception-aware replay requires a dedicated lowering protocol.");
+                }
             }
         }
 
@@ -1929,6 +2805,7 @@ internal sealed class RazorVueRenderTreeExtractor
             if (!TryGetRenderHelperInvocationBindings(
                     invocation,
                     builderParameter,
+                    requireCallerOwnedReplaySafeBinding: _openFrames.Count > 0,
                     out var builderArgument,
                     out var extraArgumentBindings,
                     out failureMessage))
@@ -2406,6 +3283,13 @@ internal sealed class RazorVueRenderTreeExtractor
             failureMessage = string.Empty;
             var helperDisplayName = method.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
 
+            if (method.IsAsync)
+            {
+                failureMessage =
+                    $"BuildRenderTree helper method '{helperDisplayName}' must be synchronous in component '{_snapshot.Descriptor.FullName}'. Async render helpers are not supported because RazorVue cannot replay asynchronous continuation against caller-owned open frame semantics.";
+                return false;
+            }
+
             if (!method.ReturnsVoid)
             {
                 failureMessage =
@@ -2464,6 +3348,7 @@ internal sealed class RazorVueRenderTreeExtractor
         private bool TryGetRenderHelperInvocationBindings(
             IInvocationOperation invocation,
             IParameterSymbol builderParameter,
+            bool requireCallerOwnedReplaySafeBinding,
             out IArgumentOperation builderArgument,
             out ImmutableArray<RenderHelperValueBinding> extraArgumentBindings,
             out string failureMessage)
@@ -2472,7 +3357,8 @@ internal sealed class RazorVueRenderTreeExtractor
             extraArgumentBindings = ImmutableArray<RenderHelperValueBinding>.Empty;
             failureMessage = string.Empty;
 
-            if (invocation.Arguments.Length != invocation.TargetMethod.Parameters.Length)
+            if (requireCallerOwnedReplaySafeBinding &&
+                invocation.Arguments.Length != invocation.TargetMethod.Parameters.Length)
             {
                 failureMessage =
                     $"BuildRenderTree helper method '{GetBuilderCallDisplayName(invocation)}' must be invoked with arguments matching its declared signature in component '{_snapshot.Descriptor.FullName}'. Omitted optional parameters and argument reshaping are not supported.";
@@ -2482,6 +3368,8 @@ internal sealed class RazorVueRenderTreeExtractor
             var boundParameters = new HashSet<IParameterSymbol>(SymbolEqualityComparer.Default);
             var extraBindingsBuilder = ImmutableArray.CreateBuilder<RenderHelperValueBinding>(Math.Max(invocation.Arguments.Length - 1, 0));
             IArgumentOperation? matchedBuilderArgument = null;
+            var previousExplicitArgumentSourceStart = -1;
+            var previousArgumentParameterOrdinal = -1;
             foreach (var argument in invocation.Arguments)
             {
                 if (argument.Parameter is not { } rawParameter)
@@ -2492,8 +3380,17 @@ internal sealed class RazorVueRenderTreeExtractor
                 }
 
                 var parameter = RazorVueMethodSymbolNormalizer.NormalizeParameter(invocation.TargetMethod, rawParameter);
-                if (!IsSupportedRenderHelperArgumentKind(invocation, parameter, out failureMessage))
+                if (requireCallerOwnedReplaySafeBinding &&
+                    !IsSupportedCallerOwnedReplayRenderHelperArgumentKind(
+                        invocation,
+                        argument,
+                        parameter,
+                        ref previousExplicitArgumentSourceStart,
+                        ref previousArgumentParameterOrdinal,
+                        out failureMessage))
+                {
                     return false;
+                }
 
                 if (!boundParameters.Add(parameter))
                 {
@@ -2520,7 +3417,7 @@ internal sealed class RazorVueRenderTreeExtractor
             }
 
             if (matchedBuilderArgument is null ||
-                boundParameters.Count != invocation.TargetMethod.Parameters.Length)
+                (requireCallerOwnedReplaySafeBinding && boundParameters.Count != invocation.TargetMethod.Parameters.Length))
             {
                 failureMessage =
                     $"BuildRenderTree helper method '{GetBuilderCallDisplayName(invocation)}' must be invoked with arguments matching its declared signature in component '{_snapshot.Descriptor.FullName}'.";
@@ -2532,12 +3429,46 @@ internal sealed class RazorVueRenderTreeExtractor
             return true;
         }
 
-        private bool IsSupportedRenderHelperArgumentKind(
+        private bool IsSupportedCallerOwnedReplayRenderHelperArgumentKind(
             IInvocationOperation invocation,
+            IArgumentOperation argument,
             IParameterSymbol normalizedParameter,
+            ref int previousExplicitArgumentSourceStart,
+            ref int previousArgumentParameterOrdinal,
             out string failureMessage)
         {
             failureMessage = string.Empty;
+
+            switch (argument.ArgumentKind)
+            {
+                case ArgumentKind.Explicit:
+                    if (!IsExplicitArgumentInSourceOrder(argument, ref previousExplicitArgumentSourceStart) ||
+                        !IsArgumentInParameterSourceOrder(argument, ref previousArgumentParameterOrdinal))
+                    {
+                        failureMessage =
+                            $"BuildRenderTree helper method '{GetBuilderCallDisplayName(invocation)}' must evaluate explicit arguments in source order for parameter '{normalizedParameter.Name}' in component '{_snapshot.Descriptor.FullName}'. Named argument reshaping that can change captured value evaluation order is not supported.";
+                        return false;
+                    }
+
+                    break;
+                case ArgumentKind.ParamArray:
+                    if (!IsArgumentInParameterSourceOrder(argument, ref previousArgumentParameterOrdinal))
+                    {
+                        failureMessage =
+                            $"BuildRenderTree helper method '{GetBuilderCallDisplayName(invocation)}' must evaluate params arguments in source order for parameter '{normalizedParameter.Name}' in component '{_snapshot.Descriptor.FullName}'. Params argument reshaping that can change captured value evaluation order is not supported.";
+                        return false;
+                    }
+
+                    break;
+                case ArgumentKind.DefaultValue:
+                    failureMessage =
+                        $"BuildRenderTree helper method '{GetBuilderCallDisplayName(invocation)}' cannot omit optional parameter '{normalizedParameter.Name}' in component '{_snapshot.Descriptor.FullName}'. Omitted optional parameters are compiler-synthesized default arguments and are not supported for render helper captured value replay.";
+                    return false;
+                default:
+                    failureMessage =
+                        $"BuildRenderTree helper method '{GetBuilderCallDisplayName(invocation)}' cannot bind {argument.ArgumentKind} argument for parameter '{normalizedParameter.Name}' in component '{_snapshot.Descriptor.FullName}'. Render helper parameters only support explicit one-to-one arguments and controlled params array expansion.";
+                    return false;
+            }
 
             var expectedRefKind = normalizedParameter.RefKind;
             if (expectedRefKind is RefKind.None or RefKind.In or RefKind.Ref)
@@ -2547,6 +3478,32 @@ internal sealed class RazorVueRenderTreeExtractor
             failureMessage =
                 $"BuildRenderTree helper method '{GetBuilderCallDisplayName(invocation)}' cannot bind '{modifier}' argument for parameter '{normalizedParameter.Name}' in component '{_snapshot.Descriptor.FullName}'. Render helper parameters only support by-value binding, read-only 'in' value binding, and read-only 'ref' value binding with no writeback.";
             return false;
+        }
+
+        private static bool IsExplicitArgumentInSourceOrder(
+            IArgumentOperation argument,
+            ref int previousExplicitArgumentSourceStart)
+        {
+            var sourceStart = argument.Syntax.SpanStart;
+            if (sourceStart < previousExplicitArgumentSourceStart)
+                return false;
+
+            previousExplicitArgumentSourceStart = sourceStart;
+            return true;
+        }
+
+        private static bool IsArgumentInParameterSourceOrder(
+            IArgumentOperation argument,
+            ref int previousArgumentParameterOrdinal)
+        {
+            if (argument.Parameter is not { } parameter)
+                return false;
+
+            if (parameter.Ordinal < previousArgumentParameterOrdinal)
+                return false;
+
+            previousArgumentParameterOrdinal = parameter.Ordinal;
+            return true;
         }
 
         private void ThrowIfReadOnlyByRefParameterEscapes(IOperation operation)
@@ -2890,6 +3847,7 @@ internal sealed class RazorVueRenderTreeExtractor
             try
             {
                 var operations = GetRenderHelperOperations(invocation);
+                ThrowIfRuntimeSensitiveGenericRenderHelperTypeParameterUsage(operations, invocation);
                 ThrowIfReadOnlyRefParameterWritesOrEscapes(
                     operations,
                     GetReadOnlyRefParameters(invocation.TargetMethod),
@@ -2902,13 +3860,320 @@ internal sealed class RazorVueRenderTreeExtractor
             }
         }
 
+        private void ThrowIfRuntimeSensitiveGenericRenderHelperTypeParameterUsage(
+            ImmutableArray<IOperation> operations,
+            IInvocationOperation invocation)
+        {
+            var typeParameters = RazorVueMethodSymbolNormalizer
+                .GetCanonicalMethod(invocation.TargetMethod)
+                .TypeParameters
+                .ToImmutableHashSet<ITypeParameterSymbol>(SymbolEqualityComparer.Default);
+            if (typeParameters.Count == 0)
+                return;
+
+            var localFunctionDeclarations = new Dictionary<IMethodSymbol, ILocalFunctionOperation>(SymbolEqualityComparer.Default);
+            var anonymousFunctionCarriers = new Dictionary<ILocalSymbol, List<IAnonymousFunctionOperation>>(SymbolEqualityComparer.Default);
+            var visitedLocalFunctions = new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default);
+            var visitedAnonymousFunctions = new HashSet<IAnonymousFunctionOperation>();
+            var pendingScopes = new Queue<ImmutableArray<IOperation>>();
+            pendingScopes.Enqueue(operations);
+
+            while (pendingScopes.Count > 0)
+            {
+                var scopeOperations = pendingScopes.Dequeue();
+                RegisterLocalFunctionDeclarations(scopeOperations, localFunctionDeclarations);
+                RegisterAnonymousFunctionCarriers(scopeOperations, anonymousFunctionCarriers);
+
+                foreach (var operation in scopeOperations)
+                {
+                    foreach (var current in RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(
+                                 operation,
+                                 includeLocalFunctionBodies: false,
+                                 includeAnonymousFunctionBodies: false))
+                    {
+                        var unwrapped = Unwrap(current) ?? current;
+                        switch (unwrapped)
+                        {
+                            case ITypeOfOperation typeOf
+                                when IsRenderHelperTypeParameter(typeOf.TypeOperand, typeParameters, out var typeOfTypeParameter):
+                                ThrowRuntimeSensitiveGenericRenderHelperTypeParameterUsage(
+                                    typeOf,
+                                    invocation,
+                                    typeOfTypeParameter,
+                                    "typeof(T)");
+                                break;
+                            case IDefaultValueOperation defaultValue
+                                when IsRenderHelperTypeParameter(defaultValue.Type, typeParameters, out var defaultTypeParameter):
+                                ThrowRuntimeSensitiveGenericRenderHelperTypeParameterUsage(
+                                    defaultValue,
+                                    invocation,
+                                    defaultTypeParameter,
+                                    "default(T)");
+                                break;
+                            case ITypeParameterObjectCreationOperation objectCreation:
+                                if (IsRenderHelperTypeParameter(objectCreation.Type, typeParameters, out var objectCreationTypeParameter))
+                                {
+                                    ThrowRuntimeSensitiveGenericRenderHelperTypeParameterUsage(
+                                        objectCreation,
+                                        invocation,
+                                        objectCreationTypeParameter,
+                                        "new T()");
+                                }
+
+                                throw CreateStructuralIssue(
+                                    objectCreation,
+                                    $"BuildRenderTree helper method '{GetBuilderCallDisplayName(invocation)}' uses runtime generic type-parameter semantics '{GetOperationDisplay(objectCreation)}' in component '{_snapshot.Descriptor.FullName}'. Generic render helpers only support erased value-parameter usage; 'new T()' requires runtime type-parameter metadata and constructor metadata and is not supported.");
+                            case IIsTypeOperation isType
+                                when IsRenderHelperTypeParameter(isType.TypeOperand, typeParameters, out var isTypeTypeParameter):
+                                ThrowRuntimeSensitiveGenericRenderHelperTypeParameterUsage(
+                                    isType,
+                                    invocation,
+                                    isTypeTypeParameter,
+                                    "is T");
+                                break;
+                            case ITypePatternOperation typePattern
+                                when IsRenderHelperTypeParameter(typePattern.MatchedType, typeParameters, out var typePatternTypeParameter):
+                                ThrowRuntimeSensitiveGenericRenderHelperTypeParameterUsage(
+                                    typePattern,
+                                    invocation,
+                                    typePatternTypeParameter,
+                                    "type pattern T");
+                                break;
+                            case IDeclarationPatternOperation declarationPattern
+                                when IsRenderHelperTypeParameter(declarationPattern.MatchedType, typeParameters, out var declarationPatternTypeParameter):
+                                ThrowRuntimeSensitiveGenericRenderHelperTypeParameterUsage(
+                                    declarationPattern,
+                                    invocation,
+                                    declarationPatternTypeParameter,
+                                    "type pattern T");
+                                break;
+                            case IInvocationOperation { TargetMethod.MethodKind: MethodKind.LocalFunction } localInvocation
+                                when TryGetReachableLocalFunctionDeclaration(localInvocation.TargetMethod, localFunctionDeclarations, out var localFunction) &&
+                                     visitedLocalFunctions.Add(localFunction.Symbol.OriginalDefinition):
+                                var localFunctionOperations = GetLocalFunctionBodyOperations(localFunction);
+                                if (!localFunctionOperations.IsDefaultOrEmpty)
+                                    pendingScopes.Enqueue(localFunctionOperations);
+                                break;
+                            case IInvocationOperation anonymousInvocation
+                                when TryGetInvokedAnonymousFunctions(anonymousInvocation, anonymousFunctionCarriers, out var anonymousFunctions):
+                                foreach (var anonymousFunction in anonymousFunctions)
+                                {
+                                    if (!visitedAnonymousFunctions.Add(anonymousFunction))
+                                        continue;
+
+                                    var anonymousFunctionOperations = GetAnonymousFunctionBodyOperations(anonymousFunction);
+                                    if (!anonymousFunctionOperations.IsDefaultOrEmpty)
+                                        pendingScopes.Enqueue(anonymousFunctionOperations);
+                                }
+
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void RegisterLocalFunctionDeclarations(
+            ImmutableArray<IOperation> operations,
+            Dictionary<IMethodSymbol, ILocalFunctionOperation> declarations)
+        {
+            foreach (var operation in operations)
+            {
+                foreach (var current in RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(operation))
+                {
+                    if (Unwrap(current) is not ILocalFunctionOperation localFunction)
+                        continue;
+
+                    var method = localFunction.Symbol.OriginalDefinition;
+                    if (!declarations.ContainsKey(method))
+                        declarations.Add(method, localFunction);
+                }
+            }
+        }
+
+        private static void RegisterAnonymousFunctionCarriers(
+            ImmutableArray<IOperation> operations,
+            Dictionary<ILocalSymbol, List<IAnonymousFunctionOperation>> carriers)
+        {
+            foreach (var operation in operations)
+            {
+                foreach (var current in RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(
+                             operation,
+                             includeLocalFunctionBodies: false,
+                             includeAnonymousFunctionBodies: false))
+                {
+                    switch (Unwrap(current))
+                    {
+                        case IVariableDeclaratorOperation { Initializer.Value: { } initializer } declarator
+                            when TryGetAnonymousFunction(initializer, out var anonymousFunction):
+                            AddAnonymousFunctionCarrier(carriers, declarator.Symbol, anonymousFunction);
+                            break;
+                        case ISimpleAssignmentOperation assignment
+                            when Unwrap(assignment.Target) is ILocalReferenceOperation localReference &&
+                                 TryGetAnonymousFunction(assignment.Value, out var anonymousFunction):
+                            AddAnonymousFunctionCarrier(carriers, localReference.Local, anonymousFunction);
+                            break;
+                    }
+                }
+            }
+        }
+
+        private static void AddAnonymousFunctionCarrier(
+            Dictionary<ILocalSymbol, List<IAnonymousFunctionOperation>> carriers,
+            ILocalSymbol local,
+            IAnonymousFunctionOperation anonymousFunction)
+        {
+            if (!carriers.TryGetValue(local, out var functions))
+            {
+                functions = [];
+                carriers.Add(local, functions);
+            }
+
+            if (!functions.Contains(anonymousFunction))
+                functions.Add(anonymousFunction);
+        }
+
+        private static bool TryGetInvokedAnonymousFunctions(
+            IInvocationOperation invocation,
+            Dictionary<ILocalSymbol, List<IAnonymousFunctionOperation>> carriers,
+            out ImmutableArray<IAnonymousFunctionOperation> anonymousFunctions)
+        {
+            var builder = ImmutableArray.CreateBuilder<IAnonymousFunctionOperation>();
+            CollectInvokedAnonymousFunctions(invocation.Instance, carriers, builder);
+
+            anonymousFunctions = builder.ToImmutable();
+            return anonymousFunctions.Length > 0;
+        }
+
+        private static void CollectInvokedAnonymousFunctions(
+            IOperation? operation,
+            Dictionary<ILocalSymbol, List<IAnonymousFunctionOperation>> carriers,
+            ImmutableArray<IAnonymousFunctionOperation>.Builder builder)
+        {
+            var current = UnwrapDelegateCarrier(operation);
+            switch (current)
+            {
+                case IOperation candidate when TryGetAnonymousFunction(candidate, out var anonymousFunction):
+                    builder.Add(anonymousFunction);
+                    break;
+                case IAnonymousFunctionOperation anonymousFunction:
+                    builder.Add(anonymousFunction);
+                    break;
+                case ILocalReferenceOperation localReference
+                    when carriers.TryGetValue(localReference.Local, out var anonymousFunctions):
+                    builder.AddRange(anonymousFunctions);
+                    break;
+            }
+        }
+
+        private bool TryGetReachableLocalFunctionDeclaration(
+            IMethodSymbol targetMethod,
+            Dictionary<IMethodSymbol, ILocalFunctionOperation> declarations,
+            out ILocalFunctionOperation localFunction)
+        {
+            if (declarations.TryGetValue(targetMethod.OriginalDefinition, out localFunction!))
+                return true;
+
+            foreach (var syntaxReference in targetMethod.OriginalDefinition.DeclaringSyntaxReferences)
+            {
+                if (syntaxReference.GetSyntax() is not LocalFunctionStatementSyntax localFunctionSyntax)
+                    continue;
+
+                var semanticModel = _compilation.GetSemanticModel(localFunctionSyntax.SyntaxTree);
+                if (semanticModel.GetOperation(localFunctionSyntax) is not ILocalFunctionOperation operation)
+                    continue;
+
+                localFunction = operation;
+                if (!declarations.ContainsKey(operation.Symbol.OriginalDefinition))
+                    declarations.Add(operation.Symbol.OriginalDefinition, operation);
+                return true;
+            }
+
+            localFunction = default!;
+            return false;
+        }
+
+        private ImmutableArray<IOperation> GetLocalFunctionBodyOperations(ILocalFunctionOperation localFunction)
+        {
+            if (localFunction.Body is not null)
+                return localFunction.Body.Operations;
+
+            foreach (var syntaxReference in localFunction.Symbol.OriginalDefinition.DeclaringSyntaxReferences)
+            {
+                if (syntaxReference.GetSyntax() is not LocalFunctionStatementSyntax localFunctionSyntax)
+                    continue;
+
+                var semanticModel = _compilation.GetSemanticModel(localFunctionSyntax.SyntaxTree);
+                var operation = localFunctionSyntax.Body is not null
+                    ? semanticModel.GetOperation(localFunctionSyntax.Body)
+                    : localFunctionSyntax.ExpressionBody is not null
+                        ? semanticModel.GetOperation(localFunctionSyntax.ExpressionBody.Expression)
+                        : null;
+
+                if (operation is IBlockOperation block)
+                    return block.Operations;
+
+                if (TryGetOperationStatements(operation, out var statements))
+                    return statements;
+            }
+
+            return ImmutableArray<IOperation>.Empty;
+        }
+
+        private static ImmutableArray<IOperation> GetAnonymousFunctionBodyOperations(
+            IAnonymousFunctionOperation anonymousFunction)
+        {
+            var body = Unwrap(anonymousFunction.Body);
+            if (body is null)
+                return ImmutableArray<IOperation>.Empty;
+
+            if (body is IBlockOperation block)
+                return block.Operations;
+
+            if (TryGetOperationStatements(body, out var statements))
+                return statements;
+
+            return ImmutableArray.Create(body);
+        }
+
+        private void ThrowRuntimeSensitiveGenericRenderHelperTypeParameterUsage(
+            IOperation operation,
+            IInvocationOperation invocation,
+            ITypeParameterSymbol typeParameter,
+            string usage)
+            => throw CreateStructuralIssue(
+                operation,
+                $"BuildRenderTree helper method '{GetBuilderCallDisplayName(invocation)}' uses runtime generic type-parameter semantics '{GetOperationDisplay(operation)}' for type parameter '{typeParameter.Name}' in component '{_snapshot.Descriptor.FullName}'. Generic render helpers only support erased value-parameter usage; '{usage}' requires runtime type metadata and is not supported.");
+
+        private static bool IsRenderHelperTypeParameter(
+            ITypeSymbol? type,
+            ImmutableHashSet<ITypeParameterSymbol> typeParameters,
+            out ITypeParameterSymbol typeParameter)
+        {
+            typeParameter = default!;
+            if (type is not ITypeParameterSymbol candidate)
+                return false;
+
+            foreach (var parameter in typeParameters)
+            {
+                if (SymbolEqualityComparer.Default.Equals(candidate, parameter) ||
+                    SymbolEqualityComparer.Default.Equals(candidate.OriginalDefinition, parameter.OriginalDefinition))
+                {
+                    typeParameter = candidate;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private void ThrowIfCallerOwnedRenderHelperBodyContainsRecursiveInvocation(
             ImmutableArray<IOperation> operations,
             IInvocationOperation rootInvocation)
         {
             foreach (var operation in operations)
             {
-                foreach (var current in EnumerateSelfAndDescendants(operation))
+                foreach (var current in RazorVueOperationLocalCollector.EnumerateSelfAndDescendants(operation))
                 {
                     if (Unwrap(current) is not IInvocationOperation invocation)
                         continue;
@@ -3088,7 +4353,7 @@ internal sealed class RazorVueRenderTreeExtractor
                 memberRenderFragmentCarriers: GetMemberRenderFragmentCarrierSnapshot(),
                 factoryRenderFragmentCarriers: GetFactoryRenderFragmentCarrierSnapshot(),
                 localFunctionDeclarations: GetLocalFunctionDeclarationSnapshot(),
-                accessibleTemplateLocals: _accessibleTemplateLocals,
+                accessibleTemplateLocals: null,
                 accessibleTemplateParameters: _accessibleTemplateParameters,
                 allowTemplateScopedLocals: true);
 
@@ -3149,18 +4414,60 @@ internal sealed class RazorVueRenderTreeExtractor
             if (targetOpenNode is not ComponentBuilder)
                 return operations;
 
+            return NormalizeComponentReplayOperations(operations, snapshot);
+        }
+
+        private static ImmutableArray<RazorVueOpenNodeReplayOperation> NormalizeComponentReplayOperations(
+            ImmutableArray<RazorVueOpenNodeReplayOperation> operations,
+            OpenNodeSnapshot snapshot)
+        {
+            if (operations.IsDefaultOrEmpty)
+                return operations;
+
             var builder = ImmutableArray.CreateBuilder<RazorVueOpenNodeReplayOperation>(operations.Length + 1);
             var ambientDefaultSlotChildren = ImmutableArray.CreateBuilder<RazorVueRenderNode>();
+            var implicitDefaultSlotAssignmentChildren = ImmutableArray.CreateBuilder<RazorVueRenderNode>();
+            foreach (var operation in operations)
+            {
+                if (operation is RazorVueOpenNodeAmbientDefaultSlotChildReplayOperation ambientChildOperation)
+                {
+                    ambientDefaultSlotChildren.Add(ambientChildOperation.Child);
+                    continue;
+                }
+
+                if (operation is RazorVueOpenNodeImplicitDefaultSlotAssignmentReplayOperation assignmentOperation)
+                    implicitDefaultSlotAssignmentChildren.AddRange(assignmentOperation.Assignment.Children.Children);
+            }
 
             foreach (var operation in operations)
             {
                 switch (operation)
                 {
-                    case RazorVueOpenNodeAmbientDefaultSlotChildReplayOperation ambientChildOperation:
-                        ambientDefaultSlotChildren.Add(ambientChildOperation.Child);
+                    case RazorVueOpenNodeConditionalReplayOperation conditionalOperation:
+                        builder.Add(conditionalOperation with
+                        {
+                            WhenTrue = NormalizeComponentReplayOperations(conditionalOperation.WhenTrue, snapshot),
+                            WhenFalse = NormalizeComponentReplayOperations(conditionalOperation.WhenFalse, snapshot)
+                        });
+                        break;
+                    case RazorVueOpenNodeSwitchReplayOperation switchOperation:
+                        builder.Add(switchOperation with
+                        {
+                            Sections = NormalizeComponentReplaySwitchSections(switchOperation.Sections, snapshot)
+                        });
+                        break;
+                    case RazorVueOpenNodeScopedReplayOperation scopedOperation:
+                        builder.Add(scopedOperation with
+                        {
+                            Operations = NormalizeComponentReplayOperations(scopedOperation.Operations, snapshot)
+                        });
+                        break;
+                    case RazorVueOpenNodeAmbientDefaultSlotChildReplayOperation:
                         break;
                     case RazorVueOpenNodeChildReplayOperation childOperation
-                        when ContainsReferenceNode(snapshot.AmbientDefaultSlotChildren, childOperation.Child) ||
+                        when ContainsReferenceNode(ambientDefaultSlotChildren, childOperation.Child) ||
+                             ContainsReferenceNode(implicitDefaultSlotAssignmentChildren, childOperation.Child) ||
+                             ContainsReferenceNode(snapshot.AmbientDefaultSlotChildren, childOperation.Child) ||
                              ContainsReferenceNode(snapshot.ImplicitDefaultSlotAssignments, childOperation.Child):
                         break;
                     default:
@@ -3181,6 +4488,19 @@ internal sealed class RazorVueRenderTreeExtractor
             return builder.ToImmutable();
         }
 
+        private static ImmutableArray<RazorVueOpenNodeSwitchReplaySection> NormalizeComponentReplaySwitchSections(
+            ImmutableArray<RazorVueOpenNodeSwitchReplaySection> sections,
+            OpenNodeSnapshot snapshot)
+        {
+            if (sections.IsDefaultOrEmpty)
+                return sections;
+
+            return [.. sections.Select(section => section with
+            {
+                Operations = NormalizeComponentReplayOperations(section.Operations, snapshot)
+            })];
+        }
+
         private static bool ContainsReferenceNode(
             RazorVueRenderFragment fragment,
             RazorVueRenderNode candidate)
@@ -3191,6 +4511,19 @@ internal sealed class RazorVueRenderTreeExtractor
             foreach (var child in fragment.Children)
             {
                 if (ReferenceEquals(child, candidate))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static bool ContainsReferenceNode(
+            IEnumerable<RazorVueRenderNode> nodes,
+            RazorVueRenderNode candidate)
+        {
+            foreach (var node in nodes)
+            {
+                if (ReferenceEquals(node, candidate))
                     return true;
             }
 
@@ -3330,10 +4663,16 @@ internal sealed class RazorVueRenderTreeExtractor
                 {
                     EventModifiers = StripCapturedBindings(modifierOperation.EventModifiers, capturedBindings)
                 },
+                RazorVueOpenNodeLocalDeclarationReplayOperation => operation,
+                RazorVueOpenNodeImperativeReplayOperation => operation,
                 RazorVueOpenNodeConditionalReplayOperation conditionalOperation => conditionalOperation with
                 {
                     WhenTrue = StripCapturedBindings(conditionalOperation.WhenTrue, capturedBindings),
                     WhenFalse = StripCapturedBindings(conditionalOperation.WhenFalse, capturedBindings)
+                },
+                RazorVueOpenNodeSwitchReplayOperation switchOperation => switchOperation with
+                {
+                    Sections = StripCapturedBindings(switchOperation.Sections, capturedBindings)
                 },
                 RazorVueOpenNodeKeyReplayOperation keyOperation => keyOperation with
                 {
@@ -3372,6 +4711,19 @@ internal sealed class RazorVueRenderTreeExtractor
                 },
                 _ => operation
             };
+
+        private static ImmutableArray<RazorVueOpenNodeSwitchReplaySection> StripCapturedBindings(
+            ImmutableArray<RazorVueOpenNodeSwitchReplaySection> sections,
+            ImmutableArray<RenderHelperValueBinding> capturedBindings)
+        {
+            if (sections.IsDefaultOrEmpty || capturedBindings.IsDefaultOrEmpty)
+                return sections;
+
+            return [.. sections.Select(section => section with
+            {
+                Operations = StripCapturedBindings(section.Operations, capturedBindings)
+            })];
+        }
 
         private static RazorVueEventModifiers StripCapturedBindings(
             RazorVueEventModifiers modifiers,

@@ -105,11 +105,12 @@ runRazorVueConsumerSsr(razorVueConsumerComponents, razorVueHostRequirements, raz
 - 不含 optional separator 的 mixed/composite segment，例如 `/examples/post-{id}`、`/examples/post-{id:int}`
 - composite/mixed segment 内部 default value，例如 `/examples/post-{id=42}`；该参数在 Vue path 中保持 required，只把默认值写入 metadata，不做 URL elision
 - 尾部 optional separator composite segment，例如 `/files/{filename}.{ext?}`；会展开为 `/files/:filename.:ext` 与 `/files/:filename` 两条稳定 Vue route
-- catch-all segment，例如 `/examples/{*path}`
+- 不带 inline constraint 的 catch-all segment，例如 `/examples/{*path}`
 
 当前会显式拒绝：
 
-- optional separator 参数不是 segment 尾部、没有紧邻前置 optional separator、或需要多层组合展开的 composite/mixed segment
+- optional separator 参数不是 segment 尾部、没有紧邻前置 optional separator、或 SDK Razor route parser 无法接受的多层 optional separator composite/mixed segment
+- catch-all 参数上的 inline constraint；当前没有诚实的 Vue Router repeatable segment + generated metadata 二次校验合同可覆盖该形态
 - 无法诚实映射为“一个 Vue Router path regex + generated metadata 二次校验”的 route constraint 组合
 
 对于 default value，consumer entry 会把默认值写入 `defaultParameterValues` metadata，并用 `elidableDefaultParameterNames` 明确标注哪些默认值允许在 href 生成时省略。whole-segment default value 会转换成 Vue Router 可接受的 optional path（例如 `:id?` / `:id(<regex>)?`），并标记为可省略；composite default value（例如 `post-{id=42}`）按 ASP.NET Core inbound 语义保持 required path，因此不会进入 `elidableDefaultParameterNames`。consumer runtime 会在 route match 读取与 href 生成时统一应用这两份 metadata，避免把 composite default 错误折叠成不存在的 URL。

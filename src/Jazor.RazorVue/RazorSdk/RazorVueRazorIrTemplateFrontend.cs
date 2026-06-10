@@ -3202,6 +3202,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 ILockOperation or
                 IUsingOperation or
                 IUsingDeclarationOperation or
+                ILabeledOperation or
                 IReturnOperation or
                 IThrowOperation or
                 IAssignmentOperation or

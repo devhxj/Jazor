@@ -1040,6 +1040,12 @@ internal sealed class RazorVueConsumerEntryCompiler
         builder.PathBuilder.Append(parameterName);
 
         var inlineConstraints = part.InlineConstraints?.ToArray() ?? [];
+        if (part.IsCatchAll && inlineConstraints.Length > 0)
+        {
+            error = $"catch-all route parameter '{parameterName}' does not support inline constraints for Vue Router conversion.";
+            return false;
+        }
+
         if (inlineConstraints.Length > 0)
         {
             var constraintPattern = TryConvertInlineConstraintsToVueRegex(inlineConstraints, out var routeConstraints);

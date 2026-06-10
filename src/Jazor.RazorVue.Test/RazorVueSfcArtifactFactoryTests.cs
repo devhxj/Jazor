@@ -334,6 +334,54 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithStringOnAttributeAndEventModifier_EmitsPlainHtmlAttribute()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using Microsoft.AspNetCore.Components.Web;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "button");
+                        builder.AddAttribute(1, "onclick", "return false");
+                        WebRenderTreeBuilderExtensions.AddEventPreventDefaultAttribute(builder, 2, "onclick", true);
+                        builder.AddContent(3, "Go");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<button onclick=\"return false\">");
+        StringAssert.Contains(artifact.TemplateText, "Go");
+        Assert.IsFalse(artifact.TemplateText.Contains("@click", StringComparison.Ordinal), artifact.TemplateText);
+        Assert.IsFalse(artifact.TemplateText.Contains(".prevent", StringComparison.Ordinal), artifact.TemplateText);
+        Assert.IsFalse(artifact.TemplateText.Contains(":onclick", StringComparison.Ordinal), artifact.TemplateText);
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_WithComponentEventModifier_ThrowsStructuralIssue()
     {
         var context = CreateContext(
@@ -1652,6 +1700,58 @@ public sealed class RazorVueSfcArtifactFactoryTests
         Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
         StringAssert.Contains(artifact.SfcText, "function getStep()");
         StringAssert.Contains(artifact.SfcText, "for (let i = props.start; i <= props.count; i = i + getStep())");
+        Assert.IsFalse(artifact.SfcText.Contains("__jazorVueForRange", StringComparison.Ordinal), artifact.SfcText);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithSideEffectingAddAssignStep_UsesRenderFunctionToPreservePerIterationEvaluation()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/list-card")]
+                public class ListCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    [Parameter]
+                    public int Step { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        for (var i = 0; i < Count; i += ++Step)
+                        {
+                            builder.OpenElement(0, "span");
+                            builder.AddContent(1, i);
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        StringAssert.Contains(artifact.SfcText, "for (let i = 0; i < props.count; i += ++props.step)");
         Assert.IsFalse(artifact.SfcText.Contains("__jazorVueForRange", StringComparison.Ordinal), artifact.SfcText);
     }
 
@@ -11342,6 +11442,79 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithDirectiveMarkupStringAddContent_ThrowsCanonicalizationFailed()
+    {
+        var exception = AssertBuildRenderTreeSfcArtifactThrows(
+            "DirectiveMarkupStringCard",
+            """
+            builder.AddContent(0, (MarkupString)"<section v-html=\"payload\">safe</section>");
+            """);
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "raw markup execution");
+        StringAssert.Contains(exception.Issue.Message, "v-html");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithSrcdocMarkupStringAddContent_ThrowsCanonicalizationFailed()
+    {
+        var exception = AssertBuildRenderTreeSfcArtifactThrows(
+            "SrcdocMarkupStringCard",
+            """
+            builder.AddContent(0, (MarkupString)"<section srcdoc=\"<p>unsafe</p>\">safe</section>");
+            """);
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "raw markup execution attribute");
+        StringAssert.Contains(exception.Issue.Message, "srcdoc");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithFormActionMarkupStringAddContent_ThrowsCanonicalizationFailed()
+    {
+        var exception = AssertBuildRenderTreeSfcArtifactThrows(
+            "FormActionMarkupStringCard",
+            """
+            builder.AddContent(0, (MarkupString)"<button formaction=\"/submit\">safe</button>");
+            """);
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "raw markup execution attribute");
+        StringAssert.Contains(exception.Issue.Message, "formaction");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithExecutableDataUriMarkupStringAddContent_ThrowsCanonicalizationFailed()
+    {
+        var exception = AssertBuildRenderTreeSfcArtifactThrows(
+            "ExecutableDataUriMarkupStringCard",
+            """
+            builder.AddContent(0, (MarkupString)"<a href=\"data:image/svg+xml,%3Csvg%20onload=alert(1)%3E\">safe</a>");
+            """);
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "raw markup execution URL");
+        StringAssert.Contains(exception.Issue.Message, "href");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithImmediatelyAssignedMarkupStringLocalCarrierThenReassigned_ThrowsCanonicalizationFailed()
+    {
+        var exception = AssertBuildRenderTreeSfcArtifactThrows(
+            "ReassignedMarkupStringCard",
+            """
+            MarkupString markup;
+            markup = (MarkupString)"<section class=\"hero\"><span>safe</span><p>ok</p></section>";
+            markup = (MarkupString)"<section class=\"hero\"><span>changed</span></section>";
+            builder.AddContent(0, markup);
+            """);
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "MarkupString local 'markup'");
+        StringAssert.Contains(exception.Issue.Message, "later writes");
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_LowersNewMarkupStringAddContent()
     {
         var context = CreateContext(
@@ -13269,6 +13442,68 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersGetterReturningSourceStableRenderFragmentLocalChain_ToTemplateSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    private RenderFragment<int> Template
+                    {
+                        get
+                        {
+                            RenderFragment<int> core = item => itemBuilder =>
+                            {
+                                itemBuilder.OpenElement(1, "span");
+                                itemBuilder.AddContent(2, item);
+                                itemBuilder.CloseElement();
+                            };
+                            RenderFragment<int> template;
+                            template = core;
+                            return template;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, Template, 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.Template, artifact.RenderMode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+        Assert.IsTrue(artifact.HasTemplateBlock, artifact.SfcText);
+        StringAssert.Contains(artifact.SfcText, "<template>");
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(item) in [42]\">");
+        StringAssert.Contains(artifact.TemplateText, "<span>");
+        StringAssert.Contains(artifact.TemplateText, "{{ item }}");
+        Assert.IsFalse(artifact.SfcText.Contains("<script lang=\"ts\">", StringComparison.Ordinal), artifact.SfcText);
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_WithGetterSideEffectRenderFragmentPropertyCarrier_ThrowsCanonicalizationFailed()
     {
         var context = CreateContext(
@@ -13368,6 +13603,61 @@ public sealed class RazorVueSfcArtifactFactoryTests
                                 itemBuilder.CloseElement();
                             };
                             return template;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, Template, 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "RenderFragment shape");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithGetterReturningDelegateInvocation_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    private RenderFragment<int> Template
+                    {
+                        get
+                        {
+                            Func<RenderFragment<int>> create = () => item => itemBuilder =>
+                            {
+                                itemBuilder.OpenElement(1, "span");
+                                itemBuilder.AddContent(2, item);
+                                itemBuilder.CloseElement();
+                            };
+                            return create();
                         }
                     }
 
@@ -13854,6 +14144,288 @@ public sealed class RazorVueSfcArtifactFactoryTests
 
         StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(item) in [42]\">");
         StringAssert.Contains(artifact.TemplateText, "{{ item }}");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersCurrentComponentRenderFragmentFactoryBlockBodyReturningSourceStableLocalChain_ToTemplateSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private RenderFragment<int> CreateTemplate(string? title)
+                    {
+                        RenderFragment<int> core = item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, title);
+                            itemBuilder.AddContent(3, item);
+                            itemBuilder.CloseElement();
+                        };
+                        RenderFragment<int> template;
+                        template = core;
+                        return template;
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, CreateTemplate(Title), 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.Template, artifact.RenderMode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(title) in [props.title]\">");
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(item) in [42]\">");
+        StringAssert.Contains(artifact.TemplateText, "<span>");
+        StringAssert.Contains(artifact.TemplateText, "{{ title }}");
+        StringAssert.Contains(artifact.TemplateText, "{{ item }}");
+        Assert.IsFalse(artifact.SfcText.Contains("CreateTemplate", StringComparison.Ordinal), artifact.SfcText);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersLocalRenderFragmentFactoryBlockBodyReturningSourceStableLocalChain_ToTemplateSfc()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderFragment<int> CreateTemplate(string? title)
+                        {
+                            RenderFragment<int> core = item => itemBuilder =>
+                            {
+                                itemBuilder.OpenElement(1, "span");
+                                itemBuilder.AddContent(2, title);
+                                itemBuilder.AddContent(3, item);
+                                itemBuilder.CloseElement();
+                            };
+                            RenderFragment<int> template;
+                            template = core;
+                            return template;
+                        }
+
+                        builder.AddContent(0, CreateTemplate(Title), 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.Template, artifact.RenderMode);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(title) in [props.title]\">");
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"(item) in [42]\">");
+        StringAssert.Contains(artifact.TemplateText, "<span>");
+        StringAssert.Contains(artifact.TemplateText, "{{ title }}");
+        StringAssert.Contains(artifact.TemplateText, "{{ item }}");
+        Assert.IsFalse(artifact.SfcText.Contains("CreateTemplate", StringComparison.Ordinal), artifact.SfcText);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithRenderFragmentFactoryViaDelegateDataflow_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    private RenderFragment<int> CreateTemplate()
+                        => item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        Func<RenderFragment<int>> create = CreateTemplate;
+                        builder.AddContent(0, create(), 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "callable template state");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithCurrentComponentRenderFragmentFactoryBlockBodyReturningDelegateInvocation_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    private RenderFragment<int> CreateTemplate()
+                    {
+                        Func<RenderFragment<int>> create = () => item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, item);
+                            itemBuilder.CloseElement();
+                        };
+                        return create();
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, CreateTemplate(), 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "CreateTemplate");
+        StringAssert.Contains(exception.Issue.Message, "analyzable");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithRenderFragmentFactoryTemplateBodyReturnedByCallable_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    private RenderFragment<int> CreateTemplate()
+                        => item => CreateBody(item);
+
+                    private RenderFragment CreateBody(int item)
+                        => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, item);
+                            itemBuilder.CloseElement();
+                        };
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, CreateTemplate(), 42);
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "CreateTemplate");
+        StringAssert.Contains(exception.Issue.Message, "analyzable");
     }
 
     [TestMethod]
@@ -16174,6 +16746,48 @@ public sealed class RazorVueSfcArtifactFactoryTests
         Assert.IsNotNull(context);
         return context;
     }
+
+    private static RazorVueCompilationIssueException AssertBuildRenderTreeSfcArtifactThrows(
+        string componentName,
+        string renderStatements)
+    {
+        var context = CreateContext(CreateBuildRenderTreeComponentSource(componentName, renderStatements));
+        var snapshot = context.CreateSemanticSnapshots().Single(item => item.Descriptor.Name == componentName);
+        return Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
+    }
+
+    private static string CreateBuildRenderTreeComponentSource(
+        string componentName,
+        string renderStatements)
+        => $$"""
+        using System;
+        using ECMAScript.VueContract;
+        using Microsoft.AspNetCore.Components;
+        using Microsoft.AspNetCore.Components.Rendering;
+
+        namespace ECMAScript
+        {
+            [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+            public sealed class ECMAScriptModuleAttribute : Attribute
+            {
+                public ECMAScriptModuleAttribute() { }
+                public ECMAScriptModuleAttribute(string import) { }
+            }
+        }
+
+        namespace Demo.Components
+        {
+            [ECMAScript.ECMAScriptModule("./components/raw-markup-boundary")]
+            public class {{componentName}} : ComponentBase, IVueComponent
+            {
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+        {{renderStatements}}
+                }
+            }
+        }
+        """;
 
     private sealed class FixedTemplateFrontend(RazorVueRenderFragment renderTree) : IRazorVueTemplateFrontend
     {

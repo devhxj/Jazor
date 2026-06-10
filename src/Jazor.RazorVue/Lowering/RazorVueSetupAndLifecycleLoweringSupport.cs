@@ -2431,6 +2431,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 lifecycleMethod,
                 helperMethod,
                 invocation,
+                allowReadOnlyByRefArguments: false,
                 visitedSymbols,
                 paramsArrayLengthParameters,
                 sourceStableLocalInitializers,
@@ -2523,6 +2524,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 lifecycleMethod,
                 helperMethod,
                 invocation,
+                allowReadOnlyByRefArguments: true,
                 visitedSymbols,
                 paramsArrayLengthParameters,
                 sourceStableLocalInitializers,
@@ -2540,6 +2542,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         IMethodSymbol lifecycleMethod,
         IMethodSymbol helperMethod,
         IInvocationOperation invocation,
+        bool allowReadOnlyByRefArguments,
         HashSet<ISymbol> visitedSymbols,
         HashSet<IParameterSymbol>? paramsArrayLengthParameters,
         IReadOnlyDictionary<ILocalSymbol, IOperation>? sourceStableLocalInitializers,
@@ -2548,7 +2551,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         helperParamsArrayLengthParameters = null;
         foreach (var parameter in helperMethod.Parameters)
         {
-            if (!CanBindNoOpLifecycleHelperArgument(parameter))
+            if (!CanBindNoOpLifecycleHelperArgument(parameter, allowReadOnlyByRefArguments))
             {
                 return false;
             }
@@ -2557,7 +2560,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         foreach (var argument in invocation.Arguments)
         {
             if (argument.Parameter is null ||
-                !CanBindNoOpLifecycleHelperArgument(argument.Parameter) ||
+                !CanBindNoOpLifecycleHelperArgument(argument.Parameter, allowReadOnlyByRefArguments) ||
                 IsForwardedReadOnlyByRefNoOpLifecycleArgument(argument))
             {
                 return false;
@@ -2611,8 +2614,11 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
         return true;
     }
 
-    private static bool CanBindNoOpLifecycleHelperArgument(IParameterSymbol parameter)
-        => parameter.RefKind is RefKind.None or RefKind.In;
+    private static bool CanBindNoOpLifecycleHelperArgument(
+        IParameterSymbol parameter,
+        bool allowReadOnlyByRefArguments)
+        => parameter.RefKind == RefKind.None ||
+           (allowReadOnlyByRefArguments && parameter.RefKind == RefKind.In);
 
     private static bool IsForwardedReadOnlyByRefNoOpLifecycleArgument(IArgumentOperation argument)
         => argument.Parameter?.RefKind == RefKind.In &&

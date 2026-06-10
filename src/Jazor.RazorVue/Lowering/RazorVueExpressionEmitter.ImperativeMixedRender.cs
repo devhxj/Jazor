@@ -3,6 +3,7 @@ using System.Text;
 using Jazor.RazorVue.Descriptor;
 using Jazor.RazorVue.RenderTree;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Jazor.RazorVue.Lowering;
 
@@ -461,6 +462,8 @@ internal sealed partial class RazorVueExpressionEmitter
         if (operations.IsDefaultOrEmpty)
             return;
 
+        var currentLocalScope = allowedLocalSymbols;
+        var currentParameterScope = allowedParameterSymbols;
         foreach (var operation in operations)
         {
             AppendReplayOperationStatement(
@@ -471,8 +474,12 @@ internal sealed partial class RazorVueExpressionEmitter
                 descriptor,
                 slotsByPublicName,
                 emitDescriptorsByAlias,
-                allowedLocalSymbols,
-                allowedParameterSymbols);
+                currentLocalScope,
+                currentParameterScope,
+                out var nextLocalScope,
+                out var nextParameterScope);
+            currentLocalScope = nextLocalScope;
+            currentParameterScope = nextParameterScope;
         }
     }
 
@@ -485,8 +492,12 @@ internal sealed partial class RazorVueExpressionEmitter
         ImmutableDictionary<string, VueSlotDescriptor>? slotsByPublicName,
         ImmutableDictionary<string, VueEmitDescriptor>? emitDescriptorsByAlias,
         ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
-        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
+        out ImmutableHashSet<ILocalSymbol> nextAllowedLocalSymbols,
+        out ImmutableHashSet<IParameterSymbol> nextAllowedParameterSymbols)
     {
+        nextAllowedLocalSymbols = allowedLocalSymbols;
+        nextAllowedParameterSymbols = allowedParameterSymbols;
         switch (operation)
         {
             case RazorVueOpenNodeAttributeReplayOperation attributeOperation:
@@ -514,6 +525,32 @@ internal sealed partial class RazorVueExpressionEmitter
                         allowedLocalSymbols,
                         allowedParameterSymbols))
                     .AppendLine(");");
+                break;
+            case RazorVueOpenNodeLocalDeclarationReplayOperation localDeclaration:
+                var initializerExpression = TryEmitImperativeRenderFragmentLocalDeclarationInitializer(
+                        localDeclaration.Initializer,
+                        allowedLocalSymbols,
+                        allowedParameterSymbols)
+                    ?? EmitScopedExpression(
+                        localDeclaration.Initializer,
+                        allowedLocalSymbols,
+                        allowedParameterSymbols);
+                builder.Append("const ")
+                    .Append(localDeclaration.LocalSymbol.Name)
+                    .Append(" = ")
+                    .Append(initializerExpression)
+                    .AppendLine(";");
+                nextAllowedLocalSymbols =
+                    RazorVueTemplateExpressionScopeValidator.AddIfPresent(allowedLocalSymbols, localDeclaration.LocalSymbol);
+                break;
+            case RazorVueOpenNodeImperativeReplayOperation imperativeOperation:
+                var imperativeBody = EmitImperativeReplayBlockBody(
+                    imperativeOperation,
+                    builderAlias,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols);
+                if (!string.IsNullOrWhiteSpace(imperativeBody))
+                    builder.AppendLine(imperativeBody);
                 break;
             case RazorVueOpenNodeConditionalReplayOperation conditionalOperation:
                 builder.Append("if (")
@@ -549,6 +586,18 @@ internal sealed partial class RazorVueExpressionEmitter
                     builder.AppendLine("}");
                 }
 
+                break;
+            case RazorVueOpenNodeSwitchReplayOperation switchOperation:
+                AppendSwitchReplayOperationStatement(
+                    builder,
+                    switchOperation,
+                    builderAlias,
+                    component,
+                    descriptor,
+                    slotsByPublicName,
+                    emitDescriptorsByAlias,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols);
                 break;
             case RazorVueOpenNodeKeyReplayOperation keyOperation:
                 if (!keyOperation.KeyAssigned)
@@ -686,6 +735,179 @@ internal sealed partial class RazorVueExpressionEmitter
                 builder.Append(wrappedBody);
                 break;
         }
+    }
+
+    private void AppendSwitchReplayOperationStatement(
+        StringBuilder builder,
+        RazorVueOpenNodeSwitchReplayOperation switchOperation,
+        string builderAlias,
+        RazorVueComponentNode? component,
+        VueComponentDescriptor? descriptor,
+        ImmutableDictionary<string, VueSlotDescriptor>? slotsByPublicName,
+        ImmutableDictionary<string, VueEmitDescriptor>? emitDescriptorsByAlias,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+    {
+        if (switchOperation.Sections.Any(static section => section.Labels.Any(static label => label.IsCondition)))
+        {
+            AppendConditionalSwitchReplayOperationStatement(
+                builder,
+                switchOperation,
+                builderAlias,
+                component,
+                descriptor,
+                slotsByPublicName,
+                emitDescriptorsByAlias,
+                allowedLocalSymbols,
+                allowedParameterSymbols);
+            return;
+        }
+
+        builder.Append("switch (")
+            .Append(EmitScopedExpression(switchOperation.Value, allowedLocalSymbols, allowedParameterSymbols))
+            .AppendLine(") {");
+        foreach (var section in switchOperation.Sections)
+        {
+            foreach (var label in section.Labels)
+            {
+                if (label.IsDefault)
+                {
+                    builder.AppendLine("default:");
+                    continue;
+                }
+
+                if (label.Kind != RazorVueOpenNodeSwitchReplayLabelKind.Value || label.Value is null)
+                    throw new InvalidOperationException("Plain switch replay labels require value or default labels.");
+
+                builder.Append("case ")
+                    .Append(EmitScopedExpression(label.Value, allowedLocalSymbols, allowedParameterSymbols))
+                    .AppendLine(":");
+            }
+
+            AppendReplayOperationsStatements(
+                builder,
+                section.Operations,
+                builderAlias,
+                component,
+                descriptor,
+                slotsByPublicName,
+                emitDescriptorsByAlias,
+                allowedLocalSymbols,
+                allowedParameterSymbols);
+            builder.AppendLine("break;");
+        }
+
+        builder.AppendLine("}");
+    }
+
+    private void AppendConditionalSwitchReplayOperationStatement(
+        StringBuilder builder,
+        RazorVueOpenNodeSwitchReplayOperation switchOperation,
+        string builderAlias,
+        RazorVueComponentNode? component,
+        VueComponentDescriptor? descriptor,
+        ImmutableDictionary<string, VueSlotDescriptor>? slotsByPublicName,
+        ImmutableDictionary<string, VueEmitDescriptor>? emitDescriptorsByAlias,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+    {
+        var valueAlias = AllocateImperativeScratchName("SwitchValue");
+        builder.Append("const ")
+            .Append(valueAlias)
+            .Append(" = ")
+            .Append(EmitScopedExpression(switchOperation.Value, allowedLocalSymbols, allowedParameterSymbols))
+            .AppendLine(";");
+
+        var emittedConditionalSection = false;
+        RazorVueOpenNodeSwitchReplaySection? defaultSection = null;
+        foreach (var section in switchOperation.Sections)
+        {
+            if (section.Labels.Any(static label => label.IsDefault))
+            {
+                if (defaultSection is not null || section.Labels.Length != 1)
+                    throw new InvalidOperationException("Conditional switch replay supports at most one standalone default section.");
+
+                defaultSection = section;
+                continue;
+            }
+
+            var condition = EmitSwitchReplaySectionCondition(
+                section,
+                valueAlias,
+                allowedLocalSymbols,
+                allowedParameterSymbols);
+            if (string.IsNullOrWhiteSpace(condition))
+                throw new InvalidOperationException("Conditional switch replay section requires at least one condition.");
+
+            builder.Append(emittedConditionalSection ? "else if (" : "if (")
+                .Append(condition)
+                .AppendLine(") {");
+            AppendReplayOperationsStatements(
+                builder,
+                section.Operations,
+                builderAlias,
+                component,
+                descriptor,
+                slotsByPublicName,
+                emitDescriptorsByAlias,
+                allowedLocalSymbols,
+                allowedParameterSymbols);
+            builder.AppendLine("}");
+            emittedConditionalSection = true;
+        }
+
+        if (defaultSection is not null)
+        {
+            builder.Append(emittedConditionalSection ? "else {" : "{").AppendLine();
+            AppendReplayOperationsStatements(
+                builder,
+                defaultSection.Operations,
+                builderAlias,
+                component,
+                descriptor,
+                slotsByPublicName,
+                emitDescriptorsByAlias,
+                allowedLocalSymbols,
+                allowedParameterSymbols);
+            builder.AppendLine("}");
+        }
+    }
+
+    private string EmitSwitchReplaySectionCondition(
+        RazorVueOpenNodeSwitchReplaySection section,
+        string valueAlias,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+    {
+        var conditions = new List<string>();
+        foreach (var label in section.Labels)
+        {
+            switch (label.Kind)
+            {
+                case RazorVueOpenNodeSwitchReplayLabelKind.Value:
+                    if (label.Value is null)
+                        throw new InvalidOperationException("Value switch replay labels require a value.");
+
+                    conditions.Add(
+                        valueAlias +
+                        " === " +
+                        EmitScopedExpression(label.Value, allowedLocalSymbols, allowedParameterSymbols));
+                    break;
+                case RazorVueOpenNodeSwitchReplayLabelKind.Condition:
+                    if (label.Value is not IPatternCaseClauseOperation patternCase)
+                        throw new InvalidOperationException("Condition switch replay labels require a pattern case operation.");
+
+                    conditions.Add(
+                        EmitSwitchPatternCaseCondition(
+                            patternCase,
+                            valueAlias));
+                    break;
+                case RazorVueOpenNodeSwitchReplayLabelKind.Default:
+                    throw new InvalidOperationException("Default switch replay labels do not participate in conditional expressions.");
+            }
+        }
+
+        return string.Join(" || ", conditions.Select(static condition => "(" + condition + ")"));
     }
 
     private string EmitReplayAttributeStatement(

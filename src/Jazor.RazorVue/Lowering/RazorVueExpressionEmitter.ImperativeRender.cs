@@ -103,6 +103,92 @@ internal sealed partial class RazorVueExpressionEmitter
                                     })))))));
     }
 
+    private string EmitImperativeReplayBlockBody(
+        RazorVueOpenNodeImperativeReplayOperation imperative,
+        string builderAlias,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+    {
+        foreach (var operation in imperative.Operations)
+            EnsureSupportedImperativeOperation(operation);
+
+        var bodyArgument = new SenseArgument(Sense.FunctionBody, UseImportAliases: true);
+        var visibleLocalAliases = new Dictionary<ILocalSymbol, string>(SymbolEqualityComparer.Default);
+        var imperativeBuilderTargets = new Dictionary<IParameterSymbol, string>(SymbolEqualityComparer.Default);
+        var parameterAliases = new Dictionary<IParameterSymbol, string>(SymbolEqualityComparer.Default);
+        var locallyDeclaredLocals = RazorVueOperationLocalCollector.CollectDeclaredLocals(imperative.Operations);
+        foreach (var local in allowedLocalSymbols)
+            visibleLocalAliases[local] = local.Name;
+
+        foreach (var local in imperative.VisibleLocals)
+        {
+            if (locallyDeclaredLocals.Contains(local))
+                continue;
+
+            visibleLocalAliases[local] = local.Name;
+        }
+
+        foreach (var parameter in allowedParameterSymbols)
+            parameterAliases[parameter] = parameter.Name;
+
+        foreach (var parameter in imperative.VisibleParameters)
+        {
+            parameterAliases[parameter] = parameter.Name;
+            if (IsRenderTreeBuilderType(parameter.Type))
+                imperativeBuilderTargets[parameter] = builderAlias;
+        }
+
+        var imperativeRenderFragmentLocalInitializers =
+            RazorVueImperativeRenderFragmentCarrierHelper.CollectSourceStableLocalRenderFragmentInitializers(
+                _snapshot.Compilation,
+                imperative.Operations);
+        var imperativeStaticMarkupLocalInitializers =
+            RazorVueSourceStableLocalInitializerHelper.CollectSourceStableLocalInitializers(
+                _snapshot.Compilation,
+                imperative.Operations,
+                RazorVueStaticMarkupValueHelper.IsStaticMarkupCarrierType);
+        var materializedLocalRenderFragmentFactories =
+            CollectMaterializedImperativeLocalRenderFragmentFactories(imperative.Operations);
+
+        return WithImperativeBuilderAlias(
+            builderAlias,
+            () => WithImperativeBuilderParameterTargets(
+                imperativeBuilderTargets,
+                () => WithImperativeRenderFragmentLocalInitializers(
+                    imperativeRenderFragmentLocalInitializers,
+                    () => WithImperativeMaterializedLocalRenderFragmentFactories(
+                        materializedLocalRenderFragmentFactories,
+                        () => WithImperativeStaticMarkupLocalInitializers(
+                            imperativeStaticMarkupLocalInitializers,
+                            () => WithScopedLocalAliases(
+                                visibleLocalAliases,
+                                () => WithScopedParameterAliases(
+                                    parameterAliases,
+                                    () =>
+                                    {
+                                        try
+                                        {
+                                            var statements = _semanticWalker.TranslateStatementSequence(imperative.Operations, bodyArgument);
+                                            var functionBody = NormalizeImperativeFunctionBody(
+                                                new FunctionBody(NodeList.From(statements), strict: true),
+                                                builderAlias,
+                                                rewriteTopLevelVoidReturnToFinish: false,
+                                                appendTerminalReturn: false);
+                                            return NormalizeImperativeFunctionText(functionBody.ToKnRECMAScript());
+                                        }
+                                        catch (RazorVueCompilationIssueException)
+                                        {
+                                            throw;
+                                        }
+                                        catch (Exception ex) when (ex is NotSupportedException or OperationTransformationException)
+                                        {
+                                            throw CreateUnsupportedImperativeRenderCompilerBoundaryException(
+                                                imperative.Operations,
+                                                ex);
+                                        }
+                                    })))))));
+    }
+
     private T WithImperativeBuilderAlias<T>(string builderAlias, Func<T> action)
     {
         var previous = _imperativeBuilderAlias;

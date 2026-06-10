@@ -361,11 +361,14 @@ internal sealed partial class RazorVueExpressionEmitter
             switch (attributeEntry)
             {
                 case RazorVueAttributeNode attribute:
-                    var name = GetElementAttributeRuntimeName(attribute);
+                    var isElementDomEvent = IsElementDomEventAttribute(attribute, out var eventName);
+                    var name = isElementDomEvent
+                        ? RazorVueDomEventName.ToVueHandlerPropName(eventName)
+                        : attribute.Name;
                     var value = attribute.Value is null
                         ? "true"
                         : EmitCapturedScopedExpression(attribute.Value!, attribute.CapturedBindings, allowedLocalSymbols, allowedParameterSymbols);
-                    if (attribute.Value is not null)
+                    if (isElementDomEvent && attribute.Value is not null)
                     {
                         value = WrapElementEventHandler(
                             value,
@@ -526,16 +529,8 @@ internal sealed partial class RazorVueExpressionEmitter
         objectEntries.Clear();
     }
 
-    private static string GetElementAttributeRuntimeName(RazorVueAttributeNode attribute)
-        => IsElementDomEventAttribute(attribute, out var eventName)
-            ? RazorVueDomEventName.ToVueHandlerPropName(eventName)
-            : attribute.Name;
-
     private static bool IsElementDomEventAttribute(RazorVueAttributeNode attribute, out string eventName)
     {
-        if (attribute.EventModifiers.HasAny)
-            return RazorVueDomEventName.TryNormalizeBlazorEventAttributeName(attribute.Name, out eventName);
-
         if (attribute.Value is not null &&
             IsEventCallbackLike(attribute.Value) &&
             RazorVueDomEventName.TryNormalizeBlazorEventAttributeName(attribute.Name, out eventName))

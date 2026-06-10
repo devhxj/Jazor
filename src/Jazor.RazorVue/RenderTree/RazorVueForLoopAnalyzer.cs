@@ -202,12 +202,27 @@ internal static class RazorVueForLoopAnalyzer
         if (current is null)
             return false;
 
-        if (current is IInvocationOperation)
+        if (RequiresPerIterationEvaluation(current))
             return true;
 
         return current.Descendants().Any(descendant =>
-            RazorVueOperationNormalizer.Unwrap(descendant) is IInvocationOperation);
+        {
+            var unwrapped = RazorVueOperationNormalizer.Unwrap(descendant);
+            return unwrapped is not null && RequiresPerIterationEvaluation(unwrapped);
+        });
     }
+
+    private static bool RequiresPerIterationEvaluation(IOperation operation)
+        => operation is
+            IInvocationOperation or
+            ISimpleAssignmentOperation or
+            ICompoundAssignmentOperation or
+            IIncrementOrDecrementOperation or
+            IAwaitOperation or
+            IThrowOperation or
+            IObjectCreationOperation or
+            IAnonymousObjectCreationOperation or
+            IArrayCreationOperation;
 
     private static bool TryMapForConditionKind(
         BinaryOperatorKind operatorKind,

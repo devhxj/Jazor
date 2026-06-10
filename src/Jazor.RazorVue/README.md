@@ -273,11 +273,9 @@
   - `i = i + step`
   - `i = step + i`
   - `i = i - step`
-  - `i += GetStep()`
-  - `i = i + GetStep()`
 - 其中 `i = i + step` / `i = step + i` / `i = i - step` 会被规范化到与 `+=` / `-=` 相同的 count-style loop 语义，再继续进入 canonical / H / SFC lowering；不会额外引入新的 runtime 协议。
-- `step` 不要求是编译期常量。只要 iterator 结构仍是当前受支持的 `++` / `--` / `+= expr` / `-= expr` / `i = i +/- expr` 子集，`expr` 可以是当前组件方法调用等运行时表达式；RazorVue 会保留“进入 range helper 前单次求值”的合同，并在 SFC 路径对需要单次求值保护的步进表达式提升 setup/computed binding。
-- 上述动态步进表达式路径现在也已被 Razor IR / parity / pipeline / canonical / SFC 回归正式锁定，不再只停留在 analyzer 或 runtime helper 实现层面的隐式支持。
+- `step` 不要求是编译期常量。参数、属性、常量、静态局部 carrier，以及无 invocation / mutation / creation / await / throw 等每轮副作用需求的 loop-invariant 表达式可以进入 range helper。
+- 需要每轮重新求值的 step 表达式不会被收进 `__jazorVueForRange(...)`。例如 `i += GetStep()`、`i = i + GetStep()`、`i += ++Step` 会保守切到 imperative render / render-function `.vue`，以保留 C# iterator step 的每轮求值次数和副作用顺序。
 - 这条声明式 count-style 支持边界仍然不放宽到任意 iterator 表达式。多 iterator、非单变量协议、`i = i * step`、`i = Next(i)`、以及需要逐轮重新解释循环协议的形态，当前仍不会被当作 `RazorVueForNode` / `__jazorVueForRange(...)` 这条声明式 count-style 合同接受。
 - 但这不再等同于“整体不支持 `for`”。对 handwritten `BuildRenderTree` 与 Razor IR root/template code-block 而言，只要这类 `for` 仍落在现有同步 imperative render artifact contract 内，它们现在会直接切到 `RazorVueImperativeBlockNode` / render-context imperative bridge / render-function `.vue` 主线。例如 `for (var index = 0; index < Count; index++, total++)` 这类多 iterator authored form，当前已不再因 count-style analyzer 失败而直接报 unsupported；它会按真实 JS `for (...)` 语义交给 `SemanticWalker` / imperative render lowering 承载。
 - `foreach` 也遵循同一条“双通道”边界：当 direct Razor IR `@foreach` body 仍可结构化时，继续保留 `RazorVueForEachNode` / declarative lowering；当 body 已经需要 imperative 语义（例如循环内 `break` / `continue`），则不再因为 frontend 结构化失败而掉回 unsupported，而是直接切到 `RazorVueImperativeBlockNode` / render-context imperative bridge / render-function `.vue` 主线。这里扩的是 frontend fallback，不是新增 `foreach` runtime 协议。
@@ -303,9 +301,13 @@
   - 上述承载同时覆盖 handwritten `BuildRenderTree` 与 Razor authored root template `@{ ... }` code-block，经 Razor IR frontend 提升后复用同一 imperative render 主线
   - canonical / SFC semantic 正式模型现已承载“单 imperative root program”，不再要求 SFC artifact factory 在入口层单独扫描 renderTree 决定是否旁路
   - template canonical subtree 的稳定显式边界
-- 当 render tree 任意位置包含 imperative node 时，SFC 输出统一切到 render-function `.vue` 路径；不再尝试让 mixed imperative subtree 回流 template canonicalization
+  - canonical template recovery 已覆盖 root-level guard-return，以及 mixed/nested template-safe subtree 中的受控 `switch`、guard-return、`try/finally` / 空 recovery、`lock(this)` / 受控 readonly object gate、null/default `using`、no-op label、`do while(false)` / `while(false)` 子集
+  - typed child-content / typed slot fragment 中的 `if (condition) return;` + 后续 template-safe sibling tail 现在可回流为 slot `<template>` 内的 `v-if` / `v-else`，前提是 condition 满足无副作用、template-safe 的现有 guard 条件合同；调用型条件、mutation / throw / loop control / helper type runtime declaration 仍保持 render-function
+  - root/template code-block 中的 template-local declaration 前缀后接 guard-return、no-op `do while(false)` / `while(false)`、template-safe `switch`、no-op `try/finally` / empty recovery `try/catch/finally`、`lock(this)` / 受控 readonly object gate、null/default `using` statement / using declaration 或 no-op labeled statement + 后续 template-safe sibling tail，也可回流为 SFC `<template>`；`continue`、不可证明 switch value、catch payload、未知 lock target、真实 disposable resource、读取被擦除 using local、label body mutation、mutation / throw / byref / loop-control / helper type runtime declaration 仍保持 render-function 或 fail-fast
+  - typed child-content / typed slot fragment 中的 template-local declaration 前缀后接 guard-return、no-op `do while(false)` / `while(false)` 或 template-safe `switch` + 后续 template-safe sibling tail，以及 no-op labeled statement、null/default `using` statement / using declaration、no-op `try/finally` / empty recovery `try/catch/finally`、`lock(this)` / 受控 readonly object gate，也可回流为同一个 slot `<template>`；`throw`、`continue`、真实 exception payload、真实 disposable resource、未知 lock target、读取被擦除 using local、label body mutation / byref / loop-control / helper type runtime declaration、不可证明 switch value / pattern-local 逃逸继续保持 render-function 或 fail-fast
+- 当 render tree 包含不可回流的 imperative node 时，SFC 输出统一切到 render-function `.vue` 路径；只有上述可证明 template-safe 的 root-level 或 mixed/nested 窄子集会进入 template canonicalization
 - 当前 Phase 1 仍未落地的是：
-  - imperative body 继续结构化进入 template canonical subtree 的路径
+  - 更宽的 imperative body 继续结构化进入 template canonical subtree 的路径
   - 真正 async imperative render contract 的设计与产物承载；当前同步 `.mjs` / render-function `.vue` 主线对 `await`、`await foreach`、`await using` / `await using var` 均显式 fail-fast，而不是生成非法或 fire-and-forget async render
   - `lock` 当前已进入正式命令式渲染通道，但语义边界刻意收敛为 single-agent erased lock lowering：保留单次求值、空值失败、同步顺序与异常传播，不宣称 CLR monitor / cross-thread 互斥语义
 - imperative component parameter bridge 现已进入 descriptor-aware 路线：
@@ -317,7 +319,7 @@
   - imperative body 中实际使用到的 injected/resolved component prop / emit / slot runtime shape 现已进入 descriptor identity/runtime-usage 收集；HMR/descriptor hash 不再忽略 imperative `AddComponentParameter(...)`、slot forwarding 或 slot builder 内嵌套组件
   - Razor IR root template `@{ ... }` promotion 后的 imperative 路径也已与 handwritten `BuildRenderTree` 对齐，current-component slot forwarding 不再在 SG/IR 路径退化成普通 slot 函数值
 - 当前仍未落地的是：
-  - imperative body 继续结构化进入 template canonical subtree 的路径
+  - 更宽的 imperative body 继续结构化进入 template canonical subtree 的路径
   - 真正 async imperative render contract 的设计与产物承载；当前同步 `.mjs` / render-function `.vue` 主线对 `await`、`await foreach`、`await using` / `await using var` 均显式 fail-fast，而不是生成非法或 fire-and-forget async render
 
 ## Default Slot Modeling

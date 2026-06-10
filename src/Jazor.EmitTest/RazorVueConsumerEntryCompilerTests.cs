@@ -634,7 +634,7 @@ public sealed class RazorVueConsumerEntryCompilerTests
     }
 
     [TestMethod]
-    public async Task GenerateAsync_WhenRouteTemplateUsesCatchAll_FailsWithActionableError()
+    public async Task GenerateAsync_WhenRouteTemplateUsesCatchAll_EmitsVueRouteRegexSegment()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteManifest(
@@ -653,6 +653,27 @@ public sealed class RazorVueConsumerEntryCompilerTests
         var clientEntry = await File.ReadAllTextAsync(workspace.ClientEntryPath, TestContext.CancellationTokenSource.Token);
         Assert.Contains("path: \"/examples/:path(.*)*\"", clientEntry);
         Assert.Contains("parameterNames: Object.freeze([\"path\"])", clientEntry);
+    }
+
+    [TestMethod]
+    public async Task GenerateAsync_WhenRouteTemplateUsesConstrainedCatchAll_FailsWithActionableError()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            ManifestEntry("Demo.Pages.DetailPage", "DetailPage", "pages/detail-page.vue") with
+            {
+                RouteTemplates = ["/examples/{*path:int}"]
+            });
+        workspace.WriteVue("pages/detail-page.vue", "<template><section>Detail</section></template>");
+
+        var compiler = new RazorVueConsumerEntryCompiler();
+        var result = await compiler.GenerateAsync(workspace.CreateDefaultOptions(
+            new RazorVueConsumerComponentSelection("DetailPage", "id:Demo.Pages.DetailPage")));
+
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(15, result.ExitCode);
+        StringAssert.Contains(result.Error, "catch-all route parameter 'path' does not support inline constraints for Vue Router conversion");
+        Assert.IsFalse(File.Exists(workspace.ClientEntryPath));
     }
 
     [TestMethod]
@@ -874,7 +895,7 @@ public sealed class RazorVueConsumerEntryCompilerTests
     }
 
     [TestMethod]
-    public async Task GenerateAsync_WhenRouteTemplateRequiresMultipleOptionalCompositeExpansions_FailsWithActionableError()
+    public async Task GenerateAsync_WhenRouteTemplateRequiresMultipleOptionalCompositeExpansions_FailsAtParseBoundary()
     {
         using var workspace = new TestWorkspace();
         workspace.WriteManifest(
@@ -890,7 +911,7 @@ public sealed class RazorVueConsumerEntryCompilerTests
 
         Assert.IsFalse(result.IsSuccess);
         Assert.AreEqual(15, result.ExitCode);
-        StringAssert.Contains(result.Error, "optional parameter 'ext' is followed by");
+        StringAssert.Contains(result.Error, "optional parameter must be at the end of the segment");
         Assert.IsFalse(File.Exists(workspace.ClientEntryPath));
     }
 

@@ -187,6 +187,20 @@ internal sealed partial class RazorVueExpressionEmitter
                 AppendEventModifiersShape(builder, modifierOperation.EventModifiers);
                 builder.Append(')');
                 break;
+            case RazorVueOpenNodeLocalDeclarationReplayOperation localDeclaration:
+                builder.Append("local(")
+                    .Append(localDeclaration.LocalSymbol.Name)
+                    .Append('=')
+                    .Append(localDeclaration.Initializer.Syntax.ToString())
+                    .Append(')');
+                break;
+            case RazorVueOpenNodeImperativeReplayOperation imperative:
+                builder.Append("imperative(")
+                    .Append(imperative.Kind)
+                    .Append(':')
+                    .Append(string.Join("||", imperative.Operations.Select(static operation => operation.Syntax.ToString())))
+                    .Append(')');
+                break;
             case RazorVueOpenNodeConditionalReplayOperation conditionalOperation:
                 builder.Append("if(")
                     .Append(conditionalOperation.Condition.Syntax.ToString())
@@ -194,6 +208,44 @@ internal sealed partial class RazorVueExpressionEmitter
                 AppendReplayOperationsShape(builder, conditionalOperation.WhenTrue);
                 builder.Append("}else{");
                 AppendReplayOperationsShape(builder, conditionalOperation.WhenFalse);
+                builder.Append('}');
+                break;
+            case RazorVueOpenNodeSwitchReplayOperation switchOperation:
+                builder.Append("switch(")
+                    .Append(switchOperation.Value.Syntax.ToString())
+                    .Append("){");
+                for (var sectionIndex = 0; sectionIndex < switchOperation.Sections.Length; sectionIndex++)
+                {
+                    if (sectionIndex > 0)
+                        builder.Append(';');
+
+                    var section = switchOperation.Sections[sectionIndex];
+                    for (var labelIndex = 0; labelIndex < section.Labels.Length; labelIndex++)
+                    {
+                        if (labelIndex > 0)
+                            builder.Append('|');
+
+                        var label = section.Labels[labelIndex];
+                        if (label.IsDefault)
+                        {
+                            builder.Append("default");
+                        }
+                        else if (label.IsCondition)
+                        {
+                            builder.Append("when:")
+                                .Append(label.Value?.Syntax.ToString());
+                        }
+                        else
+                        {
+                            builder.Append("case:")
+                                .Append(label.Value?.Syntax.ToString());
+                        }
+                    }
+
+                    builder.Append("=>");
+                    AppendReplayOperationsShape(builder, section.Operations);
+                }
+
                 builder.Append('}');
                 break;
             case RazorVueOpenNodeKeyReplayOperation keyOperation:

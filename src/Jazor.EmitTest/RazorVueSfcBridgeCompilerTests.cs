@@ -148,6 +148,133 @@ public sealed class RazorVueSfcBridgeCompilerTests
     }
 
     [TestMethod]
+    public async Task CompileAsync_RewritesRelativeVueDefaultImportsWithoutDroppingNamedImports()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            new ManifestModule("Demo.Components.ParentCard", "ParentCard", "components/parent-card.vue"),
+            new ManifestModule("Demo.Components.ChildCard", "ChildCard", "components/child-card.vue"));
+        workspace.WriteVue(
+            "components/child-card.vue",
+            """
+            <script lang="ts">
+            export const childFlag = true;
+            export default {
+              name: "ChildCard"
+            };
+            </script>
+            """);
+        workspace.WriteVue(
+            "components/parent-card.vue",
+            """
+            <script lang="ts">
+            import ChildCard, { childFlag as importedChildFlag } from "./child-card.vue";
+            export default {
+              components: { ChildCard },
+              setup() {
+                return { importedChildFlag };
+              }
+            };
+            </script>
+            """);
+
+        var compiler = new RazorVueSfcBridgeCompiler();
+        var result = await compiler.CompileAsync(new RazorVueSfcBridgeOptions(
+            workspace.HostJazorRoot,
+            workspace.BrowserOutputRoot,
+            workspace.ManifestPath,
+            RazorVueSfcBridgeMode.Browser,
+            Production: true,
+            Clean: true));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var parentModule = await File.ReadAllTextAsync(
+            Path.Combine(workspace.BrowserOutputRoot, "components", "parent-card.mjs"),
+            TestContext.CancellationTokenSource.Token);
+        Assert.Contains("import { ChildCard, childFlag as importedChildFlag } from \"./child-card.mjs\";", parentModule);
+        Assert.IsFalse(parentModule.Contains("import ChildCard", StringComparison.Ordinal), parentModule);
+        Assert.IsFalse(parentModule.Contains(".vue", StringComparison.Ordinal), parentModule);
+    }
+
+    [TestMethod]
+    public async Task CompileAsync_RewritesRelativeVueDefaultReExportsToNamedBridgeExports()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(
+            new ManifestModule("Demo.Components.ParentCard", "ParentCard", "components/parent-card.vue"),
+            new ManifestModule("Demo.Components.ChildCard", "ChildCard", "components/child-card.vue"));
+        workspace.WriteVue(
+            "components/child-card.vue",
+            """
+            <template><span class="child-card">Child</span></template>
+            """);
+        workspace.WriteVue(
+            "components/parent-card.vue",
+            """
+            <script lang="ts">
+            export { default as ForwardedChildCard } from "./child-card.vue";
+            export default {
+              name: "ParentCard"
+            };
+            </script>
+            """);
+
+        var compiler = new RazorVueSfcBridgeCompiler();
+        var result = await compiler.CompileAsync(new RazorVueSfcBridgeOptions(
+            workspace.HostJazorRoot,
+            workspace.BrowserOutputRoot,
+            workspace.ManifestPath,
+            RazorVueSfcBridgeMode.Browser,
+            Production: true,
+            Clean: true));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var parentModule = await File.ReadAllTextAsync(
+            Path.Combine(workspace.BrowserOutputRoot, "components", "parent-card.mjs"),
+            TestContext.CancellationTokenSource.Token);
+        Assert.Contains("export { ChildCard as ForwardedChildCard } from \"./child-card.mjs\";", parentModule);
+        Assert.IsFalse(parentModule.Contains("default as ForwardedChildCard", StringComparison.Ordinal), parentModule);
+        Assert.IsFalse(parentModule.Contains(".vue", StringComparison.Ordinal), parentModule);
+    }
+
+    [TestMethod]
+    public async Task CompileAsync_WithSelectedEntryModulePaths_FailsWhenRelativeVueDependencyIsNotInManifest()
+    {
+        using var workspace = new TestWorkspace();
+        workspace.WriteManifest(new ManifestModule("Demo.Components.ParentCard", "ParentCard", "components/parent-card.vue"));
+        workspace.WriteVue(
+            "components/child-card.vue",
+            """
+            <template><span class="child-card">Child</span></template>
+            """);
+        workspace.WriteVue(
+            "components/parent-card.vue",
+            """
+            <script setup lang="ts">
+            import ChildCard from "./child-card.vue";
+            </script>
+            """);
+
+        var compiler = new RazorVueSfcBridgeCompiler();
+        var result = await compiler.CompileAsync(new RazorVueSfcBridgeOptions(
+            workspace.HostJazorRoot,
+            workspace.BrowserOutputRoot,
+            workspace.ManifestPath,
+            RazorVueSfcBridgeMode.Browser,
+            Production: true,
+            Clean: true,
+            EntryModulePaths: ["components/parent-card.vue"]));
+
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(9, result.ExitCode);
+        StringAssert.Contains(result.Error, "missing relative .vue dependency module(s)");
+        StringAssert.Contains(result.Error, "components/child-card.vue");
+        Assert.IsFalse(File.Exists(Path.Combine(workspace.BrowserOutputRoot, "components", "parent-card.mjs")));
+    }
+
+    [TestMethod]
     public async Task CompileAsync_InvalidComponentName_FailsBeforeWritingBridgeModule()
     {
         using var workspace = new TestWorkspace();

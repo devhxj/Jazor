@@ -167,11 +167,48 @@ internal sealed record RazorVueOpenNodeEventModifierReplayOperation(
     RazorVueEventModifiers EventModifiers,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueOpenNodeReplayOperation(Origins);
 
+internal sealed record RazorVueOpenNodeLocalDeclarationReplayOperation(
+    ILocalSymbol LocalSymbol,
+    IOperation Initializer,
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueOpenNodeReplayOperation(Origins);
+
+internal sealed record RazorVueOpenNodeImperativeReplayOperation(
+    ImmutableArray<IOperation> Operations,
+    RazorVueImperativeBlockKind Kind,
+    ImmutableArray<ILocalSymbol> VisibleLocals,
+    ImmutableArray<IParameterSymbol> VisibleParameters,
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueOpenNodeReplayOperation(Origins);
+
 internal sealed record RazorVueOpenNodeConditionalReplayOperation(
     IOperation Condition,
     ImmutableArray<RazorVueOpenNodeReplayOperation> WhenTrue,
     ImmutableArray<RazorVueOpenNodeReplayOperation> WhenFalse,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueOpenNodeReplayOperation(Origins);
+
+internal sealed record RazorVueOpenNodeSwitchReplayOperation(
+    IOperation Value,
+    ImmutableArray<RazorVueOpenNodeSwitchReplaySection> Sections,
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueOpenNodeReplayOperation(Origins);
+
+internal sealed record RazorVueOpenNodeSwitchReplaySection(
+    ImmutableArray<RazorVueOpenNodeSwitchReplayLabel> Labels,
+    ImmutableArray<RazorVueOpenNodeReplayOperation> Operations);
+
+internal enum RazorVueOpenNodeSwitchReplayLabelKind
+{
+    Value,
+    Condition,
+    Default
+}
+
+internal sealed record RazorVueOpenNodeSwitchReplayLabel(
+    RazorVueOpenNodeSwitchReplayLabelKind Kind,
+    IOperation? Value)
+{
+    public bool IsDefault => Kind == RazorVueOpenNodeSwitchReplayLabelKind.Default;
+
+    public bool IsCondition => Kind == RazorVueOpenNodeSwitchReplayLabelKind.Condition;
+}
 
 internal sealed record RazorVueOpenNodeKeyReplayOperation(
     RazorVueNodeKey? Key,
