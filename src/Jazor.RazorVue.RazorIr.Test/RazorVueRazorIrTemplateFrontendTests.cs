@@ -1526,7 +1526,10 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
             tagHelpers: null);
         var tree = RazorIrTestHost.DumpIntermediateNodeTree(RazorIrTestHost.GetDocumentNode(codeDocument));
 
-        StringAssert.Contains(tree, "HtmlAttributeIntermediateNode AttributeName=\"@bind\"");
+        // Without component/bind tag-helper registration, the current Razor SDK host surfaces
+        // the @bind directive as raw markup rather than a structured HtmlAttributeIntermediateNode.
+        StringAssert.Contains(tree, "MarkupBlockIntermediateNode");
+        StringAssert.Contains(tree, "@bind");
     }
 
     [TestMethod]
@@ -8436,6 +8439,94 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_ForConcatenatedStaticMarkupStringExpression_ProducesStaticMarkupNodes()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @{
+                string open = "<section class='hero'><span>safe</span></section>";
+                string body = "<p>ok</p>";
+            }
+
+            @((MarkupString)(open + body))
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ConcatenatedStaticMarkupStringExpression.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+
+        Assert.AreEqual(
+            4,
+            renderTree.Children.Length,
+            RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot) + Environment.NewLine + DescribeStructure(renderTree));
+        Assert.IsInstanceOfType<RazorVueLocalDeclarationNode>(renderTree.Children[0]);
+        Assert.IsInstanceOfType<RazorVueLocalDeclarationNode>(renderTree.Children[1]);
+        var section = Assert.IsInstanceOfType<RazorVueElementNode>(renderTree.Children[2]);
+        Assert.AreEqual("section", section.TagName);
+        Assert.AreEqual("hero", ((RazorVueAttributeNode)section.Attributes.Single()).Value?.ConstantValue.Value);
+        Assert.AreEqual("span", Assert.IsInstanceOfType<RazorVueElementNode>(section.Children.Children[0]).TagName);
+        var paragraph = Assert.IsInstanceOfType<RazorVueElementNode>(renderTree.Children[3]);
+        Assert.AreEqual("p", paragraph.TagName);
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithRazorIrTemplateFrontend_LowersConcatenatedStaticMarkupStringExpression()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @{
+                string open = "<section class='hero'><span>safe</span></section>";
+                string body = "<p>ok</p>";
+            }
+
+            @((MarkupString)(open + body))
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ConcatenatedStaticMarkupStringExpression.Sfc.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var artifact = new RazorVueSfcArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<section class=\"hero\">");
+        StringAssert.Contains(artifact.TemplateText, "<span>");
+        StringAssert.Contains(artifact.TemplateText, "safe");
+        StringAssert.Contains(artifact.TemplateText, "<p>");
+        StringAssert.Contains(artifact.TemplateText, "ok");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_CanLowerConcatenatedStaticMarkupStringExpression()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @{
+                string open = "<section class='hero'><span>safe</span></section>";
+                string body = "<p>ok</p>";
+            }
+
+            @((MarkupString)(open + body))
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ConcatenatedStaticMarkupStringExpression.Pipeline.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ModuleCode, "h(\"section\", { \"class\": \"hero\" }, h(\"span\", null, \"safe\"))");
+        StringAssert.Contains(artifact.ModuleCode, "h(\"p\", null, \"ok\")");
+    }
+
+    [TestMethod]
     public void RazorVueSfcArtifactFactory_WithRazorIrTemplateFrontend_LowersImmediatelyAssignedLocalMarkupStringCarrierExpression()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -8819,6 +8910,108 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_ForMalformedStaticMarkupAttributeNameMarkupStringExpression_ThrowsCanonicalizationFailed()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """@((MarkupString)"<section 1x='payload'>safe</section>")""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.MalformedStaticMarkupAttributeName.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "static markup attribute name");
+        StringAssert.Contains(exception.Issue.Message, "1x");
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithRazorIrTemplateFrontend_ForMalformedStaticMarkupElementNameMarkupStringExpression_ThrowsCanonicalizationFailed()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """@((MarkupString)"<section><x<script>safe</x<script></section>")""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.MalformedStaticMarkupElementName.Sfc.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => new RazorVueSfcArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "static markup element name");
+        StringAssert.Contains(exception.Issue.Message, "x<script");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForMalformedStaticMarkupElementNameMarkupStringExpression_ThrowsCanonicalizationFailed()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """@((MarkupString)"<section><x<script>safe</x<script></section>")""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.MalformedStaticMarkupElementName.Pipeline.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => RazorVueRazorIrTestContextFactory.CreateSgPipeline(snapshot)
+                .Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "static markup element name");
+        StringAssert.Contains(exception.Issue.Message, "x<script");
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithRazorIrTemplateFrontend_ForMalformedStaticMarkupAttributeNameMarkupStringExpression_ThrowsCanonicalizationFailed()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """@((MarkupString)"<section 1x='payload'>safe</section>")""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.MalformedStaticMarkupAttributeName.Sfc.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => new RazorVueSfcArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "static markup attribute name");
+        StringAssert.Contains(exception.Issue.Message, "1x");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForMalformedStaticMarkupAttributeNameMarkupStringExpression_ThrowsCanonicalizationFailed()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """@((MarkupString)"<section 1x='payload'>safe</section>")""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.MalformedStaticMarkupAttributeName.Pipeline.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => RazorVueRazorIrTestContextFactory.CreateSgPipeline(snapshot)
+                .Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "static markup attribute name");
+        StringAssert.Contains(exception.Issue.Message, "1x");
+    }
+
+    [TestMethod]
     public void CreateRenderTree_ForSrcdocMarkupStringExpression_ThrowsCanonicalizationFailed()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -8927,6 +9120,148 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
 
         var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
             "RazorVue.RazorIr.TemplateFrontend.ExecutableDataUriMarkupStringExpression.Pipeline.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => RazorVueRazorIrTestContextFactory.CreateSgPipeline(snapshot)
+                .Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "raw markup execution URL");
+        StringAssert.Contains(exception.Issue.Message, "href");
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForExecutableUrlMarkupStringExpression_ThrowsCanonicalizationFailed()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """@((MarkupString)"<a href='javascript:alert(1)'>safe</a>")""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ExecutableUrlMarkupStringExpression.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "raw markup execution URL");
+        StringAssert.Contains(exception.Issue.Message, "href");
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForVbscriptUrlMarkupStringExpression_ThrowsCanonicalizationFailed()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """@((MarkupString)"<a href='vbscript:msgbox(1)'>safe</a>")""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.VbscriptUrlMarkupStringExpression.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "raw markup execution URL");
+        StringAssert.Contains(exception.Issue.Message, "href");
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithRazorIrTemplateFrontend_ForExecutableUrlMarkupStringExpression_ThrowsCanonicalizationFailed()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """@((MarkupString)"<a href='javascript:alert(1)'>safe</a>")""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ExecutableUrlMarkupStringExpression.Sfc.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => new RazorVueSfcArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "raw markup execution URL");
+        StringAssert.Contains(exception.Issue.Message, "href");
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForFormActionMarkupStringExpression_ThrowsCanonicalizationFailed()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """@((MarkupString)"<button formaction='https://example.com'>go</button>")""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.FormActionMarkupStringExpression.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "raw markup execution attribute");
+        StringAssert.Contains(exception.Issue.Message, "formaction");
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithRazorIrTemplateFrontend_ForFormActionMarkupStringExpression_ThrowsCanonicalizationFailed()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """@((MarkupString)"<button formaction='https://example.com'>go</button>")""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.FormActionMarkupStringExpression.Sfc.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => new RazorVueSfcArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "raw markup execution attribute");
+        StringAssert.Contains(exception.Issue.Message, "formaction");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForFormActionMarkupStringExpression_ThrowsCanonicalizationFailed()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """@((MarkupString)"<button formaction='https://example.com'>go</button>")""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.FormActionMarkupStringExpression.Pipeline.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => RazorVueRazorIrTestContextFactory.CreateSgPipeline(snapshot)
+                .Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "raw markup execution attribute");
+        StringAssert.Contains(exception.Issue.Message, "formaction");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForExecutableUrlMarkupStringExpression_ThrowsCanonicalizationFailed()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """@((MarkupString)"<a href='javascript:alert(1)'>safe</a>")""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ExecutableUrlMarkupStringExpression.Pipeline.Tests",
             documentPath,
             documentText,
             RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
