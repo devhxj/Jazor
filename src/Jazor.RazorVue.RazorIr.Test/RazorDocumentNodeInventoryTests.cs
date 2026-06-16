@@ -29,7 +29,7 @@ public sealed class RazorDocumentNodeInventoryTests
         StringAssert.Contains(tree, "DocumentIntermediateNode");
         StringAssert.Contains(tree, "MarkupElementIntermediateNode TagName=\"section\"");
         StringAssert.Contains(tree, "MarkupElementIntermediateNode TagName=\"h1\"");
-        StringAssert.Contains(tree, "MarkupElementIntermediateNode TagName=\"p\"");
+        StringAssert.Contains(tree, "MarkupBlockIntermediateNode Content=\"<p>Hello</p>\"");
         StringAssert.Contains(tree, "CSharpExpressionIntermediateNode");
     }
 
@@ -98,10 +98,10 @@ public sealed class RazorDocumentNodeInventoryTests
 
         StringAssert.Contains(tree, "DocumentIntermediateNode");
         StringAssert.Contains(tree, "CSharpCodeIntermediateNode");
-        StringAssert.Contains(tree, "MarkupElementIntermediateNode TagName=\"p\"");
+        StringAssert.Contains(tree, "MarkupBlockIntermediateNode Content=\"<p>Primary</p>\"");
         StringAssert.Contains(tree, "Content=\"if (primary)");
-        StringAssert.Contains(tree, "Content=\"\\n}\\nelse if (secondary)");
-        StringAssert.Contains(tree, "Content=\"\\n}\\nelse\\n{");
+        StringAssert.Contains(tree, "Content=\"}\\nelse if (secondary)");
+        StringAssert.Contains(tree, "Content=\"}\\nelse\\n{");
     }
 
     [TestMethod]
@@ -152,7 +152,7 @@ public sealed class RazorDocumentNodeInventoryTests
         TestContext.WriteLine(tree);
 
         StringAssert.Contains(tree, "MarkupElementIntermediateNode TagName=\"CounterCard\"");
-        StringAssert.Contains(tree, "MarkupElementIntermediateNode TagName=\"p\"");
+        StringAssert.Contains(tree, "MarkupBlockIntermediateNode Content=\"<p>Body</p>\"");
         StringAssert.Contains(tree, "HtmlAttributeIntermediateNode AttributeName=\"Title\"");
         StringAssert.Contains(tree, "CSharpExpressionAttributeValueIntermediateNode");
         Assert.IsFalse(
@@ -484,9 +484,9 @@ public sealed class RazorDocumentNodeInventoryTests
         TestContext.WriteLine(tree);
 
         StringAssert.Contains(tree, "CSharpCodeIntermediateNode");
-        StringAssert.Contains(tree, "Content=\"\\n    var localTitle = Title;\\n    if (Show)\\n    {\\n        \"");
+        StringAssert.Contains(tree, "Content=\"\\n    var localTitle = Title;\\n    if (Show)\\n    {\\n\"");
         StringAssert.Contains(tree, "MarkupElementIntermediateNode TagName=\"section\"");
-        StringAssert.Contains(tree, "Content=\"\\n    }\\n\"");
+        StringAssert.Contains(tree, "Content=\"    }\\n\"");
     }
 
     [TestMethod]
@@ -522,8 +522,8 @@ public sealed class RazorDocumentNodeInventoryTests
 
         StringAssert.Contains(tree, "CSharpCodeIntermediateNode");
         StringAssert.Contains(tree, "MarkupElementIntermediateNode TagName=\"section\"");
-        StringAssert.Contains(tree, "MarkupElementIntermediateNode TagName=\"p\"");
-        StringAssert.Contains(tree, "Content=\"\\n    }\\n\\n    if (ShowSecondary)\\n    {\\n        \"");
+        StringAssert.Contains(tree, "MarkupBlockIntermediateNode Content=\"<p>secondary</p>\"");
+        StringAssert.Contains(tree, "Content=\"    }\\n\\n    if (ShowSecondary)\\n    {\\n\"");
     }
 
     [TestMethod]
@@ -560,7 +560,7 @@ public sealed class RazorDocumentNodeInventoryTests
         StringAssert.Contains(tree, "CSharpCodeIntermediateNode");
         StringAssert.Contains(tree, "MarkupElementIntermediateNode TagName=\"p\"");
         StringAssert.Contains(tree, "MarkupElementIntermediateNode TagName=\"section\"");
-        StringAssert.Contains(tree, "Content=\"\\n    }\\n\\n    if (ShowTail)\\n    {\\n        \"");
+        StringAssert.Contains(tree, "Content=\"    }\\n\\n    if (ShowTail)\\n    {\\n\"");
     }
 
     [TestMethod]

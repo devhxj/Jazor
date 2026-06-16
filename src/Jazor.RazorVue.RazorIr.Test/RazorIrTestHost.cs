@@ -99,7 +99,7 @@ internal static class RazorIrTestHost
         var sourceDocument = RazorSourceDocument.Create(sourceText, documentPath);
         var projectEngine = CreateProjectEngine(documentPath);
 
-        return projectEngine.ProcessDesignTime(
+        return projectEngine.Process(
             sourceDocument,
             RazorFileKind.Component,
             importSources.ToImmutableArray(),

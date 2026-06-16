@@ -217,7 +217,7 @@ public sealed class RazorEngineFeatureSpikeTests
         var projectEngine = RazorIrTestHost.CreateProjectEngineWithOfficialSourceGeneratorRegistration(documentPath);
         var sourceDocument = RazorSourceDocument.Create(documentText, documentPath);
         var tagHelpers = RazorIrTestHost.DiscoverTagHelpers(projectEngine, baseCompilation);
-        var codeDocument = projectEngine.ProcessDesignTime(
+        var codeDocument = projectEngine.Process(
             sourceDocument,
             RazorFileKind.Component,
             [],
