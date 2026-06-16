@@ -1060,6 +1060,123 @@ public sealed class BuildRenderTreeTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_WithOpenComponentUsingTypeOfLocalForwardedFromMemberCarrier_ResolvesComponentNode()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private Type ChildType => typeof(ChildCard);
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        var childType = ChildType;
+                        builder.OpenComponent(0, childType);
+                        builder.AddComponentParameter(1, nameof(ChildCard.Title), Title);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+
+        var component = renderTree.Children.Single() as RazorVueComponentNode;
+        Assert.IsNotNull(component);
+        Assert.AreEqual("ChildCard", component.ComponentName);
+        Assert.AreEqual("ChildCard", component.ResolutionName);
+        Assert.AreEqual(1, component.Attributes.Length);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithOpenComponentUsingTypeOfMemberForwardingChain_ResolvesComponentNode()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private Type PrimaryChildType => typeof(ChildCard);
+
+                    private Type ChildType => PrimaryChildType;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent(0, ChildType);
+                        builder.AddComponentParameter(1, nameof(ChildCard.Title), Title);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
+
+        var component = renderTree.Children.Single() as RazorVueComponentNode;
+        Assert.IsNotNull(component);
+        Assert.AreEqual("ChildCard", component.ComponentName);
+        Assert.AreEqual("ChildCard", component.ResolutionName);
+        Assert.AreEqual(1, component.Attributes.Length);
+    }
+
+    [TestMethod]
     public void CreateRenderTree_WithRenderTreeBuilderLocalAlias_ProducesStructuredNodes()
     {
         var context = CreateContext(

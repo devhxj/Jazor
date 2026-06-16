@@ -185,6 +185,130 @@ public sealed class RazorVueComponentTypeCarrierBoundaryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersOpenComponentDirectTypeOf_ToStaticComponentTemplate()
+    {
+        var context = CreateContext(
+            ComponentTypeCarrierSource(
+                """
+                builder.OpenComponent(0, typeof(ChildCard));
+                builder.AddComponentParameter(1, nameof(ChildCard.Title), Title);
+                builder.CloseComponent();
+                """));
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "TypeCarrierHost");
+
+        var artifact = new RazorVueSfcArtifactFactory(BuildRenderTreeTemplateFrontend.Instance).Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.Template, artifact.RenderMode);
+        StringAssert.Contains(artifact.ScriptSetupText, "import ChildCardComponent");
+        StringAssert.Contains(artifact.TemplateText, "<ChildCardComponent");
+        StringAssert.Contains(artifact.TemplateText, ":title=\"props.title\"");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersOpenComponentTypeOfPropertyCarrier_ToStaticComponentTemplate()
+    {
+        var context = CreateContext(
+            ComponentTypeCarrierSource(
+                """
+                builder.OpenComponent(0, ChildType);
+                builder.AddComponentParameter(1, nameof(ChildCard.Title), Title);
+                builder.CloseComponent();
+                """,
+                extraMembers:
+                """
+                private Type ChildType => typeof(ChildCard);
+                """));
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "TypeCarrierHost");
+
+        var artifact = new RazorVueSfcArtifactFactory(BuildRenderTreeTemplateFrontend.Instance).Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.Template, artifact.RenderMode);
+        StringAssert.Contains(artifact.ScriptSetupText, "import ChildCardComponent");
+        StringAssert.Contains(artifact.TemplateText, "<ChildCardComponent");
+        StringAssert.Contains(artifact.TemplateText, ":title=\"props.title\"");
+        Assert.IsFalse(artifact.SfcText.Contains("ChildType", StringComparison.Ordinal), artifact.SfcText);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersOpenComponentTypeOfReadonlyFieldCarrier_ToStaticComponentTemplate()
+    {
+        var context = CreateContext(
+            ComponentTypeCarrierSource(
+                """
+                builder.OpenComponent(0, ChildType);
+                builder.AddComponentParameter(1, nameof(ChildCard.Title), Title);
+                builder.CloseComponent();
+                """,
+                extraMembers:
+                """
+                private readonly Type ChildType = typeof(ChildCard);
+                """));
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "TypeCarrierHost");
+
+        var artifact = new RazorVueSfcArtifactFactory(BuildRenderTreeTemplateFrontend.Instance).Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.Template, artifact.RenderMode);
+        StringAssert.Contains(artifact.ScriptSetupText, "import ChildCardComponent");
+        StringAssert.Contains(artifact.TemplateText, "<ChildCardComponent");
+        StringAssert.Contains(artifact.TemplateText, ":title=\"props.title\"");
+        Assert.IsFalse(artifact.SfcText.Contains("ChildType", StringComparison.Ordinal), artifact.SfcText);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersOpenComponentTypeOfLocalForwardedFromMemberCarrier_ToStaticComponentTemplate()
+    {
+        var context = CreateContext(
+            ComponentTypeCarrierSource(
+                """
+                var childType = ChildType;
+                builder.OpenComponent(0, childType);
+                builder.AddComponentParameter(1, nameof(ChildCard.Title), Title);
+                builder.CloseComponent();
+                """,
+                extraMembers:
+                """
+                private Type ChildType => typeof(ChildCard);
+                """));
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "TypeCarrierHost");
+
+        var artifact = new RazorVueSfcArtifactFactory(BuildRenderTreeTemplateFrontend.Instance).Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.Template, artifact.RenderMode);
+        StringAssert.Contains(artifact.ScriptSetupText, "import ChildCardComponent");
+        StringAssert.Contains(artifact.TemplateText, "<ChildCardComponent");
+        StringAssert.Contains(artifact.TemplateText, ":title=\"props.title\"");
+        Assert.IsFalse(artifact.SfcText.Contains("childType", StringComparison.Ordinal), artifact.SfcText);
+        Assert.IsFalse(artifact.SfcText.Contains("ChildType", StringComparison.Ordinal), artifact.SfcText);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersOpenComponentTypeOfMemberForwardingChain_ToStaticComponentTemplate()
+    {
+        var context = CreateContext(
+            ComponentTypeCarrierSource(
+                """
+                builder.OpenComponent(0, ChildType);
+                builder.AddComponentParameter(1, nameof(ChildCard.Title), Title);
+                builder.CloseComponent();
+                """,
+                extraMembers:
+                """
+                private Type PrimaryChildType => typeof(ChildCard);
+                private Type ChildType => PrimaryChildType;
+                """));
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "TypeCarrierHost");
+
+        var artifact = new RazorVueSfcArtifactFactory(BuildRenderTreeTemplateFrontend.Instance).Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.Template, artifact.RenderMode);
+        StringAssert.Contains(artifact.ScriptSetupText, "import ChildCardComponent");
+        StringAssert.Contains(artifact.TemplateText, "<ChildCardComponent");
+        StringAssert.Contains(artifact.TemplateText, ":title=\"props.title\"");
+        Assert.IsFalse(artifact.SfcText.Contains("ChildType", StringComparison.Ordinal), artifact.SfcText);
+        Assert.IsFalse(artifact.SfcText.Contains("PrimaryChildType", StringComparison.Ordinal), artifact.SfcText);
+    }
+
+    [TestMethod]
     public void CreateRenderTree_WithComponentTypeLocalCarrierUsedAsAttribute_ThrowsCanonicalizationFailed()
     {
         var context = CreateContext(
@@ -194,6 +318,97 @@ public sealed class RazorVueComponentTypeCarrierBoundaryTests
                 builder.OpenElement(0, "section");
                 builder.AddAttribute(1, "data-type", childType);
                 builder.CloseElement();
+                """));
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "TypeCarrierHost");
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "System.Type local 'childType'");
+        StringAssert.Contains(exception.Issue.Message, "runtime value");
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithComponentTypeLocalCarrierUsedAsContent_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            ComponentTypeCarrierSource(
+                """
+                var childType = typeof(ChildCard);
+                builder.OpenElement(0, "section");
+                builder.AddContent(1, childType);
+                builder.CloseElement();
+                """));
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "TypeCarrierHost");
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "System.Type local 'childType'");
+        StringAssert.Contains(exception.Issue.Message, "runtime value");
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithComponentTypeLocalCarrierUsedAsKey_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            ComponentTypeCarrierSource(
+                """
+                var childType = typeof(ChildCard);
+                builder.OpenElement(0, "section");
+                builder.SetKey(childType);
+                builder.AddContent(1, "ready");
+                builder.CloseElement();
+                """));
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "TypeCarrierHost");
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "System.Type local 'childType'");
+        StringAssert.Contains(exception.Issue.Message, "runtime value");
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithComponentTypeLocalCarrierUsedAsCondition_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            ComponentTypeCarrierSource(
+                """
+                var childType = typeof(ChildCard);
+                if (childType is not null)
+                {
+                    builder.OpenElement(0, "section");
+                    builder.AddContent(1, "ready");
+                    builder.CloseElement();
+                }
+                """));
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "TypeCarrierHost");
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "System.Type local 'childType'");
+        StringAssert.Contains(exception.Issue.Message, "runtime value");
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_WithComponentTypeLocalCarrierUsedAsLoopSource_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            ComponentTypeCarrierSource(
+                """
+                var childType = typeof(ChildCard);
+                foreach (var item in new[] { childType })
+                {
+                    builder.OpenElement(0, "section");
+                    builder.AddContent(1, item.Name);
+                    builder.CloseElement();
+                }
                 """));
         var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "TypeCarrierHost");
 
