@@ -161,6 +161,71 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_ForElementDomEventWithClearedModifier_PreservesConstantFalseModifier()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<button @onclick="OnClick" @onclick:preventDefault="false">Go</button>""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.EventModifierCleared.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    private void OnClick()
+                    {
+                    }
+                }
+            }
+            """);
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+
+        var button = Assert.IsInstanceOfType<RazorVueElementNode>(renderTree.Children.Single());
+        var clickAttribute = button.Attributes.OfType<RazorVueAttributeNode>().Single(static attribute => attribute.Name == "onclick");
+
+        Assert.IsNotNull(clickAttribute.Value);
+        // A constant-false modifier is a compile-time no-op in the .razor / template path, so the
+        // IR frontend drops the modifier metadata entirely (no PreventDefault binding is recorded).
+        Assert.IsNull(clickAttribute.EventModifiers.PreventDefault);
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithRazorIrTemplateFrontend_LowersElementDomEventWithClearedModifier()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<button @onclick="OnClick" @onclick:preventDefault="false">Go</button>""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.EventModifierCleared.Sfc.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    private void OnClick()
+                    {
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVueSfcArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        // A constant-false preventDefault modifier is a compile-time no-op, so the SFC template
+        // emits a plain handler reference with no modifier gate and no preventDefault call.
+        StringAssert.Contains(artifact.TemplateText, "<button @click=\"__jazor$0\">");
+        Assert.IsFalse(artifact.TemplateText.Contains("preventDefault", StringComparison.Ordinal), artifact.TemplateText);
+    }
+
+    [TestMethod]
     public void RazorVueSfcArtifactFactory_WithRazorIrTemplateFrontend_LowersElementDomEventLambdaHandler()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
