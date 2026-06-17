@@ -16331,6 +16331,218 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersSetParametersAsyncBaseThenConditionalEmitIntoSingleWatch()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-conditional")]
+                public class SetParametersAsyncConditionalCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        if (Value > 0)
+                        {
+                            await ValueChanged.InvokeAsync(Value);
+                            await ReadyChanged.InvokeAsync(true);
+                        }
+                        else
+                        {
+                            await ReadyChanged.InvokeAsync(false);
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "SetParametersAsyncConditionalCard");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ScriptSetupText, "watch(() => [props.value], async () => {");
+        StringAssert.Contains(artifact.ScriptSetupText, "if ((props.value > 0)) {");
+        var conditionIndex = artifact.ScriptSetupText.IndexOf("if ((props.value > 0)) {", StringComparison.Ordinal);
+        var valueEmitIndex = artifact.ScriptSetupText.IndexOf("await emit(\"update:value\", props.value);", StringComparison.Ordinal);
+        var readyTrueIndex = artifact.ScriptSetupText.IndexOf("await emit(\"readyChanged\", true);", StringComparison.Ordinal);
+        var elseIndex = artifact.ScriptSetupText.IndexOf("} else {", StringComparison.Ordinal);
+        var readyFalseIndex = artifact.ScriptSetupText.IndexOf("await emit(\"readyChanged\", false);", StringComparison.Ordinal);
+
+        Assert.IsTrue(conditionIndex >= 0, artifact.ScriptSetupText);
+        Assert.IsTrue(valueEmitIndex > conditionIndex, artifact.ScriptSetupText);
+        Assert.IsTrue(readyTrueIndex > valueEmitIndex, artifact.ScriptSetupText);
+        Assert.IsTrue(elseIndex > readyTrueIndex, artifact.ScriptSetupText);
+        Assert.IsTrue(readyFalseIndex > elseIndex, artifact.ScriptSetupText);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersSetParametersAsyncBaseThenSwitchEmitIntoSingleWatch()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-switch")]
+                public class SetParametersAsyncSwitchCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ValueChanged { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> ReadyChanged { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        switch (Value)
+                        {
+                            case 0:
+                                await ReadyChanged.InvokeAsync(false);
+                                break;
+                            case 1:
+                            case 2:
+                                await ValueChanged.InvokeAsync(Value);
+                                await ReadyChanged.InvokeAsync(true);
+                                break;
+                            default:
+                                await ReadyChanged.InvokeAsync(Value > 0);
+                                break;
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "SetParametersAsyncSwitchCard");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ScriptSetupText, "watch(() => [props.value], async () => {");
+        StringAssert.Contains(artifact.ScriptSetupText, "switch (props.value) {");
+        var valueEmitIndex = artifact.ScriptSetupText.IndexOf("await emit(\"update:value\", props.value);", StringComparison.Ordinal);
+        var readyTrueIndex = artifact.ScriptSetupText.IndexOf("await emit(\"readyChanged\", true);", StringComparison.Ordinal);
+        Assert.IsTrue(valueEmitIndex >= 0, artifact.ScriptSetupText);
+        Assert.IsTrue(readyTrueIndex > valueEmitIndex, artifact.ScriptSetupText);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersSetParametersAsyncBaseThenAwaitForEachEmitIntoSingleWatch()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using System.Threading.Tasks;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/set-parameters-async-await-foreach")]
+                public class SetParametersAsyncAwaitForEachCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public IAsyncEnumerable<int> Values { get; set; } = default!;
+
+                    [Parameter]
+                    public EventCallback<int> ItemSelected { get; set; }
+
+                    public override async Task SetParametersAsync(ParameterView parameters)
+                    {
+                        await base.SetParametersAsync(parameters);
+                        await foreach (var value in Values)
+                        {
+                            await ItemSelected.InvokeAsync(value);
+                        }
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, 0);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "SetParametersAsyncAwaitForEachCard");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ScriptSetupText, "watch(() => [props.values], async () => {");
+        StringAssert.Contains(artifact.ScriptSetupText, "for await (let value of props.values)");
+        StringAssert.Contains(artifact.ScriptSetupText, "await emit(\"itemSelected\", value);");
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_LowersLibrarySlotNamesWithDots_ToVueSlotTemplates()
     {
         var context = CreateContext(
