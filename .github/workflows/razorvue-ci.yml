@@ -1,0 +1,122 @@
+name: RazorVue CI
+
+# Gate 5 of the RazorVue production-readiness gates (completion-analysis.md):
+# wire the RazorVue test suites (including the browser-smoke E2E that lives inside
+# Jazor.EmitTest SDK integration tests) into the upper CI pipeline. Previously the
+# browser smoke and pure-Deno consumer tests only ran as focused integration tests,
+# not in CI.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/Jazor.RazorVue/**'
+      - 'src/Jazor.RazorVue.RazorIr.Test/**'
+      - 'src/Jazor.RazorVue.Test/**'
+      - 'src/Jazor.Emit/**'
+      - 'src/Jazor.EmitTest/**'
+      - 'src/Jazor.Analyzer/**'
+      - 'src/Jazor.Compiler/**'
+      - 'src/Jazor.Common/**'
+      - 'src/ECMAScript/**'
+      - 'src/ECMAScript.Vue3/**'
+      - 'src/ECMAScript.VueContract/**'
+      - 'src/ECMAScript.Vuetify/**'
+      - 'src/Jazor/**'
+      - 'samples/RazorVue.TodoList/**'
+      - 'Jazor.slnx'
+      - 'global.json'
+      - 'Directory.Build.props'
+      - '.github/workflows/razorvue-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/Jazor.RazorVue/**'
+      - 'src/Jazor.RazorVue.RazorIr.Test/**'
+      - 'src/Jazor.RazorVue.Test/**'
+      - 'src/Jazor.Emit/**'
+      - 'src/Jazor.EmitTest/**'
+      - 'src/Jazor.Analyzer/**'
+      - 'src/Jazor.Compiler/**'
+      - 'src/Jazor.Common/**'
+      - 'src/ECMAScript/**'
+      - 'src/ECMAScript.Vue3/**'
+      - 'src/ECMAScript.VueContract/**'
+      - 'src/ECMAScript.Vuetify/**'
+      - 'src/Jazor/**'
+      - 'samples/RazorVue.TodoList/**'
+      - 'Jazor.slnx'
+      - 'global.json'
+      - 'Directory.Build.props'
+      - '.github/workflows/razorvue-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# RazorVue test suites run concurrently. Per AGENTS.md parallel-test stability rules,
+# each suite owns its resources. The SDK integration tests inside Jazor.EmitTest
+# (including the browser-smoke E2E) use unique temp workspaces and the
+# DENOHOST_ALLOW_CHECKSUM_BYPASS break-glass knob, which is required because the
+# local deno.metadata.json signature verification fails outside a signed-runtime
+# environment (see docs/04-补充/razorvue-debug-capability-boundary-2026-06-17.md).
+env:
+  DENOHOST_ALLOW_CHECKSUM_BYPASS: 'true'
+
+jobs:
+  razorvue-test:
+    name: RazorVue unit + IR
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        shell: pwsh
+        run: dotnet restore Jazor.slnx
+
+      - name: Build
+        shell: pwsh
+        run: dotnet build Jazor.slnx --no-restore -v minimal
+
+      - name: RazorVue frontend tests
+        shell: pwsh
+        run: dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --no-build -v minimal
+
+      - name: Razor IR frontend tests
+        shell: pwsh
+        run: dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj --no-build -v minimal
+
+  emit-and-browser-smoke:
+    # Jazor.EmitTest contains the SDK integration / pack / payload-guard tests AND
+    # the end-to-end browser-smoke + pure-Deno consumer E2E
+    # (Build_LocalPackages_RazorVueTodoListSample_PureDenoPipeline_PassesInIsolatedWorkspace,
+    # Build_LocalPackages_WithExternalRazorSgSfcConsumer_PureDenoPipeline_PassesInIsolatedWorkspace).
+    # Running the suite is what wires the browser smoke into CI.
+    name: Emit + SDK integration + browser smoke E2E
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        shell: pwsh
+        run: dotnet restore Jazor.slnx
+
+      - name: Build
+        shell: pwsh
+        run: dotnet build Jazor.slnx --no-restore -v minimal
+
+      - name: Emit + SDK integration tests (includes browser smoke E2E)
+        shell: pwsh
+        run: dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --no-build -v minimal
