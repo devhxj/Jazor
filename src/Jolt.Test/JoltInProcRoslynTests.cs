@@ -986,20 +986,15 @@ public sealed class JoltInProcRoslynTests
             projection.SourceText,
             @"public\s+partial\s+class\s+(?<name>[A-Za-z0-9_]+)",
             RegexOptions.CultureInvariant);
-        Assert.IsTrue(namespaceMatches.Count > 0);
-        Assert.IsTrue(classMatches.Count > 0);
+        Assert.IsTrue(namespaceMatches.Count > 0, projection.SourceText);
+        Assert.IsTrue(classMatches.Count > 0, projection.SourceText);
 
-        var sharedIndex = projection.SourceText.IndexOf("Shared", StringComparison.Ordinal);
-        Assert.IsTrue(sharedIndex >= 0);
-        var classMatch = classMatches
-            .Where(match => match.Index <= sharedIndex)
-            .LastOrDefault();
-        Assert.IsNotNull(classMatch);
-
-        var namespaceMatch = namespaceMatches
-            .Where(match => match.Index <= sharedIndex)
-            .LastOrDefault();
-        Assert.IsNotNull(namespaceMatch);
+        // A .jazor document projects to exactly one generated namespace + partial class. Earlier
+        // SDK builds named the class after the file (e.g. "SharedSource"); SDK 10.4 emits a hashed
+        // "AspNetCore_<hash>" class name, so anchor on the generated declaration itself rather than
+        // a member/file-name substring.
+        var classMatch = classMatches.Last();
+        var namespaceMatch = namespaceMatches.Last();
 
         return $"global::{namespaceMatch.Groups["name"].Value}.{classMatch.Groups["name"].Value}";
     }

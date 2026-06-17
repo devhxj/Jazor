@@ -46,7 +46,7 @@ internal sealed class RazorDesignTimeCodeProjectionService
         {
             var sourceDocument = RazorSourceDocument.Create(document.Text, document.DocumentPath);
             var projectEngine = CreateProjectEngine(document.DocumentPath);
-            var codeDocument = projectEngine.ProcessDesignTime(
+            var codeDocument = projectEngine.Process(
                 sourceDocument,
                 RazorFileKind.Component,
 				[],
