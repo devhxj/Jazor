@@ -142,6 +142,122 @@ public sealed class RazorVueRenderHelperOpenFrameBoundaryTests
     }
 
     [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithCallerOwnedHelperChildEmission_LowersTemplateReplay()
+    {
+        var context = CreateContext(
+            RenderHelperSource(
+                """
+                builder.OpenElement(0, "section");
+                RenderBody(builder);
+                builder.CloseElement();
+                """,
+                """
+                private void RenderBody(RenderTreeBuilder builder)
+                {
+                    builder.OpenElement(1, "span");
+                    builder.AddContent(2, Title);
+                    builder.CloseElement();
+                }
+                """));
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "RenderHelperHost");
+        var artifact = new RazorVueSfcArtifactFactory(BuildRenderTreeTemplateFrontend.Instance).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<section>");
+        StringAssert.Contains(artifact.TemplateText, "<span>");
+        StringAssert.Contains(artifact.TemplateText, "{{ props.title }}");
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithCallerOwnedExpressionBodiedHelperAttributeMutation_LowersTemplateReplay()
+    {
+        var context = CreateContext(
+            RenderHelperSource(
+                """
+                builder.OpenElement(0, "section");
+                RenderBody(builder, Title);
+                builder.CloseElement();
+                """,
+                """
+                private void RenderBody(RenderTreeBuilder builder, string? title)
+                    => builder.AddAttribute(1, "class", title);
+                """));
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "RenderHelperHost");
+        var artifact = new RazorVueSfcArtifactFactory(BuildRenderTreeTemplateFrontend.Instance).Lower(context, snapshot);
+
+        // A caller-owned replay that mutates a captured-value attribute uses a synthetic
+        // __jazor$ binding slot; assert the combined SFC text rather than TemplateText,
+        // since the captured binding may be rendered through the render-function carrier.
+        StringAssert.Contains(artifact.SfcText, "section");
+        StringAssert.Contains(artifact.SfcText, ":class");
+        Assert.IsFalse(artifact.SfcText.Contains("RenderBody", StringComparison.Ordinal), artifact.SfcText);
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithCallerOwnedConditionalHelperChildEmission_LowersTemplateReplay()
+    {
+        var context = CreateContext(
+            RenderHelperSource(
+                """
+                builder.OpenElement(0, "section");
+                RenderBody(builder, ShowPrimary, Title);
+                builder.CloseElement();
+                """,
+                """
+                private void RenderBody(RenderTreeBuilder builder, bool showPrimary, string? title)
+                {
+                    if (showPrimary)
+                    {
+                        builder.OpenElement(1, "span");
+                        builder.AddContent(2, title);
+                        builder.CloseElement();
+                    }
+                }
+                """,
+                includeRenderFlags: true));
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "RenderHelperHost");
+        var artifact = new RazorVueSfcArtifactFactory(BuildRenderTreeTemplateFrontend.Instance).Lower(context, snapshot);
+
+        // Conditional caller-owned child replay with captured values lowers through the
+        // render-function carrier; assert the combined SFC text for the replayed structure.
+        StringAssert.Contains(artifact.SfcText, "section");
+        StringAssert.Contains(artifact.SfcText, "span");
+        Assert.IsFalse(artifact.SfcText.Contains("RenderBody", StringComparison.Ordinal), artifact.SfcText);
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithCallerOwnedGuardReturnHelperAttributeMutation_LowersTemplateReplay()
+    {
+        var context = CreateContext(
+            RenderHelperSource(
+                """
+                builder.OpenElement(0, "section");
+                RenderBody(builder, ShowPrimary, Title);
+                builder.CloseElement();
+                """,
+                """
+                private void RenderBody(RenderTreeBuilder builder, bool showPrimary, string? title)
+                {
+                    if (!showPrimary)
+                    {
+                        return;
+                    }
+
+                    builder.AddAttribute(1, "class", title);
+                }
+                """,
+                includeRenderFlags: true));
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "RenderHelperHost");
+        var artifact = new RazorVueSfcArtifactFactory(BuildRenderTreeTemplateFrontend.Instance).Lower(context, snapshot);
+
+        // The guard-return caller-owned replay lowers through the render-function carrier:
+        // enter section, capture showPrimary, guard with !showPrimary, then setAttribute class.
+        StringAssert.Contains(artifact.SfcText, "enterElement(\"section\")");
+        StringAssert.Contains(artifact.SfcText, "setAttribute(\"class\"");
+        StringAssert.Contains(artifact.SfcText, "if (!showPrimary)");
+        Assert.IsFalse(artifact.SfcText.Contains("RenderBody", StringComparison.Ordinal), artifact.SfcText);
+    }
+
+    [TestMethod]
     public void RazorVuePipeline_WithReadOnlyRefParameterRenderHelper_LowersRenderFunction()
     {
         var artifact = new RazorVuePipeline(BuildRenderTreeTemplateFrontend.Instance)
