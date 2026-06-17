@@ -125,6 +125,7 @@
 | `ComponentBase, IVueComponent` + `[ECMAScriptModule]` 入口 | ✅ | authoring 合同：per-file `using static ECMAScript.Vue3;` | sample `TodoApp.razor.cs`、SDK 集成 `CreateRazorVueSampleProject` |
 | `IVueLibraryComponent` 库组件（Vuetify / ElementPlus / TDesign / Vben） | ✅ | descriptor-aware | `VuetifyAuthoringSurfaceTests`、`ElementPlusAuthoringSurfaceTests`、`TDesignAuthoringSurfaceTests`、`ECMAScript.Vuetify.ComponentCoverageMatrix.md` |
 | component parameter descriptor / nested component metadata / import | ✅ | — | `ImportsNestedUserAndLibraryComponents_IntoScriptSetup` |
+| `[EditorRequired]` 参数 | ✅ | 识别为 `Required=true` prop | `RazorVue_Snapshot_EditorRequiredParameter_IsProjectedAsRequiredProp` |
 | `IVueContainerComponent` inject | ✅ | container inject lowering | `VueContainerComponentInjectTests` |
 | 直接 `ComponentBase` 入口 / 缺 `[ECMAScriptModule]` | ❌ | `JAZORVUE002` / `JAZORVGA017` | analyzer 诊断矩阵 |
 | `StateHasChanged()` | 🟡 | `JAZORVUE004` Warning（不 fail）；Vue 是响应式驱动，调用被忽略为 no-op | `RazorVue_Misuse_StateHasChanged_ReportsJAZORVUE004_AsWarning` |

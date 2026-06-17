@@ -406,6 +406,48 @@ public sealed class RazorVueDescriptorExtractionTests
     }
 
     [TestMethod]
+    public void RazorVue_Snapshot_EditorRequiredParameter_IsProjectedAsRequiredProp()
+    {
+        var snapshot = CreateSingleSnapshot(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/form-card")]
+                public class FormCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    [EditorRequired]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public string? Subtitle { get; set; }
+                }
+            }
+            """);
+
+        var descriptor = snapshot.Descriptor;
+        var title = descriptor.Props.Single(static prop => prop.PublicName == "Title");
+        Assert.IsTrue(title.Required, "Props with [EditorRequired] should be marked Required=true.");
+
+        var subtitle = descriptor.Props.Single(static prop => prop.PublicName == "Subtitle");
+        Assert.IsFalse(subtitle.Required, "Props without [EditorRequired] should remain Required=false.");
+    }
+
+    [TestMethod]
     public void RazorVue_Context_InvalidComponentCaptureUnmatchedValuesDeclaration_ThrowsStructuredIssue()
     {
         var context = CreateContext(

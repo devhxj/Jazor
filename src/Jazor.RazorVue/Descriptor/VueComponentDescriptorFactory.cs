@@ -139,6 +139,7 @@ internal static class VueComponentDescriptorFactory
             var acceptsBinding = propOverride?.AcceptsBinding ?? inferredAcceptsBinding;
             var captureUnmatchedValues = HasCaptureUnmatchedValues(property, symbols);
             var initializerExpression = TryGetPropertyInitializerExpression(property);
+            var isEditorRequired = IsEditorRequired(property, symbols);
             var kind = propOverride is not null && propOverride.HasKindOverride
                 ? propOverride.Kind
                 : acceptsBinding
@@ -148,7 +149,7 @@ internal static class VueComponentDescriptorFactory
                 Name: propOverride?.Name ?? ToLowerCamelCase(publicName),
                 PublicName: publicName,
                 TypeName: FormatTypeName(property.Type),
-                Required: propOverride?.Required ?? false,
+                Required: propOverride?.Required ?? isEditorRequired,
                 AcceptsBinding: acceptsBinding,
                 DefaultExpression: propOverride?.DefaultExpression ?? initializerExpression,
                 DefaultSource: propOverride?.DefaultExpression is not null
@@ -886,6 +887,15 @@ internal static class VueComponentDescriptorFactory
         }
 
         return false;
+    }
+
+    private static bool IsEditorRequired(IPropertySymbol property, RazorVueCompilationSymbols symbols)
+    {
+        if (symbols.EditorRequiredAttribute is null)
+            return false;
+
+        return property.GetAttributes().Any(attribute =>
+            Comparer.Equals(attribute.AttributeClass, symbols.EditorRequiredAttribute));
     }
 
     private static void ValidateCaptureUnmatchedValuesParameters(
