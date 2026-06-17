@@ -22,10 +22,10 @@ internal static class RazorVueDiagnosticDescriptors
 
     public static readonly DiagnosticDescriptor StateHasChangedNotSupported = new(
         id: "JAZORVUE004",
-        title: "StateHasChanged is not part of RazorVue semantics",
-        messageFormat: "StateHasChanged is not part of RazorVue semantics",
+        title: "StateHasChanged has no effect in RazorVue",
+        messageFormat: "StateHasChanged has no effect in RazorVue; Vue drives update scheduling reactively, so this call is ignored",
         category: "RazorVue",
-        defaultSeverity: DiagnosticSeverity.Error,
+        defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
     public static readonly DiagnosticDescriptor RenderControlOrLifecycleNotSupported = new(

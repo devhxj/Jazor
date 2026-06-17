@@ -45,8 +45,9 @@ public sealed class RazorVueMisuseAnalyzer : DiagnosticAnalyzer
         if (!knownSymbols.IsStateHasChanged(invocation.TargetMethod))
             return;
 
-        // Vue drives update scheduling in RazorVue, so StateHasChanged must not
-        // silently survive as a hidden Blazor semantic.
+        // Vue drives update scheduling in RazorVue, so StateHasChanged is a no-op.
+        // Report as a warning (not an error) so existing Blazor code that calls
+        // StateHasChanged compiles; the call is simply ignored at lowering time.
         context.ReportDiagnostic(Diagnostic.Create(
             RazorVueDiagnosticDescriptors.StateHasChangedNotSupported,
             invocation.Syntax.GetLocation()));

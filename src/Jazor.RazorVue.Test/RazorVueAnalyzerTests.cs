@@ -95,7 +95,7 @@ public sealed class RazorVueAnalyzerTests
     }
 
     [TestMethod]
-    public async Task RazorVue_Misuse_StateHasChanged_ReportsJAZORVUE004()
+    public async Task RazorVue_Misuse_StateHasChanged_ReportsJAZORVUE004_AsWarning()
     {
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
@@ -123,7 +123,9 @@ public sealed class RazorVueAnalyzerTests
             }
             """);
 
-        AssertHasDiagnostic(diagnostics, "JAZORVUE004");
+        var diagnostic = diagnostics.FirstOrDefault(d => d.Id == "JAZORVUE004");
+        Assert.IsNotNull(diagnostic, $"Expected JAZORVUE004, actual: {string.Join(Environment.NewLine, diagnostics.Select(static x => x.ToString()))}");
+        Assert.AreEqual(DiagnosticSeverity.Warning, diagnostic.Severity, "StateHasChanged should be a warning (ignored), not an error (fail-fast).");
     }
 
     [TestMethod]

@@ -127,7 +127,8 @@
 | component parameter descriptor / nested component metadata / import | ✅ | — | `ImportsNestedUserAndLibraryComponents_IntoScriptSetup` |
 | `IVueContainerComponent` inject | ✅ | container inject lowering | `VueContainerComponentInjectTests` |
 | 直接 `ComponentBase` 入口 / 缺 `[ECMAScriptModule]` | ❌ | `JAZORVUE002` / `JAZORVGA017` | analyzer 诊断矩阵 |
-| `StateHasChanged` / 无效 bind / 未知 parameter / 未知 slot | ❌ | `JAZORVUE004/008/007/009` | analyzer 诊断矩阵 |
+| `StateHasChanged()` | 🟡 | `JAZORVUE004` Warning（不 fail）；Vue 是响应式驱动，调用被忽略为 no-op | `RazorVue_Misuse_StateHasChanged_ReportsJAZORVUE004_AsWarning` |
+| 无效 bind / 未知 parameter / 未知 slot | ❌ | `JAZORVUE008/007/009` | analyzer 诊断矩阵 |
 
 ## 9. Route / DOM / Consumer Build
 
