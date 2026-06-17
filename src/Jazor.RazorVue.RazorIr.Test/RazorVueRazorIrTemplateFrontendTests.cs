@@ -7278,6 +7278,100 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithRazorIrTemplateFrontend_ForDirectRenderFragmentFactoryExpressionForwardingInParameterByReference_ThrowsCanonicalizationFailed()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @using Microsoft.AspNetCore.Components
+
+            @CreateTemplate(Title)
+
+            @code {
+                [Parameter]
+                public string? Title { get; set; }
+
+                private RenderFragment CreateTemplate(in string? title)
+                {
+                    ConsumeByRef(in title);
+                    return @<section><span>safe</span></section>;
+                }
+
+                private static void ConsumeByRef(in string? value)
+                {
+                }
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.DirectFactory.InParameter.ByRefEscape.Sfc.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => new RazorVueSfcArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "by-reference");
+        StringAssert.Contains(exception.Issue.Message, "fragment factory");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForDirectRenderFragmentFactoryExpressionForwardingInParameterByReference_ThrowsCanonicalizationFailed()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @using Microsoft.AspNetCore.Components
+
+            @CreateTemplate(Title)
+
+            @code {
+                [Parameter]
+                public string? Title { get; set; }
+
+                private RenderFragment CreateTemplate(in string? title)
+                {
+                    ConsumeByRef(in title);
+                    return @<section><span>safe</span></section>;
+                }
+
+                private static void ConsumeByRef(in string? value)
+                {
+                }
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.DirectFactory.InParameter.ByRefEscape.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "by-reference");
+        StringAssert.Contains(exception.Issue.Message, "fragment factory");
+    }
+
+    [TestMethod]
     public void CreateRenderTree_ForDirectRenderFragmentFactoryExpressionWithInParameter_IgnoresNestedLocalFunctionInParameterByRefForwarding()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";

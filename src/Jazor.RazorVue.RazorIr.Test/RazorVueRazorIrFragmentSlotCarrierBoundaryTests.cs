@@ -33,6 +33,114 @@ public sealed class RazorVueRazorIrFragmentSlotCarrierBoundaryTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_WithRefParameterFragmentFactory_ThrowsCanonicalizationFailed()
+    {
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateRenderTree(
+                """
+                @using Microsoft.AspNetCore.Components
+
+                @{
+                    var title = Title;
+                }
+
+                @(CreateTemplate(ref title))
+
+                @code {
+                    private RenderFragment CreateTemplate(ref string? title)
+                    {
+                        var captured = title;
+                        return @<section>@captured</section>;
+                    }
+                }
+                """));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "fragment factory");
+        StringAssert.Contains(exception.Issue.Message, "ref");
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithRefParameterFragmentFactory_ThrowsCanonicalizationFailed()
+    {
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            LowerSfc(
+                """
+                @using Microsoft.AspNetCore.Components
+
+                @{
+                    var title = Title;
+                }
+
+                @(CreateTemplate(ref title))
+
+                @code {
+                    private RenderFragment CreateTemplate(ref string? title)
+                    {
+                        var captured = title;
+                        return @<section>@captured</section>;
+                    }
+                }
+                """));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "fragment factory");
+        StringAssert.Contains(exception.Issue.Message, "ref");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRefParameterFragmentFactory_ThrowsCanonicalizationFailed()
+    {
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            LowerPipeline(
+                """
+                @using Microsoft.AspNetCore.Components
+
+                @{
+                    var title = Title;
+                }
+
+                @(CreateTemplate(ref title))
+
+                @code {
+                    private RenderFragment CreateTemplate(ref string? title)
+                    {
+                        var captured = title;
+                        return @<section>@captured</section>;
+                    }
+                }
+                """));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "fragment factory");
+        StringAssert.Contains(exception.Issue.Message, "ref");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithOutParameterFragmentFactory_ThrowsCanonicalizationFailed()
+    {
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            LowerPipeline(
+                """
+                @using Microsoft.AspNetCore.Components
+
+                @(CreateTemplate(out _))
+
+                @code {
+                    private RenderFragment CreateTemplate(out string? title)
+                    {
+                        title = "fallback";
+                        return @<section>safe</section>;
+                    }
+                }
+                """));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "fragment factory");
+        StringAssert.Contains(exception.Issue.Message, "out");
+    }
+
+    [TestMethod]
     public void CreateRenderTree_WithDataflowGetterFragmentCarrier_ProducesStructuredSlotTemplate()
     {
         var renderTree = CreateRenderTree(

@@ -418,6 +418,58 @@ public sealed class RazorVueFragmentSlotCarrierBoundaryTests
     }
 
     [TestMethod]
+    public void RazorVuePipeline_WithOutParameterRenderFragmentFactory_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    private RenderFragment<int> CreateTemplate(out string? title)
+                    {
+                        title = "fallback";
+                        return item => itemBuilder =>
+                        {
+                            itemBuilder.OpenElement(1, "span");
+                            itemBuilder.AddContent(2, item);
+                            itemBuilder.CloseElement();
+                        };
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, CreateTemplate(out _), 42);
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            new RazorVuePipeline(BuildRenderTreeTemplateFrontend.Instance).Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "fragment factory");
+        StringAssert.Contains(exception.Issue.Message, "out");
+    }
+
+    [TestMethod]
     public void RazorVuePipeline_WithConditionalGetterRenderFragmentCarrier_ThrowsCanonicalizationFailed()
     {
         var context = CreateContext(
