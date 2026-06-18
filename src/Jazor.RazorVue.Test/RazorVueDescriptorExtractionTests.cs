@@ -448,6 +448,64 @@ public sealed class RazorVueDescriptorExtractionTests
     }
 
     [TestMethod]
+    public void RazorVue_Snapshot_CascadingParameter_IsProjectedIntoDescriptor()
+    {
+        var snapshot = CreateSingleSnapshot(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/theme-card")]
+                public class ThemeCard : ComponentBase, IVueComponent
+                {
+                    [CascadingParameter]
+                    public string? Theme { get; set; }
+
+                    [CascadingParameter(Name = "UserContext")]
+                    public string? CurrentUser { get; set; }
+
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """);
+
+        var descriptor = snapshot.Descriptor;
+
+        // Cascading parameters must NOT appear in regular props.
+        Assert.AreEqual(1, descriptor.Props.Length, "Only [Parameter] props should be in Props.");
+        Assert.AreEqual("Title", descriptor.Props[0].PublicName);
+
+        // Cascading parameters should be in the CascadingParameters collection.
+        Assert.AreEqual(2, descriptor.CascadingParameters.Length);
+
+        var theme = descriptor.CascadingParameters.Single(static c => c.PublicName == "Theme");
+        Assert.AreEqual("string?", theme.TypeName);
+        Assert.AreEqual("System.String", theme.Key, "CascadingParameter without Name should use a nullable-stable type key.");
+        Assert.AreEqual("System.String", theme.InjectKey);
+        Assert.AreEqual("Theme", theme.PublicName);
+
+        var user = descriptor.CascadingParameters.Single(static c => c.PublicName == "CurrentUser");
+        Assert.AreEqual("string?", user.TypeName);
+        Assert.AreEqual("UserContext", user.Key, "CascadingParameter with Name should use it as Key.");
+        Assert.AreEqual("UserContext", user.InjectKey);
+        Assert.AreEqual("CurrentUser", user.PublicName);
+    }
+
+    [TestMethod]
     public void RazorVue_Context_InvalidComponentCaptureUnmatchedValuesDeclaration_ThrowsStructuredIssue()
     {
         var context = CreateContext(

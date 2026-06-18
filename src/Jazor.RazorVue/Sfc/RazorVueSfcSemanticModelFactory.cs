@@ -21,6 +21,7 @@ internal sealed class RazorVueSfcSemanticModelFactory
         var ownerRelativeSfcPath = ChangeExtensionToVue(canonicalModel.RelativeComponentPath);
         var componentImports = CollectComponentImports(canonicalModel, ownerRelativeSfcPath);
         var bindings = CollectLiftedBindings(canonicalModel.ComponentFullName, canonicalModel.Template);
+        var templateRefs = CollectTemplateRefs(canonicalModel.Template);
         var requiresSlotsRuntime = bindings.Bindings.Any(static binding => RequiresSlotsRuntime(binding.ExpressionText));
         return new RazorVueSfcSemanticModel(
             ComponentName: canonicalModel.ComponentName,
@@ -40,7 +41,7 @@ internal sealed class RazorVueSfcSemanticModelFactory
                 bindings.Sites.ToImmutable(),
                 canonicalModel.Template.Children.SelectMany(static child => child.SourceOrigins).ToImmutableArray()),
             ImperativeRootProgram: null,
-            ScriptSetupBlock: new RazorVueSfcScriptSetupBlockModel(canonicalModel.Setup, bindings.Bindings.ToImmutable(), requiresSlotsRuntime, canonicalModel.SourceOrigins),
+            ScriptSetupBlock: new RazorVueSfcScriptSetupBlockModel(canonicalModel.Setup, bindings.Bindings.ToImmutable(), templateRefs, requiresSlotsRuntime, canonicalModel.SourceOrigins),
             StyleBlocks: ImmutableArray<RazorVueSfcStyleBlockModel>.Empty,
             CustomBlocks: ImmutableArray<RazorVueSfcCustomBlockModel>.Empty);
     }
@@ -70,6 +71,7 @@ internal sealed class RazorVueSfcSemanticModelFactory
             ScriptSetupBlock: new RazorVueSfcScriptSetupBlockModel(
                 canonicalModel.Setup,
                 ImmutableArray<RazorVueSfcSetupBinding>.Empty,
+                ImmutableArray<RazorVueSfcTemplateRefBinding>.Empty,
                 RequiresSlotsRuntime: false,
                 canonicalModel.SourceOrigins),
             StyleBlocks: ImmutableArray<RazorVueSfcStyleBlockModel>.Empty,
@@ -115,6 +117,18 @@ internal sealed class RazorVueSfcSemanticModelFactory
                 continue;
 
             var descriptor = component.ResolvedDescriptor;
+            if (VueCascadingValueProviderDescriptor.IsProviderDescriptor(descriptor))
+            {
+                builder.Add(new RazorVueSfcComponentImport(
+                    ComponentKey: component.ComponentFullName,
+                    TemplateTagName: VueCascadingValueProviderDescriptor.Name,
+                    LocalBindingName: VueCascadingValueProviderDescriptor.Name,
+                    ImportSpecifier: null,
+                    ExportName: VueCascadingValueProviderDescriptor.Name,
+                    ImportKind: RazorVueSfcComponentImportKind.None));
+                continue;
+            }
+
             if (string.Equals(descriptor.ImportSpecifier, "vue", StringComparison.Ordinal))
             {
                 builder.Add(new RazorVueSfcComponentImport(
@@ -168,6 +182,27 @@ internal sealed class RazorVueSfcSemanticModelFactory
     private static bool RequiresSlotsRuntime(string expressionText)
         => expressionText.Contains("slots.", StringComparison.Ordinal) ||
            expressionText.Contains("slots[", StringComparison.Ordinal);
+
+    private static ImmutableArray<RazorVueSfcTemplateRefBinding> CollectTemplateRefs(RazorVueCanonicalTemplateFragment fragment)
+    {
+        var builder = ImmutableArray.CreateBuilder<RazorVueSfcTemplateRefBinding>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var node in EnumerateNodes(fragment))
+        {
+            if (node is not RazorVueCanonicalElementNode { ReferenceCapture: { } referenceCapture })
+                continue;
+
+            if (!seen.Add(referenceCapture.Name))
+                continue;
+
+            builder.Add(new RazorVueSfcTemplateRefBinding(
+                referenceCapture.Name,
+                referenceCapture.ElementTypeName,
+                referenceCapture.SourceOrigins));
+        }
+
+        return builder.ToImmutable();
+    }
 
     private static void CollectLiftedBindings(
         string ownerComponentFullName,

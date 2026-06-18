@@ -18,6 +18,9 @@ internal static class RazorVueImperativeSfcModuleBuilder
         var descriptor = snapshot.Descriptor;
         var propDefaultBindings = CollectPropDefaultBindings(snapshot, descriptor, expressionEmitter);
         var renderBody = expressionEmitter.EmitImperativeRenderBody(renderTree);
+        var templateRefs = MergeElementReferenceCaptures(
+            CollectElementReferenceCaptures(renderTree),
+            expressionEmitter.GetRequiredImperativeElementReferenceCaptures());
         var requiresAttributeMergeHelper = RazorVueAttributeMergeHelper.ContainsInvocation(renderBody);
         var imperativeRenderHelperDeclarationsBuilder = new StringBuilder();
         expressionEmitter.AppendRequiredImperativeRenderHelperDeclarations(imperativeRenderHelperDeclarationsBuilder, "    ");
@@ -25,12 +28,15 @@ internal static class RazorVueImperativeSfcModuleBuilder
         var setupBodyBuilder = new StringBuilder();
         setupBodyBuilder.AppendLine("  setup(__jazorRawProps, { emit, slots, expose, attrs }) {");
         AppendPropsBinding(setupBodyBuilder, propDefaultBindings);
+        RazorVueArtifactFactory.AppendCascadingParameterInjectionsForSfc(setupBodyBuilder, descriptor, "    ");
         if (RazorVueForLoopLoweringSupport.ContainsForLoop(renderTree))
             RazorVueForLoopLoweringSupport.AppendForRangeHelper(setupBodyBuilder, "    ");
         if (requiresAttributeMergeHelper)
             RazorVueAttributeMergeHelper.AppendHelper(setupBodyBuilder, "    ");
         AppendImperativeComponentMetadataBindings(setupBodyBuilder, resolvedComponents, "    ");
         AppendImperativeRenderBridgeHelper(setupBodyBuilder, "    ");
+        if (RazorVueArtifactFactory.ContainsCascadingValueProviderForSfc(resolvedComponents))
+            RazorVueArtifactFactory.AppendCascadingValueProviderDefinitionForSfc(setupBodyBuilder, "    ");
         var lifecyclePlan = RazorVueSetupAndLifecycleLoweringSupport.CreateLifecyclePlan(snapshot, expressionEmitter);
         RazorVueSetupAndLifecycleLoweringSupport.AppendSetupLogicLowering(
             setupBodyBuilder,
@@ -41,6 +47,7 @@ internal static class RazorVueImperativeSfcModuleBuilder
             lifecyclePlan.RequiredMethods,
             "    ");
         RazorVueSetupAndLifecycleLoweringSupport.AppendLifecyclePlan(setupBodyBuilder, lifecyclePlan, "    ");
+        AppendTemplateRefBindings(setupBodyBuilder, templateRefs, "    ");
         setupBodyBuilder.Append(imperativeRenderHelperDeclarations);
         RazorVueArtifactFactory.AppendShouldRenderGateStateForSfc(setupBodyBuilder, lifecyclePlan.ShouldRenderGate, "    ");
         setupBodyBuilder.AppendLine("    const __jazorComponent = { props, emit, slots, expose, attrs };");
@@ -78,7 +85,7 @@ internal static class RazorVueImperativeSfcModuleBuilder
         compilerImports = expressionEmitter.FlushCompilerImports();
 
         var builder = new StringBuilder();
-        AppendVueImports(builder, snapshot, resolvedComponents, compilerImports);
+        AppendVueImports(builder, snapshot, resolvedComponents, compilerImports, templateRefs);
         builder.AppendLine();
         if (!string.IsNullOrWhiteSpace(helperDeclarations))
         {
@@ -92,6 +99,32 @@ internal static class RazorVueImperativeSfcModuleBuilder
         builder.Append(setupBodyBuilder);
         builder.AppendLine("});");
         return builder.ToString();
+    }
+
+    private static ImmutableArray<RazorVueElementReferenceCapture> MergeElementReferenceCaptures(
+        ImmutableArray<RazorVueElementReferenceCapture> structuredCaptures,
+        ImmutableArray<RazorVueElementReferenceCapture> imperativeCaptures)
+    {
+        if (structuredCaptures.IsDefaultOrEmpty)
+            return imperativeCaptures.IsDefault ? ImmutableArray<RazorVueElementReferenceCapture>.Empty : imperativeCaptures;
+        if (imperativeCaptures.IsDefaultOrEmpty)
+            return structuredCaptures;
+
+        var builder = ImmutableArray.CreateBuilder<RazorVueElementReferenceCapture>(structuredCaptures.Length + imperativeCaptures.Length);
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var capture in structuredCaptures)
+        {
+            if (seen.Add(capture.Name))
+                builder.Add(capture);
+        }
+
+        foreach (var capture in imperativeCaptures)
+        {
+            if (seen.Add(capture.Name))
+                builder.Add(capture);
+        }
+
+        return builder.ToImmutable();
     }
 
     public static string BuildLogicShape(
@@ -130,8 +163,9 @@ internal static class RazorVueImperativeSfcModuleBuilder
         StringBuilder builder,
         RazorVueSemanticSnapshot snapshot,
         ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
-        ImmutableArray<RazorVueCompilerImportBinding> compilerImports)
-        => RazorVueArtifactFactory.AppendVueImportsForSfc(builder, snapshot, resolvedComponents, compilerImports);
+        ImmutableArray<RazorVueCompilerImportBinding> compilerImports,
+        ImmutableArray<RazorVueElementReferenceCapture> templateRefs)
+        => RazorVueArtifactFactory.AppendVueImportsForSfc(builder, snapshot, resolvedComponents, compilerImports, includeUseTemplateRef: !templateRefs.IsDefaultOrEmpty);
 
     private static void AppendLifecycleLowering(
         StringBuilder builder,
@@ -146,4 +180,108 @@ internal static class RazorVueImperativeSfcModuleBuilder
 
     private static string FormatStringArray(IEnumerable<string> values)
         => RazorVueArtifactFactory.FormatStringArrayForSfc(values);
+
+    private static ImmutableArray<RazorVueElementReferenceCapture> CollectElementReferenceCaptures(RazorVueRenderFragment fragment)
+    {
+        var builder = ImmutableArray.CreateBuilder<RazorVueElementReferenceCapture>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        CollectElementReferenceCaptures(fragment, builder, seen);
+        return builder.ToImmutable();
+    }
+
+    private static void CollectElementReferenceCaptures(
+        RazorVueRenderFragment fragment,
+        ImmutableArray<RazorVueElementReferenceCapture>.Builder builder,
+        HashSet<string> seen)
+    {
+        foreach (var child in fragment.Children)
+        {
+            switch (child)
+            {
+                case RazorVueElementNode element:
+                    if (element.ReferenceCapture is { } referenceCapture &&
+                        seen.Add(referenceCapture.Name))
+                    {
+                        builder.Add(referenceCapture);
+                    }
+
+                    CollectElementReferenceCaptures(element.Children, builder, seen);
+                    break;
+                case RazorVueComponentNode component:
+                    foreach (var slot in component.SlotTemplates)
+                        CollectElementReferenceCaptures(slot.Children, builder, seen);
+                    foreach (var assignment in component.ImplicitDefaultSlotAssignments)
+                        CollectElementReferenceCaptures(assignment.Children, builder, seen);
+                    CollectElementReferenceCaptures(component.AmbientDefaultSlotChildren, builder, seen);
+                    CollectElementReferenceCaptures(component.Children, builder, seen);
+                    break;
+                case RazorVueTemplateScopeNode templateScope:
+                    CollectElementReferenceCaptures(templateScope.Children, builder, seen);
+                    break;
+                case RazorVueConditionalNode conditional:
+                    CollectElementReferenceCaptures(conditional.WhenTrue, builder, seen);
+                    CollectElementReferenceCaptures(conditional.WhenFalse, builder, seen);
+                    break;
+                case RazorVueRecoveredSwitchConditionalNode conditional:
+                    CollectElementReferenceCaptures(conditional.WhenTrue, builder, seen);
+                    CollectElementReferenceCaptures(conditional.WhenFalse, builder, seen);
+                    break;
+                case RazorVueForEachNode loop:
+                    CollectElementReferenceCaptures(loop.Body, builder, seen);
+                    break;
+                case RazorVueForNode loop:
+                    CollectElementReferenceCaptures(loop.Body, builder, seen);
+                    break;
+            }
+        }
+    }
+
+    private static void AppendTemplateRefBindings(
+        StringBuilder builder,
+        ImmutableArray<RazorVueElementReferenceCapture> templateRefs,
+        string indent)
+    {
+        if (templateRefs.IsDefaultOrEmpty)
+            return;
+
+        foreach (var templateRef in templateRefs)
+        {
+            if (!IsSimpleJavaScriptIdentifier(templateRef.Name))
+            {
+                throw new RazorVueCompilationIssueException(
+                    new RazorVueCompilationIssue(
+                        RazorVueIssueCode.UnsupportedTemplateEncoding,
+                        RazorVueIssueSeverity.Error,
+                        $"RazorVue element @ref name '{templateRef.Name}' cannot be emitted as a stable Vue setup binding. Use a C# field or property name that is also a valid JavaScript identifier.",
+                        ImmutableArray<string>.Empty),
+                    string.Empty,
+                    templateRef.Origins.FirstOrDefault());
+            }
+
+            builder.Append(indent)
+                .Append("const ")
+                .Append(templateRef.Name)
+                .Append(" = useTemplateRef<Element>(")
+                .Append(RazorVueArtifactFactory.ToJavaScriptStringForSfc(templateRef.Name))
+                .AppendLine(");");
+        }
+    }
+
+    private static bool IsSimpleJavaScriptIdentifier(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        if (!(char.IsLetter(value[0]) || value[0] is '_' or '$'))
+            return false;
+
+        for (var index = 1; index < value.Length; index++)
+        {
+            var ch = value[index];
+            if (!(char.IsLetterOrDigit(ch) || ch is '_' or '$'))
+                return false;
+        }
+
+        return true;
+    }
 }

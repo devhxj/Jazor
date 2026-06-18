@@ -53198,6 +53198,7 @@ public sealed class RazorVuePipelineTests
                 new RazorVueElementNode(
                     "section",
                     null,
+                    null,
                     ImmutableArray<RazorVueAttributeEntry>.Empty,
                     new RazorVueRenderFragment(
                         ImmutableArray.Create<RazorVueRenderNode>(

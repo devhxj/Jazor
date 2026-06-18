@@ -35,6 +35,7 @@ internal sealed partial class RazorVueArtifactFactory
         var setupBodyBuilder = new StringBuilder();
         setupBodyBuilder.AppendLine("  setup(__jazorRawProps, { emit, slots, expose, attrs }) {");
         AppendPropsBinding(setupBodyBuilder, propDefaultBindings);
+        AppendCascadingParameterInjections(setupBodyBuilder, descriptor, "    ");
         if (RazorVueForLoopLoweringSupport.ContainsForLoop(renderTree))
             RazorVueForLoopLoweringSupport.AppendForRangeHelper(setupBodyBuilder, "    ");
         if (requiresAttributeMergeHelper)
@@ -43,6 +44,8 @@ internal sealed partial class RazorVueArtifactFactory
             AppendImperativeComponentMetadataBindings(setupBodyBuilder, resolvedComponents, "    ");
         if (usesImperativeRenderBody)
             AppendImperativeRenderBridgeHelper(setupBodyBuilder, "    ");
+        if (ContainsCascadingValueProvider(resolvedComponents))
+            AppendCascadingValueProviderDefinition(setupBodyBuilder, "    ");
         var lifecyclePlan = RazorVueSetupAndLifecycleLoweringSupport.CreateLifecyclePlan(snapshot, expressionEmitter);
         AppendSetupLogicLowering(
             setupBodyBuilder,
@@ -278,6 +281,7 @@ internal sealed partial class RazorVueArtifactFactory
         builder.Append(indent).AppendLine("    setComponentParameter(name, value) { const frame = __stack[__stack.length - 1]; if (!frame || frame.kind !== \"component\") throw new Error(\"RazorVue imperative render context setComponentParameter requires an open component frame.\"); __applyComponentParameter(frame, name, value); },");
         builder.Append(indent).AppendLine("    mergeAttributes(values) { const frame = __stack[__stack.length - 1]; if (!frame) throw new Error(\"RazorVue imperative render context mergeAttributes requires an open frame.\"); __applyMultipleAttributes(frame, values); },");
         builder.Append(indent).AppendLine("    setKey(value) { const frame = __stack[__stack.length - 1]; if (!frame) throw new Error(\"RazorVue imperative render context setKey requires an open frame.\"); __applyProp(frame, \"key\", value); },");
+        builder.Append(indent).AppendLine("    setElementReference(name) { const frame = __stack[__stack.length - 1]; if (!frame || frame.kind !== \"element\") throw new Error(\"RazorVue imperative render context setElementReference requires an open element frame.\"); __applyProp(frame, \"ref\", name); },");
         builder.Append(indent).AppendLine("    openRegion() { __regions.push(__stack.length); },");
         builder.Append(indent).AppendLine("    closeRegion() {");
         builder.Append(indent).AppendLine("      if (__regions.length === 0) throw new Error(\"RazorVue imperative render context closeRegion requires a matching openRegion.\");");
@@ -336,17 +340,31 @@ internal sealed partial class RazorVueArtifactFactory
         StringBuilder builder,
         RazorVueSemanticSnapshot snapshot,
         ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
-        ImmutableArray<RazorVueCompilerImportBinding> compilerImports)
-        => AppendVueImports(builder, snapshot, resolvedComponents, compilerImports);
+        ImmutableArray<RazorVueCompilerImportBinding> compilerImports,
+        bool includeUseTemplateRef = false)
+        => AppendVueImports(builder, snapshot, resolvedComponents, compilerImports, includeUseTemplateRef);
 
     private static void AppendVueImports(
         StringBuilder builder,
         RazorVueSemanticSnapshot snapshot,
         ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
-        ImmutableArray<RazorVueCompilerImportBinding> compilerImports)
+        ImmutableArray<RazorVueCompilerImportBinding> compilerImports,
+        bool includeUseTemplateRef = false)
     {
         var vueImports = new List<string> { "defineComponent", "h" };
         vueImports.AddRange(RazorVueSetupAndLifecycleLoweringSupport.CollectVueRuntimeImports(snapshot));
+        if (includeUseTemplateRef)
+            vueImports.Add("useTemplateRef");
+        if (!snapshot.Descriptor.CascadingParameters.IsDefaultOrEmpty)
+        {
+            vueImports.Add("inject");
+            vueImports.Add("unref");
+        }
+        if (ContainsCascadingValueProvider(resolvedComponents))
+        {
+            vueImports.Add("provide");
+            vueImports.Add("toRef");
+        }
 
         builder.Append("import { ")
             .Append(string.Join(", ", vueImports.Distinct(StringComparer.Ordinal)))
@@ -506,6 +524,21 @@ internal sealed partial class RazorVueArtifactFactory
         ImmutableArray<PropDefaultBinding> propDefaultBindings)
         => AppendPropsBinding(builder, propDefaultBindings);
 
+    internal static void AppendCascadingParameterInjectionsForSfc(
+        StringBuilder builder,
+        VueComponentDescriptor descriptor,
+        string indent)
+        => AppendCascadingParameterInjections(builder, descriptor, indent);
+
+    internal static void AppendCascadingValueProviderDefinitionForSfc(
+        StringBuilder builder,
+        string indent)
+        => AppendCascadingValueProviderDefinition(builder, indent);
+
+    internal static bool ContainsCascadingValueProviderForSfc(
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
+        => ContainsCascadingValueProvider(resolvedComponents);
+
     private static void AppendPropsBinding(
         StringBuilder builder,
         ImmutableArray<PropDefaultBinding> propDefaultBindings)
@@ -518,6 +551,54 @@ internal sealed partial class RazorVueArtifactFactory
 
         AppendPropDefaultProxy(builder, propDefaultBindings);
     }
+
+    private static void AppendCascadingParameterInjections(
+        StringBuilder builder,
+        VueComponentDescriptor descriptor,
+        string indent)
+    {
+        if (descriptor.CascadingParameters.IsDefaultOrEmpty)
+            return;
+
+        foreach (var cascading in descriptor.CascadingParameters)
+        {
+            builder.Append(indent).Append("const ").Append(cascading.Name);
+            builder.Append(" = inject(");
+            builder.Append(ToJavaScriptString(cascading.InjectKey));
+            builder.AppendLine(");");
+        }
+    }
+
+    private static void AppendCascadingValueProviderDefinition(StringBuilder builder, string indent)
+    {
+        builder.Append(indent)
+            .Append("const ")
+            .Append(VueCascadingValueProviderDescriptor.Name)
+            .AppendLine(" = defineComponent({");
+        builder.Append(indent).AppendLine("  name: \"JazorCascadingValueProvider\",");
+        builder.Append(indent).AppendLine("  props: {");
+        builder.Append(indent)
+            .Append("    ")
+            .Append(VueCascadingValueProviderDescriptor.ProvideKeyPropName)
+            .AppendLine(": { type: String, required: true },");
+        builder.Append(indent)
+            .Append("    ")
+            .Append(VueCascadingValueProviderDescriptor.ValuePropName)
+            .AppendLine(": { required: false },");
+        builder.Append(indent)
+            .Append("    ")
+            .Append(VueCascadingValueProviderDescriptor.IsFixedPropName)
+            .AppendLine(": { type: Boolean, default: false }");
+        builder.Append(indent).AppendLine("  },");
+        builder.Append(indent).AppendLine("  setup(props, { slots }) {");
+        builder.Append(indent).AppendLine("    provide(props.provideKey, props.isFixed ? props.value : toRef(props, \"value\"));");
+        builder.Append(indent).AppendLine("    return () => slots.default ? slots.default() : null;");
+        builder.Append(indent).AppendLine("  }");
+        builder.Append(indent).AppendLine("});");
+    }
+
+    private static bool ContainsCascadingValueProvider(ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
+        => resolvedComponents.Values.Any(VueCascadingValueProviderDescriptor.IsProviderDescriptor);
 
     private static void AppendPropDefaultProxy(
         StringBuilder builder,
@@ -660,6 +741,9 @@ internal sealed partial class RazorVueArtifactFactory
 
     internal static string FormatStringArrayForSfc(IEnumerable<string> values)
         => FormatStringArray(values);
+
+    internal static string ToJavaScriptStringForSfc(string value)
+        => ToJavaScriptString(value);
 
     private static string FormatStringArray(IEnumerable<string> values)
         => "[" + string.Join(", ", values.Select(ToJavaScriptString)) + "]";

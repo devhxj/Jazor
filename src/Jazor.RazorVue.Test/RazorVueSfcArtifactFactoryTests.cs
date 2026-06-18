@@ -81,6 +81,162 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersElementReferenceCapture_ToTemplateRefBinding()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    private ElementReference _element;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "input");
+                        builder.AddElementReferenceCapture(1, value => _element = value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.Template, artifact.RenderMode);
+        StringAssert.Contains(artifact.TemplateText, "<input ref=\"_element\" />");
+        StringAssert.Contains(artifact.ScriptSetupText, "import { useTemplateRef } from \"vue\";");
+        StringAssert.Contains(artifact.ScriptSetupText, "const _element = useTemplateRef<Element>(\"_element\");");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersElementReferenceCaptureInsideRenderFunction_ToTemplateRefBinding()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Visible { get; set; }
+
+                    private ElementReference _element;
+
+                    protected override bool ShouldRender() => Visible;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "input");
+                        builder.AddElementReferenceCapture(1, value => _element = value);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        StringAssert.Contains(artifact.SfcText, "import { defineComponent, h, useTemplateRef } from \"vue\";");
+        StringAssert.Contains(artifact.SfcText, "const _element = useTemplateRef<Element>(\"_element\");");
+        StringAssert.Contains(artifact.SfcText, "h(\"input\", { \"ref\": \"_element\" })");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersElementReferenceCaptureInsideImperativeRenderBody_ToTemplateRefBinding()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Start { get; set; }
+
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    private ElementReference _element;
+
+                    private int GetStep()
+                        => 1;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        for (var i = Start; i <= Count; i += GetStep())
+                        {
+                            builder.OpenElement(0, "input");
+                            builder.AddElementReferenceCapture(1, value => _element = value);
+                            builder.AddContent(2, i);
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        StringAssert.Contains(artifact.SfcText, "import { defineComponent, h, useTemplateRef } from \"vue\";");
+        StringAssert.Contains(artifact.SfcText, "const _element = useTemplateRef<Element>(\"_element\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.setElementReference(\"_element\");");
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_LowersVNodeKeys_ToTemplateKeyBindings()
     {
         var context = CreateContext(
@@ -1914,6 +2070,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
                     new RazorVueElementNode(
                         "span",
                         null,
+                        null,
                         ImmutableArray<RazorVueAttributeEntry>.Empty,
                         new RazorVueRenderFragment(
                         [
@@ -1925,6 +2082,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
                 [
                     new RazorVueElementNode(
                         "span",
+                        null,
                         null,
                         ImmutableArray<RazorVueAttributeEntry>.Empty,
                         new RazorVueRenderFragment(
@@ -15913,6 +16071,303 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersCascadingParameter_IntoInjectBinding()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/theme-card")]
+                public class ThemeCard : ComponentBase, IVueComponent
+                {
+                    [CascadingParameter]
+                    public string? Theme { get; set; }
+
+                    [CascadingParameter(Name = "UserContext")]
+                    public string? CurrentUser { get; set; }
+
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Theme);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "ThemeCard");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        // inject() calls should appear in script setup.
+        StringAssert.Contains(artifact.ScriptSetupText, "const theme = inject(");
+        StringAssert.Contains(artifact.ScriptSetupText, "const currentUser = inject(");
+        StringAssert.Contains(artifact.TemplateText, "{{ unref(theme) }}");
+
+        // The inject key for [CascadingParameter] without Name should be the nullable-stable type name.
+        StringAssert.Contains(artifact.ScriptSetupText, "inject(\"System.String\")");
+
+        // The inject key for [CascadingParameter(Name = "UserContext")] should be "UserContext".
+        StringAssert.Contains(artifact.ScriptSetupText, "inject(\"UserContext\")");
+
+        // "inject" should be in the vue import.
+        StringAssert.Contains(artifact.SfcText, "inject");
+
+        // Cascading parameters must NOT appear in defineProps.
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("Theme?:", StringComparison.Ordinal) ||
+                       artifact.ScriptSetupText.Contains("Theme:", StringComparison.Ordinal),
+                       "Cascading parameter should not appear in defineProps type.");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersCascadingValue_IntoScopedProviderComponent()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/theme-child")]
+                public class ThemeChild : ComponentBase, IVueComponent
+                {
+                    [CascadingParameter]
+                    public string? Theme { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "span");
+                        builder.AddContent(1, Theme);
+                        builder.CloseElement();
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/theme-host")]
+                public class ThemeHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Theme { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<CascadingValue<string>>(0);
+                        builder.AddComponentParameter(1, "Value", Theme);
+                        builder.AddComponentParameter(2, "ChildContent", (RenderFragment)((childBuilder) =>
+                        {
+                            childBuilder.OpenComponent<ThemeChild>(3);
+                            childBuilder.CloseComponent();
+                        }));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "ThemeHost");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ScriptSetupText, "const JazorCascadingValueProvider = defineComponent({");
+        StringAssert.Contains(artifact.ScriptSetupText, "provide(props.provideKey, props.isFixed ? props.value : toRef(props, \"value\"));");
+        StringAssert.Contains(artifact.TemplateText, "<JazorCascadingValueProvider provideKey=\"System.String\" :value=\"props.theme\">");
+        StringAssert.Contains(artifact.TemplateText, "<ThemeChildComponent />");
+        StringAssert.Contains(artifact.SfcText, "import { defineComponent, provide, toRef } from \"vue\";");
+        Assert.IsFalse(artifact.SfcText.Contains("import JazorCascadingValueProvider", StringComparison.Ordinal), artifact.SfcText);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersCascadingValueDynamicName_WithTypeKeyFallback()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/theme-child")]
+                public class ThemeChild : ComponentBase, IVueComponent
+                {
+                    [CascadingParameter]
+                    public string? Theme { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "span");
+                        builder.AddContent(1, Theme);
+                        builder.CloseElement();
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/theme-host")]
+                public class ThemeHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Theme { get; set; }
+
+                    [Parameter]
+                    public string? CascadeName { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<CascadingValue<string>>(0);
+                        builder.AddComponentParameter(1, "Name", CascadeName);
+                        builder.AddComponentParameter(2, "Value", Theme);
+                        builder.AddComponentParameter(3, "ChildContent", (RenderFragment)((childBuilder) =>
+                        {
+                            childBuilder.OpenComponent<ThemeChild>(4);
+                            childBuilder.CloseComponent();
+                        }));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "ThemeHost");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, ":provideKey=\"(props.cascadeName ?? &quot;System.String&quot;)\"");
+        StringAssert.Contains(artifact.TemplateText, ":value=\"props.theme\"");
+        StringAssert.Contains(artifact.TemplateText, "<ThemeChildComponent />");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersCascadingValueInsideImperativeRenderFunction()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/theme-child")]
+                public class ThemeChild : ComponentBase, IVueComponent
+                {
+                    [CascadingParameter]
+                    public string? Theme { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "span");
+                        builder.AddContent(1, Theme);
+                        builder.CloseElement();
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/theme-host")]
+                public class ThemeHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Theme { get; set; }
+
+                    [Parameter]
+                    public string? CascadeName { get; set; }
+
+                    private bool ShouldContinue() => false;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        while (ShouldContinue())
+                        {
+                            builder.OpenComponent<CascadingValue<string>>(0);
+                            builder.AddComponentParameter(1, "Name", CascadeName);
+                            builder.AddComponentParameter(2, "Value", Theme);
+                            builder.AddComponentParameter(3, "IsFixed", true);
+                            builder.AddComponentParameter(4, "ChildContent", (RenderFragment)((childBuilder) =>
+                            {
+                                childBuilder.OpenComponent<ThemeChild>(5);
+                                childBuilder.CloseComponent();
+                            }));
+                            builder.CloseComponent();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "ThemeHost");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.RenderFunction, artifact.RenderMode);
+        StringAssert.Contains(artifact.SfcText, "import { defineComponent, h, provide, toRef } from \"vue\";");
+        StringAssert.Contains(artifact.SfcText, "const JazorCascadingValueProvider = defineComponent({");
+        StringAssert.Contains(artifact.SfcText, "provide(props.provideKey, props.isFixed ? props.value : toRef(props, \"value\"));");
+        StringAssert.Contains(artifact.SfcText, "while (shouldContinue())");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.enterComponent(JazorCascadingValueProvider, __jazorImperativeComponentMetadata_JazorCascadingValueProvider);");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.setComponentParameter(\"ProvideKey\", props.cascadeName ?? \"System.String\");");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.setComponentParameter(\"Value\", props.theme);");
+        StringAssert.Contains(artifact.SfcText, "__jazorRenderContext.setComponentParameter(\"IsFixed\", true);");
+        StringAssert.Contains(artifact.SfcText, "__jazorImperativeRenderContext0.enterComponent(ThemeChildComponent, __jazorImperativeComponentMetadata_ThemeChild);");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_CascadingParameterShapeChangesAffectDescriptorHash()
+    {
+        var identityA = CreateCascadingParameterIdentity(cascadingParameterAttribute: "[CascadingParameter]");
+        var identityB = CreateCascadingParameterIdentity(cascadingParameterAttribute: "[CascadingParameter(Name = \"ThemeContext\")]");
+
+        Assert.AreNotEqual(identityA.DescriptorHash, identityB.DescriptorHash);
+        Assert.AreEqual(identityA.TemplateHash, identityB.TemplateHash);
+        Assert.AreNotEqual(identityA.LogicHash, identityB.LogicHash);
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_LowersCustomGetterPrivateSetterSetupPropertyWithoutLaterWrites_IntoScriptSetupFunction()
     {
         var context = CreateContext(
@@ -16959,6 +17414,47 @@ public sealed class RazorVueSfcArtifactFactoryTests
         return context;
     }
 
+    private static VueSfcArtifactIdentity CreateCascadingParameterIdentity(string cascadingParameterAttribute)
+    {
+        var context = CreateContext(
+            $$"""
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/theme-card")]
+                public class ThemeCard : ComponentBase, IVueComponent
+                {
+                    {{cascadingParameterAttribute}}
+                    public string? Theme { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Theme);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "ThemeCard");
+        return CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot).Identity;
+    }
+
     private static RazorVueCompilationIssueException AssertBuildRenderTreeSfcArtifactThrows(
         string componentName,
         string renderStatements)
@@ -17060,6 +17556,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
             ImmutableArray.Create<RazorVueRenderNode>(
                 new RazorVueElementNode(
                     "section",
+                    null,
                     null,
                     ImmutableArray<RazorVueAttributeEntry>.Empty,
                     new RazorVueRenderFragment(

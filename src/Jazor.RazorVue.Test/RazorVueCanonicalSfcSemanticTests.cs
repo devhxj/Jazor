@@ -597,7 +597,8 @@ public sealed class RazorVueCanonicalSfcSemanticTests
             Slots: ImmutableArray<VueSlotDescriptor>.Empty,
             StyleDependencies: ImmutableArray<string>.Empty,
             PluginRequirements: ImmutableArray<string>.Empty,
-            Flags: VueComponentFlags.None);
+            Flags: VueComponentFlags.None,
+            CascadingParameters: ImmutableArray<VueCascadingParameterDescriptor>.Empty);
 
         var canonical = new RazorVueCanonicalHComponentModel(
             ComponentName: "BrokenCard",

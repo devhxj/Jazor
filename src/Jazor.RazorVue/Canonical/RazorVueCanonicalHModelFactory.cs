@@ -337,12 +337,22 @@ internal sealed class RazorVueCanonicalHModelFactory
         => new(
             TagName: element.TagName,
             Key: CreateNodeKey(snapshot, expressionEmitter, element.Key, allowedLocalSymbols, allowedParameterSymbols),
+            ReferenceCapture: CreateElementReferenceCapture(element.ReferenceCapture),
             Attributes: CreateHtmlAttributeBindings(snapshot, expressionEmitter, element.Attributes, allowedLocalSymbols, allowedParameterSymbols),
             Children: CreateTemplateFragment(snapshot, expressionEmitter, resolvedComponents, element.Children, allowedLocalSymbols, allowedParameterSymbols),
             TemplateEncodability: RazorVueTemplateEncodability.DirectTemplate,
             TemplateExpressionSafety: RazorVueTemplateExpressionSafety.DirectTemplateSafe,
             SideEffectClassification: RazorVueSideEffectClassification.None,
             SourceOrigins: element.Origins);
+
+    private static RazorVueCanonicalElementReferenceCapture? CreateElementReferenceCapture(
+        RazorVueElementReferenceCapture? referenceCapture)
+        => referenceCapture is null
+            ? null
+            : new RazorVueCanonicalElementReferenceCapture(
+                referenceCapture.Name,
+                "Element",
+                referenceCapture.Origins);
 
     private static RazorVueCanonicalImperativeRootProgram? TryCreateImperativeRootProgram(
         RazorVueCompilationContext context,
@@ -1949,6 +1959,7 @@ internal sealed class RazorVueCanonicalHModelFactory
             RazorVueTextNode => true,
             RazorVueElementNode element =>
                 element.Key is null &&
+                element.ReferenceCapture is null &&
                 IsPureStaticTemplateReplay(element.ReplayOperations) &&
                 element.Attributes.All(IsPureStaticTemplateAttribute) &&
                 IsPureStaticTemplateFragment(element.Children),
@@ -2947,25 +2958,201 @@ internal sealed class RazorVueCanonicalHModelFactory
                     .ToImmutableArray()));
         }
 
+        var attributes = VueCascadingValueProviderDescriptor.IsProviderDescriptor(resolvedDescriptor)
+            ? CreateCascadingValueProviderAttributeBindings(
+                snapshot,
+                expressionEmitter,
+                component,
+                allowedLocalSymbols,
+                allowedParameterSymbols)
+            : CreateComponentAttributeBindings(
+                snapshot,
+                expressionEmitter,
+                component,
+                resolvedDescriptor,
+                allowedLocalSymbols,
+                allowedParameterSymbols);
+
         return new RazorVueCanonicalComponentNode(
             ComponentName: component.ComponentName,
             ComponentFullName: component.ComponentFullName,
             ResolutionName: component.ResolutionName,
             ResolvedDescriptor: resolvedDescriptor,
             Key: CreateNodeKey(snapshot, expressionEmitter, component.Key, allowedLocalSymbols, allowedParameterSymbols),
-            Attributes: CreateComponentAttributeBindings(
-                snapshot,
-                expressionEmitter,
-                component,
-                resolvedDescriptor,
-                allowedLocalSymbols,
-                allowedParameterSymbols),
+            Attributes: attributes,
             Slots: slotBindings,
             Children: RazorVueCanonicalTemplateFragment.Empty,
             TemplateEncodability: RazorVueTemplateEncodability.DirectTemplate,
             TemplateExpressionSafety: RazorVueTemplateExpressionSafety.DirectTemplateSafe,
             SideEffectClassification: RazorVueSideEffectClassification.None,
             SourceOrigins: component.Origins);
+    }
+
+    private static ImmutableArray<RazorVueCanonicalAttributeEntry> CreateCascadingValueProviderAttributeBindings(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter expressionEmitter,
+        RazorVueComponentNode component,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+    {
+        var builder = ImmutableArray.CreateBuilder<RazorVueCanonicalAttributeEntry>();
+        var typeKey = ToJavaScriptString(RazorVueCascadingValueComponent.GetTypeKey(component.ResolutionName));
+        if (TryGetAttribute(component, "Name", out var nameAttribute) && nameAttribute.Value is not null)
+        {
+            builder.Add(CreateCascadingValueProviderKeyAttribute(
+                snapshot,
+                expressionEmitter,
+                nameAttribute,
+                typeKey,
+                allowedLocalSymbols,
+                allowedParameterSymbols));
+        }
+        else
+        {
+            builder.Add(CreateCascadingValueProviderAttribute(
+                VueCascadingValueProviderDescriptor.ProvideKeyPropName,
+                typeKey,
+                RazorVueLiteralValueKind.String,
+                RazorVueExpressionBindingKind.Literal,
+                RazorVueTemplateEncodability.DirectTemplate,
+                RazorVueTemplateExpressionSafety.DirectTemplateSafe,
+                RazorVueSideEffectClassification.None,
+                component.Origins));
+        }
+
+        if (TryGetAttribute(component, "Value", out var valueAttribute) && valueAttribute.Value is not null)
+        {
+            builder.Add(CreateCascadingValueProviderAttribute(
+                VueCascadingValueProviderDescriptor.ValuePropName,
+                EmitAttributeExpression(snapshot, expressionEmitter, valueAttribute, allowedLocalSymbols, allowedParameterSymbols),
+                ClassifyLiteralValueKind(valueAttribute.Value),
+                valueAttribute.CapturedBindings.IsDefaultOrEmpty
+                    ? ClassifyBindingKind(snapshot, valueAttribute.Value)
+                    : RazorVueExpressionBindingKind.RuntimeExpression,
+                valueAttribute.CapturedBindings.IsDefaultOrEmpty
+                    ? ClassifyTemplateEncodability(valueAttribute.Value)
+                    : RazorVueTemplateEncodability.TemplateViaSetupBinding,
+                valueAttribute.CapturedBindings.IsDefaultOrEmpty
+                    ? ClassifyTemplateExpressionSafety(snapshot, valueAttribute.Value)
+                    : RazorVueTemplateExpressionSafety.RequiresSetupBinding,
+                valueAttribute.CapturedBindings.IsDefaultOrEmpty
+                    ? ClassifySideEffects(valueAttribute.Value)
+                    : RazorVueSideEffectClassification.SingleEvaluationRequired,
+                valueAttribute.Origins));
+        }
+
+        if (TryGetAttribute(component, "IsFixed", out var isFixedAttribute) && isFixedAttribute.Value is not null)
+        {
+            builder.Add(CreateCascadingValueProviderAttribute(
+                VueCascadingValueProviderDescriptor.IsFixedPropName,
+                EmitAttributeExpression(snapshot, expressionEmitter, isFixedAttribute, allowedLocalSymbols, allowedParameterSymbols),
+                ClassifyLiteralValueKind(isFixedAttribute.Value),
+                isFixedAttribute.CapturedBindings.IsDefaultOrEmpty
+                    ? ClassifyBindingKind(snapshot, isFixedAttribute.Value)
+                    : RazorVueExpressionBindingKind.RuntimeExpression,
+                isFixedAttribute.CapturedBindings.IsDefaultOrEmpty
+                    ? ClassifyTemplateEncodability(isFixedAttribute.Value)
+                    : RazorVueTemplateEncodability.TemplateViaSetupBinding,
+                isFixedAttribute.CapturedBindings.IsDefaultOrEmpty
+                    ? ClassifyTemplateExpressionSafety(snapshot, isFixedAttribute.Value)
+                    : RazorVueTemplateExpressionSafety.RequiresSetupBinding,
+                isFixedAttribute.CapturedBindings.IsDefaultOrEmpty
+                    ? ClassifySideEffects(isFixedAttribute.Value)
+                    : RazorVueSideEffectClassification.SingleEvaluationRequired,
+                isFixedAttribute.Origins));
+        }
+
+        return builder.ToImmutable();
+    }
+
+    private static RazorVueCanonicalAttributeBinding CreateCascadingValueProviderKeyAttribute(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter expressionEmitter,
+        RazorVueAttributeNode nameAttribute,
+        string typeKeyExpression,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+    {
+        var nameExpression = EmitAttributeExpression(snapshot, expressionEmitter, nameAttribute, allowedLocalSymbols, allowedParameterSymbols);
+        if (nameAttribute.CapturedBindings.IsDefaultOrEmpty &&
+            ClassifyLiteralValueKind(nameAttribute.Value) == RazorVueLiteralValueKind.String)
+        {
+            return CreateCascadingValueProviderAttribute(
+                VueCascadingValueProviderDescriptor.ProvideKeyPropName,
+                nameExpression,
+                RazorVueLiteralValueKind.String,
+                RazorVueExpressionBindingKind.Literal,
+                RazorVueTemplateEncodability.DirectTemplate,
+                RazorVueTemplateExpressionSafety.DirectTemplateSafe,
+                RazorVueSideEffectClassification.None,
+                nameAttribute.Origins);
+        }
+
+        return CreateCascadingValueProviderAttribute(
+            VueCascadingValueProviderDescriptor.ProvideKeyPropName,
+            "(" + nameExpression + " ?? " + typeKeyExpression + ")",
+            RazorVueLiteralValueKind.None,
+            RazorVueExpressionBindingKind.RuntimeExpression,
+            nameAttribute.CapturedBindings.IsDefaultOrEmpty
+                ? ClassifyTemplateEncodability(nameAttribute.Value)
+                : RazorVueTemplateEncodability.TemplateViaSetupBinding,
+            nameAttribute.CapturedBindings.IsDefaultOrEmpty
+                ? ClassifyTemplateExpressionSafety(snapshot, nameAttribute.Value)
+                : RazorVueTemplateExpressionSafety.RequiresSetupBinding,
+            nameAttribute.CapturedBindings.IsDefaultOrEmpty
+                ? ClassifySideEffects(nameAttribute.Value)
+                : RazorVueSideEffectClassification.SingleEvaluationRequired,
+            nameAttribute.Origins);
+    }
+
+    private static RazorVueCanonicalAttributeBinding CreateCascadingValueProviderAttribute(
+        string name,
+        string expressionText,
+        RazorVueLiteralValueKind literalValueKind,
+        RazorVueExpressionBindingKind bindingKind,
+        RazorVueTemplateEncodability templateEncodability,
+        RazorVueTemplateExpressionSafety templateExpressionSafety,
+        RazorVueSideEffectClassification sideEffectClassification,
+        ImmutableArray<RazorVueSourceOrigin> origins)
+        => new(
+            Name: name,
+            ExpressionText: expressionText,
+            LiteralValueKind: literalValueKind,
+            AttributeKind: RazorVueCanonicalAttributeKind.ComponentProp,
+            BindingKind: bindingKind,
+            TemplateEncodability: templateEncodability,
+            TemplateExpressionSafety: templateExpressionSafety,
+            SideEffectClassification: sideEffectClassification,
+            EventModifiers: RazorVueCanonicalEventModifiers.Empty,
+            SourceOrigins: origins);
+
+    private static string EmitAttributeExpression(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter expressionEmitter,
+        RazorVueAttributeNode attribute,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+        => attribute.CapturedBindings.IsDefaultOrEmpty
+            ? EmitTemplateExpression(snapshot, expressionEmitter, attribute.Value!, allowedLocalSymbols, allowedParameterSymbols)
+            : expressionEmitter.EmitCapturedTemplateExpression(attribute.Value!, attribute.CapturedBindings, allowedLocalSymbols, allowedParameterSymbols);
+
+    private static bool TryGetAttribute(
+        RazorVueComponentNode component,
+        string name,
+        out RazorVueAttributeNode attribute)
+    {
+        foreach (var attributeEntry in component.Attributes)
+        {
+            if (attributeEntry is RazorVueAttributeNode candidate &&
+                string.Equals(candidate.Name, name, StringComparison.Ordinal))
+            {
+                attribute = candidate;
+                return true;
+            }
+        }
+
+        attribute = default!;
+        return false;
     }
 
     private static RazorVueCanonicalNodeKey? CreateNodeKey(
@@ -4571,4 +4758,11 @@ internal sealed class RazorVueCanonicalHModelFactory
 
     private static string NormalizeRelativePath(string relativePath)
         => RazorVueArtifactFactory.NormalizeRelativePathForCanonicalization(relativePath);
+
+    private static string ToJavaScriptString(string value)
+        => "\"" + (value ?? string.Empty)
+            .Replace("\\", "\\\\")
+            .Replace("\"", "\\\"")
+            .Replace("\r", "\\r")
+            .Replace("\n", "\\n") + "\"";
 }

@@ -4020,7 +4020,7 @@ public sealed class BuildRenderTreeTemplateFrontendTests
     }
 
     [TestMethod]
-    public void CreateRenderTree_WithAddElementReferenceCapture_ThrowsCanonicalizationFailed()
+    public void CreateRenderTree_WithAddElementReferenceCapture_ProducesElementReferenceCapture()
     {
         var context = CreateContext(
             """
@@ -4057,11 +4057,11 @@ public sealed class BuildRenderTreeTemplateFrontendTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
-            () => BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
+        var renderTree = BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
 
-        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "AddElementReferenceCapture");
+        var section = Assert.IsInstanceOfType<RazorVueElementNode>(renderTree.Children.Single());
+        Assert.IsNotNull(section.ReferenceCapture);
+        Assert.AreEqual("_element", section.ReferenceCapture.Name);
     }
 
     [TestMethod]

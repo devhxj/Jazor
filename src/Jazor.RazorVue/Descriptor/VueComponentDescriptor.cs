@@ -17,7 +17,24 @@ internal sealed record VueComponentDescriptor(
     ImmutableArray<VueSlotDescriptor> Slots,
     ImmutableArray<string> StyleDependencies,
     ImmutableArray<string> PluginRequirements,
-    VueComponentFlags Flags);
+    VueComponentFlags Flags,
+    ImmutableArray<VueCascadingParameterDescriptor> CascadingParameters);
+
+internal static class VueCascadingValueProviderDescriptor
+{
+    public const string Name = "JazorCascadingValueProvider";
+    public const string FullName = "Jazor.RazorVue.Intrinsics.JazorCascadingValueProvider";
+    public const string ProvideKeyPropName = "provideKey";
+    public const string ValuePropName = "value";
+    public const string IsFixedPropName = "isFixed";
+
+    public static bool IsProviderDescriptor(VueComponentDescriptor? descriptor)
+        => descriptor is not null &&
+           string.Equals(descriptor.FullName, FullName, StringComparison.Ordinal);
+
+    public static bool IsProviderFullName(string fullName)
+        => string.Equals(fullName, FullName, StringComparison.Ordinal);
+}
 
 internal static class VueComponentDescriptorRouteTemplateResolver
 {
@@ -137,4 +154,13 @@ internal enum VueComponentSourceKind
     UserComponent,
     Intrinsic,
     LibraryComponent
+}
+
+internal sealed record VueCascadingParameterDescriptor(
+    string Name,
+    string PublicName,
+    string TypeName,
+    string? Key)
+{
+    public string InjectKey => Key ?? TypeName;
 }

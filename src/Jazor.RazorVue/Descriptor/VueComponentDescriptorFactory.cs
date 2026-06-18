@@ -19,6 +19,10 @@ internal static class VueComponentDescriptorFactory
         miscellaneousOptions:
             SymbolDisplayMiscellaneousOptions.UseSpecialTypes |
             SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
+    private static readonly SymbolDisplayFormat CascadingParameterTypeKeyDisplayFormat = new(
+        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
+        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+        genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters);
 
     public static VueComponentDescriptor Create(RazorVueComponentCandidate candidate, RazorVueCompilationContext context)
     {
@@ -86,6 +90,7 @@ internal static class VueComponentDescriptorFactory
         ImmutableArray<string> pluginRequirements)
     {
         var parameterProperties = GetParameterProperties(componentSymbol, symbols);
+        var cascadingParameterProperties = GetCascadingParameterProperties(componentSymbol, symbols);
         var bindPairs = GetBindableParameterNames(parameterProperties, symbols);
         var authoringMetadata = sourceKind == VueComponentSourceKind.LibraryComponent
             ? GetLibraryAuthoringMetadata(componentSymbol, symbols, parameterProperties)
@@ -94,6 +99,7 @@ internal static class VueComponentDescriptorFactory
         var props = ImmutableArray.CreateBuilder<VuePropDescriptor>();
         var emits = ImmutableArray.CreateBuilder<VueEmitDescriptor>();
         var slots = ImmutableArray.CreateBuilder<VueSlotDescriptor>();
+        var cascadingParameters = ImmutableArray.CreateBuilder<VueCascadingParameterDescriptor>();
         var captureUnmatchedValuesProperties = ImmutableArray.CreateBuilder<IPropertySymbol>();
         var bindableParameters = new HashSet<string>(StringComparer.Ordinal);
 
@@ -167,6 +173,16 @@ internal static class VueComponentDescriptorFactory
                 bindableParameters.Add(publicName);
         }
 
+        foreach (var property in cascadingParameterProperties)
+        {
+            var key = TryGetCascadingParameterName(property, symbols);
+            cascadingParameters.Add(new VueCascadingParameterDescriptor(
+                Name: ToLowerCamelCase(property.Name),
+                PublicName: property.Name,
+                TypeName: FormatTypeName(property.Type),
+                Key: key ?? FormatCascadingParameterTypeKey(property.Type)));
+        }
+
         foreach (var property in parameterProperties)
         {
             authoringMetadata.EmitOverrides.TryGetValue(property.Name, out var emitOverride);
@@ -220,7 +236,8 @@ internal static class VueComponentDescriptorFactory
             Slots: slots.ToImmutable(),
             StyleDependencies: styleDependencies,
             PluginRequirements: pluginRequirements,
-            Flags: authoringMetadata.Flags);
+            Flags: authoringMetadata.Flags,
+            CascadingParameters: cascadingParameters.ToImmutable());
     }
 
     private static ImmutableArray<string> GetRouteTemplates(
@@ -291,6 +308,52 @@ internal static class VueComponentDescriptorFactory
         }
 
         return builder.ToImmutable();
+    }
+
+    private static ImmutableArray<IPropertySymbol> GetCascadingParameterProperties(INamedTypeSymbol componentSymbol, RazorVueCompilationSymbols symbols)
+    {
+        if (symbols.CascadingParameterAttribute is null)
+            return [];
+
+        var builder = ImmutableArray.CreateBuilder<IPropertySymbol>();
+        var seenNames = new HashSet<string>(StringComparer.Ordinal);
+        for (var current = componentSymbol; current is not null; current = current.BaseType)
+        {
+            foreach (var member in current.GetMembers())
+            {
+                if (member is not IPropertySymbol property || property.IsStatic || !seenNames.Add(property.Name))
+                    continue;
+
+                if (property.GetAttributes().Any(attribute => Comparer.Equals(attribute.AttributeClass, symbols.CascadingParameterAttribute)))
+                    builder.Add(property);
+            }
+        }
+
+        return builder.ToImmutable();
+    }
+
+    private static string? TryGetCascadingParameterName(IPropertySymbol property, RazorVueCompilationSymbols symbols)
+    {
+        if (symbols.CascadingParameterAttribute is null)
+            return null;
+
+        foreach (var attribute in property.GetAttributes())
+        {
+            if (!Comparer.Equals(attribute.AttributeClass, symbols.CascadingParameterAttribute))
+                continue;
+
+            foreach (var pair in attribute.NamedArguments)
+            {
+                if (string.Equals(pair.Key, "Name", StringComparison.Ordinal) &&
+                    pair.Value.Value is string name &&
+                    !string.IsNullOrWhiteSpace(name))
+                {
+                    return name.Trim();
+                }
+            }
+        }
+
+        return null;
     }
 
     private static HashSet<string> GetBindableParameterNames(
@@ -784,6 +847,10 @@ internal static class VueComponentDescriptorFactory
 
     private static string FormatTypeName(ITypeSymbol typeSymbol)
         => typeSymbol.ToDisplayString(TypeDisplayFormat);
+
+    private static string FormatCascadingParameterTypeKey(ITypeSymbol typeSymbol)
+        => typeSymbol.WithNullableAnnotation(NullableAnnotation.NotAnnotated)
+            .ToDisplayString(CascadingParameterTypeKeyDisplayFormat);
 
     private static string FormatFullName(INamedTypeSymbol componentSymbol)
         => componentSymbol.ToDisplayString(TypeDisplayFormat);

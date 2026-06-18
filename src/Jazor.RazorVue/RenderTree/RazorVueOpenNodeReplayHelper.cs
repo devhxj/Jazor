@@ -79,6 +79,7 @@ internal static class RazorVueOpenNodeReplayHelper
             RazorVueOpenNodeConditionalReplayOperation => true,
             RazorVueOpenNodeSwitchReplayOperation => true,
             RazorVueOpenNodeKeyReplayOperation => false,
+            RazorVueOpenNodeElementReferenceReplayOperation => false,
             RazorVueOpenNodeScopedReplayOperation scopedOperation => scopedOperation.Operations.Any(static child =>
                 child is RazorVueOpenNodeEventModifierReplayOperation or RazorVueOpenNodeLocalDeclarationReplayOperation or RazorVueOpenNodeImperativeReplayOperation or RazorVueOpenNodeConditionalReplayOperation or RazorVueOpenNodeSwitchReplayOperation ||
                 RequiresImperativeScopedReplay(child, isScopedReplay: true)),

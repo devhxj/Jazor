@@ -392,7 +392,8 @@ public sealed class RazorVueComponentRegistryTests
             Slots: [],
             StyleDependencies: [],
             PluginRequirements: [],
-            Flags: VueComponentFlags.None);
+            Flags: VueComponentFlags.None,
+            CascadingParameters: []);
 
     private static VueComponentDescriptor CreateLibraryComponent(string name, string resolutionNamespace)
         => new(
@@ -409,7 +410,8 @@ public sealed class RazorVueComponentRegistryTests
             Slots: [],
             StyleDependencies: [],
             PluginRequirements: ["vuetify"],
-            Flags: VueComponentFlags.None);
+            Flags: VueComponentFlags.None,
+            CascadingParameters: []);
 
     private static RazorVueCompilationContext CreateContext(string source)
     {

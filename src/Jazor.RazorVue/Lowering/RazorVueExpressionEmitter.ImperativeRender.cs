@@ -538,6 +538,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 if (componentReference is null)
                     return false;
 
+                PushImperativeOpenComponentFrame(invocation);
                 var componentMetadataReference = ResolveImperativeComponentMetadataReference(invocation) ?? "null";
                 expression = builderTarget + ".enterComponent(" + componentReference + ", " + componentMetadataReference + ")";
                 return true;
@@ -548,6 +549,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 expression = builderTarget + ".leaveElement()";
                 return true;
             case "CloseComponent":
+                PopImperativeOpenComponentFrame();
                 expression = builderTarget + ".leaveComponent()";
                 return true;
             case "CloseRegion":
@@ -591,8 +593,15 @@ internal sealed partial class RazorVueExpressionEmitter
                 expression = builderTarget + ".setAttribute(" + EmitImperativeArgument(invocation, argument, 1) + ", " + EmitImperativeComponentParameterValue(invocation, argument, builderTarget, 2) + ")";
                 return true;
             case "AddComponentParameter":
-                expression = builderTarget + ".setComponentParameter(" + EmitImperativeArgument(invocation, argument, 1) + ", " + EmitImperativeComponentParameterValue(invocation, argument, builderTarget, 2) + ")";
+                expression = builderTarget + ".setComponentParameter(" + EmitImperativeComponentParameterName(invocation, argument) + ", " + EmitImperativeComponentParameterValue(invocation, argument, builderTarget, 2) + ")";
                 return true;
+            case "AddElementReferenceCapture":
+                expression = builderTarget + ".setElementReference(" + EmitImperativeElementReferenceCaptureName(invocation) + ")";
+                return true;
+            case "AddComponentReferenceCapture":
+                throw CreateUnsupportedImperativeRenderLoweringException(
+                    invocation,
+                    $"RazorVue imperative render lowering does not support component reference capture in component '{_snapshot.Descriptor.FullName}'. Vue component public-instance template refs do not preserve Blazor component instance semantics.");
             case "AddMultipleAttributes":
                 expression = builderTarget + ".mergeAttributes(" + EmitImperativeArgument(invocation, argument, 1) + ")";
                 return true;
@@ -1317,12 +1326,182 @@ internal sealed partial class RazorVueExpressionEmitter
         return EmitImperativeNestedExpression(value, argument);
     }
 
+    private string EmitImperativeComponentParameterName(IInvocationOperation invocation, SenseArgument argument)
+    {
+        var parameterName = invocation.Arguments.Length > 1
+            ? TryGetConstantString(invocation.Arguments[1].Value)
+            : null;
+
+        if (IsCurrentImperativeCascadingValueProviderFrame(out _) &&
+            string.Equals(parameterName, "Name", System.StringComparison.Ordinal))
+        {
+            return ToJavaScriptString("ProvideKey");
+        }
+
+        return EmitImperativeArgument(invocation, argument, 1);
+    }
+
+    private string EmitImperativeElementReferenceCaptureName(IInvocationOperation invocation)
+    {
+        var callback = invocation.Arguments.Length > 1
+            ? invocation.Arguments[1].Value
+            : null;
+
+        if (!TryResolveElementReferenceCaptureName(callback, out var name))
+        {
+            throw CreateUnsupportedImperativeRenderLoweringException(
+                invocation,
+                $"RazorVue imperative render lowering only supports element reference capture callbacks that assign the captured value to a current-component field or property in component '{_snapshot.Descriptor.FullName}'.");
+        }
+
+        RegisterImperativeElementReferenceCapture(
+            name,
+            invocation.Syntax is null
+                ? _snapshot.Origins
+                : [RazorVueSourceOrigin.FromLocation(invocation.Syntax.GetLocation(), RazorVueOriginKind.Template)]);
+
+        return ToJavaScriptString(name);
+    }
+
+    private bool TryResolveElementReferenceCaptureName(IOperation? callback, out string name)
+    {
+        name = string.Empty;
+        var current = Unwrap(callback);
+        if (current is IDelegateCreationOperation delegateCreation)
+            current = Unwrap(delegateCreation.Target);
+
+        if (current is IConversionOperation conversion)
+            return TryResolveElementReferenceCaptureName(conversion.Operand, out name);
+
+        if (current is not IAnonymousFunctionOperation anonymousFunction)
+            return false;
+
+        if (TryResolveElementReferenceCaptureNameFromOperation(anonymousFunction.Body, out name))
+            return true;
+
+        return TryResolveElementReferenceCaptureNameFromLambdaSyntax(anonymousFunction, out name);
+    }
+
+    private bool TryResolveElementReferenceCaptureNameFromLambdaSyntax(
+        IAnonymousFunctionOperation anonymousFunction,
+        out string name)
+    {
+        name = string.Empty;
+        var assignment = anonymousFunction.Syntax switch
+        {
+            SimpleLambdaExpressionSyntax { ExpressionBody: AssignmentExpressionSyntax expression } => expression,
+            ParenthesizedLambdaExpressionSyntax { ExpressionBody: AssignmentExpressionSyntax expression } => expression,
+            SimpleLambdaExpressionSyntax { Block.Statements.Count: 1 } lambda
+                when lambda.Block.Statements[0] is ExpressionStatementSyntax { Expression: AssignmentExpressionSyntax expression } => expression,
+            ParenthesizedLambdaExpressionSyntax { Block.Statements.Count: 1 } lambda
+                when lambda.Block.Statements[0] is ExpressionStatementSyntax { Expression: AssignmentExpressionSyntax expression } => expression,
+            _ => null
+        };
+        if (assignment is null)
+            return false;
+
+        var semanticModel = _snapshot.Compilation.GetSemanticModel(assignment.SyntaxTree);
+        if (semanticModel.GetSymbolInfo(assignment.Left).Symbol is not { } targetSymbol)
+            return false;
+
+        return TryResolveElementReferenceCaptureTargetSymbolName(targetSymbol, out name);
+    }
+
+    private bool TryResolveElementReferenceCaptureNameFromOperation(IOperation operation, out string name)
+    {
+        name = string.Empty;
+        var current = Unwrap(operation);
+        switch (current)
+        {
+            case IBlockOperation block when block.Operations.Length == 1:
+                return TryResolveElementReferenceCaptureNameFromOperation(block.Operations[0], out name);
+            case IReturnOperation { ReturnedValue: not null } returnOperation:
+                return TryResolveElementReferenceCaptureNameFromOperation(returnOperation.ReturnedValue, out name);
+            case IReturnOperation returnOperation
+                when TryGetSingleChildOperation(returnOperation, out var returnedValue):
+                return TryResolveElementReferenceCaptureNameFromOperation(returnedValue, out name);
+            case IExpressionStatementOperation expressionStatement:
+                return TryResolveElementReferenceCaptureNameFromOperation(expressionStatement.Operation, out name);
+            case ISimpleAssignmentOperation assignment:
+                return TryResolveElementReferenceCaptureTargetName(assignment.Target, out name);
+            default:
+                return false;
+        }
+    }
+
+    private bool TryResolveElementReferenceCaptureTargetName(IOperation target, out string name)
+    {
+        name = string.Empty;
+        var current = Unwrap(target);
+        switch (current)
+        {
+            case IFieldReferenceOperation fieldReference
+                when IsCurrentComponentMember(fieldReference.Field, fieldReference.Instance):
+                name = fieldReference.Field.Name;
+                return true;
+            case IPropertyReferenceOperation propertyReference
+                when IsCurrentComponentMember(propertyReference.Property, propertyReference.Instance):
+                name = propertyReference.Property.Name;
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private bool TryResolveElementReferenceCaptureTargetSymbolName(ISymbol targetSymbol, out string name)
+    {
+        name = string.Empty;
+        switch (targetSymbol)
+        {
+            case IFieldSymbol field when IsCurrentComponentMemberSymbol(field):
+                name = field.Name;
+                return true;
+            case IPropertySymbol property when IsCurrentComponentMemberSymbol(property):
+                name = property.Name;
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private bool IsCurrentComponentMemberSymbol(ISymbol symbol)
+    {
+        for (var current = _snapshot.ComponentSymbol; current is not null; current = current.BaseType)
+        {
+            if (SymbolEqualityComparer.Default.Equals(symbol.ContainingType, current))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryGetSingleChildOperation(IOperation operation, out IOperation child)
+    {
+        var children = operation.ChildOperations;
+        var enumerator = children.GetEnumerator();
+        if (!enumerator.MoveNext())
+        {
+            child = default!;
+            return false;
+        }
+
+        child = enumerator.Current;
+        return !enumerator.MoveNext();
+    }
+
     private string EmitImperativeComponentParameterValue(IInvocationOperation invocation, SenseArgument argument, string builderTarget, int argumentIndex)
     {
         if (invocation.Arguments.Length <= argumentIndex)
             return "undefined";
 
         var value = invocation.Arguments[argumentIndex].Value;
+        if (IsCurrentImperativeCascadingValueProviderFrame(out var cascadingValueTypeKey) &&
+            invocation.Arguments.Length > 1 &&
+            string.Equals(TryGetConstantString(invocation.Arguments[1].Value), "Name", System.StringComparison.Ordinal))
+        {
+            return "(" + EmitImperativeNestedExpression(value, argument) + " ?? " + ToJavaScriptString(cascadingValueTypeKey) + ")";
+        }
+
         if (TryGetCurrentComponentSlotDescriptor(value, out var currentSlot))
         {
             return "__jazorCreateSlotReference(" +
@@ -1360,6 +1539,41 @@ internal sealed partial class RazorVueExpressionEmitter
             return EmitImperativeNestedExpression(value, argument);
 
         return EmitImperativeNestedExpression(value, argument);
+    }
+
+    private void PushImperativeOpenComponentFrame(IInvocationOperation invocation)
+    {
+        _imperativeOpenComponentFrames ??= new Stack<ImperativeOpenComponentFrame>();
+        if (TryGetImperativeOpenComponentType(invocation, out var componentType) &&
+            RazorVueCascadingValueComponent.IsCascadingValueComponent(componentType))
+        {
+            _imperativeOpenComponentFrames.Push(new ImperativeOpenComponentFrame(
+                IsCascadingValueProvider: true,
+                CascadingValueTypeKey: RazorVueCascadingValueComponent.GetTypeKey(componentType)));
+            return;
+        }
+
+        _imperativeOpenComponentFrames.Push(default);
+    }
+
+    private void PopImperativeOpenComponentFrame()
+    {
+        if (_imperativeOpenComponentFrames is { Count: > 0 })
+            _imperativeOpenComponentFrames.Pop();
+    }
+
+    private bool IsCurrentImperativeCascadingValueProviderFrame(out string typeKey)
+    {
+        typeKey = string.Empty;
+        if (_imperativeOpenComponentFrames is not { Count: > 0 })
+            return false;
+
+        var frame = _imperativeOpenComponentFrames.Peek();
+        if (!frame.IsCascadingValueProvider)
+            return false;
+
+        typeKey = frame.CascadingValueTypeKey;
+        return true;
     }
 
     private string EmitImperativeNestedExpression(IOperation operation, SenseArgument argument)
@@ -2804,8 +3018,41 @@ internal sealed partial class RazorVueExpressionEmitter
         return null;
     }
 
+    private bool TryGetImperativeOpenComponentType(IInvocationOperation invocation, out INamedTypeSymbol componentType)
+    {
+        componentType = default!;
+        if (invocation.TargetMethod.TypeArguments.Length == 1 &&
+            invocation.TargetMethod.TypeArguments[0] is INamedTypeSymbol genericComponentType)
+        {
+            componentType = genericComponentType;
+            return true;
+        }
+
+        if (invocation.Arguments.Length < 2)
+            return false;
+
+        if (RazorVueComponentTypeCarrierHelper.TryResolveComponentType(
+                _snapshot.Compilation,
+                _snapshot.ComponentSymbol,
+                invocation.Arguments[1].Value,
+                out var explicitComponentType,
+                out _))
+        {
+            componentType = explicitComponentType;
+            return true;
+        }
+
+        return false;
+    }
+
     private string? TryResolveImperativeComponentReference(INamedTypeSymbol componentType)
     {
+        if (RazorVueCascadingValueComponent.IsCascadingValueComponent(componentType) &&
+            _componentReferences.TryGetValue(VueCascadingValueProviderDescriptor.Name, out var providerReference))
+        {
+            return providerReference;
+        }
+
         foreach (var pair in _resolvedComponents)
         {
             if (!string.Equals(pair.Value.FullName, componentType.ToDisplayString(), System.StringComparison.Ordinal))
@@ -2821,6 +3068,12 @@ internal sealed partial class RazorVueExpressionEmitter
 
     private string? TryResolveImperativeComponentMetadataReference(INamedTypeSymbol componentType)
     {
+        if (RazorVueCascadingValueComponent.IsCascadingValueComponent(componentType) &&
+            _resolvedComponents.ContainsKey(VueCascadingValueProviderDescriptor.Name))
+        {
+            return RazorVueArtifactFactory.CreateImperativeComponentMetadataAlias(VueCascadingValueProviderDescriptor.Name);
+        }
+
         foreach (var pair in _resolvedComponents)
         {
             if (!string.Equals(pair.Value.FullName, componentType.ToDisplayString(), System.StringComparison.Ordinal))
@@ -2830,6 +3083,14 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         return null;
+    }
+
+    private static string? TryGetConstantString(IOperation operation)
+    {
+        var current = Unwrap(operation);
+        return current?.ConstantValue.HasValue == true
+            ? current.ConstantValue.Value as string
+            : null;
     }
 
     private string? ResolveImperativeBuilderTarget(IOperation? instance)

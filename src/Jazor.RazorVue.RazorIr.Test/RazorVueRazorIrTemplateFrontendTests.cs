@@ -278,6 +278,96 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_ForElementRefCapture_ProducesElementReferenceCapture()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<input @ref="_input" />""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ElementRef.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    private ElementReference _input;
+                }
+            }
+            """);
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+
+        var input = Assert.IsInstanceOfType<RazorVueElementNode>(renderTree.Children.Single());
+        Assert.IsNotNull(input.ReferenceCapture);
+        Assert.AreEqual("_input", input.ReferenceCapture.Name);
+    }
+
+    [TestMethod]
+    public void RazorVueSfcArtifactFactory_WithRazorIrTemplateFrontend_LowersElementRefCapture_ToTemplateRef()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<input @ref="_input" />""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ElementRef.Sfc.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    private ElementReference _input;
+                }
+            }
+            """);
+
+        var artifact = new RazorVueSfcArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        Assert.AreEqual(VueSfcArtifactRenderMode.Template, artifact.RenderMode);
+        StringAssert.Contains(artifact.TemplateText, "<input ref=\"_input\" />");
+        StringAssert.Contains(artifact.ScriptSetupText, "import { useTemplateRef } from \"vue\";");
+        StringAssert.Contains(artifact.ScriptSetupText, "const _input = useTemplateRef<Element>(\"_input\");");
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForComponentRefCapture_ThrowsCanonicalizationFailed()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<ChildCard @ref="_child" />""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ComponentRef.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public partial class ChildCard : ComponentBase, IVueComponent
+                {
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    private ChildCard? _child;
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(
+            () => new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "component reference capture");
+    }
+
+    [TestMethod]
     public void CreateRenderTree_ForStaticAttributeSplitAcrossLiteralIrNodes_ConcatenatesValue()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -1665,6 +1755,47 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_ForComponentBindFormatAttribute_RemainsOfficialRazorSgCompileBoundary()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<EditorCard @bind-Value="PublishedAt" @bind-Value:format="yyyy-MM-dd" />""";
+
+        var exception = Assert.ThrowsExactly<AssertFailedException>(() =>
+            RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+                "RazorVue.RazorIr.TemplateFrontend.ComponentBindFormat.Tests",
+                documentPath,
+                documentText,
+                """
+                using System;
+
+                namespace Demo.Pages
+                {
+                    [ECMAScript.ECMAScriptModule("./components/editor-card")]
+                    public partial class EditorCard : ComponentBase, IVueComponent
+                    {
+                        [Parameter]
+                        public string? Value { get; set; }
+
+                        [Parameter]
+                        public EventCallback<DateTime> ValueChanged { get; set; }
+                    }
+
+                    [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                    public partial class TodoApp : ComponentBase, IVueComponent
+                    {
+                        [Parameter]
+                        public DateTime PublishedAt { get; set; }
+                    }
+                }
+                """));
+
+        StringAssert.Contains(exception.Message, "@bind-Value:format");
+        StringAssert.Contains(exception.Message, "__builder.AddComponentParameter(1, \"@bind-Value:format\", \"yyyy-MM-dd\");");
+        StringAssert.Contains(exception.Message, "RuntimeHelpers.TypeCheck<global::System.String>");
+        StringAssert.Contains(exception.Message, "PublishedAt");
+    }
+
+    [TestMethod]
     public void RazorVuePipeline_WithRazorIrTemplateFrontend_CanLowerComponentBindAttribute()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -1703,6 +1834,39 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
 
         StringAssert.Contains(artifact.ModuleCode, "\"value\": props.title");
         StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:value\": (__value) => emit(\"update:title\", __value)");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForElementBindFormat_PreservesRawBindAttributes()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<input @bind="PublishedAt" @bind:format="yyyy-MM-dd" />""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateContext(
+            "RazorVue.RazorIr.TemplateFrontend.ElementBindFormat.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            using System;
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public DateTime PublishedAt { get; set; }
+                }
+            }
+            """);
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+        var input = renderTree.Children[0] as RazorVueElementNode;
+
+        Assert.IsNotNull(input);
+        Assert.AreEqual("input", input!.TagName);
+        Assert.IsTrue(input.Attributes.OfType<RazorVueAttributeNode>().Any(static item => item.Name == "@bind"));
+        Assert.IsTrue(input.Attributes.OfType<RazorVueAttributeNode>().Any(static item => item.Name == "@bind:format"));
     }
 
     [TestMethod]

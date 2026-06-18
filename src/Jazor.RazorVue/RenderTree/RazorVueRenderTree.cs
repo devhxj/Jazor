@@ -22,6 +22,7 @@ internal sealed record RazorVueNodeKey(
 internal sealed record RazorVueElementNode(
     string TagName,
     RazorVueNodeKey? Key,
+    RazorVueElementReferenceCapture? ReferenceCapture,
     ImmutableArray<RazorVueAttributeEntry> Attributes,
     RazorVueRenderFragment Children,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins)
@@ -29,6 +30,10 @@ internal sealed record RazorVueElementNode(
     public ImmutableArray<RazorVueOpenNodeReplayOperation> ReplayOperations { get; init; } =
         ImmutableArray<RazorVueOpenNodeReplayOperation>.Empty;
 }
+
+internal sealed record RazorVueElementReferenceCapture(
+    string Name,
+    ImmutableArray<RazorVueSourceOrigin> Origins);
 
 internal sealed record RazorVueComponentNode(
     string ComponentName,
@@ -213,6 +218,11 @@ internal sealed record RazorVueOpenNodeSwitchReplayLabel(
 internal sealed record RazorVueOpenNodeKeyReplayOperation(
     RazorVueNodeKey? Key,
     bool KeyAssigned,
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueOpenNodeReplayOperation(Origins);
+
+internal sealed record RazorVueOpenNodeElementReferenceReplayOperation(
+    RazorVueElementReferenceCapture? ReferenceCapture,
+    bool ReferenceCaptureAssigned,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueOpenNodeReplayOperation(Origins);
 
 internal sealed record RazorVueOpenNodeSlotTemplateReplayOperation(

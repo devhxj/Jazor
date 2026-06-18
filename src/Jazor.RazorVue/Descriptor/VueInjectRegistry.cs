@@ -158,7 +158,8 @@ internal sealed class VueInjectRegistry
             Slots: MergeSlots(contractDescriptor, implementationDescriptor),
             StyleDependencies: implementationDescriptor.StyleDependencies,
             PluginRequirements: implementationDescriptor.PluginRequirements,
-            Flags: contractDescriptor.Flags);
+            Flags: contractDescriptor.Flags,
+            CascadingParameters: implementationDescriptor.CascadingParameters);
 
     private static ImmutableArray<VuePropDescriptor> MergeProps(
         VueComponentDescriptor contractDescriptor,

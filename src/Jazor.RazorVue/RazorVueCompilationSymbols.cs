@@ -26,7 +26,8 @@ internal sealed record RazorVueCompilationSymbols(
     INamedTypeSymbol? IVueContainerComponent,
     INamedTypeSymbol? IVueContainerImplementation,
     INamedTypeSymbol? VueInjectAttribute,
-    INamedTypeSymbol? EditorRequiredAttribute)
+    INamedTypeSymbol? EditorRequiredAttribute,
+    INamedTypeSymbol? CascadingParameterAttribute)
 {
     public static RazorVueCompilationSymbols? TryCreate(Compilation compilation)
     {
@@ -64,6 +65,7 @@ internal sealed record RazorVueCompilationSymbols(
         var iVueContainerImplementation = compilation.GetTypeByMetadataName("ECMAScript.VueContract.IVueContainerImplementation`1");
         var vueInjectAttribute = compilation.GetTypeByMetadataName("ECMAScript.VueContract.VueInjectAttribute");
         var editorRequiredAttribute = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.EditorRequiredAttribute");
+        var cascadingParameterAttribute = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.CascadingParameterAttribute");
 
         return new RazorVueCompilationSymbols(
             ecmaScriptModuleAttribute,
@@ -89,7 +91,8 @@ internal sealed record RazorVueCompilationSymbols(
             iVueContainerComponent,
             iVueContainerImplementation,
             vueInjectAttribute,
-            editorRequiredAttribute);
+            editorRequiredAttribute,
+            cascadingParameterAttribute);
     }
 
 }

@@ -33,6 +33,13 @@ internal sealed partial class RazorVueArtifactFactory
 
         foreach (var component in components)
         {
+            if (VueCascadingValueProviderDescriptor.IsProviderFullName(component.ComponentFullName) ||
+                RazorVueCascadingValueComponent.IsCascadingValueComponentFullName(component.ComponentFullName))
+            {
+                builder[component.ComponentName] = registry.ComponentsByFullName[VueCascadingValueProviderDescriptor.FullName];
+                continue;
+            }
+
             var result = ResolveComponentDescriptor(registry, resolutionContext, component);
             if (result.Status != VueComponentResolutionStatus.Resolved || result.Descriptor is null)
                 throw CreateResolutionIssueException(result, snapshot.Descriptor.FullName, component);
@@ -107,7 +114,9 @@ internal sealed partial class RazorVueArtifactFactory
         var builder = ImmutableDictionary.CreateBuilder<string, string>(StringComparer.Ordinal);
         foreach (var item in resolvedComponents)
         {
-            if (string.Equals(item.Value.ImportSpecifier, "vue", StringComparison.Ordinal))
+            if (VueCascadingValueProviderDescriptor.IsProviderDescriptor(item.Value))
+                builder[item.Key] = VueCascadingValueProviderDescriptor.Name;
+            else if (string.Equals(item.Value.ImportSpecifier, "vue", StringComparison.Ordinal))
                 builder[item.Key] = item.Value.ExportName;
             else
                 builder[item.Key] = CreateComponentAlias(item.Key);
@@ -248,17 +257,7 @@ internal sealed partial class RazorVueArtifactFactory
                     if (nestedOperation is IInvocationOperation nestedInvocation &&
                         IsOpenComponentInvocation(nestedInvocation, componentSymbol, out var nestedComponentType, out var nestedResolutionName))
                     {
-                        components.Add(new RazorVueComponentNode(
-                            nestedComponentType.Name,
-                            nestedComponentType.ToDisplayString(),
-                            nestedResolutionName,
-                            Key: null,
-                            Attributes: ImmutableArray<RazorVueAttributeEntry>.Empty,
-                            SlotTemplates: ImmutableArray<RazorVueComponentSlotTemplateNode>.Empty,
-                            ImplicitDefaultSlotAssignments: ImmutableArray<RazorVueImplicitDefaultSlotAssignmentNode>.Empty,
-                            AmbientDefaultSlotChildren: RazorVueRenderFragment.Empty,
-                            Children: RazorVueRenderFragment.Empty,
-                            Origins: origins));
+                        components.Add(CreateCollectedComponentNode(nestedComponentType, nestedResolutionName, origins));
                     }
                 }
             }
@@ -272,18 +271,41 @@ internal sealed partial class RazorVueArtifactFactory
             if (!IsOpenComponentInvocation(invocation, componentSymbol, out var componentType, out var resolutionName))
                 continue;
 
-            components.Add(new RazorVueComponentNode(
-                componentType.Name,
-                componentType.ToDisplayString(),
-                resolutionName,
+            components.Add(CreateCollectedComponentNode(componentType, resolutionName, origins));
+        }
+    }
+
+    private static RazorVueComponentNode CreateCollectedComponentNode(
+        INamedTypeSymbol componentType,
+        string resolutionName,
+        ImmutableArray<RazorVueSourceOrigin> origins)
+    {
+        if (RazorVueCascadingValueComponent.IsCascadingValueComponent(componentType))
+        {
+            return new RazorVueComponentNode(
+                VueCascadingValueProviderDescriptor.Name,
+                VueCascadingValueProviderDescriptor.FullName,
+                RazorVueCascadingValueComponent.GetTypeKey(componentType),
                 Key: null,
                 Attributes: ImmutableArray<RazorVueAttributeEntry>.Empty,
                 SlotTemplates: ImmutableArray<RazorVueComponentSlotTemplateNode>.Empty,
                 ImplicitDefaultSlotAssignments: ImmutableArray<RazorVueImplicitDefaultSlotAssignmentNode>.Empty,
                 AmbientDefaultSlotChildren: RazorVueRenderFragment.Empty,
                 Children: RazorVueRenderFragment.Empty,
-                Origins: origins));
+                Origins: origins);
         }
+
+        return new RazorVueComponentNode(
+            componentType.Name,
+            componentType.ToDisplayString(),
+            resolutionName,
+            Key: null,
+            Attributes: ImmutableArray<RazorVueAttributeEntry>.Empty,
+            SlotTemplates: ImmutableArray<RazorVueComponentSlotTemplateNode>.Empty,
+            ImplicitDefaultSlotAssignments: ImmutableArray<RazorVueImplicitDefaultSlotAssignmentNode>.Empty,
+            AmbientDefaultSlotChildren: RazorVueRenderFragment.Empty,
+            Children: RazorVueRenderFragment.Empty,
+            Origins: origins);
     }
 
     private static bool IsSourceStableMutableCarrierMember(Compilation compilation, ISymbol member)

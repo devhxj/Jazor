@@ -101,7 +101,7 @@ internal sealed partial class RazorVueExpressionEmitter
         {
             return EmitVNodeCall(
                 ToJavaScriptString(element.TagName),
-                EmitAttributesArgument(element.Attributes, element.Key, allowedLocalSymbols, allowedParameterSymbols),
+                EmitAttributesArgument(element.Attributes, element.Key, element.ReferenceCapture, allowedLocalSymbols, allowedParameterSymbols),
                 EmitImperativeCompatibleFragmentArgument(element.Children, allowedLocalSymbols, allowedParameterSymbols));
         }
 
@@ -118,6 +118,15 @@ internal sealed partial class RazorVueExpressionEmitter
         ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
     {
         _resolvedComponents.TryGetValue(component.ComponentName, out var descriptor);
+        if (VueCascadingValueProviderDescriptor.IsProviderDescriptor(descriptor))
+        {
+            return EmitCascadingValueProviderNode(
+                component,
+                allowedLocalSymbols,
+                allowedParameterSymbols,
+                EmitImperativeCompatibleFragmentExpression);
+        }
+
         _componentSlotsByPublicName.TryGetValue(component.ComponentName, out var slotsByPublicName);
         _componentEmitDescriptorsByRazorAlias.TryGetValue(component.ComponentName, out var emitDescriptorsByAlias);
 
@@ -612,6 +621,22 @@ internal sealed partial class RazorVueExpressionEmitter
                             keyOperation.Key.CapturedBindings,
                             allowedLocalSymbols,
                             allowedParameterSymbols))
+                    .AppendLine(");");
+                break;
+            case RazorVueOpenNodeElementReferenceReplayOperation referenceOperation:
+                if (component is not null)
+                    throw new InvalidOperationException("Element reference replay requires an open element frame.");
+                if (!referenceOperation.ReferenceCaptureAssigned)
+                    break;
+
+                if (referenceOperation.ReferenceCapture is { } referenceCapture)
+                    RegisterImperativeElementReferenceCapture(referenceCapture.Name, referenceCapture.Origins);
+
+                builder.Append(builderAlias)
+                    .Append(".setElementReference(")
+                    .Append(referenceOperation.ReferenceCapture is null
+                        ? "null"
+                        : ToJavaScriptString(referenceOperation.ReferenceCapture.Name))
                     .AppendLine(");");
                 break;
             case RazorVueOpenNodeSlotTemplateReplayOperation slotTemplateOperation:

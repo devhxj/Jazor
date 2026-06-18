@@ -59,6 +59,7 @@ internal sealed partial class RazorVueExpressionEmitter
             case RazorVueElementNode element:
                 builder.Append("element(").Append(element.TagName).Append(')');
                 AppendKeyShape(builder, element.Key);
+                AppendElementReferenceCaptureShape(builder, element.ReferenceCapture);
                 AppendAttributesShape(builder, element.Attributes);
                 AppendReplayOperationsShape(builder, element.ReplayOperations);
                 AppendFragmentShape(builder, element.Children);
@@ -150,6 +151,14 @@ internal sealed partial class RazorVueExpressionEmitter
         foreach (var assignment in assignments)
             AppendFragmentShape(builder, assignment.Children);
         builder.Append(']');
+    }
+
+    private static void AppendElementReferenceCaptureShape(
+        StringBuilder builder,
+        RazorVueElementReferenceCapture? referenceCapture)
+    {
+        if (referenceCapture is not null)
+            builder.Append("[ref:").Append(referenceCapture.Name).Append(']');
     }
 
     private void AppendReplayOperationsShape(
@@ -252,6 +261,12 @@ internal sealed partial class RazorVueExpressionEmitter
                 builder.Append("keyop(").Append(keyOperation.KeyAssigned).Append(':');
                 if (keyOperation.Key is not null)
                     builder.Append(keyOperation.Key.Expression.Syntax.ToString());
+                builder.Append(')');
+                break;
+            case RazorVueOpenNodeElementReferenceReplayOperation referenceOperation:
+                builder.Append("refop(").Append(referenceOperation.ReferenceCaptureAssigned).Append(':');
+                if (referenceOperation.ReferenceCapture is not null)
+                    builder.Append(referenceOperation.ReferenceCapture.Name);
                 builder.Append(')');
                 break;
             case RazorVueOpenNodeSlotTemplateReplayOperation slotOperation:

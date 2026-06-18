@@ -46,6 +46,7 @@ internal sealed record RazorVueRazorIrNode(
     string? TypeName = null,
     string? MethodName = null,
     string? AttributeName = null,
+    string? Identifier = null,
     string? ParameterName = null,
     bool IsParameterized = false,
     bool IsDesignTimePropertyAccessHelper = false,

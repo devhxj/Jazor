@@ -1449,6 +1449,12 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         if (IsCurrentComponentMember(method.ContainingType, property.Property, property.Instance) &&
+            TryEmitCurrentComponentCascadingParameterReference(property.Property, out var cascadingExpression))
+        {
+            return new LifecyclePayloadEmission(cascadingExpression, false);
+        }
+
+        if (IsCurrentComponentMember(method.ContainingType, property.Property, property.Instance) &&
             TryEmitLifecycleCurrentComponentPropertyReference(property.Property, out var lifecyclePropertyExpression))
         {
             return new LifecyclePayloadEmission(lifecyclePropertyExpression, false);
@@ -1713,6 +1719,9 @@ internal sealed partial class RazorVueExpressionEmitter
                 return true;
             }
 
+            if (TryEmitCurrentComponentCascadingParameterReference(property.Property, out expression))
+                return true;
+
             return TryEmitLifecycleCurrentComponentPropertyReference(property.Property, out expression);
         }
 
@@ -1755,6 +1764,9 @@ internal sealed partial class RazorVueExpressionEmitter
         {
             if (_propsByPublicName.TryGetValue(property.Property.Name, out var prop))
                 return "props." + prop.Name;
+
+            if (TryEmitCurrentComponentCascadingParameterReference(property.Property, out var cascadingExpression))
+                return cascadingExpression;
 
             if (_slotsByPublicName.TryGetValue(property.Property.Name, out var slot))
                 return EmitCurrentComponentSlotReference(slot);
@@ -1832,6 +1844,9 @@ internal sealed partial class RazorVueExpressionEmitter
                 expression = "props." + prop.Name;
                 return true;
             }
+
+            if (TryEmitCurrentComponentCascadingParameterReference(property.Property, out expression))
+                return true;
 
             if (_slotsByPublicName.TryGetValue(property.Property.Name, out var slot))
             {
@@ -1918,6 +1933,9 @@ internal sealed partial class RazorVueExpressionEmitter
             if (_propsByPublicName.TryGetValue(property.Property.Name, out var prop))
                 return "props." + prop.Name;
 
+            if (TryEmitCurrentComponentCascadingParameterReference(property.Property, out var cascadingExpression))
+                return cascadingExpression;
+
             if (_slotsByPublicName.TryGetValue(property.Property.Name, out var slot))
                 return EmitCurrentComponentSlotReference(slot);
 
@@ -1978,6 +1996,20 @@ internal sealed partial class RazorVueExpressionEmitter
                string.Equals(displayName, "System.Collections.Generic.IReadOnlyCollection<T>", StringComparison.Ordinal) ||
                string.Equals(displayName, "System.Collections.ICollection", StringComparison.Ordinal) ||
                string.Equals(displayName, "System.Collections.ObjectModel.ReadOnlyCollection<T>", StringComparison.Ordinal);
+    }
+
+    private bool TryEmitCurrentComponentCascadingParameterReference(
+        IPropertySymbol property,
+        out string expression)
+    {
+        if (_cascadingParametersByPublicName.TryGetValue(property.Name, out var cascading))
+        {
+            expression = "unref(" + cascading.Name + ")";
+            return true;
+        }
+
+        expression = string.Empty;
+        return false;
     }
 
     private string EmitFieldReference(IFieldReferenceOperation field)

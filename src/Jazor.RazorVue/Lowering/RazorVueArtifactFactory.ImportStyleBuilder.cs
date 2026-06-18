@@ -36,6 +36,7 @@ internal sealed partial class RazorVueArtifactFactory
         // than local alias names generated during lowering.
         builder.AddRange(
             resolvedComponents.Values
+                .Where(static descriptor => !VueCascadingValueProviderDescriptor.IsProviderDescriptor(descriptor))
                 .Select(static descriptor => descriptor.ImportSpecifier)
                 .Where(static importSpecifier => !string.Equals(importSpecifier, "vue", StringComparison.Ordinal))
                 .Distinct(StringComparer.Ordinal));
@@ -95,7 +96,8 @@ internal sealed partial class RazorVueArtifactFactory
     private static void AppendComponentImports(StringBuilder builder, ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
     {
         var groups = resolvedComponents
-            .Where(static pair => !string.Equals(pair.Value.ImportSpecifier, "vue", StringComparison.Ordinal))
+            .Where(static pair => !VueCascadingValueProviderDescriptor.IsProviderDescriptor(pair.Value) &&
+                                  !string.Equals(pair.Value.ImportSpecifier, "vue", StringComparison.Ordinal))
             .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
             .GroupBy(static pair => pair.Value.ImportSpecifier, StringComparer.Ordinal);
 

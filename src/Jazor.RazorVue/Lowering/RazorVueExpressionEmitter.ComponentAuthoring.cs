@@ -55,7 +55,7 @@ internal sealed partial class RazorVueExpressionEmitter
         ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
         => EmitVNodeCall(
             ToJavaScriptString(element.TagName),
-            EmitAttributesArgument(element.Attributes, element.Key, allowedLocalSymbols, allowedParameterSymbols),
+            EmitAttributesArgument(element.Attributes, element.Key, element.ReferenceCapture, allowedLocalSymbols, allowedParameterSymbols),
             EmitFragmentArgument(element.Children, allowedLocalSymbols, allowedParameterSymbols));
 
     private string EmitComponentNode(
@@ -64,6 +64,15 @@ internal sealed partial class RazorVueExpressionEmitter
         ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
     {
         _resolvedComponents.TryGetValue(component.ComponentName, out var descriptor);
+        if (VueCascadingValueProviderDescriptor.IsProviderDescriptor(descriptor))
+        {
+            return EmitCascadingValueProviderNode(
+                component,
+                allowedLocalSymbols,
+                allowedParameterSymbols,
+                EmitFragment);
+        }
+
         _componentSlotsByPublicName.TryGetValue(component.ComponentName, out var slotsByPublicName);
         _componentEmitDescriptorsByRazorAlias.TryGetValue(component.ComponentName, out var emitDescriptorsByAlias);
 
@@ -87,6 +96,88 @@ internal sealed partial class RazorVueExpressionEmitter
             ResolveComponentReference(component),
             ApplyNodeKey(attributes, component.Key, allowedLocalSymbols, allowedParameterSymbols),
             slots);
+    }
+
+    private string EmitCascadingValueProviderNode(
+        RazorVueComponentNode component,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols,
+        Func<RazorVueRenderFragment, ImmutableHashSet<ILocalSymbol>, ImmutableHashSet<IParameterSymbol>, string> emitDefaultSlotFragment)
+    {
+        var provideKey = ResolveCascadingValueProviderKey(component, allowedLocalSymbols, allowedParameterSymbols);
+        var value = ResolveCascadingValueProviderValue(component, allowedLocalSymbols, allowedParameterSymbols);
+        var isFixed = ResolveCascadingValueProviderIsFixed(component, allowedLocalSymbols, allowedParameterSymbols);
+        var children = HasAnyDefaultSlotContent(component)
+            ? emitDefaultSlotFragment(GetDefaultSlotFragment(component), allowedLocalSymbols, allowedParameterSymbols)
+            : "null";
+
+        return EmitVNodeCall(
+            VueCascadingValueProviderDescriptor.Name,
+            new OptionalJsArgument(
+                "{ \"" + VueCascadingValueProviderDescriptor.ProvideKeyPropName + "\": " + provideKey +
+                ", \"" + VueCascadingValueProviderDescriptor.ValuePropName + "\": " + value +
+                ", \"" + VueCascadingValueProviderDescriptor.IsFixedPropName + "\": " + isFixed + " }",
+                true),
+            new OptionalJsArgument("{ default: () => " + children + " }", true));
+    }
+
+    private string ResolveCascadingValueProviderKey(
+        RazorVueComponentNode component,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+    {
+        var typeKey = ToJavaScriptString(ResolveCascadingValueTypeKey(component));
+        if (TryGetAttribute(component, "Name", out var nameAttribute) && nameAttribute.Value is not null)
+        {
+            var nameExpression = EmitCapturedScopedExpression(
+                nameAttribute.Value,
+                nameAttribute.CapturedBindings,
+                allowedLocalSymbols,
+                allowedParameterSymbols);
+            return "(" + nameExpression + " ?? " + typeKey + ")";
+        }
+
+        return typeKey;
+    }
+
+    private string ResolveCascadingValueProviderValue(
+        RazorVueComponentNode component,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+        => TryGetAttribute(component, "Value", out var valueAttribute) && valueAttribute.Value is not null
+            ? EmitCapturedScopedExpression(valueAttribute.Value, valueAttribute.CapturedBindings, allowedLocalSymbols, allowedParameterSymbols)
+            : "undefined";
+
+    private string ResolveCascadingValueProviderIsFixed(
+        RazorVueComponentNode component,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+        => TryGetAttribute(component, "IsFixed", out var isFixedAttribute) && isFixedAttribute.Value is not null
+            ? EmitCapturedScopedExpression(isFixedAttribute.Value, isFixedAttribute.CapturedBindings, allowedLocalSymbols, allowedParameterSymbols)
+            : "false";
+
+    private static string ResolveCascadingValueTypeKey(RazorVueComponentNode component)
+        => VueCascadingValueProviderDescriptor.IsProviderFullName(component.ComponentFullName)
+            ? RazorVueCascadingValueComponent.GetTypeKey(component.ResolutionName)
+            : RazorVueCascadingValueComponent.GetTypeKey(component.ComponentFullName);
+
+    private static bool TryGetAttribute(
+        RazorVueComponentNode component,
+        string name,
+        out RazorVueAttributeNode attribute)
+    {
+        foreach (var attributeEntry in component.Attributes)
+        {
+            if (attributeEntry is RazorVueAttributeNode candidate &&
+                string.Equals(candidate.Name, name, StringComparison.Ordinal))
+            {
+                attribute = candidate;
+                return true;
+            }
+        }
+
+        attribute = default!;
+        return false;
     }
 
     private void ValidateDefaultLibrarySlotUsage(
@@ -347,15 +438,16 @@ internal sealed partial class RazorVueExpressionEmitter
     private OptionalJsArgument EmitAttributesArgument(
         ImmutableArray<RazorVueAttributeEntry> attributes,
         RazorVueNodeKey? key,
+        RazorVueElementReferenceCapture? referenceCapture,
         ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
         ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
     {
-        if (attributes.IsDefaultOrEmpty)
-            return ApplyNodeKey(OptionalJsArgument.Missing, key, allowedLocalSymbols, allowedParameterSymbols);
-
         var segments = new List<string>();
         var objectEntries = new List<string>();
         var containsSpread = false;
+        if (referenceCapture is not null)
+            objectEntries.Add(ToJavaScriptString("ref") + ": " + ToJavaScriptString(referenceCapture.Name));
+
         foreach (var attributeEntry in attributes)
         {
             switch (attributeEntry)

@@ -237,6 +237,7 @@ internal static class RazorVueReflectedRazorIrReader
             TypeName: ReadString(node, "TypeName"),
             MethodName: ReadString(node, "MethodName") ?? ReadString(node, "Name"),
             AttributeName: ReadString(node, "AttributeName"),
+            Identifier: ReadString(node, "Identifier") ?? ReadString(node, "FieldName") ?? ReadString(node, "MemberName"),
             ParameterName: ReadString(node, "ParameterName"),
             IsParameterized: ReadBool(node, "IsParameterized"),
             IsDesignTimePropertyAccessHelper: ReadBool(node, "IsDesignTimePropertyAccessHelper"),

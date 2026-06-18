@@ -39,10 +39,13 @@ internal sealed partial class RazorVueExpressionEmitter
         public static OptionalJsArgument Missing => new(string.Empty, false);
     }
 
+    private readonly record struct ImperativeOpenComponentFrame(bool IsCascadingValueProvider, string CascadingValueTypeKey);
+
     internal const string LifecycleFirstRenderPlaceholder = "__jazorVueLifecycleFirstRender__";
 
     private readonly RazorVueSemanticSnapshot _snapshot;
     private readonly Dictionary<string, VuePropDescriptor> _propsByPublicName;
+    private readonly Dictionary<string, VueCascadingParameterDescriptor> _cascadingParametersByPublicName;
     private readonly Dictionary<string, VueSlotDescriptor> _slotsByPublicName;
     private readonly Dictionary<string, VueEmitDescriptor> _emitsByRazorAlias;
     private readonly ImmutableDictionary<string, VueComponentDescriptor> _resolvedComponents;
@@ -67,10 +70,13 @@ internal sealed partial class RazorVueExpressionEmitter
     private Dictionary<IMethodSymbol, string>? _scopedLifecycleLocalFunctionAliases;
     private Dictionary<ILocalSymbol, string>? _scopedLocalAliases;
     private Dictionary<IParameterSymbol, string>? _scopedParameterAliases;
+    private Stack<ImperativeOpenComponentFrame>? _imperativeOpenComponentFrames;
     private readonly RazorVueCompilerModuleContext _compilerModuleContext;
     private readonly SenseArgument _compilerArgument;
     private readonly SemanticWalker _semanticWalker;
     private readonly List<RazorVueCompilerImportBinding> _compilerImports;
+    private readonly List<RazorVueElementReferenceCapture> _requiredImperativeElementReferenceCaptures = new();
+    private readonly HashSet<string> _requiredImperativeElementReferenceCaptureNames = new(StringComparer.Ordinal);
 
     public RazorVueExpressionEmitter(
         RazorVueSemanticSnapshot snapshot,
@@ -83,6 +89,10 @@ internal sealed partial class RazorVueExpressionEmitter
         _propsByPublicName = snapshot.Descriptor.Props.ToDictionary(
             static prop => prop.PublicName,
             static prop => prop,
+            StringComparer.Ordinal);
+        _cascadingParametersByPublicName = snapshot.Descriptor.CascadingParameters.ToDictionary(
+            static cascading => cascading.PublicName,
+            static cascading => cascading,
             StringComparer.Ordinal);
         _slotsByPublicName = snapshot.Descriptor.Slots
             .GroupBy(static slot => slot.PublicName, StringComparer.Ordinal)
@@ -161,6 +171,9 @@ internal sealed partial class RazorVueExpressionEmitter
 
     internal string EmitImperativeRenderBody(RazorVueRenderFragment fragment)
     {
+        _requiredImperativeElementReferenceCaptures.Clear();
+        _requiredImperativeElementReferenceCaptureNames.Clear();
+
         var statements = EmitImperativeFragmentStatements(
             fragment,
             ImperativeRenderContextAlias,
@@ -171,6 +184,22 @@ internal sealed partial class RazorVueExpressionEmitter
             return "return " + ImperativeRenderContextAlias + ".finish();";
 
         return statements + "\nreturn " + ImperativeRenderContextAlias + ".finish();";
+    }
+
+    internal ImmutableArray<RazorVueElementReferenceCapture> GetRequiredImperativeElementReferenceCaptures()
+        => _requiredImperativeElementReferenceCaptures.ToImmutableArray();
+
+    private void RegisterImperativeElementReferenceCapture(
+        string name,
+        ImmutableArray<RazorVueSourceOrigin> origins)
+    {
+        if (!_requiredImperativeElementReferenceCaptureNames.Add(name))
+            return;
+
+        _requiredImperativeElementReferenceCaptures.Add(
+            new RazorVueElementReferenceCapture(
+                name,
+                origins.IsDefault ? ImmutableArray<RazorVueSourceOrigin>.Empty : origins));
     }
 
     internal string EmitTemplateExpression(IOperation operation)

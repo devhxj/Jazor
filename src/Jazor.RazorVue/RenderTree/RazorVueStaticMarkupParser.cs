@@ -444,6 +444,7 @@ internal static class RazorVueStaticMarkupParser
             => new(
                 TagName,
                 Key: null,
+                ReferenceCapture: null,
                 Attributes,
                 new RazorVueRenderFragment(Children.ToImmutable()),
                 Origins);

@@ -49,6 +49,8 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
             case RazorVueElementNode element:
                 if (element.Key is not null)
                     builder.AppendLine("render:key:" + element.Key.Expression.Syntax.ToString());
+                if (element.ReferenceCapture is not null)
+                    builder.AppendLine("render:ref:" + element.ReferenceCapture.Name);
                 AppendRenderTreeKeyShape(builder, element.Children);
                 break;
             case RazorVueComponentNode component:
@@ -107,6 +109,8 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
             case RazorVueCanonicalElementNode element:
                 if (element.Key is not null)
                     builder.AppendLine("canonical:key:" + element.Key.ExpressionText);
+                if (element.ReferenceCapture is not null)
+                    builder.AppendLine("canonical:ref:" + element.ReferenceCapture.Name);
                 AppendCanonicalKeyShape(builder, element.Children);
                 break;
             case RazorVueCanonicalComponentNode component:
@@ -173,6 +177,16 @@ internal static class RazorVueDescriptorIdentityShapeBuilder
                 slot.IsDefault + "|" +
                 slot.Required + "|" +
                 string.Join(",", slot.Parameters.Select(static parameter => parameter.Name + ":" + parameter.TypeName)));
+        }
+
+        foreach (var cascading in descriptor.CascadingParameters.OrderBy(static item => item.PublicName, StringComparer.Ordinal))
+        {
+            builder.AppendLine(
+                "cascading:" +
+                cascading.PublicName + "|" +
+                cascading.Name + "|" +
+                cascading.TypeName + "|" +
+                cascading.InjectKey);
         }
 
         foreach (var pluginRequirement in descriptor.PluginRequirements.OrderBy(static item => item, StringComparer.Ordinal))

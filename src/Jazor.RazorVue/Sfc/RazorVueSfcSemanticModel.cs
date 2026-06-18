@@ -32,6 +32,7 @@ internal sealed record RazorVueSfcTemplateBlockModel(
 internal sealed record RazorVueSfcScriptSetupBlockModel(
     RazorVueCanonicalSetupModel Setup,
     ImmutableArray<RazorVueSfcSetupBinding> LiftedBindings,
+    ImmutableArray<RazorVueSfcTemplateRefBinding> TemplateRefs,
     bool RequiresSlotsRuntime,
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins);
 
@@ -56,6 +57,11 @@ internal sealed record RazorVueSfcSetupBinding(
     string ExpressionText,
     RazorVueSfcSetupBindingKind BindingKind,
     string TemplateExpressionText,
+    ImmutableArray<RazorVueSourceOrigin> SourceOrigins);
+
+internal sealed record RazorVueSfcTemplateRefBinding(
+    string Name,
+    string ElementTypeName,
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins);
 
 internal sealed record RazorVueSfcTemplateBindingSite(

@@ -96,7 +96,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         RazorVueRazorSourceGeneratorDocument document)
     {
         var resolver = new RazorVueRazorIrOperationResolver(context, snapshot, document);
-        var converter = new Converter(context, snapshot, resolver);
+        var converter = new Converter(context, snapshot, resolver, document.PrimaryDocument);
         return converter.Convert(document.DocumentNode);
     }
 
@@ -123,7 +123,8 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
     private sealed class Converter(
         Jazor.RazorVue.RazorVueCompilationContext context,
         RazorVueSemanticSnapshot snapshot,
-        RazorVueRazorIrOperationResolver resolver)
+        RazorVueRazorIrOperationResolver resolver,
+        Jazor.RazorVue.RazorVueRazorDocument primaryDocument)
     {
         private static readonly ImmutableHashSet<ILocalSymbol> EmptyLocalScope =
             ImmutableHashSet<ILocalSymbol>.Empty.WithComparer(SymbolEqualityComparer.Default);
@@ -150,6 +151,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         private readonly Jazor.RazorVue.RazorVueCompilationContext _context = context;
         private readonly RazorVueSemanticSnapshot _snapshot = snapshot;
         private readonly RazorVueRazorIrOperationResolver _resolver = resolver;
+        private readonly Jazor.RazorVue.RazorVueRazorDocument _primaryDocument = primaryDocument;
         private readonly Dictionary<string, IOperation> _literalStringOperationCache = new(StringComparer.Ordinal);
         private readonly Dictionary<string, int> _elementAttributeOrdinals = new(StringComparer.Ordinal);
         private readonly Dictionary<string, int> _componentAttributeOrdinals = new(StringComparer.Ordinal);
@@ -211,6 +213,10 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             string FilePath,
             int Start,
             int Length);
+
+        private readonly record struct StaticRazorRefDirective(
+            string Name,
+            RazorVueRazorSourceSpan? Source);
 
         public RazorVueRenderFragment Convert(RazorVueRazorIrNode document)
         {
@@ -916,13 +922,15 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
             ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
         {
-            RejectElementExtensions(node.CapturesOrEmpty, "ReferenceCaptureIntermediateNode");
-
+            var staticRefDirective = ResolveStaticRazorRefDirective(node);
+            var referenceCapture = ResolveElementReferenceCapture(node.CapturesOrEmpty, staticRefDirective);
             var key = ResolveElementKey(node);
             var attributes = ImmutableArray.CreateBuilder<RazorVueAttributeEntry>();
             foreach (var attribute in node.AttributesOrEmpty)
             {
                 if (IsKeyAttribute(attribute))
+                    continue;
+                if (IsStaticRazorRefDirectiveAttribute(attribute, staticRefDirective))
                     continue;
 
                 AddHtmlAttributeEntry(attributes, attribute);
@@ -934,9 +942,267 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return new RazorVueElementNode(
                 node.TagName ?? string.Empty,
                 key,
+                referenceCapture,
                 attributes.ToImmutable(),
                 children,
                 CreateOrigins(node.Source));
+        }
+
+        private RazorVueElementReferenceCapture? ResolveElementReferenceCapture(
+            ImmutableArray<RazorVueRazorIrNode> captures,
+            StaticRazorRefDirective? staticRefDirective)
+        {
+            if (captures.IsDefaultOrEmpty)
+            {
+                return staticRefDirective is null
+                    ? null
+                    : new RazorVueElementReferenceCapture(
+                        staticRefDirective.Value.Name,
+                        CreateOrigins(staticRefDirective.Value.Source));
+            }
+
+            if (captures.Length != 1)
+            {
+                throw CreateUnsupportedAttributeException(
+                    GetBestSourceSpan(captures[0]),
+                    $"RazorVue Razor IR frontend expected exactly one ReferenceCaptureIntermediateNode for element @ref in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
+            var capture = captures[0];
+            var name = ResolveReferenceCaptureIdentifier(capture);
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw CreateUnsupportedAttributeException(
+                    GetBestSourceSpan(capture),
+                    $"RazorVue element @ref in component '{_snapshot.Descriptor.FullName}' requires a static field or property reference that the Razor SDK exposes as a ReferenceCaptureIntermediateNode identifier.");
+            }
+
+            return new RazorVueElementReferenceCapture(
+                name!,
+                CreateOrigins(GetBestSourceSpan(capture)));
+        }
+
+        private string? ResolveReferenceCaptureIdentifier(RazorVueRazorIrNode capture)
+        {
+            if (!string.IsNullOrWhiteSpace(capture.Identifier))
+                return capture.Identifier;
+
+            foreach (var child in capture.Children)
+            {
+                if (!string.IsNullOrWhiteSpace(child.Identifier))
+                    return child.Identifier;
+
+                var content = ResolveLiteralText(child);
+                if (TryExtractReferenceCaptureIdentifier(content) is { } extracted)
+                    return extracted;
+            }
+
+            return TryExtractReferenceCaptureIdentifier(ResolveLiteralText(capture));
+        }
+
+        private StaticRazorRefDirective? ResolveStaticRazorRefDirective(RazorVueRazorIrNode node)
+        {
+            var sourceSpan = node.StartTagSpan ?? node.Source ?? GetBestSourceSpan(node);
+            if (sourceSpan is null ||
+                !TryReadStartTagText(sourceSpan.Value, out var startTagText, out var startTagSpan) ||
+                !TryExtractStaticRazorRefDirective(startTagText, startTagSpan, out var directive))
+            {
+                return null;
+            }
+
+            return directive;
+        }
+
+        private bool IsStaticRazorRefDirectiveAttribute(
+            RazorVueRazorIrNode attribute,
+            StaticRazorRefDirective? directive)
+        {
+            if (directive is null)
+                return false;
+
+            if (string.Equals(attribute.AttributeName, "@ref", StringComparison.Ordinal) ||
+                string.Equals(attribute.AttributeName, "ref", StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            var sourceSpan = attribute.Source ?? GetBestSourceSpan(attribute);
+            return sourceSpan is not null &&
+                   TryReadSourceSpanText(sourceSpan.Value, out var sourceText) &&
+                   IsRazorRefAttributeSourceText(sourceText);
+        }
+
+        private static string? TryExtractReferenceCaptureIdentifier(string? text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return null;
+
+            var trimmed = text!.Trim();
+            var arrowIndex = trimmed.IndexOf("=>", StringComparison.Ordinal);
+            if (arrowIndex >= 0)
+                trimmed = trimmed.Substring(arrowIndex + 2).Trim();
+
+            var equalsIndex = trimmed.LastIndexOf('=');
+            if (equalsIndex >= 0)
+                trimmed = trimmed.Substring(equalsIndex + 1).Trim();
+
+            if (trimmed.StartsWith("this.", StringComparison.Ordinal))
+                trimmed = trimmed.Substring("this.".Length);
+
+            return IsSimpleIdentifier(trimmed) ? trimmed : null;
+        }
+
+        private bool TryReadStartTagText(
+            RazorVueRazorSourceSpan sourceSpan,
+            out string text,
+            out RazorVueRazorSourceSpan adjustedSourceSpan)
+        {
+            text = string.Empty;
+            adjustedSourceSpan = sourceSpan;
+
+            if (!PathsEqual(_primaryDocument.Path, sourceSpan.FilePath) &&
+                !string.Equals(_primaryDocument.NormalizedPath, Jazor.RazorVue.RazorVueRazorDocument.NormalizePath(sourceSpan.FilePath ?? string.Empty), StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            if (sourceSpan.AbsoluteIndex < 0 ||
+                sourceSpan.AbsoluteIndex >= _primaryDocument.Text.Length)
+            {
+                return false;
+            }
+
+            var documentText = _primaryDocument.Text.ToString();
+            var searchStart = Math.Min(sourceSpan.AbsoluteIndex, documentText.Length - 1);
+            var tagStart = documentText.LastIndexOf('<', searchStart);
+            if (tagStart < 0)
+                tagStart = sourceSpan.AbsoluteIndex;
+
+            var tagEnd = documentText.IndexOf('>', tagStart);
+            if (tagEnd < 0)
+                return false;
+
+            var length = tagEnd - tagStart + 1;
+            text = documentText.Substring(tagStart, length);
+            adjustedSourceSpan = sourceSpan with
+            {
+                AbsoluteIndex = tagStart,
+                Length = length
+            };
+            return true;
+        }
+
+        private static bool TryExtractStaticRazorRefDirective(
+            string startTagText,
+            RazorVueRazorSourceSpan startTagSpan,
+            out StaticRazorRefDirective directive)
+        {
+            directive = default;
+            var index = 0;
+            while (index < startTagText.Length)
+            {
+                var candidate = startTagText.IndexOf("ref", index, StringComparison.Ordinal);
+                if (candidate < 0)
+                    return false;
+
+                var nameStart = candidate;
+                if (candidate > 0 && startTagText[candidate - 1] == '@')
+                    nameStart = candidate - 1;
+
+                var nameLength = candidate - nameStart + "ref".Length;
+                if (!IsRazorRefAttributeBoundary(startTagText, nameStart, nameLength))
+                {
+                    index = candidate + "ref".Length;
+                    continue;
+                }
+
+                var cursor = nameStart + nameLength;
+                while (cursor < startTagText.Length && char.IsWhiteSpace(startTagText[cursor]))
+                    cursor++;
+                if (cursor >= startTagText.Length || startTagText[cursor] != '=')
+                {
+                    index = candidate + "ref".Length;
+                    continue;
+                }
+
+                cursor++;
+                while (cursor < startTagText.Length && char.IsWhiteSpace(startTagText[cursor]))
+                    cursor++;
+                if (cursor >= startTagText.Length || startTagText[cursor] is not ('"' or '\''))
+                    return false;
+
+                var quote = startTagText[cursor];
+                var valueStart = cursor + 1;
+                var valueEnd = startTagText.IndexOf(quote, valueStart);
+                if (valueEnd < 0)
+                    return false;
+
+                var value = startTagText.Substring(valueStart, valueEnd - valueStart).Trim();
+                if (!IsSimpleIdentifier(value))
+                    return false;
+
+                directive = new StaticRazorRefDirective(
+                    value,
+                    startTagSpan with
+                    {
+                        AbsoluteIndex = startTagSpan.AbsoluteIndex + nameStart,
+                        Length = valueEnd - nameStart + 1
+                    });
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsRazorRefAttributeSourceText(string sourceText)
+        {
+            if (string.IsNullOrWhiteSpace(sourceText))
+                return false;
+
+            var index = 0;
+            while (index < sourceText.Length)
+            {
+                var candidate = sourceText.IndexOf("ref", index, StringComparison.Ordinal);
+                if (candidate < 0)
+                    return false;
+
+                var nameStart = candidate > 0 && sourceText[candidate - 1] == '@'
+                    ? candidate - 1
+                    : candidate;
+                var nameLength = candidate - nameStart + "ref".Length;
+                if (IsRazorRefAttributeBoundary(sourceText, nameStart, nameLength))
+                    return true;
+
+                index = candidate + "ref".Length;
+            }
+
+            return false;
+        }
+
+        private static bool IsRazorRefAttributeBoundary(string text, int start, int length)
+        {
+            var before = start == 0 ? ' ' : text[start - 1];
+            var afterIndex = start + length;
+            var after = afterIndex >= text.Length ? ' ' : text[afterIndex];
+            return (char.IsWhiteSpace(before) || before is '<' or '/') &&
+                   (char.IsWhiteSpace(after) || after is '=' or '>' or '/');
+        }
+
+        private static bool IsSimpleIdentifier(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return false;
+
+            if (!(char.IsLetter(value[0]) || value[0] == '_'))
+                return false;
+
+            for (var index = 1; index < value.Length; index++)
+            {
+                if (!(char.IsLetterOrDigit(value[index]) || value[index] == '_'))
+                    return false;
+            }
+
+            return true;
         }
 
         private RazorVueComponentNode ConvertComponent(
@@ -945,6 +1211,12 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
         {
             RejectComponentExtensions(node.CapturesOrEmpty, "ReferenceCaptureIntermediateNode");
+            if (ResolveStaticRazorRefDirective(node) is { } staticRefDirective)
+            {
+                throw CreateUnsupportedAttributeException(
+                    staticRefDirective.Source ?? GetBestSourceSpan(node),
+                    $"RazorVue Razor IR frontend does not support component reference capture '@ref' in component '{_snapshot.Descriptor.FullName}'. Vue component public-instance template refs do not preserve Blazor component instance semantics.");
+            }
 
             var key = ResolveComponentKey(node);
             var attributes = ImmutableArray.CreateBuilder<RazorVueAttributeEntry>();
@@ -1087,7 +1359,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
             var origins = CreateOrigins(GetBestSourceSpan(node));
             foreach (var markupNode in ParseStaticMarkupFragment(markup, origins))
-                builder.Add(NormalizeRazorEventDirectiveMarkupNode(markupNode, origins));
+                builder.Add(NormalizeRazorDirectiveMarkupNode(markupNode, origins));
         }
 
         private RazorVueAttributeNode ConvertHtmlAttribute(RazorVueRazorIrNode node)
@@ -1199,7 +1471,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return true;
         }
 
-        private RazorVueRenderNode NormalizeRazorEventDirectiveMarkupNode(
+        private RazorVueRenderNode NormalizeRazorDirectiveMarkupNode(
             RazorVueRenderNode node,
             ImmutableArray<RazorVueSourceOrigin> origins)
         {
@@ -1207,10 +1479,22 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 return node;
 
             var attributes = ImmutableArray.CreateBuilder<RazorVueAttributeEntry>();
+            RazorVueElementReferenceCapture? referenceCapture = null;
             foreach (var attribute in element.Attributes)
             {
-                if (attribute is not RazorVueAttributeNode attributeNode ||
-                    !IsRazorEventDirectiveMarkupAttribute(attributeNode.Name))
+                if (attribute is not RazorVueAttributeNode attributeNode)
+                {
+                    attributes.Add(attribute);
+                    continue;
+                }
+
+                if (IsRazorRefDirectiveMarkupAttribute(attributeNode.Name))
+                {
+                    referenceCapture = ResolveRazorRefDirectiveMarkupCapture(attributeNode, origins);
+                    continue;
+                }
+
+                if (!IsRazorEventDirectiveMarkupAttribute(attributeNode.Name))
                 {
                     attributes.Add(attribute);
                     continue;
@@ -1251,10 +1535,11 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             }
 
             var children = element.Children.Children
-                .Select(child => NormalizeRazorEventDirectiveMarkupNode(child, origins))
+                .Select(child => NormalizeRazorDirectiveMarkupNode(child, origins))
                 .ToImmutableArray();
             return element with
             {
+                ReferenceCapture = referenceCapture ?? element.ReferenceCapture,
                 Attributes = attributes.ToImmutable(),
                 Children = new RazorVueRenderFragment(children)
             };
@@ -1295,6 +1580,26 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
         private static bool IsRazorEventDirectiveMarkupAttribute(string attributeName)
             => attributeName.StartsWith("@on", StringComparison.Ordinal);
+
+        private static bool IsRazorRefDirectiveMarkupAttribute(string attributeName)
+            => string.Equals(attributeName, "@ref", StringComparison.Ordinal);
+
+        private RazorVueElementReferenceCapture ResolveRazorRefDirectiveMarkupCapture(
+            RazorVueAttributeNode attribute,
+            ImmutableArray<RazorVueSourceOrigin> fallbackOrigins)
+        {
+            if (!TryGetStaticStringValue(attribute.Value, out var name) ||
+                !IsSimpleIdentifier(name))
+            {
+                throw CreateUnsupportedAttributeException(
+                    null,
+                    $"RazorVue Razor IR frontend only supports static element @ref names in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
+            return new RazorVueElementReferenceCapture(
+                name,
+                attribute.Origins.IsDefaultOrEmpty ? fallbackOrigins : attribute.Origins);
+        }
 
         private IOperation? ResolveRazorEventDirectiveMarkupHandler(RazorVueAttributeNode attribute)
         {
@@ -2102,24 +2407,20 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         private bool TryReadSourceSpanText(RazorVueRazorSourceSpan sourceSpan, out string text)
         {
             text = string.Empty;
-            var primaryDocument = _snapshot.RazorSourceGeneratorDocument?.PrimaryDocument;
-            if (primaryDocument is null)
-                return false;
-
-            if (!PathsEqual(primaryDocument.Path, sourceSpan.FilePath) &&
-                !string.Equals(primaryDocument.NormalizedPath, Jazor.RazorVue.RazorVueRazorDocument.NormalizePath(sourceSpan.FilePath ?? string.Empty), StringComparison.Ordinal))
+            if (!PathsEqual(_primaryDocument.Path, sourceSpan.FilePath) &&
+                !string.Equals(_primaryDocument.NormalizedPath, Jazor.RazorVue.RazorVueRazorDocument.NormalizePath(sourceSpan.FilePath ?? string.Empty), StringComparison.Ordinal))
             {
                 return false;
             }
 
             if (sourceSpan.AbsoluteIndex < 0 ||
                 sourceSpan.Length <= 0 ||
-                sourceSpan.AbsoluteIndex + sourceSpan.Length > primaryDocument.Text.Length)
+                sourceSpan.AbsoluteIndex + sourceSpan.Length > _primaryDocument.Text.Length)
             {
                 return false;
             }
 
-            text = primaryDocument.Text.ToString(TextSpan.FromBounds(sourceSpan.AbsoluteIndex, sourceSpan.AbsoluteIndex + sourceSpan.Length));
+            text = _primaryDocument.Text.ToString(TextSpan.FromBounds(sourceSpan.AbsoluteIndex, sourceSpan.AbsoluteIndex + sourceSpan.Length));
             return !string.IsNullOrWhiteSpace(text);
         }
 

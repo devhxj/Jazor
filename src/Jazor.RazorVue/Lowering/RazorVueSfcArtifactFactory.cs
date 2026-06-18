@@ -258,6 +258,7 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         builder.AddRange(RazorVueCompilerImportFormatter.CollectImportSources(compilerImports));
         builder.AddRange(
             resolvedComponents.Values
+                .Where(static descriptor => !VueCascadingValueProviderDescriptor.IsProviderDescriptor(descriptor))
                 .Select(static descriptor => descriptor.ImportSpecifier)
                 .Where(static importSpecifier => !string.Equals(importSpecifier, "vue", StringComparison.Ordinal))
                 .Distinct(StringComparer.Ordinal));
@@ -479,6 +480,7 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
             case RazorVueCanonicalElementNode element:
                 builder.Append(indent).Append('<').Append(element.TagName);
                 AppendNodeKeyBinding(builder, element.Key, bindingSiteMap, path + "/key", templateScopeDepth);
+                AppendElementReferenceCapture(builder, element.ReferenceCapture);
                 AppendAttributeBindings(builder, element.Attributes, bindingSiteMap, path + "/attrs", templateScopeDepth);
                 if (element.Children.Children.IsDefaultOrEmpty)
                 {
@@ -589,6 +591,18 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
             default:
                 throw new NotSupportedException($"Unsupported canonical template node '{node.NodeKind}'.");
         }
+    }
+
+    private static void AppendElementReferenceCapture(
+        StringBuilder builder,
+        RazorVueCanonicalElementReferenceCapture? referenceCapture)
+    {
+        if (referenceCapture is null)
+            return;
+
+        builder.Append(" ref=\"")
+            .Append(EscapeAttributeValue(referenceCapture.Name))
+            .Append('"');
     }
 
     private static void AppendNamedSlot(
@@ -1133,9 +1147,12 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         builder.Append(GetPropsTypeLiteral(semantic.Descriptor));
         builder.AppendLine(">();");
         AppendNormalizedPropsBinding(builder, snapshot, expressionEmitter, semantic.Descriptor);
+        AppendCascadingParameterInjections(builder, semantic.Descriptor);
         builder.Append("const emit = defineEmits<");
         builder.Append(GetEmitTypeLiteral(semantic.Descriptor));
         builder.AppendLine(">();");
+        if (ContainsCascadingValueProvider(semantic.TemplateBlock.Template))
+            AppendCascadingValueProviderDefinition(builder);
         if (semantic.ScriptSetupBlock.RequiresSlotsRuntime)
             builder.AppendLine("const slots = useSlots();");
         if (RazorVueForLoopLoweringSupport.ContainsForLoop(semantic.TemplateBlock.Template))
@@ -1152,6 +1169,11 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
             semantic.ScriptSetupBlock.Setup.RequiredMethods.AddRange(lifecyclePlan.RequiredMethods).Distinct().ToImmutableArray(),
             string.Empty);
         RazorVueSetupAndLifecycleLoweringSupport.AppendLifecyclePlan(builder, lifecyclePlan, string.Empty);
+
+        foreach (var templateRef in semantic.ScriptSetupBlock.TemplateRefs)
+        {
+            AppendTemplateRefBinding(builder, templateRef);
+        }
 
         foreach (var binding in semantic.ScriptSetupBlock.LiftedBindings)
         {
@@ -1172,10 +1194,92 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
             builder.Add("computed");
         if (semantic.ScriptSetupBlock.RequiresSlotsRuntime)
             builder.Add("useSlots");
+        if (!semantic.ScriptSetupBlock.TemplateRefs.IsDefaultOrEmpty)
+            builder.Add("useTemplateRef");
+        if (!semantic.Descriptor.CascadingParameters.IsDefaultOrEmpty)
+        {
+            builder.Add("inject");
+            builder.Add("unref");
+        }
+        if (ContainsCascadingValueProvider(semantic.TemplateBlock.Template))
+        {
+            builder.Add("defineComponent");
+            builder.Add("provide");
+            builder.Add("toRef");
+        }
         return builder
             .Distinct(StringComparer.Ordinal)
             .ToImmutableArray();
     }
+
+    private static void AppendTemplateRefBinding(StringBuilder builder, RazorVueSfcTemplateRefBinding templateRef)
+    {
+        if (!IsSimpleJavaScriptIdentifier(templateRef.Name))
+        {
+            throw new RazorVueCompilationIssueException(
+                new RazorVueCompilationIssue(
+                    RazorVueIssueCode.UnsupportedTemplateEncoding,
+                    RazorVueIssueSeverity.Error,
+                    $"RazorVue element @ref name '{templateRef.Name}' cannot be emitted as a stable Vue setup binding. Use a C# field or property name that is also a valid JavaScript identifier.",
+                    ImmutableArray<string>.Empty),
+                string.Empty,
+                templateRef.SourceOrigins.FirstOrDefault());
+        }
+
+        builder.Append("const ")
+            .Append(templateRef.Name)
+            .Append(" = useTemplateRef<")
+            .Append(templateRef.ElementTypeName)
+            .Append(">(")
+            .Append(ToJavaScriptString(templateRef.Name))
+            .AppendLine(");");
+    }
+
+    private static bool IsSimpleJavaScriptIdentifier(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        if (!(char.IsLetter(value[0]) || value[0] is '_' or '$'))
+            return false;
+
+        for (var index = 1; index < value.Length; index++)
+        {
+            var ch = value[index];
+            if (!(char.IsLetterOrDigit(ch) || ch is '_' or '$'))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool ContainsCascadingValueProvider(RazorVueCanonicalTemplateFragment fragment)
+    {
+        foreach (var child in fragment.Children)
+        {
+            if (ContainsCascadingValueProvider(child))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool ContainsCascadingValueProvider(RazorVueCanonicalTemplateNode node)
+        => node switch
+        {
+            RazorVueCanonicalComponentNode component =>
+                VueCascadingValueProviderDescriptor.IsProviderDescriptor(component.ResolvedDescriptor) ||
+                component.Slots.Any(static slot => ContainsCascadingValueProvider(slot.Children)) ||
+                ContainsCascadingValueProvider(component.Children),
+            RazorVueCanonicalElementNode element => ContainsCascadingValueProvider(element.Children),
+            RazorVueCanonicalTemplateScopeNode templateScope => ContainsCascadingValueProvider(templateScope.Children),
+            RazorVueCanonicalConditionalNode conditional =>
+                ContainsCascadingValueProvider(conditional.WhenTrue) ||
+                ContainsCascadingValueProvider(conditional.WhenFalse),
+            RazorVueCanonicalForEachNode loop => ContainsCascadingValueProvider(loop.Body),
+            RazorVueCanonicalForNode loop => ContainsCascadingValueProvider(loop.Body),
+            _ => false
+        };
 
     private static void AppendNormalizedPropsBinding(
         StringBuilder builder,
@@ -1223,6 +1327,47 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         }
         builder.AppendLine("    }");
         builder.AppendLine("    return Reflect.get(target, key, receiver);");
+        builder.AppendLine("  }");
+        builder.AppendLine("});");
+    }
+
+    private static void AppendCascadingParameterInjections(
+        StringBuilder builder,
+        VueComponentDescriptor descriptor)
+    {
+        if (descriptor.CascadingParameters.IsDefaultOrEmpty)
+            return;
+
+        foreach (var cascading in descriptor.CascadingParameters)
+        {
+            builder.Append("const ");
+            builder.Append(cascading.Name);
+            builder.Append(" = inject(");
+            builder.Append(ToJavaScriptString(cascading.InjectKey));
+            builder.AppendLine(");");
+        }
+    }
+
+    private static void AppendCascadingValueProviderDefinition(StringBuilder builder)
+    {
+        builder.Append("const ")
+            .Append(VueCascadingValueProviderDescriptor.Name)
+            .AppendLine(" = defineComponent({");
+        builder.AppendLine("  name: \"JazorCascadingValueProvider\",");
+        builder.AppendLine("  props: {");
+        builder.Append("    ")
+            .Append(VueCascadingValueProviderDescriptor.ProvideKeyPropName)
+            .AppendLine(": { type: String, required: true },");
+        builder.Append("    ")
+            .Append(VueCascadingValueProviderDescriptor.ValuePropName)
+            .AppendLine(": { required: false },");
+        builder.Append("    ")
+            .Append(VueCascadingValueProviderDescriptor.IsFixedPropName)
+            .AppendLine(": { type: Boolean, default: false }");
+        builder.AppendLine("  },");
+        builder.AppendLine("  setup(props, { slots }) {");
+        builder.AppendLine("    provide(props.provideKey, props.isFixed ? props.value : toRef(props, \"value\"));");
+        builder.AppendLine("    return () => slots.default ? slots.default() : null;");
         builder.AppendLine("  }");
         builder.AppendLine("});");
     }
@@ -1409,6 +1554,9 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
 
         if (component.ResolvedDescriptor is null)
             return component.ResolutionName;
+
+        if (VueCascadingValueProviderDescriptor.IsProviderDescriptor(component.ResolvedDescriptor))
+            return VueCascadingValueProviderDescriptor.Name;
 
         return component.ResolvedDescriptor.SourceKind == VueComponentSourceKind.LibraryComponent
             ? component.ResolvedDescriptor.ExportName

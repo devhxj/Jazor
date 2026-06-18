@@ -53,6 +53,7 @@ internal abstract record RazorVueCanonicalTemplateNode(
 internal sealed record RazorVueCanonicalElementNode(
     string TagName,
     RazorVueCanonicalNodeKey? Key,
+    RazorVueCanonicalElementReferenceCapture? ReferenceCapture,
     ImmutableArray<RazorVueCanonicalAttributeEntry> Attributes,
     RazorVueCanonicalTemplateFragment Children,
     RazorVueTemplateEncodability TemplateEncodability,
@@ -60,6 +61,11 @@ internal sealed record RazorVueCanonicalElementNode(
     RazorVueSideEffectClassification SideEffectClassification,
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins)
     : RazorVueCanonicalTemplateNode(RazorVueCanonicalNodeKind.Element, TemplateEncodability, TemplateExpressionSafety, SideEffectClassification, SourceOrigins);
+
+internal sealed record RazorVueCanonicalElementReferenceCapture(
+    string Name,
+    string ElementTypeName,
+    ImmutableArray<RazorVueSourceOrigin> SourceOrigins);
 
 internal sealed record RazorVueCanonicalComponentNode(
     string ComponentName,

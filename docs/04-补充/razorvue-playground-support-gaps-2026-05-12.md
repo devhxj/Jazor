@@ -1,4 +1,4 @@
-# RazorVue Playground 支持缺口状态（2026-06-10）
+# RazorVue Playground 支持缺口状态（2026-06-18）
 
 本文是 RazorVue / Playground 的当前边界状态页，不记录逐次修复日志。单次修复过程、focused run 输出和完整历史细节应回到测试名、提交记录、PR 描述和实现代码中追溯。
 
@@ -22,6 +22,17 @@
 - C# 表达式、成员、类型引用、CLR helper、import/reference 语义继续走 `Jazor.Compiler` / `SemanticWalker`。RazorVue 只负责 Vue artifact framing、Razor frontend 还原和组件/slot 描述符桥接。
 - RazorVue 的 `.razor` 输入必须保持官方 Razor Source Generator 可编译，不能引入只有 RazorVue 自己懂的参数或类型形态。
 - Analyzer 可以更早、更严；compiler / RazorVue lowering 仍必须在实际 runtime-sensitive 使用点 fail-fast。
+
+## fail-fast 分类规则
+
+本文把 fail-fast 点分成四类，后续“下一步”只从第一类自动取任务：
+
+| 分类 | 含义 | 当前例子 |
+|------|------|----------|
+| RazorVue 内部可推进 | Vue 有对应语义，主要是 descriptor、Razor IR、SFC/render-function lowering 工程量 | lifecycle emit-watch 扩面、async lifecycle 扩面、递归 fragment 放宽 |
+| 需要外部库或架构支持才可能 | Vue 本身或当前 RazorVue SFC artifact 没有直接等价，但可通过明确依赖、适配层或架构切换建模 | 组件 `@ref`（需显式 Vue public instance / `defineExpose` / adapter 合同，不能等同 Blazor component instance）、`@bind:format`（当前 Razor SDK/tag-helper 输入不提供可复用结构化 bind 语义时）、Blazor `InputText` / `EditForm` / `ValidationSummary` 等运行时组件、动态 trusted HTML sanitizer + `v-html`、Vue `<Suspense>` 型 async render、SSR/传输层 streaming render |
+| 外部库也补不出的语义差异 | 语义依赖 CLR / Blazor renderer / compiler control-flow，不能靠 Vue 组件库补齐 | `goto`（当前 `Jazor.Compiler` 无任意 jump lowering）、一般 CLR `ref` / `out` 地址模型、`StateHasChanged()` 的 Blazor 手动渲染调度语义 |
+| 安全边界选择 fail-fast | 技术上可拼出运行时代码，但默认会破坏 RazorVue 安全/确定性合同，必须等显式安全设计 | 运行时 `MarkupString` / raw HTML、执行型元素/属性/directive、无法证明求值次数或 frame identity 的动态 replay |
 
 ## 支持策略总览
 
@@ -81,6 +92,7 @@
 ### DOM Event / Route / Consumer Build
 
 - component emit modifier 不与 HTML DOM event modifier 共用路径，组件 emits 继续按 descriptor-aware component event lowering。
+- `@bind:format` 当前不作为 RazorVue 内部自动推进项。SDK 10.4 下，元素 `<input @bind ... @bind:format ...>` 在当前 RazorVue Razor IR host 中仍只暴露为 raw Razor directive attributes，没有 `BindConverter.FormatValue(...)` / binder / parser 的结构化 IR；组件 `<EditorCard @bind-Value:format=...>` 会被官方 Razor SG 生成普通 `@bind-Value:format` 组件参数，并在 `Value` 类型不匹配时停在官方生成 C# 编译边界。RazorVue 不从 raw markup 中自行复刻 Blazor bind converter、culture、parse/validation 语义；若后续要支持，必须先取得 Razor SDK tag-helper 的结构化 bind 输入，或引入明确的 Vue bind/parse/validation adapter 架构。
 - route template -> Vue Router bridge 继续拒绝无法诚实映射的长尾形态：optional separator 参数位置非法、SDK Razor route parser 不接受的多层 optional separator composite/mixed segment、catch-all inline constraint、未知自定义 constraint，以及无法表达为“Vue Router path regex + generated metadata 二次校验”的 constraint 组合。普通多参数 composite/mixed segment、普通 catch-all 和单尾部 optional separator composite segment 已由 Emit 回归固化。
 
 ## 已固化能力摘要
@@ -92,6 +104,9 @@
 | Body-level imperative render | 常见 `return`、loop、`switch`、`lock`、`try/catch/finally`、`using` / using declaration、无 `goto` labeled statement、局部 mutation、静态 markup / `MarkupString`。 |
 | Canonical template recovery | root-level 与 mixed/nested template-safe 子树中的受控 `switch`、guard-return、`try/finally` / 空 recovery、`lock(this)` / 受控 readonly object gate、null/default `using`、no-op label、`do while(false)` / `while(false)`，root/template code-block 内 template-local declaration 前缀后接 guard-return、no-op `do while(false)` / `while(false)`、template-safe `switch`、no-op `try/finally` / empty recovery `try/catch/finally`、`lock(this)` / 受控 readonly object gate、null/default `using` 或 no-op label + sibling tail，以及 typed slot/template fragment 内 guard-return / template-local declaration 前缀后接 guard-return、no-op `do while(false)` / `while(false)` 或 template-safe `switch` + sibling tail / no-op label / null-default `using` / no-op `try/finally` / empty recovery `try/catch/finally` / `lock(this)` / 受控 readonly object gate 子集。 |
 | Component / slot metadata | Component parameter descriptor、current-component slot forwarding、builder-style `RenderFragment` / `RenderFragment<T>` slot callback、nested component metadata/import。 |
+| Component parameter descriptor | `[EditorRequired]` 的普通 `[Parameter]` 会投影为 `VuePropDescriptor.Required=true`；无 `[EditorRequired]` 的参数保持非 required。 |
+| Cascading value/parameter | `[CascadingParameter]` 描述符、type-key / `Name` key 解析、`inject(...)` + `unref(...)` 消费、`CascadingValue<T>` 到 RazorVue synthetic provider 的 scoped `provide(...)`，template 与 render-function SFC 均支持，动态 `Name` 为 `null` 时回退到 `T` 的 type key，`IsFixed` 使用 plain value，否则通过 `toRef(props, "value")` 保持动态传播。 |
+| Element reference | 元素 `@ref` / `AddElementReferenceCapture` 会映射为 Vue template ref：template SFC 输出 `ref="name"` + `useTemplateRef<Element>("name")`，render-function / imperative SFC 输出 VNode `ref` / `setElementReference(...)` 并声明对应 setup binding；组件 `@ref` 仍 fail-fast，需单独 adapter 架构。 |
 | Razor IR frontend | mixed attribute、lowercase `class` / `style` fallthrough、DOM event modifier、typed/untyped `RenderFragment` carrier、fragment factory、template local、受控 setup/lifecycle helper payload、动态 `ShouldRender` cached render gate。 |
 | Raw markup / `MarkupString` | 可证明静态的 carrier、条件静态分支、静态安全 `+` 拼接、显式 `MarkupString` 表达式入口；plain `string` 仍按普通 render content 处理。 |
 | Fragment factory | getter / factory block body 中由 source-stable `RenderFragment` local carrier 组成的返回值依赖链，current-component 与 local function factory 的非递归多跳转发链。 |
@@ -111,6 +126,9 @@
 
 最近状态锚点：
 
+- 2026-06-18：CascadingValue / CascadingParameter 已进入支持面。组件描述符提取 `[CascadingParameter]` 到 `CascadingParameters`，SFC script-setup / render-function 通过 `inject(...)` 绑定并在读取处 `unref(...)`；`CascadingValue<T>` 不作为通用 Blazor runtime component 支持，而是映射到 RazorVue synthetic provider component，template 与 imperative render-function SFC 均生成本地 `JazorCascadingValueProvider`，使用 `provide(props.provideKey, props.isFixed ? props.value : toRef(props, "value"))` 保持 scoped provide/inject 语义。默认 key 为 nullable-stable type key，动态 `Name` 为 `null` 时回退到 type key。focused `CascadingParameter|CascadingValue` 为 6/6 通过，`RazorVueSfcArtifactFactoryTests` 为 305/305 通过，`git diff --check` 通过。
+- 2026-06-18：`@bind:format` 已从“RazorVue 内部可推进”移出并归类为“需要外部库或架构支持才可能”。验证显示元素 `@bind` / `@bind:format` 在当前 RazorVue Razor IR host 中仍是 raw directive attributes；组件 `@bind-Value:format` 停在官方 Razor SG 生成 C# 编译边界。新增 focused `BindFormat` 为 2/2 通过，用于固化该边界，避免 RazorVue 从 raw markup 中自行模拟 Blazor bind converter / parser / validation 语义。
+- 2026-06-18：元素 `@ref` 已进入支持面。BuildRenderTree、Razor IR static markup、SFC template、render-function 和 imperative render body 路径均会把可证明的元素引用映射为 Vue template ref / VNode `ref`；组件引用继续 fail-fast，因为 Vue public instance ref / `defineExpose` 只能通过显式 adapter 合同建模，不能自动保留 Blazor component instance 语义。focused `ElementReference|ElementRef|ComponentReference|ComponentRef` 为 12/12 通过，Razor IR focused `ElementRef|ComponentRef|RefCapture` 为 3/3 通过。
 - 2026-06-09：普通 lifecycle no-op helper 的 by-reference 边界已重新收口：value-returning no-op helper 只允许普通按值参数，void no-op helper 继续允许 local-only `in` 只读值读取，但 `ref` / `out`、返回值 helper 的 `in` by-reference 调用、以及 `in` 参数继续 by-reference forwarding 均按 analyzer / generator / pipeline 三层一致 fail-fast；focused by-reference lifecycle 过滤器为 8/8 通过，`Jazor.RazorVue.Test` 全套为 2396/2396 通过。
 - 2026-06-09：focused 验证覆盖 Render Helper / Open Frame 的 caller-owned replay、expression-bodied single-call helper replay、builder local alias / `this.` qualified helper replay、DOM event modifier mutation、generic value-erased helper attribute replay、conditional attribute/child/event-modifier/key/spread/ambient default-slot child/region ambient default-slot child/implicit default-slot assignment/named-typed slot assignment replay、普通 `if/else` 双分支 attribute/child/default-slot/event-modifier/key/spread/named-typed slot replay、嵌套/组合条件 attribute+child、component attribute+default-slot 和 nested `if/else` replay、guard-return replay、consecutive guard-return nested replay、single-branch / both-branches terminal-return replay、frame-neutral caller-owned loop / `try/catch/finally` / `lock` / null-default `using` / null-default using declaration scope mutation replay、顶层/受控条件分支内 single-value/default/multiple-label、pattern-local condition-only 与 source-stable helper-local prelude guard 的 pattern/relational/guarded `switch` replay、ordinary conditional child boundary、recursive helper materialization、overload alias 去碰撞，以及 active frame 漂移、recursive caller-owned mutation、component frame DOM event modifier、direct / invoked-local-function / invoked-lambda generic runtime type-parameter semantics、`async` helper、omitted optional parameter、named argument reshaping、case body 依赖 pattern-local、`goto case`、后续写入 helper-local guard、副作用 guard、caller-owned loop / `try/catch/finally` / `lock` / null-default `using` / null-default using declaration scope 改变 frame depth、真实 disposable `using` / using declaration、混合真实 disposable using declaration resource、`goto` / try 内 `goto` 控制流等负向边界；`RazorVueRenderHelperOpenFrameBoundaryTests` 为 150/150 通过，`Jazor.RazorVue.Test` 全套为 2425/2425 通过。
 - 2026-06-09：DOM event 判定收紧为属性值必须是 EventCallback / delegate-like；`on*` 字符串 attribute 即使带有 Razor/RenderTree event modifier metadata，也在 SFC template 与 H render-function 路径中保持普通 HTML attribute。focused SFC artifact 事件属性类为 284/284 通过，focused pipeline 事件边界为 6/6 通过，`Jazor.RazorVue.Test` 全套为 2427/2427 通过。
@@ -149,6 +167,7 @@
 
 ## 下一步
 
-- 当前状态：所有“当前缺口”领域（Render / Template、Template Code Block / Raw Markup、Component / `System.Type`、Fragment / Slot Carrier、Render Helper / Open Frame、Setup / Lifecycle / Render Control、DOM Event / Route / Consumer Build）已完成四层一致性盘点，现有正向 / 负向边界在各层的行为均由测试名、commit 描述和 git 历史佐证。本页不再主动追加盘点任务。
-- 维护姿态：后续新发现的缺口只补充到“当前缺口”，并在“最近状态锚点”记录补齐过程；某层因 SDK 升级或实现演进出现 IR-shape / carrier 选择漂移时，按本页“维护规则”更新对应测试与锚点，不回退到逐次修复日志。下一个具体任务由新发现的缺口或实现演进触发，而不是本文预设。
-- 后续新发现的缺口只补充到“当前缺口”；完成过程留在测试名、PR/commit 描述和 git 历史中。
+- 当前已完成的新补齐项：`EditorRequired -> descriptor Required` 已由 `RazorVue_Snapshot_EditorRequiredParameter_IsProjectedAsRequiredProp` 固化；`CascadingValue<T>` / `[CascadingParameter]` 已由 descriptor、template SFC、render-function SFC 和 descriptor hash 回归固化；`@bind:format` 已完成边界分类，当前不自动实现；元素 `@ref` 已由 BuildRenderTree、Razor IR、SFC template、render-function / imperative render body 回归固化。
+- 下一个自动推进任务：lifecycle emit-watch 扩面。目标是从已有 `SetParametersAsync` 受控 emit/watch 子集继续补齐仍能保持同步/顺序/依赖可证明的形态；async helper、外部 invocation、mutation、真实 exception payload 或不可证明 delegate escape 继续 fail-fast。
+- 后续可推进队列：async lifecycle 扩面、递归 fragment 放宽。每完成一项，先补测试，再从“当前缺口”移除或收紧边界，并在“最近状态锚点”记录验证入口。
+- 暂不自动推进的理论边界：Blazor TagHelper/runtime 组件、`StateHasChanged()`、动态 raw HTML、`goto`、一般 `ref` / `out`、streaming render、async render。处理这些项前必须先按“fail-fast 分类规则”判断是外部库/架构可建模，还是外部库也补不出的语义差异。

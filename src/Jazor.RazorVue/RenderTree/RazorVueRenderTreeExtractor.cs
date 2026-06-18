@@ -952,6 +952,13 @@ internal sealed class RazorVueRenderTreeExtractor
                 case "AddComponentParameter":
                     AddComponentParameter(invocation);
                     break;
+                case "AddElementReferenceCapture":
+                    AddElementReferenceCapture(invocation);
+                    break;
+                case "AddComponentReferenceCapture":
+                    throw CreateUnsupportedBuilderCall(
+                        invocation,
+                        $"RazorVue BuildRenderTree frontend does not support component reference capture '{GetBuilderCallDisplayName(invocation)}' in component '{_snapshot.Descriptor.FullName}'. Vue component public-instance template refs do not preserve Blazor component instance semantics.");
                 case "AddMultipleAttributes":
                     AddMultipleAttributes(invocation);
                     break;
@@ -997,6 +1004,17 @@ internal sealed class RazorVueRenderTreeExtractor
                 throw CreateUnsupportedBuilderCall(
                     invocation,
                     $"BuildRenderTree call '{GetBuilderCallDisplayName(invocation)}' must specify a concrete component type that RazorVue can resolve in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
+            if (RazorVueCascadingValueComponent.IsCascadingValueComponent(componentType))
+            {
+                _openFrames.Push(new ComponentBuilder(
+                    VueCascadingValueProviderDescriptor.Name,
+                    VueCascadingValueProviderDescriptor.FullName,
+                    RazorVueCascadingValueComponent.GetTypeKey(componentType),
+                    componentType,
+                    CreateOrigins(invocation, RazorVueOriginKind.Template)));
+                return;
             }
 
             _openFrames.Push(new ComponentBuilder(
@@ -1247,6 +1265,152 @@ internal sealed class RazorVueRenderTreeExtractor
                 value,
                 ToCapturedValueBindings(_activeCapturedBindings),
                 CreateOrigins(invocation, RazorVueOriginKind.Template)));
+        }
+
+        private void AddElementReferenceCapture(IInvocationOperation invocation)
+        {
+            var currentNode = GetRequiredOpenElementBuilder(invocation);
+            var callback = GetInvocationArgument(invocation, 1);
+            if (!TryResolveElementReferenceCaptureName(callback, out var name))
+            {
+                throw CreateUnsupportedBuilderCall(
+                    invocation,
+                    $"RazorVue BuildRenderTree frontend only supports element reference capture callbacks that assign the captured value to a current-component field or property in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
+            currentNode.SetElementReferenceCapture(
+                new RazorVueElementReferenceCapture(
+                    name,
+                    CreateOrigins(invocation, RazorVueOriginKind.Template)),
+                referenceCaptureAssigned: true);
+        }
+
+        private bool TryResolveElementReferenceCaptureName(IOperation? callback, out string name)
+        {
+            name = string.Empty;
+            var current = RazorVueOperationNormalizer.Unwrap(callback);
+            if (current is IDelegateCreationOperation delegateCreation)
+                current = RazorVueOperationNormalizer.Unwrap(delegateCreation.Target);
+
+            if (current is IAnonymousFunctionOperation anonymousFunction)
+            {
+                if (TryResolveElementReferenceCaptureNameFromOperation(anonymousFunction.Body, out name))
+                    return true;
+
+                return TryResolveElementReferenceCaptureNameFromLambdaSyntax(anonymousFunction, out name);
+            }
+
+            if (current is IConversionOperation conversion)
+                return TryResolveElementReferenceCaptureName(conversion.Operand, out name);
+
+            return false;
+        }
+
+        private bool TryResolveElementReferenceCaptureNameFromLambdaSyntax(
+            IAnonymousFunctionOperation anonymousFunction,
+            out string name)
+        {
+            name = string.Empty;
+            var assignment = anonymousFunction.Syntax switch
+            {
+                SimpleLambdaExpressionSyntax { ExpressionBody: AssignmentExpressionSyntax expression } => expression,
+                ParenthesizedLambdaExpressionSyntax { ExpressionBody: AssignmentExpressionSyntax expression } => expression,
+                SimpleLambdaExpressionSyntax { Block.Statements.Count: 1 } lambda
+                    when lambda.Block.Statements[0] is ExpressionStatementSyntax { Expression: AssignmentExpressionSyntax expression } => expression,
+                ParenthesizedLambdaExpressionSyntax { Block.Statements.Count: 1 } lambda
+                    when lambda.Block.Statements[0] is ExpressionStatementSyntax { Expression: AssignmentExpressionSyntax expression } => expression,
+                _ => null
+            };
+            if (assignment is null)
+                return false;
+
+            var semanticModel = _compilation.GetSemanticModel(assignment.SyntaxTree);
+            if (semanticModel.GetSymbolInfo(assignment.Left).Symbol is not { } targetSymbol)
+                return false;
+
+            return TryResolveElementReferenceCaptureTargetSymbolName(targetSymbol, out name);
+        }
+
+        private bool TryResolveElementReferenceCaptureNameFromOperation(IOperation operation, out string name)
+        {
+            name = string.Empty;
+            var current = RazorVueOperationNormalizer.Unwrap(operation);
+            switch (current)
+            {
+                case IBlockOperation block when block.Operations.Length == 1:
+                    return TryResolveElementReferenceCaptureNameFromOperation(block.Operations[0], out name);
+                case IReturnOperation { ReturnedValue: not null } returnOperation:
+                    return TryResolveElementReferenceCaptureNameFromOperation(returnOperation.ReturnedValue, out name);
+                case IReturnOperation returnOperation
+                    when TryGetSingleChildOperation(returnOperation, out var returnedValue):
+                    return TryResolveElementReferenceCaptureNameFromOperation(returnedValue, out name);
+                case IExpressionStatementOperation expressionStatement:
+                    return TryResolveElementReferenceCaptureNameFromOperation(expressionStatement.Operation, out name);
+                case ISimpleAssignmentOperation assignment:
+                    return TryResolveElementReferenceCaptureTargetName(assignment.Target, out name);
+                default:
+                    return false;
+            }
+        }
+
+        private bool TryResolveElementReferenceCaptureTargetName(IOperation target, out string name)
+        {
+            name = string.Empty;
+            var current = RazorVueOperationNormalizer.Unwrap(target);
+            switch (current)
+            {
+                case IFieldReferenceOperation fieldReference
+                    when IsCurrentComponentMember(fieldReference.Field, fieldReference.Instance):
+                    name = fieldReference.Field.Name;
+                    return true;
+                case IPropertyReferenceOperation propertyReference
+                    when IsCurrentComponentMember(propertyReference.Property, propertyReference.Instance):
+                    name = propertyReference.Property.Name;
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private bool TryResolveElementReferenceCaptureTargetSymbolName(ISymbol targetSymbol, out string name)
+        {
+            name = string.Empty;
+            switch (targetSymbol)
+            {
+                case IFieldSymbol field when IsCurrentComponentMemberSymbol(field):
+                    name = field.Name;
+                    return true;
+                case IPropertySymbol property when IsCurrentComponentMemberSymbol(property):
+                    name = property.Name;
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private bool IsCurrentComponentMemberSymbol(ISymbol symbol)
+        {
+            for (var current = _snapshot.ComponentSymbol; current is not null; current = current.BaseType)
+            {
+                if (SymbolEqualityComparer.Default.Equals(symbol.ContainingType, current))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static bool TryGetSingleChildOperation(IOperation operation, out IOperation child)
+        {
+            var children = operation.ChildOperations;
+            var enumerator = children.GetEnumerator();
+            if (!enumerator.MoveNext())
+            {
+                child = default!;
+                return false;
+            }
+
+            child = enumerator.Current;
+            return !enumerator.MoveNext();
         }
 
         private void AddMultipleAttributes(IInvocationOperation invocation)
@@ -4366,6 +4530,17 @@ internal sealed class RazorVueRenderTreeExtractor
             var snapshot = deltaOpenNode.CreateSnapshot();
             if (snapshot.KeyAssigned)
                 targetOpenNode.SetKeyWithoutReplay(snapshot.Key, snapshot.KeyAssigned);
+            if (snapshot.ReferenceCaptureAssigned)
+            {
+                if (targetOpenNode is not ElementBuilder)
+                {
+                    throw CreateStructuralIssue(
+                        snapshot.ReferenceCapture?.Origins ?? ImmutableArray<RazorVueSourceOrigin>.Empty,
+                        $"BuildRenderTree caller-owned open frame mutation attempted to apply an element @ref capture to a component frame in component '{_snapshot.Descriptor.FullName}'.");
+                }
+
+                targetOpenNode.SetElementReferenceCaptureWithoutReplay(snapshot.ReferenceCapture, snapshot.ReferenceCaptureAssigned);
+            }
 
             foreach (var attribute in snapshot.Attributes)
                 targetOpenNode.AddAttributeWithoutReplay(attribute);
@@ -4841,10 +5016,17 @@ internal sealed class RazorVueRenderTreeExtractor
             for (var current = _snapshot.ComponentSymbol; current is not null; current = current.BaseType)
             {
                 if (SymbolEqualityComparer.Default.Equals(symbol.ContainingType, current))
-                    return instance is null || Unwrap(instance) is IInstanceReferenceOperation;
+                    return instance is null || IsCurrentComponentInstance(instance);
             }
 
             return false;
+        }
+
+        private static bool IsCurrentComponentInstance(IOperation instance)
+        {
+            var current = Unwrap(instance);
+            return current is null or IInstanceReferenceOperation ||
+                   current.Kind is OperationKind.None;
         }
 
         private OpenNodeBuilder GetRequiredOpenNodeBuilder(IInvocationOperation invocation)
@@ -6342,6 +6524,8 @@ internal sealed class RazorVueRenderTreeExtractor
     {
         private RazorVueNodeKey? _key;
         private bool _keyAssigned;
+        private RazorVueElementReferenceCapture? _referenceCapture;
+        private bool _referenceCaptureAssigned;
         private readonly List<RazorVueAttributeEntry> _attributes = [];
         private readonly List<RazorVueComponentSlotTemplateNode> _slotTemplates = [];
         private readonly List<RazorVueImplicitDefaultSlotAssignmentNode> _implicitDefaultSlotAssignments = [];
@@ -6380,6 +6564,15 @@ internal sealed class RazorVueRenderTreeExtractor
             _replayOperations.Add(new RazorVueOpenNodeKeyReplayOperation(key, keyAssigned, key?.Origins ?? ImmutableArray<RazorVueSourceOrigin>.Empty));
         }
 
+        public void SetElementReferenceCapture(RazorVueElementReferenceCapture? referenceCapture, bool referenceCaptureAssigned)
+        {
+            SetElementReferenceCaptureWithoutReplay(referenceCapture, referenceCaptureAssigned);
+            _replayOperations.Add(new RazorVueOpenNodeElementReferenceReplayOperation(
+                referenceCapture,
+                referenceCaptureAssigned,
+                referenceCapture?.Origins ?? ImmutableArray<RazorVueSourceOrigin>.Empty));
+        }
+
         public void AddSlotTemplate(RazorVueComponentSlotTemplateNode slotTemplate)
         {
             AddSlotTemplateWithoutReplay(slotTemplate);
@@ -6415,6 +6608,9 @@ internal sealed class RazorVueRenderTreeExtractor
 
         protected RazorVueNodeKey? BuildKey()
             => _key;
+
+        protected RazorVueElementReferenceCapture? BuildElementReferenceCapture()
+            => _referenceCapture;
 
         protected ImmutableArray<RazorVueComponentSlotTemplateNode> BuildSlotTemplates()
             => [.. _slotTemplates];
@@ -6460,6 +6656,14 @@ internal sealed class RazorVueRenderTreeExtractor
             _key = key;
         }
 
+        public void SetElementReferenceCaptureWithoutReplay(
+            RazorVueElementReferenceCapture? referenceCapture,
+            bool referenceCaptureAssigned)
+        {
+            _referenceCaptureAssigned = referenceCaptureAssigned;
+            _referenceCapture = referenceCapture;
+        }
+
         public void AddSlotTemplateWithoutReplay(RazorVueComponentSlotTemplateNode slotTemplate)
             => _slotTemplates.Add(slotTemplate);
 
@@ -6476,6 +6680,8 @@ internal sealed class RazorVueRenderTreeExtractor
             => new(
                 Key: _key,
                 KeyAssigned: _keyAssigned,
+                ReferenceCapture: _referenceCapture,
+                ReferenceCaptureAssigned: _referenceCaptureAssigned,
                 Attributes: BuildAttributes(),
                 SlotTemplates: BuildSlotTemplates(),
                 ImplicitDefaultSlotAssignments: BuildImplicitDefaultSlotAssignments(),
@@ -6493,6 +6699,8 @@ internal sealed class RazorVueRenderTreeExtractor
     private readonly record struct OpenNodeSnapshot(
         RazorVueNodeKey? Key,
         bool KeyAssigned,
+        RazorVueElementReferenceCapture? ReferenceCapture,
+        bool ReferenceCaptureAssigned,
         ImmutableArray<RazorVueAttributeEntry> Attributes,
         ImmutableArray<RazorVueComponentSlotTemplateNode> SlotTemplates,
         ImmutableArray<RazorVueImplicitDefaultSlotAssignmentNode> ImplicitDefaultSlotAssignments,
@@ -6522,7 +6730,7 @@ internal sealed class RazorVueRenderTreeExtractor
             => new ElementBuilder(tagName, Origins, _eventModifiersByHandlerName);
 
         public override RazorVueRenderNode Build()
-            => new RazorVueElementNode(tagName, BuildKey(), BuildAttributes(), BuildChildren(), Origins)
+            => new RazorVueElementNode(tagName, BuildKey(), BuildElementReferenceCapture(), BuildAttributes(), BuildChildren(), Origins)
             {
                 ReplayOperations = BuildReplayOperations()
             };

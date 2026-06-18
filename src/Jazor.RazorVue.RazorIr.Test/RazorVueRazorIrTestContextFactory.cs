@@ -242,6 +242,8 @@ internal static class RazorVueRazorIrTestContextFactory
                 builder.Append(" TagName=\"").Append(node.TagName).Append('"');
             if (!string.IsNullOrWhiteSpace(node.AttributeName))
                 builder.Append(" AttributeName=\"").Append(node.AttributeName).Append('"');
+            if (!string.IsNullOrWhiteSpace(node.Identifier))
+                builder.Append(" Identifier=\"").Append(node.Identifier).Append('"');
             if (!string.IsNullOrWhiteSpace(node.TypeName))
                 builder.Append(" TypeName=\"").Append(node.TypeName).Append('"');
             if (node.IsDesignTimePropertyAccessHelper)
