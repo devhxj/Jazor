@@ -12,7 +12,6 @@ on:
     paths:
       - 'src/Jazor.RazorVue/**'
       - 'src/Jazor.RazorVue.Sg.Test/**'
-      - 'src/Jazor.RazorVue.Test/**'
       - 'src/Jazor.Emit/**'
       - 'src/Jazor.EmitTest/**'
       - 'src/Jazor.Analyzer/**'
@@ -33,7 +32,6 @@ on:
     paths:
       - 'src/Jazor.RazorVue/**'
       - 'src/Jazor.RazorVue.Sg.Test/**'
-      - 'src/Jazor.RazorVue.Test/**'
       - 'src/Jazor.Emit/**'
       - 'src/Jazor.EmitTest/**'
       - 'src/Jazor.Analyzer/**'
@@ -65,7 +63,7 @@ env:
 
 jobs:
   razorvue-test:
-    name: RazorVue unit + Razor SG boundary
+    name: Razor SG final-document boundary
     runs-on: windows-latest
     steps:
       - name: Checkout
@@ -83,10 +81,6 @@ jobs:
       - name: Build
         shell: pwsh
         run: dotnet build Jazor.slnx --no-restore -v minimal
-
-      - name: RazorVue frontend tests
-        shell: pwsh
-        run: dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --no-build -v minimal
 
       - name: Razor SG final-document tests
         shell: pwsh
