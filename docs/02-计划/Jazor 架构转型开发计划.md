@@ -29,8 +29,8 @@
 
 ```text
 baseline branch/tag: main (at baseline commit below)
-transformation branch: <待填写>
-baseline commit: 77e9b17097bdb0bb2c6d48ca270c386d7de476c5
+transformation branch: feature/razor-sg-render-function
+baseline commit: d68aecbb00b23aa35735c9a269b2e987c7815b05
 ```
 
 ### 1.2 与 Jazor Component Runtime 计划的关系
