@@ -108,7 +108,10 @@ internal static class RazorSgGeneratedCSharpBinder
                 return false;
             }
 
-            var componentIdentity = component!.ComponentSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            if (component is null)
+                continue;
+
+            var componentIdentity = component.ComponentSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
             if (!componentIdentities.Add(componentIdentity))
             {
                 failure = "The Razor SG generated-C# batch contained duplicate component identity '" +
@@ -207,6 +210,9 @@ internal static class RazorSgGeneratedCSharpBinder
             .ToImmutableArray();
         if (candidates.Length == 0)
         {
+            if (IsNonComponentGeneratedDocument(generatedTree, document))
+                return true;
+
             failure = "The Razor SG generated document '" +
                       document.HintName +
                       "' did not declare BuildRenderTree(RenderTreeBuilder).";
@@ -241,6 +247,21 @@ internal static class RazorSgGeneratedCSharpBinder
 
         component = new RazorSgBoundComponent(document, componentSymbol, candidate.Symbol, body);
         return true;
+    }
+
+    private static bool IsNonComponentGeneratedDocument(
+        SyntaxTree generatedTree,
+        RazorSgGeneratedDocument document)
+    {
+        // The official batch can contain directive-only output with no generated
+        // type at all, plus the special _Imports.razor Execute host. Neither is a
+        // component artifact, but both must remain in the bound compilation.
+        if (!generatedTree.GetRoot().DescendantNodes().OfType<TypeDeclarationSyntax>().Any())
+            return true;
+
+        var sourcePath = document.SourcePath.Replace('\\', '/');
+        return string.Equals(sourcePath, "_Imports.razor", StringComparison.OrdinalIgnoreCase) ||
+               sourcePath.EndsWith("/_Imports.razor", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsBuildRenderTree(IMethodSymbol? method)

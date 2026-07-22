@@ -39,6 +39,60 @@ public sealed class RazorSgGeneratedCSharpBinderInvariantTests
     }
 
     [TestMethod]
+    public void TryBind_IgnoresNonComponentGeneratedDocument_WhileBindingComponentDocuments()
+    {
+        var baseCompilation = CreateCompilation(
+            """
+            namespace Demo.Pages;
+
+            public partial class Counter : global::Microsoft.AspNetCore.Components.ComponentBase
+            {
+            }
+            """);
+        var componentDocument = CreateDocument(
+            "Counter.razor.g.cs",
+            "Pages/Counter.razor",
+            """
+            namespace Demo.Pages;
+
+            public partial class Counter
+            {
+                protected override void BuildRenderTree(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+                {
+                    builder.AddContent(0, "counter");
+                }
+            }
+            """);
+        var importsDocument = CreateDocument(
+            "_Imports_razor.g.cs",
+            "_Imports.razor",
+            """
+            namespace Demo;
+
+            // Razor imports emit an Execute host, not a render component.
+            public partial class _Imports : object
+            {
+                protected void Execute()
+                {
+                }
+            }
+            """);
+        var batch = new RazorSgTailBatch(
+            baseCompilation,
+            ImmutableArray.Create(componentDocument, importsDocument));
+
+        var bound = RazorSgGeneratedCSharpBinder.TryBind(batch, out var result, out var failure);
+
+        Assert.IsTrue(bound, failure);
+        Assert.IsNotNull(result);
+        Assert.AreEqual(RazorSgCompilationBindingMode.DerivedHookCompilation, result.BindingMode);
+        Assert.AreEqual(2, result.Documents.Length);
+        Assert.AreEqual(1, result.Components.Length);
+        Assert.AreEqual("Counter", result.Components[0].ComponentSymbol.Name);
+        Assert.AreEqual(importsDocument.HintName, result.Documents.Single(document => document.HintName == importsDocument.HintName).HintName);
+    }
+
+    [TestMethod]
     public void TryBind_RejectsStaleCurrentGeneratedTree()
     {
         var fixture = CreateTwoComponentFixture();
