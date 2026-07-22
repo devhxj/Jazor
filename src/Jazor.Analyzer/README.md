@@ -33,7 +33,7 @@
 - `JAZOR001`: 不支持的类型/成员进入 ECMAScript 编译域。
 - `JAZOR002`: 共享 runtime alias 造成的类型过滤歧义。
 - `JAZORVUE*`: RazorVue authoring 规则与旧指令迁移诊断。
-- `JAZORVGA*`: RazorVue catalog 生成与 library component 约束诊断。
+- `JAZORVGA020`: Razor SG tail hook 无法提供官方 final-document 输入时的 fail-fast 诊断。
 
 ## Build and Test
 

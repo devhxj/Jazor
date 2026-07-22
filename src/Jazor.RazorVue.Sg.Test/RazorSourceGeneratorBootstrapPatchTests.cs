@@ -259,7 +259,6 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
                 ["build_property.GenerateRazorMetadataSourceChecksumAttributes"] = "false",
                 ["build_property.MSBuildProjectDirectory"] = projectDirectory,
                 ["build_property.EnableRazorHostOutputs"] = "true",
-                ["build_property.JazorRazorVueOutputMode"] = "sfc",
                 ["build_property.JazorRazorVueEnableRazorSgIntegration"] = "true"
             },
             new Dictionary<string, IReadOnlyDictionary<string, string>>(StringComparer.OrdinalIgnoreCase)
