@@ -3,7 +3,7 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Jazor.RazorVue.RazorIr.Test;
+namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
 public sealed class RazorSourceGeneratorLoadTimingTests
@@ -163,7 +163,7 @@ public sealed class RazorSourceGeneratorLoadTimingTests
             [
                 CSharpSyntaxTree.ParseText(source, path: "TimingProbe.Analyzer.cs")
             ],
-            references: RazorIrTestHost.CreateMetadataReferences(),
+            references: RazorSgTestHost.CreateMetadataReferences(),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         Directory.CreateDirectory(Path.GetDirectoryName(outputAssemblyPath)!);

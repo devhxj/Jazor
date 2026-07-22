@@ -2,7 +2,7 @@ using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Jazor.RazorVue.RazorIr.Test;
+namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
 public sealed class RazorSgComponentCandidateSelectorTests
@@ -39,7 +39,7 @@ public sealed class RazorSgComponentCandidateSelectorTests
                     new CSharpParseOptions(LanguageVersion.Preview),
                     path: "Components.razor.cs")
             ],
-            references: RazorIrTestHost.CreateMetadataReferences(),
+            references: RazorSgTestHost.CreateMetadataReferences(),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var components = RazorSgComponentCandidateSelector.DiscoverCurrentComponents(compilation);
@@ -76,7 +76,7 @@ public sealed class RazorSgComponentCandidateSelectorTests
                     new CSharpParseOptions(LanguageVersion.Preview),
                     path: "Counter.razor.cs")
             ],
-            references: RazorIrTestHost.CreateMetadataReferences(),
+            references: RazorSgTestHost.CreateMetadataReferences(),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var components = RazorSgComponentCandidateSelector.DiscoverTailRequiredComponents(compilation);

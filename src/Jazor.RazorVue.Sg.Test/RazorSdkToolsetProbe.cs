@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.AspNetCore.Razor.Language;
 
-namespace Jazor.RazorVue.RazorIr.Test;
+namespace Jazor.RazorVue.Sg.Test;
 
 internal sealed record RazorSdkToolsetProbe(
     string RootPath,

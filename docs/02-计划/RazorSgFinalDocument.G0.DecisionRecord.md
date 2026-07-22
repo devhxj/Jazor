@@ -87,9 +87,9 @@ G0 于 2026-07-22 通过。当前锁定的 SDK 为
 
 自动化证据：
 
-- `dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj --filter "FullyQualifiedName~RazorSgFinalDocumentBindingTests" --no-restore`
+- `dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --filter "FullyQualifiedName~RazorSgFinalDocumentBindingTests" --no-restore`
   覆盖 reused/derived binder、current tree reconciliation 和 final-document evidence。
-- `dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj --filter "FullyQualifiedName~ExternalBuild_BootstrapHook_BindsOfficialGeneratedCSharpThroughImplementationSourceOutput" --no-restore`
+- `dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --filter "FullyQualifiedName~ExternalBuild_BootstrapHook_BindsOfficialGeneratedCSharpThroughImplementationSourceOutput" --no-restore`
   在独立 Razor SDK consumer 中验证 implementation source-output hook、fingerprint、trace 和 official generated C#。
 - `dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedName~Build_LocalPackages_WithExternalRazorSgG0Consumer_ReconcilesFinalDocumentsAcrossIncrementalBuilds" --no-restore`
   通过本地 NuGet 包运行 clean restore、首次 build、无改动 incremental build 与 Razor

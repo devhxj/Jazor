@@ -1,19 +1,18 @@
 using System.Collections;
-using System.Reflection;
-using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.NET.Sdk.Razor.SourceGenerators;
+using System.Text;
 
-namespace Jazor.RazorVue.RazorIr.Test;
+namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
-public sealed class RazorSourceGeneratorCarrierBridgeTests
+public sealed class RazorSourceGeneratorHostOutputTests
 {
     [TestMethod]
-    public void RazorSourceGenerator_HostOutput_ExposesCodeDocumentForComponent()
+    public void RazorSourceGenerator_SingleRun_ProducesGeneratedSourceAndHostOutput()
     {
         const string projectDirectory = @"D:\repo\Demo";
         const string documentPath = @"D:\repo\Demo\Pages\Counter.razor";
@@ -25,7 +24,7 @@ public sealed class RazorSourceGeneratorCarrierBridgeTests
 
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
         var compilation = CSharpCompilation.Create(
-            assemblyName: "RazorVue.RazorIr.SdkSourceGenerator.CarrierBridge",
+            assemblyName: "RazorVue.Sg.SdkSourceGenerator.HostOutput",
             syntaxTrees:
             [
                 CSharpSyntaxTree.ParseText(
@@ -37,7 +36,7 @@ public sealed class RazorSourceGeneratorCarrierBridgeTests
                     options: parseOptions,
                     path: "EntryPoint.cs")
             ],
-            references: RazorIrTestHost.CreateMetadataReferences(),
+            references: RazorSgTestHost.CreateMetadataReferences(),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var additionalText = new InMemoryAdditionalText(documentPath, documentText);
@@ -55,6 +54,7 @@ public sealed class RazorSourceGeneratorCarrierBridgeTests
             {
                 [documentPath] = new Dictionary<string, string>(StringComparer.Ordinal)
                 {
+                    // The SDK Razor source generator expects TargetPath metadata to be UTF-8 base64 encoded.
                     ["build_metadata.AdditionalFiles.TargetPath"] = Convert.ToBase64String(Encoding.UTF8.GetBytes("Pages/Counter.razor"))
                 }
             });
@@ -65,60 +65,57 @@ public sealed class RazorSourceGeneratorCarrierBridgeTests
             parseOptions: parseOptions,
             optionsProvider: optionsProvider);
 
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out _, out var diagnostics);
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
+        var runResult = driver.GetRunResult();
+        var generatorResult = runResult.Results.Single();
+        var generatedSources = generatorResult.GeneratedSources;
+        var hostOutputs = ReadHostOutputs(generatorResult);
+        var compilationErrors = outputCompilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+
         Assert.AreEqual(0, diagnostics.Length, string.Join(Environment.NewLine, diagnostics.Select(static item => item.ToString())));
-
-        var generatorResult = driver.GetRunResult().Results.Single();
-        var razorGeneratorResult = GetHostOutputValue(generatorResult, "RazorGeneratorResult");
-        Assert.IsNotNull(razorGeneratorResult, "The SDK Razor source generator did not publish RazorGeneratorResult.");
-
-        var codeDocument = GetCodeDocument(razorGeneratorResult!, documentPath);
-        Assert.IsNotNull(codeDocument, "RazorGeneratorResult.GetCodeDocument(...) returned null for the Razor component physical path.");
-
-        var source = codeDocument!.GetType().GetProperty("Source")?.GetValue(codeDocument);
-        var filePath = source?.GetType().GetProperty("FilePath")?.GetValue(source) as string;
-        Assert.AreEqual(documentPath, filePath, "The bridged RazorCodeDocument source file path was not preserved.");
+        Assert.AreEqual(0, compilationErrors.Length, string.Join(Environment.NewLine, compilationErrors.Select(static item => item.ToString())));
+        Assert.IsTrue(generatedSources.Length > 0, "The SDK Razor source generator did not emit any generated source.");
+        Assert.IsTrue(
+            generatedSources.Any(static source => source.SourceText.ToString().Contains("BuildRenderTree", StringComparison.Ordinal)),
+            "The SDK Razor source generator did not emit the expected component render method.");
+        Assert.IsTrue(
+            hostOutputs.Any(static entry => string.Equals(entry.ValueTypeName, "Microsoft.NET.Sdk.Razor.SourceGenerators.RazorGeneratorResult", StringComparison.Ordinal)),
+            "The SDK Razor source generator did not publish RazorGeneratorResult into HostOutputs.");
     }
 
-    private static object? GetHostOutputValue(object generatorResult, string key)
+    private static IReadOnlyList<HostOutputEntry> ReadHostOutputs(object generatorResult)
     {
         var property = generatorResult.GetType().GetProperty("HostOutputs");
         Assert.IsNotNull(property, "GeneratorRunResult.HostOutputs was not available.");
 
-        if (property.GetValue(generatorResult) is not IEnumerable entries)
+        var value = property.GetValue(generatorResult);
+        Assert.IsNotNull(value, "GeneratorRunResult.HostOutputs returned null.");
+
+        if (value is not IEnumerable entries)
         {
             Assert.Fail("GeneratorRunResult.HostOutputs did not implement IEnumerable.");
-            return null;
+            return Array.Empty<HostOutputEntry>();
         }
 
+        var results = new List<HostOutputEntry>();
         foreach (var entry in entries)
         {
             Assert.IsNotNull(entry, "HostOutputs contained a null entry.");
 
-            var entryType = entry!.GetType();
-            var entryKey = entryType.GetProperty("Key")?.GetValue(entry) as string;
-            if (!string.Equals(entryKey, key, StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            return entryType.GetProperty("Value")?.GetValue(entry);
+            var entryType = entry.GetType();
+            var key = entryType.GetProperty("Key")?.GetValue(entry) as string;
+            var outputValue = entryType.GetProperty("Value")?.GetValue(entry);
+            results.Add(new HostOutputEntry(
+                key ?? string.Empty,
+                outputValue?.GetType().FullName ?? "<null>"));
         }
 
-        return null;
+        return results;
     }
 
-    private static object? GetCodeDocument(object razorGeneratorResult, string documentPath)
-    {
-        var method = razorGeneratorResult.GetType().GetMethod(
-            "GetCodeDocument",
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-            binder: null,
-            types: [typeof(string)],
-            modifiers: null);
-        Assert.IsNotNull(method, "RazorGeneratorResult.GetCodeDocument(string) was not available.");
-        return method!.Invoke(razorGeneratorResult, [documentPath]);
-    }
+    private sealed record HostOutputEntry(string Key, string ValueTypeName);
 
     private sealed class InMemoryAdditionalText(string path, string text) : AdditionalText
     {

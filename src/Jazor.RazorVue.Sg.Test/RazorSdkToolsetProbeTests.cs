@@ -1,4 +1,4 @@
-namespace Jazor.RazorVue.RazorIr.Test;
+namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
 public sealed class RazorSdkToolsetProbeTests
@@ -10,7 +10,7 @@ public sealed class RazorSdkToolsetProbeTests
     {
         var toolset = RazorSdkToolsetProbeResolver.Resolve();
 
-        Assert.IsNotNull(toolset, "The independent Razor IR spike could not locate a usable Razor SDK toolset.");
+        Assert.IsNotNull(toolset, "The Razor SG test fixture could not locate a usable Razor SDK toolset.");
 
         TestContext.WriteLine(toolset.Describe());
 
@@ -24,11 +24,11 @@ public sealed class RazorSdkToolsetProbeTests
     public void LoadedRazorCompilerAssembly_MatchesResolvedSdkSourceGeneratorBinary()
     {
         var toolset = RazorSdkToolsetProbeResolver.Resolve();
-        Assert.IsNotNull(toolset, "The independent Razor IR spike could not locate a usable Razor SDK toolset.");
+        Assert.IsNotNull(toolset, "The Razor SG test fixture could not locate a usable Razor SDK toolset.");
 
-        var loadedAssemblyPath = RazorIrTestHost.GetLoadedRazorCompilerAssemblyPath();
-        var loadedAssemblyHash = RazorIrTestHost.ComputeFileSha256(loadedAssemblyPath);
-        var resolvedSdkAssemblyHash = RazorIrTestHost.ComputeFileSha256(toolset.RazorSourceGeneratorPath);
+        var loadedAssemblyPath = RazorSgTestHost.GetLoadedRazorCompilerAssemblyPath();
+        var loadedAssemblyHash = RazorSgTestHost.ComputeFileSha256(loadedAssemblyPath);
+        var resolvedSdkAssemblyHash = RazorSgTestHost.ComputeFileSha256(toolset.RazorSourceGeneratorPath);
 
         TestContext.WriteLine("Loaded compiler assembly: " + loadedAssemblyPath);
         TestContext.WriteLine("Resolved SDK assembly:   " + toolset.RazorSourceGeneratorPath);

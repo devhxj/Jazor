@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Jazor.RazorVue.RazorIr.Test;
+namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
 public sealed class RoslynGeneratorVisibilityTests
@@ -26,7 +26,7 @@ public sealed class RoslynGeneratorVisibilityTests
         var runResult = driver.GetRunResult();
         var observationSource = GetGeneratedSource(runResult, "Consumer.Observation.g.cs");
         var outputSymbol = outputCompilation.GetTypeByMetadataName("Demo.Counter");
-        var outputErrors = RazorIrTestHost.GetCompilationErrors(outputCompilation);
+        var outputErrors = RazorSgTestHost.GetCompilationErrors(outputCompilation);
 
         Assert.AreEqual(0, diagnostics.Length, string.Join(Environment.NewLine, diagnostics.Select(static item => item.ToString())));
         Assert.AreEqual(0, outputErrors.Length, string.Join(Environment.NewLine, outputErrors));
@@ -58,7 +58,7 @@ public sealed class RoslynGeneratorVisibilityTests
         consumerDriver = consumerDriver.RunGeneratorsAndUpdateCompilation(producerOutputCompilation, out var consumerOutputCompilation, out var consumerDiagnostics);
 
         var observationSource = GetGeneratedSource(consumerDriver.GetRunResult(), "Consumer.Observation.g.cs");
-        var consumerErrors = RazorIrTestHost.GetCompilationErrors(consumerOutputCompilation);
+        var consumerErrors = RazorSgTestHost.GetCompilationErrors(consumerOutputCompilation);
 
         Assert.AreEqual(0, producerDiagnostics.Length, string.Join(Environment.NewLine, producerDiagnostics.Select(static item => item.ToString())));
         Assert.AreEqual(0, consumerDiagnostics.Length, string.Join(Environment.NewLine, consumerDiagnostics.Select(static item => item.ToString())));
@@ -85,7 +85,7 @@ public sealed class RoslynGeneratorVisibilityTests
                     options: parseOptions,
                     path: "Counter.cs")
             ],
-            references: RazorIrTestHost.CreateMetadataReferences(),
+            references: RazorSgTestHost.CreateMetadataReferences(),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
     private static string GetGeneratedSource(GeneratorDriverRunResult runResult, string hintName)

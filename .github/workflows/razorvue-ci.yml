@@ -11,7 +11,7 @@ on:
     branches: [main]
     paths:
       - 'src/Jazor.RazorVue/**'
-      - 'src/Jazor.RazorVue.RazorIr.Test/**'
+      - 'src/Jazor.RazorVue.Sg.Test/**'
       - 'src/Jazor.RazorVue.Test/**'
       - 'src/Jazor.Emit/**'
       - 'src/Jazor.EmitTest/**'
@@ -32,7 +32,7 @@ on:
     branches: [main]
     paths:
       - 'src/Jazor.RazorVue/**'
-      - 'src/Jazor.RazorVue.RazorIr.Test/**'
+      - 'src/Jazor.RazorVue.Sg.Test/**'
       - 'src/Jazor.RazorVue.Test/**'
       - 'src/Jazor.Emit/**'
       - 'src/Jazor.EmitTest/**'
@@ -65,7 +65,7 @@ env:
 
 jobs:
   razorvue-test:
-    name: RazorVue unit + IR
+    name: RazorVue unit + Razor SG boundary
     runs-on: windows-latest
     steps:
       - name: Checkout
@@ -88,9 +88,9 @@ jobs:
         shell: pwsh
         run: dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --no-build -v minimal
 
-      - name: Razor IR frontend tests
+      - name: Razor SG final-document tests
         shell: pwsh
-        run: dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj --no-build -v minimal
+        run: dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --no-build -v minimal
 
   emit-and-browser-smoke:
     # Jazor.EmitTest contains the SDK integration / pack / payload-guard tests AND

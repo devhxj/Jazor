@@ -12,6 +12,7 @@ var piniaTestProject = Path.Combine(repoRoot, "src", "ECMAScript.Pinia.Test", "E
 var piniaTestingTestProject = Path.Combine(repoRoot, "src", "ECMAScript.Pinia.Testing.Test", "ECMAScript.Pinia.Testing.Test.csproj");
 var vueRouteTestProject = Path.Combine(repoRoot, "src", "ECMAScript.VueRoute.Test", "ECMAScript.VueRoute.Test.csproj");
 var razorVueTestProject = Path.Combine(repoRoot, "src", "Jazor.RazorVue.Test", "Jazor.RazorVue.Test.csproj");
+var razorSgTestProject = Path.Combine(repoRoot, "src", "Jazor.RazorVue.Sg.Test", "Jazor.RazorVue.Sg.Test.csproj");
 var joltTestProject = Path.Combine(repoRoot, "src", "Jolt.Test", "Jolt.Test.csproj");
 var emitTestProject = Path.Combine(repoRoot, "src", "Jazor.EmitTest", "Jazor.EmitTest.csproj");
 
@@ -80,6 +81,7 @@ var testTargets = options.Project switch
     "pinia-testing" => new[] { piniaTestingTestProject },
     "vueroute" => new[] { vueRouteTestProject },
     "razorvue" => new[] { razorVueTestProject },
+    "razor-sg" => new[] { razorSgTestProject },
     "jolt" => new[] { joltTestProject },
     "jolt-build" => new[] { joltTestProject },
     "emit" => new[] { emitTestProject },
@@ -91,6 +93,7 @@ var testTargets = options.Project switch
         piniaTestingTestProject,
         vueRouteTestProject,
         razorVueTestProject,
+        razorSgTestProject,
         joltTestProject,
         emitTestProject
     }
@@ -178,7 +181,7 @@ internal sealed record ScriptArguments
         var normalized = project.Trim().ToLowerInvariant();
         var supported = new HashSet<string>(StringComparer.Ordinal)
         {
-            "all", "compiler", "clr", "pinia", "pinia-testing", "vueroute", "razorvue",
+            "all", "compiler", "clr", "pinia", "pinia-testing", "vueroute", "razorvue", "razor-sg",
             "jolt", "jolt-build", "emit", "wiki", "wiki-publish", "wiki-browser", "wiki-browser-publish"
         };
 
@@ -205,7 +208,7 @@ internal sealed record ScriptArguments
     {
         Console.WriteLine("Usage: dotnet run --file scripts/csharp/test-dotnet.cs -- [options]");
         Console.WriteLine("Options:");
-        Console.WriteLine("  --project <all|compiler|clr|pinia|pinia-testing|vueroute|razorvue|jolt|jolt-build|emit|wiki|wiki-publish|wiki-browser|wiki-browser-publish>");
+        Console.WriteLine("  --project <all|compiler|clr|pinia|pinia-testing|vueroute|razorvue|razor-sg|jolt|jolt-build|emit|wiki|wiki-publish|wiki-browser|wiki-browser-publish>");
         Console.WriteLine("  --configuration <Debug|Release>");
         Console.WriteLine("  --filter <expression>");
         Console.WriteLine("  --base-output-path <path>");

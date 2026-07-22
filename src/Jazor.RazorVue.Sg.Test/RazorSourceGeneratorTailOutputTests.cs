@@ -3,7 +3,7 @@ using Jazor.Analyzer.RazorVue.Generation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Jazor.RazorVue.RazorIr.Test;
+namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
 public sealed class RazorSourceGeneratorTailOutputTests
@@ -110,7 +110,7 @@ public sealed class RazorSourceGeneratorTailOutputTests
                     options: parseOptions,
                     path: includeRazorVueCandidate ? "EntryPoint.razor.cs" : "EntryPoint.cs")
             ],
-            references: RazorIrTestHost.CreateMetadataReferences(),
+            references: RazorSgTestHost.CreateMetadataReferences(),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         GeneratorDriver driver = CSharpGeneratorDriver.Create(

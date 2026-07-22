@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Jazor.RazorVue.RazorIr.Test;
+namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
 public sealed class RazorSgGeneratedCSharpBinderInvariantTests
@@ -215,7 +215,7 @@ public sealed class RazorSgGeneratedCSharpBinderInvariantTests
         => CSharpCompilation.Create(
             assemblyName: "RazorSg.GeneratedCSharpBinder.Invariant.Tests",
             syntaxTrees: [Parse(source, "Components.razor.cs")],
-            references: RazorIrTestHost.CreateMetadataReferences(),
+            references: RazorSgTestHost.CreateMetadataReferences(),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
     private static RazorSgGeneratedDocument CreateDocument(string hintName, string sourcePath, string source)

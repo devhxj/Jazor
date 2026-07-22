@@ -1,4 +1,4 @@
-namespace Jazor.RazorVue.RazorIr.Test;
+namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
 public sealed class ProductionRazorCompilerReferenceTests

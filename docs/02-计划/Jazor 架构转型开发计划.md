@@ -6,7 +6,7 @@
 >
 > **日期**：2026-07-22
 >
-> **状态**：Draft v3 - G0 已通过，Task 0.5 待执行
+> **状态**：Draft v3 - G0 已通过，Task 0.5 进行中（SG-focused 测试资产已迁移）
 
 本文中的 `DR/IR` 特指 Razor intermediate representation（包括 `DocumentIntermediateNode` 及其相关节点），不是 Roslyn `IOperation` 或官方 SG 最终生成的 C# 文档。本文中的 `hook compilation` 指 source-output callback 可见的 Roslyn compilation 快照，不等同于外层 `GeneratorDriver` 应用全部 generator output 后返回的 final updated compilation。
 
@@ -386,7 +386,7 @@ generated-C# content hash、`BuildRenderTree` operation inventory/hash 与禁止
 **验收标准**：
 
 - [ ] solution 不再包含 Jolt 和 Razor IR test project。
-- [ ] 新建或重命名为 SG-result focused test project，测试职责不再包含 IR。
+- [x] 新建或重命名为 SG-result focused test project，测试职责不再包含 IR。
 - [ ] 不存在 SFC output mode 分支、DR/IR DTO 或 Jolt protocol orphan。
 - [ ] 测试不是 skip：旧合同测试删除，新合同测试在同一提交加入。
 - [ ] 清理提交引用 G0 evidence；若 G0 失败，Task 0.5 不执行。

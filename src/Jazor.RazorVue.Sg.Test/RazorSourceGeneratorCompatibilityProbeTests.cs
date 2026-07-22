@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Jazor.RazorVue.RazorIr.Test;
+namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
 public sealed class RazorSourceGeneratorCompatibilityProbeTests
@@ -35,7 +35,7 @@ public sealed class RazorSourceGeneratorCompatibilityProbeTests
         var validation = RazorSourceGeneratorCompatibilityGuard.Validate(result);
         Assert.IsTrue(validation.Success, validation.Failure ?? "The Razor source generator compatibility validation did not succeed.");
 
-        var fileSha256 = RazorIrTestHost.ComputeFileSha256(shape.AssemblyPath);
+        var fileSha256 = RazorSgTestHost.ComputeFileSha256(shape.AssemblyPath);
         Assert.IsFalse(string.IsNullOrWhiteSpace(fileSha256), "File SHA-256 was empty.");
 
         TestContext.WriteLine("Assembly path: " + shape.AssemblyPath);

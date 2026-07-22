@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.NET.Sdk.Razor.SourceGenerators;
 
-namespace Jazor.RazorVue.RazorIr.Test;
+namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
 public sealed class RazorSourceGeneratorBootstrapPatchTests
@@ -201,14 +201,14 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
     public void InProcess_RazorSourceGeneratorTailOutput_BindsForEachInitialize()
     {
         var firstRun = RunHookedRazorSourceGenerator(
-            assemblyName: "Jazor.RazorVue.RazorIr.Bootstrap.First",
+            assemblyName: "Jazor.RazorVue.Sg.Bootstrap.First",
             documentPath: @"D:\repo\Demo\Pages\FirstCounter.razor",
             componentName: "FirstCounter",
             moduleImport: "./components/first-counter");
         AssertHookedRunEmittedFinalDocumentEvidence(firstRun);
 
         var secondRun = RunHookedRazorSourceGenerator(
-            assemblyName: "Jazor.RazorVue.RazorIr.Bootstrap.Second",
+            assemblyName: "Jazor.RazorVue.Sg.Bootstrap.Second",
             documentPath: @"D:\repo\Demo\Pages\SecondCounter.razor",
             componentName: "SecondCounter",
             moduleImport: "./components/second-counter");
@@ -246,7 +246,7 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
                     options: parseOptions,
                     path: componentName + ".razor.cs")
             ],
-            references: RazorIrTestHost.CreateMetadataReferences(),
+            references: RazorSgTestHost.CreateMetadataReferences(),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var additionalText = new InMemoryAdditionalText(documentPath, documentText);

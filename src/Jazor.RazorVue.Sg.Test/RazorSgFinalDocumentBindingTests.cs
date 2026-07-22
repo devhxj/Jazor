@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Jazor.RazorVue.RazorIr.Test;
+namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
 public sealed class RazorSgFinalDocumentBindingTests
@@ -70,7 +70,7 @@ public sealed class RazorSgFinalDocumentBindingTests
     }
 
     [TestMethod]
-    public void TailOutput_EmitsFinalDocumentEvidenceInsteadOfSfcCatalog()
+    public void TailOutput_EmitsFinalDocumentEvidenceWithoutLegacyCatalog()
     {
         var fixture = CreateFixture();
         var documents = ImmutableArray.Create(
@@ -148,21 +148,20 @@ public sealed class RazorSgFinalDocumentBindingTests
                     options: parseOptions,
                     path: "Counter.razor.cs")
             ],
-            references: RazorIrTestHost.CreateMetadataReferences(),
+            references: RazorSgTestHost.CreateMetadataReferences(),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        var projectEngine = RazorVueRazorCodeDocumentProvider.CreateProjectEngine(
+        var projectEngine = RazorSgTestDocumentFactory.CreateProjectEngine(
             documentPath,
             parseOptions,
             rootNamespace: "Demo.Pages");
-        var tagHelpers = RazorVueRazorCodeDocumentProvider.DiscoverTagHelpers(projectEngine, baseCompilation);
+        var tagHelpers = RazorSgTestDocumentFactory.DiscoverTagHelpers(projectEngine, baseCompilation);
         var codeDocument = projectEngine.Process(
-            RazorVueRazorCodeDocumentProvider.CreateSourceDocument(
-                new Jazor.RazorVue.RazorVueRazorDocument(documentPath, SourceText.From(documentText))),
+            RazorSgTestDocumentFactory.CreateSourceDocument(documentPath, SourceText.From(documentText)),
             RazorFileKind.Component,
             ImmutableArray<RazorSourceDocument>.Empty,
             tagHelpers.Length == 0 ? null : TagHelperCollection.Create(tagHelpers));
-        var csharpDocument = RazorVueRazorCodeDocumentProvider.GetRequiredCSharpDocument(codeDocument);
+        var csharpDocument = RazorSgTestDocumentFactory.GetRequiredCSharpDocument(codeDocument);
         var generatedTree = CSharpSyntaxTree.ParseText(
             csharpDocument.Text,
             options: parseOptions,

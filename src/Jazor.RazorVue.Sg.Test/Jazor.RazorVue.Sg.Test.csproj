@@ -5,10 +5,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UseVSTest>true</UseVSTest>
-    <RazorIrTestRoslynBinariesPath Condition="$([System.IO.Directory]::Exists('$([System.IO.Path]::GetFullPath('$(MSBuildSDKsPath)\..\Roslyn\bincore'))'))">$([System.IO.Path]::GetFullPath('$(MSBuildSDKsPath)\..\Roslyn\bincore'))</RazorIrTestRoslynBinariesPath>
-    <RazorIrTestRoslynBinariesPath Condition="'$(RazorIrTestRoslynBinariesPath)' == '' And '$(NETCoreSdkVersion)' != ''">$([System.IO.Path]::GetFullPath('$(ProgramFiles)\dotnet\sdk\$(NETCoreSdkVersion)\Roslyn\bincore'))</RazorIrTestRoslynBinariesPath>
-    <RazorIrTestSdkPath Condition="$([System.IO.Directory]::Exists('$(MSBuildSDKsPath)\Microsoft.NET.Sdk.Razor'))">$(MSBuildSDKsPath)</RazorIrTestSdkPath>
-    <RazorIrTestSdkPath Condition="'$(RazorIrTestSdkPath)' == '' And '$(NETCoreSdkVersion)' != ''">$([System.IO.Path]::GetFullPath('$(ProgramFiles)\dotnet\sdk\$(NETCoreSdkVersion)\Sdks'))</RazorIrTestSdkPath>
+    <RazorSgTestRoslynBinariesPath Condition="$([System.IO.Directory]::Exists('$([System.IO.Path]::GetFullPath('$(MSBuildSDKsPath)\..\Roslyn\bincore'))'))">$([System.IO.Path]::GetFullPath('$(MSBuildSDKsPath)\..\Roslyn\bincore'))</RazorSgTestRoslynBinariesPath>
+    <RazorSgTestRoslynBinariesPath Condition="'$(RazorSgTestRoslynBinariesPath)' == '' And '$(NETCoreSdkVersion)' != ''">$([System.IO.Path]::GetFullPath('$(ProgramFiles)\dotnet\sdk\$(NETCoreSdkVersion)\Roslyn\bincore'))</RazorSgTestRoslynBinariesPath>
+    <RazorSgTestSdkPath Condition="$([System.IO.Directory]::Exists('$(MSBuildSDKsPath)\Microsoft.NET.Sdk.Razor'))">$(MSBuildSDKsPath)</RazorSgTestSdkPath>
+    <RazorSgTestSdkPath Condition="'$(RazorSgTestSdkPath)' == '' And '$(NETCoreSdkVersion)' != ''">$([System.IO.Path]::GetFullPath('$(ProgramFiles)\dotnet\sdk\$(NETCoreSdkVersion)\Sdks'))</RazorSgTestSdkPath>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="bin\**\*.cs;obj\**\*.cs" />
@@ -25,15 +25,15 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CodeAnalysis">
-      <HintPath>$(RazorIrTestRoslynBinariesPath)\Microsoft.CodeAnalysis.dll</HintPath>
+      <HintPath>$(RazorSgTestRoslynBinariesPath)\Microsoft.CodeAnalysis.dll</HintPath>
       <Private>true</Private>
     </Reference>
     <Reference Include="Microsoft.CodeAnalysis.CSharp">
-      <HintPath>$(RazorIrTestRoslynBinariesPath)\Microsoft.CodeAnalysis.CSharp.dll</HintPath>
+      <HintPath>$(RazorSgTestRoslynBinariesPath)\Microsoft.CodeAnalysis.CSharp.dll</HintPath>
       <Private>true</Private>
     </Reference>
     <Reference Include="Microsoft.CodeAnalysis.Razor.Compiler">
-      <HintPath>$(RazorIrTestSdkPath)\Microsoft.NET.Sdk.Razor\source-generators\Microsoft.CodeAnalysis.Razor.Compiler.dll</HintPath>
+      <HintPath>$(RazorSgTestSdkPath)\Microsoft.NET.Sdk.Razor\source-generators\Microsoft.CodeAnalysis.Razor.Compiler.dll</HintPath>
       <Private>true</Private>
     </Reference>
   </ItemGroup>
