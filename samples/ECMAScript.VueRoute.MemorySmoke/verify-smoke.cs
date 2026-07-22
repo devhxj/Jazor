@@ -244,8 +244,6 @@ internal static class ScriptHelpers
             AddDenoRuntimeCandidates(candidatePaths, Path.Combine(isolatedOutputRoot, "Jazor.Emit", "bin", options.Configuration, "net11.0"));
         }
 
-        AddDenoRuntimeCandidates(candidatePaths, Path.Combine(repoRoot, "src", "Jolt", "bin", "Debug", "net11.0"));
-        AddDenoRuntimeCandidates(candidatePaths, Path.Combine(repoRoot, "src", "Jolt", "bin", "Release", "net11.0"));
         AddDenoRuntimeCandidates(candidatePaths, Path.Combine(repoRoot, "src", "Jazor.Emit", "bin", "Debug", "net11.0"));
         AddDenoRuntimeCandidates(candidatePaths, Path.Combine(repoRoot, "src", "Jazor.Emit", "bin", "Release", "net11.0"));
 
@@ -265,7 +263,7 @@ internal static class ScriptHelpers
         var denoExePath = candidatePaths.FirstOrDefault(File.Exists);
         if (denoExePath is null)
         {
-            throw new FileNotFoundException("Bundled Deno runtime was not found. Build Jolt or Jazor.Emit first so DenoHost runtime assets exist.");
+            throw new FileNotFoundException("Bundled Deno runtime was not found. Build Jazor.Emit first so DenoHost runtime assets exist.");
         }
 
         return denoExePath;

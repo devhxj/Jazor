@@ -13,7 +13,6 @@ var piniaTestingTestProject = Path.Combine(repoRoot, "src", "ECMAScript.Pinia.Te
 var vueRouteTestProject = Path.Combine(repoRoot, "src", "ECMAScript.VueRoute.Test", "ECMAScript.VueRoute.Test.csproj");
 var razorVueTestProject = Path.Combine(repoRoot, "src", "Jazor.RazorVue.Test", "Jazor.RazorVue.Test.csproj");
 var razorSgTestProject = Path.Combine(repoRoot, "src", "Jazor.RazorVue.Sg.Test", "Jazor.RazorVue.Sg.Test.csproj");
-var joltTestProject = Path.Combine(repoRoot, "src", "Jolt.Test", "Jolt.Test.csproj");
 var emitTestProject = Path.Combine(repoRoot, "src", "Jazor.EmitTest", "Jazor.EmitTest.csproj");
 
 if (options.Project is "wiki" or "wiki-publish" or "wiki-browser" or "wiki-browser-publish")
@@ -59,20 +58,6 @@ if (options.Project is "wiki" or "wiki-publish" or "wiki-browser" or "wiki-brows
     return;
 }
 
-var joltBuildFilter = string.Join("|", new[]
-{
-    "FullyQualifiedName~JoltBuildTests",
-    "FullyQualifiedName~JoltStaticAssetHandlerTests",
-    "FullyQualifiedName~JoltBuildCssPipelineTests",
-    "FullyQualifiedName~JoltBuildOptimizationTests",
-    "FullyQualifiedName~JoltBuildJsSourceMapTests",
-    "FullyQualifiedName~JoltBuildSliceFixTests"
-});
-
-var effectiveFilter = options.Project == "jolt-build" && string.IsNullOrWhiteSpace(options.Filter)
-    ? joltBuildFilter
-    : options.Filter;
-
 var testTargets = options.Project switch
 {
     "compiler" => new[] { compilerTestProject },
@@ -82,8 +67,6 @@ var testTargets = options.Project switch
     "vueroute" => new[] { vueRouteTestProject },
     "razorvue" => new[] { razorVueTestProject },
     "razor-sg" => new[] { razorSgTestProject },
-    "jolt" => new[] { joltTestProject },
-    "jolt-build" => new[] { joltTestProject },
     "emit" => new[] { emitTestProject },
     _ => new[]
     {
@@ -94,7 +77,6 @@ var testTargets = options.Project switch
         vueRouteTestProject,
         razorVueTestProject,
         razorSgTestProject,
-        joltTestProject,
         emitTestProject
     }
 };
@@ -110,10 +92,10 @@ foreach (var testProject in testTargets)
 {
     var testArgs = new List<string> { "test", testProject, "-c", options.Configuration, "--no-build", "--no-restore", "-v", "minimal" };
     testArgs.AddRange(sharedBuildPathArguments);
-    if (!string.IsNullOrWhiteSpace(effectiveFilter))
+    if (!string.IsNullOrWhiteSpace(options.Filter))
     {
         testArgs.Add("--filter");
-        testArgs.Add(effectiveFilter);
+        testArgs.Add(options.Filter);
     }
 
     await ScriptHelpers.RunDotNetAsync(testArgs, repoRoot, dotnetCliHome);
@@ -182,7 +164,7 @@ internal sealed record ScriptArguments
         var supported = new HashSet<string>(StringComparer.Ordinal)
         {
             "all", "compiler", "clr", "pinia", "pinia-testing", "vueroute", "razorvue", "razor-sg",
-            "jolt", "jolt-build", "emit", "wiki", "wiki-publish", "wiki-browser", "wiki-browser-publish"
+            "emit", "wiki", "wiki-publish", "wiki-browser", "wiki-browser-publish"
         };
 
         if (!supported.Contains(normalized))
@@ -208,7 +190,7 @@ internal sealed record ScriptArguments
     {
         Console.WriteLine("Usage: dotnet run --file scripts/csharp/test-dotnet.cs -- [options]");
         Console.WriteLine("Options:");
-        Console.WriteLine("  --project <all|compiler|clr|pinia|pinia-testing|vueroute|razorvue|razor-sg|jolt|jolt-build|emit|wiki|wiki-publish|wiki-browser|wiki-browser-publish>");
+        Console.WriteLine("  --project <all|compiler|clr|pinia|pinia-testing|vueroute|razorvue|razor-sg|emit|wiki|wiki-publish|wiki-browser|wiki-browser-publish>");
         Console.WriteLine("  --configuration <Debug|Release>");
         Console.WriteLine("  --filter <expression>");
         Console.WriteLine("  --base-output-path <path>");
