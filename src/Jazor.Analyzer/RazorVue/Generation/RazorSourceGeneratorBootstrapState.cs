@@ -16,8 +16,8 @@ internal static class RazorSourceGeneratorBootstrapState
     private static int _patchFailed;
     private static int _patchUnavailable;
     private static int _postfixInvoked;
-    private static int _hostOutputHookInstalled;
-    private static int _hostOutputObserved;
+    private static int _implementationSourceOutputHookInstalled;
+    private static int _implementationSourceOutputObserved;
     private static int _tailOutputRegistered;
     private static int _tailOutputRegistrationVersion;
     private static int _testHookObserved;
@@ -71,11 +71,11 @@ internal static class RazorSourceGeneratorBootstrapState
     internal static void MarkPostfixInvoked()
         => Interlocked.Exchange(ref _postfixInvoked, 1);
 
-    internal static void MarkHostOutputHookInstalled()
-        => Interlocked.Exchange(ref _hostOutputHookInstalled, 1);
+    internal static void MarkImplementationSourceOutputHookInstalled()
+        => Interlocked.Exchange(ref _implementationSourceOutputHookInstalled, 1);
 
-    internal static void MarkHostOutputObserved()
-        => Interlocked.Exchange(ref _hostOutputObserved, 1);
+    internal static void MarkImplementationSourceOutputObserved()
+        => Interlocked.Exchange(ref _implementationSourceOutputObserved, 1);
 
     internal static void MarkTailOutputRegistered(object? contextKey = null, string? registrationKind = null)
     {
@@ -120,8 +120,8 @@ internal static class RazorSourceGeneratorBootstrapState
             PatchFailed: Volatile.Read(ref _patchFailed) != 0,
             PatchUnavailable: Volatile.Read(ref _patchUnavailable) != 0,
             PostfixInvoked: Volatile.Read(ref _postfixInvoked) != 0,
-            HostOutputHookInstalled: Volatile.Read(ref _hostOutputHookInstalled) != 0,
-            HostOutputObserved: Volatile.Read(ref _hostOutputObserved) != 0,
+            ImplementationSourceOutputHookInstalled: Volatile.Read(ref _implementationSourceOutputHookInstalled) != 0,
+            ImplementationSourceOutputObserved: Volatile.Read(ref _implementationSourceOutputObserved) != 0,
             TailOutputRegistered: Volatile.Read(ref _tailOutputRegistered) != 0,
             CurrentContextKeyAvailable: contextKey is not null,
             TailOutputRegisteredForCurrentContext: IsTailOutputRegisteredForContext(
@@ -178,8 +178,8 @@ internal static class RazorSourceGeneratorBootstrapState
         Interlocked.Exchange(ref _patchFailed, 0);
         Interlocked.Exchange(ref _patchUnavailable, 0);
         Interlocked.Exchange(ref _postfixInvoked, 0);
-        Interlocked.Exchange(ref _hostOutputHookInstalled, 0);
-        Interlocked.Exchange(ref _hostOutputObserved, 0);
+        Interlocked.Exchange(ref _implementationSourceOutputHookInstalled, 0);
+        Interlocked.Exchange(ref _implementationSourceOutputObserved, 0);
         Interlocked.Exchange(ref _tailOutputRegistered, 0);
         Interlocked.Exchange(ref _tailOutputRegistrationVersion, 0);
         Interlocked.Exchange(ref _testHookObserved, 0);
@@ -223,8 +223,8 @@ internal sealed record RazorSourceGeneratorBootstrapTrace(
     bool PatchFailed,
     bool PatchUnavailable,
     bool PostfixInvoked,
-    bool HostOutputHookInstalled,
-    bool HostOutputObserved,
+    bool ImplementationSourceOutputHookInstalled,
+    bool ImplementationSourceOutputObserved,
     bool TailOutputRegistered,
     bool CurrentContextKeyAvailable,
     bool TailOutputRegisteredForCurrentContext,

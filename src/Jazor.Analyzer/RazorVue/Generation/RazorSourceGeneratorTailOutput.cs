@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Immutable;
-using Jazor.RazorVue.Analysis;
 using Jazor.RazorVue;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
@@ -62,7 +61,7 @@ internal static class RazorSourceGeneratorTailOutput
                 options,
                 hostDocumentCount: 0,
                 generatorDocumentCount: 0,
-                artifactCount: 0,
+                componentCount: 0,
                 state: "no-generator-documents",
                 sourceItemCount: source.IsDefault ? -1 : 0,
                 sourceTypeName: typeof(TDocument).FullName ?? typeof(TDocument).Name);
@@ -121,7 +120,7 @@ internal static class RazorSourceGeneratorTailOutput
                 options,
                 hostDocumentCount: suppressedCount,
                 generatorDocumentCount: 0,
-                artifactCount: 0,
+                componentCount: 0,
                 state: suppressedCount > 0 ? "suppressed" : "no-generator-documents",
                 sourceItemCount: source.Length,
                 sourceTypeName: (typeof(TDocument).FullName ?? typeof(TDocument).Name)
@@ -206,121 +205,139 @@ internal static class RazorSourceGeneratorTailOutput
             return;
         }
 
-        var bridgeInputs = documents
-            .Select(static item => new RazorVueRazorSourceGeneratorDocumentInput(
+        var adapterInputs = documents
+            .Select(static item => new RazorSgTailDocumentInput(
                 item.HintName,
                 item.CodeDocument,
                 item.CSharpDocument))
             .ToImmutableArray();
-        RazorVueRazorSourceGeneratorTailBridgeResult result;
-        try
+        if (!RazorSgFinalDocumentAdapter.TryCreateBatch(
+                compilation,
+                adapterInputs,
+                out var batch,
+                out var adaptationFailure))
         {
-            result = RazorVueRazorSourceGeneratorTailBridge.ExecuteSfcPipeline(compilation, bridgeInputs);
-        }
-        catch (Exception ex)
-        {
-            ReportTailFailure(context, ex.GetType().Name + ": " + ex.Message);
+            ReportTailFailure(context, adaptationFailure ?? "Unknown Razor SG final-document adapter failure.");
             EmitTraceIfEnabled(
                 context,
                 options,
                 documents.Length,
                 0,
                 0,
-                "bridge-exception",
-                sourceTypeName: ex.GetType().FullName + ": " + ex.Message);
+                "adapter-failed",
+                sourceTypeName: adaptationFailure);
             return;
         }
 
-        if (!result.Success)
+        if (!RazorSgGeneratedCSharpBinder.TryBind(batch!, out var binding, out var bindingFailure))
         {
-            ReportTailFailure(context, result.Failure ?? "Unknown RazorVue Razor SG tail bridge failure.");
+            ReportTailFailure(context, bindingFailure ?? "Unknown Razor SG generated-C# binding failure.");
             EmitTraceIfEnabled(
                 context,
                 options,
                 documents.Length,
-                result.GeneratorDocumentCount,
+                batch!.Documents.Length,
                 0,
-                "bridge-failed",
-                sourceTypeName: result.Failure);
+                "binding-failed",
+                sourceTypeName: bindingFailure);
             return;
         }
 
-        var catalog = result.Catalog;
-        if (catalog.Artifacts.IsDefaultOrEmpty)
+        if (!TrySelectRazorVueComponents(binding!, out var razorVueBinding, out var componentMatchFailure))
         {
-            ReportTailFailure(
-                context,
-                BuildNoArtifactsFailure(compilation, result, documents));
+            ReportTailFailure(context, componentMatchFailure ?? "The Razor SG generated C# did not match a RazorVue component candidate.");
             EmitTraceIfEnabled(
                 context,
                 options,
                 documents.Length,
-                result.GeneratorDocumentCount,
+                batch!.Documents.Length,
                 0,
-                "no-artifacts");
+                "component-mismatch",
+                sourceTypeName: componentMatchFailure,
+                binding: binding);
             return;
         }
 
-        foreach (var artifact in catalog.Artifacts)
-        {
-            context.AddSource(
-                RazorVueGenerator.CreateRazorVueSfcArtifactHintName(artifact),
-                RazorVueGenerator.BuildRazorVueSfcArtifactSource(artifact));
-        }
-
-        context.AddSource(
-            "Jazor.Generated.RazorVueCatalog.g.cs",
-            RazorVueGenerator.BuildRazorVueSfcCatalogSource(catalog));
+        EmitFinalDocumentEvidence(context, razorVueBinding!);
         EmitTraceIfEnabled(
             context,
             options,
             documents.Length,
-            result.GeneratorDocumentCount,
-            catalog.Artifacts.Length,
-            "emitted");
+            batch!.Documents.Length,
+            razorVueBinding!.Components.Length,
+            "bound",
+            binding: razorVueBinding);
     }
 
-    private static string BuildNoArtifactsFailure(
-        Compilation compilation,
-        RazorVueRazorSourceGeneratorTailBridgeResult result,
-        ImmutableArray<ReflectedRazorSourceGeneratorDocument> documents)
+    private static bool TrySelectRazorVueComponents(
+        RazorSgGeneratedCSharpBinding binding,
+        out RazorSgGeneratedCSharpBinding? razorVueBinding,
+        out string? failure)
     {
-        var componentSummary = DescribeRazorVueComponents(compilation);
-        var documentSummary = DescribeTailDocuments(documents);
-        return "RazorVue Razor SG tail output produced no SFC artifacts after receiving Razor source generator documents. " +
-               "This usually means the official Razor source generator output did not match any RazorVue component or did not provide a bindable BuildRenderTree semantic baseline. " +
-               "Components: " + componentSummary + ". " +
-               "Tail documents: " + documentSummary + ". " +
-               "Ensure the .razor component is compiled by the official Razor source generator and that RazorVue runs from the SG tail output route after generated C# is available.";
-    }
+        razorVueBinding = null;
+        failure = null;
+        var razorVueContext = RazorVueCompilationContext.TryCreate(binding.Compilation);
+        if (razorVueContext is null)
+        {
+            failure = "The Razor SG generated C# binder could not create a RazorVue compilation context.";
+            return false;
+        }
 
-    private static string DescribeRazorVueComponents(Compilation compilation)
-    {
-        var context = RazorVueCompilationContext.TryCreate(compilation);
-        if (context is null)
-            return "<no RazorVue compilation context>";
+        var candidateIdentities = razorVueContext.DiscoverComponentCandidates()
+            .Select(static candidate => candidate.ComponentSymbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat))
+            .ToImmutableHashSet(StringComparer.Ordinal);
+        var components = binding.Components
+            .Where(component => candidateIdentities.Contains(
+                component.ComponentSymbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)))
+            .ToImmutableArray();
+        if (!components.IsDefaultOrEmpty)
+        {
+            razorVueBinding = binding with { Components = components };
+            return true;
+        }
 
-        var candidates = context.DiscoverComponentCandidates();
-        if (candidates.IsDefaultOrEmpty)
-            return "<none>";
-
-        return string.Join(
+        var candidateSummary = candidateIdentities.Count == 0
+            ? "<none>"
+            : string.Join(", ", candidateIdentities.OrderBy(static item => item, StringComparer.Ordinal));
+        var generatedSummary = string.Join(
             ", ",
-            candidates
-                .Select(static candidate => candidate.ComponentSymbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat))
-                .OrderBy(static name => name, StringComparer.Ordinal));
+            binding.Components
+                .Select(static component => component.ComponentSymbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat))
+                .OrderBy(static item => item, StringComparer.Ordinal));
+        failure = "The Razor SG generated BuildRenderTree documents did not match any RazorVue component candidate. " +
+                  "RazorVue candidates: " + candidateSummary + ". " +
+                  "Generated BuildRenderTree components: " + generatedSummary + ".";
+        return false;
     }
 
-    private static string DescribeTailDocuments(ImmutableArray<ReflectedRazorSourceGeneratorDocument> documents)
+    private static void EmitFinalDocumentEvidence(
+        SourceProductionContext context,
+        RazorSgGeneratedCSharpBinding binding)
     {
-        if (documents.IsDefaultOrEmpty)
-            return "<none>";
+        context.AddSource(
+            "Jazor.Generated.RazorSgFinalDocumentEvidence.g.cs",
+            BuildFinalDocumentEvidenceSource(binding));
+    }
 
-        return string.Join(
-            ", ",
-            documents
-                .Select(static document => string.IsNullOrWhiteSpace(document.HintName) ? "<unknown>" : document.HintName)
-                .OrderBy(static name => name, StringComparer.Ordinal));
+    private static string BuildFinalDocumentEvidenceSource(RazorSgGeneratedCSharpBinding binding)
+    {
+        var builder = new System.Text.StringBuilder();
+        builder.AppendLine("#nullable enable");
+        builder.AppendLine("namespace Jazor.Generated");
+        builder.AppendLine("{");
+        builder.AppendLine("    [global::System.Runtime.CompilerServices.CompilerGenerated]");
+        builder.AppendLine("    internal static class RazorSgFinalDocumentEvidence");
+        builder.AppendLine("    {");
+        builder.AppendLine("        internal const int SchemaVersion = 1;");
+        builder.Append("        internal const int GeneratorDocumentCount = ").Append(binding.ReusedGeneratedTreeCount + binding.DerivedGeneratedTreeCount).AppendLine(";");
+        builder.Append("        internal const int CurrentGeneratedTreeCount = ").Append(binding.ReusedGeneratedTreeCount + binding.DerivedGeneratedTreeCount).AppendLine(";");
+        builder.Append("        internal const int ReusedGeneratedTreeCount = ").Append(binding.ReusedGeneratedTreeCount).AppendLine(";");
+        builder.Append("        internal const int DerivedGeneratedTreeCount = ").Append(binding.DerivedGeneratedTreeCount).AppendLine(";");
+        builder.Append("        internal const int ComponentCount = ").Append(binding.Components.Length).AppendLine(";");
+        builder.Append("        internal const string BindingMode = ").Append(EscapeCSharpString(binding.BindingMode.ToString())).AppendLine(";");
+        builder.AppendLine("    }");
+        builder.AppendLine("}");
+        return builder.ToString();
     }
 
     private static bool CompilationRequiresRazorVueTailOutput(Compilation compilation)
@@ -350,26 +367,28 @@ internal static class RazorSourceGeneratorTailOutput
         RazorSourceGeneratorTailOutputOptions options,
         int hostDocumentCount,
         int generatorDocumentCount,
-        int artifactCount,
+        int componentCount,
         string state,
         int? sourceItemCount = null,
-        string? sourceTypeName = null)
+        string? sourceTypeName = null,
+        RazorSgGeneratedCSharpBinding? binding = null)
     {
         if (!options.TestHookEnabled)
             return;
 
         context.AddSource(
             "Jazor.RazorVue.RazorSgTailTrace.g.cs",
-            BuildTraceSource(hostDocumentCount, generatorDocumentCount, artifactCount, state, sourceItemCount, sourceTypeName));
+            BuildTraceSource(hostDocumentCount, generatorDocumentCount, componentCount, state, sourceItemCount, sourceTypeName, binding));
     }
 
     private static string BuildTraceSource(
         int hostDocumentCount,
         int generatorDocumentCount,
-        int artifactCount,
+        int componentCount,
         string state,
         int? sourceItemCount,
-        string? sourceTypeName)
+        string? sourceTypeName,
+        RazorSgGeneratedCSharpBinding? binding)
     {
         var builder = new System.Text.StringBuilder();
         builder.AppendLine("#nullable enable");
@@ -380,10 +399,13 @@ internal static class RazorSourceGeneratorTailOutput
         builder.AppendLine("    {");
         builder.Append("        internal const int HostDocumentCount = ").Append(hostDocumentCount).AppendLine(";");
         builder.Append("        internal const int GeneratorDocumentCount = ").Append(generatorDocumentCount).AppendLine(";");
-        builder.Append("        internal const int ArtifactCount = ").Append(artifactCount).AppendLine(";");
+        builder.Append("        internal const int ComponentCount = ").Append(componentCount).AppendLine(";");
         builder.Append("        internal const string State = ").Append(EscapeCSharpString(state)).AppendLine(";");
         builder.Append("        internal const int SourceItemCount = ").Append(sourceItemCount ?? -2).AppendLine(";");
         builder.Append("        internal const string SourceTypeName = ").Append(EscapeCSharpString(sourceTypeName ?? string.Empty)).AppendLine(";");
+        builder.Append("        internal const int ReusedGeneratedTreeCount = ").Append(binding?.ReusedGeneratedTreeCount ?? 0).AppendLine(";");
+        builder.Append("        internal const int DerivedGeneratedTreeCount = ").Append(binding?.DerivedGeneratedTreeCount ?? 0).AppendLine(";");
+        builder.Append("        internal const string BindingMode = ").Append(EscapeCSharpString(binding?.BindingMode.ToString() ?? string.Empty)).AppendLine(";");
         builder.AppendLine("    }");
         builder.AppendLine("}");
         return builder.ToString();

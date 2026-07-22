@@ -9,10 +9,9 @@ namespace Jazor.Analyzer.RazorVue.Generation;
 internal static class RazorSourceGeneratorTailOutputRegistration
 {
     private const string ImplementationSourceOutputRegistrationKind = "implementation-source-output";
-    private const string HostOutputRegistrationKind = "host-output";
     private static readonly object Sync = new();
-    private static readonly ConditionalWeakTable<object, HookedHostOutputSourceSet> HookedHostOutputSourcesByContext = new();
-    private static readonly HashSet<object> HookedHostOutputSourcesWithoutContext = new(ReferenceEqualityComparer.Instance);
+    private static readonly ConditionalWeakTable<object, HookedSourceOutputSet> HookedSourceOutputsByContext = new();
+    private static readonly HashSet<object> HookedSourceOutputsWithoutContext = new(ReferenceEqualityComparer.Instance);
 
     internal static bool TryRegisterTailOutputFromNewOutputNodes(
         IncrementalGeneratorInitializationContext context,
@@ -32,19 +31,6 @@ internal static class RazorSourceGeneratorTailOutputRegistration
                     return true;
                 }
             }
-
-            foreach (var outputNode in outputNodes)
-            {
-                if (IsHostOutputNode(outputNode) &&
-                    TryRegisterTailOutputFromOutputNode(
-                        context,
-                        outputNode,
-                        nameof(TryRegisterTailOutputFromValueProvider)))
-                {
-                    return true;
-                }
-            }
-
             return false;
         }
         catch (Exception ex)
@@ -67,35 +53,13 @@ internal static class RazorSourceGeneratorTailOutputRegistration
         return count;
     }
 
-    private static void TryRegisterTailOutputFromValueProvider<TSource>(
-        IncrementalGeneratorInitializationContext context,
-        object sourceNode)
-    {
-        RazorSourceGeneratorBootstrapState.MarkHostOutputObserved();
-        var contextKey = RazorSourceGeneratorInitializationContextState.GetContextKey(context);
-        if (!TryMarkHostOutputSourceHooked(contextKey, sourceNode))
-            return;
-
-        var provider = (IncrementalValueProvider<TSource>)CreateIncrementalValueProvider(
-            typeof(TSource),
-            sourceNode,
-            GetCatchAnalyzerExceptions(context));
-        var options = context.AnalyzerConfigOptionsProvider.Select(
-            static (provider, _) => RazorSourceGeneratorHostOutputHookOptions.CreateTailOutputOptions(provider));
-        var gatedSource = provider.Combine(options);
-
-        context.RegisterSourceOutput(gatedSource, EmitTailOutput);
-        RazorSourceGeneratorBootstrapState.MarkTailOutputRegistered(contextKey, HostOutputRegistrationKind);
-        RazorSourceGeneratorBootstrapState.MarkHostOutputHookInstalled();
-    }
-
     private static void TryRegisterTailOutputFromValuesProvider<TSource>(
         IncrementalGeneratorInitializationContext context,
         object sourceNode)
     {
-        RazorSourceGeneratorBootstrapState.MarkHostOutputObserved();
+        RazorSourceGeneratorBootstrapState.MarkImplementationSourceOutputObserved();
         var contextKey = RazorSourceGeneratorInitializationContextState.GetContextKey(context);
-        if (!TryMarkHostOutputSourceHooked(contextKey, sourceNode))
+        if (!TryMarkSourceOutputHooked(contextKey, sourceNode))
             return;
 
         var provider = (IncrementalValuesProvider<TSource>)CreateIncrementalValuesProvider(
@@ -108,34 +72,20 @@ internal static class RazorSourceGeneratorTailOutputRegistration
 
         context.RegisterSourceOutput(gatedSource, EmitCollectedTailOutput);
         RazorSourceGeneratorBootstrapState.MarkTailOutputRegistered(contextKey, ImplementationSourceOutputRegistrationKind);
-        RazorSourceGeneratorBootstrapState.MarkHostOutputHookInstalled();
+        RazorSourceGeneratorBootstrapState.MarkImplementationSourceOutputHookInstalled();
     }
 
-    private static bool TryMarkHostOutputSourceHooked(object? contextKey, object sourceNode)
+    private static bool TryMarkSourceOutputHooked(object? contextKey, object sourceNode)
     {
         lock (Sync)
         {
             if (contextKey is null)
-                return HookedHostOutputSourcesWithoutContext.Add(sourceNode);
+                return HookedSourceOutputsWithoutContext.Add(sourceNode);
 
-            return HookedHostOutputSourcesByContext
+            return HookedSourceOutputsByContext
                 .GetOrCreateValue(contextKey)
                 .TryAdd(sourceNode);
         }
-    }
-
-    private static void EmitTailOutput<TSource>(
-        SourceProductionContext productionContext,
-        (TSource Source, RazorSourceGeneratorTailOutputOptions Options) input)
-    {
-        if (!input.Options.Enabled)
-            return;
-
-        var compilation = GetCompilation(productionContext);
-        if (compilation is null)
-            return;
-
-        RazorSourceGeneratorTailOutput.Emit(productionContext, compilation, input.Source!, input.Options);
     }
 
     private static void EmitCollectedTailOutput<TSource>(
@@ -158,7 +108,7 @@ internal static class RazorSourceGeneratorTailOutputRegistration
         string registerMethodName)
     {
         var sourceType = GetOutputSourceType(outputNode.GetType());
-        if (sourceType is null || !IsRazorGeneratorResultHostOutputSource(sourceType))
+        if (sourceType is null || !IsRazorGeneratorFinalDocumentSource(sourceType))
             return false;
 
         var sourceField = outputNode.GetType().GetField("_source", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -199,16 +149,6 @@ internal static class RazorSourceGeneratorTailOutputRegistration
     private static IEnumerable? GetOutputNodes(IncrementalGeneratorInitializationContext context)
         => RazorSourceGeneratorInitializationContextState.GetOutputNodes(context);
 
-    private static bool IsHostOutputNode(object outputNode)
-    {
-        var type = outputNode.GetType();
-        return type.IsGenericType &&
-               string.Equals(
-                   type.GetGenericTypeDefinition().FullName,
-                   "Microsoft.CodeAnalysis.HostOutputNode`1",
-                   StringComparison.Ordinal);
-    }
-
     private static bool IsImplementationSourceOutputNode(object outputNode)
     {
         var type = outputNode.GetType();
@@ -230,7 +170,7 @@ internal static class RazorSourceGeneratorTailOutputRegistration
             ? outputNodeType.GetGenericArguments()[0]
             : null;
 
-    private static bool IsRazorGeneratorResultHostOutputSource(Type type)
+    private static bool IsRazorGeneratorFinalDocumentSource(Type type)
         => TypeContainsFullName(type, "Microsoft.AspNetCore.Razor.Language.RazorCodeDocument") &&
            TypeContainsFullName(type, "Microsoft.AspNetCore.Razor.Language.RazorCSharpDocument");
 
@@ -255,18 +195,6 @@ internal static class RazorSourceGeneratorTailOutputRegistration
         }
 
         return false;
-    }
-
-    private static object CreateIncrementalValueProvider(Type sourceType, object sourceNode, bool catchAnalyzerExceptions)
-    {
-        var providerType = typeof(IncrementalValueProvider<>).MakeGenericType(sourceType);
-        var constructor = providerType
-            .GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)
-            .SingleOrDefault(static item => item.GetParameters().Length == 2);
-        if (constructor is null)
-            throw new InvalidOperationException("IncrementalValueProvider<T> internal constructor was not found.");
-
-        return constructor.Invoke([sourceNode, catchAnalyzerExceptions]);
     }
 
     private static object CreateIncrementalValuesProvider(Type sourceType, object sourceNode, bool catchAnalyzerExceptions)
@@ -308,7 +236,7 @@ internal static class RazorSourceGeneratorTailOutputRegistration
             => RuntimeHelpers.GetHashCode(obj);
     }
 
-    private sealed class HookedHostOutputSourceSet
+    private sealed class HookedSourceOutputSet
     {
         private readonly HashSet<object> _sources = new(ReferenceEqualityComparer.Instance);
 

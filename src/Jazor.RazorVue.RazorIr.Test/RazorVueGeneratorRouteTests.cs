@@ -71,7 +71,7 @@ public sealed class RazorVueGeneratorRouteTests
     }
 
     [TestMethod]
-    public void TailOutput_WithRazorSourceGeneratorDocument_RoutesRazorComponentThroughTailBridge()
+    public void TailOutput_WithRazorSourceGeneratorDocument_BindsRazorComponentThroughFinalDocumentPath()
     {
         var compilation = CreateCompilation(
             "RazorVue.Route.RazorTail.Tests",
@@ -104,15 +104,15 @@ public sealed class RazorVueGeneratorRouteTests
 
         var diagnostics = GetDiagnostics(runResult);
         Assert.AreEqual(0, diagnostics.Length, string.Join(Environment.NewLine, diagnostics.Select(static item => item.ToString())));
-        AssertGeneratedSourceContains(runResult, "Jazor.RazorVue.RazorSgTailTrace.g.cs", "internal const string State = \"emitted\";");
-        AssertGeneratedArtifact(runResult, "components/todo-app");
-        AssertGeneratedArtifactContains(runResult, "props.title");
-        AssertGeneratedArtifactContains(runResult, "GeneratedMappingQuality.ExactSource");
+        AssertGeneratedSourceContains(runResult, "Jazor.RazorVue.RazorSgTailTrace.g.cs", "internal const string State = \"bound\";");
+        AssertGeneratedSourceContains(runResult, "Jazor.RazorVue.RazorSgTailTrace.g.cs", "internal const string BindingMode = \"DerivedHookCompilation\";");
+        AssertGeneratedSourceContains(runResult, "Jazor.Generated.RazorSgFinalDocumentEvidence.g.cs", "internal const int ComponentCount = 1;");
         Assert.IsTrue(
             runResult.Results
                 .SelectMany(static result => result.GeneratedSources)
-                .Any(static source => source.HintName.StartsWith("Jazor.Generated.RazorVue.Artifact_", StringComparison.Ordinal)),
-            "The Razor SG tail route did not emit an SFC artifact.");
+                .All(static source => source.HintName != "Jazor.Generated.RazorVueCatalog.g.cs" &&
+                              !source.HintName.StartsWith("Jazor.Generated.RazorVue.Artifact_", StringComparison.Ordinal)),
+            "The final-document G0 tail must not emit legacy SFC output.");
     }
 
     [TestMethod]
@@ -159,7 +159,7 @@ public sealed class RazorVueGeneratorRouteTests
     }
 
     [TestMethod]
-    public void TailOutput_WithGeneratedDocumentThatDoesNotMatchComponent_ReportsDiagnosticInsteadOfEmptyCatalog()
+    public void TailOutput_WithGeneratedDocumentThatDoesNotMatchComponent_ReportsDiagnostic()
     {
         var compilation = CreateCompilation(
             "RazorVue.Route.RazorTail.UnmatchedDocument.Tests",
@@ -199,12 +199,11 @@ public sealed class RazorVueGeneratorRouteTests
             tailDiagnostics.Length > 0,
             "Expected JAZORVGA020. Actual diagnostics:" + Environment.NewLine + string.Join(Environment.NewLine, diagnostics.Select(static item => item.ToString())));
         var message = tailDiagnostics[0].GetMessage();
-        StringAssert.Contains(message, "RazorVue Razor SG tail output produced no SFC artifacts");
+        StringAssert.Contains(message, "did not match any RazorVue component candidate");
         StringAssert.Contains(message, "Demo.Pages.TodoApp");
-        StringAssert.Contains(message, "TodoApp");
-        StringAssert.Contains(message, "official Razor source generator");
+        StringAssert.Contains(message, "Demo.OtherPages.OtherPage");
         StringAssert.Contains(message, "BuildRenderTree");
-        AssertGeneratedSourceContains(runResult, "Jazor.RazorVue.RazorSgTailTrace.g.cs", "internal const string State = \"no-artifacts\";");
+        AssertGeneratedSourceContains(runResult, "Jazor.RazorVue.RazorSgTailTrace.g.cs", "internal const string State = \"component-mismatch\";");
         AssertNoGeneratedArtifact(runResult);
     }
 
@@ -508,8 +507,8 @@ public sealed class RazorVueGeneratorRouteTests
             PatchFailed: false,
             PatchUnavailable: false,
             PostfixInvoked: tailOutputRegistered,
-            HostOutputHookInstalled: tailOutputRegistered,
-            HostOutputObserved: tailOutputRegistered,
+            ImplementationSourceOutputHookInstalled: tailOutputRegistered,
+            ImplementationSourceOutputObserved: tailOutputRegistered,
             TailOutputRegistered: tailOutputRegistered,
             CurrentContextKeyAvailable: true,
             TailOutputRegisteredForCurrentContext: tailOutputRegistered,

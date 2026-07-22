@@ -14,7 +14,7 @@ namespace Jazor.RazorVue.RazorIr.Test;
 public sealed class RazorSourceGeneratorBootstrapPatchTests
 {
     [TestMethod]
-    public void ExternalBuild_BootstrapHook_CanObserveOfficialRegisterHostOutput()
+    public void ExternalBuild_BootstrapHook_BindsOfficialGeneratedCSharpThroughImplementationSourceOutput()
     {
         var rootDirectory = CreateTemporaryDirectory();
 
@@ -66,11 +66,11 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
             var generatedTracePath = Directory
                 .EnumerateFiles(generatedRoot, "Jazor.RazorVue.RazorSgBootstrapTrace.g.cs", SearchOption.AllDirectories)
                 .FirstOrDefault();
-            Assert.IsFalse(string.IsNullOrWhiteSpace(generatedTracePath), "The bootstrap host-output hook did not emit the trace generated source.");
+            Assert.IsFalse(string.IsNullOrWhiteSpace(generatedTracePath), "The bootstrap implementation source-output hook did not emit the trace generated source.");
             var generatedTrace = File.ReadAllText(generatedTracePath!);
             StringAssert.Contains(generatedTrace, "internal const bool CurrentContextKeyAvailable = true;");
-            StringAssert.Contains(generatedTrace, "internal const bool HostOutputHookInstalled = true;");
-            StringAssert.Contains(generatedTrace, "internal const bool HostOutputObserved = true;");
+            StringAssert.Contains(generatedTrace, "internal const bool ImplementationSourceOutputHookInstalled = true;");
+            StringAssert.Contains(generatedTrace, "internal const bool ImplementationSourceOutputObserved = true;");
             StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegistered = true;");
             StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegisteredForCurrentContext = true;");
             StringAssert.Contains(generatedTrace, "internal const string TailOutputRegistrationKind = \"implementation-source-output\";");
@@ -83,22 +83,27 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
             var generatedTailTrace = File.ReadAllText(generatedTailTracePath!);
             TestContext.WriteLine("Tail trace:");
             TestContext.WriteLine(generatedTailTrace);
-            StringAssert.Contains(generatedTailTrace, "internal const string State = \"emitted\";");
+            StringAssert.Contains(generatedTailTrace, "internal const string State = \"bound\";");
+            StringAssert.Contains(generatedTailTrace, "internal const int ReusedGeneratedTreeCount = 0;");
+            StringAssert.Contains(generatedTailTrace, "internal const int DerivedGeneratedTreeCount = 1;");
+            StringAssert.Contains(generatedTailTrace, "internal const string BindingMode = \"DerivedHookCompilation\";");
 
             var generatedRazorPath = Directory
                 .EnumerateFiles(generatedRoot, "*_razor.g.cs", SearchOption.AllDirectories)
                 .FirstOrDefault();
             Assert.IsFalse(string.IsNullOrWhiteSpace(generatedRazorPath), "The official Razor source generator output was not found.");
 
-            var generatedCatalogPath = Directory
-                .EnumerateFiles(generatedRoot, "Jazor.Generated.RazorVueCatalog.g.cs", SearchOption.AllDirectories)
+            var generatedEvidencePath = Directory
+                .EnumerateFiles(generatedRoot, "Jazor.Generated.RazorSgFinalDocumentEvidence.g.cs", SearchOption.AllDirectories)
                 .FirstOrDefault();
-            Assert.IsFalse(string.IsNullOrWhiteSpace(generatedCatalogPath), "The RazorVue tail output did not emit the generated catalog.");
+            Assert.IsFalse(string.IsNullOrWhiteSpace(generatedEvidencePath), "The Razor SG tail output did not emit final-document evidence.");
+            var generatedEvidence = File.ReadAllText(generatedEvidencePath!);
+            StringAssert.Contains(generatedEvidence, "internal const int SchemaVersion = 1;");
+            StringAssert.Contains(generatedEvidence, "internal const int ComponentCount = 1;");
+            StringAssert.Contains(generatedEvidence, "internal const string BindingMode = \"DerivedHookCompilation\";");
 
-            var generatedArtifactPath = Directory
-                .EnumerateFiles(generatedRoot, "Jazor.Generated.RazorVue.Artifact_*.g.cs", SearchOption.AllDirectories)
-                .FirstOrDefault();
-            Assert.IsFalse(string.IsNullOrWhiteSpace(generatedArtifactPath), "The RazorVue tail output did not emit an SFC artifact source.");
+            AssertNoExternalGeneratedSource(generatedRoot, "Jazor.Generated.RazorVueCatalog.g.cs");
+            AssertNoExternalGeneratedSource(generatedRoot, "Jazor.Generated.RazorVue.Artifact_*.g.cs");
         }
         finally
         {
@@ -156,8 +161,8 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
             Assert.IsFalse(string.IsNullOrWhiteSpace(generatedTracePath), "The bootstrap trace source was not emitted.");
             var generatedTrace = File.ReadAllText(generatedTracePath!);
             StringAssert.Contains(generatedTrace, "internal const bool CurrentContextKeyAvailable = true;");
-            StringAssert.Contains(generatedTrace, "internal const bool HostOutputHookInstalled = true;");
-            StringAssert.Contains(generatedTrace, "internal const bool HostOutputObserved = true;");
+            StringAssert.Contains(generatedTrace, "internal const bool ImplementationSourceOutputHookInstalled = true;");
+            StringAssert.Contains(generatedTrace, "internal const bool ImplementationSourceOutputObserved = true;");
             StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegistered = true;");
             StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegisteredForCurrentContext = true;");
             StringAssert.Contains(generatedTrace, "internal const string TailOutputRegistrationKind = \"implementation-source-output\";");
@@ -170,21 +175,21 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
     }
 
     [TestMethod]
-    public void InProcess_RazorSourceGeneratorTailOutput_RegistersForEachInitialize()
+    public void InProcess_RazorSourceGeneratorTailOutput_BindsForEachInitialize()
     {
         var firstRun = RunHookedRazorSourceGenerator(
             assemblyName: "Jazor.RazorVue.RazorIr.Bootstrap.First",
             documentPath: @"D:\repo\Demo\Pages\FirstCounter.razor",
             componentName: "FirstCounter",
             moduleImport: "./components/first-counter");
-        AssertHookedRunEmittedRazorVueCatalog(firstRun);
+        AssertHookedRunEmittedFinalDocumentEvidence(firstRun);
 
         var secondRun = RunHookedRazorSourceGenerator(
             assemblyName: "Jazor.RazorVue.RazorIr.Bootstrap.Second",
             documentPath: @"D:\repo\Demo\Pages\SecondCounter.razor",
             componentName: "SecondCounter",
             moduleImport: "./components/second-counter");
-        AssertHookedRunEmittedRazorVueCatalog(secondRun);
+        AssertHookedRunEmittedFinalDocumentEvidence(secondRun);
     }
 
     private static GeneratorDriverRunResult RunHookedRazorSourceGenerator(
@@ -261,17 +266,20 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
         return driver.GetRunResult();
     }
 
-    private static void AssertHookedRunEmittedRazorVueCatalog(GeneratorDriverRunResult runResult)
+    private static void AssertHookedRunEmittedFinalDocumentEvidence(GeneratorDriverRunResult runResult)
     {
         var generatedSources = runResult.Results
             .SelectMany(static result => result.GeneratedSources)
             .ToArray();
         Assert.IsTrue(
-            generatedSources.Any(static source => source.HintName == "Jazor.Generated.RazorVueCatalog.g.cs"),
-            "The hooked Razor SG run did not emit the RazorVue catalog.");
+            generatedSources.Any(static source => source.HintName == "Jazor.Generated.RazorSgFinalDocumentEvidence.g.cs"),
+            "The hooked Razor SG run did not emit final-document evidence.");
         Assert.IsTrue(
-            generatedSources.Any(static source => source.HintName.StartsWith("Jazor.Generated.RazorVue.Artifact_", StringComparison.Ordinal)),
-            "The hooked Razor SG run did not emit an SFC artifact.");
+            generatedSources.All(static source => source.HintName != "Jazor.Generated.RazorVueCatalog.g.cs"),
+            "The final-document G0 tail must not emit the legacy RazorVue catalog.");
+        Assert.IsTrue(
+            generatedSources.All(static source => !source.HintName.StartsWith("Jazor.Generated.RazorVue.Artifact_", StringComparison.Ordinal)),
+            "The final-document G0 tail must not emit an SFC artifact.");
         Assert.IsTrue(
             generatedSources.Any(static source => source.HintName.EndsWith("_razor.g.cs", StringComparison.Ordinal)),
             "The official Razor source generator output was not found.");

@@ -1429,8 +1429,8 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         builder.Append("        internal const bool PatchFailed = ").Append(ToCSharpBool(trace.PatchFailed)).AppendLine(";");
         builder.Append("        internal const bool PatchUnavailable = ").Append(ToCSharpBool(trace.PatchUnavailable)).AppendLine(";");
         builder.Append("        internal const bool PostfixInvoked = ").Append(ToCSharpBool(trace.PostfixInvoked)).AppendLine(";");
-        builder.Append("        internal const bool HostOutputHookInstalled = ").Append(ToCSharpBool(trace.HostOutputHookInstalled)).AppendLine(";");
-        builder.Append("        internal const bool HostOutputObserved = ").Append(ToCSharpBool(trace.HostOutputObserved)).AppendLine(";");
+        builder.Append("        internal const bool ImplementationSourceOutputHookInstalled = ").Append(ToCSharpBool(trace.ImplementationSourceOutputHookInstalled)).AppendLine(";");
+        builder.Append("        internal const bool ImplementationSourceOutputObserved = ").Append(ToCSharpBool(trace.ImplementationSourceOutputObserved)).AppendLine(";");
         builder.Append("        internal const bool TailOutputRegistered = ").Append(ToCSharpBool(trace.TailOutputRegistered)).AppendLine(";");
         builder.Append("        internal const bool CurrentContextKeyAvailable = ").Append(ToCSharpBool(trace.CurrentContextKeyAvailable)).AppendLine(";");
         builder.Append("        internal const bool TailOutputRegisteredForCurrentContext = ").Append(ToCSharpBool(trace.TailOutputRegisteredForCurrentContext)).AppendLine(";");
