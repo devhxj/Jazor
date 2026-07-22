@@ -1871,6 +1871,72 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    public async Task Build_LocalPackages_WithExternalRazorSgG0Consumer_ReconcilesFinalDocumentsAcrossIncrementalBuilds()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgG0Consumer");
+        var projectPath = CreateExternalRazorSgG0ConsumerProject(projectRoot);
+        var restorePackagesPath = package.RestorePackagesPath;
+        var commonArguments = new[]
+        {
+            "/m:1",
+            "/p:BuildInParallel=false",
+            $"-p:RestoreSources={package.PackageOutputDirectory}",
+            "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+            $"-p:RestorePackagesPath={restorePackagesPath}",
+            $"-p:JazorPackageVersion={package.PackageVersion}"
+        };
+
+        var restore = await RunSourceReferencedRazorVueBuildAsync(
+            package.RepoRoot,
+            ["restore", projectPath, .. commonArguments]);
+        Assert.AreEqual(0, restore.ExitCode, restore.ToString());
+
+        var firstBuild = await RunSourceReferencedRazorVueBuildAsync(
+            package.RepoRoot,
+            ["build", projectPath, "--no-restore", .. commonArguments]);
+        Assert.AreEqual(0, firstBuild.ExitCode, firstBuild.ToString());
+
+        var generatedRoot = Path.Combine(projectRoot, "obj", "Generated");
+        var firstGenerated = ReadRazorSgG0GeneratedSources(generatedRoot);
+        var firstDocumentHash = ReadGeneratedStringConstant(firstGenerated.Evidence, "GeneratedDocumentContentHash");
+        var firstOperationInventory = ReadGeneratedStringConstant(firstGenerated.Evidence, "BuildRenderTreeOperationInventory");
+        Assert.IsFalse(
+            firstGenerated.Evidence.Contains(projectRoot, StringComparison.OrdinalIgnoreCase),
+            "Canonical G0 evidence must not contain the external consumer's absolute path.");
+
+        var incrementalBuild = await RunSourceReferencedRazorVueBuildAsync(
+            package.RepoRoot,
+            ["build", projectPath, "--no-restore", .. commonArguments]);
+        Assert.AreEqual(0, incrementalBuild.ExitCode, incrementalBuild.ToString());
+
+        var incrementalGenerated = ReadRazorSgG0GeneratedSources(generatedRoot);
+        Assert.AreEqual(firstDocumentHash, ReadGeneratedStringConstant(incrementalGenerated.Evidence, "GeneratedDocumentContentHash"));
+        Assert.AreEqual(firstOperationInventory, ReadGeneratedStringConstant(incrementalGenerated.Evidence, "BuildRenderTreeOperationInventory"));
+
+        await File.WriteAllTextAsync(
+            Path.Combine(projectRoot, "Counter.razor"),
+            """
+            <button @onclick="Increment">Clicks: @count</button>
+            @if (count > 0)
+            {
+                <span>Counter changed</span>
+            }
+            """);
+
+        var changedBuild = await RunSourceReferencedRazorVueBuildAsync(
+            package.RepoRoot,
+            ["build", projectPath, "--no-restore", .. commonArguments]);
+        Assert.AreEqual(0, changedBuild.ExitCode, changedBuild.ToString());
+
+        var changedGenerated = ReadRazorSgG0GeneratedSources(generatedRoot);
+        Assert.AreNotEqual(firstDocumentHash, ReadGeneratedStringConstant(changedGenerated.Evidence, "GeneratedDocumentContentHash"));
+        Assert.AreNotEqual(firstOperationInventory, ReadGeneratedStringConstant(changedGenerated.Evidence, "BuildRenderTreeOperationInventory"));
+    }
+
+    [TestMethod]
     public async Task Build_LocalPackages_WithExternalRazorSgSfcConsumer_EmitsVueSfcArtifacts()
     {
         var package = await LocalPackage.Value;
@@ -3367,6 +3433,159 @@ public sealed class SdkIntegrationTests
                     builder.CloseComponent();
                 }
             }
+            """);
+
+        return projectPath;
+    }
+
+    private static (string BootstrapTrace, string TailTrace, string Evidence) ReadRazorSgG0GeneratedSources(string generatedRoot)
+    {
+        Assert.IsTrue(Directory.Exists(generatedRoot), $"Compiler generated source root was not created: {generatedRoot}");
+
+        var razorGeneratedSources = Directory
+            .EnumerateFiles(generatedRoot, "*_razor.g.cs", SearchOption.AllDirectories)
+            .OrderBy(static path => path, StringComparer.Ordinal)
+            .ToArray();
+        Assert.AreEqual(
+            1,
+            razorGeneratedSources.Length,
+            "The external G0 consumer must expose exactly one official Razor generated document." + Environment.NewLine +
+            string.Join(Environment.NewLine, razorGeneratedSources));
+
+        var bootstrapTrace = ReadSingleGeneratedSource(generatedRoot, "Jazor.RazorVue.RazorSgBootstrapTrace.g.cs");
+        var tailTrace = ReadSingleGeneratedSource(generatedRoot, "Jazor.RazorVue.RazorSgTailTrace.g.cs");
+        var evidence = ReadSingleGeneratedSource(generatedRoot, "Jazor.Generated.RazorSgFinalDocumentEvidence.g.cs");
+
+        StringAssert.Contains(bootstrapTrace, "internal const bool ImplementationSourceOutputHookInstalled = true;");
+        StringAssert.Contains(bootstrapTrace, "internal const bool TailOutputRegisteredForCurrentContext = true;");
+        StringAssert.Contains(tailTrace, "internal const string State = \"bound\";");
+        StringAssert.Contains(tailTrace, "internal const int ReusedGeneratedTreeCount = 0;");
+        StringAssert.Contains(tailTrace, "internal const int DerivedGeneratedTreeCount = 1;");
+        StringAssert.Contains(tailTrace, "internal const string BindingMode = \"DerivedHookCompilation\";");
+
+        StringAssert.Contains(evidence, "internal const int SchemaVersion = 2;");
+        StringAssert.Contains(evidence, "internal const string InputContract = \"OfficialRazorSgFinalDocument\";");
+        StringAssert.Contains(evidence, "internal const bool ConsumesRazorIntermediateRepresentation = false;");
+        StringAssert.Contains(evidence, "internal const bool RecreatedCompilation = false;");
+        StringAssert.Contains(evidence, "internal const bool NestedRazorSourceGeneratorRun = false;");
+        StringAssert.Contains(evidence, "internal const int GeneratorDocumentCount = 1;");
+        StringAssert.Contains(evidence, "internal const int CurrentGeneratedTreeCount = 1;");
+        StringAssert.Contains(evidence, "internal const int ComponentCount = 1;");
+        StringAssert.Contains(evidence, "internal const string BindingMode = \"DerivedHookCompilation\";");
+
+        AssertNoGeneratedSource(generatedRoot, "Jazor.Generated.RazorVueCatalog.g.cs");
+        AssertNoGeneratedSource(generatedRoot, "Jazor.Generated.RazorVue.Artifact_*.g.cs");
+
+        return (bootstrapTrace, tailTrace, evidence);
+    }
+
+    private static string ReadSingleGeneratedSource(string generatedRoot, string searchPattern)
+    {
+        var generatedPaths = Directory
+            .EnumerateFiles(generatedRoot, searchPattern, SearchOption.AllDirectories)
+            .OrderBy(static path => path, StringComparer.Ordinal)
+            .ToArray();
+        Assert.AreEqual(
+            1,
+            generatedPaths.Length,
+            "Expected exactly one generated source matching '" + searchPattern + "'." + Environment.NewLine +
+            string.Join(Environment.NewLine, generatedPaths));
+        return File.ReadAllText(generatedPaths[0]);
+    }
+
+    private static void AssertNoGeneratedSource(string generatedRoot, string searchPattern)
+    {
+        var generatedPath = Directory
+            .EnumerateFiles(generatedRoot, searchPattern, SearchOption.AllDirectories)
+            .FirstOrDefault();
+        Assert.IsTrue(
+            string.IsNullOrWhiteSpace(generatedPath),
+            "Generated source '" + searchPattern + "' was not expected: " + generatedPath);
+    }
+
+    private static string ReadGeneratedStringConstant(string source, string constantName)
+    {
+        var match = Regex.Match(
+            source,
+            "internal const string " + Regex.Escape(constantName) + " = \\\"(?<value>[^\\\"]*)\\\";",
+            RegexOptions.CultureInvariant);
+        Assert.IsTrue(match.Success, "Generated source did not define string constant '" + constantName + "'." + Environment.NewLine + source);
+        return match.Groups["value"].Value;
+    }
+
+    private static string CreateExternalRazorSgG0ConsumerProject(string projectRoot)
+    {
+        Directory.CreateDirectory(projectRoot);
+
+        var projectPath = Path.Combine(projectRoot, "ExternalRazorSgG0Consumer.csproj");
+        WriteFile(
+            projectPath,
+            """
+            <Project Sdk="Microsoft.NET.Sdk.Razor">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>net11.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <RazorLangVersion>11.0</RazorLangVersion>
+                <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
+                <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+                <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+                <JazorEmit>false</JazorEmit>
+                <JazorRazorVueEnableRazorSgIntegration>true</JazorRazorVueEnableRazorSgIntegration>
+                <JazorRazorVueTestHook>true</JazorRazorVueTestHook>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+              </ItemGroup>
+
+              <ItemGroup>
+                <FrameworkReference Include="Microsoft.AspNetCore.App" />
+                <CompilerVisibleProperty Include="JazorRazorVueTestHook" />
+                <CompilerVisibleProperty Include="JazorRazorVueEnableRazorSgIntegration" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "Program.cs"),
+            """
+            namespace ExternalRazorSgG0Consumer;
+
+            internal static class Program
+            {
+                private static void Main()
+                {
+                }
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "Counter.razor.cs"),
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ExternalRazorSgG0Consumer;
+
+            [ECMAScriptModule("./components/counter")]
+            public partial class Counter : ComponentBase, IVueComponent
+            {
+                private int count;
+
+                private void Increment()
+                {
+                    count++;
+                }
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "Counter.razor"),
+            """
+            <button @onclick="Increment">Clicks: @count</button>
             """);
 
         return projectPath;

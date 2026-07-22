@@ -125,6 +125,7 @@ internal static class RazorSgGeneratedCSharpBinder
             missingTrees.Count == 0
                 ? RazorSgCompilationBindingMode.ReusedHookCompilation
                 : RazorSgCompilationBindingMode.DerivedHookCompilation,
+            orderedDocuments,
             components.ToImmutable(),
             reusedTreeCount,
             missingTrees.Count);
@@ -264,6 +265,7 @@ internal enum RazorSgCompilationBindingMode
 internal sealed record RazorSgGeneratedCSharpBinding(
     Compilation Compilation,
     RazorSgCompilationBindingMode BindingMode,
+    ImmutableArray<RazorSgGeneratedDocument> Documents,
     ImmutableArray<RazorSgBoundComponent> Components,
     int ReusedGeneratedTreeCount,
     int DerivedGeneratedTreeCount);

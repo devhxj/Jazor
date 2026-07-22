@@ -117,7 +117,11 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
                 .FirstOrDefault();
             Assert.IsFalse(string.IsNullOrWhiteSpace(generatedEvidencePath), "The Razor SG tail output did not emit final-document evidence.");
             var generatedEvidence = File.ReadAllText(generatedEvidencePath!);
-            StringAssert.Contains(generatedEvidence, "internal const int SchemaVersion = 1;");
+            StringAssert.Contains(generatedEvidence, "internal const int SchemaVersion = 2;");
+            StringAssert.Contains(generatedEvidence, "internal const string InputContract = \"OfficialRazorSgFinalDocument\";");
+            StringAssert.Contains(generatedEvidence, "internal const bool ConsumesRazorIntermediateRepresentation = false;");
+            StringAssert.Contains(generatedEvidence, "internal const string GeneratedDocumentContentHash = \"");
+            StringAssert.Contains(generatedEvidence, "internal const string BuildRenderTreeOperationInventory = \"");
             StringAssert.Contains(generatedEvidence, "internal const int ComponentCount = 1;");
             StringAssert.Contains(generatedEvidence, "internal const string BindingMode = \"DerivedHookCompilation\";");
 

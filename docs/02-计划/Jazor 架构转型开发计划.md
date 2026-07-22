@@ -6,7 +6,7 @@
 >
 > **日期**：2026-07-22
 >
-> **状态**：Draft v3 - G0 待验证
+> **状态**：Draft v3 - G0 已通过，Task 0.5 待执行
 
 本文中的 `DR/IR` 特指 Razor intermediate representation（包括 `DocumentIntermediateNode` 及其相关节点），不是 Roslyn `IOperation` 或官方 SG 最终生成的 C# 文档。本文中的 `hook compilation` 指 source-output callback 可见的 Roslyn compilation 快照，不等同于外层 `GeneratorDriver` 应用全部 generator output 后返回的 final updated compilation。
 
@@ -297,9 +297,9 @@ Netpack 可在 3.1 接口冻结后与 Deno 的后续工作并行，但不阻塞 
 
 **验收标准**：
 
-- [ ] 旧线路有可定位的 branch/tag/commit，不复制源码到文档目录。
-- [ ] ADR 明确接受 tail hook，明确拒绝 DR/IR 消费和双 lowering。
-- [ ] `.jazor`、Jolt LSP/DAP、Razor-to-SFC 被列为转型分支 breaking changes。
+- [x] 旧线路有可定位的 branch/tag/commit，不复制源码到文档目录。
+- [x] ADR 明确接受 tail hook，明确拒绝 DR/IR 消费和双 lowering。
+- [x] `.jazor`、Jolt LSP/DAP、Razor-to-SFC 被列为转型分支 breaking changes。
 
 **验证**：人工架构评审通过后再进入 0.2。
 
@@ -309,13 +309,13 @@ Netpack 可在 3.1 接口冻结后与 Deno 的后续工作并行，但不阻塞 
 
 **验收标准**：
 
-- [ ] 外部 `.razor` consumer 的 official SG 原样运行一次。
-- [ ] adapter 可读取 hint name、source identity、generated C# 与 source mappings。
-- [ ] adapter 可取得 callback compilation；读取失败属于 SDK compatibility failure，不另建 compilation 掩盖问题。
-- [ ] trace/evidence 记录本轮 generated document count、callback compilation tree count、exact tree hit count 和 binding mode；canonical output 不写入绝对路径。
-- [ ] implementation `SourceOutputNode` 被确定为唯一 production source；HostOutput 仅用于 probe/diagnostic，不注册第二个 lowering provider。
-- [ ] production call graph 不包含 `GetDocumentNode`、`ConvertNode`、`RazorVueRazorIrNode`。
-- [ ] SDK shape 不匹配时给出明确 diagnostic，不静默 no-op。
+- [x] 外部 `.razor` consumer 的 official SG 原样运行一次。
+- [x] adapter 可读取 hint name、source identity、generated C# 与 source mappings。
+- [x] adapter 可取得 callback compilation；读取失败属于 SDK compatibility failure，不另建 compilation 掩盖问题。
+- [x] trace/evidence 记录本轮 generated document count、callback compilation tree count、exact tree hit count 和 binding mode；canonical output 不写入绝对路径。
+- [x] implementation `SourceOutputNode` 被确定为唯一 production source；HostOutput 仅用于 probe/diagnostic，不注册第二个 lowering provider。
+- [x] production call graph 不包含 `GetDocumentNode`、`ConvertNode`、`RazorVueRazorIrNode`。
+- [x] SDK shape 不匹配时给出明确 diagnostic，不静默 no-op。
 
 **验证**：新增 focused tests 覆盖正常、多文档、suppressed/empty result、compilation unavailable、shape mismatch 和 fingerprint mismatch；真实 package consumer probe 必须确认当前 SDK 的 callback compilation 是否已经包含 current generated trees。
 
@@ -327,16 +327,16 @@ Netpack 可在 3.1 接口冻结后与 Deno 的后续工作并行，但不阻塞 
 
 **验收标准**：
 
-- [ ] `ReusedHookCompilation` 与 `DerivedHookCompilation` 都有 focused test；真实 SDK/host 实际采用的 mode 被写入 G0 evidence。
-- [ ] 复用模式保持 `ReferenceEquals(boundCompilation, hookCompilation)`；派生模式保持同一 assembly identity/references/options，且不调用 `CSharpCompilation.Create(...)`。
-- [ ] current generated trees 在 bound compilation 中恰好各一份；部分 exact hit 被保留并只补 missing trees，identity/hash 冲突和 stale tree 均 fail-fast，不猜测替换。
-- [ ] 同一 `.razor` 与 `.razor.cs` partial 被绑定为同一组件符号。
-- [ ] `BuildRenderTree` 参数、方法体、泛型组件和 source origin 可稳定定位。
-- [ ] 同一轮的多文档、共享 generated helper 和 partial source 在一个 bound compilation 中可互相解析。
-- [ ] candidate identity 由 SG document 映射确定；手写 `.cs` `BuildRenderTree` 组件不会被 tail hook 重复 claim，另有明确 analyzer/compiler route 或 diagnostic。
-- [ ] 重复 hint、重复 component identity、编译错误和缺失 method 均 fail-fast。
-- [ ] 不通过磁盘回读 generated `.g.cs` 建立生产主线。
-- [ ] binding path 不启动 `GeneratorDriver`，不执行第二次 Razor SG，也不重新解析项目的普通 C# source trees。
+- [x] `ReusedHookCompilation` 与 `DerivedHookCompilation` 都有 focused test；真实 SDK/host 实际采用的 mode 被写入 G0 evidence。
+- [x] 复用模式保持 `ReferenceEquals(boundCompilation, hookCompilation)`；派生模式保持同一 assembly identity/references/options，且不调用 `CSharpCompilation.Create(...)`。
+- [x] current generated trees 在 bound compilation 中恰好各一份；部分 exact hit 被保留并只补 missing trees，identity/hash 冲突和 stale tree 均 fail-fast，不猜测替换。
+- [x] 同一 `.razor` 与 `.razor.cs` partial 被绑定为同一组件符号。
+- [x] `BuildRenderTree` 参数、方法体、泛型组件和 source origin 可稳定定位。
+- [x] 同一轮的多文档、共享 generated helper 和 partial source 在一个 bound compilation 中可互相解析。
+- [x] candidate identity 由 SG document 映射确定；手写 `.cs` `BuildRenderTree` 组件不会被 tail hook 重复 claim，另有明确 analyzer/compiler route 或 diagnostic。
+- [x] 重复 hint、重复 component identity、编译错误和缺失 method 均 fail-fast。
+- [x] 不通过磁盘回读 generated `.g.cs` 建立生产主线。
+- [x] binding path 不启动 `GeneratorDriver`，不执行第二次 Razor SG，也不重新解析项目的普通 C# source trees。
 
 **验证**：使用纯 markup、Counter、子组件、条件/循环四类 generated result fixture，并对每类运行“trees 已存在”和“trees 缺失”两种 compilation fixture；再由 0.4 外部构建锁定真实 host mode。
 
@@ -348,10 +348,10 @@ Netpack 可在 3.1 接口冻结后与 Deno 的后续工作并行，但不阻塞 
 
 **验收标准**：
 
-- [ ] clean restore/build 可重复通过。
-- [ ] 首次和增量构建都只生成一份目标组件输入。
-- [ ] 修改 `.razor` 后 generated C# hash 与 operation inventory 更新。
-- [ ] 构建日志记录 hook compilation 与 binding mode，证明未消费 DR/IR、未从零创建 compilation、未 nested-run Razor SG。
+- [x] clean restore/build 可重复通过。
+- [x] 首次和增量构建都只生成一份目标组件输入。
+- [x] 修改 `.razor` 后 generated C# hash 与 operation inventory 更新。
+- [x] 构建日志记录 hook compilation 与 binding mode，证明未消费 DR/IR、未从零创建 compilation、未 nested-run Razor SG。
 
 **验证**：在当前支持的 .NET 11 preview SDK 上运行 package consumer smoke；SDK matrix 由 ADR 固定。
 
@@ -368,6 +368,14 @@ G0 必须同时满足：
 - `BuildRenderTree` IOperation 可供 compiler 消费；
 - production path 不消费 DR/IR、不回读 `.razor`、不从零创建 compilation、不双跑 Razor SG；
 - 独立 package consumer 首次/增量构建通过。
+
+**结果（2026-07-22）：通过。** 当前支持 SDK 为
+`11.0.100-preview.5.26302.115`；package consumer 实测为
+`DerivedHookCompilation`（`Reused=0`、`Derived=1`）。Schema 2 evidence 记录
+generated-C# content hash、`BuildRenderTree` operation inventory/hash 与禁止路径
+标志；consumer 在 clean restore、首次 build、无改动 incremental build 及 Razor
+结构修改后的 build 中均保持一个 generated input，修改后两个 inventory 均更新。
+验证命令见 [Razor SG Final-Document G0 决策记录](./RazorSgFinalDocument.G0.DecisionRecord.md)。
 
 任一条件不满足，停止转型分支并重新评估输入架构，不进入 runtime、toolchain 或清理工作。
 
@@ -389,7 +397,7 @@ G0 必须同时满足：
 
 ### Phase 0 出口检查点
 
-- [ ] G0 evidence、SDK fingerprint、baseline commit 和 ADR 草案已入转型分支。
+- [x] G0 evidence、SDK fingerprint、baseline commit 和 ADR 草案已入转型分支。
 - [ ] Task 0.5 清理完成，且新线在没有旧 IR/Jolt 依赖的情况下可 clean build。
 - [ ] 下一阶段只从 Phase 0 出口开始；不得在 G0 未通过时并行实现 runtime 或 toolchain。
 

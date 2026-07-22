@@ -1,6 +1,6 @@
 # Razor SG Final-Document G0 决策记录
 
-> 状态：Accepted for G0 validation
+> 状态：Accepted - G0 passed
 >
 > 日期：2026-07-22
 >
@@ -71,6 +71,33 @@ G0 仅在以下事实同时被自动化验证时成立：
 - 独立 package consumer 的 clean 和 incremental build 均通过。
 
 任何一项失败都停止后续 G1-G5，而不是回退到 IR、SFC 或 second generator run。
+
+## Gate Evidence
+
+G0 于 2026-07-22 通过。当前锁定的 SDK 为
+`11.0.100-preview.5.26302.115`，Razor compiler assembly version 为 `10.4.0.0`，
+`RazorSourceGenerator.Initialize` 指纹为 IL length `1375`、SHA-256
+`D26899291FF7BD908E842A14E3AFE5DBB1CE7376AB667C7733EBF25820FBBDC6`。
+
+当前 package consumer host 的实际 binding mode 是
+`DerivedHookCompilation`：hook callback compilation 不含本轮 generated tree，binder
+仅对该 immutable compilation 调用一次 `AddSyntaxTrees(...)`。evidence Schema 2
+记录 document content hash、`BuildRenderTree` operation inventory/hash、tree counts
+和禁止路径标志；它不包含外部 consumer 的绝对路径。
+
+自动化证据：
+
+- `dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj --filter "FullyQualifiedName~RazorSgFinalDocumentBindingTests" --no-restore`
+  覆盖 reused/derived binder、current tree reconciliation 和 final-document evidence。
+- `dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj --filter "FullyQualifiedName~ExternalBuild_BootstrapHook_BindsOfficialGeneratedCSharpThroughImplementationSourceOutput" --no-restore`
+  在独立 Razor SDK consumer 中验证 implementation source-output hook、fingerprint、trace 和 official generated C#。
+- `dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedName~Build_LocalPackages_WithExternalRazorSgG0Consumer_ReconcilesFinalDocumentsAcrossIncrementalBuilds" --no-restore`
+  通过本地 NuGet 包运行 clean restore、首次 build、无改动 incremental build 与 Razor
+  修改后的 build，断言每轮只有一个 generated input、mode 为 `DerivedHookCompilation`、
+  legacy catalog/SFC artifact 不出现且 content hash / operation inventory 会更新。
+
+G0 的通过只解除 Task 0.5 的前置条件；它不表示 render-function runtime、artifact
+carrier、toolchain 或旧线路清理已经完成。
 
 ## 相关文档
 

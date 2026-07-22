@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Immutable;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Jazor.Analyzer.RazorVue.Generation;
 
@@ -279,6 +280,16 @@ internal static class RazorSourceGeneratorTailOutput
 
     private static string BuildFinalDocumentEvidenceSource(RazorSgGeneratedCSharpBinding binding)
     {
+        var documentContentHash = ComputeStableHash(
+            string.Join(
+                "\n",
+                binding.Documents
+                    .Select(static document => document.ContentHash)
+                    .OrderBy(static hash => hash, StringComparer.Ordinal)));
+        var operationInventory = BuildRenderTreeOperationInventory(binding);
+        var operationInventoryHash = ComputeStableHash(operationInventory);
+        var operationCount = binding.Components.Sum(
+            static component => component.BuildRenderTreeBody.DescendantsAndSelf().Count());
         var builder = new System.Text.StringBuilder();
         builder.AppendLine("#nullable enable");
         builder.AppendLine("namespace Jazor.Generated");
@@ -286,15 +297,52 @@ internal static class RazorSourceGeneratorTailOutput
         builder.AppendLine("    [global::System.Runtime.CompilerServices.CompilerGenerated]");
         builder.AppendLine("    internal static class RazorSgFinalDocumentEvidence");
         builder.AppendLine("    {");
-        builder.AppendLine("        internal const int SchemaVersion = 1;");
-        builder.Append("        internal const int GeneratorDocumentCount = ").Append(binding.ReusedGeneratedTreeCount + binding.DerivedGeneratedTreeCount).AppendLine(";");
-        builder.Append("        internal const int CurrentGeneratedTreeCount = ").Append(binding.ReusedGeneratedTreeCount + binding.DerivedGeneratedTreeCount).AppendLine(";");
+        builder.AppendLine("        internal const int SchemaVersion = 2;");
+        builder.AppendLine("        internal const string InputContract = \"OfficialRazorSgFinalDocument\";");
+        builder.AppendLine("        internal const bool ConsumesRazorIntermediateRepresentation = false;");
+        builder.AppendLine("        internal const bool RecreatedCompilation = false;");
+        builder.AppendLine("        internal const bool NestedRazorSourceGeneratorRun = false;");
+        builder.Append("        internal const int GeneratorDocumentCount = ").Append(binding.Documents.Length).AppendLine(";");
+        builder.Append("        internal const int CurrentGeneratedTreeCount = ").Append(binding.Documents.Length).AppendLine(";");
         builder.Append("        internal const int ReusedGeneratedTreeCount = ").Append(binding.ReusedGeneratedTreeCount).AppendLine(";");
         builder.Append("        internal const int DerivedGeneratedTreeCount = ").Append(binding.DerivedGeneratedTreeCount).AppendLine(";");
         builder.Append("        internal const int ComponentCount = ").Append(binding.Components.Length).AppendLine(";");
+        builder.Append("        internal const int BuildRenderTreeOperationCount = ").Append(operationCount).AppendLine(";");
         builder.Append("        internal const string BindingMode = ").Append(EscapeCSharpString(binding.BindingMode.ToString())).AppendLine(";");
+        builder.Append("        internal const string GeneratedDocumentContentHash = ").Append(EscapeCSharpString(documentContentHash)).AppendLine(";");
+        builder.Append("        internal const string BuildRenderTreeOperationInventory = ").Append(EscapeCSharpString(operationInventory)).AppendLine(";");
+        builder.Append("        internal const string BuildRenderTreeOperationInventoryHash = ").Append(EscapeCSharpString(operationInventoryHash)).AppendLine(";");
         builder.AppendLine("    }");
         builder.AppendLine("}");
+        return builder.ToString();
+    }
+
+    private static string BuildRenderTreeOperationInventory(RazorSgGeneratedCSharpBinding binding)
+        => string.Join(
+            "|",
+            binding.Components
+                .OrderBy(
+                    static component => component.ComponentSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                    StringComparer.Ordinal)
+                .Select(static component =>
+                {
+                    var componentName = component.ComponentSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                    var operationCounts = component.BuildRenderTreeBody
+                        .DescendantsAndSelf()
+                        .GroupBy(static operation => operation.Kind)
+                        .OrderBy(static group => group.Key.ToString(), StringComparer.Ordinal)
+                        .Select(static group => group.Key + ":" + group.Count());
+                    return componentName + "[" + string.Join(",", operationCounts) + "]";
+                }));
+
+    private static string ComputeStableHash(string value)
+    {
+        using var sha256 = System.Security.Cryptography.SHA256.Create();
+        var bytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(value));
+        var builder = new System.Text.StringBuilder(bytes.Length * 2);
+        foreach (var valueByte in bytes)
+            builder.Append(valueByte.ToString("x2", System.Globalization.CultureInfo.InvariantCulture));
+
         return builder.ToString();
     }
 
