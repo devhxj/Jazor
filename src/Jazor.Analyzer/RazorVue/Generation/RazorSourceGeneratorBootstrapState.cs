@@ -15,6 +15,10 @@ internal static class RazorSourceGeneratorBootstrapState
     private static int _patchSucceeded;
     private static int _patchFailed;
     private static int _patchUnavailable;
+    private static string? _razorSourceGeneratorAssemblyVersion;
+    private static string? _razorSourceGeneratorModuleVersionId;
+    private static int _razorSourceGeneratorInitializeMethodIlLength;
+    private static string? _razorSourceGeneratorInitializeMethodIlSha256;
     private static int _postfixInvoked;
     private static int _implementationSourceOutputHookInstalled;
     private static int _implementationSourceOutputObserved;
@@ -55,6 +59,17 @@ internal static class RazorSourceGeneratorBootstrapState
 
     internal static void MarkPatchSucceeded()
         => Interlocked.Exchange(ref _patchSucceeded, 1);
+
+    internal static void MarkCompatibilityValidated(RazorSourceGeneratorCompatibilityShape shape)
+    {
+        if (shape is null)
+            throw new ArgumentNullException(nameof(shape));
+
+        _razorSourceGeneratorAssemblyVersion = shape.AssemblyVersion;
+        _razorSourceGeneratorModuleVersionId = shape.ModuleVersionId;
+        _razorSourceGeneratorInitializeMethodIlSha256 = shape.InitializeMethodIlSha256;
+        Interlocked.Exchange(ref _razorSourceGeneratorInitializeMethodIlLength, shape.InitializeMethodIlLength);
+    }
 
     internal static void MarkPatchFailed(string failure)
     {
@@ -119,6 +134,10 @@ internal static class RazorSourceGeneratorBootstrapState
             PatchSucceeded: Volatile.Read(ref _patchSucceeded) != 0,
             PatchFailed: Volatile.Read(ref _patchFailed) != 0,
             PatchUnavailable: Volatile.Read(ref _patchUnavailable) != 0,
+            RazorSourceGeneratorAssemblyVersion: _razorSourceGeneratorAssemblyVersion ?? string.Empty,
+            RazorSourceGeneratorModuleVersionId: _razorSourceGeneratorModuleVersionId ?? string.Empty,
+            RazorSourceGeneratorInitializeMethodIlLength: Volatile.Read(ref _razorSourceGeneratorInitializeMethodIlLength),
+            RazorSourceGeneratorInitializeMethodIlSha256: _razorSourceGeneratorInitializeMethodIlSha256 ?? string.Empty,
             PostfixInvoked: Volatile.Read(ref _postfixInvoked) != 0,
             ImplementationSourceOutputHookInstalled: Volatile.Read(ref _implementationSourceOutputHookInstalled) != 0,
             ImplementationSourceOutputObserved: Volatile.Read(ref _implementationSourceOutputObserved) != 0,
@@ -177,6 +196,7 @@ internal static class RazorSourceGeneratorBootstrapState
         Interlocked.Exchange(ref _patchSucceeded, 0);
         Interlocked.Exchange(ref _patchFailed, 0);
         Interlocked.Exchange(ref _patchUnavailable, 0);
+        Interlocked.Exchange(ref _razorSourceGeneratorInitializeMethodIlLength, 0);
         Interlocked.Exchange(ref _postfixInvoked, 0);
         Interlocked.Exchange(ref _implementationSourceOutputHookInstalled, 0);
         Interlocked.Exchange(ref _implementationSourceOutputObserved, 0);
@@ -190,6 +210,9 @@ internal static class RazorSourceGeneratorBootstrapState
 
         _failure = null;
         _tailOutputRegistrationKind = null;
+        _razorSourceGeneratorAssemblyVersion = null;
+        _razorSourceGeneratorModuleVersionId = null;
+        _razorSourceGeneratorInitializeMethodIlSha256 = null;
     }
 
     private sealed class TailOutputRegistration
@@ -222,6 +245,10 @@ internal sealed record RazorSourceGeneratorBootstrapTrace(
     bool PatchSucceeded,
     bool PatchFailed,
     bool PatchUnavailable,
+    string RazorSourceGeneratorAssemblyVersion,
+    string RazorSourceGeneratorModuleVersionId,
+    int RazorSourceGeneratorInitializeMethodIlLength,
+    string RazorSourceGeneratorInitializeMethodIlSha256,
     bool PostfixInvoked,
     bool ImplementationSourceOutputHookInstalled,
     bool ImplementationSourceOutputObserved,

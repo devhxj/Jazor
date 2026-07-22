@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Immutable;
-using Jazor.RazorVue;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 
@@ -193,7 +192,7 @@ internal static class RazorSourceGeneratorTailOutput
             return;
         }
 
-        if (!requiresTailOutput)
+        if (RazorSgComponentCandidateSelector.DiscoverCurrentComponents(compilation).IsDefaultOrEmpty)
         {
             EmitTraceIfEnabled(
                 context,
@@ -243,7 +242,7 @@ internal static class RazorSourceGeneratorTailOutput
             return;
         }
 
-        if (!TrySelectRazorVueComponents(binding!, out var razorVueBinding, out var componentMatchFailure))
+        if (!RazorSgComponentCandidateSelector.TrySelect(binding!, out var razorVueBinding, out var componentMatchFailure))
         {
             ReportTailFailure(context, componentMatchFailure ?? "The Razor SG generated C# did not match a RazorVue component candidate.");
             EmitTraceIfEnabled(
@@ -267,47 +266,6 @@ internal static class RazorSourceGeneratorTailOutput
             razorVueBinding!.Components.Length,
             "bound",
             binding: razorVueBinding);
-    }
-
-    private static bool TrySelectRazorVueComponents(
-        RazorSgGeneratedCSharpBinding binding,
-        out RazorSgGeneratedCSharpBinding? razorVueBinding,
-        out string? failure)
-    {
-        razorVueBinding = null;
-        failure = null;
-        var razorVueContext = RazorVueCompilationContext.TryCreate(binding.Compilation);
-        if (razorVueContext is null)
-        {
-            failure = "The Razor SG generated C# binder could not create a RazorVue compilation context.";
-            return false;
-        }
-
-        var candidateIdentities = razorVueContext.DiscoverComponentCandidates()
-            .Select(static candidate => candidate.ComponentSymbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat))
-            .ToImmutableHashSet(StringComparer.Ordinal);
-        var components = binding.Components
-            .Where(component => candidateIdentities.Contains(
-                component.ComponentSymbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)))
-            .ToImmutableArray();
-        if (!components.IsDefaultOrEmpty)
-        {
-            razorVueBinding = binding with { Components = components };
-            return true;
-        }
-
-        var candidateSummary = candidateIdentities.Count == 0
-            ? "<none>"
-            : string.Join(", ", candidateIdentities.OrderBy(static item => item, StringComparer.Ordinal));
-        var generatedSummary = string.Join(
-            ", ",
-            binding.Components
-                .Select(static component => component.ComponentSymbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat))
-                .OrderBy(static item => item, StringComparer.Ordinal));
-        failure = "The Razor SG generated BuildRenderTree documents did not match any RazorVue component candidate. " +
-                  "RazorVue candidates: " + candidateSummary + ". " +
-                  "Generated BuildRenderTree components: " + generatedSummary + ".";
-        return false;
     }
 
     private static void EmitFinalDocumentEvidence(
@@ -341,11 +299,7 @@ internal static class RazorSourceGeneratorTailOutput
     }
 
     private static bool CompilationRequiresRazorVueTailOutput(Compilation compilation)
-    {
-        var razorVueContext = RazorVueCompilationContext.TryCreate(compilation);
-        return razorVueContext is not null &&
-               !razorVueContext.DiscoverComponentCandidates().IsDefaultOrEmpty;
-    }
+        => !RazorSgComponentCandidateSelector.DiscoverTailRequiredComponents(compilation).IsDefaultOrEmpty;
 
     private static void ReportTailFailureIfRequired(
         SourceProductionContext context,

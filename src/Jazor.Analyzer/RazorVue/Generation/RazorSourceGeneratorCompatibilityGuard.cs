@@ -8,6 +8,10 @@ internal static class RazorSourceGeneratorCompatibilityGuard
     internal const string RazorSourceGeneratorTypeName = "Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator";
     internal const string IncrementalGeneratorInitializationContextTypeName = "Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext";
     internal const string VoidTypeName = "System.Void";
+    // The hook overwrites Initialize, so a shape-only check is not enough to make patching safe.
+    internal const string SupportedRazorCompilerAssemblyVersion = "10.4.0.0";
+    internal const int SupportedInitializeMethodIlLength = 1375;
+    internal const string SupportedInitializeMethodIlSha256 = "D26899291FF7BD908E842A14E3AFE5DBB1CE7376AB667C7733EBF25820FBBDC6";
 
     public static RazorSourceGeneratorCompatibilityValidationResult Validate(RazorSourceGeneratorCompatibilityProbeResult probeResult)
     {
@@ -82,6 +86,42 @@ internal static class RazorSourceGeneratorCompatibilityGuard
         {
             return RazorSourceGeneratorCompatibilityValidationResult.Fail(
                 "RazorSourceGenerator.Initialize is static; the RazorVue bootstrap patch expects an instance method.");
+        }
+
+        if (!string.Equals(shape.AssemblyVersion, SupportedRazorCompilerAssemblyVersion, StringComparison.Ordinal))
+        {
+            return RazorSourceGeneratorCompatibilityValidationResult.Fail(
+                "Razor source generator assembly version mismatch. Expected '" +
+                SupportedRazorCompilerAssemblyVersion +
+                "' but found '" +
+                shape.AssemblyVersion +
+                "'.");
+        }
+
+        if (!shape.InitializeMethodIlFingerprintAvailable)
+        {
+            return RazorSourceGeneratorCompatibilityValidationResult.Fail(
+                "RazorSourceGenerator.Initialize fingerprint was unavailable. " +
+                "Expected IL length " +
+                SupportedInitializeMethodIlLength.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+                " and SHA-256 '" +
+                SupportedInitializeMethodIlSha256 +
+                "'.");
+        }
+
+        if (shape.InitializeMethodIlLength != SupportedInitializeMethodIlLength ||
+            !string.Equals(shape.InitializeMethodIlSha256, SupportedInitializeMethodIlSha256, StringComparison.OrdinalIgnoreCase))
+        {
+            return RazorSourceGeneratorCompatibilityValidationResult.Fail(
+                "RazorSourceGenerator.Initialize fingerprint mismatch. Expected IL length " +
+                SupportedInitializeMethodIlLength.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+                " and SHA-256 '" +
+                SupportedInitializeMethodIlSha256 +
+                "', but found IL length " +
+                shape.InitializeMethodIlLength.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+                " and SHA-256 '" +
+                shape.InitializeMethodIlSha256 +
+                "'.");
         }
 
         if (!shape.DeclaredMethodNames.Contains("Initialize", StringComparer.Ordinal))

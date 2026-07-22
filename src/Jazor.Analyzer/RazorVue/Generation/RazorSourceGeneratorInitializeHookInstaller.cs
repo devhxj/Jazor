@@ -70,6 +70,8 @@ internal static class RazorSourceGeneratorInitializeHookInstaller
                 return false;
             }
 
+            RazorSourceGeneratorBootstrapState.MarkCompatibilityValidated(compatibility.Shape!);
+
             var generatorType = assembly.GetType(
                 RazorSourceGeneratorCompatibilityGuard.RazorSourceGeneratorTypeName,
                 throwOnError: false);

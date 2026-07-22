@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using Jazor.RazorVue;
 using Jazor.RazorVue.Analysis;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
@@ -84,14 +83,9 @@ internal static class RazorSourceGeneratorFallbackOutput
     private static bool RequiresTailOutput(Compilation compilation, out string componentSummary)
     {
         componentSummary = string.Empty;
-        var razorVueContext = RazorVueCompilationContext.TryCreate(compilation);
-        if (razorVueContext is null)
-            return false;
-
-        var snapshots = RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(razorVueContext);
-        var requiredComponents = snapshots
-            .Where(RazorVueGenerator.IsRazorSgTailRequired)
-            .Select(static snapshot => snapshot.Descriptor.FullName)
+        var requiredComponents = RazorSgComponentCandidateSelector
+            .DiscoverTailRequiredComponents(compilation)
+            .Select(static component => component.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat))
             .OrderBy(static name => name, StringComparer.Ordinal)
             .ToImmutableArray();
         if (requiredComponents.IsDefaultOrEmpty)

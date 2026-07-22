@@ -76,9 +76,28 @@ public sealed class RazorSourceGeneratorTailOutputTests
             "did not receive any Razor source generator documents");
     }
 
+    [TestMethod]
+    public void Emit_WhenEnabledWithHandwrittenBuildRenderTree_DoesNotRequireTailOutput()
+    {
+        var diagnostics = RunTailOutputGenerator(
+            static (context, compilation) =>
+            {
+                RazorSourceGeneratorTailOutput.Emit(
+                    context,
+                    compilation,
+                    source: new object(),
+                    new RazorSourceGeneratorTailOutputOptions(Enabled: true, TestHookEnabled: false));
+            },
+            includeRazorVueCandidate: true,
+            includeHandwrittenBuildRenderTree: true);
+
+        AssertNoTailFailureDiagnostic(diagnostics);
+    }
+
     private static ImmutableArray<Diagnostic> RunTailOutputGenerator(
         Action<SourceProductionContext, Compilation> emit,
-        bool includeRazorVueCandidate = false)
+        bool includeRazorVueCandidate = false,
+        bool includeHandwrittenBuildRenderTree = false)
     {
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
         var compilation = CSharpCompilation.Create(
@@ -86,9 +105,10 @@ public sealed class RazorSourceGeneratorTailOutputTests
             syntaxTrees:
             [
                 CSharpSyntaxTree.ParseText(
+                    includeHandwrittenBuildRenderTree ? RazorVueCandidateWithHandwrittenBuildRenderTreeSource :
                     includeRazorVueCandidate ? RazorVueCandidateSource : EmptySource,
                     options: parseOptions,
-                    path: "EntryPoint.cs")
+                    path: includeRazorVueCandidate ? "EntryPoint.razor.cs" : "EntryPoint.cs")
             ],
             references: RazorIrTestHost.CreateMetadataReferences(),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
@@ -132,6 +152,22 @@ public sealed class RazorSourceGeneratorTailOutputTests
         [ECMAScriptModule("./components/counter")]
         public partial class Counter : ComponentBase, IVueComponent
         {
+        }
+        """;
+
+    private const string RazorVueCandidateWithHandwrittenBuildRenderTreeSource = """
+        using ECMAScript;
+        using static ECMAScript.Vue3;
+        using Microsoft.AspNetCore.Components;
+        using Microsoft.AspNetCore.Components.Rendering;
+
+        [ECMAScriptModule("./components/counter")]
+        public partial class Counter : ComponentBase, IVueComponent
+        {
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                builder.AddContent(0, "handwritten");
+            }
         }
         """;
 

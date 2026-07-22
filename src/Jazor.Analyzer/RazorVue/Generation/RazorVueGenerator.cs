@@ -1428,6 +1428,10 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         builder.Append("        internal const bool PatchSucceeded = ").Append(ToCSharpBool(trace.PatchSucceeded)).AppendLine(";");
         builder.Append("        internal const bool PatchFailed = ").Append(ToCSharpBool(trace.PatchFailed)).AppendLine(";");
         builder.Append("        internal const bool PatchUnavailable = ").Append(ToCSharpBool(trace.PatchUnavailable)).AppendLine(";");
+        builder.Append("        internal const string RazorSourceGeneratorAssemblyVersion = ").Append(EscapeCSharpString(trace.RazorSourceGeneratorAssemblyVersion)).AppendLine(";");
+        builder.Append("        internal const string RazorSourceGeneratorModuleVersionId = ").Append(EscapeCSharpString(trace.RazorSourceGeneratorModuleVersionId)).AppendLine(";");
+        builder.Append("        internal const int RazorSourceGeneratorInitializeMethodIlLength = ").Append(trace.RazorSourceGeneratorInitializeMethodIlLength.ToString(CultureInfo.InvariantCulture)).AppendLine(";");
+        builder.Append("        internal const string RazorSourceGeneratorInitializeMethodIlSha256 = ").Append(EscapeCSharpString(trace.RazorSourceGeneratorInitializeMethodIlSha256)).AppendLine(";");
         builder.Append("        internal const bool PostfixInvoked = ").Append(ToCSharpBool(trace.PostfixInvoked)).AppendLine(";");
         builder.Append("        internal const bool ImplementationSourceOutputHookInstalled = ").Append(ToCSharpBool(trace.ImplementationSourceOutputHookInstalled)).AppendLine(";");
         builder.Append("        internal const bool ImplementationSourceOutputObserved = ").Append(ToCSharpBool(trace.ImplementationSourceOutputObserved)).AppendLine(";");

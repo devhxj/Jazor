@@ -75,6 +75,25 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
             StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegisteredForCurrentContext = true;");
             StringAssert.Contains(generatedTrace, "internal const string TailOutputRegistrationKind = \"implementation-source-output\";");
             StringAssert.Contains(generatedTrace, "internal const bool PatchFailed = false;");
+            StringAssert.Contains(
+                generatedTrace,
+                "internal const string RazorSourceGeneratorAssemblyVersion = \"" +
+                RazorSourceGeneratorCompatibilityGuard.SupportedRazorCompilerAssemblyVersion +
+                "\";");
+            StringAssert.Contains(generatedTrace, "internal const string RazorSourceGeneratorModuleVersionId = \"");
+            Assert.IsFalse(
+                generatedTrace.Contains("internal const string RazorSourceGeneratorModuleVersionId = \"\";", StringComparison.Ordinal),
+                "The bootstrap trace must record the patched Razor SG module MVID.");
+            StringAssert.Contains(
+                generatedTrace,
+                "internal const int RazorSourceGeneratorInitializeMethodIlLength = " +
+                RazorSourceGeneratorCompatibilityGuard.SupportedInitializeMethodIlLength +
+                ";");
+            StringAssert.Contains(
+                generatedTrace,
+                "internal const string RazorSourceGeneratorInitializeMethodIlSha256 = \"" +
+                RazorSourceGeneratorCompatibilityGuard.SupportedInitializeMethodIlSha256 +
+                "\";");
 
             var generatedTailTracePath = Directory
                 .EnumerateFiles(generatedRoot, "Jazor.RazorVue.RazorSgTailTrace.g.cs", SearchOption.AllDirectories)

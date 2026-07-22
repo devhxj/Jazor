@@ -27,11 +27,10 @@ public sealed class RazorSourceGeneratorCompatibilityProbeTests
         Assert.IsFalse(shape.InitializeMethodIsStatic, "Initialize must remain an instance method for RazorVue to integrate with the SDK generator entry point.");
         Assert.IsTrue(shape.ImplementsIncrementalGenerator, "The Razor source generator no longer implements IIncrementalGenerator.");
         Assert.IsTrue(shape.DeclaredMethodNames.Contains("Initialize"), "Declared methods must include Initialize.");
-        if (shape.InitializeMethodIlFingerprintAvailable)
-        {
-            Assert.IsTrue(shape.InitializeMethodIlLength > 0, "Initialize method IL length must be positive when the fingerprint is available.");
-            Assert.IsFalse(string.IsNullOrWhiteSpace(shape.InitializeMethodIlSha256), "Initialize method IL SHA-256 must be present when the fingerprint is available.");
-        }
+        Assert.IsTrue(shape.InitializeMethodIlFingerprintAvailable, "G0 requires an available Initialize method IL fingerprint.");
+        Assert.AreEqual(RazorSourceGeneratorCompatibilityGuard.SupportedRazorCompilerAssemblyVersion, shape.AssemblyVersion);
+        Assert.AreEqual(RazorSourceGeneratorCompatibilityGuard.SupportedInitializeMethodIlLength, shape.InitializeMethodIlLength);
+        Assert.AreEqual(RazorSourceGeneratorCompatibilityGuard.SupportedInitializeMethodIlSha256, shape.InitializeMethodIlSha256);
 
         var validation = RazorSourceGeneratorCompatibilityGuard.Validate(result);
         Assert.IsTrue(validation.Success, validation.Failure ?? "The Razor source generator compatibility validation did not succeed.");
@@ -75,11 +74,11 @@ public sealed class RazorSourceGeneratorCompatibilityProbeTests
     }
 
     [TestMethod]
-    public void Validate_ForSupportedAbiWithUnknownInitializeIlHash_Succeeds()
+    public void Validate_ForSupportedAbiWithUnknownInitializeIlHash_Fails()
     {
         var shape = new RazorSourceGeneratorCompatibilityShape(
             AssemblyPath: "ignored",
-            AssemblyVersion: "11.0.0.0",
+            AssemblyVersion: RazorSourceGeneratorCompatibilityGuard.SupportedRazorCompilerAssemblyVersion,
             ModuleVersionId: "ignored",
             TypeFullName: RazorSourceGeneratorCompatibilityGuard.RazorSourceGeneratorTypeName,
             ImplementsIncrementalGenerator: true,
@@ -94,15 +93,16 @@ public sealed class RazorSourceGeneratorCompatibilityProbeTests
 
         var validation = RazorSourceGeneratorCompatibilityGuard.Validate(shape);
 
-        Assert.IsTrue(validation.Success, validation.Failure ?? "Supported Razor SG ABI must not be rejected because the method body hash changed.");
+        Assert.IsFalse(validation.Success, "G0 must reject an unrecognized Razor SG Initialize fingerprint before patching.");
+        StringAssert.Contains(validation.Failure ?? string.Empty, "Initialize fingerprint mismatch");
     }
 
     [TestMethod]
-    public void Validate_ForSupportedAbiWithUnavailableInitializeIlFingerprint_Succeeds()
+    public void Validate_ForSupportedAbiWithUnavailableInitializeIlFingerprint_Fails()
     {
         var shape = new RazorSourceGeneratorCompatibilityShape(
             AssemblyPath: "ignored",
-            AssemblyVersion: "11.0.0.0",
+            AssemblyVersion: RazorSourceGeneratorCompatibilityGuard.SupportedRazorCompilerAssemblyVersion,
             ModuleVersionId: "ignored",
             TypeFullName: RazorSourceGeneratorCompatibilityGuard.RazorSourceGeneratorTypeName,
             ImplementsIncrementalGenerator: true,
@@ -117,7 +117,8 @@ public sealed class RazorSourceGeneratorCompatibilityProbeTests
 
         var validation = RazorSourceGeneratorCompatibilityGuard.Validate(shape);
 
-        Assert.IsTrue(validation.Success, validation.Failure ?? "Supported Razor SG ABI must not be rejected because the optional method body fingerprint is unavailable.");
+        Assert.IsFalse(validation.Success, "G0 must reject a Razor SG whose Initialize fingerprint is unavailable.");
+        StringAssert.Contains(validation.Failure ?? string.Empty, "fingerprint was unavailable");
     }
 
     [TestMethod]
@@ -223,7 +224,7 @@ public sealed class RazorSourceGeneratorCompatibilityProbeTests
     private static RazorSourceGeneratorCompatibilityShape CreateSupportedShape()
         => new(
             AssemblyPath: "ignored",
-            AssemblyVersion: "11.0.0.0",
+            AssemblyVersion: RazorSourceGeneratorCompatibilityGuard.SupportedRazorCompilerAssemblyVersion,
             ModuleVersionId: "ignored",
             TypeFullName: RazorSourceGeneratorCompatibilityGuard.RazorSourceGeneratorTypeName,
             ImplementsIncrementalGenerator: true,
@@ -232,8 +233,8 @@ public sealed class RazorSourceGeneratorCompatibilityProbeTests
             InitializeMethodReturnType: RazorSourceGeneratorCompatibilityGuard.VoidTypeName,
             InitializeMethodIsPublic: true,
             InitializeMethodIsStatic: false,
-            InitializeMethodIlLength: 1,
-            InitializeMethodIlSha256: "diagnostic-only",
+            InitializeMethodIlLength: RazorSourceGeneratorCompatibilityGuard.SupportedInitializeMethodIlLength,
+            InitializeMethodIlSha256: RazorSourceGeneratorCompatibilityGuard.SupportedInitializeMethodIlSha256,
             DeclaredMethodNames: ["Initialize"]);
 
     private static Assembly CreateUnsupportedRazorCompilerAssembly()

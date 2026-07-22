@@ -1,5 +1,6 @@
 using System;
 using Jazor.RazorVue.Artifacts;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Jazor.RazorVue.RazorSdk;
@@ -11,10 +12,15 @@ internal static class RazorVueBuildRenderTreeAuthoringClassifier
         if (snapshot is null)
             throw new ArgumentNullException(nameof(snapshot));
 
-        if (snapshot.BuildRenderTreeMethod is null)
+        return IsHandwrittenBuildRenderTree(snapshot.BuildRenderTreeMethod);
+    }
+
+    public static bool IsHandwrittenBuildRenderTree(IMethodSymbol? buildRenderTreeMethod)
+    {
+        if (buildRenderTreeMethod is null)
             return false;
 
-        foreach (var syntaxReference in snapshot.BuildRenderTreeMethod.DeclaringSyntaxReferences)
+        foreach (var syntaxReference in buildRenderTreeMethod.DeclaringSyntaxReferences)
         {
             if (syntaxReference.GetSyntax() is not MethodDeclarationSyntax methodSyntax)
                 continue;

@@ -133,7 +133,8 @@ public sealed class RazorVueGeneratorRouteTests
                 [Parameter]
                 public string? Title { get; set; }
             }
-            """);
+            """,
+            "TodoApp.razor.cs");
 
         var runResult = RunTailOutputGenerator(
             compilation,
@@ -506,6 +507,10 @@ public sealed class RazorVueGeneratorRouteTests
             PatchSucceeded: isInstalled,
             PatchFailed: false,
             PatchUnavailable: false,
+            RazorSourceGeneratorAssemblyVersion: string.Empty,
+            RazorSourceGeneratorModuleVersionId: string.Empty,
+            RazorSourceGeneratorInitializeMethodIlLength: 0,
+            RazorSourceGeneratorInitializeMethodIlSha256: string.Empty,
             PostfixInvoked: tailOutputRegistered,
             ImplementationSourceOutputHookInstalled: tailOutputRegistered,
             ImplementationSourceOutputObserved: tailOutputRegistered,
