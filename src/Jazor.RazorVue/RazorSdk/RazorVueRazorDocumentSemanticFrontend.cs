@@ -97,9 +97,15 @@ internal sealed class RazorVueRazorDocumentSemanticFrontend : IRazorSemanticFron
             ?.Name
             .ToString();
 
+        var typeParameterList = classDeclaration.TypeParameterList is null
+            ? string.Empty
+            : "<" + string.Join(
+                ", ",
+                classDeclaration.TypeParameterList.Parameters.Select(static parameter => parameter.Identifier.ValueText)) + ">";
+
         typeName = string.IsNullOrWhiteSpace(namespaceName)
-            ? "global::" + classDeclaration.Identifier.ValueText
-            : "global::" + namespaceName + "." + classDeclaration.Identifier.ValueText;
+            ? "global::" + classDeclaration.Identifier.ValueText + typeParameterList
+            : "global::" + namespaceName + "." + classDeclaration.Identifier.ValueText + typeParameterList;
         return true;
     }
 

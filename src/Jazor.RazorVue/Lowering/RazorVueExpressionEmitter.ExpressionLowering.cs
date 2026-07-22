@@ -3079,6 +3079,9 @@ internal sealed partial class RazorVueExpressionEmitter
 
     private string TryNormalizeRazorGeneratedCallbackFactory(IInvocationOperation invocation)
     {
+        if (TryNormalizeRazorBinderEventCallback(invocation, out var binderCallback))
+            return binderCallback;
+
         if (!IsEventCallbackFactoryCreate(invocation) || invocation.Arguments.Length < 2)
             return string.Empty;
 
@@ -3093,6 +3096,9 @@ internal sealed partial class RazorVueExpressionEmitter
         if (TryNormalizeRazorInferredEventCallback(callbackTarget, out var inferredCallbackFactory))
             return inferredCallbackFactory;
 
+        if (TryNormalizeRazorAssignedLambdaCallback(callbackTarget, out var assignedLambdaCallback))
+            return assignedLambdaCallback;
+
         return callbackTarget switch
         {
             IPropertyReferenceOperation property when IsCurrentComponentMember(property.Property, property.Instance) =>
@@ -3105,6 +3111,27 @@ internal sealed partial class RazorVueExpressionEmitter
                 EmitSetupExpression(anonymousFunction),
             _ => string.Empty
         };
+    }
+
+    private bool TryNormalizeRazorBinderEventCallback(IInvocationOperation invocation, out string expression)
+    {
+        expression = string.Empty;
+        if (!IsEventCallbackFactoryCreateBinder(invocation))
+            return false;
+
+        foreach (var argument in invocation.Arguments)
+        {
+            if (!TryNormalizeRazorAssignedLambdaCallback(argument.Value, out var callback))
+                continue;
+
+            expression =
+                "(__event) => { const __jazorBindValue = __event?.target?.value ?? __event?.value ?? __event; return (" +
+                callback +
+                ")(__jazorBindValue); }";
+            return true;
+        }
+
+        return false;
     }
 
     private string TryNormalizeCurrentComponentCallbackMethod(IMethodReferenceOperation methodReference)
@@ -3142,7 +3169,13 @@ internal sealed partial class RazorVueExpressionEmitter
             return false;
         }
 
-        if (!TryGetAssignedLambdaTarget(invocation.Arguments[1].Value, out var assignedTarget))
+        return TryNormalizeRazorAssignedLambdaCallback(invocation.Arguments[1].Value, out expression);
+    }
+
+    private bool TryNormalizeRazorAssignedLambdaCallback(IOperation callbackTarget, out string expression)
+    {
+        expression = string.Empty;
+        if (!TryGetAssignedLambdaTarget(callbackTarget, out var assignedTarget))
             return false;
 
         switch (assignedTarget)
@@ -3477,6 +3510,13 @@ internal sealed partial class RazorVueExpressionEmitter
            string.Equals(
                invocation.TargetMethod.ContainingType?.ToDisplayString(),
                "Microsoft.AspNetCore.Components.EventCallbackFactory",
+               StringComparison.Ordinal);
+
+    private static bool IsEventCallbackFactoryCreateBinder(IInvocationOperation invocation)
+        => invocation.TargetMethod.Name == "CreateBinder" &&
+           string.Equals(
+               invocation.TargetMethod.ContainingType?.ToDisplayString(),
+               "Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions",
                StringComparison.Ordinal);
 
     private static bool IsCallableSlotExpression(IOperation operation)

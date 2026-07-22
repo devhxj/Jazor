@@ -58,6 +58,27 @@
 - Razor IR 增强必须发生在 canonical render model / SFC semantic model 层，不能通过 patch 最终 `.vue` 文本、绕过 `Jazor.Compiler` / `SemanticWalker` 手拼 JS，或把 `@code` 文本直接塞进 `<script setup>`。
 - 当 Razor IR 增强缺失或无法识别时，只能退回到已绑定的 Roslyn/`BuildRenderTree` 语义基线，或在连该语义基线也不可用时显式失败；不得回读 `.razor` 文件、私跑 Razor SG、或用路径猜测文档身份。
 
+## Generic Component Contract
+
+- RazorVue 支持 Blazor component `@typeparam` / generic component authoring 的受控子集。官方 Razor Source Generator 生成的 `.razor.g.cs` 必须先能编译，RazorVue 再从同一 Roslyn 语义视图读取 descriptor、slot 和 template expression。
+- Generic component descriptor 与 component resolution 使用开放泛型身份，例如 `GenericList<TItem>` 的 descriptor full name 保持 `Demo.Pages.GenericList<TItem>`，组件引用/import key 使用稳定组件名 `GenericList`。RazorVue 不为每个调用点生成 runtime closed Vue component descriptor。
+- Generic arguments 默认是 compile-time annotation：prop / slot type name 可以保留 `TItem` 这种类型形状；typed slot body 内的 `item.Title` 等成员访问仍由官方 Razor SG / Roslyn `IOperation` 绑定到实际闭合上下文，再交给既有 expression lowering。
+- Runtime generic type-parameter semantics 不进入 Vue artifact。模板表达式中的 `typeof(T)`、`default(T)`、`new T()`、`is T` / type pattern 等需要 CLR runtime generic metadata 的形态会 fail-fast，并在 diagnostic 中指出 component 与 type parameter。
+
+## Metadata Directive Contract
+
+- `@attribute`、`@inherits`、`@implements` 都先由官方 Razor Source Generator 生成合法 `.razor.g.cs`，再进入 RazorVue 的 Roslyn semantic snapshot；RazorVue 不直接解析这些 directive 文本来替代 C# 语义。
+- `@attribute` 只在 artifact-relevant attribute 上产生 RazorVue 行为：route metadata、`[ECMAScriptModule]` import、`[Parameter]` / `[CascadingParameter]` / `[EditorRequired]`、Vue library descriptor attributes、container/inject metadata 和诊断相关标记。其他合法 C# attribute 保持透明 metadata，不写入 `.vue` artifact。
+- `@inherits` 允许源码可分析 base class 上的参数、setup value member、helper 和受控 lifecycle 参与 descriptor、render 与 lifecycle lowering。外部无源码 override、动态 lifecycle 或超出受控子集的 base member 仍按既有 lifecycle/setup 边界 FullReloadRequired 或 fail-fast。
+- `@implements` 仅表达 C# compile-time contract。RazorVue 不生成 Vue runtime interface shim，也不会把 interface 名称写入 `.vue` module。
+
+## Blazor Host Directive Boundary
+
+- `@inject`、`@layout`、`@rendermode`、`@formname` 是 Blazor host/runtime-only 语义，不属于 RazorVue `.vue` artifact 合同。
+- 当官方 Razor SG 已把 `@inject` / `@layout` / `@rendermode` 降为 C# metadata 且该 metadata 对 `.vue` 没有可观察语义时，RazorVue 会透明编译并确保 artifact 不携带对应 Blazor runtime 名称。
+- raw host directive attribute 形态（例如 HTML 上的 `@formname`）会 fail-fast；推荐用 Vue component composition、Vue / host inject、或 host-side form integration 表达同类需求。
+- Razor MVC / Razor Pages `.cshtml` 指令不进入 RazorVue 目标域。
+
 ## `@key` Support
 
 - RazorVue 现已将 vnode `key` 作为一等语义处理，不会把它退化成普通 HTML / component attribute。

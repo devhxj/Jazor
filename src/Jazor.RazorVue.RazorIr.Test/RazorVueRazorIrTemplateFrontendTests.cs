@@ -1669,26 +1669,35 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
-    public void CreateRenderTree_ForElementBind_CurrentHostStillExposesRawBindAttribute()
+    public void CreateRenderTree_ForElementBind_LowersToValueAndChangeHandler()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """<input @bind="Title" />""";
 
-        var codeDocument = RazorIrTestHost.CreateCodeDocument(
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateContext(
+            "RazorVue.RazorIr.TemplateFrontend.ElementBind.RenderTree.Tests",
             documentPath,
             documentText,
-            importSources: [],
-            tagHelpers: null);
-        var tree = RazorIrTestHost.DumpIntermediateNodeTree(RazorIrTestHost.GetDocumentNode(codeDocument));
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+        var input = renderTree.Children[0] as RazorVueElementNode;
 
-        // Without component/bind tag-helper registration, the current Razor SDK host surfaces
-        // the @bind directive as raw markup rather than a structured HtmlAttributeIntermediateNode.
-        StringAssert.Contains(tree, "MarkupBlockIntermediateNode");
-        StringAssert.Contains(tree, "@bind");
+        Assert.IsNotNull(input);
+        Assert.AreEqual("input", input!.TagName);
+        Assert.IsFalse(input.Attributes.OfType<RazorVueAttributeNode>().Any(static item => item.Name == "@bind"));
+
+        var valueAttribute = input.Attributes.OfType<RazorVueAttributeNode>().Single(static item => item.Name == "value");
+        Assert.IsNotNull(valueAttribute.Value);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(valueAttribute.Value);
+        Assert.AreEqual("Title", ((IPropertyReferenceOperation)valueAttribute.Value).Property.Name);
+
+        var changeAttribute = input.Attributes.OfType<RazorVueAttributeNode>().Single(static item => item.Name == "onchange");
+        Assert.IsNotNull(changeAttribute.Value);
+        Assert.IsInstanceOfType<IInvocationOperation>(changeAttribute.Value);
     }
 
     [TestMethod]
-    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForElementBind_PreservesRawBindAttribute()
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForElementBind_LowersToValueAndChangeHandler()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """<input @bind="Title" />""";
@@ -1697,15 +1706,285 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
             "RazorVue.RazorIr.TemplateFrontend.ElementBind.Pipeline.Tests",
             documentPath,
             documentText,
+            CreateBindableParentComponentSource());
+
+        var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ModuleCode, "\"value\": props.title");
+        StringAssert.Contains(artifact.ModuleCode, "\"onChange\": (__event) =>");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"update:title\", __value)");
+        Assert.IsFalse(artifact.ModuleCode.Contains("@bind", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForElementBindEventOnInput_LowersToInputHandler()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<input @bind="Title" @bind:event="oninput" />""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateContext(
+            "RazorVue.RazorIr.TemplateFrontend.ElementBind.OnInput.Pipeline.Tests",
+            documentPath,
+            documentText,
+            CreateBindableParentComponentSource());
+
+        var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ModuleCode, "\"value\": props.title");
+        StringAssert.Contains(artifact.ModuleCode, "\"onInput\": (__event) =>");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"update:title\", __value)");
+        Assert.IsFalse(artifact.ModuleCode.Contains("@bind", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForTextareaElementBind_LowersToValueAndChangeHandler()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<textarea @bind="Title"></textarea>""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateContext(
+            "RazorVue.RazorIr.TemplateFrontend.ElementBind.Textarea.Pipeline.Tests",
+            documentPath,
+            documentText,
+            CreateBindableParentComponentSource());
+
+        var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ModuleCode, "h(\"textarea\", { \"value\": props.title, \"onChange\": (__event) =>");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"update:title\", __value)");
+        Assert.IsFalse(artifact.ModuleCode.Contains("@bind", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForSelectElementBind_LowersToValueAndChangeHandler()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            <select @bind="Title">
+                <option value="todo">todo</option>
+            </select>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateContext(
+            "RazorVue.RazorIr.TemplateFrontend.ElementBind.Select.Pipeline.Tests",
+            documentPath,
+            documentText,
+            CreateBindableParentComponentSource());
+
+        var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ModuleCode, "h(\"select\", { \"value\": props.title, \"onChange\": (__event) =>");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"update:title\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "h(\"option\", { \"value\": \"todo\" }, \"todo\")");
+        Assert.IsFalse(artifact.ModuleCode.Contains("@bind", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForElementBindEventWithoutBind_ReportsUnsupportedDirective()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<input @bind:event="oninput" />""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateContext(
+            "RazorVue.RazorIr.TemplateFrontend.ElementBind.EventWithoutBind.Pipeline.Tests",
+            documentPath,
+            documentText,
             RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
 
-        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
-        var input = renderTree.Children[0] as RazorVueElementNode;
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot));
 
-        Assert.IsNotNull(input);
-        Assert.AreEqual("input", input!.TagName);
-        Assert.IsTrue(input.Attributes.OfType<RazorVueAttributeNode>().Any(static item => item.Name == "@bind"));
+        StringAssert.Contains(exception.Issue.Message, "@bind:event");
+        StringAssert.Contains(exception.Issue.Message, "'@bind'");
     }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForCheckboxElementBind_ReportsUnsupportedDirective()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<input type="checkbox" @bind="Done" />""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateContext(
+            "RazorVue.RazorIr.TemplateFrontend.ElementBind.Checkbox.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Done { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> DoneChanged { get; set; }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot));
+
+        StringAssert.Contains(exception.Issue.Message, "input type 'checkbox'");
+        StringAssert.Contains(exception.Issue.Message, "HTML element @bind");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForRadioElementBind_ReportsUnsupportedDirective()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<input type="radio" @bind="Title" />""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateContext(
+            "RazorVue.RazorIr.TemplateFrontend.ElementBind.Radio.Pipeline.Tests",
+            documentPath,
+            documentText,
+            CreateBindableParentComponentSource());
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot));
+
+        StringAssert.Contains(exception.Issue.Message, "input type 'radio'");
+        StringAssert.Contains(exception.Issue.Message, "HTML element @bind");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForFileElementBind_ReportsUnsupportedDirective()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<input type="file" @bind="Title" />""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateContext(
+            "RazorVue.RazorIr.TemplateFrontend.ElementBind.File.Pipeline.Tests",
+            documentPath,
+            documentText,
+            CreateBindableParentComponentSource());
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot));
+
+        StringAssert.Contains(exception.Issue.Message, "input type 'file'");
+        StringAssert.Contains(exception.Issue.Message, "HTML element @bind");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForNonStringElementBind_ReportsUnsupportedDirective()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<input @bind="Count" />""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateContext(
+            "RazorVue.RazorIr.TemplateFrontend.ElementBind.NonString.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> CountChanged { get; set; }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot));
+
+        StringAssert.Contains(exception.Issue.Message, "only for string value-style targets");
+        StringAssert.Contains(exception.Issue.Message, "HTML element @bind");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForElementBindGet_ReportsUnsupportedDirective()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<input @bind:get="Title" @bind:set="SetTitle" />""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateContext(
+            "RazorVue.RazorIr.TemplateFrontend.ElementBind.GetSet.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private void SetTitle(string? value)
+                    {
+                        Title = value;
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot));
+
+        StringAssert.Contains(exception.Issue.Message, "@bind:get");
+        StringAssert.Contains(exception.Issue.Message, "HTML element @bind");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForElementBindAfter_ReportsUnsupportedDirective()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<input @bind="Title" @bind:after="AfterTitleChanged" />""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateContext(
+            "RazorVue.RazorIr.TemplateFrontend.ElementBind.After.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> TitleChanged { get; set; }
+
+                    private void AfterTitleChanged()
+                    {
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot));
+
+        StringAssert.Contains(exception.Issue.Message, "@bind:after");
+        StringAssert.Contains(exception.Issue.Message, "HTML element @bind");
+    }
+
+    private static string CreateBindableParentComponentSource()
+        => """
+        namespace Demo.Pages
+        {
+            [ECMAScript.ECMAScriptModule("./components/todo-app")]
+            public partial class TodoApp : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public string? Title { get; set; }
+
+                [Parameter]
+                public EventCallback<string?> TitleChanged { get; set; }
+            }
+        }
+        """;
 
     [TestMethod]
     public void CreateRenderTree_ForComponentBindAttribute_ProducesValueAndValueChangedAttributes()
@@ -1837,7 +2116,7 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
-    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForElementBindFormat_PreservesRawBindAttributes()
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForElementBindFormat_ReportsUnsupportedDirective()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """<input @bind="PublishedAt" @bind:format="yyyy-MM-dd" />""";
@@ -1860,13 +2139,11 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
             }
             """);
 
-        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
-        var input = renderTree.Children[0] as RazorVueElementNode;
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot));
 
-        Assert.IsNotNull(input);
-        Assert.AreEqual("input", input!.TagName);
-        Assert.IsTrue(input.Attributes.OfType<RazorVueAttributeNode>().Any(static item => item.Name == "@bind"));
-        Assert.IsTrue(input.Attributes.OfType<RazorVueAttributeNode>().Any(static item => item.Name == "@bind:format"));
+        StringAssert.Contains(exception.Issue.Message, "@bind:format");
+        StringAssert.Contains(exception.Issue.Message, "HTML element @bind");
     }
 
     [TestMethod]

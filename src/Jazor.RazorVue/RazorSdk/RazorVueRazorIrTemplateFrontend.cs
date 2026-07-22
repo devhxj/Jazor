@@ -939,13 +939,15 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 attributes.Add(ConvertSplatAttribute(splat));
             var children = ConvertTemplateMethodBody(node.BodyOrEmpty, allowImperativePromotion: false, allowedLocalSymbols, allowedParameterSymbols);
 
-            return new RazorVueElementNode(
+            var origins = CreateOrigins(node.Source);
+            var element = new RazorVueElementNode(
                 node.TagName ?? string.Empty,
                 key,
                 referenceCapture,
                 attributes.ToImmutable(),
                 children,
-                CreateOrigins(node.Source));
+                origins);
+            return (RazorVueElementNode)NormalizeRazorDirectiveMarkupNode(element, origins);
         }
 
         private RazorVueElementReferenceCapture? ResolveElementReferenceCapture(
@@ -1274,13 +1276,16 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 }
 
                 var slotName = ToLowerCamelCase(attributeName);
+                var parameterSymbol = childContent.IsParameterized
+                    ? TryResolveTemplateParameterSymbol(slotFragment, childContent.ParameterName)
+                    : null;
                 slotTemplates.Add(new RazorVueComponentSlotTemplateNode(
                     PublicName: attributeName,
                     SlotName: slotName,
                     ParameterName: childContent.IsParameterized
                         ? childContent.ParameterName
                         : null,
-                    ParameterSymbol: null,
+                    ParameterSymbol: parameterSymbol,
                     Children: slotFragment,
                     Origins: CreateOrigins(childContent.Source ?? node.Source ?? node.StartTagSpan)));
             }
@@ -1296,6 +1301,139 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 RazorVueRenderFragment.Empty,
                 new RazorVueRenderFragment(children.ToImmutable()),
                 CreateOrigins(node.Source is null ? node.StartTagSpan : node.Source));
+        }
+
+        private static IParameterSymbol? TryResolveTemplateParameterSymbol(
+            RazorVueRenderFragment fragment,
+            string? parameterName)
+        {
+            if (string.IsNullOrWhiteSpace(parameterName))
+                return null;
+
+            foreach (var operation in EnumerateRenderFragmentOperations(fragment))
+            {
+                foreach (var current in EnumerateSelfAndDescendants(operation))
+                {
+                    if (Unwrap(current) is IParameterReferenceOperation parameterReference &&
+                        string.Equals(parameterReference.Parameter.Name, parameterName, StringComparison.Ordinal))
+                    {
+                        return parameterReference.Parameter;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private static IEnumerable<IOperation> EnumerateRenderFragmentOperations(RazorVueRenderFragment fragment)
+        {
+            foreach (var child in fragment.Children)
+            {
+                foreach (var operation in EnumerateRenderNodeOperations(child))
+                    yield return operation;
+            }
+        }
+
+        private static IEnumerable<IOperation> EnumerateRenderNodeOperations(RazorVueRenderNode node)
+        {
+            switch (node)
+            {
+                case RazorVueElementNode element:
+                    if (element.Key is not null)
+                        yield return element.Key.Expression;
+                    foreach (var attribute in element.Attributes)
+                    {
+                        foreach (var operation in EnumerateAttributeOperations(attribute))
+                            yield return operation;
+                    }
+                    foreach (var operation in EnumerateRenderFragmentOperations(element.Children))
+                        yield return operation;
+                    break;
+                case RazorVueComponentNode component:
+                    if (component.Key is not null)
+                        yield return component.Key.Expression;
+                    foreach (var attribute in component.Attributes)
+                    {
+                        foreach (var operation in EnumerateAttributeOperations(attribute))
+                            yield return operation;
+                    }
+                    foreach (var slotTemplate in component.SlotTemplates)
+                    {
+                        foreach (var operation in EnumerateRenderFragmentOperations(slotTemplate.Children))
+                            yield return operation;
+                    }
+                    foreach (var assignment in component.ImplicitDefaultSlotAssignments)
+                    {
+                        foreach (var operation in EnumerateRenderFragmentOperations(assignment.Children))
+                            yield return operation;
+                    }
+                    foreach (var operation in EnumerateRenderFragmentOperations(component.AmbientDefaultSlotChildren))
+                        yield return operation;
+                    foreach (var operation in EnumerateRenderFragmentOperations(component.Children))
+                        yield return operation;
+                    break;
+                case RazorVueExpressionNode expression:
+                    yield return expression.Expression;
+                    break;
+                case RazorVueLocalDeclarationNode localDeclaration:
+                    yield return localDeclaration.Initializer;
+                    break;
+                case RazorVueTemplateScopeNode templateScope:
+                    yield return templateScope.Initializer;
+                    foreach (var operation in EnumerateRenderFragmentOperations(templateScope.Children))
+                        yield return operation;
+                    break;
+                case RazorVueSlotOutletNode slotOutlet:
+                    if (slotOutlet.Argument is not null)
+                        yield return slotOutlet.Argument;
+                    break;
+                case RazorVueConditionalNode conditional:
+                    yield return conditional.Condition;
+                    foreach (var operation in EnumerateRenderFragmentOperations(conditional.WhenTrue))
+                        yield return operation;
+                    foreach (var operation in EnumerateRenderFragmentOperations(conditional.WhenFalse))
+                        yield return operation;
+                    break;
+                case RazorVueForEachNode loop:
+                    yield return loop.Source;
+                    foreach (var operation in EnumerateRenderFragmentOperations(loop.Body))
+                        yield return operation;
+                    break;
+                case RazorVueForNode loop:
+                    yield return loop.InitialValue;
+                    yield return loop.LimitValue;
+                    if (loop.StepValue is not null)
+                        yield return loop.StepValue;
+                    foreach (var operation in EnumerateRenderFragmentOperations(loop.Body))
+                        yield return operation;
+                    break;
+                case RazorVueImperativeBlockNode imperative:
+                    foreach (var operation in imperative.Operations)
+                        yield return operation;
+                    break;
+            }
+        }
+
+        private static IEnumerable<IOperation> EnumerateAttributeOperations(RazorVueAttributeEntry attribute)
+        {
+            switch (attribute)
+            {
+                case RazorVueAttributeNode attributeNode:
+                    if (attributeNode.Value is not null)
+                        yield return attributeNode.Value;
+                    foreach (var binding in attributeNode.CapturedBindings)
+                        yield return binding.Initializer;
+                    if (attributeNode.EventModifiers.PreventDefault is not null)
+                        yield return attributeNode.EventModifiers.PreventDefault.Value;
+                    if (attributeNode.EventModifiers.StopPropagation is not null)
+                        yield return attributeNode.EventModifiers.StopPropagation.Value;
+                    break;
+                case RazorVueAttributeSpreadNode spread:
+                    yield return spread.Expression;
+                    foreach (var binding in spread.CapturedBindings)
+                        yield return binding.Initializer;
+                    break;
+            }
         }
 
         private RazorVueExpressionNode ConvertExpression(RazorVueRazorIrNode node)
@@ -1480,6 +1618,8 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
             var attributes = ImmutableArray.CreateBuilder<RazorVueAttributeEntry>();
             RazorVueElementReferenceCapture? referenceCapture = null;
+            RazorVueAttributeNode? elementBindAttribute = null;
+            RazorVueAttributeNode? elementBindEventAttribute = null;
             foreach (var attribute in element.Attributes)
             {
                 if (attribute is not RazorVueAttributeNode attributeNode)
@@ -1494,8 +1634,34 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     continue;
                 }
 
+                if (IsRazorBindDirectiveMarkupAttribute(attributeNode.Name))
+                {
+                    switch (attributeNode.Name)
+                    {
+                        case "@bind":
+                            elementBindAttribute = attributeNode;
+                            break;
+                        case "@bind:event":
+                            elementBindEventAttribute = attributeNode;
+                            break;
+                        default:
+                            throw CreateUnsupportedAttributeException(
+                                null,
+                                $"RazorVue Razor IR frontend does not yet support HTML element @bind modifier '{attributeNode.Name}' in component '{_snapshot.Descriptor.FullName}'.");
+                    }
+
+                    continue;
+                }
+
                 if (!IsRazorEventDirectiveMarkupAttribute(attributeNode.Name))
                 {
+                    if (IsUnknownRazorDirectiveMarkupAttribute(attributeNode.Name))
+                    {
+                        throw CreateUnsupportedAttributeException(
+                            null,
+                            $"RazorVue Razor IR frontend does not support Razor directive attribute '{attributeNode.Name}' in component '{_snapshot.Descriptor.FullName}'. Blazor host/runtime-only directives are outside RazorVue .vue artifact generation; use Vue component composition, Vue/host inject, or host-side form integration instead.");
+                    }
+
                     attributes.Add(attribute);
                     continue;
                 }
@@ -1534,6 +1700,22 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 attributes.Add(attribute);
             }
 
+            if (elementBindAttribute is not null)
+            {
+                AddHtmlElementBindAttributes(
+                    attributes,
+                    element,
+                    elementBindAttribute,
+                    elementBindEventAttribute,
+                    origins);
+            }
+            else if (elementBindEventAttribute is not null)
+            {
+                throw CreateUnsupportedAttributeException(
+                    null,
+                    $"RazorVue Razor IR frontend requires HTML element @bind:event to appear with '@bind' in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
             var children = element.Children.Children
                 .Select(child => NormalizeRazorDirectiveMarkupNode(child, origins))
                 .ToImmutableArray();
@@ -1543,6 +1725,147 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 Attributes = attributes.ToImmutable(),
                 Children = new RazorVueRenderFragment(children)
             };
+        }
+
+        private void AddHtmlElementBindAttributes(
+            ImmutableArray<RazorVueAttributeEntry>.Builder attributes,
+            RazorVueElementNode element,
+            RazorVueAttributeNode bindAttribute,
+            RazorVueAttributeNode? bindEventAttribute,
+            ImmutableArray<RazorVueSourceOrigin> fallbackOrigins)
+        {
+            var bindOrigins = bindAttribute.Origins.IsDefaultOrEmpty ? fallbackOrigins : bindAttribute.Origins;
+            ValidateHtmlElementBindTarget(element, bindAttribute);
+            var valueExpression = ResolveRazorBindDirectiveMarkupExpression(bindAttribute);
+            ValidateHtmlElementBindValueExpression(valueExpression, bindAttribute);
+            var eventHandlerName = ResolveRazorBindDirectiveEventName(bindEventAttribute);
+            var callback = ResolveRazorBindDirectiveMarkupHandler(bindAttribute);
+
+            AddOrMergeHtmlAttribute(
+                attributes,
+                new RazorVueAttributeNode(
+                    "value",
+                    valueExpression,
+                    ImmutableArray<RazorVueCapturedValueBinding>.Empty,
+                    bindOrigins));
+            AddOrMergeHtmlAttribute(
+                attributes,
+                new RazorVueAttributeNode(
+                    eventHandlerName,
+                    callback,
+                    ImmutableArray<RazorVueCapturedValueBinding>.Empty,
+                    bindOrigins));
+        }
+
+        private void ValidateHtmlElementBindTarget(RazorVueElementNode element, RazorVueAttributeNode bindAttribute)
+        {
+            if (!IsValueStyleBindElement(element.TagName))
+            {
+                throw CreateUnsupportedAttributeException(
+                    null,
+                    $"RazorVue Razor IR frontend only supports value-style HTML element @bind on input, textarea, and select in component '{_snapshot.Descriptor.FullName}'. Element '{element.TagName}' is not supported.");
+            }
+
+            if (!string.Equals(element.TagName, "input", StringComparison.OrdinalIgnoreCase))
+                return;
+
+            var inputType = element.Attributes
+                .OfType<RazorVueAttributeNode>()
+                .FirstOrDefault(static attribute => string.Equals(attribute.Name, "type", StringComparison.OrdinalIgnoreCase));
+            if (inputType is null ||
+                !TryGetStaticStringValue(inputType.Value, out var inputTypeName))
+            {
+                return;
+            }
+
+            switch (inputTypeName.Trim().ToLowerInvariant())
+            {
+                case "checkbox":
+                case "radio":
+                case "file":
+                    throw CreateUnsupportedAttributeException(
+                        null,
+                        $"RazorVue Razor IR frontend does not yet support HTML element @bind for input type '{inputTypeName}' in component '{_snapshot.Descriptor.FullName}'.");
+            }
+        }
+
+        private static bool IsValueStyleBindElement(string tagName)
+            => string.Equals(tagName, "input", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(tagName, "textarea", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(tagName, "select", StringComparison.OrdinalIgnoreCase);
+
+        private void ValidateHtmlElementBindValueExpression(IOperation valueExpression, RazorVueAttributeNode bindAttribute)
+        {
+            _ = bindAttribute;
+            var valueType = Unwrap(valueExpression)?.Type;
+            if (valueType?.SpecialType == SpecialType.System_String)
+                return;
+
+            throw CreateUnsupportedAttributeException(
+                null,
+                $"RazorVue Razor IR frontend currently supports HTML element @bind only for string value-style targets in component '{_snapshot.Descriptor.FullName}'.");
+        }
+
+        private IOperation ResolveRazorBindDirectiveMarkupExpression(RazorVueAttributeNode attribute)
+        {
+            var expressionText = ResolveRazorDirectiveExpressionText(attribute, "@bind");
+            if (_resolver.TryResolveComponentExpression(expressionText, out var operation))
+                return operation;
+
+            throw CreateUnsupportedAttributeException(
+                null,
+                $"RazorVue Razor IR frontend could not resolve HTML element @bind expression '{expressionText}' in component '{_snapshot.Descriptor.FullName}'.");
+        }
+
+        private IOperation ResolveRazorBindDirectiveMarkupHandler(RazorVueAttributeNode attribute)
+        {
+            var expressionText = ResolveRazorDirectiveExpressionText(attribute, "@bind");
+            var callbackExpression =
+                "Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, " +
+                "__value => " + expressionText + " = __value, " +
+                expressionText +
+                ")";
+            if (_resolver.TryResolveComponentExpression(callbackExpression, out var operation))
+                return operation;
+
+            throw CreateUnsupportedAttributeException(
+                null,
+                $"RazorVue Razor IR frontend could not resolve HTML element @bind update expression '{expressionText}' in component '{_snapshot.Descriptor.FullName}'.");
+        }
+
+        private string ResolveRazorBindDirectiveEventName(RazorVueAttributeNode? bindEventAttribute)
+        {
+            if (bindEventAttribute is null)
+                return "onchange";
+
+            var eventName = ResolveRazorDirectiveExpressionText(bindEventAttribute, "@bind:event").Trim();
+            if (eventName.StartsWith("@", StringComparison.Ordinal))
+                eventName = eventName.Substring(1);
+            if (IsQuotedStringLiteral(eventName))
+                eventName = UnquoteStringLiteral(eventName);
+
+            if (!eventName.StartsWith("on", StringComparison.Ordinal) ||
+                !RazorVueDomEventName.TryNormalizeBlazorEventAttributeName(eventName, out _))
+            {
+                throw CreateUnsupportedAttributeException(
+                    null,
+                    $"RazorVue Razor IR frontend requires HTML element @bind:event to be a Blazor DOM event name such as 'onchange' or 'oninput' in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
+            return eventName;
+        }
+
+        private string ResolveRazorDirectiveExpressionText(RazorVueAttributeNode attribute, string directiveName)
+        {
+            if (TryGetStaticStringValue(attribute.Value, out var expressionText) &&
+                !string.IsNullOrWhiteSpace(expressionText))
+            {
+                return expressionText.Trim();
+            }
+
+            throw CreateUnsupportedAttributeException(
+                null,
+                $"RazorVue Razor IR frontend requires a static expression value for HTML element {directiveName} in component '{_snapshot.Descriptor.FullName}'.");
         }
 
         private IOperation? ResolveGeneratedEventAttributeValue(string eventHandlerName)
@@ -1580,6 +1903,13 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
         private static bool IsRazorEventDirectiveMarkupAttribute(string attributeName)
             => attributeName.StartsWith("@on", StringComparison.Ordinal);
+
+        private static bool IsRazorBindDirectiveMarkupAttribute(string attributeName)
+            => string.Equals(attributeName, "@bind", StringComparison.Ordinal) ||
+               attributeName.StartsWith("@bind:", StringComparison.Ordinal);
+
+        private static bool IsUnknownRazorDirectiveMarkupAttribute(string attributeName)
+            => attributeName.StartsWith("@", StringComparison.Ordinal);
 
         private static bool IsRazorRefDirectiveMarkupAttribute(string attributeName)
             => string.Equals(attributeName, "@ref", StringComparison.Ordinal);
@@ -4269,6 +4599,54 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             {
                 switch (Unwrap(candidate))
                 {
+                    case ITypeOfOperation typeOf
+                        when IsCurrentComponentTypeParameter(typeOf.TypeOperand, out var typeOfTypeParameter):
+                        ThrowRuntimeSensitiveGenericComponentTypeParameterUsage(
+                            typeOf,
+                            sourceSpan,
+                            typeOfTypeParameter,
+                            "typeof(T)");
+                        break;
+                    case IDefaultValueOperation defaultValue
+                        when IsCurrentComponentTypeParameter(defaultValue.Type, out var defaultTypeParameter):
+                        ThrowRuntimeSensitiveGenericComponentTypeParameterUsage(
+                            defaultValue,
+                            sourceSpan,
+                            defaultTypeParameter,
+                            "default(T)");
+                        break;
+                    case ITypeParameterObjectCreationOperation objectCreation
+                        when IsCurrentComponentTypeParameter(objectCreation.Type, out var objectCreationTypeParameter):
+                        ThrowRuntimeSensitiveGenericComponentTypeParameterUsage(
+                            objectCreation,
+                            sourceSpan,
+                            objectCreationTypeParameter,
+                            "new T()");
+                        break;
+                    case IIsTypeOperation isType
+                        when IsCurrentComponentTypeParameter(isType.TypeOperand, out var isTypeTypeParameter):
+                        ThrowRuntimeSensitiveGenericComponentTypeParameterUsage(
+                            isType,
+                            sourceSpan,
+                            isTypeTypeParameter,
+                            "is T");
+                        break;
+                    case ITypePatternOperation typePattern
+                        when IsCurrentComponentTypeParameter(typePattern.MatchedType, out var typePatternTypeParameter):
+                        ThrowRuntimeSensitiveGenericComponentTypeParameterUsage(
+                            typePattern,
+                            sourceSpan,
+                            typePatternTypeParameter,
+                            "type pattern T");
+                        break;
+                    case IDeclarationPatternOperation declarationPattern
+                        when IsCurrentComponentTypeParameter(declarationPattern.MatchedType, out var declarationPatternTypeParameter):
+                        ThrowRuntimeSensitiveGenericComponentTypeParameterUsage(
+                            declarationPattern,
+                            sourceSpan,
+                            declarationPatternTypeParameter,
+                            "type pattern T");
+                        break;
                     case ITypeOfOperation:
                         throw CreateUnsupportedAttributeException(
                             sourceSpan ?? CreateSourceSpanFromSyntax(candidate.Syntax),
@@ -4326,6 +4704,36 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                             $"RazorVue System.Type member '{fieldReference.Field.Name}' in component '{_snapshot.Descriptor.FullName}' cannot be used as a runtime render value or observed through later writes. System.Type members are only supported as source-stable OpenComponent(Type) carriers.");
                 }
             }
+        }
+
+        private void ThrowRuntimeSensitiveGenericComponentTypeParameterUsage(
+            IOperation operation,
+            RazorVueRazorSourceSpan? sourceSpan,
+            ITypeParameterSymbol typeParameter,
+            string usage)
+            => throw CreateUnsupportedAttributeException(
+                sourceSpan ?? CreateSourceSpanFromSyntax(operation.Syntax),
+                $"RazorVue Razor IR frontend uses runtime generic type-parameter semantics '{operation.Syntax}' for type parameter '{typeParameter.Name}' in component '{_snapshot.Descriptor.FullName}'. Generic component arguments are compile-time annotations for Vue artifact generation; '{usage}' requires CLR runtime generic metadata and is not supported.");
+
+        private bool IsCurrentComponentTypeParameter(
+            ITypeSymbol? type,
+            out ITypeParameterSymbol typeParameter)
+        {
+            typeParameter = default!;
+            if (type is not ITypeParameterSymbol candidate)
+                return false;
+
+            foreach (var parameter in _snapshot.ComponentSymbol.TypeParameters)
+            {
+                if (SymbolEqualityComparer.Default.Equals(candidate, parameter) ||
+                    SymbolEqualityComparer.Default.Equals(candidate.OriginalDefinition, parameter.OriginalDefinition))
+                {
+                    typeParameter = candidate;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void ThrowIfComponentTypeCarrierUsedAsRuntimeValue(
@@ -6112,11 +6520,55 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             var normalizedTypeName = NormalizeTypeName(node.TypeName);
             if (!string.IsNullOrWhiteSpace(normalizedTypeName))
             {
-                var lastDot = normalizedTypeName.LastIndexOf('.');
-                return lastDot >= 0 ? normalizedTypeName.Substring(lastDot + 1) : normalizedTypeName;
+                var lastDot = LastTopLevelDot(normalizedTypeName);
+                var simpleName = lastDot >= 0 ? normalizedTypeName.Substring(lastDot + 1) : normalizedTypeName;
+                return StripTopLevelGenericArguments(simpleName);
             }
 
             return string.IsNullOrWhiteSpace(node.TagName) ? "Component" : node.TagName!;
+        }
+
+        private static int LastTopLevelDot(string value)
+        {
+            var depth = 0;
+            for (var index = value.Length - 1; index >= 0; index--)
+            {
+                switch (value[index])
+                {
+                    case '>':
+                        depth++;
+                        break;
+                    case '<':
+                        if (depth > 0)
+                            depth--;
+                        break;
+                    case '.' when depth == 0:
+                        return index;
+                }
+            }
+
+            return -1;
+        }
+
+        private static string StripTopLevelGenericArguments(string value)
+        {
+            var depth = 0;
+            for (var index = 0; index < value.Length; index++)
+            {
+                switch (value[index])
+                {
+                    case '<' when depth == 0:
+                        return value.Substring(0, index);
+                    case '<':
+                        depth++;
+                        break;
+                    case '>' when depth > 0:
+                        depth--;
+                        break;
+                }
+            }
+
+            return value;
         }
 
         private static string NormalizeTypeName(string? typeName)

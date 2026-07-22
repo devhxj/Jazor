@@ -73,7 +73,7 @@ internal static class RazorVueStaticMarkupParser
                 index++;
                 SkipWhitespace(markup, ref index);
                 var startTagName = ReadName(markup, ref index);
-                ValidateStaticElementName(startTagName);
+                ValidateStaticElementName(startTagName, dependencies);
                 var attributes = ImmutableArray.CreateBuilder<RazorVueAttributeEntry>();
                 var selfClosing = false;
 
@@ -206,16 +206,25 @@ internal static class RazorVueStaticMarkupParser
         "v-html"
     };
 
-    private static void ValidateStaticElementName(string tagName)
+    private static void ValidateStaticElementName(
+        string tagName,
+        Dependencies dependencies)
     {
         ValidateStaticNameSyntax(tagName, "element", IsValidStaticElementName);
 
-        if (UnsupportedRawMarkupElementNames.Contains(tagName))
+        if (UnsupportedRawMarkupElementNames.Contains(tagName) &&
+            !CanAllowRazorDirectiveElement(tagName, dependencies))
         {
             throw new InvalidOperationException(
                 $"RazorVue static markup does not support raw markup execution element '<{tagName}>'.");
         }
     }
+
+    private static bool CanAllowRazorDirectiveElement(
+        string tagName,
+        Dependencies dependencies)
+        => dependencies.AllowRazorDirectiveAttributes &&
+           string.Equals(tagName, "textarea", StringComparison.OrdinalIgnoreCase);
 
     private static void ValidateStaticAttributeName(
         string attributeName,

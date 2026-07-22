@@ -3,14 +3,16 @@
 本文是 RazorVue library-mode 的**支持 / 不支持矩阵**，按领域给出当前支持面、保守降级条件和 fail-fast 边界，并指向佐证的测试名 / 文件。它与以下文档互为引用，不重复记录逐次修复日志：
 
 - `docs/04-补充/razorvue-playground-support-gaps-2026-05-12.md` — 当前缺口状态页（fail-fast / 降级 / 已固化能力的动态边界）。
+- `docs/04-补充/razorvue-blazor-component-directive-support-inventory-2026-06-23.md` — Blazor component 指令 family 视角的支持盘点与完成度统计。
 - `src/Jazor.RazorVue/README.md` — authoring 合同、lowering 规则、各领域支持说明。
 - `docs/03-完成/razorvue/completion-analysis.md` — 完成度与生产就绪评审。
 
 ## 约定
 
 - ✅ 支持：已进入正式支持面，有回归测试佐证。
-- 🟡 保守降级：不能证明 template-safe 时降级为 render-function `.vue`，或按 HMR 边界降级。
-- ❌ fail-fast：显式报 `JAZORVGA0xx` / `JAZORVUE0xx` Error 诊断，不静默擦除。
+- 🟡 受控支持 / 保守降级：只能在已定义子集内支持；不能证明 template-safe 时降级为 render-function `.vue`，或按 HMR 边界降级。
+- ❌ 不支持 / fail-fast：显式报 `JAZORVGA0xx` / `JAZORVUE0xx` Error 诊断，不静默擦除。
+- 非目标：只用于 Blazor component 指令盘点中的 host/runtime-only 语义，不纳入本领域矩阵完成度分母。
 - 测试佐证列给出代表性测试名或测试类；完整覆盖以测试代码为准。
 
 ## 1. Razor 语法 / 模板
@@ -62,6 +64,7 @@
 | 形态 | 状态 | 边界说明 | 测试佐证 |
 |------|------|----------|----------|
 | `@bind`（component parameter + `ValueChanged`） | ✅ | descriptor-aware | `RazorVue_SfcArtifactFactory_LowersRazorGeneratedEventCallbackFactoryWrapper_*`、bind 回归 |
+| HTML element string value-style `@bind` | ✅ | 支持 `input` / `textarea` / `select` string value-style bind，默认 `onchange`，`@bind:event="oninput"` lower 为 `onInput`；checkbox / radio / file、非 string target、`@bind:format`、`@bind:get` / `@bind:set` / `@bind:after`、孤立 `@bind:event` fail-fast | `CreateRenderTree_ForElementBind_LowersToValueAndChangeHandler`、`RazorVuePipeline_WithRazorIrTemplateFrontend_ForTextareaElementBind_LowersToValueAndChangeHandler`、`RazorVuePipeline_WithRazorIrTemplateFrontend_ForSelectElementBind_LowersToValueAndChangeHandler`、`RazorVuePipeline_WithRazorIrTemplateFrontend_ForCheckboxElementBind_ReportsUnsupportedDirective` |
 | `@key` | ✅ | 常量 / 表达式 | `CreateRenderTree_ForAtKeyAttributes_*` |
 | DOM event `@onclick` 等（static / dynamic / merged modifier） | ✅ | event modifier metadata 装饰已确认的 EventCallback / delegate-like DOM event | `LowersElementDomEventWithModifiers*`、`LowersElementDomEventWithDynamicModifier*`、`LowersMergedElementDomEventWithDynamicModifier*` |
 | `@onclick:preventDefault` / `:stopPropagation`（常量 `true`） | ✅ | emit modifier gate | `ForElementDomEventWithModifiers_*` |
@@ -125,8 +128,13 @@
 | `ComponentBase, IVueComponent` + `[ECMAScriptModule]` 入口 | ✅ | authoring 合同：per-file `using static ECMAScript.Vue3;` | sample `TodoApp.razor.cs`、SDK 集成 `CreateRazorVueSampleProject` |
 | `IVueLibraryComponent` 库组件（Vuetify / ElementPlus / TDesign / Vben） | ✅ | descriptor-aware | `VuetifyAuthoringSurfaceTests`、`ElementPlusAuthoringSurfaceTests`、`TDesignAuthoringSurfaceTests`、`ECMAScript.Vuetify.ComponentCoverageMatrix.md` |
 | component parameter descriptor / nested component metadata / import | ✅ | — | `ImportsNestedUserAndLibraryComponents_IntoScriptSetup` |
+| `@typeparam` / generic component authoring | 🟡 | descriptor / component resolution 使用开放泛型形状；generic arguments 默认是 compile-time annotation。`RenderFragment<T>` slot descriptor 和 typed slot context 保留类型形状并由 Roslyn 绑定闭合成员访问；`typeof(T)` / `default(T)` / `new T()` / `is T` 等 runtime generic type-parameter semantics fail-fast。 | `RazorVueRazorIrGenericComponentDirectiveTests` |
+| `@attribute` metadata directive | 🟡 | 只解释 route、module/import、parameter、library descriptor、diagnostic 相关 attribute；其他合法 C# attribute 透明编译，不产生 `.vue` artifact 行为。 | `RazorVueRazorIrMetadataDirectiveTests`、`RazorVueDescriptorExtractionTests` |
+| `@inherits` metadata directive | 🟡 | 源码可分析 base parameter / setup member / lifecycle 子集参与 descriptor、render 和 lifecycle lowering；外部无源码 override 或超出受控 lifecycle 合同的形态保持 FullReloadRequired / fail-fast。 | `RazorVueRazorIrMetadataDirectiveTests`、lifecycle/base boundary 回归 |
+| `@implements` metadata directive | 🟡 | 仅作为 Roslyn compile-time contract；不生成 Vue runtime interface shim，不把 interface 名写入 artifact。 | `RazorVueRazorIrMetadataDirectiveTests` |
 | `[EditorRequired]` 参数 | ✅ | 识别为 `Required=true` prop | `RazorVue_Snapshot_EditorRequiredParameter_IsProjectedAsRequiredProp` |
 | `IVueContainerComponent` inject | ✅ | container inject lowering | `VueContainerComponentInjectTests` |
+| Blazor host/runtime-only directives：`@inject` / `@layout` / `@rendermode` / `@formname` | 非目标 | `@inject` / `@layout` / `@rendermode` 不产生 `.vue` artifact 语义；raw host directive attribute 形态 fail-fast 并提示 Vue composition、Vue/host inject 或 host-side form integration。Razor MVC / Razor Pages 不属于 RazorVue 目标域。 | `RazorVueRazorDirectiveSupportMatrixTests` |
 | 直接 `ComponentBase` 入口 / 缺 `[ECMAScriptModule]` | ❌ | `JAZORVUE002` / `JAZORVGA017` | analyzer 诊断矩阵 |
 | `StateHasChanged()` | 🟡 | `JAZORVUE004` Warning（不 fail）；Vue 是响应式驱动，调用被忽略为 no-op | `RazorVue_Misuse_StateHasChanged_ReportsJAZORVUE004_AsWarning` |
 | 无效 bind / 未知 parameter / 未知 slot | ❌ | `JAZORVUE008/007/009` | analyzer 诊断矩阵 |
