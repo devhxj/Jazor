@@ -270,7 +270,8 @@ public sealed class ClrRuntimeCatalogReaderTests
         StringAssert.Contains(bigIntegerModule.Content, "if (value < 0n || baseValue === 1)");
         StringAssert.Contains(bigIntegerModule.Content, "if (baseValue === Number.POSITIVE_INFINITY)");
         StringAssert.Contains(bigIntegerModule.Content, "return Math.log(0) / Math.log(baseValue);");
-        StringAssert.Contains(bigIntegerModule.Content, "return BigInt(64);");
+        StringAssert.Contains(bigIntegerModule.Content, "return BigInt(32);");
+        Assert.IsFalse(bigIntegerModule.Content.Contains("return BigInt(64);", StringComparison.Ordinal), bigIntegerModule.Content);
         StringAssert.Contains(bigIntegerModule.Content, "let modulusMagnitude = modulus < 0n ? -modulus : modulus;");
         StringAssert.Contains(bigIntegerModule.Content, "let negativeResult = value < 0n && (exponent & 1n) === 1n;");
         Assert.IsFalse(bigIntegerModule.Content.Contains("throw new RangeError(\"Logarithm is undefined for non-positive numbers\")", StringComparison.Ordinal), bigIntegerModule.Content);
