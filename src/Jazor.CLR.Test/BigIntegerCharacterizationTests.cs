@@ -22,13 +22,16 @@ public sealed class BigIntegerCharacterizationTests
     [TestMethod]
     public void BigInteger_LeadingZeroCount_MatchesNetRuntime()
     {
-        Assert.AreEqual(new BigInteger(64), BigInteger.LeadingZeroCount(BigInteger.Zero));
-        Assert.AreEqual(new BigInteger(63), BigInteger.LeadingZeroCount(BigInteger.One));
-        Assert.AreEqual(new BigInteger(62), BigInteger.LeadingZeroCount(new BigInteger(2)));
-        Assert.AreEqual(new BigInteger(56), BigInteger.LeadingZeroCount(new BigInteger(255)));
-        Assert.AreEqual(new BigInteger(55), BigInteger.LeadingZeroCount(new BigInteger(256)));
+        Assert.AreEqual(new BigInteger(32), BigInteger.LeadingZeroCount(BigInteger.Zero));
+        Assert.AreEqual(new BigInteger(31), BigInteger.LeadingZeroCount(BigInteger.One));
+        Assert.AreEqual(new BigInteger(30), BigInteger.LeadingZeroCount(new BigInteger(2)));
+        Assert.AreEqual(new BigInteger(24), BigInteger.LeadingZeroCount(new BigInteger(255)));
+        Assert.AreEqual(new BigInteger(23), BigInteger.LeadingZeroCount(new BigInteger(256)));
         Assert.AreEqual(BigInteger.Zero, BigInteger.LeadingZeroCount(BigInteger.MinusOne));
+        Assert.AreEqual(BigInteger.Zero, BigInteger.LeadingZeroCount(BigInteger.One << 31));
         Assert.AreEqual(new BigInteger(31), BigInteger.LeadingZeroCount(BigInteger.One << 32));
+        Assert.AreEqual(BigInteger.Zero, BigInteger.LeadingZeroCount(BigInteger.One << 63));
+        Assert.AreEqual(new BigInteger(31), BigInteger.LeadingZeroCount(BigInteger.One << 64));
     }
 
     [TestMethod]

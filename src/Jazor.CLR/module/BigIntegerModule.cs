@@ -1195,15 +1195,15 @@ public static class BigIntegerModule
 	public static BigInt _276680abacb93277(BigInt value)
 	{
 		if (value == BigInt.Zero)
-			return BigIntFn(64);
+			return BigIntFn(32);
 		if (value < BigInt.Zero)
 			return BigInt.Zero;
 
-		var remainder = GetBitLengthCore(value) % BigIntFn(64);
+		var remainder = GetBitLengthCore(value) % BigIntFn(32);
 		if (remainder == BigInt.Zero)
 			return BigInt.Zero;
 
-		return BigIntFn(64) - remainder;
+		return BigIntFn(32) - remainder;
 	}
 
 	///<summary>Computes the number of bits that are set in a value.</summary>
