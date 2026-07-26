@@ -51,7 +51,7 @@ if (options.MeasureRuntime)
 
 if (options.MeasureGeneratedArtifacts)
 {
-    var report = await GeneratedArtifactBenchmarkRunner.RunAsync(repoRoot, outputDirectory);
+    var report = await GeneratedArtifactBenchmarkRunner.RunAsync(repoRoot, outputDirectory, options);
     var generatedJsonPath = Path.Combine(outputDirectory, "razorvue-g2-generated-artifacts-report.json");
     var generatedMarkdownPath = Path.Combine(outputDirectory, "razorvue-g2-generated-artifacts-report.md");
     File.WriteAllText(generatedJsonPath, GeneratedArtifactBenchmarkReportJson.Write(report));
@@ -903,6 +903,8 @@ internal sealed record GeneratedArtifactBenchmarkReport(
     string OutputRootRelativePath,
     long PackageElapsedMilliseconds,
     long CleanBuildElapsedMilliseconds,
+    IReadOnlyList<long> IncrementalBuildElapsedMilliseconds,
+    long IncrementalBuildP95Milliseconds,
     IReadOnlyList<GeneratedArtifactMeasurement> Artifacts,
     IReadOnlyList<string> Notes)
 {
@@ -920,6 +922,8 @@ internal sealed record GeneratedArtifactBenchmarkReport(
         writer.WriteLine("- Artifact root: `" + OutputRootRelativePath + "`");
         writer.WriteLine("- Package elapsed: " + PackageElapsedMilliseconds.ToString(CultureInfo.InvariantCulture) + " ms");
         writer.WriteLine("- Clean build elapsed: " + CleanBuildElapsedMilliseconds.ToString(CultureInfo.InvariantCulture) + " ms");
+        writer.WriteLine("- Incremental build samples: " + string.Join(", ", IncrementalBuildElapsedMilliseconds.Select(static value => value.ToString(CultureInfo.InvariantCulture))) + " ms");
+        writer.WriteLine("- Incremental build p95: " + IncrementalBuildP95Milliseconds.ToString(CultureInfo.InvariantCulture) + " ms");
         writer.WriteLine();
         writer.WriteLine("## Fixture modules");
         writer.WriteLine();
@@ -1034,6 +1038,13 @@ internal static class GeneratedArtifactBenchmarkReportJson
             writer.WriteString("outputRootRelativePath", report.OutputRootRelativePath);
             writer.WriteNumber("packageElapsedMilliseconds", report.PackageElapsedMilliseconds);
             writer.WriteNumber("cleanBuildElapsedMilliseconds", report.CleanBuildElapsedMilliseconds);
+            writer.WritePropertyName("incrementalBuildElapsedMilliseconds");
+            writer.WriteStartArray();
+            foreach (var elapsed in report.IncrementalBuildElapsedMilliseconds)
+                writer.WriteNumberValue(elapsed);
+
+            writer.WriteEndArray();
+            writer.WriteNumber("incrementalBuildP95Milliseconds", report.IncrementalBuildP95Milliseconds);
 
             writer.WritePropertyName("artifacts");
             writer.WriteStartArray();
@@ -1093,7 +1104,8 @@ internal static class GeneratedArtifactBenchmarkRunner
 
     public static async Task<GeneratedArtifactBenchmarkReport> RunAsync(
         string repoRoot,
-        string outputDirectory)
+        string outputDirectory,
+        BenchmarkArguments options)
     {
         var workspaceRoot = Path.Combine(
             outputDirectory,
@@ -1161,6 +1173,31 @@ internal static class GeneratedArtifactBenchmarkRunner
         if (build.ExitCode != 0)
             throw new InvalidOperationException("Failed to build external Razor SG three-fixture consumer for generated artifact benchmark." + Environment.NewLine + build);
 
+        var incrementalBuildElapsedMilliseconds = new List<long>(options.Samples);
+        for (var sample = 0; sample < options.Samples; sample++)
+        {
+            var incrementalStopwatch = Stopwatch.StartNew();
+            var incrementalBuild = await RunDotNetAsync(
+                repoRoot,
+                [
+                    "build",
+                    projectPath,
+                    "/m:1",
+                    "/p:BuildInParallel=false",
+                    $"-p:RestoreSources={packageOutputDirectory}",
+                    "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                    $"-p:RestorePackagesPath={restorePackagesPath}",
+                    $"-p:JazorPackageVersion={packageVersion}",
+                    "/nr:false",
+                    "/p:UseSharedCompilation=false"
+                ]);
+            incrementalStopwatch.Stop();
+            if (incrementalBuild.ExitCode != 0)
+                throw new InvalidOperationException("Failed incremental build sample " + sample.ToString(CultureInfo.InvariantCulture) + " for generated artifact benchmark." + Environment.NewLine + incrementalBuild);
+
+            incrementalBuildElapsedMilliseconds.Add(incrementalStopwatch.ElapsedMilliseconds);
+        }
+
         var outputRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
         var artifacts = ReadArtifactMeasurements(outputRoot);
         AssertRequiredArtifacts(artifacts, FixtureDefinitions);
@@ -1177,6 +1214,8 @@ internal static class GeneratedArtifactBenchmarkRunner
             OutputRootRelativePath: ScriptHelpers.NormalizeRelativePath(repoRoot, outputRoot),
             PackageElapsedMilliseconds: packageStopwatch.ElapsedMilliseconds,
             CleanBuildElapsedMilliseconds: buildStopwatch.ElapsedMilliseconds,
+            IncrementalBuildElapsedMilliseconds: incrementalBuildElapsedMilliseconds,
+            IncrementalBuildP95Milliseconds: CalculateP95(incrementalBuildElapsedMilliseconds),
             Artifacts: artifacts,
             Notes:
             [
@@ -1184,8 +1223,19 @@ internal static class GeneratedArtifactBenchmarkRunner
                 "It records generated artifact size, gzip size, and SHA256 for the active official Razor SG -> IOperation -> Jazor.Compiler -> Vue render-function .mjs path.",
                 "Each fixture includes a same-machine handwritten Vue h() .mjs baseline (shared Vue/runtime dependencies excluded) and generated/handwritten gzip ratio.",
                 "Runtime and CLR module artifacts are reported separately from per-fixture component modules so later G2 threshold comparisons can isolate shared dependencies.",
-                "Partial G2 evidence only: this does not cover browser DOM patching, retained heap snapshots, compiler cold/incremental p95 timing, or fixed retired-line worktree baseline."
+                "Clean build elapsed is the cold official Razor SG consumer build after package creation; incremental p95 is computed from no-op builds of the same consumer.",
+                "Partial G2 evidence only: this does not cover browser DOM patching, retained heap snapshots, or fixed retired-line worktree baseline."
             ]);
+    }
+
+    private static long CalculateP95(IReadOnlyList<long> values)
+    {
+        if (values.Count == 0)
+            return 0;
+
+        var ordered = values.OrderBy(static value => value).ToArray();
+        var index = (int)Math.Ceiling(ordered.Length * 0.95) - 1;
+        return ordered[Math.Clamp(index, 0, ordered.Length - 1)];
     }
 
     private static async Task<ProcessResult> RunDotNetAsync(
