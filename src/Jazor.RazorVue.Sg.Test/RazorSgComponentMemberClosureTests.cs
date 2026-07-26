@@ -244,7 +244,7 @@ public sealed class RazorSgComponentMemberClosureTests
         StringAssert.Contains(artifact.SourceMapContent, "\"sources\": [", StringComparison.Ordinal);
         StringAssert.Contains(script, "import { defineComponent, h, reactive } from \"vue\";", StringComparison.Ordinal);
         StringAssert.Contains(script, "import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal);
-        StringAssert.Contains(script, "function createCounterSetupScope(props, stateHasChanged) {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "function createCounterSetupScope(props) {", StringComparison.Ordinal);
         StringAssert.Contains(script, "const state = reactive({", StringComparison.Ordinal);
         StringAssert.Contains(script, "count: seed()", StringComparison.Ordinal);
         StringAssert.Contains(script, "function buildRenderTree(builder)", StringComparison.Ordinal);
@@ -253,20 +253,16 @@ public sealed class RazorSgComponentMemberClosureTests
         StringAssert.Contains(script, "builder.addContent(state.count);", StringComparison.Ordinal);
         StringAssert.Contains(script, "props: [", StringComparison.Ordinal);
         StringAssert.Contains(script, "\"title\"", StringComparison.Ordinal);
-        StringAssert.Contains(script, "let invalidate = null;", StringComparison.Ordinal);
-        StringAssert.Contains(script, "let pendingInvalidations = 0;", StringComparison.Ordinal);
-        StringAssert.Contains(script, "const stateHasChanged = () => {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "if (invalidate === null) {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "pendingInvalidations++;", StringComparison.Ordinal);
-        StringAssert.Contains(script, "invalidate.tick++;", StringComparison.Ordinal);
-        StringAssert.Contains(script, "const scope = createCounterSetupScope(props, stateHasChanged);", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("let invalidate = null;", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("let pendingInvalidations = 0;", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("const stateHasChanged = () => {", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("if (invalidate === null) {", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("pendingInvalidations++;", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("invalidate.tick++;", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "const scope = createCounterSetupScope(props);", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("const invokeAsync = ", StringComparison.Ordinal), script);
-        StringAssert.Contains(script, "invalidate = reactive({ tick: pendingInvalidations });", StringComparison.Ordinal);
-        Assert.IsTrue(
-            script.IndexOf("const state = reactive({", StringComparison.Ordinal) <
-            script.IndexOf("invalidate = reactive({ tick: pendingInvalidations });", StringComparison.Ordinal),
-            script);
-        StringAssert.Contains(script, "invalidate.tick;", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("invalidate = reactive({ tick: pendingInvalidations });", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("invalidate.tick;", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "const builder = createRenderContext(h);", StringComparison.Ordinal);
         StringAssert.Contains(script, "scope.buildRenderTree(builder);", StringComparison.Ordinal);
         StringAssert.Contains(script, "return builder.finish();", StringComparison.Ordinal);
@@ -1296,11 +1292,10 @@ public sealed class RazorSgComponentMemberClosureTests
                 test("state initializer runs once per setup and handler identity is stable", () => {
                     const render = component.setup({ title: "Count: " }, { slots: {} });
 
-                    // One reactive(state) + one reactive(invalidate) per setup.
+                    // One reactive(state) per setup.
                     console.error("DBG reactiveCalls:", JSON.stringify(reactiveCalls));
-                    assert.equal(reactiveCalls.length, 2);
+                    assert.equal(reactiveCalls.length, 1);
                     assert.ok("count" in reactiveCalls[0]);
-                    assert.deepEqual(reactiveCalls[1], { tick: 0 });
                     assert.deepEqual(component.props, ["title"]);
 
                     const first = render();
@@ -1317,11 +1312,11 @@ public sealed class RazorSgComponentMemberClosureTests
                     const third = render();
                     assert.equal(third.props.onClick, handler);
                     assert.deepEqual(third.children, ["Count: ", 2]);
-                    assert.equal(reactiveCalls.length, 2);
+                    assert.equal(reactiveCalls.length, 1);
 
                     const otherRender = component.setup({ title: "Other: " }, { slots: {} });
                     const other = otherRender();
-                    assert.equal(reactiveCalls.length, 4);
+                    assert.equal(reactiveCalls.length, 2);
                     assert.notEqual(other.props.onClick, handler);
                     assert.deepEqual(other.children, ["Other: ", 1]);
                 });

@@ -100,6 +100,12 @@ internal static class RazorSgVueComponentModuleBuilder
         var usesMounted = hasOnAfterRender || hasOnAfterRenderAsync;
         var usesUpdated = hasOnAfterRender || hasOnAfterRenderAsync;
         var usesUnmounted = hasDispose || hasDisposeAsync;
+        var usesState = parts.StateSlots.Length > 0;
+        var usesStateHasChanged = hasOnInitializedAsync ||
+                                  hasOnParametersSetAsync ||
+                                  parts.SetupBodyLines.Any(static line =>
+                                      line.Text.Contains("stateHasChanged(", StringComparison.Ordinal));
+        var usesReactive = usesState || usesStateHasChanged;
         var builder = new StringBuilder();
         var lineMappings = ImmutableArray.CreateBuilder<CompiledLineMapping>();
         var line = 0;
@@ -110,7 +116,7 @@ internal static class RazorSgVueComponentModuleBuilder
             line++;
         }
 
-        AppendLine(BuildVueImportLine(usesMounted, usesUnmounted, usesUpdated, usesWatch));
+        AppendLine(BuildVueImportLine(usesMounted, usesUnmounted, usesUpdated, usesReactive, usesWatch));
         AppendLine("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";");
         foreach (var importLine in parts.ImportLines)
         {
@@ -125,10 +131,9 @@ internal static class RazorSgVueComponentModuleBuilder
         }
 
         AppendLine();
-        AppendLine(usesInvokeAsync
-            ? "function " + setupFactoryName + "(props, stateHasChanged, invokeAsync) {"
-            : "function " + setupFactoryName + "(props, stateHasChanged) {");
-        AppendStateDeclaration(builder, parts.StateSlots, lineMappings, ref line);
+        AppendLine("function " + setupFactoryName + "(" + BuildSetupFactoryParameterList(usesStateHasChanged, usesInvokeAsync) + ") {");
+        if (usesState)
+            AppendStateDeclaration(builder, parts.StateSlots, lineMappings, ref line);
         if (parts.SetupBodyLines.Length > 0)
         {
             AppendLine();
@@ -151,20 +156,19 @@ internal static class RazorSgVueComponentModuleBuilder
         AppendEmitsDeclaration(builder, closure, ref line);
         AppendLine("  setup(props, { slots }) {");
         AppendSlotParameterBridges(builder, closure, ref line);
-        // Minimal lifecycle/invalidation v1:
-        // - state initialization belongs to the setup factory and must run before
-        //   the render invalidation slot is materialized
-        // - tick is a reactive dependency read by every render
-        // - StateHasChanged lowers to stateHasChanged() which bumps tick
-        AppendLine("    let invalidate = null;");
-        AppendLine("    let pendingInvalidations = 0;");
-        AppendLine("    const stateHasChanged = () => {");
-        AppendLine("      if (invalidate === null) {");
-        AppendLine("        pendingInvalidations++;");
-        AppendLine("        return;");
-        AppendLine("      }");
-        AppendLine("      invalidate.tick++;");
-        AppendLine("    };");
+        if (usesStateHasChanged)
+        {
+            AppendLine("    let invalidate = null;");
+            AppendLine("    let pendingInvalidations = 0;");
+            AppendLine("    const stateHasChanged = () => {");
+            AppendLine("      if (invalidate === null) {");
+            AppendLine("        pendingInvalidations++;");
+            AppendLine("        return;");
+            AppendLine("      }");
+            AppendLine("      invalidate.tick++;");
+            AppendLine("    };");
+        }
+
         if (usesInvokeAsync)
         {
             AppendLine("    const invokeAsync = (workItem) => {");
@@ -176,10 +180,9 @@ internal static class RazorSgVueComponentModuleBuilder
             AppendLine("    };");
         }
 
-        AppendLine(usesInvokeAsync
-            ? "    const scope = " + setupFactoryName + "(props, stateHasChanged, invokeAsync);"
-            : "    const scope = " + setupFactoryName + "(props, stateHasChanged);");
-        AppendLine("    invalidate = reactive({ tick: pendingInvalidations });");
+        AppendLine("    const scope = " + setupFactoryName + "(" + BuildSetupFactoryArgumentList(usesStateHasChanged, usesInvokeAsync) + ");");
+        if (usesStateHasChanged)
+            AppendLine("    invalidate = reactive({ tick: pendingInvalidations });");
         if (hasOnInitialized)
         {
             AppendLine("    scope.onInitialized();");
@@ -283,7 +286,8 @@ internal static class RazorSgVueComponentModuleBuilder
 
         AppendLine();
         AppendLine("    return () => {");
-        AppendLine("      invalidate.tick;");
+        if (usesStateHasChanged)
+            AppendLine("      invalidate.tick;");
         if (hasShouldRender)
         {
             AppendLine("      if (hasRendered && !scope.shouldRender()) {");
@@ -355,6 +359,7 @@ internal static class RazorSgVueComponentModuleBuilder
         bool usesMounted,
         bool usesUnmounted,
         bool usesUpdated,
+        bool usesReactive,
         bool usesWatch)
     {
         var imports = new List<string>
@@ -370,11 +375,38 @@ internal static class RazorSgVueComponentModuleBuilder
         if (usesUpdated)
             imports.Add("onUpdated");
 
-        imports.Add("reactive");
+        if (usesReactive)
+            imports.Add("reactive");
         if (usesWatch)
             imports.Add("watch");
 
         return "import { " + string.Join(", ", imports) + " } from \"vue\";";
+    }
+
+    private static string BuildSetupFactoryParameterList(
+        bool usesStateHasChanged,
+        bool usesInvokeAsync)
+    {
+        var parameters = new List<string> { "props" };
+        if (usesStateHasChanged)
+            parameters.Add("stateHasChanged");
+        if (usesInvokeAsync)
+            parameters.Add("invokeAsync");
+
+        return string.Join(", ", parameters);
+    }
+
+    private static string BuildSetupFactoryArgumentList(
+        bool usesStateHasChanged,
+        bool usesInvokeAsync)
+    {
+        var arguments = new List<string> { "props" };
+        if (usesStateHasChanged)
+            arguments.Add("stateHasChanged");
+        if (usesInvokeAsync)
+            arguments.Add("invokeAsync");
+
+        return string.Join(", ", arguments);
     }
 
     private static void AppendIndentedLines(
