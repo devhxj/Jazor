@@ -97,7 +97,10 @@ internal static class RazorSgVueComponentModuleBuilder
         var hasDispose = returnedMembers.Contains("dispose", StringComparer.Ordinal);
         var hasDisposeAsync = returnedMembers.Contains("disposeAsync", StringComparer.Ordinal);
         var usesSlots = HasSlotParameterBridges(closure);
+        var usesFactoryProps = parts.SetupBodyLines.Any(static line =>
+            line.Text.Contains("props.", StringComparison.Ordinal));
         var usesWatch = hasOnParametersSet || hasOnParametersSetAsync;
+        var usesSetupProps = usesFactoryProps || usesSlots || usesWatch;
         var usesMounted = hasOnAfterRender || hasOnAfterRenderAsync;
         var usesUpdated = hasOnAfterRender || hasOnAfterRenderAsync;
         var usesUnmounted = hasDispose || hasDisposeAsync;
@@ -132,7 +135,7 @@ internal static class RazorSgVueComponentModuleBuilder
         }
 
         AppendLine();
-        AppendLine("function " + setupFactoryName + "(" + BuildSetupFactoryParameterList(usesStateHasChanged, usesInvokeAsync) + ") {");
+        AppendLine("function " + setupFactoryName + "(" + BuildSetupFactoryParameterList(usesFactoryProps, usesStateHasChanged, usesInvokeAsync) + ") {");
         if (usesState)
             AppendStateDeclaration(builder, parts.StateSlots, lineMappings, ref line);
         if (parts.SetupBodyLines.Length > 0)
@@ -157,7 +160,9 @@ internal static class RazorSgVueComponentModuleBuilder
         AppendEmitsDeclaration(builder, closure, ref line);
         AppendLine(usesSlots
             ? "  setup(props, { slots }) {"
-            : "  setup(props) {");
+            : usesSetupProps
+                ? "  setup(props) {"
+                : "  setup() {");
         AppendSlotParameterBridges(builder, closure, ref line);
         if (usesStateHasChanged)
         {
@@ -183,7 +188,7 @@ internal static class RazorSgVueComponentModuleBuilder
             AppendLine("    };");
         }
 
-        AppendLine("    const scope = " + setupFactoryName + "(" + BuildSetupFactoryArgumentList(usesStateHasChanged, usesInvokeAsync) + ");");
+        AppendLine("    const scope = " + setupFactoryName + "(" + BuildSetupFactoryArgumentList(usesFactoryProps, usesStateHasChanged, usesInvokeAsync) + ");");
         if (usesStateHasChanged)
             AppendLine("    invalidate = reactive({ tick: pendingInvalidations });");
         if (hasOnInitialized)
@@ -387,10 +392,13 @@ internal static class RazorSgVueComponentModuleBuilder
     }
 
     private static string BuildSetupFactoryParameterList(
+        bool usesProps,
         bool usesStateHasChanged,
         bool usesInvokeAsync)
     {
-        var parameters = new List<string> { "props" };
+        var parameters = new List<string>();
+        if (usesProps)
+            parameters.Add("props");
         if (usesStateHasChanged)
             parameters.Add("stateHasChanged");
         if (usesInvokeAsync)
@@ -400,10 +408,13 @@ internal static class RazorSgVueComponentModuleBuilder
     }
 
     private static string BuildSetupFactoryArgumentList(
+        bool usesProps,
         bool usesStateHasChanged,
         bool usesInvokeAsync)
     {
-        var arguments = new List<string> { "props" };
+        var arguments = new List<string>();
+        if (usesProps)
+            arguments.Add("props");
         if (usesStateHasChanged)
             arguments.Add("stateHasChanged");
         if (usesInvokeAsync)

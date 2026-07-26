@@ -280,6 +280,46 @@ public sealed class RazorSgComponentMemberClosureTests
     }
 
     [TestMethod]
+    public async Task BuildVueComponentModule_OmitsPropsWhenComponentDoesNotUseProps()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/plain-text")]
+                public partial class PlainText : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, "Hello");
+                    }
+                }
+            }
+            """);
+        var closure = BuildClosure(fixture);
+
+        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            fixture.Component,
+            closure);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+
+        StringAssert.Contains(script, "import { defineComponent, h } from \"vue\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, "function createPlainTextSetupScope() {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "setup() {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "const scope = createPlainTextSetupScope();", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("setup(props", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("props.", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("{ slots }", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("reactive", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
     public async Task BuildVueComponentModule_EmitsOnParametersSetWatchHook()
     {
         var fixture = CreateManualGeneratedFixture(
@@ -562,11 +602,12 @@ public sealed class RazorSgComponentMemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        StringAssert.Contains(script, "function createCounterSetupScope(props, stateHasChanged, invokeAsync) {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "function createCounterSetupScope(stateHasChanged, invokeAsync) {", StringComparison.Ordinal);
         StringAssert.Contains(script, "const invokeAsync = (workItem) => {", StringComparison.Ordinal);
         StringAssert.Contains(script, "return Promise.resolve(workItem());", StringComparison.Ordinal);
         StringAssert.Contains(script, "return Promise.reject(error);", StringComparison.Ordinal);
-        StringAssert.Contains(script, "const scope = createCounterSetupScope(props, stateHasChanged, invokeAsync);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "setup() {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "const scope = createCounterSetupScope(stateHasChanged, invokeAsync);", StringComparison.Ordinal);
         StringAssert.Contains(script, "invokeAsync(increment);", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("InvokeAsync", StringComparison.Ordinal), script);
 
