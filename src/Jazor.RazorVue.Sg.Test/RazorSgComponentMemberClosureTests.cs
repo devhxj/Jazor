@@ -242,7 +242,7 @@ public sealed class RazorSgComponentMemberClosureTests
         Assert.IsFalse(artifact.SourceMapContent.Contains("\r", StringComparison.Ordinal), artifact.SourceMapContent);
         StringAssert.Contains(artifact.SourceMapContent, "\"file\": \"components/counter.mjs\"", StringComparison.Ordinal);
         StringAssert.Contains(artifact.SourceMapContent, "\"sources\": [", StringComparison.Ordinal);
-        StringAssert.Contains(script, "import { defineComponent, h, onMounted, onUnmounted, onUpdated, reactive, watch } from \"vue\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, "import { defineComponent, h, reactive } from \"vue\";", StringComparison.Ordinal);
         StringAssert.Contains(script, "import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal);
         StringAssert.Contains(script, "function createCounterSetupScope(props, stateHasChanged) {", StringComparison.Ordinal);
         StringAssert.Contains(script, "const state = reactive({", StringComparison.Ordinal);
@@ -266,25 +266,16 @@ public sealed class RazorSgComponentMemberClosureTests
             script.IndexOf("const state = reactive({", StringComparison.Ordinal) <
             script.IndexOf("invalidate = reactive({ tick: pendingInvalidations });", StringComparison.Ordinal),
             script);
-        StringAssert.Contains(script, "if (typeof scope.onParametersSet === \"function\") {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "scope.onParametersSet();", StringComparison.Ordinal);
-        StringAssert.Contains(script, "watch(", StringComparison.Ordinal);
-        StringAssert.Contains(script, "if (typeof scope.onAfterRender === \"function\") {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "onMounted(() => {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "scope.onAfterRender(true);", StringComparison.Ordinal);
-        StringAssert.Contains(script, "onUpdated(() => {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "scope.onAfterRender(false);", StringComparison.Ordinal);
-        StringAssert.Contains(script, "let hasRendered = false;", StringComparison.Ordinal);
-        StringAssert.Contains(script, "let cachedVNode = null;", StringComparison.Ordinal);
         StringAssert.Contains(script, "invalidate.tick;", StringComparison.Ordinal);
-        StringAssert.Contains(script, "if (hasRendered && typeof scope.shouldRender === \"function\" && !scope.shouldRender()) {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "return cachedVNode;", StringComparison.Ordinal);
-        StringAssert.Contains(script, "hasRendered = true;", StringComparison.Ordinal);
         StringAssert.Contains(script, "const builder = createRenderContext(h);", StringComparison.Ordinal);
         StringAssert.Contains(script, "scope.buildRenderTree(builder);", StringComparison.Ordinal);
-        StringAssert.Contains(script, "cachedVNode = builder.finish();", StringComparison.Ordinal);
-        StringAssert.Contains(script, "return cachedVNode;", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return builder.finish();", StringComparison.Ordinal);
         StringAssert.Contains(script, "export default defineComponent({", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("watch(", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("onMounted(", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("onUpdated(", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("onUnmounted(", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("cachedVNode", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("let count", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("this.", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains(".bind(", StringComparison.Ordinal), script);
@@ -333,7 +324,7 @@ public sealed class RazorSgComponentMemberClosureTests
             closure);
 
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
-        StringAssert.Contains(script, "if (typeof scope.onParametersSet === \"function\") {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "import { defineComponent, h, reactive, watch } from \"vue\";", StringComparison.Ordinal);
         StringAssert.Contains(script, "scope.onParametersSet();", StringComparison.Ordinal);
         StringAssert.Contains(script, "watch(", StringComparison.Ordinal);
         StringAssert.Contains(script, "() => props,", StringComparison.Ordinal);
@@ -380,8 +371,7 @@ public sealed class RazorSgComponentMemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        StringAssert.Contains(script, "import { defineComponent, h, onMounted, onUnmounted, onUpdated, reactive, watch } from \"vue\";", StringComparison.Ordinal);
-        StringAssert.Contains(script, "if (typeof scope.onAfterRender === \"function\") {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "import { defineComponent, h, onMounted, onUpdated, reactive } from \"vue\";", StringComparison.Ordinal);
         StringAssert.Contains(script, "onMounted(() => {", StringComparison.Ordinal);
         StringAssert.Contains(script, "scope.onAfterRender(true);", StringComparison.Ordinal);
         StringAssert.Contains(script, "onUpdated(() => {", StringComparison.Ordinal);
@@ -428,13 +418,10 @@ public sealed class RazorSgComponentMemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        StringAssert.Contains(script, "import { defineComponent, h, onMounted, onUnmounted, onUpdated, reactive, watch } from \"vue\";", StringComparison.Ordinal);
-        StringAssert.Contains(script, "if (typeof scope.dispose === \"function\" || typeof scope.disposeAsync === \"function\") {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "import { defineComponent, h, onUnmounted, reactive } from \"vue\";", StringComparison.Ordinal);
         StringAssert.Contains(script, "onUnmounted(() => {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "if (typeof scope.dispose === \"function\") {", StringComparison.Ordinal);
         StringAssert.Contains(script, "scope.dispose();", StringComparison.Ordinal);
-        StringAssert.Contains(script, "if (typeof scope.disposeAsync === \"function\") {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "void scope.disposeAsync();", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("scope.disposeAsync();", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "function dispose()", StringComparison.Ordinal);
         StringAssert.Contains(script, "state.disposeCount++;", StringComparison.Ordinal);
     }
@@ -479,7 +466,7 @@ public sealed class RazorSgComponentMemberClosureTests
 
         StringAssert.Contains(script, "let hasRendered = false;", StringComparison.Ordinal);
         StringAssert.Contains(script, "let cachedVNode = null;", StringComparison.Ordinal);
-        StringAssert.Contains(script, "if (hasRendered && typeof scope.shouldRender === \"function\" && !scope.shouldRender()) {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "if (hasRendered && !scope.shouldRender()) {", StringComparison.Ordinal);
         StringAssert.Contains(script, "return cachedVNode;", StringComparison.Ordinal);
         StringAssert.Contains(script, "function shouldRender()", StringComparison.Ordinal);
         StringAssert.Contains(script, "return state.count % 2 === 0;", StringComparison.Ordinal);
@@ -526,7 +513,6 @@ public sealed class RazorSgComponentMemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        StringAssert.Contains(script, "if (typeof scope.onInitializedAsync === \"function\") {", StringComparison.Ordinal);
         StringAssert.Contains(script, "Promise.resolve(scope.onInitializedAsync()).then(", StringComparison.Ordinal);
         StringAssert.Contains(script, "stateHasChanged();", StringComparison.Ordinal);
         StringAssert.Contains(script, "function onInitializedAsync()", StringComparison.Ordinal);
@@ -712,7 +698,7 @@ public sealed class RazorSgComponentMemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        StringAssert.Contains(script, "if (typeof scope.onParametersSetAsync === \"function\") {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "import { defineComponent, h, reactive, watch } from \"vue\";", StringComparison.Ordinal);
         StringAssert.Contains(script, "let parametersSetAsyncGen = 0;", StringComparison.Ordinal);
         StringAssert.Contains(script, "let parametersSetAsyncTail = Promise.resolve();", StringComparison.Ordinal);
         StringAssert.Contains(script, "const runOnParametersSetAsync = () => {", StringComparison.Ordinal);
@@ -766,7 +752,7 @@ public sealed class RazorSgComponentMemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        StringAssert.Contains(script, "if (typeof scope.onAfterRenderAsync === \"function\") {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "import { defineComponent, h, onMounted, onUpdated, reactive } from \"vue\";", StringComparison.Ordinal);
         StringAssert.Contains(script, "void Promise.resolve(scope.onAfterRenderAsync(true));", StringComparison.Ordinal);
         StringAssert.Contains(script, "void Promise.resolve(scope.onAfterRenderAsync(false));", StringComparison.Ordinal);
         StringAssert.Contains(script, "function onAfterRenderAsync(firstRender)", StringComparison.Ordinal);

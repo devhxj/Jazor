@@ -87,6 +87,19 @@ internal static class RazorSgVueComponentModuleBuilder
             line.Text.Contains("invokeAsync(", StringComparison.Ordinal));
         var setupFactoryName = "create" + SanitizeJavaScriptIdentifierPart(componentSymbol.Name, "Component") + "SetupScope";
         var returnedMembers = GetReturnedMembers(closure);
+        var hasOnInitialized = returnedMembers.Contains("onInitialized", StringComparer.Ordinal);
+        var hasOnInitializedAsync = returnedMembers.Contains("onInitializedAsync", StringComparer.Ordinal);
+        var hasOnParametersSet = returnedMembers.Contains("onParametersSet", StringComparer.Ordinal);
+        var hasOnParametersSetAsync = returnedMembers.Contains("onParametersSetAsync", StringComparer.Ordinal);
+        var hasOnAfterRender = returnedMembers.Contains("onAfterRender", StringComparer.Ordinal);
+        var hasOnAfterRenderAsync = returnedMembers.Contains("onAfterRenderAsync", StringComparer.Ordinal);
+        var hasShouldRender = returnedMembers.Contains("shouldRender", StringComparer.Ordinal);
+        var hasDispose = returnedMembers.Contains("dispose", StringComparer.Ordinal);
+        var hasDisposeAsync = returnedMembers.Contains("disposeAsync", StringComparer.Ordinal);
+        var usesWatch = hasOnParametersSet || hasOnParametersSetAsync;
+        var usesMounted = hasOnAfterRender || hasOnAfterRenderAsync;
+        var usesUpdated = hasOnAfterRender || hasOnAfterRenderAsync;
+        var usesUnmounted = hasDispose || hasDisposeAsync;
         var builder = new StringBuilder();
         var lineMappings = ImmutableArray.CreateBuilder<CompiledLineMapping>();
         var line = 0;
@@ -97,7 +110,7 @@ internal static class RazorSgVueComponentModuleBuilder
             line++;
         }
 
-        AppendLine("import { defineComponent, h, onMounted, onUnmounted, onUpdated, reactive, watch } from \"vue\";");
+        AppendLine(BuildVueImportLine(usesMounted, usesUnmounted, usesUpdated, usesWatch));
         AppendLine("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";");
         foreach (var importLine in parts.ImportLines)
         {
@@ -167,117 +180,130 @@ internal static class RazorSgVueComponentModuleBuilder
             ? "    const scope = " + setupFactoryName + "(props, stateHasChanged, invokeAsync);"
             : "    const scope = " + setupFactoryName + "(props, stateHasChanged);");
         AppendLine("    invalidate = reactive({ tick: pendingInvalidations });");
-        // Minimal lifecycle v1: run OnInitialized once before first render when present.
-        AppendLine("    if (typeof scope.onInitialized === \"function\") {");
-        AppendLine("      scope.onInitialized();");
-        AppendLine("    }");
-        // OnInitializedAsync: fire-and-forget; does not block first render.
-        // Completion schedules at most one invalidation via stateHasChanged().
-        AppendLine("    if (typeof scope.onInitializedAsync === \"function\") {");
-        AppendLine("      Promise.resolve(scope.onInitializedAsync()).then(");
-        AppendLine("        () => {");
-        AppendLine("          stateHasChanged();");
-        AppendLine("        },");
-        AppendLine("        () => {");
-        AppendLine("          stateHasChanged();");
-        AppendLine("        }");
-        AppendLine("      );");
-        AppendLine("    }");
-        // OnParametersSet: once after parameters are applied, then on subsequent prop updates.
-        AppendLine("    if (typeof scope.onParametersSet === \"function\") {");
-        AppendLine("      scope.onParametersSet();");
-        AppendLine("      watch(");
-        AppendLine("        () => props,");
-        AppendLine("        () => {");
-        AppendLine("          scope.onParametersSet();");
-        AppendLine("        },");
-        AppendLine("        { deep: true }");
-        AppendLine("      );");
-        AppendLine("    }");
-        // OnParametersSetAsync: serialized async watch.
-        // - immediate first run + deep prop watch
-        // - chain serializes execution
-        // - generation token drops stale completions so old tasks cannot overwrite newer state
-        AppendLine("    if (typeof scope.onParametersSetAsync === \"function\") {");
-        AppendLine("      let parametersSetAsyncGen = 0;");
-        AppendLine("      let parametersSetAsyncTail = Promise.resolve();");
-        AppendLine("      const runOnParametersSetAsync = () => {");
-        AppendLine("        const gen = ++parametersSetAsyncGen;");
-        AppendLine("        parametersSetAsyncTail = parametersSetAsyncTail");
-        AppendLine("          .catch(() => {})");
-        AppendLine("          .then(() => {");
-        AppendLine("            if (gen !== parametersSetAsyncGen) {");
-        AppendLine("              return;");
-        AppendLine("            }");
-        AppendLine("            return Promise.resolve(scope.onParametersSetAsync()).then(");
-        AppendLine("              () => {");
-        AppendLine("                if (gen === parametersSetAsyncGen) {");
-        AppendLine("                  stateHasChanged();");
-        AppendLine("                }");
-        AppendLine("              },");
-        AppendLine("              () => {");
-        AppendLine("                if (gen === parametersSetAsyncGen) {");
-        AppendLine("                  stateHasChanged();");
-        AppendLine("                }");
-        AppendLine("              }");
-        AppendLine("            );");
-        AppendLine("          });");
-        AppendLine("      };");
-        AppendLine("      runOnParametersSetAsync();");
-        AppendLine("      watch(");
-        AppendLine("        () => props,");
-        AppendLine("        () => {");
-        AppendLine("          runOnParametersSetAsync();");
-        AppendLine("        },");
-        AppendLine("        { deep: true }");
-        AppendLine("      );");
-        AppendLine("    }");
-        // OnAfterRender: firstRender=true on mount, false on subsequent updates.
-        AppendLine("    if (typeof scope.onAfterRender === \"function\") {");
-        AppendLine("      onMounted(() => {");
-        AppendLine("        scope.onAfterRender(true);");
-        AppendLine("      });");
-        AppendLine("      onUpdated(() => {");
-        AppendLine("        scope.onAfterRender(false);");
-        AppendLine("      });");
-        AppendLine("    }");
-        // OnAfterRenderAsync: post-flush fire-and-forget.
-        // Intentionally do NOT treat task completion as a render request.
-        AppendLine("    if (typeof scope.onAfterRenderAsync === \"function\") {");
-        AppendLine("      onMounted(() => {");
-        AppendLine("        void Promise.resolve(scope.onAfterRenderAsync(true));");
-        AppendLine("      });");
-        AppendLine("      onUpdated(() => {");
-        AppendLine("        void Promise.resolve(scope.onAfterRenderAsync(false));");
-        AppendLine("      });");
-        AppendLine("    }");
-        // IDisposable / IAsyncDisposable: cleanup once on unmount.
-        // Prefer dispose then disposeAsync when both exist; async completion is fire-and-forget.
-        AppendLine("    if (typeof scope.dispose === \"function\" || typeof scope.disposeAsync === \"function\") {");
-        AppendLine("      onUnmounted(() => {");
-        AppendLine("        if (typeof scope.dispose === \"function\") {");
-        AppendLine("          scope.dispose();");
-        AppendLine("        }");
-        AppendLine("        if (typeof scope.disposeAsync === \"function\") {");
-        AppendLine("          void scope.disposeAsync();");
-        AppendLine("        }");
-        AppendLine("      });");
-        AppendLine("    }");
-        // ShouldRender: first render always executes; later renders may reuse cached VNode.
-        // Epoch (invalidate.tick) is still read so StateHasChanged remains a reactive dependency.
-        AppendLine("    let hasRendered = false;");
-        AppendLine("    let cachedVNode = null;");
+        if (hasOnInitialized)
+        {
+            AppendLine("    scope.onInitialized();");
+        }
+
+        if (hasOnInitializedAsync)
+        {
+            AppendLine("    Promise.resolve(scope.onInitializedAsync()).then(");
+            AppendLine("      () => {");
+            AppendLine("        stateHasChanged();");
+            AppendLine("      },");
+            AppendLine("      () => {");
+            AppendLine("        stateHasChanged();");
+            AppendLine("      }");
+            AppendLine("    );");
+        }
+
+        if (hasOnParametersSet)
+        {
+            AppendLine("    scope.onParametersSet();");
+            AppendLine("    watch(");
+            AppendLine("      () => props,");
+            AppendLine("      () => {");
+            AppendLine("        scope.onParametersSet();");
+            AppendLine("      },");
+            AppendLine("      { deep: true }");
+            AppendLine("    );");
+        }
+
+        if (hasOnParametersSetAsync)
+        {
+            AppendLine("    let parametersSetAsyncGen = 0;");
+            AppendLine("    let parametersSetAsyncTail = Promise.resolve();");
+            AppendLine("    const runOnParametersSetAsync = () => {");
+            AppendLine("      const gen = ++parametersSetAsyncGen;");
+            AppendLine("      parametersSetAsyncTail = parametersSetAsyncTail");
+            AppendLine("        .catch(() => {})");
+            AppendLine("        .then(() => {");
+            AppendLine("          if (gen !== parametersSetAsyncGen) {");
+            AppendLine("            return;");
+            AppendLine("          }");
+            AppendLine("          return Promise.resolve(scope.onParametersSetAsync()).then(");
+            AppendLine("            () => {");
+            AppendLine("              if (gen === parametersSetAsyncGen) {");
+            AppendLine("                stateHasChanged();");
+            AppendLine("              }");
+            AppendLine("            },");
+            AppendLine("            () => {");
+            AppendLine("              if (gen === parametersSetAsyncGen) {");
+            AppendLine("                stateHasChanged();");
+            AppendLine("              }");
+            AppendLine("            }");
+            AppendLine("          );");
+            AppendLine("        });");
+            AppendLine("    };");
+            AppendLine("    runOnParametersSetAsync();");
+            AppendLine("    watch(");
+            AppendLine("      () => props,");
+            AppendLine("      () => {");
+            AppendLine("        runOnParametersSetAsync();");
+            AppendLine("      },");
+            AppendLine("      { deep: true }");
+            AppendLine("    );");
+        }
+
+        if (hasOnAfterRender)
+        {
+            AppendLine("    onMounted(() => {");
+            AppendLine("      scope.onAfterRender(true);");
+            AppendLine("    });");
+            AppendLine("    onUpdated(() => {");
+            AppendLine("      scope.onAfterRender(false);");
+            AppendLine("    });");
+        }
+
+        if (hasOnAfterRenderAsync)
+        {
+            AppendLine("    onMounted(() => {");
+            AppendLine("      void Promise.resolve(scope.onAfterRenderAsync(true));");
+            AppendLine("    });");
+            AppendLine("    onUpdated(() => {");
+            AppendLine("      void Promise.resolve(scope.onAfterRenderAsync(false));");
+            AppendLine("    });");
+        }
+
+        if (hasDispose || hasDisposeAsync)
+        {
+            AppendLine("    onUnmounted(() => {");
+            if (hasDispose)
+                AppendLine("      scope.dispose();");
+            if (hasDisposeAsync)
+                AppendLine("      void scope.disposeAsync();");
+            AppendLine("    });");
+        }
+
+        if (hasShouldRender)
+        {
+            AppendLine("    let hasRendered = false;");
+            AppendLine("    let cachedVNode = null;");
+        }
+
         AppendLine();
         AppendLine("    return () => {");
         AppendLine("      invalidate.tick;");
-        AppendLine("      if (hasRendered && typeof scope.shouldRender === \"function\" && !scope.shouldRender()) {");
-        AppendLine("        return cachedVNode;");
-        AppendLine("      }");
-        AppendLine("      hasRendered = true;");
+        if (hasShouldRender)
+        {
+            AppendLine("      if (hasRendered && !scope.shouldRender()) {");
+            AppendLine("        return cachedVNode;");
+            AppendLine("      }");
+            AppendLine("      hasRendered = true;");
+        }
+
         AppendLine("      const builder = createRenderContext(h);");
         AppendLine("      scope.buildRenderTree(builder);");
-        AppendLine("      cachedVNode = builder.finish();");
-        AppendLine("      return cachedVNode;");
+        if (hasShouldRender)
+        {
+            AppendLine("      cachedVNode = builder.finish();");
+            AppendLine("      return cachedVNode;");
+        }
+        else
+        {
+            AppendLine("      return builder.finish();");
+        }
+
         AppendLine("    };");
         AppendLine("  }");
         AppendLine("});");
@@ -323,6 +349,32 @@ internal static class RazorSgVueComponentModuleBuilder
 
         builder.AppendLine("  });");
         line++;
+    }
+
+    private static string BuildVueImportLine(
+        bool usesMounted,
+        bool usesUnmounted,
+        bool usesUpdated,
+        bool usesWatch)
+    {
+        var imports = new List<string>
+        {
+            "defineComponent",
+            "h"
+        };
+
+        if (usesMounted)
+            imports.Add("onMounted");
+        if (usesUnmounted)
+            imports.Add("onUnmounted");
+        if (usesUpdated)
+            imports.Add("onUpdated");
+
+        imports.Add("reactive");
+        if (usesWatch)
+            imports.Add("watch");
+
+        return "import { " + string.Join(", ", imports) + " } from \"vue\";";
     }
 
     private static void AppendIndentedLines(

@@ -1004,7 +1004,11 @@ public sealed class SdkIntegrationTests
         Assert.IsTrue(File.Exists(runtimeCoreModulePath), $"RazorVue runtime core module was not generated: {runtimeCoreModulePath}");
 
         var componentModule = (await File.ReadAllTextAsync(componentModulePath)).ReplaceLineEndings("\n");
-        StringAssert.Contains(componentModule, "import { defineComponent, h, onMounted, onUnmounted, onUpdated, reactive, watch } from \"vue\";");
+        StringAssert.Contains(componentModule, "import { defineComponent, h, reactive } from \"vue\";");
+        Assert.IsFalse(componentModule.Contains("watch", StringComparison.Ordinal), componentModule);
+        Assert.IsFalse(componentModule.Contains("onMounted", StringComparison.Ordinal), componentModule);
+        Assert.IsFalse(componentModule.Contains("onUpdated", StringComparison.Ordinal), componentModule);
+        Assert.IsFalse(componentModule.Contains("onUnmounted", StringComparison.Ordinal), componentModule);
         StringAssert.Contains(componentModule, "import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";");
         StringAssert.Contains(componentModule, "export default defineComponent({");
         StringAssert.Contains(componentModule, "sourceMappingURL=counter.mjs.map");
