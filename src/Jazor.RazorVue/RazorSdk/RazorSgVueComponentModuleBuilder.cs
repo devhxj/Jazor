@@ -83,6 +83,8 @@ internal static class RazorSgVueComponentModuleBuilder
         string relativePath)
     {
         var parts = SplitCompiledScript(compiledScript, closure);
+        var usesInvokeAsync = parts.SetupBodyLines.Any(static line =>
+            line.Text.Contains("invokeAsync(", StringComparison.Ordinal));
         var setupFactoryName = "create" + SanitizeJavaScriptIdentifierPart(componentSymbol.Name, "Component") + "SetupScope";
         var returnedMembers = GetReturnedMembers(closure);
         var builder = new StringBuilder();
@@ -110,7 +112,9 @@ internal static class RazorSgVueComponentModuleBuilder
         }
 
         AppendLine();
-        AppendLine("function " + setupFactoryName + "(props, stateHasChanged) {");
+        AppendLine(usesInvokeAsync
+            ? "function " + setupFactoryName + "(props, stateHasChanged, invokeAsync) {"
+            : "function " + setupFactoryName + "(props, stateHasChanged) {");
         AppendStateDeclaration(builder, parts.StateSlots, lineMappings, ref line);
         if (parts.SetupBodyLines.Length > 0)
         {
@@ -148,7 +152,20 @@ internal static class RazorSgVueComponentModuleBuilder
         AppendLine("      }");
         AppendLine("      invalidate.tick++;");
         AppendLine("    };");
-        AppendLine("    const scope = " + setupFactoryName + "(props, stateHasChanged);");
+        if (usesInvokeAsync)
+        {
+            AppendLine("    const invokeAsync = (workItem) => {");
+            AppendLine("      try {");
+            AppendLine("        return Promise.resolve(workItem());");
+            AppendLine("      } catch (error) {");
+            AppendLine("        return Promise.reject(error);");
+            AppendLine("      }");
+            AppendLine("    };");
+        }
+
+        AppendLine(usesInvokeAsync
+            ? "    const scope = " + setupFactoryName + "(props, stateHasChanged, invokeAsync);"
+            : "    const scope = " + setupFactoryName + "(props, stateHasChanged);");
         AppendLine("    invalidate = reactive({ tick: pendingInvalidations });");
         // Minimal lifecycle v1: run OnInitialized once before first render when present.
         AppendLine("    if (typeof scope.onInitialized === \"function\") {");

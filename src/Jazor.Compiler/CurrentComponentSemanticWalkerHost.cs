@@ -26,6 +26,7 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
     private const string EventCallbackOfTMetadataName = "Microsoft.AspNetCore.Components.EventCallback`1";
     private const string ComponentBaseMetadataName = "Microsoft.AspNetCore.Components.ComponentBase";
     private const string StateHasChangedRuntimeName = "stateHasChanged";
+    private const string InvokeAsyncRuntimeName = "invokeAsync";
     private readonly INamedTypeSymbol _componentType;
     private readonly RenderTreeBuilderSemanticWalkerHost _renderTreeBuilderHost = new();
     private readonly string _stateIdentifier;
@@ -74,6 +75,9 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
 
         if (IsStateHasChangedInvocation(operation.TargetMethod, operation.Instance))
             return RewriteStateHasChanged(operation);
+
+        if (IsComponentBaseInvokeAsyncInvocation(operation.TargetMethod, operation.Instance))
+            return RewriteInvokeAsync(operation, arguments);
 
         // VisitInvocation calls this before RejectUnsupportedRuntimeFallback.
         if (IsEventCallbackInvoke(operation.TargetMethod) &&
@@ -486,8 +490,45 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
             optional: false);
     }
 
+    private bool IsComponentBaseInvokeAsyncInvocation(IMethodSymbol method, IOperation? instance)
+    {
+        if (!string.Equals(method.Name, "InvokeAsync", StringComparison.Ordinal) ||
+            method.Parameters.Length != 1 ||
+            method.IsStatic)
+        {
+            return false;
+        }
+
+        if (!IsCurrentComponentReceiver(instance) && instance is not null)
+            return false;
+
+        // Component-declared InvokeAsync overloads stay on the normal
+        // current-component method path; only the ComponentBase dispatcher maps
+        // to the setup-scoped invokeAsync helper.
+        return string.Equals(
+            method.ContainingType?.OriginalDefinition.ToDisplayString(Format.NameFormat),
+            ComponentBaseMetadataName,
+            StringComparison.Ordinal);
+    }
+
+    private static Expression RewriteInvokeAsync(IInvocationOperation operation, IReadOnlyList<Expression> arguments)
+    {
+        if (arguments.Count != 1)
+        {
+            throw new OperationTransformationException(
+                operation,
+                "ComponentBase.InvokeAsync is supported by RazorVue current-component rewrite v1 only as a single work-item call that maps to the setup-scoped invokeAsync dispatcher.");
+        }
+
+        return new CallExpression(
+            new Identifier(InvokeAsyncRuntimeName),
+            NodeList.From(arguments),
+            optional: false);
+    }
+
     private bool IsUnsupportedIndirectCurrentComponentDispatch(IMethodSymbol method, IOperation? instance)
         => !IsStateHasChangedInvocation(method, instance) &&
+           !IsComponentBaseInvokeAsyncInvocation(method, instance) &&
            !IsCurrentComponentMethod(method, instance) &&
            IsCurrentComponentReceiver(instance);
 

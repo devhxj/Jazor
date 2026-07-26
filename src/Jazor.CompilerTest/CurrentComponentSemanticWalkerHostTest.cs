@@ -278,6 +278,44 @@ public sealed class CurrentComponentSemanticWalkerHostTest
     }
 
     [TestMethod]
+    public void RewriteCurrentComponentMembers_LowersComponentBaseInvokeAsyncToSetupDispatcher()
+    {
+        var fixture = CompileComponent(
+            """
+            public sealed class Counter : ComponentBase
+            {
+                private int count;
+
+                private void Refresh()
+                {
+                    _ = InvokeAsync(Increment);
+                    _ = InvokeAsync(() => { count++; StateHasChanged(); });
+                }
+
+                private void Increment()
+                {
+                    count++;
+                }
+            }
+            """,
+            methodName: "Refresh");
+
+        var walker = new SemanticWalker(true)
+        {
+            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+        };
+        var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script!, "invokeAsync(increment);", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "invokeAsync(() => {", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "state.count++;", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "stateHasChanged();", StringComparison.Ordinal);
+        Assert.IsFalse(script!.Contains("InvokeAsync", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("this.", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
     public void RewriteCurrentComponentMembers_LowersEventCallbackParameterInvokeToOptionalPropsCall()
     {
         var fixture = CompileComponent(

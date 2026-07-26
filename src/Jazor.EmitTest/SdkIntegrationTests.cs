@@ -1004,7 +1004,7 @@ public sealed class SdkIntegrationTests
         Assert.IsTrue(File.Exists(runtimeCoreModulePath), $"RazorVue runtime core module was not generated: {runtimeCoreModulePath}");
 
         var componentModule = (await File.ReadAllTextAsync(componentModulePath)).ReplaceLineEndings("\n");
-        StringAssert.Contains(componentModule, "import { defineComponent, h, reactive } from \"vue\";");
+        StringAssert.Contains(componentModule, "import { defineComponent, h, onMounted, onUnmounted, onUpdated, reactive, watch } from \"vue\";");
         StringAssert.Contains(componentModule, "import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";");
         StringAssert.Contains(componentModule, "export default defineComponent({");
         StringAssert.Contains(componentModule, "sourceMappingURL=counter.mjs.map");
@@ -2117,9 +2117,9 @@ public sealed class SdkIntegrationTests
             .OrderBy(static path => path, StringComparer.Ordinal)
             .ToArray();
         Assert.AreEqual(
-            1,
+            3,
             razorGeneratedSources.Length,
-            "The external G0 consumer must expose exactly one official Razor generated component document." + Environment.NewLine +
+            "The external G0 consumer must expose exactly the Counter, KeyedList100 and PlainText official Razor generated component documents." + Environment.NewLine +
             string.Join(Environment.NewLine, razorGeneratedSources));
 
         var bootstrapTrace = ReadSingleGeneratedSource(generatedRoot, "Jazor.RazorVue.RazorSgBootstrapTrace.g.cs");
@@ -2130,8 +2130,8 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(bootstrapTrace, "internal const bool TailOutputRegisteredForCurrentContext = true;");
         StringAssert.Contains(tailTrace, "internal const string State = \"bound\";");
         StringAssert.Contains(tailTrace, "internal const int ReusedGeneratedTreeCount = 0;");
-        StringAssert.Contains(tailTrace, "internal const int GeneratorDocumentCount = 2;");
-        StringAssert.Contains(tailTrace, "internal const int DerivedGeneratedTreeCount = 2;");
+        StringAssert.Contains(tailTrace, "internal const int GeneratorDocumentCount = 4;");
+        StringAssert.Contains(tailTrace, "internal const int DerivedGeneratedTreeCount = 4;");
         StringAssert.Contains(tailTrace, "internal const string BindingMode = \"DerivedHookCompilation\";");
 
         StringAssert.Contains(evidence, "internal const int SchemaVersion = 2;");
@@ -2139,9 +2139,9 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(evidence, "internal const bool ConsumesRazorIntermediateRepresentation = false;");
         StringAssert.Contains(evidence, "internal const bool RecreatedCompilation = false;");
         StringAssert.Contains(evidence, "internal const bool NestedRazorSourceGeneratorRun = false;");
-        StringAssert.Contains(evidence, "internal const int GeneratorDocumentCount = 2;");
-        StringAssert.Contains(evidence, "internal const int CurrentGeneratedTreeCount = 2;");
-        StringAssert.Contains(evidence, "internal const int ComponentCount = 1;");
+        StringAssert.Contains(evidence, "internal const int GeneratorDocumentCount = 4;");
+        StringAssert.Contains(evidence, "internal const int CurrentGeneratedTreeCount = 4;");
+        StringAssert.Contains(evidence, "internal const int ComponentCount = 3;");
         StringAssert.Contains(evidence, "internal const string BindingMode = \"DerivedHookCompilation\";");
 
         AssertNoGeneratedSource(generatedRoot, "Jazor.Generated.RazorVueCatalog.g.cs");

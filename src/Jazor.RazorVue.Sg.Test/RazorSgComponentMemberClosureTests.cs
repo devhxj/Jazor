@@ -260,6 +260,7 @@ public sealed class RazorSgComponentMemberClosureTests
         StringAssert.Contains(script, "pendingInvalidations++;", StringComparison.Ordinal);
         StringAssert.Contains(script, "invalidate.tick++;", StringComparison.Ordinal);
         StringAssert.Contains(script, "const scope = createCounterSetupScope(props, stateHasChanged);", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("const invokeAsync = ", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "invalidate = reactive({ tick: pendingInvalidations });", StringComparison.Ordinal);
         Assert.IsTrue(
             script.IndexOf("const state = reactive({", StringComparison.Ordinal) <
@@ -530,6 +531,141 @@ public sealed class RazorSgComponentMemberClosureTests
         StringAssert.Contains(script, "stateHasChanged();", StringComparison.Ordinal);
         StringAssert.Contains(script, "function onInitializedAsync()", StringComparison.Ordinal);
         StringAssert.Contains(script, "state.count = 1;", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public async Task BuildVueComponentModule_EmitsInvokeAsyncDispatcherAndRuntimeDispatchesSynchronously()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/counter")]
+                public partial class Counter : ComponentBase, IVueComponent
+                {
+                    private int count;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "button");
+                        builder.AddAttribute(1, "onclick", EventCallback.Factory.Create(this, Refresh));
+                        builder.AddContent(2, count);
+                        builder.CloseElement();
+                    }
+
+                    private void Refresh()
+                    {
+                        _ = InvokeAsync(Increment);
+                    }
+
+                    private void Increment()
+                    {
+                        count++;
+                        StateHasChanged();
+                    }
+                }
+            }
+            """);
+        var closure = BuildClosure(fixture);
+        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            fixture.Component,
+            closure);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+
+        StringAssert.Contains(script, "function createCounterSetupScope(props, stateHasChanged, invokeAsync) {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "const invokeAsync = (workItem) => {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return Promise.resolve(workItem());", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return Promise.reject(error);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "const scope = createCounterSetupScope(props, stateHasChanged, invokeAsync);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "invokeAsync(increment);", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("InvokeAsync", StringComparison.Ordinal), script);
+
+        var tempRoot = Path.Combine(
+            Path.GetTempPath(),
+            "Jazor.RazorVue.Sg.Test",
+            Guid.NewGuid().ToString("N"));
+        try
+        {
+            WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
+            WriteFile(
+                Path.Combine(tempRoot, "package.json"),
+                """{"type":"module"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "package.json"),
+                """{"type":"module","exports":"./index.mjs"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "index.mjs"),
+                """
+                export const Fragment = Symbol("Fragment");
+                export function createStaticVNode(html, count) {
+                    return { html, count };
+                }
+                export function defineComponent(options) {
+                    return options;
+                }
+                export function reactive(value) {
+                    return value;
+                }
+                export function watch() {
+                    return () => {};
+                }
+                export function onMounted() {}
+                export function onUpdated() {}
+                export function onUnmounted() {}
+                export function h(name, props, children) {
+                    return { name, props, children };
+                }
+                """);
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "package.json"),
+                """{"type":"module"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context-core.mjs"),
+                System.IO.File.ReadAllText(FindRepositoryFile("src/Jazor.RazorVue/Runtime/render-context-core.mjs")));
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context.mjs"),
+                """
+                import { Fragment, createStaticVNode } from "vue";
+                import { createRenderContextCore } from "./render-context-core.mjs";
+
+                export function createRenderContext(h) {
+                    return createRenderContextCore(h, Fragment, createStaticVNode);
+                }
+                """);
+            var testFile = Path.Combine(tempRoot, "invoke-async-runtime.test.mjs");
+            WriteFile(
+                testFile,
+                """
+                import assert from "node:assert/strict";
+                import test from "node:test";
+
+                import component from "./components/counter.mjs";
+
+                test("invokeAsync dispatches the work item synchronously before any microtask", () => {
+                    const render = component.setup({}, { slots: {} });
+                    const first = render();
+                    assert.deepEqual(first.children, [0]);
+
+                    first.props.onClick();
+
+                    const second = render();
+                    assert.deepEqual(second.children, [1]);
+                });
+                """);
+
+            await RunNodeTestAsync(testFile, tempRoot);
+        }
+        finally
+        {
+            if (Directory.Exists(tempRoot))
+                Directory.Delete(tempRoot, recursive: true);
+        }
     }
 
     [TestMethod]
