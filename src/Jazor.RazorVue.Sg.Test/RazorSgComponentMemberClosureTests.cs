@@ -260,6 +260,8 @@ public sealed class RazorSgComponentMemberClosureTests
         Assert.IsFalse(script.Contains("pendingInvalidations++;", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("invalidate.tick++;", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "const scope = createCounterSetupScope(props);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "setup(props) {", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("{ slots }", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("const invokeAsync = ", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("invalidate = reactive({ tick: pendingInvalidations });", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("invalidate.tick;", StringComparison.Ordinal), script);

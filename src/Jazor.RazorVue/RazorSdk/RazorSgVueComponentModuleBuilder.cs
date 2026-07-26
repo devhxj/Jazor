@@ -96,6 +96,7 @@ internal static class RazorSgVueComponentModuleBuilder
         var hasShouldRender = returnedMembers.Contains("shouldRender", StringComparer.Ordinal);
         var hasDispose = returnedMembers.Contains("dispose", StringComparer.Ordinal);
         var hasDisposeAsync = returnedMembers.Contains("disposeAsync", StringComparer.Ordinal);
+        var usesSlots = HasSlotParameterBridges(closure);
         var usesWatch = hasOnParametersSet || hasOnParametersSetAsync;
         var usesMounted = hasOnAfterRender || hasOnAfterRenderAsync;
         var usesUpdated = hasOnAfterRender || hasOnAfterRenderAsync;
@@ -154,7 +155,9 @@ internal static class RazorSgVueComponentModuleBuilder
         AppendLine("export default defineComponent({");
         AppendPropsDeclaration(builder, closure, ref line);
         AppendEmitsDeclaration(builder, closure, ref line);
-        AppendLine("  setup(props, { slots }) {");
+        AppendLine(usesSlots
+            ? "  setup(props, { slots }) {"
+            : "  setup(props) {");
         AppendSlotParameterBridges(builder, closure, ref line);
         if (usesStateHasChanged)
         {
@@ -684,6 +687,13 @@ internal static class RazorSgVueComponentModuleBuilder
             line++;
         }
     }
+
+    private static bool HasSlotParameterBridges(RazorSgComponentMemberClosure closure)
+        => closure.ParameterProperties.Any(static property =>
+            IsRenderFragmentType(property.Type) &&
+            !string.IsNullOrWhiteSpace(property.Name) &&
+            !string.IsNullOrWhiteSpace(Util.GetConfigOrSymbolName(property)) &&
+            !string.IsNullOrWhiteSpace(GetVueSlotName(property)));
 
     private static string GetVueSlotName(IPropertySymbol property)
         => IsChildContentParameter(property)
