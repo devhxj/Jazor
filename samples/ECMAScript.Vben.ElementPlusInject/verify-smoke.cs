@@ -1,6 +1,11 @@
 using System.Diagnostics;
 using System.Globalization;
 
+// Legacy pre-G0 smoke script.
+// This verifies the retired generated-SFC / razorvue-consumer-entry sample path only.
+// It is kept as a migration fixture until the sample moves to the current
+// RazorVue render-function .mjs artifact contract.
+
 var options = SmokeOptions.Parse(args);
 var repoRoot = FindRepositoryRoot(Directory.GetCurrentDirectory());
 var sampleRoot = Path.Combine(repoRoot, "samples", "ECMAScript.Vben.ElementPlusInject");

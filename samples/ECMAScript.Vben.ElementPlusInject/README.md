@@ -1,19 +1,23 @@
 # ECMAScript.Vben.ElementPlusInject
 
-This sample demonstrates the current production-oriented `ECMAScript.Vben` composition path:
+> Status: legacy pre-G0 sample, pending migration to the current RazorVue render-function `.mjs` artifact path.
+>
+> This README documents the old generated-SFC consumer workflow so the migration target is explicit. It is not current production evidence for the active transformation branch.
+
+This sample demonstrates the retired SFC-based `ECMAScript.Vben` composition path:
 
 - author the app against `ECMAScript.Vben` shell contracts in Razor
 - compile-time inject concrete container implementations through `[VueInject]`
 - keep the injected implementations sample-local and user-component based
 - compose `ECMAScript.ElementPlus` library components inside those injected implementations
-- consume the generated Vue SFCs from a colocated Deno pipeline
+- consume the generated Vue SFCs from a colocated Deno pipeline in the legacy flow
 - keep the entire consumer path on the supported Deno-only consumer flow
 
 The sample is split into:
 
 - `Vben.ElementPlusInject.Library`: RazorVue library authored with Razor and C#
-- `Vben.ElementPlusInject.Host`: ASP.NET Core host that emits generated SFCs to `jazor/` and browser assets to `wwwroot/jazor/`
-- `Vben.ElementPlusInject.Host/consumer`: colocated Deno consumer using the official `razorvue-consumer-entry` contract
+- `Vben.ElementPlusInject.Host`: ASP.NET Core host that emits legacy generated SFCs to `jazor/` and browser assets to `wwwroot/jazor/`
+- `Vben.ElementPlusInject.Host/consumer`: colocated Deno consumer using the retired `razorvue-consumer-entry` contract
 
 ## Build from this repository
 
@@ -93,11 +97,11 @@ This verification:
   - `VbenSidebarMenu`
   - `VbenPageContainer`
 - internal composition of `ECMAScript.ElementPlus` wrappers without coupling the public Vben contract to Element Plus
-- official `razorvue-consumer-entry` bridge generation
+- retired `razorvue-consumer-entry` bridge generation
 - Deno-only browser/SSR/bundle verification
 
 ## Notes
 
 - There is no `ECMAScript.Vben.ElementPlus` product package in this design. Element Plus cooperation stays in the sample/app layer.
 - The injected implementations are user components (`IVueComponent + IVueContainerImplementation<TContainer>`), not library components masquerading as the public Vben contract.
-- The supported consumer path here is `deno.json` + `scripts/run-deno.cs` + `razorvue-consumer-entry`.
+- The legacy consumer path here is `deno.json` + `scripts/run-deno.cs` + `razorvue-consumer-entry`; current production samples must migrate to render-function `.mjs` artifacts.

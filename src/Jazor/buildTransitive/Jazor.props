@@ -12,9 +12,6 @@
     <JazorCleanEmit Condition="'$(JazorCleanEmit)' == ''">true</JazorCleanEmit>
     <JazorFailOnPathConflict Condition="'$(JazorFailOnPathConflict)' == ''">true</JazorFailOnPathConflict>
     <JazorPublishMaterializeEnabled Condition="'$(JazorPublishMaterializeEnabled)' == ''">false</JazorPublishMaterializeEnabled>
-    <JazorConsumerBuildTask Condition="'$(JazorConsumerBuildTask)' == ''">build</JazorConsumerBuildTask>
-    <JazorConsumerBuildArguments Condition="'$(JazorConsumerBuildArguments)' == ''"></JazorConsumerBuildArguments>
-    <JazorConsumerEnvironmentVariables Condition="'$(JazorConsumerEnvironmentVariables)' == ''"></JazorConsumerEnvironmentVariables>
     <JazorPublishMaterializedRoot Condition="'$(JazorPublishMaterializedRoot)' == ''"></JazorPublishMaterializedRoot>
   </PropertyGroup>
 

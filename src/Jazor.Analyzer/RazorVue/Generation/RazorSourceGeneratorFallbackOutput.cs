@@ -71,7 +71,7 @@ internal static class RazorSourceGeneratorFallbackOutput
         }
 
         var detail = "RazorVue does not run a private Razor source generator fallback inside the analyzer. " +
-                     "RazorVue .razor component SFC generation must be triggered after the official Razor source generator has produced Razor IR and generated C# through the Razor SG tail output route. " +
+                     "RazorVue .razor component processing must be triggered after the official Razor source generator has produced final generated C# through the Razor SG tail output route. " +
                      "Components requiring official Razor SG tail output: " + componentSummary + ".";
         context.ReportDiagnostic(Diagnostic.Create(
             RazorSourceGeneratorDiagnostics.RazorSgTailOutputFailed,

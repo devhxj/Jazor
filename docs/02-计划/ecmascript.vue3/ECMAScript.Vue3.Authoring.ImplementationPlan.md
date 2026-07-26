@@ -264,7 +264,7 @@
 - 下一阶段的核心是承接已完成 contract，而不是继续扩张 compiler Vue 特路。
 - 先把 Razor/Jolt 等上层工作流压到 Phase 1 contract 上，再讨论更高层 ergonomics。
 - 其中 RazorVue `h(...)` 发射已完成最小 arity 对齐：`h(component)` / `h(component, props)` / `h(component, slots)` / `h(element, child)` 等 canonical 形态不再携带多余 `null` 占位。
-- 若库模式主工件改为 `.vue` SFC，则 SFC 生成必须视为 Phase 2 的直接下游，而不是独立于 canonical `H(...)` 的第二套模板语义；详见 [RazorVue 库模式 Design-Time SFC 方案](./RazorVue.LibraryMode.DesignTimeSfcPlan.md)。
+- RazorVue 当前转型主线不再把库模式主工件改为 `.vue` SFC；Razor 组件输出合同是 render-function `.mjs`。Vue3 authoring 工作不得重新引入独立于 compiler mainline 的 SFC 模板语义。
 
 ## 5.1 Phase 2 / Phase 3 前置门槛
 
@@ -314,7 +314,7 @@ dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "FullyQual
 ## 9. 参考
 
 - [src/ECMAScript.Vue3/README.md](../../../src/ECMAScript.Vue3/README.md)
-- [RazorVue.LibraryMode.DesignTimeSfcPlan.md](./RazorVue.LibraryMode.DesignTimeSfcPlan.md)
+- [Jazor 架构转型开发计划](../Jazor%20架构转型开发计划.md)
 - [src/Jazor.Compiler/ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md)
 - [docs/01-目标/ecmascript.vue3/vue3-balanced-design.md](../../01-目标/ecmascript.vue3/vue3-balanced-design.md)
 - [docs/01-目标/ecmascript.vue3/vue3-module-mapping-rules.md](../../01-目标/ecmascript.vue3/vue3-module-mapping-rules.md)

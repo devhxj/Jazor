@@ -1,7 +1,9 @@
 # .NET 11 / C# 15 Union Migration Status
 
-> Status: active migration snapshot, verification in progress
+> Status: historical migration snapshot; not the current RazorVue architecture source of truth
 > Date: 2026-05-13
+
+This file records the older .NET 11 / C# 15 union migration branch state. RazorIr, Jolt, SFC manifest, and pre-G0 sample verification references below are historical evidence only. For the current RazorVue production path, use official Razor SG generated C# -> Roslyn `IOperation` -> Vue render-function `.mjs`; Razor DR/IR, generated SFC output, Jolt, and consumer-entry bridge paths are not fallback routes on the active transformation branch.
 
 ## Current Decisions
 
@@ -13,7 +15,7 @@
 - In-memory Roslyn test compilation references are aligned to .NET 11 via `Basic.Reference.Assemblies.Net110`; new tests should not reintroduce `Net100.References.All`.
 - Analyzer support must mirror proven compiler host surfaces narrowly. Do not suppress `JAZOR001` or widen arbitrary CLR indexers to make Vue/WebIDL authoring compile.
 
-## Completed
+## Historical Completed Snapshot
 
 - Solution/project target migration is on the `net11.0` preview path where needed.
 - The repository-local C# union preview shim was removed after the target SDK exposed the official `System.Runtime.CompilerServices.UnionAttribute` / `IUnion` types.
@@ -28,9 +30,9 @@
 - Roslyn packages are aligned to SDK compiler version `5.7.0-1.26207.106`, restoring analyzer execution instead of `CS9057` analyzer skips.
 - Razor source-generator integration compatibility is matched by structural ABI, not IL hash. The hard gate is the expected SDK generator type, `IIncrementalGenerator`, and public instance `Initialize(IncrementalGeneratorInitializationContext): void`; the optional `Initialize` IL SHA-256 is retained only as diagnostic/probe metadata.
 - Razor source-generator compatibility guard coverage now includes positive current-SDK probing plus negative structural ABI cases for generator type name, `IIncrementalGenerator`, `Initialize` parameter type, return type, visibility, staticness, and declared method surface. This prevents reintroducing hash-based or overly loose compatibility gates.
-- RazorIr external-build tests now resolve SDK versions semantically and derive `TargetFramework` / `RazorLangVersion` from the resolved SDK major version. This prevents `10.0.300-preview...` from being selected ahead of `11.0.100-preview...` by string ordering.
-- RazorIr load-timing fixtures no longer fall back to SDK `10.0.203`; they now require the resolved Razor SDK toolset and write the resolved `TargetFramework` / `RazorLangVersion` into the temporary project.
-- On CoreCLR 11, RazorVue no longer uses Lib.Harmony or a private fallback Razor SG host-output generation path. `.razor` SFC generation requires the self-owned native Razor SG `Initialize` hook so RazorVue can reuse the official SG tail output carrying generated C# and in-memory Razor IR; missing tail output is diagnostic-only.
+- Historical RazorIr external-build tests resolved SDK versions semantically and derived `TargetFramework` / `RazorLangVersion` from the resolved SDK major version. Those tests are no longer the current RazorVue production verification lane.
+- Historical RazorIr load-timing fixtures stopped falling back to SDK `10.0.203`. Those fixtures belonged to the retired RazorIr line.
+- On CoreCLR 11, the old Lib.Harmony/private fallback probe was removed. The current branch goes further: RazorVue no longer consumes in-memory Razor IR or generates SFC output; the official SG tail hook is used to reach generated C# and Roslyn `IOperation`.
 - Razor 11 component-attribute binding differences are handled at the authored surface with explicit strong expressions, not by weakening component APIs. Static values for non-`string` parameters such as `VuetifyTextValue`, `[String]` enums, and other host value wrappers must be written as typed C# expressions when Razor cannot legally bind an HTML-style literal.
 - Jolt and RazorIr SDK toolset probing no longer assumes `tasks\net10.0`. They locate `Microsoft.NET.Sdk.Razor.Tasks.dll` under the resolved SDK and sort known TFMs so modern `netX.0` task assets win over legacy `net4xx` assets while still preserving fallback compatibility when only older task assets exist.
 - Packaging, sample smoke scripts, Deno runtime probing, Razor load-timing fixtures, and package layout guards now target `net11.0` / Razor `11.0` paths for current toolchain artifacts.
@@ -49,7 +51,7 @@
 - `SampleGeneratedArtifactLayoutTests` now guards checked-in sample manifest layout: standard manifests must target `net11.0`, must not contain stale `net10.0`, and every declared module/source-map path must exist under the manifest output root. RazorVue SFC manifests are also checked for declared module/source-map/origin files and safe relative SFC imports.
 - `scripts/csharp/wiki-build-local.cs` now accepts `BaseOutputPath` and `BaseIntermediateOutputPath`, forwards them as isolated build roots, and disables shared compilation/node reuse for deterministic smoke-script reuse.
 
-## Latest Verification
+## Historical Verification Log
 
 - `dotnet build src\Jazor.Compiler\Jazor.Compiler.csproj --no-restore -v minimal -p:UseSharedCompilation=false` passed.
 - `dotnet build src\Jazor.Analyzer\Jazor.Analyzer.csproj --no-restore -v minimal -p:UseSharedCompilation=false` passed.
@@ -132,7 +134,7 @@ Resolution: `Jazor.Analyzer` now allows only non-static ordinary instance `Add(k
 - The manifest `Hash`, `MapHash`, and RazorVue `ContentHash` values are generator content hashes, not a stable contract that the checked-in file bytes must equal after repository newline normalization. Guard file presence and path boundaries in layout tests; test hash semantics at the generator/writer layer where the source content string is available.
 - `src/Wiki/wwwroot/jazor` and `src/Wiki/jazor` are ignored local/publish outputs. They may show stale `net10.0` locally after previous publish checks, but they are not checked-in source-of-truth artifacts. Use `scripts/csharp/wiki-build-local.cs`, `scripts/csharp/wiki-verify-smoke.cs -- --publish`, or `scripts/csharp/wiki-verify-browser.cs -- --publish` to regenerate and validate them when working on Wiki release output.
 
-## Next Work
+## Historical Next Work
 
 1. Continue migrating remaining generated/manual union wrappers only when each target branch set is proven safe for the official-preview contract.
 2. Keep object/interface/delegate/nullable-boundary union branches on explicit strong factories or overloads unless C# 15 preview semantics make normal assignment/overload binding sound.

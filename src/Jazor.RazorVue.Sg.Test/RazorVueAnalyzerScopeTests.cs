@@ -1,0 +1,84 @@
+using System.Collections.Immutable;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
+
+namespace Jazor.RazorVue.Sg.Test;
+
+[TestClass]
+public sealed class RazorVueAnalyzerScopeTests
+{
+    [TestMethod]
+    public async Task ComponentSurface_DoesNotTriggerGenericWhitelistAnalyzer()
+    {
+        var diagnostics = await AnalyzeAsync(
+            """
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using static ECMAScript.Vue3;
+
+            [ECMAScriptModule("./components/counter")]
+            public sealed class Counter : ComponentBase, IVueComponent
+            {
+            }
+            """);
+
+        Assert.IsFalse(diagnostics.Any(static diagnostic => diagnostic.Id == "JAZOR001"));
+    }
+
+    [TestMethod]
+    public async Task ComponentWithUnsupportedConcreteUsage_RemainsSubjectToGenericWhitelistAnalyzer()
+    {
+        var diagnostics = await AnalyzeAsync(
+            """
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using static ECMAScript.Vue3;
+
+            [ECMAScriptModule("./components/counter")]
+            public sealed class Counter : ComponentBase, IVueComponent
+            {
+                private readonly System.IO.FileInfo _file = new("counter.txt");
+            }
+            """);
+
+        Assert.IsTrue(diagnostics.Any(static diagnostic => diagnostic.Id == "JAZOR001"));
+    }
+
+    [TestMethod]
+    public async Task ModuleClassWithoutVueMarker_RemainsSubjectToGenericWhitelistAnalyzer()
+    {
+        var diagnostics = await AnalyzeAsync(
+            """
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+
+            [ECMAScriptModule("./components/incomplete")]
+            public sealed class IncompleteComponent : ComponentBase
+            {
+                private readonly System.IO.FileInfo _file = new("incomplete.txt");
+            }
+            """);
+
+        Assert.IsTrue(diagnostics.Any(static diagnostic => diagnostic.Id == "JAZOR001"));
+    }
+
+    private static async Task<ImmutableArray<Diagnostic>> AnalyzeAsync(string source)
+    {
+        var compilation = CSharpCompilation.Create(
+            assemblyName: "RazorVue.AnalyzerScope.Tests",
+            syntaxTrees:
+            [
+                CSharpSyntaxTree.ParseText(
+                    source,
+                    new CSharpParseOptions(LanguageVersion.Preview),
+                    path: "Component.razor.cs")
+            ],
+            references: RazorSgTestHost.CreateMetadataReferences(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        return await compilation
+            .WithAnalyzers(ImmutableArray.Create<DiagnosticAnalyzer>(new Jazor.Analyzer.Analyzer()))
+            .GetAnalyzerDiagnosticsAsync();
+    }
+}

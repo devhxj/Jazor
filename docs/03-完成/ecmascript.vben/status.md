@@ -1,8 +1,9 @@
 # ECMAScript.Vben 状态（2026-05-17）
 
-> Status: 当前状态快照  
-> Positioning: `src/ECMAScript.Vben/` 后台壳层抽象与原生 RazorVue 实现的仓库级状态快照  
+> Status: historical pre-G0 status snapshot
+> Positioning: `src/ECMAScript.Vben/` 后台壳层抽象与原生 RazorVue 实现的历史仓库级状态快照
 > Scope: 原生壳层组件、公共后台语义模型、Vue authoring contract 收口、独立测试基线与产品边界
+> Current boundary: `src/ECMAScript.Vben.Test/` 和旧 RazorVue SFC pipeline 已在当前转型分支退役；本文的测试通过记录和 Deno consumer 主链说明仅作迁移参考，不作为当前 `.mjs` 主线完成证据。
 
 ## 总结
 

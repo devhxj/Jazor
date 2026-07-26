@@ -1,27 +1,14 @@
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Jazor.RazorVue;
-using Jazor.RazorVue.Emit;
 
 namespace Jazor.Emit;
 
-internal static class ManifestModuleKind
+internal sealed record ManifestModel
 {
-    public const string Mjs = "mjs";
-    public const string Vue = "vue";
-}
+    public const int CurrentSchemaVersion = 1;
+    public const int CurrentRuntimeProtocolVersion = 1;
 
-internal static class ManifestComponentModel
-{
-    public const string H = "h";
-    public const string Sfc = "sfc";
-}
-
-internal sealed record ManifestModel(
-    string RootAssemblyPath,
-    DateTime GeneratedAtUtc,
-    List<ManifestModuleEntry> Modules)
-{
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         WriteIndented = true,
@@ -30,69 +17,98 @@ internal sealed record ManifestModel(
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
+    public ManifestModel(string RootAssemblyPath, DateTime GeneratedAtUtc, List<ManifestModuleEntry> Modules)
+        : this(
+            CurrentSchemaVersion,
+            CurrentRuntimeProtocolVersion,
+            DeriveRootAssemblyName(RootAssemblyPath, Modules),
+            RootAssemblyPath,
+            GeneratedAtUtc,
+            Modules,
+            entries: null)
+    {
+    }
+
+    public ManifestModel(string RootAssemblyPath, List<ManifestModuleEntry> Modules)
+        : this(
+            CurrentSchemaVersion,
+            CurrentRuntimeProtocolVersion,
+            DeriveRootAssemblyName(RootAssemblyPath, Modules),
+            RootAssemblyPath,
+            generatedAtUtc: null,
+            Modules,
+            entries: null)
+    {
+    }
+
+    private ManifestModel(
+        int schemaVersion,
+        int runtimeProtocolVersion,
+        string rootAssemblyName,
+        string rootAssemblyPath,
+        DateTime? generatedAtUtc,
+        List<ManifestModuleEntry> modules,
+        List<string>? entries)
+    {
+        SchemaVersion = schemaVersion;
+        RuntimeProtocolVersion = runtimeProtocolVersion;
+        RootAssemblyName = string.IsNullOrWhiteSpace(rootAssemblyName)
+            ? DeriveRootAssemblyName(rootAssemblyPath, modules)
+            : rootAssemblyName;
+        RootAssemblyPath = rootAssemblyPath ?? string.Empty;
+        GeneratedAtUtc = generatedAtUtc;
+        Modules = NormalizeModules(modules ?? []);
+        Entries = NormalizeEntries(entries, Modules, RootAssemblyName);
+    }
+
+    public int SchemaVersion { get; init; }
+
+    public int RuntimeProtocolVersion { get; init; }
+
+    public string RootAssemblyName { get; init; }
+
+    public string RootAssemblyPath { get; init; }
+
+    public DateTime? GeneratedAtUtc { get; init; }
+
+    public List<string> Entries { get; init; }
+
+    public List<ManifestModuleEntry> Modules { get; init; }
+
     public static ManifestModel? TryLoad(string manifestPath)
     {
         if (!File.Exists(manifestPath))
             return null;
 
-        var json = File.ReadAllText(manifestPath);
-        var manifest = JsonSerializer.Deserialize<ManifestModel>(json, JsonOptions);
-        if (manifest is null)
-            return null;
+        using var document = JsonDocument.Parse(File.ReadAllText(manifestPath));
+        var root = document.RootElement;
 
-        var normalizedModules = NormalizeModules(manifest.Modules);
+        var schemaVersion = ReadOptionalInt(root, "schemaVersion", "SchemaVersion") ?? CurrentSchemaVersion;
+        if (schemaVersion != CurrentSchemaVersion)
+            throw new InvalidOperationException($"Unsupported Jazor manifest schema version '{schemaVersion}'.");
 
-        return manifest with { Modules = normalizedModules };
-    }
+        var runtimeProtocolVersion = ReadOptionalInt(root, "runtimeProtocolVersion", "RuntimeProtocolVersion")
+            ?? CurrentRuntimeProtocolVersion;
+        if (runtimeProtocolVersion != CurrentRuntimeProtocolVersion)
+            throw new InvalidOperationException(
+                $"Unsupported Jazor manifest runtime protocol version '{runtimeProtocolVersion}'.");
 
-    public RazorVueManifestModel ToRazorVueManifest(string? componentModel = null)
-    {
-        var normalizedComponentModel = string.IsNullOrWhiteSpace(componentModel)
-            ? null
-            : NormalizeComponentModel(componentModel);
-        var modules = Modules
-            .Where(module => module.Component is not null &&
-                             (normalizedComponentModel is null || module.Component.Model == normalizedComponentModel))
-            .Select(ToRazorVueManifestEntry)
-            .OrderBy(static module => module.RelativeModulePath, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(static module => module.ComponentName, StringComparer.Ordinal)
-            .ToList();
+        var modules = ReadModules(root);
+        var rootAssemblyPath = ReadOptionalString(root, "rootAssemblyPath", "RootAssemblyPath") ?? string.Empty;
+        var rootAssemblyName =
+            ReadOptionalString(root, "rootAssemblyName", "RootAssemblyName") ??
+            DeriveRootAssemblyName(rootAssemblyPath, modules);
+        var generatedAtUtc = ReadOptionalDateTime(root, "generatedAtUtc", "GeneratedAtUtc");
+        var entries = ReadEntries(root);
 
-        if (modules.Count == 0)
-        {
-            return new RazorVueManifestModel(
-                ResolveManifestAssemblyName(),
-                GeneratedAtUtc,
-                [],
-                [],
-                []);
-        }
-
-        return new RazorVueManifestModel(
-            ResolveManifestAssemblyName(),
-            GeneratedAtUtc,
+        return new ManifestModel(
+            schemaVersion,
+            runtimeProtocolVersion,
+            rootAssemblyName,
+            rootAssemblyPath,
+            generatedAtUtc,
             modules,
-            NormalizeHostRequirementList(modules.SelectMany(static module => module.Styles).ToArray()),
-            NormalizeHostRequirementList(modules.SelectMany(static module => module.PluginRequirements).ToArray()));
-    }
-
-    public ManifestModel WithRazorVueManifest(RazorVueManifestModel razorVueManifest, string componentModel)
-    {
-        ArgumentNullException.ThrowIfNull(razorVueManifest);
-
-        var normalizedComponentModel = NormalizeComponentModel(componentModel);
-        var modules = Modules
-            .Where(module => !IsMatchingComponentModel(module, normalizedComponentModel))
-            .Concat(razorVueManifest.Modules.Select(module => ToManifestModule(module, normalizedComponentModel)))
-            .OrderBy(static module => module.RelativePath, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(static module => module.TypeName, StringComparer.Ordinal)
-            .ToList();
-
-        return this with
-        {
-            GeneratedAtUtc = DateTime.UtcNow,
-            Modules = modules
-        };
+            entries);
     }
 
     public void Save(string manifestPath)
@@ -101,12 +117,73 @@ internal sealed record ManifestModel(
         if (!string.IsNullOrEmpty(directory))
             Directory.CreateDirectory(directory);
 
-        var normalized = this with
-        {
-            Modules = NormalizeModules(Modules)
-        };
+        var normalizedModules = NormalizeModules(Modules);
+        var normalizedEntries = NormalizeEntries(Entries, normalizedModules, RootAssemblyName);
+        var fileModel = new ManifestFileModel(
+            CurrentSchemaVersion,
+            CurrentRuntimeProtocolVersion,
+            RootAssemblyName,
+            normalizedEntries,
+            normalizedModules
+                .Select(static module => new ManifestModuleFileEntry(
+                    module.AssemblyName,
+                    module.TypeName,
+                    module.Id,
+                    module.RelativePath,
+                    module.Hash,
+                    module.SourceMapPath,
+                    module.MapHash))
+                .ToList());
 
-        File.WriteAllText(manifestPath, JsonSerializer.Serialize(normalized, JsonOptions));
+        File.WriteAllText(manifestPath, JsonSerializer.Serialize(fileModel, JsonOptions));
+    }
+
+    private static List<ManifestModuleEntry> ReadModules(JsonElement root)
+    {
+        if (!TryGetProperty(root, out var modulesElement, "modules", "Modules") ||
+            modulesElement.ValueKind != JsonValueKind.Array)
+        {
+            return [];
+        }
+
+        var modules = new List<ManifestModuleEntry>();
+        foreach (var moduleElement in modulesElement.EnumerateArray())
+        {
+            if (moduleElement.ValueKind != JsonValueKind.Object)
+                continue;
+
+            modules.Add(new ManifestModuleEntry(
+                ReadRequiredString(moduleElement, "assemblyName", "AssemblyName"),
+                ReadRequiredString(moduleElement, "typeName", "TypeName"),
+                ReadRequiredString(moduleElement, "id", "Id"),
+                ReadRequiredString(moduleElement, "path", "relativePath", "RelativePath"),
+                ReadRequiredString(moduleElement, "contentHash", "hash", "Hash"),
+                ReadOptionalString(moduleElement, "sourceMap", "sourceMapPath", "SourceMapPath"),
+                ReadOptionalString(moduleElement, "sourceMapHash", "mapHash", "MapHash")));
+        }
+
+        return modules;
+    }
+
+    private static List<string>? ReadEntries(JsonElement root)
+    {
+        if (!TryGetProperty(root, out var entriesElement, "entries", "Entries") ||
+            entriesElement.ValueKind != JsonValueKind.Array)
+        {
+            return null;
+        }
+
+        var entries = new List<string>();
+        foreach (var entryElement in entriesElement.EnumerateArray())
+        {
+            if (entryElement.ValueKind == JsonValueKind.String &&
+                entryElement.GetString() is { Length: > 0 } entry)
+            {
+                entries.Add(entry);
+            }
+        }
+
+        return entries;
     }
 
     private static List<ManifestModuleEntry> NormalizeModules(IEnumerable<ManifestModuleEntry> modules)
@@ -116,12 +193,14 @@ internal sealed record ManifestModel(
 
         foreach (var module in modules)
         {
-            var normalizedModule = NormalizeModule(module);
+            var normalizedModule = module with
+            {
+                RelativePath = NormalizeRelativePath(module.RelativePath),
+                SourceMapPath = module.SourceMapPath is null ? null : NormalizeRelativePath(module.SourceMapPath)
+            };
+
             if (indexByRelativePath.TryGetValue(normalizedModule.RelativePath, out var existingIndex))
             {
-                // Relative paths are the physical file identity for the unified manifest.
-                // Keeping the later entry lets newer writer ownership heal stale duplicate rows
-                // produced by older mixed-writer runs.
                 normalizedModules[existingIndex] = normalizedModule;
                 continue;
             }
@@ -130,163 +209,35 @@ internal sealed record ManifestModel(
             normalizedModules.Add(normalizedModule);
         }
 
-        return normalizedModules;
+        return normalizedModules
+            .OrderBy(static module => module.RelativePath, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static module => module.TypeName, StringComparer.Ordinal)
+            .ToList();
     }
 
-    private static ManifestModuleEntry NormalizeModule(ManifestModuleEntry module)
+    private static List<string> NormalizeEntries(
+        IEnumerable<string>? entries,
+        IReadOnlyList<ManifestModuleEntry> modules,
+        string rootAssemblyName)
     {
-        var relativePath = NormalizeRelativePath(module.RelativePath);
-        var component = NormalizeComponentMetadata(module, relativePath);
-        var kind = NormalizeKind(module.Kind);
-        ValidateModuleKindForComponent(kind, component, relativePath);
-
-        return module with
+        var selectedEntries = entries?.ToArray();
+        if (selectedEntries is null || selectedEntries.Length == 0)
         {
-            RelativePath = relativePath,
-            SourceMapPath = module.SourceMapPath is null ? null : NormalizeRelativePath(module.SourceMapPath),
-            Kind = kind,
-            Component = component
-        };
-    }
+            selectedEntries = modules
+                .Where(module => string.Equals(module.AssemblyName, rootAssemblyName, StringComparison.OrdinalIgnoreCase))
+                .Select(static module => module.RelativePath)
+                .ToArray();
+        }
 
-    private static string NormalizeKind(string? kind)
-    {
-        if (string.IsNullOrWhiteSpace(kind))
-            return ManifestModuleKind.Mjs;
+        if (selectedEntries.Length == 0)
+            selectedEntries = modules.Select(static module => module.RelativePath).ToArray();
 
-        var normalized = kind.Trim().ToLowerInvariant();
-        if (normalized is ManifestModuleKind.Mjs or ManifestModuleKind.Vue)
-            return normalized;
-
-        throw new InvalidOperationException("Unsupported manifest module kind '" + kind + "'.");
-    }
-
-    private static ManifestComponentMetadata? NormalizeComponentMetadata(ManifestModuleEntry module, string relativePath)
-    {
-        if (module.Component is null)
-            return null;
-
-        var componentModel = NormalizeComponentModel(module.Component.Model);
-        return module.Component with
-        {
-            Model = componentModel,
-            ComponentId = NormalizeValue(module.Component.ComponentId, module.AssemblyName + "::" + module.TypeName),
-            ModuleId = NormalizeValue(module.Component.ModuleId, relativePath),
-            ComponentName = NormalizeValue(module.Component.ComponentName, module.TypeName),
-            RouteTemplates = NormalizeRouteTemplates(module.Component.RouteTemplates),
-            OriginMapPath = NormalizeRelativePath(NormalizeValue(module.Component.OriginMapPath, relativePath + ".origins.json")),
-            Imports = NormalizeHostRequirementList(module.Component.Imports),
-            Styles = NormalizeHostRequirementList(module.Component.Styles),
-            PluginRequirements = NormalizeHostRequirementList(module.Component.PluginRequirements),
-            StyleHash = module.Component.StyleHash ?? string.Empty
-        };
-    }
-
-    private static void ValidateModuleKindForComponent(string kind, ManifestComponentMetadata? component, string relativePath)
-    {
-        if (component is null)
-            return;
-
-        if (component.Model == ManifestComponentModel.Sfc && kind != ManifestModuleKind.Vue)
-            throw new InvalidOperationException($"SFC component manifest module '{relativePath}' must use kind '{ManifestModuleKind.Vue}'.");
-
-        if (component.Model == ManifestComponentModel.H && kind != ManifestModuleKind.Mjs)
-            throw new InvalidOperationException($"H component manifest module '{relativePath}' must use kind '{ManifestModuleKind.Mjs}'.");
-    }
-
-    private static string NormalizeComponentModel(string? model)
-    {
-        if (string.IsNullOrWhiteSpace(model))
-            return ManifestComponentModel.H;
-
-        var normalized = model.Trim().ToLowerInvariant();
-        if (normalized is ManifestComponentModel.H or ManifestComponentModel.Sfc)
-            return normalized;
-
-        throw new InvalidOperationException("Unsupported manifest component model '" + model + "'.");
-    }
-
-    private static string NormalizeValue(string? value, string fallbackValue)
-        => string.IsNullOrWhiteSpace(value) ? fallbackValue : value.Trim();
-
-    private static List<string> NormalizeHostRequirementList(IReadOnlyList<string>? values)
-        => RazorVueManifestSerializer.NormalizeHostRequirementList(values ?? []);
-
-    private static List<string> NormalizeRouteTemplates(IReadOnlyList<string>? values)
-        => RazorVueManifestSerializer.NormalizeRouteTemplates(values ?? []);
-
-    private static bool IsMatchingComponentModel(ManifestModuleEntry module, string componentModel)
-        => module.Component?.Model == componentModel;
-
-    private static ManifestModuleEntry ToManifestModule(RazorVueManifestEntry module, string componentModel)
-        => new(
-            module.AssemblyName,
-            module.ComponentName,
-            module.ComponentId,
-            module.RelativeModulePath,
-            module.ContentHash,
-            module.SourceMapPath,
-            MapHash: null,
-            ResolveArtifactKind(module.RelativeModulePath),
-            new ManifestComponentMetadata(
-                componentModel,
-                module.ComponentId,
-                module.ModuleId,
-                module.ComponentName,
-                RazorVueManifestSerializer.NormalizeRouteTemplates(module.RouteTemplates),
-                module.OriginMapPath,
-                NormalizeHostRequirementList(module.Imports),
-                NormalizeHostRequirementList(module.Styles),
-                NormalizeHostRequirementList(module.PluginRequirements),
-                module.DescriptorHash,
-                module.TemplateHash,
-                module.LogicHash,
-                module.ContentHash,
-                module.HmrBoundaryKind,
-                module.RequiresHydration,
-                module.SupportsSsr,
-                module.StyleHash ?? string.Empty));
-
-    private static RazorVueManifestEntry ToRazorVueManifestEntry(ManifestModuleEntry module)
-    {
-        var component = module.Component
-            ?? throw new InvalidOperationException("Manifest module does not contain component metadata.");
-
-        return new RazorVueManifestEntry(
-            module.AssemblyName,
-            component.ComponentId,
-            component.ModuleId,
-            component.ComponentName,
-            component.RouteTemplates,
-            module.RelativePath,
-            module.SourceMapPath ?? module.RelativePath + ".map",
-            component.OriginMapPath,
-            component.Imports,
-            component.Styles,
-            component.PluginRequirements,
-            component.DescriptorHash,
-            component.TemplateHash,
-            component.LogicHash,
-            component.ContentHash,
-            component.HmrBoundaryKind,
-            component.RequiresHydration,
-            component.SupportsSsr,
-            component.StyleHash ?? string.Empty,
-            component.Model);
-    }
-
-    private static string ResolveArtifactKind(string relativeModulePath)
-        => relativeModulePath.EndsWith(".vue", StringComparison.OrdinalIgnoreCase)
-            ? ManifestModuleKind.Vue
-            : ManifestModuleKind.Mjs;
-
-    private string ResolveManifestAssemblyName()
-    {
-        if (Modules.Select(static module => module.AssemblyName).Distinct(StringComparer.Ordinal).Take(2).Count() == 1)
-            return Modules[0].AssemblyName;
-
-        var fileName = Path.GetFileNameWithoutExtension(RootAssemblyPath);
-        return string.IsNullOrWhiteSpace(fileName) ? "Jazor.Emit" : fileName;
+        return selectedEntries
+            .Where(static entry => !string.IsNullOrWhiteSpace(entry))
+            .Select(NormalizeRelativePath)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static entry => entry, StringComparer.OrdinalIgnoreCase)
+            .ToList();
     }
 
     private static string NormalizeRelativePath(string relativePath)
@@ -307,6 +258,122 @@ internal sealed record ManifestModel(
 
         return string.Join("/", segments);
     }
+
+    private static string DeriveRootAssemblyName(string? rootAssemblyPath, IReadOnlyList<ManifestModuleEntry>? modules)
+    {
+        if (!string.IsNullOrWhiteSpace(rootAssemblyPath))
+        {
+            try
+            {
+                if (File.Exists(rootAssemblyPath))
+                {
+                    var assemblyName = AssemblyName.GetAssemblyName(rootAssemblyPath).Name;
+                    if (!string.IsNullOrWhiteSpace(assemblyName))
+                        return assemblyName!;
+                }
+            }
+            catch
+            {
+            }
+
+            var fileName = Path.GetFileNameWithoutExtension(rootAssemblyPath);
+            if (!string.IsNullOrWhiteSpace(fileName))
+                return fileName;
+        }
+
+        var moduleAssemblyName = modules?
+            .Select(static module => module.AssemblyName)
+            .FirstOrDefault(static assemblyName => !string.IsNullOrWhiteSpace(assemblyName));
+        return string.IsNullOrWhiteSpace(moduleAssemblyName)
+            ? "Jazor"
+            : moduleAssemblyName!;
+    }
+
+    private static string ReadRequiredString(JsonElement element, params string[] names)
+        => ReadOptionalString(element, names)
+           ?? throw new InvalidOperationException(
+               $"Manifest field '{string.Join("' or '", names)}' is required.");
+
+    private static string? ReadOptionalString(JsonElement element, params string[] names)
+    {
+        if (!TryGetProperty(element, out var property, names) ||
+            property.ValueKind == JsonValueKind.Null)
+        {
+            return null;
+        }
+
+        return property.ValueKind == JsonValueKind.String
+            ? property.GetString()
+            : property.ToString();
+    }
+
+    private static int? ReadOptionalInt(JsonElement element, params string[] names)
+    {
+        if (!TryGetProperty(element, out var property, names) ||
+            property.ValueKind == JsonValueKind.Null)
+        {
+            return null;
+        }
+
+        if (property.ValueKind == JsonValueKind.Number && property.TryGetInt32(out var value))
+            return value;
+
+        if (property.ValueKind == JsonValueKind.String &&
+            int.TryParse(property.GetString(), out var stringValue))
+        {
+            return stringValue;
+        }
+
+        throw new InvalidOperationException($"Manifest integer field '{string.Join("' or '", names)}' is invalid.");
+    }
+
+    private static DateTime? ReadOptionalDateTime(JsonElement element, params string[] names)
+    {
+        if (!TryGetProperty(element, out var property, names) ||
+            property.ValueKind == JsonValueKind.Null)
+        {
+            return null;
+        }
+
+        if (property.ValueKind == JsonValueKind.String &&
+            DateTime.TryParse(property.GetString(), out var value))
+        {
+            return value;
+        }
+
+        return null;
+    }
+
+    private static bool TryGetProperty(JsonElement element, out JsonElement property, params string[] names)
+    {
+        foreach (var item in element.EnumerateObject())
+        {
+            if (names.Any(name => string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase)))
+            {
+                property = item.Value;
+                return true;
+            }
+        }
+
+        property = default;
+        return false;
+    }
+
+    private sealed record ManifestFileModel(
+        int SchemaVersion,
+        int RuntimeProtocolVersion,
+        string RootAssemblyName,
+        List<string> Entries,
+        List<ManifestModuleFileEntry> Modules);
+
+    private sealed record ManifestModuleFileEntry(
+        string AssemblyName,
+        string TypeName,
+        string Id,
+        string Path,
+        string ContentHash,
+        string? SourceMap = null,
+        string? SourceMapHash = null);
 }
 
 internal sealed record ManifestModuleEntry(
@@ -316,25 +383,4 @@ internal sealed record ManifestModuleEntry(
     string RelativePath,
     string Hash,
     string? SourceMapPath = null,
-    string? MapHash = null,
-    string Kind = ManifestModuleKind.Mjs,
-    ManifestComponentMetadata? Component = null);
-
-internal sealed record ManifestComponentMetadata(
-    string Model,
-    string ComponentId,
-    string ModuleId,
-    string ComponentName,
-    List<string> RouteTemplates,
-    string OriginMapPath,
-    List<string> Imports,
-    List<string> Styles,
-    List<string> PluginRequirements,
-    string DescriptorHash,
-    string TemplateHash,
-    string LogicHash,
-    string ContentHash,
-    RazorVueHmrBoundaryKind HmrBoundaryKind,
-    bool RequiresHydration,
-    bool SupportsSsr,
-    string StyleHash = "");
+    string? MapHash = null);

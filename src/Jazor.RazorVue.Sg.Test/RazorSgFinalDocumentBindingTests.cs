@@ -70,7 +70,7 @@ public sealed class RazorSgFinalDocumentBindingTests
     }
 
     [TestMethod]
-    public void TailOutput_EmitsFinalDocumentEvidenceWithoutLegacyCatalog()
+    public void TailOutput_EmitsVueRenderCatalogAndFinalDocumentEvidenceWithoutLegacyCatalog()
     {
         var fixture = CreateFixture();
         var documents = ImmutableArray.Create(
@@ -100,9 +100,28 @@ public sealed class RazorSgFinalDocumentBindingTests
             .GeneratedSources;
         var evidence = generatedSources.Single(
             static source => source.HintName == "Jazor.Generated.RazorSgFinalDocumentEvidence.g.cs");
+        var catalog = generatedSources.Single(
+            static source => source.HintName == "Jazor.Generated.VueRenderCatalog.g.cs");
+        var catalogSource = catalog.SourceText.ToString();
 
         StringAssert.Contains(evidence.SourceText.ToString(), "BindingMode = \"ReusedHookCompilation\"");
         StringAssert.Contains(evidence.SourceText.ToString(), "ComponentCount = 1");
+        StringAssert.Contains(catalogSource, "internal static partial class VueRenderCatalog");
+        StringAssert.Contains(catalogSource, "SchemaVersion = 1");
+        StringAssert.Contains(catalogSource, "RuntimeProtocolVersion = 1");
+        StringAssert.Contains(catalogSource, "GetModules()");
+        StringAssert.Contains(catalogSource, "components/counter.mjs");
+        StringAssert.Contains(catalogSource, "sha256:");
+        StringAssert.Contains(catalogSource, "SourceMapRelativePath");
+        StringAssert.Contains(catalogSource, "SourceMapContent");
+        StringAssert.Contains(catalogSource, "MapHash");
+        StringAssert.Contains(catalogSource, "components/counter.mjs.map");
+        StringAssert.Contains(catalogSource, "Pages/Counter.razor");
+        StringAssert.Contains(catalogSource, "defineComponent");
+        StringAssert.Contains(catalogSource, "createRenderContext");
+        Assert.IsFalse(
+            catalogSource.Contains(@"D:\repo", StringComparison.OrdinalIgnoreCase),
+            "The VueRenderCatalog carrier must not persist machine-absolute source paths.");
         Assert.IsFalse(
             generatedSources.Any(static source => source.HintName == "Jazor.Generated.RazorVueCatalog.g.cs"),
             "The final-document G0 tail must not emit the legacy SFC catalog.");

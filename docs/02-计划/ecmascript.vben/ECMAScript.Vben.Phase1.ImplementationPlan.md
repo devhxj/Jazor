@@ -226,10 +226,10 @@
 
 - 默认原生解析回归
 - `VbenAdminLayout` / `VbenSidebarMenu` / `VbenHeaderBar` / `VbenPageContainer` 的 `[VueInject]` 替换回归
-- 四个公开壳层的 injected runtime shape artifact 回归（Vue SFC + pipeline）
-- 多壳层组合页的 injected runtime shape artifact 回归（Vue SFC + pipeline），覆盖 import 聚合、style/plugin 聚合与嵌套壳层 slot/prop/model 映射
+- 四个公开壳层的 injected runtime shape artifact 回归曾覆盖旧 Vue SFC + pipeline；该验证属于 pre-G0 历史，不作为当前 RazorVue `.mjs` 主线证据。
+- 多壳层组合页的 injected runtime shape artifact 回归曾覆盖旧 Vue SFC + pipeline，包含 import 聚合、style/plugin 聚合与嵌套壳层 slot/prop/model 映射；当前主线需要重新迁移到 render-function `.mjs` 验证。
 - 容器兼容性失败诊断回归（prop / emit / slot / capture-unmatched-values / duplicate inject / wrong contract）
-- `samples/ECMAScript.Vben.ElementPlusInject/` 已落地真实 sample：根组件只 authoring `Vben` contract，sample-local `IVueContainerImplementation<TContainer>` 负责 Element Plus 具体实现，consumer 走 Deno-only `razorvue-consumer-entry` 主链
+- `samples/ECMAScript.Vben.ElementPlusInject/` 是 pre-G0 真实 sample：根组件只 authoring `Vben` contract，sample-local `IVueContainerImplementation<TContainer>` 负责 Element Plus 具体实现，但 consumer 仍走已退役的 SFC bridge / `razorvue-consumer-entry` 主链，等待当前 `.mjs` 路线迁移。
 
 ### C2. 建议增加最小 sample
 
@@ -248,9 +248,9 @@
 
 当前落地补充：
 
-- `samples/ECMAScript.Vben.ElementPlusInject/` 已按这个方向建立；
-- sample 明确采用 `DenoHost` / `deno.json` / `scripts/run-deno.cs` / `razorvue-consumer-entry`；
-- 该 sample 当前唯一支持的 consumer 路径是 `deno.json` + `scripts/run-deno.cs` + `razorvue-consumer-entry`。
+- `samples/ECMAScript.Vben.ElementPlusInject/` 已按这个方向建立，但当前仍是 legacy/pending-migration sample；
+- sample 的旧 consumer 路径是 `DenoHost` / `deno.json` / `scripts/run-deno.cs` / `razorvue-consumer-entry`；
+- 当前转型分支需要把该 sample 迁移到 render-function `.mjs` artifact 与新的工具链入口后，才能重新作为生产导向验证。
 
 ## 6. 第一阶段切片顺序
 

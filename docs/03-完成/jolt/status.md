@@ -1,12 +1,12 @@
-# Jolt 状态（2026-04-23）
+# Jolt 历史状态快照（2026-04-23）
 
-> Status: 当前状态快照（Windows 生产目标收敛后更新）
-> Positioning: 活跃的 `Jolt` 开发时边界的仓库级状态快照
-> Scope: `.jazor` 编辑宿主、LSP、开发服务器/HMR、Source Map 管道、调试适配器基线和生产构建 lane
+> Status: Historical snapshot
+> Retirement: Jolt 已在 `3ee18679fbdf43c13e05d7bfac8857ddcebd19f9` 从转型分支退役；`src/Jolt` 和 `src/Jolt.Test` 已从当前项目图删除。
+> Baseline: 本页内容、源码路径和命令仅对应 `d68aecbb00b23aa35735c9a269b2e987c7815b05`，不代表当前架构或当前验证结果。
 
 ## 总结
 
-`Jolt` 当前七阶段里程碑验收项已全部收口。最新一轮 Windows-only 复评进一步把“生产”范围收敛为：本机开发、受控内网调试、正式构建 lane；不再把公网服务作为当前目标。对应的失败路径、配置文件边界和 CLI 参数 fail-fast 已补齐，架构和代码质量保持良好。
+以 2026-04-23 为观察时点，`Jolt` 七阶段里程碑验收项已全部收口。当时的 Windows-only 复评把“生产”范围收敛为：本机开发、受控内网调试和正式构建 lane，不把公网服务作为目标。以下陈述均是该基线的历史记录。
 
 当前更准确的描述是：
 
@@ -20,7 +20,7 @@
 - 稳态补强：深目录 workspace 组件解析、`@functions` / CRLF 文档区域分类、代码块内字符串/注释括号误判、标准 Razor 指令即使未预热 projection map 也会回落到 Razor/Roslyn、无 `@code` 的 `.jazor` 也会建立 Razor design-time projection、Roslyn completion 已补齐 namespace/type 以覆盖 `@using` 等标准指令场景、directive-only 文档在 EOF 仍保持 `Directive` 区域判定、comment-only 前导行不再把后续 directive 误切进 template/markup 边界、注释中的 `@code {` 也不再污染后续顶层 directive 分类、`/* ... */` 与 `@* ... *@` 前导注释中的伪 `@code` 也不会再把文档误切进 code lane、`JazorVueParser`/Razor fallback/semantic tokens/builtin 结构诊断现已统一复用共享真实 `@code` 扫描器并正确跳过注释与代码块内字符串/注释中的括号、compile parser 也会跳过无块体的前导 `@code` 并命中后续真实代码块、`DocumentRegionClassifier` 现已与 `@code/@functions` 共用顶层块指令扫描器，前导无块体 `@code` 不会再把后续 `@module` 指令或真实代码块误吞进 code lane、重复真实 `@code` 已有显式结构诊断、顶层 `@module` / legacy `@import` 识别也已统一复用共享扫描器，parser、document links、semantic tokens、legacy diagnostics 与 builtin component code action 均会跳过注释、template 和代码块中的伪指令，`@module` 绑定子句解析也已共享给 parser 与 builtin component code action，quick-fix 现在按 local binding 精确匹配，不再因为 source path 或 imported name 假命中而误判”已导入”、`.vue/.ts` script-import bridge 会先屏蔽 JS/TS 注释与字符串文本，不再把块注释或 template string 中的伪 `import` 当成组件绑定、`StdioLspServer` 在 handler 执行前补上 queued cancel 落地窗口，已发出的 `$/cancelRequest` 可稳定转为 `-32800 Request cancelled.`、builtin `@module` 补全已限制在顶层 directive 区域且不再泄漏到 template 表达式、`@module` lane 收口、builtin 指令补全收窄到 `@module`、取消构建/分析时的子进程清理已修复并补回归、`--lsp --dev` 也已抑制 ASP.NET hosting 日志以保持 stdout 为纯 LSP 协议流
 - 第四轮收口：`JazorVueParser` 残余扫描实现已删除并统一复用 locator，`JazorMarkupPatterns` 已统一组件标签 regex，`MarkupComponentBridgeService` 死代码与 Build/Deno 6 处目录 null 风险已修复，`completion-analysis` 已回到 **100%**
 
-## 当前生产目标（Windows）
+## 当时的生产目标（Windows）
 
 当前确认的生产目标不是“Jolt 直接对公网提供服务”，而是以下更窄、更现实的目标边界：
 
@@ -37,7 +37,7 @@
 - Windows 下的受控内网 `--dev` / `--preview` 可用，但前提是只开放给指定机器或网段
 - “Jolt 进程直接面向公网”不在当前生产目标内，因此不作为验收项
 
-## 当前状态判断
+## 当时的状态判断
 
 ### 1. Host 边界和 Lane 架构已稳定
 
@@ -80,7 +80,7 @@
 | Phase 6 Advanced LSP | 100% | 里程碑验收完成 | references/rename/codeAction/documentSymbol/semantic tokens 主能力稳定，跨 lane 补桥接用例回归通过 |
 | Phase 7 Extension System | 100% | 里程碑验收完成 | 扩展 provider 聚合 + 超时隔离 + 健康查询 + signature/inlay/workspace/folding + 目录越界防护 + trusted/hash/provider-permission 前置拦截 + builtin 结构诊断/仅 `@module` 指令补全/组件 codeAction/workspace-symbol + VS Code 最小扩展骨架 |
 
-## 本轮验证（2026-04-23，Windows 生产目标收敛）
+## 历史验证（2026-04-23，Windows 生产目标收敛）
 
 - `dotnet test src/Jolt.Test/Jolt.Test.csproj --no-restore --disable-build-servers -m:1 -v minimal`：**748/748 通过**
 - `dotnet publish src/Jolt/Jolt.csproj --no-restore -c Release -o .artifacts/publish-jolt-review -v minimal`：**通过**
@@ -113,7 +113,7 @@
 - `dotnet test src/Jolt.Test/Jolt.Test.csproj --filter 'FullyQualifiedName~JoltStdioLspServerTests|FullyQualifiedName~Jolt_Lsp_CancelRequest_WithUnknownId_DoesNotBreakSubsequentRequests' --no-restore --disable-build-servers -m:1 -v minimal`：**7/7 通过**
 - `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --no-restore --disable-build-servers -m:1 -v minimal`：**2391/2391 通过**
 
-## 近期推进信号（截至 2026-04-21，第四轮收口）
+## 当时的推进信号（截至 2026-04-21，第四轮收口）
 
 - 最近一周 `jolt` 相关提交持续高频，且覆盖 feature/refactor/test/docs 四类
 - 最新提交聚焦在：
@@ -128,7 +128,7 @@
   - `Path.GetDirectoryName()!` 的 6 处风险点已全部改为安全目录解析 helper
   - `RangesEqual` 与 `TryFindCodeDirective` 死代码已移除，`ComponentTagPattern` 已改为共享定义
 
-## 下一步行动
+## 当时的后续设想（不再是当前计划）
 
 1. **稳态巡检（持续项）**
    - 扩展真实浏览器/CDP 长时压测矩阵

@@ -64,7 +64,8 @@ public sealed class EcmaScriptVue3DocumentationLayoutTests
             docsReadme.Contains("02-计划/ecmascript/ECMAScript.Vue3.Authoring.ImplementationPlan.md", StringComparison.Ordinal),
             "docs/README.md still contains old ecmascript plan link.");
 
-        StringAssert.Contains(dashboard, "../03-完成/ecmascript.vue3/status.md");
+        StringAssert.Contains(dashboard, "ECMAScript.Vue3 / Vuetify");
+        StringAssert.Contains(dashboard, "../01-目标/ecmascript.vue3/README.md");
     }
 
     private static string ResolveRepositoryRoot()
@@ -80,4 +81,3 @@ public sealed class EcmaScriptVue3DocumentationLayoutTests
         throw new InvalidOperationException("Cannot locate repository root (Jazor.slnx).");
     }
 }
-

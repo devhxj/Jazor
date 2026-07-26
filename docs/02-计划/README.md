@@ -6,18 +6,19 @@ WBS、里程碑、阶段拆分，以及各工作流的当前执行进度。
 
 | 文件 | 说明 |
 |------|------|
+| `Jazor 架构转型开发计划.md` | 当前唯一 Razor-to-Vue 主线计划：官方 Razor SG generated C# -> Roslyn `IOperation` -> Vue render-function `.mjs` |
+| `RazorSgFinalDocument.G0.DecisionRecord.md` | G0 决策与证据记录；确认最终生成文档和 callback compilation 派生链 |
 | `workstream-dashboard.md` | 全局工作流总览（依赖、并行策略、执行门槛） |
-| `jazor-component-runtime-plan-2026-07-06.md` | 当前前端 authoring/runtime 主线：基于官方 Razor SG 与 ASP.NET Core Components 语义移植的 Jazor Component Runtime 计划 |
-| `razorvue-blazor-component-directive-support-plan-2026-06-23.md` | RazorVue Blazor component 指令支持补齐计划，覆盖 `@bind`、`@typeparam`、metadata 指令和 host/runtime-only 指令诊断 |
+| `jazor-component-runtime-plan-2026-07-06.md` | 历史 Component Runtime 探索，不是当前执行主线 |
 
 ## 当前主线定位
 
-当前前端 authoring/runtime 主线切换为 Jazor Component Runtime：只有显式标注 `[ECMAScriptModule]` 的标准 `.razor` 组件进入该链路；`.razor` 仍由官方 Razor Source Generator 生成组件 C#，Jazor.Compiler 编译为 ES module，`@jazor/runtime` 执行 Razor render tree 与浏览器 DOM 更新。
+当前转型分支的唯一 Razor-to-Vue 主线是：官方 Razor Source Generator 最终生成文档（generated C#） -> Roslyn `IOperation` -> Vue render-function `.mjs`。G0 已通过，Task 0.5 正在清理旧入口并锁定项目图。
 
-RazorVue 和 Jolt 不再作为主线推进：
+以下旧路径已经退役，不是旁路或 fallback：
 
-- RazorVue 保留为 Vue artifact 旁路、历史探索和可选互操作参考。
-- Jolt 保留为开发期宿主、LSP、DevServer、HMR、build/debug 经验旁路；Runtime 合同稳定前不承载新的组件执行模型。
+- 旧 Razor IR/SFC 管线仅保留历史材料，生产输入必须是官方 Razor SG generated C#。
+- Jolt 已在 `3ee18679fbdf43c13e05d7bfac8857ddcebd19f9` 从当前分支退役；维护与比较使用基线 `d68aecbb00b23aa35735c9a269b2e987c7815b05`。
 
 ## 按项目结构索引
 
@@ -27,9 +28,9 @@ RazorVue 和 Jolt 不再作为主线推进：
 | `ecmascript.vue3/` | `src/ECMAScript.Vue3/` | ECMAScript.Vue3 外部库 authoring surface 的执行级落地计划 |
 | `ecmascript.vben/` | `src/ECMAScript.Vben/` | 后台壳层核心、首个 UI 适配闭环与后续扩展顺序的执行级计划 |
 | `ecmascript.pinia/` | `src/ECMAScript.Pinia/` | ECMAScript.Pinia 外部库 authoring surface 的执行级收口清单 |
-| `ecmascript.vuetify/` | `src/ECMAScript.Vuetify/` | ECMAScript.Vuetify 作为 Vuetify 代理层与 RazorVue authoring 层的执行级收口清单与组件覆盖矩阵 |
+| `ecmascript.vuetify/` | `src/ECMAScript.Vuetify/` | ECMAScript.Vuetify 作为 Vuetify 代理层与后续 RazorVue authoring 消费面的执行级收口清单与组件覆盖矩阵 |
 | `wiki/` | `src/Wiki/` | `jazor.wiki` sample 的阶段划分、收口计划与产品化分流边界 |
-| `jolt/` | `src/Jolt/` | Phase 计划、切片实施文档、运行模式收口 |
-| `csx/` | 待创建 `src/Jazor.CSX/` | Jazor CSX Frontend 独立路线计划：TSX-like `.jazor` 输入、`.jsx` 输出、shadow C# 和 compiler 复用边界 |
-| `jolt/razorvue-implementation/` | RazorVue 迁移材料（当前按 RazorVue 独立线路理解） | RazorVue 模板前端迁移、HMR/桥接边界与历史交叉材料；当前不应自动解读为 `Jolt` 生产代码所有权 |
+| `jolt/` | Git 基线 `d68aecbb00b23aa35735c9a269b2e987c7815b05` | 冻结的 Jolt Phase/WBS 历史，不是当前执行计划 |
+| `csx/` | 无当前源码落点 | 历史 TSX-like `.jazor` 前端探索，不是当前路线 |
+| `jolt/razorvue-implementation/` | Jolt/RazorVue 历史交叉材料 | 冻结的模板前端迁移、HMR/桥接探索，不代表当前生产代码所有权 |
 | `compiler/` | `src/Jazor.Compiler/` | 编译管线实施清单、转换路线图、SourceMap 实施清单 |

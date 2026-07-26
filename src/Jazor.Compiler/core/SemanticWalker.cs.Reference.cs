@@ -2547,6 +2547,9 @@ private bool TryExpandEcmascriptParamsArgument(
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitMethodReference(IMethodReferenceOperation operation, SenseArgument argument)
 	{
+		if (Host?.RewriteMethodReferencePreorder(operation, argument) is Expression preorderHostExpression)
+			return WithOriginIfMissing(preorderHostExpression, operation);
+
 		RejectUnsupportedNativeMapSetEqualityBoundaryIfNeeded(
 			operation,
 			operation.Instance?.Type ?? operation.Method.ContainingType,

@@ -34,7 +34,7 @@ public static partial class WikiHomeModule
                 H("ul",
                 [
                     H("li", [H("strong", "RazorVue"), H("span", " 是构建时库模式，用于将 Razor 组件编译为 JS 制品。")]),
-                    H("li", [H("strong", "Jolt"), H("span", " 是开发时宿主，提供 `.jazor` 编辑、预览、构建和调试流程。")]),
+                    H("li", [H("strong", "Jolt（历史）"), H("span", " 是已从转型分支退役的 `.jazor` 开发时宿主；当前只保留 baseline 与设计追溯入口。")]),
                     H("li", [H("strong", "Route catalog"), H("span", " 是单注册表面，驱动文档元数据、导航、TOC 锚点和相关页面流。")]),
                     H("li", [H("strong", "冒烟验证 (Smoke)"), H("span", " 是快速操作检查，证明发射的 Wiki 外壳和宿主路由端到端仍然有效。")])
                 ]),

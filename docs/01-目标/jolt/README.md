@@ -1,19 +1,21 @@
-# Jolt — 全功能开发模式
+# Jolt 开发时宿主（历史）
 
-> 对应源码：`src/Jolt/`
+> Status: 历史资料
+> Retirement: Jolt 已在 `3ee18679fbdf43c13e05d7bfac8857ddcebd19f9` 从转型分支退役。
+> Baseline: 源码、目录和运行命令仅对应 `d68aecbb00b23aa35735c9a269b2e987c7815b05`；本页不描述当前架构。
 
-## 为什么需要
+## 历史动机
 
-库模式的 RazorVue 只解决"构建时生成产物"。应用开发还需要编辑器智能、预览、HMR、生产构建、源码级调试与工作区级导航。`Jolt` 就是这一整套开发时宿主。
+当时的 RazorVue 库模式只解决“构建时生成产物”，Jolt 曾作为编辑器、预览、HMR、生产构建、源码级调试和工作区导航的开发时宿主。
 
-## 设计原则
+## 历史设计原则
 
 1. **`.jazor` 是第一作者文档**：保持 Razor-first，不把虚拟 `.vue` 当作公开 authoring 面。
 2. **工作区是图，不是孤立文件**：邻近 `.vue`、`.ts`、`.js`、`.css`、`.html` 都参与同一工作区图。
 3. **三条 native lane，各自保真**：Jazor、Roslyn、Volar 各自返回本地语义，跨 lane 补充由协调层完成。
 4. **Deno 是唯一前端运行时路径**：不再把 Bun/Vite 作为长期目标。
 
-## 核心子系统
+## 历史核心子系统
 
 | 子系统 | 目录 | 作用 |
 |------|------|------|
@@ -26,7 +28,7 @@
 | Build | `Build/` | 构建、CSS、资产、import map |
 | RPC / Services / Workspace | `Rpc/`、`Services/`、`Workspace/` | 工作区、协议、热更新规划与 host 协调 |
 
-## 运行模式
+## 历史运行模式
 
 | 模式 | 用途 |
 |------|------|
@@ -38,7 +40,7 @@
 | `--inspect-razor-toolset` | 检查 Razor SDK 工具集 |
 | `--probe-inproc-razor=<path>` | 进程内 Razor 投影探针 |
 
-## 与 RazorVue 的关系
+## 当时与 RazorVue 的关系
 
 | 维度 | Jolt | RazorVue |
 |------|------|----------|

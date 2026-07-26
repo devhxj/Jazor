@@ -17,7 +17,7 @@
 
 - 不在 compiler 中新增 `VueRoute`、`Router`、`useRoute` 之类的关键字或特判。
 - 不追求镜像 Vue Router 全部 TypeScript utility types、内部 matcher 细节、历史实现细节。
-- 不把 Jolt、RazorVue、应用级导航约定、文件路由约定塞进 `ECMAScript.VueRoute`。
+- 不把 RazorVue、应用级导航约定、文件路由约定或其他应用工具链协议塞进 `ECMAScript.VueRoute`。
 - 不为低频长尾 API 提前补满全部覆盖；优先主运行时和高频 authoring path。
 
 ## 推荐边界
@@ -82,4 +82,3 @@ Vue Router 里的大多数 authoring payload，本质上都是普通对象：`Ro
 - 是否切换 `npm:vue-router@4` 到更统一的导入约定
 - 更多导航失败、meta、命名视图、重定向回调边界测试
 - 文档与 Wiki 中的正式使用示例
-

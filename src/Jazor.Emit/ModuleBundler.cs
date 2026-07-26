@@ -4,7 +4,6 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using DenoHost.Core;
 using Jazor.Common.SourceMaps;
-using Jazor.RazorVue.Emit;
 
 namespace Jazor.Emit;
 
@@ -25,8 +24,6 @@ internal sealed class ModuleBundler
     };
     private static readonly SourceMapChainBuilder ChainBuilder = new();
     private static readonly SourceMapWriter SourceMapWriter = new();
-    private static readonly RazorVueHostAssetWriter RazorVueHostAssetWriter = new();
-    private static readonly RazorVueUpdatePlanWriter RazorVueUpdatePlanWriter = new();
 
     public async Task<BundleResult> BundleAsync(BundleOptions options)
     {
@@ -45,12 +42,7 @@ internal sealed class ModuleBundler
             return BundleResult.Fail(6, $"Jazor manifest could not be read: '{options.ManifestPath}'. {ex.Message}");
         }
 
-        var currentRazorVueManifestLoad = ProjectRazorVueManifest(options.ManifestPath, manifest);
-        var razorVueManifest = currentRazorVueManifestLoad.Manifest;
-        var previousRazorVueManifestLoad = LoadPreviousRazorVueManifest(options);
-
         var relativePaths = manifest.Modules
-            .Where(static module => module.Component is null)
             .Select(static module => module.RelativePath.Replace('\\', '/'))
             .Where(static relativePath => !string.IsNullOrWhiteSpace(relativePath))
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -79,8 +71,7 @@ internal sealed class ModuleBundler
 
         var rootAssemblyName = GetRootAssemblyName(manifest);
         var entryRelativePaths = manifest.Modules
-            .Where(module => module.Component is null &&
-                             StringComparer.OrdinalIgnoreCase.Equals(module.AssemblyName, rootAssemblyName))
+            .Where(module => StringComparer.OrdinalIgnoreCase.Equals(module.AssemblyName, rootAssemblyName))
             .Select(static module => module.RelativePath.Replace('\\', '/'))
             .Where(static relativePath => !string.IsNullOrWhiteSpace(relativePath))
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -109,16 +100,11 @@ internal sealed class ModuleBundler
             await File.WriteAllTextAsync(targetPath + ".map", await File.ReadAllTextAsync(sourceMapPath), Utf8WithoutBom);
         }
 
-        var razorVueHostRequirementsRelativePath = await TryWriteRazorVueHostRequirementsAsync(
-            razorVueManifest,
-            bundleWorkspace);
-
         var tempEntryPath = Path.Combine(bundleWorkspace, "__jazor_bundle_entry__.mjs");
         await WriteBundleEntryAsync(
             tempEntryPath,
             bundleWorkspace,
-            entryRelativePaths,
-            razorVueHostRequirementsRelativePath);
+            entryRelativePaths);
         await EnsureBundleWorkspaceDenoConfigAsync(bundleWorkspace);
 
         try
@@ -143,8 +129,6 @@ internal sealed class ModuleBundler
 
             await TryRewriteBundleSourceMapAsync(options.OutputPath, bundleWorkspace, relativePaths, tempEntryPath);
             await EnsureBundleSourceMappingUrlAsync(options.OutputPath);
-            RazorVueHostAssetWriter.Sync(options.OutputPath, razorVueManifest);
-            WriteRazorVueUpdatePlanIfRequested(options, previousRazorVueManifestLoad, currentRazorVueManifestLoad);
             return BundleResult.Success(options.OutputPath, relativePaths.Length);
         }
         catch (Exception ex)
@@ -167,24 +151,15 @@ internal sealed class ModuleBundler
     private static async Task WriteBundleEntryAsync(
         string tempEntryPath,
         string bundleWorkspace,
-        IReadOnlyList<string> entryRelativePaths,
-        string? razorVueHostRequirementsRelativePath)
+        IReadOnlyList<string> entryRelativePaths)
     {
         var entryLines = entryRelativePaths
             .Select(static relativePath => $"export * from \"./{relativePath}\";")
             .ToList();
-        if (!string.IsNullOrWhiteSpace(razorVueHostRequirementsRelativePath))
-        {
-            // Keep bundled hosts on the same compiler-owned metadata contract as unbundled output.
-            entryLines.Add(
-                $"export {{ razorVueHostAssemblyName, razorVueHostGeneratedAtUtc, razorVueHostModules, razorVueHostRequirements, razorVuePluginRequirements, razorVueStyles }} from \"./{razorVueHostRequirementsRelativePath}\";");
-        }
 
         var entrySource = string.Join("\n", entryLines);
         var entryMapPath = tempEntryPath + ".map";
         var entrySourcePaths = entryRelativePaths.ToList();
-        if (!string.IsNullOrWhiteSpace(razorVueHostRequirementsRelativePath))
-            entrySourcePaths.Add(razorVueHostRequirementsRelativePath);
 
         var entryMap = await BuildEntrySourceMapAsync(bundleWorkspace, Path.GetFileName(tempEntryPath), entrySourcePaths);
         var entryCode = SourceMapWriter.AppendSourceMappingUrl(entrySource, Path.GetFileName(entryMapPath));
@@ -225,88 +200,6 @@ internal sealed class ModuleBundler
 
         return new SourceMapDocument(entryFileName, sources, segments);
     }
-
-    private static RazorVueManifestLoadResult LoadPreviousRazorVueManifest(BundleOptions options)
-    {
-        if (string.IsNullOrWhiteSpace(options.PreviousManifestPath))
-            return RazorVueManifestLoadResult.FileNotFound(string.Empty);
-
-        return RazorVueManifestSerializer.Load(options.PreviousManifestPath);
-    }
-
-    private static RazorVueManifestLoadResult ProjectRazorVueManifest(string manifestPath, ManifestModel manifest)
-    {
-        var razorVueManifest = manifest.ToRazorVueManifest();
-        return razorVueManifest.Modules.Count == 0
-            ? RazorVueManifestLoadResult.NoComponentEntries(manifestPath)
-            : RazorVueManifestLoadResult.Success(manifestPath, razorVueManifest);
-    }
-
-    private static void WriteRazorVueUpdatePlanIfRequested(
-        BundleOptions options,
-        RazorVueManifestLoadResult previousManifestLoad,
-        RazorVueManifestLoadResult currentManifestLoad)
-    {
-        if (string.IsNullOrWhiteSpace(options.RazorVueUpdatePlanPath))
-            return;
-
-        if (!currentManifestLoad.IsSuccess || currentManifestLoad.Manifest is null)
-        {
-            DeleteIfExists(options.RazorVueUpdatePlanPath);
-            return;
-        }
-
-        var currentManifest = currentManifestLoad.Manifest;
-
-        // The previous manifest is snapshotted before emit because emit may rewrite
-        // or delete the live manifest before bundling starts.
-        var diff = CreateRazorVueUpdatePlanDiff(previousManifestLoad, currentManifest);
-        RazorVueUpdatePlanWriter.Write(
-            options.RazorVueUpdatePlanPath,
-            previousManifestLoad.Manifest,
-            currentManifest,
-            diff);
-    }
-
-    private static async Task<string?> TryWriteRazorVueHostRequirementsAsync(
-        RazorVueManifestModel? razorVueManifest,
-        string bundleWorkspace)
-    {
-        if (razorVueManifest is null || razorVueManifest.Modules.Count == 0)
-            return null;
-
-        var relativePath = "__jazor/razorvue-host.mjs";
-        var targetPath = Path.Combine(bundleWorkspace, relativePath.Replace('/', Path.DirectorySeparatorChar));
-        var targetDirectory = Path.GetDirectoryName(targetPath);
-        if (!string.IsNullOrWhiteSpace(targetDirectory))
-            Directory.CreateDirectory(targetDirectory);
-
-        var hostRequirementsCode = RazorVueHostRequirementsModuleWriter.BuildHostRequirementsModule(razorVueManifest);
-        await File.WriteAllTextAsync(targetPath, hostRequirementsCode, Utf8WithoutBom);
-        return relativePath;
-    }
-
-    private static RazorVueManifestDiffResult CreateRazorVueUpdatePlanDiff(
-        RazorVueManifestLoadResult previousManifestLoad,
-        RazorVueManifestModel currentManifest)
-    {
-        if (previousManifestLoad.IsSuccess && previousManifestLoad.Manifest is not null)
-            return RazorVueManifestDiffer.Diff(previousManifestLoad.Manifest, currentManifest);
-
-        if (previousManifestLoad.Status == RazorVueManifestLoadStatus.Invalid)
-        {
-            return new RazorVueManifestDiffResult(
-                RazorVueHotUpdateAction.FullReload,
-                FormatProjectionReadFailure("Previous", previousManifestLoad),
-                [],
-                TopLevelMetadataChanged: true);
-        }
-
-        return RazorVueManifestDiffer.Diff(previous: null, currentManifest);
-    }
-
-    private static string FormatProjectionReadFailure(string label, RazorVueManifestLoadResult loadResult)
-        => $"{label} Jazor manifest component projection could not be read: '{loadResult.ManifestPath}'. {loadResult.Error}";
 
     private static async Task TryRewriteBundleSourceMapAsync(string outputPath, string bundleWorkspace, IReadOnlyList<string> relativePaths, string tempEntryPath)
     {
@@ -501,12 +394,6 @@ internal sealed class ModuleBundler
         await File.WriteAllTextAsync(outputPath, updated, Utf8WithoutBom);
     }
 
-    private static void DeleteIfExists(string path)
-    {
-        if (File.Exists(path))
-            File.Delete(path);
-    }
-
     private static string GetBundleMapPath(string outputPath)
         => outputPath + ".map";
 
@@ -515,6 +402,9 @@ internal sealed class ModuleBundler
 
     private static string GetRootAssemblyName(ManifestModel manifest)
     {
+        if (!string.IsNullOrWhiteSpace(manifest.RootAssemblyName))
+            return manifest.RootAssemblyName;
+
         try
         {
             return AssemblyName.GetAssemblyName(manifest.RootAssemblyPath).Name ??

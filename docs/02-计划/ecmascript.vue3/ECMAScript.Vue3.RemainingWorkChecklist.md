@@ -33,7 +33,7 @@
 - 继续扩展 Razor authoring 到 Phase 1 `H(...)` 规范层的稳定映射；
 - 已完成 RazorVue `h(...)` 最小 arity / `null` 占位清理；继续统一剩余 props / children / slots / default-slot sugar 的 canonical shape；
 - 禁止 Razor 侧重新引入一套偏离 `ECMAScript.Vue3` contract 的特殊路径。
-- 若 RazorVue 库模式切换到 `.vue` SFC 主工件，则 SFC 生成必须严格建立在这条 canonical `H(...)` 主线上，不得从 `BuildRenderTree` 直接拼接模板；详见 [RazorVue 库模式 Design-Time SFC 方案](./RazorVue.LibraryMode.DesignTimeSfcPlan.md)。
+- RazorVue 的当前转型主线不再切向 `.vue` SFC 主工件；Razor 组件输出合同是 render-function `.mjs`。Vue3 host binding 工作不得重新引入 Razor-to-SFC fallback。
 
 ### 2.2 diagnostics 与 contract 对齐
 

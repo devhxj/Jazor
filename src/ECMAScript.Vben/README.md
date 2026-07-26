@@ -32,9 +32,9 @@ Verified baseline:
 
 - Default registry resolution keeps `VbenAdminLayout`, `VbenSidebarMenu`, `VbenHeaderBar`, and `VbenPageContainer` on the native `ECMAScript.Vben` implementation path
 - `[VueInject]` replacement is regression-covered for all four public shell components
-- Injected runtime shape lowering is regression-covered at both Vue SFC and pipeline artifact levels for all four public Vben shell components
-- Multi-shell composition is regression-covered at both Vue SFC and pipeline artifact levels, including cross-container import aggregation, style/plugin dependency aggregation, and nested slot/prop/model mapping stability
-- Native route-target semantics are regression-covered at three layers: render-tree behavior for `VbenSidebarMenu` / `VbenPageContainer`, resolver normalization for `Path` / `Name` / `Hash`, and direct `router-link` lowering probes at Vue SFC and pipeline artifact levels
+- Injected runtime shape lowering had pre-G0 regression coverage through the retired Vue SFC pipeline; current RazorVue `.mjs` verification still needs a migrated lane
+- Multi-shell composition had pre-G0 regression coverage through the retired Vue SFC pipeline, including cross-container import aggregation, style/plugin dependency aggregation, and nested slot/prop/model mapping stability
+- Native route-target semantics are regression-covered at the source/component contract level; direct `router-link` artifact probes from the retired SFC pipeline are historical only until migrated to render-function `.mjs`
 - Resolver normalization also regression-covers leading/trailing whitespace on non-empty `href/path/name/hash` values, so native shell output does not leak padded DOM `href` values or padded route-object fields
 - Sidebar key normalization is regression-covered for blank-key filtering, selected/expanded-state matching against trimmed keys, DOM `data-key` trimming, and normalized `SelectedKeyChanged` / `ExpandedKeysChanged` payloads
 - Sidebar duplicate-key handling is regression-covered for first-win effective-tree construction, duplicate DOM-key suppression, selection/expansion isolation, and blocked callbacks from dropped duplicate items
@@ -45,6 +45,6 @@ Verified baseline:
 - Page-container header semantics are regression-covered for null entries, whitespace-only breadcrumb/action entries, and navigable/disabled target branches
 - Empty-shell slot normalization is regression-covered for zero-frame, whitespace-only, and comment-only `RenderFragment` inputs, and visible slot content is captured once then replayed so presence checks do not double-execute user fragments
 - Container compatibility failures are regression-covered for missing props, prop type mismatch, emit payload mismatch, default-slot mismatch, `CaptureUnmatchedValues` mismatch, duplicate registrations, and mismatched `IVueContainerImplementation<TContainer>` contracts
-- A real sample now exists under `samples/ECMAScript.Vben.ElementPlusInject/`, proving Razor-authored Vben shell composition, sample-local `Element Plus` container injection, official `razorvue-consumer-entry` bridge generation, and Deno-only SSR/browser/bundle smoke verification
+- A real sample exists under `samples/ECMAScript.Vben.ElementPlusInject/`, but it is currently a legacy pre-G0 sample because its consumer path still uses the retired SFC bridge / `razorvue-consumer-entry` flow. Treat it as a migration fixture, not current production evidence.
 
 This package is the semantic and implementation core. Third-party UI-library cooperation belongs in samples or app-level composition, not in `ECMAScript.Vben.*` adapter packages.

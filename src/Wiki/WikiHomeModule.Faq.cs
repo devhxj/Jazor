@@ -13,7 +13,7 @@ public static partial class WikiHomeModule
             PageSection("using-jazor", "使用 Jazor",
             [
                 H("p", "问：新项目应该从 RazorVue 还是 Jolt 开始？"),
-                H("p", "答：如果工作是在 `dotnet build` 期间的库模式组件发射，从 RazorVue 开始。如果项目需要 `.jazor` 编写、预览、HMR 或多语言工作区工具，从 Jolt 开始。"),
+                H("p", "答：不要从 Jolt 开始。Jolt 已从转型分支退役；新工作进入 official Razor SG generated C# 到 Vue render-function `.mjs` 的主线，旧 `.jazor` host 只能从固定 baseline 维护。"),
                 H("p", "问：Wiki 本身是否证明了 H-function 编写是生产安全的？"),
                 H("p", "答：是的。当前的外壳、导航、路由回退和运行时模块导入都运行在与生产代码相同的 H-function 编写表面上。")
             ]),

@@ -21,19 +21,7 @@ public partial class VbenTDesignPageContainer : VbenContentComponentBase
     public RenderFragment? Extra { get; set; }
 
     private VueClassValue RootCssClass
-    {
-        get
-        {
-            if (CssClass is null)
-                return "vben-tdesign-page-container";
-
-            return new VueValue[]
-            {
-                "vben-tdesign-page-container",
-                CssClass
-            };
-        }
-    }
+        => BuildCssClass("vben-tdesign-page-container");
 
     private static TDesignButtonTheme? MapTheme(VbenPageActionKind? kind) => kind switch
     {

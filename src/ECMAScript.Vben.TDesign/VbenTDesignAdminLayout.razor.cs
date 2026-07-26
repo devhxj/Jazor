@@ -58,19 +58,4 @@ public partial class VbenTDesignAdminLayout : VbenContentComponentBase
         VbenLayoutMode.Mixed => BuildCssClass("vben-tdesign-layout", "vben-tdesign-layout--mixed"),
         _ => BuildCssClass("vben-tdesign-layout", "vben-tdesign-layout--sidebar")
     };
-
-    private VueClassValue BuildCssClass(params string[] frameworkClasses)
-    {
-        if (CssClass is null)
-            return frameworkClasses;
-
-        var values = new VueValue[frameworkClasses.Length + 1];
-        for (var i = 0; i < frameworkClasses.Length; i++)
-        {
-            values[i] = frameworkClasses[i];
-        }
-
-        values[^1] = CssClass;
-        return values;
-    }
 }

@@ -6,14 +6,11 @@
     <Nullable>enable</Nullable>
     <RazorLangVersion>11.0</RazorLangVersion>
     <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
-    <JazorRazorVueOutputMode>sfc</JazorRazorVueOutputMode>
     <JazorRazorVueEnableRazorSgIntegration>true</JazorRazorVueEnableRazorSgIntegration>
     <JazorEmit>true</JazorEmit>
     <JazorBundle>false</JazorBundle>
     <JazorOutDir>$(MSBuildProjectDirectory)\jazor\</JazorOutDir>
     <JazorPublishMaterializeEnabled>true</JazorPublishMaterializeEnabled>
-    <JazorConsumerRoot>$(MSBuildProjectDirectory)\consumer</JazorConsumerRoot>
-    <JazorConsumerBrowserAssetRoot>$(MSBuildProjectDirectory)\wwwroot\jazor</JazorConsumerBrowserAssetRoot>
   </PropertyGroup>
 
   <ItemGroup>

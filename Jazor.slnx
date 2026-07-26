@@ -24,7 +24,6 @@
   <Project Path="src/ECMAScript.Pinia.Testing/ECMAScript.Pinia.Testing.csproj" />
   <Project Path="src/ECMAScript.Pinia/ECMAScript.Pinia.csproj" />
   <Project Path="src/ECMAScript.TDesign/ECMAScript.TDesign.csproj" />
-  <Project Path="src/ECMAScript.Vben.Test/ECMAScript.Vben.Test.csproj" />
   <Project Path="src/ECMAScript.Vben/ECMAScript.Vben.csproj" />
   <Project Path="src/ECMAScript.Vue3/ECMAScript.Vue3.csproj" />
   <Project Path="src/ECMAScript.VueContract/ECMAScript.VueContract.csproj" />
@@ -40,6 +39,5 @@
   <Project Path="src/Jazor.Emit/Jazor.Emit.csproj" />
   <Project Path="src/Jazor.RazorVue/Jazor.RazorVue.csproj" />
   <Project Path="src/Jazor/Jazor.csproj" />
-  <Project Path="src/Playground/Playground.csproj" />
   <Project Path="src/Wiki/Wiki.csproj" />
 </Solution>

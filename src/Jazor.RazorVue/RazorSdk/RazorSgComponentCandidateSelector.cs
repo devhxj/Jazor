@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
-using Jazor.RazorVue.Discovery;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Jazor.RazorVue.RazorSdk;
 
@@ -8,20 +8,25 @@ namespace Jazor.RazorVue.RazorSdk;
 internal static class RazorSgComponentCandidateSelector
 {
     private static readonly SymbolEqualityComparer Comparer = SymbolEqualityComparer.Default;
+    private const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
+    private const string ComponentBaseMetadataName = "Microsoft.AspNetCore.Components.ComponentBase";
+    private const string VueComponentMarkerMetadataName = "ECMAScript.Vue3+IVueComponent";
 
     public static ImmutableArray<INamedTypeSymbol> DiscoverCurrentComponents(Compilation compilation)
     {
         if (compilation is null)
             throw new ArgumentNullException(nameof(compilation));
 
-        var symbols = RazorVueCompilationSymbols.TryCreate(compilation);
-        if (symbols is null)
+        var moduleAttribute = compilation.GetTypeByMetadataName(ECMAScriptModuleAttributeMetadataName);
+        var componentBase = compilation.GetTypeByMetadataName(ComponentBaseMetadataName);
+        var vueComponentMarker = compilation.GetTypeByMetadataName(VueComponentMarkerMetadataName);
+        if (moduleAttribute is null || componentBase is null || vueComponentMarker is null)
             return ImmutableArray<INamedTypeSymbol>.Empty;
 
         var components = ImmutableArray.CreateBuilder<INamedTypeSymbol>();
         foreach (var symbol in EnumerateNamedTypes(compilation.GlobalNamespace))
         {
-            if (RazorVueEntryClassifier.Classify(symbol, symbols) != RazorVueEntryKind.RazorVueComponent ||
+            if (!IsRazorVueComponent(symbol, moduleAttribute, componentBase, vueComponentMarker) ||
                 !Comparer.Equals(symbol.ContainingAssembly, compilation.Assembly) ||
                 !HasCurrentCompilationSource(symbol))
             {
@@ -110,13 +115,103 @@ internal static class RazorSgComponentCandidateSelector
         if (HasRazorSourceIdentity(component))
             return true;
 
-        var buildRenderTree = RazorVueEntryClassifier.FindBuildRenderTreeMethod(component);
+        var buildRenderTree = FindBuildRenderTreeMethod(component);
         return buildRenderTree is not null && HasRazorSourceIdentity(buildRenderTree);
     }
 
     private static bool HasHandwrittenBuildRenderTree(INamedTypeSymbol component)
-        => RazorVueBuildRenderTreeAuthoringClassifier.IsHandwrittenBuildRenderTree(
-            RazorVueEntryClassifier.FindBuildRenderTreeMethod(component));
+    {
+        var buildRenderTree = FindBuildRenderTreeMethod(component);
+        if (buildRenderTree is null)
+            return false;
+
+        foreach (var syntaxReference in buildRenderTree.DeclaringSyntaxReferences)
+        {
+            if (syntaxReference.GetSyntax() is not MethodDeclarationSyntax methodSyntax)
+                continue;
+
+            if (HasMappedRazorPath(methodSyntax) || IsGeneratedSourcePath(methodSyntax.SyntaxTree.FilePath))
+                continue;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsRazorVueComponent(
+        INamedTypeSymbol symbol,
+        INamedTypeSymbol moduleAttribute,
+        INamedTypeSymbol componentBase,
+        INamedTypeSymbol vueComponentMarker)
+        => !symbol.IsStatic &&
+           HasECMAScriptModuleAttribute(symbol, moduleAttribute) &&
+           DerivesFrom(symbol, componentBase) &&
+           Implements(symbol, vueComponentMarker);
+
+    private static bool HasECMAScriptModuleAttribute(INamedTypeSymbol symbol, INamedTypeSymbol moduleAttribute)
+        => symbol.GetAttributes().Any(attribute =>
+            Comparer.Equals(attribute.AttributeClass, moduleAttribute) ||
+            string.Equals(
+                attribute.AttributeClass?.ToDisplayString(),
+                ECMAScriptModuleAttributeMetadataName,
+                StringComparison.Ordinal));
+
+    private static bool DerivesFrom(INamedTypeSymbol symbol, INamedTypeSymbol componentBase)
+    {
+        for (var current = symbol; current is not null; current = current.BaseType)
+        {
+            if (Comparer.Equals(current.OriginalDefinition, componentBase))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool Implements(INamedTypeSymbol symbol, INamedTypeSymbol vueComponentMarker)
+        => symbol.AllInterfaces.Any(candidate => Comparer.Equals(candidate.OriginalDefinition, vueComponentMarker));
+
+    private static IMethodSymbol? FindBuildRenderTreeMethod(INamedTypeSymbol symbol)
+    {
+        for (var current = symbol; current is not null; current = current.BaseType)
+        {
+            var method = current.GetMembers("BuildRenderTree")
+                .OfType<IMethodSymbol>()
+                .FirstOrDefault(candidate =>
+                    !candidate.IsStatic &&
+                    candidate.MethodKind == MethodKind.Ordinary &&
+                    candidate.Parameters.Length == 1 &&
+                    (candidate.Locations.Any(static location => location.IsInSource) ||
+                     candidate.DeclaringSyntaxReferences.Length > 0));
+            if (method is not null)
+                return method;
+        }
+
+        return null;
+    }
+
+    private static bool HasMappedRazorPath(MethodDeclarationSyntax methodSyntax)
+    {
+        foreach (var nodeOrToken in methodSyntax.DescendantNodesAndTokensAndSelf())
+        {
+            var location = nodeOrToken.GetLocation();
+            if (location is null || !location.IsInSource)
+                continue;
+
+            var mappedSpan = location.GetMappedLineSpan();
+            if (mappedSpan.HasMappedPath && HasRazorSourcePath(mappedSpan.Path))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsGeneratedSourcePath(string? path)
+        => !string.IsNullOrWhiteSpace(path) &&
+           (path!.EndsWith(".razor.g.cs", StringComparison.OrdinalIgnoreCase) ||
+            path.EndsWith(".g.cs", StringComparison.OrdinalIgnoreCase) ||
+            path.EndsWith(".generated.cs", StringComparison.OrdinalIgnoreCase) ||
+            path.EndsWith(".designer.cs", StringComparison.OrdinalIgnoreCase));
 
     private static bool HasRazorSourceIdentity(INamedTypeSymbol symbol)
     {

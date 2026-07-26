@@ -1040,7 +1040,7 @@ app.config.optionMergeStrategies["route"] = mergeRoute;
 - handler 的 unknown-like value 使用 `VueValue`，不暴露 `object`。
 - `GlobalProperties` value 使用 `VueValue` bridge contract；key 是最终 runtime key，不做 `$`、camelCase 或 kebab-case 推断。
 - `OptionMergeStrategies` 使用 `VueOptionMergeFunction` delegate；merge value 仍保持 unknown-like `VueValue`。
-- `CompilerOptions` 指 Vue runtime compiler config，只影响使用浏览器内模板编译器的 app，不代表 Jolt、SFC 或 emit pipeline 的编译配置。
+- `CompilerOptions` 指 Vue runtime compiler config，只影响使用浏览器内模板编译器的 app，不代表外部 `.vue`、应用工具链或 emit pipeline 的编译配置。
 - 该 surface 只依赖 `[Description("@#...")]`、属性访问、索引器和 delegate 映射，不引入 Vue 专用 compiler 分支。
 
 ## 11. Directive 映射

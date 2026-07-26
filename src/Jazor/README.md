@@ -71,9 +71,9 @@ The final executable or web host project enables emit and optionally bundling:
 - `JazorEmit` scans the host output and referenced assemblies, emitting all declared modules together.
 - `JazorBundle=true` bundles emitted modules through the bundled Deno runtime — no global Deno install needed on the consumer machine.
 
-### RazorVue Web SDK host with colocated consumer
+### Razor integration status
 
-For RazorVue library mode, the supported Web SDK shape is one ASP.NET Core runtime host plus a colocated frontend consumer build layer. The `consumer` directory is build-time tooling; it is not a second application host.
+The transformation branch currently exposes the official Razor Source Generator final-document input boundary. A Web SDK project can opt into that boundary with the compiler-visible property already shipped by `buildTransitive/Jazor.props`:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk.Web">
@@ -81,31 +81,8 @@ For RazorVue library mode, the supported Web SDK shape is one ASP.NET Core runti
     <TargetFramework>net11.0</TargetFramework>
     <RazorLangVersion>11.0</RazorLangVersion>
     <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
-
-    <JazorEmit>true</JazorEmit>
-    <JazorBundle>false</JazorBundle>
-    <JazorRazorVueOutputMode>sfc</JazorRazorVueOutputMode>
     <JazorRazorVueEnableRazorSgIntegration>true</JazorRazorVueEnableRazorSgIntegration>
-
-    <JazorOutDir>$(MSBuildProjectDirectory)\jazor\</JazorOutDir>
-    <JazorPublishMaterializeEnabled>true</JazorPublishMaterializeEnabled>
-    <JazorConsumerRoot>$(MSBuildProjectDirectory)\consumer</JazorConsumerRoot>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="consumer\**" />
-    <Content Remove="consumer\**" />
-    <EmbeddedResource Remove="consumer\**" />
-    <None Remove="consumer\**" />
-    <Compile Remove="jazor\**" />
-    <Content Remove="jazor\**" />
-    <EmbeddedResource Remove="jazor\**" />
-    <None Remove="jazor\**" />
-    <Compile Remove="wwwroot\jazor\**" />
-    <Content Remove="wwwroot\jazor\**" />
-    <EmbeddedResource Remove="wwwroot\jazor\**" />
-    <None Remove="wwwroot\jazor\**" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Jazor" Version="0.1.26" />
@@ -113,33 +90,15 @@ For RazorVue library mode, the supported Web SDK shape is one ASP.NET Core runti
 </Project>
 ```
 
-The standard layout is:
+This opt-in enables the controlled SG tail hook that adapts final generated C# and binds `BuildRenderTree` against the callback compilation. At the current Phase 0 boundary it does not yet lower Razor components into Vue render-function `.mjs` artifacts. That lowering belongs to the following implementation phases and must not be assumed to exist in the current package.
 
-```text
-HostProject/
-  jazor/                    # compiler-owned development emit root
-  wwwroot/jazor/            # browser assets produced by the consumer
-  consumer/
-    deno.json
-    index.html
-    scripts/run-deno.cs     # default JazorConsumerBuild runner
-    scripts/build.ts
-```
+### Current MSBuild emit behavior
 
-`dotnet build` runs `JazorEmit` first, writing compiler-owned RazorVue artifacts such as `.vue`, `jazor-manifest.json`, source maps, origins files, and `__jazor/razorvue-host.mjs` under `jazor/`. After that, `JazorConsumerBuild` runs:
+The existing emit targets continue to handle declared ECMAScript modules independently of the future Razor component lowering:
 
-```powershell
-dotnet run --file "<JazorConsumerRoot>\scripts\run-deno.cs" -- task build
-```
-
-The SDK passes these environment variables to the consumer runner:
-
-- `RAZORVUE_HOST_JAZOR_ROOT`: the compiler-owned host `jazor/` root.
-- `RAZORVUE_HOST_WWWROOT_ROOT`: the host `wwwroot/` root.
-- `JAZOR_EMIT_TOOL_PATH`: the `Jazor.Emit` tool used for `razorvue-consumer-entry` and SFC bridge generation.
-
-The consumer build should use `Jazor.Emit razorvue-consumer-entry` to convert generated `.vue` default components into named exports before bundling. Build-time browser assets belong in `wwwroot/jazor/`, typically `client-entry.js`, `client-entry.css`, and maps. Do not copy compiler-owned `.vue` files or `jazor-manifest.json` into `wwwroot/jazor/` during normal build.
-
-If `JazorConsumerRoot` is set but the default runner does not exist, the SDK fails the build with `Jazor consumer runner was not found: ...` after `JazorEmit` completes. It does not run a private Razor Source Generator fallback and does not continue with stale browser assets.
-
-During `dotnet publish`, `JazorPublishMaterializeEnabled=true` materializes compiler-owned output from `jazor/` into the published `wwwroot/jazor/`, then overlays the consumer browser assets from the host `wwwroot/jazor/`. The published output must serve `/jazor/*` from `wwwroot/jazor/`; it should not contain a shadow publish-root `jazor/` directory or legacy `wwwroot/assets/` browser output.
+- `JazorEmit` runs after a successful build when enabled, scans the target and copy-local assemblies, and writes modules plus `jazor-manifest.json`.
+- `JazorOutDir` defaults to `JazorDevOutDir`, which defaults to `$(MSBuildProjectDirectory)\jazor\`.
+- During publish, the default non-materialized path switches to `JazorPublishOutDir`, which defaults to `$(MSBuildProjectDirectory)\wwwroot\jazor\`.
+- `JazorBundle=true` runs the bundled emit tool after `JazorEmit` and writes to `JazorBundleOut`.
+- `JazorCleanEmit` and `JazorFailOnPathConflict` both default to `true`.
+- `JazorPublishMaterializeEnabled=true` copies `JazorOutDir` into the published `wwwroot/jazor` directory and removes a publish-root shadow `jazor` directory.

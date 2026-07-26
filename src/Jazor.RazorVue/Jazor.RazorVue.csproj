@@ -9,12 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Acornima" Version="$(AcornimaVersion)" />
+    <PackageReference Include="Acornima.Extras" Version="$(AcornimaVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(CodeAnalysisVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="$(CodeAnalysisVersion)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.Text.Json" Version="$(JsonNetVersion)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,9 +24,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" />
-    <ProjectReference Include="..\ECMAScript.Contract\ECMAScript.Contract.csproj" />
-    <ProjectReference Include="..\ECMAScript.VueContract\ECMAScript.VueContract.csproj" />
     <ProjectReference Include="..\Jazor.Common\Jazor.Common.csproj" />
+    <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Runtime\*.mjs">
+      <LogicalName>Jazor.RazorVue.Runtime.%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

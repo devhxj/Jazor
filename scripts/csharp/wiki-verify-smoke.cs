@@ -209,7 +209,9 @@ foreach (var marker in new[]
     "主题：深色",
     "复制页面链接",
     "有帮助",
-    "需改进"
+    "需改进",
+    "Jolt 已从转型分支退役",
+    "d68aecbb00b23aa35735c9a269b2e987c7815b05"
 })
 {
     AssertContains(moduleContent, marker, "emitted docs shell marker");
@@ -220,7 +222,7 @@ var docsRoutes = new List<RouteExpectation>
     new("/", "概览 | jazor.wiki", "面向生产的 Jazor 文档外壳，完全使用 ECMAScript.Vue3 H 函数编写。", "index, follow"),
     new("/search", "搜索 | jazor.wiki", "通过子系统、路由片段、工作流或标签搜索完整 Wiki 语料库。", "noindex, nofollow"),
     new("/guides/getting-started", "快速开始 | jazor.wiki", "本地运行站点，理解路由模型，并端到端验证发射的 Wiki 宿主。", "index, follow"),
-    new("/guides/project-lines", "项目线路 | jazor.wiki", "了解两条活跃的 Jazor 线路，何时选择它们，以及它们依赖哪些共享编译器基础设施。", "index, follow"),
+    new("/guides/project-lines", "项目线路 | jazor.wiki", "了解当前 Razor-to-Vue 转型主线、共享编译器基础和已经退役的 Jolt 历史边界。", "index, follow"),
     new("/guides/content-model", "内容模型 | jazor.wiki", "代码优先的页面元数据、显式章节和保持可读性的 C# 导航契约。", "index, follow"),
     new("/guides/navigation-discovery", "导航与发现 | jazor.wiki", "读者如何通过分组导航、章节目录、相关页面和 404 恢复在文档外壳中移动。", "index, follow"),
     new("/guides/information-architecture", "信息架构 | jazor.wiki", "路由、关注组、页面顺序和命名规则如何保持文档表面在增长时保持一致性。", "index, follow"),
@@ -235,7 +237,7 @@ var docsRoutes = new List<RouteExpectation>
     new("/engineering/host-semantic-seams", "宿主语义接缝 | jazor.wiki", "WhiteList、Alias、Inline、Import 和 Compile 如何在支持的宿主语义面上划分职责。", "index, follow"),
     new("/engineering/import-emit-contract", "导入与发射契约 | jazor.wiki", "导入发现、模块 AST 组装、生成的目录和面向宿主的文件物化之间的稳定边界。", "index, follow"),
     new("/engineering/runtime-catalog", "CLR 运行时目录 | jazor.wiki", "CLR 导入 helper 如何变为浏览器可用的 `System/*` 运行时模块，以及哪些保障使该目录可安全发布。", "index, follow"),
-    new("/engineering/jolt-host", "Jolt 宿主 | jazor.wiki", "用于编辑、预览、构建和调试工作流的功能完备的 `.jazor` 开发宿主。", "index, follow"),
+    new("/engineering/jolt-host", "Jolt 宿主（历史） | jazor.wiki", "Jolt 已从转型分支退役；本页仅保留基线、能力范围和历史恢复入口。", "index, follow"),
     new("/engineering/razorvue-library-mode", "RazorVue 库模式 | jazor.wiki", "用于将 Razor 组件编译为 JavaScript 产物的构建时库模式，无需完整开发宿主。", "index, follow"),
     new("/engineering/vueroute-bindings", "VueRoute 绑定 | jazor.wiki", "独立的 Vue Router 绑定库、其宿主表面范围，以及将测试排除在编译器套件之外的拆分验证路径。", "index, follow"),
     new("/operations/content-governance", "内容治理 | jazor.wiki", "代码优先文档内容如何被拥有、编辑、审查和发布，而不偏离发射的产品外壳。", "index, follow"),

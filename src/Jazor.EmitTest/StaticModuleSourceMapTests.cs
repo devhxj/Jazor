@@ -3,7 +3,6 @@ using System.Linq;
 using System.Reflection;
 using Basic.Reference.Assemblies;
 using Jazor.Emit;
-using Jazor.RazorVue;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -241,6 +240,69 @@ public sealed class StaticModuleSourceMapTests
     }
 
     [TestMethod]
+    public void ModuleWriter_Write_ProducesCanonicalSchemaV1ManifestWithoutTimeOrAbsoluteRoot()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+        var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
+        var manifestPath = Path.Combine(outputDirectory, "jazor-manifest.json");
+        var rootAssemblyPath = Path.Combine(root, "bin", "Debug", "net11.0", "Sample.Host.dll");
+        var modules = new[]
+        {
+            new EmitModuleRecord(
+                SourceAssemblyPath: rootAssemblyPath,
+                AssemblyName: "Sample.Host",
+                TypeName: "Demo.Pages.Counter",
+                Id: "Demo.Pages.Counter",
+                RelativePath: "components/counter.mjs",
+                Content: "export default {};\n",
+                Hash: "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
+        };
+
+        try
+        {
+            var writer = new ModuleWriter();
+            var first = writer.Write(
+                rootAssemblyPath,
+                outputDirectory,
+                manifestPath,
+                modules,
+                clean: true);
+
+            Assert.IsTrue(first.IsSuccess, first.Error ?? string.Empty);
+            var firstManifest = File.ReadAllText(manifestPath).ReplaceLineEndings("\n");
+
+            var second = writer.Write(
+                rootAssemblyPath,
+                outputDirectory,
+                manifestPath,
+                modules,
+                clean: true);
+
+            Assert.IsTrue(second.IsSuccess, second.Error ?? string.Empty);
+            var secondManifest = File.ReadAllText(manifestPath).ReplaceLineEndings("\n");
+
+            Assert.AreEqual(firstManifest, secondManifest);
+            StringAssert.Contains(firstManifest, "\"schemaVersion\": 1");
+            StringAssert.Contains(firstManifest, "\"runtimeProtocolVersion\": 1");
+            StringAssert.Contains(firstManifest, "\"rootAssemblyName\": \"Sample.Host\"");
+            StringAssert.Contains(firstManifest, "\"entries\": [");
+            StringAssert.Contains(firstManifest, "\"components/counter.mjs\"");
+            StringAssert.Contains(firstManifest, "\"path\": \"components/counter.mjs\"");
+            StringAssert.Contains(firstManifest, "\"contentHash\": \"sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\"");
+
+            Assert.IsFalse(firstManifest.Contains("generatedAtUtc", StringComparison.OrdinalIgnoreCase), firstManifest);
+            Assert.IsFalse(firstManifest.Contains("rootAssemblyPath", StringComparison.OrdinalIgnoreCase), firstManifest);
+            Assert.IsFalse(firstManifest.Contains(root.Replace('\\', '/'), StringComparison.OrdinalIgnoreCase), firstManifest);
+            Assert.IsFalse(firstManifest.Contains(root.Replace("\\", "\\\\"), StringComparison.OrdinalIgnoreCase), firstManifest);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void ModuleWriter_Write_WhenSourceMapRemoved_DeletesStaleMapAndClearsManifestFields()
     {
         var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
@@ -375,103 +437,6 @@ public sealed class StaticModuleSourceMapTests
         }
     }
 
-    [TestMethod]
-    public void ModuleWriter_Write_WhenPlainModuleSupersedesLegacyRazorVueComponent_HealsUnifiedManifest()
-    {
-        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
-        var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
-        var manifestPath = Path.Combine(outputDirectory, "jazor-manifest.json");
-        var rootAssemblyPath = Path.Combine(root, "Sample.Host.dll");
-        const string moduleRelativePath = "components/counter-card.mjs";
-        const string mapRelativePath = "components/counter-card.mjs.map";
-        const string originRelativePath = "components/counter-card.mjs.origins.json";
-        var modulePath = Path.Combine(outputDirectory, "components", "counter-card.mjs");
-        var mapPath = modulePath + ".map";
-        var originPath = modulePath + ".origins.json";
-        const string mapContent = "{\"version\":3,\"file\":\"components/counter-card.mjs\",\"sources\":[],\"names\":[],\"mappings\":\"\"}";
-
-        try
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(modulePath)!);
-            File.WriteAllText(modulePath, "export default { legacy: true };\n");
-            File.WriteAllText(mapPath, "legacy-map");
-            File.WriteAllText(originPath, "legacy-origin");
-
-            new ManifestModel(
-                rootAssemblyPath,
-                new DateTime(2026, 5, 14, 0, 0, 0, DateTimeKind.Utc),
-                [
-                    new ManifestModuleEntry(
-                        "Sample.Host",
-                        "Demo.Components.CounterCard",
-                        "Demo.Components.CounterCard",
-                        moduleRelativePath,
-                        "legacy-component-hash",
-                        mapRelativePath,
-                        "legacy-component-map-hash",
-                        ManifestModuleKind.Mjs,
-                        new ManifestComponentMetadata(
-                            ManifestComponentModel.H,
-                            "Demo.Components.CounterCard",
-                            moduleRelativePath,
-                            "CounterCard",
-                            ["/counter"],
-                            originRelativePath,
-                            ["vue"],
-                            ["vuetify/styles"],
-                            ["vuetify"],
-                            "descriptor-hash",
-                            "template-hash",
-                            "logic-hash",
-                            "legacy-component-hash",
-                            RazorVueHmrBoundaryKind.LogicSafe,
-                            RequiresHydration: false,
-                            SupportsSsr: true))
-                ]).Save(manifestPath);
-
-            var writer = new ModuleWriter();
-            var result = writer.Write(
-                rootAssemblyPath,
-                outputDirectory,
-                manifestPath,
-                [
-                    new EmitModuleRecord(
-                        SourceAssemblyPath: rootAssemblyPath,
-                        AssemblyName: "Sample.Host",
-                        TypeName: "Demo.Modules.CounterCard",
-                        Id: "Demo.Modules.CounterCard",
-                        RelativePath: moduleRelativePath,
-                        Content: "export const counter = 1;\n",
-                        Hash: "plain-hash",
-                        SourceMapRelativePath: mapRelativePath,
-                        SourceMapContent: mapContent,
-                        MapHash: "plain-map-hash")
-                ],
-                clean: true);
-
-            Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
-            Assert.IsTrue(File.Exists(modulePath));
-            Assert.IsTrue(File.Exists(mapPath));
-            Assert.IsFalse(File.Exists(originPath), "Superseded RazorVue origin sidecar should be removed when a plain module takes over the same relative path.");
-            Assert.AreEqual(mapContent, File.ReadAllText(mapPath));
-
-            var moduleCode = File.ReadAllText(modulePath);
-            StringAssert.Contains(moduleCode, "export const counter = 1;");
-            StringAssert.Contains(moduleCode, "//# sourceMappingURL=counter-card.mjs.map");
-
-            var manifest = ManifestModel.TryLoad(manifestPath);
-            Assert.IsNotNull(manifest);
-            Assert.HasCount(1, manifest.Modules);
-            Assert.AreEqual(moduleRelativePath, manifest.Modules[0].RelativePath);
-            Assert.AreEqual(mapRelativePath, manifest.Modules[0].SourceMapPath);
-            Assert.IsNull(manifest.Modules[0].Component, "Superseded RazorVue component metadata must not survive in the unified manifest once a plain module owns the path.");
-        }
-        finally
-        {
-            if (Directory.Exists(root))
-                Directory.Delete(root, recursive: true);
-        }
-    }
 
     private static Assembly CompileCatalogAssembly(string assemblyName, string source)
     {

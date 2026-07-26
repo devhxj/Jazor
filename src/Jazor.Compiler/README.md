@@ -17,6 +17,14 @@
 2. `SemanticWalker`：负责语义级 lowering，把 `IOperation` 转成 ESTree。
 3. WhiteList / `Op.Compile` / SourceOrigin：负责宿主映射事实、复杂宿主钩子和调试来源锚点。
 
+Razor-to-Vue 转型线通过 opt-in `SemanticWalkerHost` seam 接入，不改变普通 compiler mainline：
+
+- `RenderTreeBuilderSemanticWalkerHost`：把受支持的 `RenderTreeBuilder` 调用降到 render-context v1。
+- `CurrentComponentMemberClosure`：从 `BuildRenderTree`/handler/lifecycle roots 计算 current-component 可达成员闭包，可直接作为 `AstConverterOptions.MemberFilter`。
+- `CurrentComponentSemanticWalkerHost`：把 current-component 字段/auto property/`[Parameter]`/方法引用分别改写到 `state`、`props` 和稳定 setup-scope 函数标识符；official SG 生成的 `EventCallback.Factory.Create(this, Handler)` method-group 也在此 seam 内解包为稳定 handler identifier。
+
+这些 seam 只负责 compiler-owned C# 语义；最终 `defineComponent`、`setup`、runtime import、`.mjs`/manifest 物化仍由 RazorVue/Emit 后续阶段承接。
+
 真正的文件物化不在本项目内完成：
 
 - `Jazor.Compiler` 负责 AST、模块文本、catalog / source map carriers

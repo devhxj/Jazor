@@ -8,8 +8,7 @@
 
 - emit 如何组装最终 bundle
 - import 重写如何保持在 emit 内部
-- 模块级 SourceMap 生成目前处于何处
-- 狭窄的 active SourceMap lane 如何通过 emit 继续
+- 模块级 source map payload 如何随 module manifest 物化
 
 ## 2. Bundle 路径
 
@@ -40,28 +39,26 @@ bundling 保持在 host-facing lane，不会泄漏回编译器语义。
 
 关键规则：bundling 保持为 emit 关注点，绝不能强制编译器重新设计。
 
-### 3.2 SourceMap 生成
+### 3.2 SourceMap 物化
 
-- `SourceMaps/SourceMapBuilder.cs`
-- `SourceMaps/SourceMapDocument.cs`
-- `SourceMaps/SourceMapWriter.cs`
-- `RazorVueModuleWriter.cs`
+- `ManifestModel.cs`
+- `ModuleWriter.cs`
 
 角色：
 
-- 为 RazorVue-emitted modules 构建模块级 `.map` 文件
-- 持久化 `sourcesContent`
+- 写出 compiler catalog 中提供的 module-level `.mjs.map` payload
+- 保持 `.mjs` 与 `.mjs.map` path 同步
 - 将 `sourceMappingURL` 追加到 emitted module 文件
 
 ## 4. 当前程序位置
 
-emit 中的 SourceMap 有意保持狭窄：
+emit 中的 SourceMap 职责有意保持狭窄：
 
-- 模块级 map 生成已位于此处
-- 与 RazorVue 相关的 SourceMap 继续是活跃的
-- 更广泛的 SourceMap 推广仍然比此切片更保守
+- module-level map 物化已位于此处
+- map 语义和 origin 生成仍属于 compiler/catalog 上游
+- bundle chaining 保持在 emit/bundler 边界
 
-emit 已经是 SourceMap 写入的操作主页，但不是整个广泛 SourceMap 程序的所有者。
+emit 已经是 source map 写入的操作主页，但不是整个 source map 语义程序的所有者。
 
 ## 5. 边界
 
@@ -70,7 +67,7 @@ emit 已经是 SourceMap 写入的操作主页，但不是整个广泛 SourceMap
 - bundle 工作空间组装
 - host-facing bundle 调用
 - 模块级 SourceMap 写入
-- 狭窄 SourceMap 推广的 emit 侧延续
+- bundle chaining 的 emit 侧延续
 
 此路径不拥有：
 

@@ -9,8 +9,7 @@ public sealed class SampleGeneratedArtifactLayoutTests
     [
         Path.Combine("samples", "ECMAScript.Pinia.Counter", "Pinia.Counter.Host", "wwwroot", "jazor", "jazor-manifest.json"),
         Path.Combine("samples", "ECMAScript.VueRoute.MemorySmoke", "VueRoute.MemorySmoke.Host", "wwwroot", "jazor", "jazor-manifest.json"),
-        Path.Combine("samples", "Jazor.MultiProject", "Sample.Host", "wwwroot", "jazor", "jazor-manifest.json"),
-        Path.Combine("samples", "RazorVue.TodoList", "Todo.Host", "jazor", "jazor-manifest.json")
+        Path.Combine("samples", "Jazor.MultiProject", "Sample.Host", "wwwroot", "jazor", "jazor-manifest.json")
     ];
 
     [TestMethod]
@@ -69,43 +68,7 @@ public sealed class SampleGeneratedArtifactLayoutTests
                 Assert.IsTrue(File.Exists(sourceMapPath), "Manifest source map file is missing: " + moduleDescription);
             }
 
-            var component = module.Component;
-            if (component is null)
-                continue;
-
-            var componentDescription = moduleDescription + " [" + component.Model + "]";
-            var originMapPath = ResolveManifestRelativePath(manifestPath, component.OriginMapPath, componentDescription);
-            Assert.IsTrue(File.Exists(originMapPath), "RazorVue origin map file is missing: " + componentDescription);
-
-            foreach (var importPath in component.Imports)
-            {
-                if (string.IsNullOrWhiteSpace(importPath) || !importPath.StartsWith(".", StringComparison.Ordinal))
-                    continue;
-
-                AssertRazorVueRelativeImportExists(importPath, modulePath, manifestPath, componentDescription);
-            }
         }
-    }
-
-    private static void AssertRazorVueRelativeImportExists(
-        string importPath,
-        string modulePath,
-        string manifestPath,
-        string moduleDescription)
-    {
-        var moduleDirectory = Path.GetDirectoryName(modulePath)
-            ?? throw new InvalidOperationException("Could not resolve module directory for " + modulePath);
-        var manifestDirectory = Path.GetDirectoryName(manifestPath)
-            ?? throw new InvalidOperationException("Could not resolve manifest directory for " + manifestPath);
-        var rootedManifestDirectory = Path.GetFullPath(manifestDirectory);
-        if (!rootedManifestDirectory.EndsWith(Path.DirectorySeparatorChar))
-            rootedManifestDirectory += Path.DirectorySeparatorChar;
-
-        var resolvedPath = Path.GetFullPath(Path.Combine(moduleDirectory, importPath.Replace('/', Path.DirectorySeparatorChar)));
-        Assert.IsTrue(
-            resolvedPath.StartsWith(rootedManifestDirectory, StringComparison.OrdinalIgnoreCase),
-            "RazorVue relative import escapes the manifest output directory: " + importPath + " for " + moduleDescription);
-        Assert.IsTrue(File.Exists(resolvedPath), "RazorVue relative import file is missing: " + importPath + " for " + moduleDescription);
     }
 
     private static string GetModuleDescription(ManifestModuleEntry module, string manifestRelativePath)

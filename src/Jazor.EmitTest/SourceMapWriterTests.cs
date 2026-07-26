@@ -7,6 +7,31 @@ namespace Jazor.EmitTest;
 public sealed class SourceMapWriterTests
 {
     [TestMethod]
+    public void Read_RoundTripsWriterOutputSegmentsAndSourcesContent()
+    {
+        var document = new SourceMapDocument(
+            File: "components/counter-card.mjs",
+            Sources:
+            [
+                new SourceMapSource("Counter.razor", "<Counter />")
+            ],
+            Segments:
+            [
+                new SourceMapSegment(0, 0, 0, 1, 3),
+                new SourceMapSegment(1, 0, 0, 2, 3)
+            ]);
+
+        var writer = new SourceMapWriter();
+        var reader = new SourceMapReader();
+
+        var roundTripped = reader.Read(writer.Write(document));
+
+        Assert.AreEqual(document.File, roundTripped.File);
+        CollectionAssert.AreEqual(document.Sources.ToArray(), roundTripped.Sources.ToArray());
+        CollectionAssert.AreEqual(document.Segments.ToArray(), roundTripped.Segments.ToArray());
+    }
+
+    [TestMethod]
     public void Write_ProducesExternalSourceMapJson()
     {
         var document = new SourceMapDocument(

@@ -1,4 +1,4 @@
-# Jazor 架构转型开发计划（WBS）v3
+﻿# Jazor 架构转型开发计划（WBS）v3
 
 > **项目**：[Jazor](https://github.com/devhxj/jazor) - .NET toolchain for authoring JavaScript and Vue applications from C# and Razor
 >
@@ -6,7 +6,7 @@
 >
 > **日期**：2026-07-22
 >
-> **状态**：Draft v3 - G0 已通过，Task 0.5 进行中（SG-focused 测试资产已迁移）
+> **状态**：Draft v3 - G0 已通过；Task 0.5 清理已验证但尚未提交；Task 1.1 与 Task 1.2 已完成；Task 1.3 compiler closure/rewrite、SG bridge seam、最小内存 `.mjs` framing、browser-visible state/event 与 dynamic dispatch/source-origin diagnostic 首切片已完成；Task 1.4 carrier/Emit/runtime asset/canonical manifest、expression-level `.mjs.map`、stale cleanup、writer repeat-write determinism 与外部 consumer clean-build artifact hash 首切片已通过；Task 1.5 真实 browser Counter 首切片已通过；Task 2.2 DOM `@bind` v1（`CreateBinder` 简单 state assignment + `SetUpdatesAttributeName` hint）、component `@bind-X` 常见 `X`/`XChanged` 首切片、default/named 非泛型 `RenderFragment` slot 首切片、`RenderFragment<T>` component slot fail-fast diagnostic 首切片、父子 component parameter lower-camel bridge、EventCallback 参数 `emits: [...]` metadata 首切片与 sibling component import rebasing 已接线；Task 2.5 benchmark protocol、runtime partial measurement 与 三 fixture official SG generated artifact size/hash 首切片（含 handwritten `.mjs` baseline）已加入，完整 G2 采样仍待完成
 
 本文中的 `DR/IR` 特指 Razor intermediate representation（包括 `DocumentIntermediateNode` 及其相关节点），不是 Roslyn `IOperation` 或官方 SG 最终生成的 C# 文档。本文中的 `hook compilation` 指 source-output callback 可见的 Roslyn compilation 快照，不等同于外层 `GeneratorDriver` 应用全部 generator output 后返回的 final updated compilation。
 
@@ -385,27 +385,38 @@ generated-C# content hash、`BuildRenderTree` operation inventory/hash 与禁止
 
 **验收标准**：
 
-- [ ] solution 不再包含 Jolt 和 Razor IR test project。
+- [x] solution 不再包含 Jolt 和 Razor IR test project。
 - [x] 新建或重命名为 SG-result focused test project，测试职责不再包含 IR。
-- [ ] 不存在 SFC output mode 分支、DR/IR DTO 或 Jolt protocol orphan。
-- [ ] 测试不是 skip：旧合同测试删除，新合同测试在同一提交加入。
+- [x] 不存在 SFC output mode 分支、DR/IR DTO 或 Jolt protocol orphan。（生产源码/项目图扫描无命中；legacy samples 作为 G5 迁移对象单独标注）
+- [x] 测试不是 skip：旧合同测试删除，新合同测试在同一提交加入。
 - [ ] 清理提交引用 G0 evidence；若 G0 失败，Task 0.5 不执行。
 
 **验证**：`dotnet build Jazor.slnx` 与 G0 focused suite 通过，并检查 solution/project graph 没有 orphan reference。
+
+2026-07-22 当前验证：
+
+- `dotnet build Jazor.slnx --no-restore -v minimal /m:1 /p:BuildInParallel=false /p:UseSharedCompilation=false`：0 warning / 0 error。
+- `dotnet run --file scripts/csharp/test-dotnet.cs -- --project razor-sg`：46/46 passed。
+- `dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit`：80/80 passed。
+- `git diff --check`：通过，仅 Git CRLF 提示。
+- 生产源码 legacy scan：`src/Jazor.RazorVue` / `src/Jazor.Emit` / `src/Jazor.Analyzer` / `src/Jazor` 中无旧 IR/SFC/Jolt 精确生产类型命中。
+- project graph scan：`Jazor.slnx`、`src/**/*.csproj`、`samples/**/*.csproj` 中无 Jolt、Razor IR test project、Playground 或旧 RazorVue SFC/consumer-entry project reference 命中。
 
 **依赖**：Gate G0。
 
 ### Phase 0 出口检查点
 
 - [x] G0 evidence、SDK fingerprint、baseline commit 和 ADR 草案已入转型分支。
-- [ ] Task 0.5 清理完成，且新线在没有旧 IR/Jolt 依赖的情况下可 clean build。
-- [ ] 下一阶段只从 Phase 0 出口开始；不得在 G0 未通过时并行实现 runtime 或 toolchain。
+- [x] Task 0.5 清理完成，且新线在没有旧 IR/Jolt 依赖的情况下可 clean build。
+- [x] 下一阶段只从 Phase 0 出口开始；不得在 G0 未通过时并行实现 runtime 或 toolchain。
 
 ---
 
 ## 六、Phase 1：Counter 最小纵向链路（5-7d）
 
 ### Task 1.1：冻结 render-context v1 协议
+
+> Status: complete（2026-07-22）
 
 **内容**：定义最小 runtime surface，仅覆盖 Counter 所需能力。
 
@@ -426,40 +437,80 @@ sequence 参数由 compiler 接收并擦除，但仍验证调用形状；runtime
 
 **验证**：runtime unit tests 覆盖 frame balance、attribute/content 顺序和空节点规范化。
 
+2026-07-22 当前验证：
+
+- `dotnet run --file scripts/csharp/test-dotnet.cs -- --project render-context`：8/8 passed。
+
 **依赖**：Phase 0 出口检查点。
 
 ### Task 1.2：RenderTreeBuilder Compile hooks
+
+> Status: complete（2026-07-22）
 
 **内容**：在 `Jazor.Compiler`/`SemanticWalkerHost` 中识别最小 RenderTreeBuilder surface，并生成 render-context 调用。组件普通 C# 表达式继续走现有 compiler mainline。
 
 **验收标准**：
 
-- [ ] builder receiver 只求值一次。
-- [ ] attribute/content value 保持 C# evaluation order 与 side-effect count。
-- [ ] unsupported overload 明确列出 method signature 并 fail-fast。
-- [ ] import、temp name 和 emitted call order 稳定。
+- [x] builder receiver 只求值一次。
+- [x] attribute/content value 保持 C# evaluation order 与 side-effect count。
+- [x] unsupported overload 明确列出 method signature 并 fail-fast。
+- [x] import、temp name 和 emitted call order 稳定。
 
 **验证**：`Jazor.CompilerTest` 覆盖直接调用、条件分支、event lambda 与 unsupported overload。
+
+2026-07-22 当前验证：
+
+- `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --no-restore --filter "SemanticWalkerRenderTreeBuilderHostTest" -v minimal /nr:false /p:UseSharedCompilation=false`：9/9 passed。
+- `dotnet build Jazor.slnx --no-restore -v minimal /m:1 /p:BuildInParallel=false /p:UseSharedCompilation=false`：0 warnings / 0 errors。
+- `dotnet run --file scripts/csharp/test-dotnet.cs -- --project render-context`：8/8 passed。
+- `dotnet run --file scripts/csharp/test-dotnet.cs -- --project razor-sg`：46/46 passed。
 
 **依赖**：1.1。
 
 ### Task 1.3：可达组件成员闭包、state 与 event
 
+> Status: first slice passed（2026-07-23；Compiler current-component 子切片、SG bridge seam、最小内存 `.mjs` framing、state default initializer、动态 dispatch/source-origin diagnostic 与真实 browser Counter 首切片已完成；G2 render/diagnostic/determinism/performance 仍待补齐）
+
 **内容**：以 `BuildRenderTree`、已支持 lifecycle、RenderFragment 和已捕获 event handler 为根，建立确定性的 current-component 可达成员闭包。只编译闭包中的字段、属性、方法、initializer 和 lambda；不复制完整 `ComponentBase`/CLR 对象模型。首版使用单一 reactive state object；参数读取与本地可变 state 使用不同 rewrite，不把所有字段机械变成独立 `ref()`。
 
 **验收标准**：
 
-- [ ] member closure、import 和 emitted member order 在重复构建中稳定；未被根可达的成员不进入产物。
-- [ ] Counter 字段/initializer 只执行一次，render 中读取可被 Vue 追踪。
-- [ ] click handler 修改 state 后只触发一次有效更新，handler identity 不因每次 render 无故漂移。
-- [ ] `[Parameter]` 读取来自 props，写入参数明确拒绝或按已定义合同处理。
-- [ ] current-component method 的 `this` 绑定稳定；无法解析的动态 dispatch 给出 source-origin diagnostic。
+- [x] member closure、import 和 emitted member order 在重复构建中稳定；未被根可达的成员不进入产物。
+- [x] Counter 字段/initializer 只执行一次，render 中读取可被 Vue 追踪。
+- [x] click handler 修改 state 后只触发一次有效更新，handler identity 不因每次 render 无故漂移。
+- [x] `[Parameter]` 读取来自 props，写入参数明确拒绝或按已定义合同处理。
+- [x] current-component method 的 `this` 绑定稳定；无法解析的动态 dispatch 给出 source-origin diagnostic。
 
 **验证**：member-closure inventory、state/member rewrite compiler tests、event identity tests + runtime reactive unit tests。
+
+2026-07-22/23 当前进展（Task 1.3 first slice 已覆盖 current-component closure/rewrite、事件 identity、动态 dispatch/source-origin diagnostic）：
+
+- 新增 `CurrentComponentMemberClosure`：从 `BuildRenderTree` / handler roots 递归收集当前组件字段、属性、方法和 initializer 依赖；只接受当前组件声明成员，不复制 `ComponentBase`/外部基类成员。
+- 新增 `CurrentComponentSemanticWalkerHost`：组合 RenderTreeBuilder render-context lowering；将当前组件字段/auto property 读写 lower 到 `state.*`，`[Parameter]` 读取 lower 到 `props.*`，参数写入 fail-fast；当前组件方法组 lower 为稳定函数标识，避免事件 handler 走普通 `.bind(this)`。
+- 明确 v1 边界：computed/accessor property 不静默伪装成 state，当前 fail-fast，等待 computed property lowering 合同。
+- `AstConverterOptions.MemberFilter` 已验证可消费 closure，未达成员不进入 compiler module 输出。
+- 2026-07-23 增量：`RazorSgComponentMemberClosureBuilder` 改为薄 SG 适配器，复用 `Jazor.Compiler.CurrentComponentMemberClosure` 与 `CurrentComponentSemanticWalkerHost`，并提供 `AstConverterOptions(RazorVueRuntime, MemberFilter, Host)`；SG 侧不再维护第二套 closure traversal。
+- 2026-07-23 增量：`CurrentComponentSemanticWalkerHost` 支持 official Razor SG 常见的 `EventCallback.Factory.Create(this, Increment)` method-group handler lowering，输出稳定 setup-scope handler identifier，避免进入 unsupported external `EventCallback.Factory` field access。
+- 2026-07-23 增量：新增 `RazorSgVueComponentModuleBuilder` 最小内存 `.mjs` framing：输出 `defineComponent` / `setup(props)` / `reactive(state)` / `createRenderContext(h)` / `builder.finish()`，并生成 deterministic component id、relative path 和 `sha256:` content hash；C# 方法/表达式语义仍由 `AstConverter` 与 `SemanticWalkerHost` 产生。
+- 2026-07-23 增量：SG focused tests 内的 Node runtime unit 已覆盖 state initializer 每个 setup 只执行一次、handler identity 跨 render 稳定、handler 调用后 state 更新并在下一次 render 体现。
+- 2026-07-23 增量：render-context runtime 将 RenderTreeBuilder 常见事件 attribute 名称 `onclick` / `@onclick` 规范化为 Vue `h()` 需要的 `onClick` prop，避免 G1 browser click 依赖 DOM attribute 旁路。
+- 2026-07-23 增量：`RazorSgVueComponentModuleBuilder` 对未显式初始化的 current-component state 字段/auto property 按 C# 默认值初始化（例如 `int -> 0`、`bool -> false`、引用类型 -> `null`），避免 browser 首屏把 Counter 默认值渲染为 `undefined`。
+- 2026-07-23 增量：`CurrentComponentSemanticWalkerHost` 对通过 interface/static receiver 间接调用当前组件成员的路径 fail-fast，诊断包含 static receiver type、目标成员和 Roslyn source location；直接 current-component method reference 保持 setup-scope 稳定标识，不生成 `.bind(this)` 或 `this.*`。
+- 已验证：
+  - `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --no-restore --filter "CurrentComponent" -v minimal /nr:false /p:UseSharedCompilation=false`：7/7 passed。
+  - `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --no-restore --filter "SemanticWalkerRenderTreeBuilderHostTest" -v minimal /nr:false /p:UseSharedCompilation=false`：9/9 passed。
+  - `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --no-restore --filter 'CurrentComponent|SemanticWalkerRenderTreeBuilderHostTest' -v minimal /nr:false /p:UseSharedCompilation=false`：17/17 passed。
+  - `dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --no-restore --filter 'ComponentMemberClosure|FinalDocument|GeneratedCSharpBinder' -v minimal /nr:false /p:UseSharedCompilation=false`：14/14 passed。
+  - `dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --no-restore --filter 'BuildVueComponentModule_UsesCSharpDefaultsForUninitializedState|BuildVueComponentModule_EmitsSetupScopedRenderFunction|Build_CreateAstConverterOptions_UsesCompilerClosureAndCurrentComponentHost' -v minimal /nr:false /p:UseSharedCompilation=false`：3/3 passed。
+  - `dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --no-restore --filter 'Build_LocalPackages_WithExternalRazorSgConsumer_RunsCounterInRealBrowser' -v minimal /nr:false /p:UseSharedCompilation=false`：1/1 passed。
+  - `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --no-restore --filter 'RewriteCurrentComponentMembers_RejectsInterfaceDispatchWithSourceLocation|CurrentComponentSemanticWalkerHostTest' -v minimal /nr:false /p:UseSharedCompilation=false`：6/6 passed。
+- 剩余：G2 render/diagnostic/determinism/performance evidence；source-map 已由 Task 1.4 接上 expression-level first slice，后续作为 G2 精度、bundle chain 与调试消费链路继续扩展。
 
 **依赖**：1.2。
 
 ### Task 1.4：generated carrier、`.mjs`、source map 与 manifest
+
+> Status: first slice passed（2026-07-23；generated carrier / `Jazor.Emit` materialization / canonical manifest / expression-level `.mjs.map` 首切片、stale cleanup、materialization-layer repeat-write determinism 与 Counter 外部 consumer clean-build artifact hash 已通过；G2 级多 fixture determinism/performance 仍待补齐）
 
 **内容**：compiler/SG tail 通过 `AddSource` 产生版本化 data-only carrier；`Jazor.Emit` 在成功 build 后读取 carrier，物化 `defineComponent + setup + render function`、runtime import、`.mjs.map` 和 schema-v1 manifest。generator 不直接写磁盘。
 
@@ -467,15 +518,49 @@ sequence 参数由 compiler 接收并擦除，但仍验证调用形状；runtime
 
 **验证**：carrier schema/version/hash tests、`Jazor.EmitTest` snapshot、path validation 和 source-map segment tests；测试 stale carrier、重复 component identity 与未知 schema 都 fail-fast。
 
+2026-07-23 当前进展：
+
+- `RazorSourceGeneratorTailOutput` 已在 successful binding 后通过 `AddSource("Jazor.Generated.VueRenderCatalog.g.cs", ...)` 发出 schema-v1 / runtime-protocol-v1 data-only carrier；carrier 包含 component id、relative path、module text 与 `sha256:` content hash，不直接写磁盘。
+- `RazorSgVueComponentModuleBuilder` 已生成最小 `.mjs.map` payload：使用 schema-v1 source-map JSON、稳定 `.mjs.map` relative path、`sha256:` map hash，以及不含机器绝对路径的 source path；其 source-map 首切片已经串起 wrapper map、compiler origin map 与 Razor SG source mappings。
+- `Jazor.Emit.CatalogReader` 已读取 `Jazor.Generated.VueRenderCatalog`，校验未知 schema/runtime protocol fail-fast，并将 source-map payload 字段进入 `EmitModuleRecord`。
+- `Jazor.Emit` 已能从 `Jazor.RazorVue` embedded resources 物化 `@jazor/vue-runtime/render-context*.mjs` runtime assets，供 generated `.mjs` bare import 解析。
+- `ModuleWriter` 写出的 `jazor-manifest.json` 已升级为 canonical schema-v1：包含 `schemaVersion`、`runtimeProtocolVersion`、`rootAssemblyName`、`entries` 与 module `path/contentHash` 字段；新写 manifest 不再序列化 `generatedAtUtc` 或机器绝对 `rootAssemblyPath`，并保持重复写入 byte-for-byte 稳定。
+- `ModuleWriter` 对同一 Vue render catalog 重复物化时已验证 deterministic skip 和 byte-for-byte 稳定：component `.mjs`、component `.mjs.map`、embedded runtime `.mjs` 与 manifest 在第二次写入后不变。
+- `SdkIntegrationTests` 已覆盖 Counter 外部 Razor SG consumer 的连续 clean build determinism：首轮 `-t:Rebuild` 后对 `wwwroot/jazor` 下 manifest、component `.mjs`、component `.mjs.map` 与 embedded runtime assets 生成相对路径 + SHA256 清单；测试显式删除 `wwwroot/jazor` 后再次 `-t:Rebuild`，断言清单 byte-for-byte 一致，同时继续断言所有 artifact 不含外部 consumer 绝对项目路径，canonical manifest 不含时间戳或绝对 root path。
+- `ModuleWriter` 已有 clean 模式 stale cleanup，并补充独立覆盖：当下一次 Vue render component 不再进入 manifest 时，旧 `.mjs` 与 `.mjs.map` 会同时删除，manifest 不再声明该 component。
+- 已验证：
+  - `dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --no-restore --filter 'BuildVueComponentModule_SourceMapChainsCompilerSegmentsToOriginalRazor' -v minimal /nr:false /p:UseSharedCompilation=false`：1/1 passed。
+  - `dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --no-restore --filter 'BuildVueComponentModule_SourceMapChainsCompilerSegmentsToOriginalRazor|BuildVueComponentModule_UsesCSharpDefaultsForUninitializedState|BuildVueComponentModule_EmitsSetupScopedRenderFunction|BuildVueComponentModule_RuntimeKeepsStateInitializerOnceAndStableHandler' -v minimal /nr:false /p:UseSharedCompilation=false`：4/4 passed。
+  - `dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --no-restore --filter 'ComponentMemberClosure|FinalDocument|GeneratedCSharpBinder' -v minimal /nr:false /p:UseSharedCompilation=false`：14/14 passed。
+  - `dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --no-restore --filter 'SourceMapWriterTests|SourceMapChainBuilderTests|StaticModuleSourceMapTests|VueRenderCatalogReaderTests' -v minimal /m:1 /p:BuildInParallel=false /nr:false /p:UseSharedCompilation=false`：22/22 passed。
+  - `dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --no-restore --filter 'ModuleWriter_Write_MaterializesVueRenderCatalogWithSourceMapAndRuntimeAssets|VueRenderCatalog' -v minimal /nr:false /p:UseSharedCompilation=false`：6/6 passed。
+  - `dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --no-restore --filter 'ModuleWriter_Write_WhenVueRenderComponentRemoved_DeletesStaleComponentAndSourceMap' -v minimal /m:1 /p:BuildInParallel=false /nr:false /p:UseSharedCompilation=false`：1/1 passed。
+  - `dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --no-restore --filter 'ModuleWriter_Write_VueRenderCatalogRepeatWriteIsByteForByteStable' -v minimal /m:1 /p:BuildInParallel=false /nr:false /p:UseSharedCompilation=false`：1/1 passed。
+  - `dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --no-restore --filter 'Build_LocalPackages_WithExternalRazorSgConsumer_CleanBuildsVueRenderArtifactsByteForByte' -v minimal /m:1 /p:BuildInParallel=false /nr:false /p:UseSharedCompilation=false`：1/1 passed（约 1m11s）。
+  - `dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --no-restore --filter 'VueRenderCatalog|ModuleWriter_Write_ProducesCanonicalSchemaV1ManifestWithoutTimeOrAbsoluteRoot|StaticModuleSourceMapTests' -v minimal /nr:false /p:UseSharedCompilation=false`：11/11 passed。
+  - `dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --no-restore --filter 'Build_LocalPackages_WithExternalRazorSgConsumer_EmitsVueRenderArtifactsAndManifest' -v minimal /nr:false /p:UseSharedCompilation=false`：1/1 passed。
+- 剩余：G2 还需要父子 props/callback、fragment/slot、conditional/list、lifecycle 等多 fixture determinism/performance evidence，以及更完整的 render/diagnostic 边界。
+
 **依赖**：1.1、1.2、1.3。
 
 ### Task 1.5：最小 Deno build harness 与 browser Counter
+
+> Status: first slice passed（2026-07-23；真实外部 Razor SG consumer + 本地 nupkg + `Jazor.Emit` materialization + Deno browser bundle + headless browser click smoke 已通过）
 
 **内容**：在正式工具链接口前先建立最小、可删除的 G1 harness，负责解析固定版本的 `vue`、bundle entry 并启动静态测试服务器。它只服务 G1，不承诺 HMR 或 SFC；harness 必须复用同一 manifest/request core，不得形成第二套 bundler。
 
 **验收标准**：Counter 首次显示 `0`，连续点击更新为 `1/2/3`；handler 不重复注册；控制台无异常。
 
 **验证**：自动化真实浏览器测试，不以手工截图代替。
+
+2026-07-23 当前进展：
+
+- `SdkIntegrationTests` 新增真实 browser Counter 测试：从外部临时 `Microsoft.NET.Sdk.Razor` consumer 出发，引用本地 packed `Jazor` nupkg，使用 official Razor SG 生成 `.razor.g.cs`，再由 `Jazor.Generated.VueRenderCatalog` + `Jazor.Emit` 物化 `components/counter.mjs`、runtime assets 和 manifest。
+- G1 harness 在测试内生成临时 `client-entry.mjs` / `deno.json` / `index.html`，通过 bundled Deno 固定解析 Vue 3 browser prod runtime，并把 emitted component bundle 成 browser ESM；该 harness 只服务 G1，不引入正式 toolchain/HMR 协议。
+- headless Edge/Chrome 真实执行 bundle，浏览器内断言首次 `Clicks: 0`，连续三次点击后到 `Clicks: 3`，并把 console/runtime failure 列表写回 DOM marker 供测试进程校验。
+- 外部 Razor fixture 增加 `_Imports.razor` 的 `Microsoft.AspNetCore.Components.Web` using，确保官方 Razor SG 将 `@onclick` 绑定为 `EventCallback.Factory.Create(...)`，而不是普通字符串属性。
+- 已验证：
+  - `dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --no-restore --filter 'Build_LocalPackages_WithExternalRazorSgConsumer_RunsCounterInRealBrowser' -v minimal /nr:false /p:UseSharedCompilation=false`：1/1 passed。
 
 **依赖**：1.4。
 
@@ -487,7 +572,10 @@ sequence 参数由 compiler 接收并擦除，但仍验证调用形状；runtime
 
 ## 七、Phase 2：核心组件语义与性能（12-18d）
 
-### Task 2.1：完整 RenderTreeBuilder v1 surface
+### Task 2.1
+
+> Status: first slice extended（2026-07-24：OpenRegion/CloseRegion + 静态 AddMarkupContent→createStaticVNode + OpenComponent<T>/CloseComponent/AddComponentParameter→[ECMAScriptModule] default import；+ AddContent(RenderFragment)→fragment(builder)；AddMultipleAttributes→render-context multiple-attribute protocol 已接线；动态 markup / OpenComponent(Type) / RenderFragment<T> / reference capture 仍 fail-fast）
+：完整 RenderTreeBuilder v1 surface
 
 覆盖：
 
@@ -512,14 +600,22 @@ sequence 参数由 compiler 接收并擦除，但仍验证调用形状；runtime
 
 ### Task 2.2：组件 descriptor、props、emits、slots 与 bind
 
+> Status: first slice extended（2026-07-26：`defineComponent` 输出 `props: ["title", ...]` 来自 `[Parameter]` 闭包成员名；`EventCallback`/`EventCallback<T>` 的 `Invoke`/`InvokeAsync` 降为 `props.onX?.(args)`；EventCallback 参数会派生 Vue `emits: [...]` metadata（例如 `ValueChanged`→`valueChanged`）；DOM multiple attributes 会规范化事件名，component multiple attributes 保留参数/emit 名原样；DOM `@bind` v1 支持 `EventCallback.Factory.CreateBinder(this, value => state = value, state)` 简单 state assignment 与 `SetUpdatesAttributeName` render-context hint；component `@bind-X` 首切片支持官方 SG 常见 `AddComponentParameter("X", value)` + `AddComponentParameter("XChanged", CreateBinder(...))`，最终 VNode 使用 `x` / `xChanged` 而不是 `modelValue`；default 与 named 非泛型 `RenderFragment` 参数走 Vue slots/default 或 slots/name bridge，不进入 props；`RenderFragment<T>` component slot 现在显式 fail-fast 并提示 typed slot descriptor lowering；`AddComponentParameter("Title"/"OnValueChanged", ...)` 到生成子组件 `props.title`/`props.onValueChanged` 的 lower-camel bridge 已接线，sibling component import 会按 importing `.mjs` 路径重写为相对 import；Razor-side unknown/required/type mismatch 由 Razor/C# 编译链路负责，lowering 不重复校验；typed slot descriptor/lowering matrix、component bind descriptor breadth/full emits catalog 仍未接线）
+
 **内容**：组件 type/import、prop public name、EventCallback runtime event name、slot metadata 和 bind pair 均来自强类型 descriptor，不按字符串猜测。
 
 **验收标准**：
 
-- [ ] DOM event 与 component emit 走不同规范化路径。
-- [ ] `@bind-X` 使用 X 对应 prop/changed-event descriptor，不一律写成 `modelValue`。
-- [ ] default、named、typed slot 的首版支持范围有显式矩阵。
-- [ ] duplicate/unknown slot、required prop 和类型不匹配有诊断。
+- [x] DOM event 与 component emit 走不同规范化路径（AddMultipleAttributes 首切片：element path 规范化 `onclick`/`@onchange`，component path 保留原始参数/emit 名）。
+- [x] DOM `@bind` v1 支持官方 Razor SG 常见 `CreateBinder` 简单 state assignment handler，并验证 `SetUpdatesAttributeName` hint 的 render-context call order。
+- [x] 父子 component parameter 首切片：official SG `AddComponentParameter("Title"/"OnValueChanged", ...)` 经 render-context bridge 映射到生成子组件 lower-camel props，并覆盖 sibling component import rebasing。
+- [x] EventCallback emits metadata 首切片：`[Parameter] EventCallback*` 派生 `defineComponent({ emits: [...] })`，并保持 `InvokeAsync` 继续走 `props.onX?.(...)` 现有调用路径。
+- [x] component `@bind-X` 常见首切片：official SG `X` / `XChanged` + `CreateBinder` lower 到最终 VNode `x` / `xChanged`，不写成 `modelValue`。
+- [ ] component bind descriptor breadth：覆盖自定义 bind pair、第三方 wrapper naming 与 descriptor/catalog 输出，不一律写成 `modelValue`；required/unknown bind 参数由 Razor/C# 编译链路负责，lowering 不重复校验。
+- [x] default 与 named 非泛型 `RenderFragment` slot 首切片：`ChildContent`→`slots.default`，`Header`→`slots.header`，child 侧 bridge 回对应 RenderFragment 参数；`RenderFragment<T>` 仍 unsupported。
+- [x] `RenderFragment<T>` component slot fail-fast diagnostic 首切片：`AddComponentParameter("Header", RenderFragment<T>)` 不再作为普通 prop 下发，诊断明确要求 typed slot descriptor lowering。
+- [ ] typed slot 的首版支持范围有显式矩阵。
+- [x] Razor-side unknown slot、required prop 和一般 prop 类型不匹配不在 RazorVue lowering 重复校验；保留 Razor/C# 编译链路诊断，lowering 直接翻译官方 SG generated C#。
 - [ ] sync/async `EventCallback` 的 await、error propagation 和 render invalidation 次数有统一规则。
 
 **验证**：descriptor metadata tests + parent/child browser fixtures，逐项断言 prop/emit/slot/bind 的最终 VNode 与事件名。
@@ -527,6 +623,8 @@ sequence 参数由 compiler 接收并擦除，但仍验证调用形状；runtime
 **依赖**：2.1。
 
 ### Task 2.3：state 与生命周期合同
+
+> Status: first slice extended（2026-07-24：`onInitialized` + `StateHasChanged`→setup-scoped `stateHasChanged()` 通过 `reactive({ tick })` 强制重渲染 + 同步 `OnParametersSet` 的 immediate call + deep `watch(props)` + 同步 `OnAfterRender` 的 `onMounted(true)`/`onUpdated(false)` firstRender 接线；同步 `IDisposable`/`IAsyncDisposable`→`onUnmounted`；同步 `ShouldRender` gate；`OnInitializedAsync` 首切片（fire-and-forget + completion invalidation）；`OnParametersSetAsync` 序列化 watch 首切片；`OnAfterRenderAsync` post-flush 首切片（completion 不触发 render request））
 
 先冻结下表，再实现：
 
@@ -564,6 +662,8 @@ sequence 参数由 compiler 接收并擦除，但仍验证调用形状；runtime
 
 ### Task 2.5：复杂度与性能 Gate
 
+> Status: partial measurement added（2026-07-23；`scripts/csharp/benchmark-razorvue-g2.cs` 已记录三 fixture、指标、阈值和输出格式，并提供 runtime-protocol vs handwritten `h()` 的首个 JSON/Markdown 采样模式；`--measure-generated-artifacts` 已输出 `plain-text` / `counter` / `keyed-list-100` 三 fixture 明细，并保留全量 artifact 表以区分 component module、source map、Vue runtime、CLR runtime；尚未覆盖 handwritten `.mjs` artifact baseline、compiler p95、browser heap 或旧线 baseline，不能作为 G2 通过证据）
+
 **内容**：建立三组等价 fixture：纯文本、Counter、100-item keyed list；同时与手写 Vue `h()` baseline 和 1.1 节记录的旧线路 baseline 比较。旧线只在固定 commit 的独立 worktree 运行，不把旧代码合并进转型分支。先提交 benchmark protocol 和采样脚本，再运行优化，避免用测量结果倒推阈值。
 
 指标：
@@ -579,6 +679,24 @@ sequence 参数由 compiler 接收并擦除，但仍验证调用形状；runtime
 **验收标准**：三组 fixture 都有同机 baseline、重复采样、阈值判定和报告；任何指标未达标都阻断 G2，不能用功能测试通过替代性能证据。
 
 **验证**：使用仓库内单文件 C# benchmark runner 固定输入、SDK、浏览器和采样次数，输出可审阅 JSON/Markdown 报告；retained measurement 使用统一 heap-snapshot/GC 方案；报告同时列出手写与旧线 baseline。
+
+2026-07-23 当前进展：
+
+- `scripts/csharp/benchmark-razorvue-g2.cs` 单文件 C# runner 已支持 protocol dry-run/materialization，并新增 `--measure-runtime` 与 `--measure-generated-artifacts` 两个真实采样模式。
+- protocol 固定三组 fixture：`plain-text`、`counter`、`keyed-list-100`。
+- protocol 固定指标：cold/incremental compile time、generated/handwritten gzip size、render/update throughput、mount/unmount retained、runtime protocol count、compiler special-case count。
+- protocol 固定阈值口径：gzip <= 2x handwritten、throughput >= 70%、incremental p95 <= 1.5x retired-line baseline、100 次 mount/unmount retained 不持续增长。
+- `--measure-runtime` 使用 Node 执行当前 `src/Jazor.RazorVue/Runtime/render-context-core.mjs`，对三组 fixture 采集 runtime-protocol vs direct handwritten `h()` 的 render/update throughput、fixture body gzip size 和 GC 后 heap-delta proxy，并输出 `razorvue-g2-runtime-report.json` / `.md`。
+- `--measure-generated-artifacts` 会本地 pack 当前 `src/Jazor/Jazor.csproj`，创建独立 `Microsoft.NET.Sdk.Razor` 三 fixture consumer（`plain-text` / `counter` / `keyed-list-100`），启用 `UseRazorSourceGenerator=true` 与 `JazorRazorVueEnableRazorSgIntegration=true`；报告输出 `fixtures[]` 明细（component + source map bytes/gzip/SHA256）并保留全量 `artifacts[]` 表（`component-module` / `source-map` / `runtime` / `clr-runtime` / `manifest`），从而后续阈值比较不会把 shared Vue/CLR runtime 与 per-fixture module 混淆；脚本同时断言 manifest 不含 `generatedAtUtc` / `rootAssemblyPath`，产物不持久化外部 consumer 绝对项目路径。
+- 当前 runtime/generated-artifact 报告只用于趋势跟踪和后续优化入口：generated-artifact 模式已覆盖三 fixture 明细 + 全量 artifact 表 + handwritten `.mjs` baseline（per-fixture gzip ratio）；仍不含 compiler cold/incremental p95、真实浏览器 DOM patch、retained handler/object heap snapshot 与旧线固定 commit/worktree baseline。
+- 已验证：
+  - `dotnet run --file scripts/csharp/benchmark-razorvue-g2.cs -- --help`：通过，无编译警告。
+  - `dotnet run --file scripts/csharp/benchmark-razorvue-g2.cs -- --dry-run --samples 1 --render-iterations 10 --mount-iterations 2`：通过，输出 pending-measurement protocol。
+  - `dotnet run --file scripts/csharp/benchmark-razorvue-g2.cs -- --write-protocol --out .tmp/razorvue-g2-protocol-check`：通过，写出 JSON/Markdown protocol。
+  - `dotnet run --file scripts/csharp/benchmark-razorvue-g2.cs -- --measure-runtime --samples 1 --render-iterations 100 --mount-iterations 5 --out .tmp/razorvue-g2-benchmark-smoke`：通过，写出 protocol 与 runtime partial report。
+  - `dotnet run --file scripts/csharp/benchmark-razorvue-g2.cs -- --measure-runtime --out .tmp/razorvue-g2-benchmark-default`：通过，按默认 5 samples / 10,000 render-update iterations / 100 mount cycles 写出 runtime partial report。
+  - `dotnet run --file scripts/csharp/benchmark-razorvue-g2.cs -- --measure-generated-artifacts --out .tmp/razorvue-g2-generated-artifacts-three-fixtures`：通过，写出 protocol 与三 fixture official SG generated artifact partial report；`fixtures[]` 含 `plain-text`（649/338）、`counter`（847/396）、`keyed-list-100`（2369/679）component bytes/gzip，并保留全量 `artifacts[]`（component-module / source-map / runtime / clr-runtime / manifest）；clean build elapsed 6614 ms（package elapsed 84493 ms）。
+- 剩余：compiler cold/incremental p95 timing、真实浏览器/heap retained 与旧线固定 commit/worktree baseline 与阈值判定。handwritten `.mjs` artifact baseline 已接入 generated-artifact 报告（per-fixture gzip ratio）；当前三 fixture generated/handwritten gzip 仍高于 2x 阈值，属后续优化项。
 
 **依赖**：2.1-2.4。
 

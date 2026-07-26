@@ -40,7 +40,7 @@ dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --build-local
                     H("li", "`/engineering/host-semantic-seams` 为 Alias / Inline / Import / Compile 职责边界"),
                     H("li", "`/engineering/import-emit-contract` 为模块导入流和文件物化边界"),
                     H("li", "`/engineering/runtime-catalog` 为 CLR 运行时辅助函数生成和浏览器交付"),
-                    H("li", "`/engineering/jolt-host` 和 `/engineering/razorvue-library-mode` 为两条活跃交付线路"),
+                    H("li", "`/engineering/razorvue-library-mode` 为当前组件线路入口；`/engineering/jolt-host` 只保留退役历史"),
                     H("li", "`/operations/content-governance` 为内容所有权、生成输出审查和发布规范"),
                     H("li", "`/operations/deployment` 为构建和托管细节"),
                     H("li", "`/operations/testing-verification` 为聚焦测试和冒烟工作流")

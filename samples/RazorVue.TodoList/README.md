@@ -1,18 +1,22 @@
 # RazorVue.TodoList
 
-This sample demonstrates the current RazorVue library-mode path:
+> Status: legacy pre-G0 sample, pending migration to the current RazorVue render-function `.mjs` artifact path.
+>
+> This README documents the old generated-SFC consumer workflow so the migration target is explicit. It is not a current architecture guide. Current RazorVue production input is official Razor SG generated C# and the output contract is Vue render-function `.mjs`.
+
+This sample demonstrates the retired RazorVue library-mode path:
 
 - author components in `.razor + .razor.cs`
-- generate Vue `.vue` SFC artifacts at design time
+- generate Vue `.vue` SFC artifacts at design time in the legacy flow
 - keep a single ASP.NET Core host as the runtime boundary
-- consume the generated SFCs from a colocated Deno frontend pipeline
+- consume the generated SFCs from a colocated Deno frontend pipeline in the legacy flow
 - materialize publish output into `wwwroot/jazor`
 
 The sample is split into:
 
 - `Todo.Library`: RazorVue component library authored with Razor and C#
 - `Todo.Host`: the single ASP.NET Core host project; development emit goes to `Todo.Host/jazor`, browser assets go to `Todo.Host/wwwroot/jazor`
-- `Todo.Host/consumer`: a colocated DenoHost consumer that uses the official `razorvue-consumer-entry` contract and bundles browser assets without Vite or npm wrapper scripts
+- `Todo.Host/consumer`: a colocated DenoHost consumer that uses the retired `razorvue-consumer-entry` contract and bundles browser assets without Vite or npm wrapper scripts
 
 `Todo.Library` follows the explicit authoring contract. Component marker types are brought in with:
 
@@ -69,12 +73,12 @@ dotnet run --file .\scripts\run-deno.cs -- task test
 
 The consumer imports:
 
-- the generated root component through the official `razorvue-consumer-entry` bridge modules
+- the generated root component through the retired `razorvue-consumer-entry` bridge modules
 - host metadata from `..\jazor\__jazor\razorvue-host.mjs`
 
 and then:
 
-- uses `Jazor.Emit razorvue-consumer-entry` to generate browser/SSR bridge modules and stable entrypoints
+- uses the retired `Jazor.Emit razorvue-consumer-entry` command to generate browser/SSR bridge modules and stable entrypoints
 - runs SSR smoke through `vue/server-renderer` + Vuetify
 - runs a `Deno.bundle()` smoke over the prepared browser entry
 - runs `deno bundle` to emit the browser build under `Todo.Host/consumer/dist/jazor/`
@@ -90,7 +94,7 @@ dotnet run --file .\scripts\run-deno.cs -- task build
 
 ## What the sample covers
 
-- design-time SFC generation in library mode
+- legacy design-time SFC generation in library mode
 - Razor authoring with `.razor + .razor.cs`
 - user component composition
 - Vuetify library component integration
@@ -101,10 +105,10 @@ dotnet run --file .\scripts\run-deno.cs -- task build
 ## Notes
 
 - `Todo.Host` is the only runtime host. The colocated `consumer` directory is a build-time frontend consumption layer, not a second application host.
-- The Deno consumer is intentionally small and explicit so the generated SFCs are consumed through the official `razorvue-consumer-entry` contract instead of a project-private SFC compiler.
+- The Deno consumer is intentionally small and explicit so the legacy generated SFCs are consumed through the retired `razorvue-consumer-entry` contract instead of a project-private SFC compiler.
 - `Todo.Host/consumer` no longer relies on `package.json` / `npm run ...` wrapper scripts. The repository-level contract is `deno.json` tasks plus `scripts/run-deno.cs`, which executes the bundled Deno runtime through `DenoHost`.
 - `Todo.Library` currently sets `UseRazorSourceGenerator=false`. The current library-mode design-time path still depends on generated `*.razor.g.cs` being present in compilation.
 - The generated SFCs do not emit `<style src="vuetify/styles">` blocks. Style and plugin requirements stay in `__jazor/razorvue-host.mjs`, and the Deno consumer imports `vuetify/styles` explicitly.
-- `Todo.Host/consumer/scripts/lib/pipeline.ts` owns only consumer orchestration. SFC bridge generation is delegated to the official `Jazor.Emit razorvue-consumer-entry` command.
+- `Todo.Host/consumer/scripts/lib/pipeline.ts` owns only consumer orchestration. Legacy SFC bridge generation is delegated to the retired `Jazor.Emit razorvue-consumer-entry` command.
 - `deno bundle` is the formal browser build entry for this sample. `Deno.bundle()` is kept as an additional API-level smoke because its option surface is still unstable.
 - `build-local.cs` is fail-fast. If any framework build, pack, restore, or host rebuild step fails, the script stops instead of silently continuing with stale outputs.

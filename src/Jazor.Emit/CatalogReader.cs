@@ -1,14 +1,34 @@
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Jazor.Emit;
 
 internal static class CatalogReader
 {
+    private const string RazorVueRuntimeResourcePrefix = "Jazor.RazorVue.Runtime.";
+    private const string RazorVueRuntimeRelativePathPrefix = "@jazor/vue-runtime/";
+
     public static IReadOnlyList<EmitModuleRecord>? TryRead(Assembly assembly)
     {
-        var catalogType = ResolveCatalogType(assembly);
-        if (catalogType is null)
-            return null;
+        var modules = new List<EmitModuleRecord>();
+        var catalogType = ResolveModuleCatalogType(assembly);
+        if (catalogType is not null)
+            modules.AddRange(ReadModuleCatalog(assembly, catalogType));
+
+        var vueRenderCatalogType = assembly.GetType("Jazor.Generated.VueRenderCatalog", throwOnError: false, ignoreCase: false);
+        if (vueRenderCatalogType is not null)
+            modules.AddRange(ReadVueRenderCatalog(assembly, vueRenderCatalogType));
+
+        modules.AddRange(ReadRazorVueRuntimeResources(assembly));
+
+        return modules.Count == 0
+            ? null
+            : modules;
+    }
+
+    private static IReadOnlyList<EmitModuleRecord> ReadModuleCatalog(Assembly assembly, Type catalogType)
+    {
         var sourceMapsById = TryReadSourceMapsById(assembly);
 
         var getModules = catalogType.GetMethod("GetModules", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static) 
@@ -41,7 +61,7 @@ internal static class CatalogReader
         return modules;
     }
 
-    private static Type? ResolveCatalogType(Assembly assembly)
+    private static Type? ResolveModuleCatalogType(Assembly assembly)
     {
         var catalogType = assembly.GetType("Jazor.Generated.ModuleCatalog", throwOnError: false, ignoreCase: false);
         if (catalogType is not null)
@@ -49,6 +69,116 @@ internal static class CatalogReader
 
         // ECMAScript ships a repository-owned CLR runtime catalog rather than a user-generated module catalog.
         return assembly.GetType("ECMAScript.Catalog", throwOnError: false, ignoreCase: false);
+    }
+
+    private static IReadOnlyList<EmitModuleRecord> ReadVueRenderCatalog(Assembly assembly, Type catalogType)
+    {
+        var schemaVersion = ReadStaticInt(catalogType, "SchemaVersion");
+        if (schemaVersion != 1)
+        {
+            throw new InvalidOperationException(
+                $"Unsupported VueRenderCatalog schema version '{schemaVersion}' in '{assembly.Location}'.");
+        }
+
+        var runtimeProtocolVersion = ReadStaticInt(catalogType, "RuntimeProtocolVersion");
+        if (runtimeProtocolVersion != 1)
+        {
+            throw new InvalidOperationException(
+                $"Unsupported VueRenderCatalog runtime protocol version '{runtimeProtocolVersion}' in '{assembly.Location}'.");
+        }
+
+        var getModules = catalogType.GetMethod("GetModules", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
+            ?? throw new InvalidOperationException($"GetModules was not found in VueRenderCatalog '{assembly.Location}'.");
+        if (getModules.Invoke(null, null) is not System.Collections.IEnumerable items)
+            throw new InvalidOperationException($"GetModules returned null in VueRenderCatalog '{assembly.Location}'.");
+
+        var assemblyName = assembly.GetName().Name ?? Path.GetFileNameWithoutExtension(assembly.Location);
+        var modules = new List<EmitModuleRecord>();
+        foreach (var item in items)
+        {
+            if (item is null)
+                continue;
+
+            var itemType = item.GetType();
+            var componentId = ReadString(itemType, item, "ComponentId");
+            var sourceMapRelativePath = TryReadString(itemType, item, "SourceMapRelativePath");
+            var sourceMapContent = TryReadString(itemType, item, "SourceMapContent");
+            var mapHash = TryReadString(itemType, item, "MapHash");
+            var hasSourceMap = !string.IsNullOrWhiteSpace(sourceMapRelativePath) ||
+                               !string.IsNullOrWhiteSpace(sourceMapContent) ||
+                               !string.IsNullOrWhiteSpace(mapHash);
+            if (hasSourceMap &&
+                (string.IsNullOrWhiteSpace(sourceMapRelativePath) ||
+                 string.IsNullOrWhiteSpace(sourceMapContent) ||
+                 string.IsNullOrWhiteSpace(mapHash)))
+            {
+                throw new InvalidOperationException(
+                    $"VueRenderCatalog module '{componentId}' must provide SourceMapRelativePath, SourceMapContent, and MapHash together.");
+            }
+
+            modules.Add(new EmitModuleRecord(
+                assembly.Location,
+                assemblyName,
+                componentId,
+                componentId,
+                NormalizeRelativePath(ReadString(itemType, item, "RelativePath")),
+                ReadString(itemType, item, "ModuleText"),
+                ReadString(itemType, item, "ContentHash"),
+                hasSourceMap ? NormalizeRelativePath(sourceMapRelativePath!) : null,
+                hasSourceMap ? sourceMapContent : null,
+                hasSourceMap ? mapHash : null));
+        }
+
+        return modules;
+    }
+
+    private static IReadOnlyList<EmitModuleRecord> ReadRazorVueRuntimeResources(Assembly assembly)
+    {
+        var resourceNames = assembly
+            .GetManifestResourceNames()
+            .Where(static name => name.StartsWith(RazorVueRuntimeResourcePrefix, StringComparison.Ordinal) &&
+                                  name.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase))
+            .OrderBy(static name => name, StringComparer.Ordinal)
+            .ToArray();
+        if (resourceNames.Length == 0)
+            return [];
+
+        var assemblyName = assembly.GetName().Name ?? Path.GetFileNameWithoutExtension(assembly.Location);
+        var modules = new List<EmitModuleRecord>(resourceNames.Length);
+        foreach (var resourceName in resourceNames)
+        {
+            var fileName = resourceName.Substring(RazorVueRuntimeResourcePrefix.Length);
+            using var stream = assembly.GetManifestResourceStream(resourceName)
+                ?? throw new InvalidOperationException(
+                    $"RazorVue runtime resource '{resourceName}' was listed but could not be opened.");
+            using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+            var content = reader.ReadToEnd().ReplaceLineEndings("\n");
+            var moduleId = RazorVueRuntimeResourcePrefix + Path.GetFileNameWithoutExtension(fileName);
+
+            modules.Add(new EmitModuleRecord(
+                assembly.Location,
+                assemblyName,
+                moduleId,
+                moduleId,
+                NormalizeRelativePath(RazorVueRuntimeRelativePathPrefix + fileName),
+                content,
+                ComputeSha256Hash(content)));
+        }
+
+        return modules;
+    }
+
+    private static int ReadStaticInt(Type catalogType, string fieldName)
+    {
+        var field = catalogType.GetField(fieldName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+        if (field?.GetValue(null) is int value)
+            return value;
+
+        var property = catalogType.GetProperty(fieldName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+        if (property?.GetValue(null) is int propertyValue)
+            return propertyValue;
+
+        throw new InvalidOperationException($"Static integer '{fieldName}' was not found on '{catalogType.FullName}'.");
     }
 
     private static IReadOnlyDictionary<string, EmitModuleSourceMapRecord> TryReadSourceMapsById(Assembly assembly)
@@ -91,6 +221,12 @@ internal static class CatalogReader
         throw new InvalidOperationException($"Property '{propertyName}' was not found on '{itemType.FullName}'.");
     }
 
+    private static string? TryReadString(Type itemType, object item, string propertyName)
+    {
+        var property = itemType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+        return property?.GetValue(item) as string;
+    }
+
     private static string NormalizeRelativePath(string relativePath)
     {
         var normalized = relativePath.Replace('\\', '/').TrimStart('/');
@@ -108,6 +244,17 @@ internal static class CatalogReader
             throw new InvalidOperationException($"Module relative path cannot escape output directory: '{relativePath}'.");
 
         return string.Join("/", segments);
+    }
+
+    private static string ComputeSha256Hash(string content)
+    {
+        using var sha256 = SHA256.Create();
+        var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(content));
+        var builder = new StringBuilder(bytes.Length * 2);
+        foreach (var item in bytes)
+            builder.Append(item.ToString("x2", System.Globalization.CultureInfo.InvariantCulture));
+
+        return "sha256:" + builder;
     }
 
     private sealed record EmitModuleSourceMapRecord(

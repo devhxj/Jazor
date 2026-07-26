@@ -8,7 +8,7 @@
 
 1. `Jazor.Emit` 消费什么
 2. 它写什么
-3. RazorVue 和 SourceMap 如何通过 emit 继续
+3. SourceMap 和 bundle 如何通过 emit 继续
 4. 哪些职责仍然属于其他地方
 
 ## 2. 模块位置
@@ -17,9 +17,9 @@
 
 划分：
 
-- compiler-side modules 生成 catalog 和 artifact 数据
+- compiler-side modules 生成 module catalog 数据
 - `Jazor.Emit` 从已构建的程序集读取这些编译后的 carriers
-- `Jazor.Emit` 将文件和 manifests 写入输出树
+- `Jazor.Emit` 将 `.mjs`、`.mjs.map`、runtime assets 和 manifest 写入输出树
 - `Jazor.Emit` 可以通过 `DenoHost` 组装最终 bundle
 
 `Jazor.Emit` 不是 compile-time 语义的所有者。它拥有：
@@ -35,17 +35,17 @@ pipeline：
 
 1. 在 `Program.cs` 中解析 CLI 选项
 2. 通过 `EmitLoadContext` 加载根和引用程序集
-3. 通过 `ModuleCollector` 收集常规模块 catalogs 和 RazorVue catalogs
-4. 通过 `ModuleWriter` 写入常规模块
-5. 通过 `RazorVueModuleWriter` 写入 RazorVue 模块、manifests 和模块级 `.map` 文件
-6. 可选地通过 `ModuleBundler` bundle emitted 模块
+3. 通过 `ModuleCollector` 收集 compiler module catalogs
+4. 通过 `ModuleWriter` 写入模块、source maps、runtime assets 和 `jazor-manifest.json`
+5. 可选地通过 `ModuleBundler` bundle emitted 模块
 
 emit lane 已经是以下内容的组合路径：
 
 - 常规 ECMAScript 模块输出
-- RazorVue 制品输出
 - SourceMap sidecar 输出
 - 最终 bundle 组装
+
+旧 RazorVue catalog、SFC bridge、consumer-entry、host sidecar 和 update-plan paths 已退役；emit 当前不读取这些旧 carrier 形状。
 
 ## 4. 核心组件
 
@@ -59,7 +59,6 @@ emit lane 已经是以下内容的组合路径：
 - `EmitLoadContext.cs`
 - `ModuleCollector.cs`
 - `CatalogReader.cs`
-- `RazorVueCatalogReader.cs`
 
 此层加载已构建的程序集并提取 compiler-owned 生成的 carriers。
 
@@ -69,8 +68,6 @@ emit lane 已经是以下内容的组合路径：
 
 - `ManifestModel.cs`
 - `ModuleWriter.cs`
-- `RazorVueManifestModel.cs`
-- `RazorVueModuleWriter.cs`
 
 此层将收集的记录转换为具体输出文件。
 
@@ -78,7 +75,7 @@ emit lane 已经是以下内容的组合路径：
 
 - 通过比较 manifest hash 状态跳过未更改的文件
 - 在启用 `clean` 时清理已移除的输出
-- 保持常规模块和 RazorVue manifest 演进并行，而不是将它们折叠成一个模糊的 carrier
+- 保持 manifest path、hash 和模块顺序确定
 
 ### 4.3 Bundle 组装
 
@@ -91,14 +88,11 @@ emit lane 已经是以下内容的组合路径：
 
 ### 4.4 SourceMap 继续
 
-- `SourceMaps/SourceMapBuilder.cs`
-- `SourceMaps/SourceMapWriter.cs`
-
 SourceMap 位置：
 
-- 模块级 map 写入已经位于 emit 中
-- RazorVue 的 SourceMap 继续是一个活跃的狭窄 lane
-- 更广泛的 SourceMap 程序仍然比此活跃切片更保守
+- 模块级 map payload 由 compiler catalog 提供
+- emit 负责将 `.mjs.map` 与 module path 一起物化
+- bundle chaining 保持在 emit/bundler 边界，不回流到 compiler lowering
 
 ## 5. 边界
 
@@ -107,22 +101,22 @@ SourceMap 位置：
 - 文件系统物化
 - manifest 持久化
 - emitted 文件布局
-- RazorVue 制品继续到文件
 - emit-side map 生成
 - bundle 编排
 
 ### 5.2 emit 不拥有什么
 
 - 编译器 lowering 规则
-- RazorVue 描述符语义
 - Roslyn generator 入口逻辑
+- RazorVue render-context lowering
+- toolchain dev-server/HMR 协议
 - repo-level 排序和工作流策略
 
 这些仍在：
 
 - `Jazor.Compiler`
 - `Jazor.RazorVue`
-- `Jazor.RazorVue.Analysis`
+- `Jazor.Analyzer`
 - repo-level `docs/03-完成/` 和 `docs/02-计划/`
 
 ## 6. 推荐阅读
@@ -137,5 +131,5 @@ SourceMap 位置：
 
 然后仅在需要时进入相邻 lanes：
 
-- `docs/01-目标/razorvue/design/RazorVue.Overview.md`
+- `docs/01-目标/razorvue/README.md`
 - `docs/01-目标/compiler/sourcemap/SourceMap.Overview.md`

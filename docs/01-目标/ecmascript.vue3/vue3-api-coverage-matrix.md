@@ -38,7 +38,7 @@
 | Partial | 当前有一部分 API 或 authoring 形态，但未覆盖官方完整能力 |
 | Target Gap | 应纳入 `ECMAScript.Vue3`，可以通过普通 binding / record / overload / delegate 补齐 |
 | Design Gap | 应纳入目标，但需要先设计 C# authoring surface，不能机械绑定 |
-| Separate Workstream | 属于 Jolt、RazorVue、SFC、SSR、custom renderer 等独立工作流，不应塞进 `Vue3.cs` |
+| Separate Workstream | 属于应用/工具链、RazorVue render-function、外部 `.vue`、SSR、custom renderer 等独立工作流，不应塞进 `Vue3.cs` |
 | Non-goal | 不适合作为 Jazor 当前目标，或会破坏 C# 到 JS 的边界 |
 
 ## 3. 官方分类覆盖概览
@@ -59,10 +59,10 @@
 | Built-in Components | Partial | Design Gap / Separate Workstream | `Transition` / `TransitionGroup` / `KeepAlive` / `Teleport` / `Suspense` render-function binding 已覆盖；template-only 体验另行设计 |
 | Built-in Special Elements | Gap | Separate Workstream | `<component>`、`<slot>`、`<template>` 属于 template/SFC 语义 |
 | Built-in Special Attributes | Gap | Separate Workstream | `key`、`ref`、`is` 可通过 props object 部分表达，但完整语义属于 renderer/template authoring |
-| SFC CSS Features | Gap | Separate Workstream | 属于 `.vue` / Jolt / RazorVue 处理，不属于 `ECMAScript.Vue3` |
+| SFC CSS Features | Gap | Separate Workstream | 属于外部 `.vue` / 应用工具链处理，不属于 `ECMAScript.Vue3`；RazorVue 不生成 SFC |
 | SFC Script Setup / Compiler Macros | Gap | Separate Workstream | compile-time macro，不适合硬塞进 C# host binding |
 | Advanced: Custom Elements | Covered | Target Gap | `defineCustomElement`（一参/二参）、`VueCustomElementComponentOptions*` merged options、`useHost`/`useHost<T>()`、`useShadowRoot` 已覆盖 |
-| Advanced: SSR | Partial | Separate Workstream | 只有 `createSSRApp`；SSR renderer / hydration / manifest 属于 emit/Jolt/SSR 工作流 |
+| Advanced: SSR | Partial | Separate Workstream | 只有 `createSSRApp`；SSR renderer / hydration / manifest 属于 emit/SSR 或应用工具链工作流 |
 | Advanced: Custom Renderer | Gap | Separate Workstream | host renderer 合同过大，应单独设计 |
 
 ## 4. Application API
@@ -238,7 +238,7 @@ Sources:
 | State | `expose` | Covered | `VueComponentDefinition.Expose` |
 | Rendering | `template` | Separate Workstream | template compiler 不属于 `Vue3.cs` |
 | Rendering | `render` | Covered | 当前 `VueRenderCallback` |
-| Rendering | `compilerOptions` | Separate Workstream | 组件/SFC compiler 配置属于 build/Jolt/SFC pipeline；`app.config.compilerOptions` 已由 Application API surface 覆盖 |
+| Rendering | `compilerOptions` | Separate Workstream | 组件/template compiler 配置属于外部 `.vue` 或应用工具链；`app.config.compilerOptions` 已由 Application API surface 覆盖 |
 | Lifecycle | created/mounted/updated 等 | Covered | lifecycle callback surface 已覆盖；this-bound lifecycle callback 通过 `BindThis<TThis,...>` 覆盖 |
 | Composition | `provide` / `inject` | Partial | `Provide = VueProps` object form、`ProvideFactory = VueDataCallback` function form、`Inject = string[] / VueProps` array/object form、`VueInjectOptions<T>` / `VueInjectEntry<T>` / `VueInjectRegistry<T>` helper 已覆盖；object-form `provide` 与 inject source 已支持 string / `Symbol` / typed `VueInjectionKey<T>` authoring；更复杂 this-bound 形态仍需设计 |
 | Composition | `mixins` / `extends` | Covered | 低层兼容 binding 已覆盖为 `VueComponentDefinition[]` / `VueComponentDefinition`；不作为新代码推荐复用模型 |
@@ -304,7 +304,7 @@ Sources:
 | compiler macros | Gap | Separate Workstream |
 | scoped CSS / CSS modules / `v-bind()` in CSS | Gap | Separate Workstream |
 
-这些能力不应进入 `src/ECMAScript.Vue3/Vue3.cs`。如果 Jolt 未来支持 `.vue` 或类 SFC authoring，应在 Jolt/RazorVue/SFC pipeline 里设计，而不是扩张 `SemanticWalker` 的 Vue hardcoding。
+这些能力不应进入 `src/ECMAScript.Vue3/Vue3.cs`。如果应用层未来需要手写 `.vue` 或类 SFC authoring，应在外部 Vue 工具链或专门应用层方案中设计；RazorVue 当前生产输出仍是 render-function `.mjs`，不通过 SFC pipeline 扩张 `SemanticWalker` 的 Vue hardcoding。
 
 ## 17. Advanced APIs
 
@@ -356,7 +356,7 @@ Status: 第一批已落地到 `src/ECMAScript.Vue3/Vue3.cs`，并由 `EcmaScript
 
 ### P1: 需要小型 helper surface
 
-- `VueAppConfig`（已落地核心路径；`compilerOptions` 指 Vue runtime compiler config，不替代 Jolt/SFC 编译配置）
+- `VueAppConfig`（已落地核心路径；`compilerOptions` 指 Vue runtime compiler config，不替代外部 `.vue` 或应用工具链编译配置）
 - `VueWatchOptions` / `VueWatchEffectOptions`（核心路径、debugger event options、reactive object source、同类 multi-source watch 已落地）
 - writable computed options（已落地）
 - `VueEffectScope`（已落地）

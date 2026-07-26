@@ -37,7 +37,7 @@
 |------|----------|----------|------|
 | Internal matcher APIs | matcher / internal record graph | 暂不覆盖 | 不属于 public authoring surface |
 | Experimental TS-only helpers | 类型级工具与内部 utility types | 暂不覆盖 | 不为 TS-only 类型结构扩张 C# surface |
-| File-based routing conventions | 目录约定式路由 | 暂不覆盖 | 属于 Jolt / 应用层工作流，不属于基础绑定 |
+| File-based routing conventions | 目录约定式路由 | 暂不覆盖 | 属于应用层/工具链工作流，不属于基础绑定 |
 | Devtools / app-shell conventions | 应用级调试与宿主协议 | 暂不覆盖 | 不属于 `ECMAScript.VueRoute` |
 
 ## 当前结论

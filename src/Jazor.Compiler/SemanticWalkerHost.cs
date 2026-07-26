@@ -65,6 +65,9 @@ public abstract class SemanticWalkerHost
         Expression? instance)
         => null;
 
+    public virtual Expression? RewriteMethodReferencePreorder(IMethodReferenceOperation operation, SenseArgument argument)
+        => null;
+
     public virtual Expression? RewriteInvocation(
         IInvocationOperation operation,
         SenseArgument argument,

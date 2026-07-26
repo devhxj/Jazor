@@ -21,17 +21,5 @@ public partial class VbenTDesignHeaderBar : VbenComponentBase
     public RenderFragment? UserRegion { get; set; }
 
     private VueClassValue RootCssClass
-    {
-        get
-        {
-            if (CssClass is null)
-                return "vben-tdesign-header";
-
-            return new VueValue[]
-            {
-                "vben-tdesign-header",
-                CssClass
-            };
-        }
-    }
+        => BuildCssClass("vben-tdesign-header");
 }

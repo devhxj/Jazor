@@ -2,6 +2,8 @@
 
 > 评审日期：2026-05-07  
 > 最新更新：2026-05-23
+> Status: historical pre-G0 review snapshot
+> Current boundary: do not treat Razor IR/SFC/Jolt statements in this file as current architecture truth. The active branch uses official Razor SG generated C# -> Roslyn `IOperation` -> Vue render-function `.mjs`.
 > 评审范围：`src/Jazor.RazorVue/`、`src/Jazor.Analyzer/RazorVue/`、`src/Jazor.Emit` 的 RazorVue 路径、`src/Jazor.RazorVue.Test/`、`src/Jazor.RazorVue.RazorIr.Test/`、`src/Jazor.EmitTest/` 的 RazorVue 切片、`src/Jolt.Test` 的 Volar/VueAnalysis/JazorVue 切片、`samples/RazorVue.TodoList/`  
 > 基线说明：本评审基于当前工作区状态。当前工作区存在多处 RazorVue/emit/VueRoute 相关未提交修改，因此结论不等同于已发布包基线。
 

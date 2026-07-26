@@ -2,7 +2,7 @@
 
 > Status: 初始可用后的活跃清单  
 > Updated: 2026-05-09  
-> Positioning: 基于 `src/ECMAScript.Vuetify/` 当前真实代码、`src/Jazor.RazorVue.Test/` / `src/Jazor.CompilerTest/` / `src/Jazor.EmitTest/` 现有守护，以及 `docs/01-目标/razorvue/design/RazorVue.Vuetify.FirstPackage.md` 的设计边界整理的下一阶段执行清单。  
+> Positioning: 基于 `src/ECMAScript.Vuetify/` 当前真实代码、`src/Jazor.CompilerTest/` / `src/Jazor.EmitTest/` / `src/Jazor.RazorVue.Sg.Test/` 现有守护，以及当前 RazorVue 目标入口整理的下一阶段执行清单。
 > Scope: 当前关注点不是“是否存在 Vuetify 代理”，而是“作为 `ECMAScript.Vue3` 环境下的 Vuetify 代理层，代理是否足够完整、authoring 是否足够易用、自定义参数与 CSS 路径是否足够清晰可生产使用”。
 
 ## 1. 当前判断

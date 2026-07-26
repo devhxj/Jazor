@@ -11,7 +11,7 @@ public static partial class WikiHomeModule
     private static readonly string[] FeaturedSearchTags =
     [
         "compiler",
-        "jolt",
+        "razor-sg",
         "razorvue",
         "vueroute",
         "runtime",
@@ -38,7 +38,7 @@ public static partial class WikiHomeModule
             [
                 H("p", "当你知道关注点但不知道确切页面标题时，使用标签。"),
                 SearchTagRow(FeaturedSearchTags),
-                RouteCardGrid([TopicIndexPath, GlossaryPath, TroubleshootingPath, CompilerOverviewPath, JoltHostPath, RazorVueLibraryModePath, VueRouteBindingsPath])
+                RouteCardGrid([TopicIndexPath, GlossaryPath, TroubleshootingPath, CompilerOverviewPath, RazorVueLibraryModePath, VueRouteBindingsPath])
             ]),
             PageSection("query-sharing", "可分享查询",
             [
@@ -59,7 +59,7 @@ public static partial class WikiHomeModule
                     Id = SearchInputId,
                     Class = "search-input",
                     Type = "search",
-                    Placeholder = "搜索编译器、运行时、Jolt、RazorVue、验证...",
+                    Placeholder = "搜索编译器、运行时、Razor SG、RazorVue、验证...",
                     Autocomplete = "off",
                     Value = query,
                     Events = CreateSearchInputEvents()
@@ -95,7 +95,7 @@ public static partial class WikiHomeModule
             return H("div", new VueObject { Class = "search-empty-state" },
             [
                 H("p", new VueObject { Class = "search-empty-title" }, "从路由或子系统名称开始。"),
-                H("p", new VueObject { Class = "search-empty-summary" }, "有用的起点包括 `compiler`、`jolt`、`razorvue`、`vueroute`、`runtime`、`catalog` 和 `smoke`。"),
+                H("p", new VueObject { Class = "search-empty-summary" }, "有用的起点包括 `compiler`、`razor-sg`、`razorvue`、`vueroute`、`runtime`、`catalog` 和 `smoke`。"),
                 RouteCardGrid([GettingStartedPath, ProjectLinesPath, CompilerOverviewPath, RuntimeCatalogPath])
             ]);
         }

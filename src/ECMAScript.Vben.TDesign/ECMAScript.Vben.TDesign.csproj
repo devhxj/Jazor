@@ -16,7 +16,6 @@
     <Nullable>enable</Nullable>
     <RazorLangVersion>11.0</RazorLangVersion>
     <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
-    <JazorRazorVueOutputMode>sfc</JazorRazorVueOutputMode>
     <JazorRazorVueEnableRazorSgIntegration>true</JazorRazorVueEnableRazorSgIntegration>
     <NoWarn>CS0626,CS0824,IDE0130,CA1822,IDE0060,IDE1006</NoWarn>
   </PropertyGroup>

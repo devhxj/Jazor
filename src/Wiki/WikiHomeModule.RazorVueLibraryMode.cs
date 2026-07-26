@@ -16,7 +16,7 @@ public static partial class WikiHomeModule
                 H("ul",
                 [
                     H("li", "在 `dotnet build` 期间编译 Razor 组件。"),
-                    H("li", "交付库制品，无需消费项目中包含 Jolt。"),
+                    H("li", "交付库制品，不依赖已退役的 Jolt host。"),
                     H("li", "与仓库其余部分共享编译器、分析器、Emit 和源起源基础。")
                 ])
             ]),
@@ -45,7 +45,7 @@ src/ECMAScript.Contract/
             PageSection("when-to-choose-library-mode", "何时选择库模式",
             [
                 H("p", "当用户故事是包创建、可复用组件或无需完整工作区宿主的构建时集成时，选择 RazorVue。"),
-                RouteCardGrid([ProjectLinesPath, JoltHostPath, HFunctionAuthoringPath])
+                RouteCardGrid([ProjectLinesPath, CompilerOverviewPath, HFunctionAuthoringPath])
             ])
         ]);
 }

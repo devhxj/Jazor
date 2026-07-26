@@ -154,7 +154,7 @@ public partial class VbenDashboardApp : ComponentBase, IVueComponent
 
                     cardBuilder.OpenElement(11, "p");
                     cardBuilder.AddAttribute(12, "class", "vben-demo-card__copy");
-                    cardBuilder.AddContent(13, "Host requirements, SFC bridge generation, SSR smoke, bundle smoke, and browser smoke are all wired through the Deno consumer path.");
+                    cardBuilder.AddContent(13, "This sample is pending migration from the retired SFC bridge path to the current render-function artifact path.");
                     cardBuilder.CloseElement();
                 }));
                 contentBuilder.CloseComponent();
@@ -203,14 +203,14 @@ public partial class VbenDashboardApp : ComponentBase, IVueComponent
                     cardBuilder.OpenComponent<ElTag>(6);
                     cardBuilder.AddComponentParameter(7, nameof(ElTag.Type), "warning");
                     cardBuilder.AddComponentParameter(8, nameof(ElTag.Effect), "light");
-                    cardBuilder.AddComponentParameter(9, nameof(ElTag.ChildContent), (RenderFragment)(tagBuilder => tagBuilder.AddContent(10, "official consumer entry")));
+                    cardBuilder.AddComponentParameter(9, nameof(ElTag.ChildContent), (RenderFragment)(tagBuilder => tagBuilder.AddContent(10, "migration pending")));
                     cardBuilder.CloseComponent();
 
                     cardBuilder.CloseElement();
 
                     cardBuilder.OpenElement(11, "p");
                     cardBuilder.AddAttribute(12, "class", "vben-demo-card__copy");
-                    cardBuilder.AddContent(13, "Browser assets are bundled by deno bundle and mounted through the official razorvue-consumer-entry flow.");
+                    cardBuilder.AddContent(13, "Browser assets will be revalidated after this sample moves to render-function .mjs artifacts.");
                     cardBuilder.CloseElement();
                 }));
                 contentBuilder.CloseComponent();

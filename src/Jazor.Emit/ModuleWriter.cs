@@ -24,17 +24,9 @@ internal sealed class ModuleWriter
         var written = 0;
         var skipped = 0;
         var deleted = 0;
-        var currentModulePaths = modules
-            .Select(static module => module.RelativePath)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
         var nextManifest = new ManifestModel(
             rootAssemblyPath,
-            DateTime.UtcNow,
-            existingManifest?.Modules
-                .Where(static module => module.Component is not null)
-                .Where(module => !currentModulePaths.Contains(module.RelativePath))
-                .ToList() ?? []);
+            []);
 
         foreach (var module in modules)
         {
@@ -86,11 +78,6 @@ internal sealed class ModuleWriter
                 written++;
             }
 
-            if (existingEntry?.Component is not null)
-            {
-                DeleteIfExists(GetTargetPath(normalizedOutputDirectory, existingEntry.Component.OriginMapPath), ref deleted);
-            }
-
             nextManifest.Modules.Add(new ManifestModuleEntry(
                 module.AssemblyName,
                 module.TypeName,
@@ -109,9 +96,6 @@ internal sealed class ModuleWriter
 
             foreach (var oldModule in existingManifest.Modules)
             {
-                if (oldModule.Component is not null)
-                    continue;
-
                 if (currentPaths.Contains(oldModule.RelativePath))
                     continue;
 

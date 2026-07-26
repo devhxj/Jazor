@@ -103,7 +103,7 @@ Then open:
 - `http://localhost:4173/engineering/host-semantic-seams`
 - `http://localhost:4173/engineering/import-emit-contract`
 - `http://localhost:4173/engineering/runtime-catalog`
-- `http://localhost:4173/engineering/jolt-host`
+- `http://localhost:4173/engineering/jolt-host` (retired Jolt history and baseline only)
 - `http://localhost:4173/engineering/razorvue-library-mode`
 - `http://localhost:4173/engineering/vueroute-bindings`
 - `http://localhost:4173/operations/content-governance`

@@ -43,7 +43,6 @@ public sealed class ClrRuntimeCatalogReaderTests
         Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
         Assert.AreEqual(1, result.AssemblyCount);
         Assert.AreEqual(1, result.CatalogCount);
-        Assert.AreEqual(0, result.RazorVueCatalogCount);
 
         AssertContainsModule(result.Modules, "System/RuntimeModule.js");
         AssertContainsModule(result.Modules, "System/StringModule.js");

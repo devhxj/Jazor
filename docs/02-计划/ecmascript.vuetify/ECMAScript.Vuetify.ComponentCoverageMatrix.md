@@ -364,4 +364,4 @@ Vuetify 官方 scoped slot 中的 `Ref`、`ComputedRef`、`WritableComputedRef` 
 - 长尾组件的复杂集合值
 - 高频 slot context 和 payload event
 
-当前结论是：代理层已具备生产集成验证条件，但还不是 Vuetify 官方 API 的全量强类型镜像。上线前仍应在目标业务应用中跑完整 RazorVue/Jolt/emit 集成验证。
+当前结论是：代理层已具备生产集成验证条件，但还不是 Vuetify 官方 API 的全量强类型镜像。上线前仍应在目标业务应用中跑完整 RazorVue SG、compiler lowering 和 emit 集成验证。

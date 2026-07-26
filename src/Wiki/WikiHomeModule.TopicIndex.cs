@@ -22,7 +22,7 @@ public static partial class WikiHomeModule
             PageSection("core-runtime", "核心运行时与架构",
             [
                 H("p", "如果你需要了解 Jazor 主要子系统如何协同工作，请从这里开始。"),
-                RouteCardGrid([ProjectLinesPath, CompilerOverviewPath, RuntimeCatalogPath, JoltHostPath, RazorVueLibraryModePath, VueRouteBindingsPath])
+                RouteCardGrid([ProjectLinesPath, CompilerOverviewPath, RuntimeCatalogPath, RazorVueLibraryModePath, VueRouteBindingsPath])
             ]),
             PageSection("operating-and-writing", "运维与编写",
             [

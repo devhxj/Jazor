@@ -1,6 +1,7 @@
 # 工具与集成
 
-> 对应源码：`src/Jazor/`、`src/Jazor.VSCodeExtension/`、`src/Jazor.Test/`
+> 当前对应源码：`src/Jazor/`
+> 历史说明：Jolt VS Code client 和旧 `Jazor.Test` 不在当前项目图中；相关源码仅见 Git 基线 `d68aecbb00b23aa35735c9a269b2e987c7815b05`。
 
 ## 为什么需要
 
@@ -16,25 +17,25 @@
 - 包含 Analyzer（编译时检查）、Compiler.Generator（白名单生成）、Emit（产物输出）
 - MSBuild 集成让构建流程自动触发 C#→JS 编译
 
-### Jazor.VSCodeExtension（VS Code 扩展）
+### Jolt VS Code 集成（历史）
 
-Jolt 的 VS Code Language Client 集成：
+当前分支不提供 Jolt LSP 或 VS Code client。历史基线曾包含以下集成：
 
 - 启动 `Jolt --language-server` 作为 LSP 后端
 - 提供语法高亮、智能补全、错误诊断、Go to Definition 等 IDE 功能
 - 支持 `.jazor` 文件类型关联
 
-### Jazor.Test（集成测试 / 手动实验）
+### Jazor.Test（历史集成测试 / 手动实验）
 
-主集成测试和手动实验平台：
+历史基线中的主集成测试和手动实验平台：
 
 - 通过 Roslyn 编译 C# 代码并送入 Jazor 编译管线，验证端到端转换
 - `NamedPipeClient`：实现 .NET 宿主与 JS/Vue 运行时之间的二进制命名管道通信协议
 - `JazorExtractorTask`：MSBuild Task，从编译后的程序集中提取生成的代码用于白名单/特殊编译处理
 
-## 已废弃的项目
+## 历史项目去向（基线快照）
 
-以下项目为空壳目录（源码已移除），功能已被 Jolt 吸收：
+以下描述只对应历史基线中的迁移判断；Jolt 自身也已从当前转型分支退役：
 
 | 项目 | 原定用途 |
 |------|---------|

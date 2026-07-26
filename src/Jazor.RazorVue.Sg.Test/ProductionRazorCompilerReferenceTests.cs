@@ -49,7 +49,7 @@ public sealed class ProductionRazorCompilerReferenceTests
     {
         var productionAssemblies = new[]
         {
-            typeof(Jazor.RazorVue.RazorVueCompilationContext).Assembly,
+            typeof(Jazor.RazorVue.RazorSdk.RazorSgGeneratedCSharpBinder).Assembly,
             typeof(Jazor.RazorVue.Analysis.RazorVueGenerator).Assembly
         };
 
