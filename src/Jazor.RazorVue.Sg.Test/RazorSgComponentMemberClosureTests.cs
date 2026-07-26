@@ -251,6 +251,7 @@ public sealed class RazorSgComponentMemberClosureTests
         StringAssert.Contains(script, "builder.addAttribute(\"onclick\", increment);", StringComparison.Ordinal);
         StringAssert.Contains(script, "builder.addContent(props.title);", StringComparison.Ordinal);
         StringAssert.Contains(script, "builder.addContent(state.count);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return {\n    buildRenderTree\n  };", StringComparison.Ordinal);
         StringAssert.Contains(script, "props: [", StringComparison.Ordinal);
         StringAssert.Contains(script, "\"title\"", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("let invalidate = null;", StringComparison.Ordinal), script);

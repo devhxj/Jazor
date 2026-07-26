@@ -828,11 +828,6 @@ internal static class RazorSgVueComponentModuleBuilder
             AddName(lifecycleRoot);
         }
 
-        foreach (var method in closure.ReachableMethods)
-        {
-            AddName(method);
-        }
-
         return names.ToImmutable();
 
         void AddName(IMethodSymbol method)
