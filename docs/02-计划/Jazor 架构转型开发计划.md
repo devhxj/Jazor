@@ -612,9 +612,16 @@ sequence 参数由 compiler 接收并擦除，但仍验证调用形状；runtime
 - [x] EventCallback emits metadata 首切片：`[Parameter] EventCallback*` 派生 `defineComponent({ emits: [...] })`，并保持 `InvokeAsync` 继续走 `props.onX?.(...)` 现有调用路径。
 - [x] component `@bind-X` 常见首切片：official SG `X` / `XChanged` + `CreateBinder` lower 到最终 VNode `x` / `xChanged`，不写成 `modelValue`。
 - [ ] component bind descriptor breadth：覆盖自定义 bind pair、第三方 wrapper naming 与 descriptor/catalog 输出，不一律写成 `modelValue`；required/unknown bind 参数由 Razor/C# 编译链路负责，lowering 不重复校验。
-- [x] default 与 named 非泛型 `RenderFragment` slot 首切片：`ChildContent`→`slots.default`，`Header`→`slots.header`，child 侧 bridge 回对应 RenderFragment 参数；`RenderFragment<T>` 仍 unsupported。
+- [x] default 与 named 非泛型 `RenderFragment` slot 首切片：`ChildContent`→`slots.default`，`Header`→`slots.header`，child 侧 bridge 回对应 RenderFragment 参数。
 - [x] `RenderFragment<T>` component slot fail-fast diagnostic 首切片：`AddComponentParameter("Header", RenderFragment<T>)` 不再作为普通 prop 下发，诊断明确要求 typed slot descriptor lowering。
-- [ ] typed slot 的首版支持范围有显式矩阵。
+- [x] typed slot 的首版支持范围有显式矩阵：
+  | Authoring/generated shape | v1 status | Runtime mapping |
+  |---|---|---|
+  | `[Parameter] RenderFragment? ChildContent` + `slots.default` | accepted | `props.childContent = builder => builder.addContent(slots.default())` |
+  | `[Parameter] RenderFragment? Header` + `slots.header` | accepted | `props.header = builder => builder.addContent(slots.header())` |
+  | `AddComponentParameter("Header", RenderFragment)` | accepted | `builder.addComponentSlot("Header", fragment)` -> Vue named slot |
+  | `RenderFragment<T>` / scoped slot parameter value | unsupported in v1 | fail-fast diagnostic naming `RenderFragment<T>` and typed slot descriptor lowering |
+  | named/scoped slot descriptor metadata | not implemented in v1 | deferred until descriptor/catalog contract exists |
 - [x] Razor-side unknown slot、required prop 和一般 prop 类型不匹配不在 RazorVue lowering 重复校验；保留 Razor/C# 编译链路诊断，lowering 直接翻译官方 SG generated C#。
 - [ ] sync/async `EventCallback` 的 await、error propagation 和 render invalidation 次数有统一规则。
 
