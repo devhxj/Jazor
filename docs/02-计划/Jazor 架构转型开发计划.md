@@ -662,7 +662,7 @@ sequence 参数由 compiler 接收并擦除，但仍验证调用形状；runtime
 
 ### Task 2.5：复杂度与性能 Gate
 
-> Status: partial measurement added（2026-07-23；`scripts/csharp/benchmark-razorvue-g2.cs` 已记录三 fixture、指标、阈值和输出格式，并提供 runtime-protocol vs handwritten `h()` 的首个 JSON/Markdown 采样模式；`--measure-generated-artifacts` 已输出 `plain-text` / `counter` / `keyed-list-100` 三 fixture 明细，并保留全量 artifact 表以区分 component module、source map、Vue runtime、CLR runtime；尚未覆盖 handwritten `.mjs` artifact baseline、compiler p95、browser heap 或旧线 baseline，不能作为 G2 通过证据）
+> Status: partial measurement added（2026-07-27；`scripts/csharp/benchmark-razorvue-g2.cs` 已记录三 fixture、指标、阈值和输出格式，并提供 runtime-protocol vs handwritten `h()` 的 JSON/Markdown 采样模式；`--measure-generated-artifacts` 已输出 `plain-text` / `counter` / `keyed-list-100` 三 fixture 明细、handwritten `.mjs` baseline、incremental build samples/p95 和全量 artifact 表；已按单一路径优化生成体积：按需 lifecycle bridge、按需 invalidation/reactive、按需 setup slots/props 参数、setup scope 只返回外部可见成员、单成员 scope return 压缩；尚未覆盖真实浏览器 DOM patch、browser heap 或旧线 baseline，不能作为 G2 通过证据）
 
 **内容**：建立三组等价 fixture：纯文本、Counter、100-item keyed list；同时与手写 Vue `h()` baseline 和 1.1 节记录的旧线路 baseline 比较。旧线只在固定 commit 的独立 worktree 运行，不把旧代码合并进转型分支。先提交 benchmark protocol 和采样脚本，再运行优化，避免用测量结果倒推阈值。
 
@@ -688,15 +688,16 @@ sequence 参数由 compiler 接收并擦除，但仍验证调用形状；runtime
 - protocol 固定阈值口径：gzip <= 2x handwritten、throughput >= 70%、incremental p95 <= 1.5x retired-line baseline、100 次 mount/unmount retained 不持续增长。
 - `--measure-runtime` 使用 Node 执行当前 `src/Jazor.RazorVue/Runtime/render-context-core.mjs`，对三组 fixture 采集 runtime-protocol vs direct handwritten `h()` 的 render/update throughput、fixture body gzip size 和 GC 后 heap-delta proxy，并输出 `razorvue-g2-runtime-report.json` / `.md`。
 - `--measure-generated-artifacts` 会本地 pack 当前 `src/Jazor/Jazor.csproj`，创建独立 `Microsoft.NET.Sdk.Razor` 三 fixture consumer（`plain-text` / `counter` / `keyed-list-100`），启用 `UseRazorSourceGenerator=true` 与 `JazorRazorVueEnableRazorSgIntegration=true`；报告输出 `fixtures[]` 明细（component + source map bytes/gzip/SHA256）并保留全量 `artifacts[]` 表（`component-module` / `source-map` / `runtime` / `clr-runtime` / `manifest`），从而后续阈值比较不会把 shared Vue/CLR runtime 与 per-fixture module 混淆；脚本同时断言 manifest 不含 `generatedAtUtc` / `rootAssemblyPath`，产物不持久化外部 consumer 绝对项目路径。
-- 当前 runtime/generated-artifact 报告只用于趋势跟踪和后续优化入口：generated-artifact 模式已覆盖三 fixture 明细 + 全量 artifact 表 + handwritten `.mjs` baseline（per-fixture gzip ratio）；仍不含 compiler cold/incremental p95、真实浏览器 DOM patch、retained handler/object heap snapshot 与旧线固定 commit/worktree baseline。
+- 当前 runtime/generated-artifact 报告只用于趋势跟踪和后续优化入口：generated-artifact 模式已覆盖三 fixture 明细 + 全量 artifact 表 + handwritten `.mjs` baseline（per-fixture gzip ratio）+ active-line incremental samples/p95；仍不含真实浏览器 DOM patch、retained handler/object heap snapshot 与旧线固定 commit/worktree baseline。
 - 已验证：
   - `dotnet run --file scripts/csharp/benchmark-razorvue-g2.cs -- --help`：通过，无编译警告。
   - `dotnet run --file scripts/csharp/benchmark-razorvue-g2.cs -- --dry-run --samples 1 --render-iterations 10 --mount-iterations 2`：通过，输出 pending-measurement protocol。
   - `dotnet run --file scripts/csharp/benchmark-razorvue-g2.cs -- --write-protocol --out .tmp/razorvue-g2-protocol-check`：通过，写出 JSON/Markdown protocol。
   - `dotnet run --file scripts/csharp/benchmark-razorvue-g2.cs -- --measure-runtime --samples 1 --render-iterations 100 --mount-iterations 5 --out .tmp/razorvue-g2-benchmark-smoke`：通过，写出 protocol 与 runtime partial report。
   - `dotnet run --file scripts/csharp/benchmark-razorvue-g2.cs -- --measure-runtime --out .tmp/razorvue-g2-benchmark-default`：通过，按默认 5 samples / 10,000 render-update iterations / 100 mount cycles 写出 runtime partial report。
-  - `dotnet run --file scripts/csharp/benchmark-razorvue-g2.cs -- --measure-generated-artifacts --out .tmp/razorvue-g2-generated-artifacts-three-fixtures`：通过，写出 protocol 与三 fixture official SG generated artifact partial report；`fixtures[]` 含 `plain-text`（649/338）、`counter`（847/396）、`keyed-list-100`（2369/679）component bytes/gzip，并保留全量 `artifacts[]`（component-module / source-map / runtime / clr-runtime / manifest）；clean build elapsed 6614 ms（package elapsed 84493 ms）。
-- 剩余：compiler cold/incremental p95 timing、真实浏览器/heap retained 与旧线固定 commit/worktree baseline 与阈值判定。handwritten `.mjs` artifact baseline 已接入 generated-artifact 报告（per-fixture gzip ratio）；当前三 fixture generated/handwritten gzip 仍高于 2x 阈值，属后续优化项。
+  - `dotnet run --file scripts/csharp/benchmark-razorvue-g2.cs -- --measure-generated-artifacts --out .tmp/razorvue-g2-generated-artifacts-three-fixtures`：通过，写出 protocol 与三 fixture official SG generated artifact partial report；历史首样 `fixtures[]` 含 `plain-text`（649/338）、`counter`（847/396）、`keyed-list-100`（2369/679）component bytes/gzip，并保留全量 `artifacts[]`（component-module / source-map / runtime / clr-runtime / manifest）；clean build elapsed 6614 ms（package elapsed 84493 ms）。
+  - 2026-07-27 最新体积优化验证：`dotnet run --file scripts/csharp/benchmark-razorvue-g2.cs -- --measure-generated-artifacts --samples 2 --out .tmp/razorvue-g2-single-return-size-check` 通过；`fixtures[]` 含 `plain-text`（628/333）、`counter`（811/387）、`keyed-list-100`（2348/672）component bytes/gzip；incremental build samples 2573/2370 ms，active-line p95 2573 ms。
+- 剩余：真实浏览器/heap retained、旧线固定 commit/worktree baseline 与阈值判定。handwritten `.mjs` artifact baseline 已接入 generated-artifact 报告（per-fixture gzip ratio）；当前三 fixture generated/handwritten gzip 仍高于 2x 阈值，属后续优化项。
 
 **依赖**：2.1-2.4。
 
