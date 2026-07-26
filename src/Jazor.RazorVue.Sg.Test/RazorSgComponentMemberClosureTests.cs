@@ -1699,6 +1699,8 @@ public sealed class RazorSgComponentMemberClosureTests
         StringAssert.Contains(script, "\"valueChanged\"", StringComparison.Ordinal);
         StringAssert.Contains(script, "props.onClick?.();", StringComparison.Ordinal);
         StringAssert.Contains(script, "props.valueChanged?.(\"ready\");", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("stateHasChanged();", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("Promise.resolve(props.", StringComparison.Ordinal), script);
         Assert.IsTrue(
             script.IndexOf("props: [", StringComparison.Ordinal) <
             script.IndexOf("emits: [", StringComparison.Ordinal),
@@ -1708,6 +1710,52 @@ public sealed class RazorSgComponentMemberClosureTests
             script.IndexOf("\"click\"", emitsIndex, StringComparison.Ordinal) <
             script.IndexOf("\"valueChanged\"", emitsIndex, StringComparison.Ordinal),
             script);
+    }
+
+    [TestMethod]
+    public async Task BuildVueComponentModule_EventCallbackAwaitUsesSourceAwaitAndLifecycleInvalidationOnly()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using System.Threading.Tasks;
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/callbacks")]
+                public partial class Counter : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public EventCallback<string> Ready { get; set; }
+
+                    protected override async Task OnInitializedAsync()
+                    {
+                        await Ready.InvokeAsync("ready");
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, "callbacks");
+                    }
+                }
+            }
+            """);
+        var closure = BuildClosure(fixture);
+        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            fixture.Component,
+            closure);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+
+        StringAssert.Contains(script, "props.ready?.(\"ready\");", StringComparison.Ordinal);
+        StringAssert.Contains(script, "async function onInitializedAsync()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "await props.ready?.(\"ready\");", StringComparison.Ordinal);
+        StringAssert.Contains(script, "Promise.resolve(scope.onInitializedAsync()).then(", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("try {", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("catch (", StringComparison.Ordinal), script);
     }
 
     private static bool IsSha256Hash(string value)

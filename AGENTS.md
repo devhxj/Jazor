@@ -57,6 +57,7 @@ Documentation interpretation rule:
 
 RazorVue artifact and lowering boundary rule:
 - The production input is official Razor SG generated C#, and the output contract is a Vue render-function `.mjs` artifact. Razor DR/IR, generated SFC output, and Jolt protocols are not fallback paths.
+- Razor/C# compiler already validates Razor-side unknown parameters, required parameters, and parameter type mismatches. RazorVue lowering should directly translate official SG generated C# and must not duplicate those checks.
 - Do not introduce intermediate wrapper-JS marker protocols for RazorVue slot/template transport when the same behavior can be expressed as the final Vue render-function shape directly.
 - When RazorVue lowering needs CLR-aware type mapping, import collection, symbol binding, reference stability, or other compiler-owned semantics, it must flow through `Jazor.Compiler` / `SemanticWalker` translation hooks rather than bypassing them with hand-assembled Acornima AST or ad hoc JavaScript string stitching.
 - Direct AST/manual-JS construction in RazorVue is acceptable only for Vue artifact framing that `Jazor.Compiler` does not own (for example Vue runtime bridge code). It must not replace compiler translation for C# expression/function/member semantics.
