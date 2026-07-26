@@ -145,14 +145,22 @@ internal static class RazorSgVueComponentModuleBuilder
         }
 
         AppendLine();
-        AppendLine("  return {");
-        for (var index = 0; index < returnedMembers.Length; index++)
+        if (returnedMembers.Length == 1)
         {
-            var suffix = index + 1 == returnedMembers.Length ? string.Empty : ",";
-            AppendLine("    " + returnedMembers[index] + suffix);
+            AppendLine("  return { " + returnedMembers[0] + " };");
+        }
+        else
+        {
+            AppendLine("  return {");
+            for (var index = 0; index < returnedMembers.Length; index++)
+            {
+                var suffix = index + 1 == returnedMembers.Length ? string.Empty : ",";
+                AppendLine("    " + returnedMembers[index] + suffix);
+            }
+
+            AppendLine("  };");
         }
 
-        AppendLine("  };");
         AppendLine("}");
         AppendLine();
         AppendLine("export default defineComponent({");
