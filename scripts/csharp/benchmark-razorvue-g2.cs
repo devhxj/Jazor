@@ -404,8 +404,8 @@ internal sealed record RuntimeBenchmarkReport(
         writer.WriteLine();
         writer.WriteLine("## Fixture measurements");
         writer.WriteLine();
-        writer.WriteLine("| Fixture | Protocol render ops/s | Handwritten render ops/s | Render ratio | Protocol update ops/s | Handwritten update ops/s | Update ratio | Protocol gzip | Handwritten gzip | Gzip ratio | Heap delta bytes |");
-        writer.WriteLine("|---------|-----------------------|--------------------------|--------------|-----------------------|--------------------------|--------------|---------------|------------------|------------|------------------|");
+        writer.WriteLine("| Fixture | Protocol render ops/s | Handwritten render ops/s | Render ratio | Protocol update ops/s | Handwritten update ops/s | Update ratio | Protocol gzip | Handwritten gzip | Gzip ratio | Heap delta median | Heap delta min | Heap delta max |");
+        writer.WriteLine("|---------|-----------------------|--------------------------|--------------|-----------------------|--------------------------|--------------|---------------|------------------|------------|-------------------|----------------|----------------|");
 
         foreach (var fixture in Fixtures)
         {
@@ -420,7 +420,9 @@ internal sealed record RuntimeBenchmarkReport(
                 " | " + fixture.ProtocolBodyGzipBytes.ToString(CultureInfo.InvariantCulture) +
                 " | " + fixture.HandwrittenBodyGzipBytes.ToString(CultureInfo.InvariantCulture) +
                 " | " + FormatRatio(fixture.GzipRatio) +
-                " | " + fixture.RetainedHeapDeltaBytes.ToString(CultureInfo.InvariantCulture) +
+                " | " + fixture.RetainedHeapDeltaBytes.Median.ToString(CultureInfo.InvariantCulture) +
+                " | " + fixture.RetainedHeapDeltaBytes.Min.ToString(CultureInfo.InvariantCulture) +
+                " | " + fixture.RetainedHeapDeltaBytes.Max.ToString(CultureInfo.InvariantCulture) +
                 " |");
         }
 
@@ -451,7 +453,7 @@ internal sealed record RuntimeFixtureMeasurement(
     int ProtocolBodyGzipBytes,
     int HandwrittenBodyGzipBytes,
     double GzipRatio,
-    long RetainedHeapDeltaBytes,
+    RuntimeMetricSummary RetainedHeapDeltaBytes,
     IReadOnlyList<string> Notes);
 
 internal sealed record RuntimeMetricSummary(
@@ -491,7 +493,7 @@ internal static class RuntimeBenchmarkReportJson
                 writer.WriteNumber("protocolBodyGzipBytes", fixture.ProtocolBodyGzipBytes);
                 writer.WriteNumber("handwrittenBodyGzipBytes", fixture.HandwrittenBodyGzipBytes);
                 writer.WriteNumber("gzipRatio", fixture.GzipRatio);
-                writer.WriteNumber("retainedHeapDeltaBytes", fixture.RetainedHeapDeltaBytes);
+                WriteSummary(writer, "retainedHeapDeltaBytes", fixture.RetainedHeapDeltaBytes);
                 WriteStringArray(writer, "notes", fixture.Notes);
                 writer.WriteEndObject();
             }
@@ -534,7 +536,7 @@ internal static class RuntimeBenchmarkReportJson
                 ProtocolBodyGzipBytes: fixture.GetProperty("protocolBodyGzipBytes").GetInt32(),
                 HandwrittenBodyGzipBytes: fixture.GetProperty("handwrittenBodyGzipBytes").GetInt32(),
                 GzipRatio: fixture.GetProperty("gzipRatio").GetDouble(),
-                RetainedHeapDeltaBytes: fixture.GetProperty("retainedHeapDeltaBytes").GetInt64(),
+                RetainedHeapDeltaBytes: ReadSummary(fixture.GetProperty("retainedHeapDeltaBytes")),
                 Notes: ReadStringArray(fixture.GetProperty("notes"))))
             .ToArray();
 
@@ -709,6 +711,16 @@ internal static class RuntimeBenchmarkRunner
               return heapUsed() - before;
             }
 
+            function sampleRetainedHeapDelta(operation) {
+              operation(0);
+              const values = [];
+              for (let index = 0; index < samples; index++) {
+                values.push(retainedHeapDelta(operation));
+              }
+
+              return summarize(values);
+            }
+
             function createItems(seed) {
               return Array.from({ length: 100 }, (_, index) => ({
                 id: index,
@@ -839,7 +851,7 @@ internal static class RuntimeBenchmarkRunner
                 protocolBodyGzipBytes,
                 handwrittenBodyGzipBytes,
                 gzipRatio: protocolBodyGzipBytes / handwrittenBodyGzipBytes,
-                retainedHeapDeltaBytes: retainedHeapDelta(fixture.protocolUpdate),
+                retainedHeapDeltaBytes: sampleRetainedHeapDelta(fixture.protocolUpdate),
                 notes: [
                   "This measurement compares the shared render-context runtime protocol against direct handwritten h() calls.",
                   "It does not include official Razor SG build time, generated .mjs size, browser DOM patching, or retired-line baseline."
