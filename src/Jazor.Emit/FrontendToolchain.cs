@@ -83,6 +83,7 @@ internal sealed record FrontendToolchainRequest(
         => source is null || source.Count == 0
             ? new HashSet<FrontendToolchainCapability>()
             : new HashSet<FrontendToolchainCapability>(source);
+
 }
 
 internal sealed record FrontendToolchainCommand(
@@ -260,7 +261,7 @@ internal sealed class FrontendToolchainRunner
         return request.Toolchain switch
         {
             FrontendToolchainKind.Deno => await BuildDenoAsync(request),
-            FrontendToolchainKind.Netpack => Unsupported(request, "JAZOR_TOOLCHAIN_NETPACK_NOT_IMPLEMENTED", "Netpack production build is not implemented yet."),
+            FrontendToolchainKind.Netpack => await BuildNetpackAsync(request),
             _ => Unsupported(request, "JAZOR_TOOLCHAIN_UNKNOWN", $"Unsupported frontend toolchain '{request.Toolchain}'.")
         };
     }
@@ -335,5 +336,36 @@ internal sealed class FrontendToolchainRunner
                 bundleResult.ExitCode,
                 "JAZOR_TOOLCHAIN_DENO_FAILED",
                 bundleResult.Error ?? "Deno build failed.");
+    }
+
+    private static async Task<FrontendToolchainResult> BuildNetpackAsync(FrontendToolchainRequest request)
+    {
+        if (request.Mode != FrontendBuildMode.Production)
+            return Unsupported(request, "JAZOR_TOOLCHAIN_MODE_UNSUPPORTED", "Netpack development mode is not implemented yet.");
+
+        foreach (var capability in request.RequiredCapabilities)
+        {
+            if (capability is FrontendToolchainCapability.ProductionBuild or FrontendToolchainCapability.SourceMaps)
+                continue;
+
+            return UnsupportedCapability(request, capability);
+        }
+
+        Directory.CreateDirectory(request.OutputRoot);
+
+        var bundler = new NetpackModuleBundler();
+        var bundleResult = await bundler.BundleAsync(new BundleOptions(
+            request.ArtifactRoot,
+            request.ManifestPath,
+            request.BundleOutputPath,
+            request.SourceRoot));
+
+        return bundleResult.IsSuccess
+            ? FrontendToolchainResult.Success(request.Toolchain, bundleResult.OutputPath!, bundleResult.ModuleCount)
+            : FrontendToolchainResult.Fail(
+                request.Toolchain,
+                bundleResult.ExitCode,
+                "JAZOR_TOOLCHAIN_NETPACK_FAILED",
+                bundleResult.Error ?? "Netpack build failed.");
     }
 }

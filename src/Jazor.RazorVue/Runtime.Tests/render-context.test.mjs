@@ -244,9 +244,10 @@ test("setKey writes the Vue key prop on the current element", () => {
     assert.deepEqual(result.children, ["Item 42"]);
 });
 
-test("setUpdatesAttributeName validates DOM bind hint without changing VNode props", () => {
+test("setUpdatesAttributeName wraps the current DOM bind event handler", () => {
     const { createContext } = createHarness();
-    const change = () => {};
+    const values = [];
+    const change = (value) => values.push(value);
     const context = createContext();
 
     context.openElement("input");
@@ -255,14 +256,16 @@ test("setUpdatesAttributeName validates DOM bind hint without changing VNode pro
     assert.equal(context.setUpdatesAttributeName("value"), context);
     context.closeElement();
 
-    assert.deepEqual(context.finish(), {
-        name: "input",
-        props: {
-            value: "ready",
-            onChange: change
-        },
-        children: []
-    });
+    const result = context.finish();
+    assert.equal(result.name, "input");
+    assert.equal(result.props.value, "ready");
+    assert.equal(typeof result.props.onChange, "function");
+    assert.notEqual(result.props.onChange, change);
+    assert.deepEqual(result.children, []);
+
+    result.props.onChange({ target: { value: "updated" } });
+    result.props.onChange("direct");
+    assert.deepEqual(values, ["updated", "direct"]);
 });
 
 test("named events validate enclosing element metadata without changing VNode props", () => {

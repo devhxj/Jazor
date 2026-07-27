@@ -7,7 +7,7 @@
     <JazorEmit>true</JazorEmit>
     <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
     <JazorBundle>false</JazorBundle>
-    <JazorBundleOut>$(MSBuildProjectDirectory)\wwwroot\app.bundle.js</JazorBundleOut>
+    <JazorBundleOut>$(MSBuildProjectDirectory)\wwwroot\bundle\</JazorBundleOut>
   </PropertyGroup>
 
   <ItemGroup>

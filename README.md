@@ -34,6 +34,15 @@ The active line reuses `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyzer`, `Jazor.E
 
 For current status, prefer the status pages under `docs/03-完成/` and local test output over hard-coded counts in README files.
 
+## Latest Updates
+
+### 2026-07-27
+
+- RazorVue render-context now covers the core generated component semantics for render surface, props, events, slots, bind, lifecycle, references, metadata, and browser DOM behavior.
+- Production bundling now supports explicit Deno and Netpack lanes over the same manifest contract, including import-backed `.vue` SFC assets and package consumer builds.
+
+See [release notes](docs/releases/release-notes.md) for the full history.
+
 ## Feature Overview
 
 - **Semantic C# lowering**: C# is lowered through Roslyn `IOperation`, not syntax-string rewriting.
@@ -42,7 +51,7 @@ For current status, prefer the status pages under `docs/03-完成/` and local te
 - **ECMAScript module output**: `[ECMAScriptModule]` classes emit named-export `.mjs` modules with stable import collection, source-origin tracking, and source-map carriers.
 - **RazorVue artifact generation**: Razor component semantics flow from official Razor SG generated C# through Roslyn binding and compiler-owned `IOperation` lowering.
 - **Typed Vue authoring**: `ECMAScript.Vue3` provides typed bindings for Vue 3 `defineComponent`, `h`, refs/reactivity, lifecycle hooks, props, slots, and component contracts.
-- **Host-facing build support**: MSBuild targets currently emit and materialize generic ECMAScript modules, publish assets, and bundle through the bundled Deno runtime. RazorVue `.mjs` consumer builds are part of the active transformation plan and must not be assumed complete until the relevant gates pass.
+- **Host-facing build support**: MSBuild targets emit and materialize ECMAScript/RazorVue modules, publish assets, and bundle production output through explicit Deno or Netpack toolchain lanes.
 - **Retired Jolt boundary**: `.jazor` authoring, Jolt LSP/DAP, DevServer/HMR, debug, and build protocols are deliberately absent from this branch.
 
 ## Install
@@ -57,10 +66,10 @@ Add ecosystem packages explicitly when needed:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.26" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.26" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.26" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.26" />
+  <PackageReference Include="Jazor" Version="0.1.27" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.27" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.27" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.27" />
 </ItemGroup>
 ```
 
@@ -141,8 +150,9 @@ Jolt was removed from this transformation branch in `3ee18679fbdf43c13e05d7bfac8
 | `JazorDevOutDir` | `$(MSBuildProjectDirectory)\jazor\` | Default development output root for compiler-owned artifacts. |
 | `JazorPublishOutDir` | `$(MSBuildProjectDirectory)\wwwroot\jazor\` | Default publish-time browser asset root when publish materialization is not enabled. |
 | `JazorOutDir` | `$(JazorDevOutDir)` | Selected output directory for compiler-owned artifacts. |
-| `JazorBundle` | `false` | Bundles emitted modules through the bundled Deno runtime. |
-| `JazorBundleOut` | `$(OutDir)jazor\app.js` | Output path for bundled JavaScript. |
+| `JazorBundle` | `false` | Bundles emitted modules through the selected `JazorToolchain`. |
+| `JazorToolchain` | `Deno` | Selects the explicit production toolchain lane, currently `Deno` or `Netpack`. |
+| `JazorBundleOut` | `$(OutDir)jazor\` | Output root for bundled production assets; the JavaScript bundle is written as `bundle.js` under this root. |
 | `JazorCleanEmit` | `true` | Removes stale emitted files from the output directory. |
 | `JazorFailOnPathConflict` | `true` | Fails the build when two modules claim the same output path. |
 | `JazorPublishMaterializeEnabled` | `false` | Materializes compiler-owned RazorVue output into publish assets. |

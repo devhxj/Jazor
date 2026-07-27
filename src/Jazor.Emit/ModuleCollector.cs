@@ -34,6 +34,7 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
 
         var byKey = new Dictionary<string, EmitModuleRecord>(StringComparer.Ordinal);
         var byRelativePath = new Dictionary<string, EmitModuleRecord>(StringComparer.OrdinalIgnoreCase);
+        var assetsByArtifactPath = new Dictionary<string, ManifestAssetEntry>(StringComparer.OrdinalIgnoreCase);
         var catalogCount = 0;
 
         foreach (var assembly in assemblies)
@@ -67,6 +68,23 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
                     continue;
                 }
 
+                foreach (var asset in module.FrontendAssets ?? [])
+                {
+                    if (assetsByArtifactPath.TryGetValue(asset.ArtifactPath, out var existingAsset))
+                    {
+                        if (!StringComparer.Ordinal.Equals(existingAsset.SourcePath, asset.SourcePath) ||
+                            !StringComparer.Ordinal.Equals(existingAsset.Kind, asset.Kind) ||
+                            !StringComparer.Ordinal.Equals(existingAsset.Hash, asset.Hash))
+                        {
+                            return CollectResult.Fail(4, $"Conflicting frontend asset for '{asset.ArtifactPath}'.");
+                        }
+
+                        continue;
+                    }
+
+                    assetsByArtifactPath[asset.ArtifactPath] = asset;
+                }
+
                 if (byRelativePath.TryGetValue(module.RelativePath, out var existingPath))
                 {
                     if (!StringComparer.Ordinal.Equals(existingPath.Hash, module.Hash) ||
@@ -93,8 +111,12 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
             .OrderBy(static module => module.RelativePath, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static module => module.TypeName, StringComparer.Ordinal)
             .ToArray();
+        var orderedAssets = assetsByArtifactPath.Values
+            .OrderBy(static asset => asset.ArtifactPath, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static asset => asset.SourcePath, StringComparer.Ordinal)
+            .ToArray();
 
-        return CollectResult.Success(assemblies.Count, catalogCount, orderedModules);
+        return CollectResult.Success(assemblies.Count, catalogCount, orderedModules, orderedAssets);
     }
 }
 
@@ -108,7 +130,8 @@ internal sealed record EmitModuleRecord(
     string Hash,
     string? SourceMapRelativePath = null,
     string? SourceMapContent = null,
-    string? MapHash = null);
+    string? MapHash = null,
+    IReadOnlyList<ManifestAssetEntry>? FrontendAssets = null);
 
 internal sealed record CollectResult(
     bool IsSuccess,
@@ -116,14 +139,16 @@ internal sealed record CollectResult(
     string? Error,
     int AssemblyCount,
     int CatalogCount,
-    IReadOnlyList<EmitModuleRecord> Modules)
+    IReadOnlyList<EmitModuleRecord> Modules,
+    IReadOnlyList<ManifestAssetEntry> Assets)
 {
     public static CollectResult Success(
         int assemblyCount,
         int catalogCount,
-        IReadOnlyList<EmitModuleRecord> modules)
-        => new(true, 0, null, assemblyCount, catalogCount, modules);
+        IReadOnlyList<EmitModuleRecord> modules,
+        IReadOnlyList<ManifestAssetEntry> assets)
+        => new(true, 0, null, assemblyCount, catalogCount, modules, assets);
 
     public static CollectResult Fail(int exitCode, string error)
-        => new(false, exitCode, error, 0, 0, []);
+        => new(false, exitCode, error, 0, 0, [], []);
 }

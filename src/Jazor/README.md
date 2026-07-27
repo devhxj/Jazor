@@ -17,7 +17,7 @@ Jazor is a C#-to-JavaScript compiler that translates Roslyn `IOperation` semanti
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.26" />
+  <PackageReference Include="Jazor" Version="0.1.27" />
 </ItemGroup>
 ```
 
@@ -29,7 +29,7 @@ Every project that declares `[ECMAScriptModule]` must reference `Jazor`:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.26" />
+  <PackageReference Include="Jazor" Version="0.1.27" />
 </ItemGroup>
 ```
 
@@ -41,11 +41,11 @@ Keep `JazorEmit` disabled (default) in library projects.
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.26" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.26" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.26" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.26" />
-  <PackageReference Include="ECMAScript.TDesign" Version="0.1.26" />
+  <PackageReference Include="Jazor" Version="0.1.27" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.27" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.27" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.27" />
+  <PackageReference Include="ECMAScript.TDesign" Version="0.1.27" />
 </ItemGroup>
 ```
 
@@ -58,7 +58,7 @@ The final executable or web host project enables emit and optionally bundling:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.26" />
+  <PackageReference Include="Jazor" Version="0.1.27" />
 </ItemGroup>
 
 <PropertyGroup>
@@ -70,7 +70,7 @@ The final executable or web host project enables emit and optionally bundling:
 ```
 
 - `JazorEmit` scans the host output and referenced assemblies, emitting all declared modules together.
-- `JazorBundle=true` bundles emitted modules through the selected `JazorToolchain`; `Deno` uses the bundled runtime, so no global Deno install is needed on the consumer machine.
+- `JazorBundle=true` bundles emitted modules through the selected `JazorToolchain`; `Deno` uses the bundled runtime, and `Netpack` uses the packaged NetPack lane.
 
 ### Razor integration status
 
@@ -86,12 +86,12 @@ The transformation branch currently exposes the official Razor Source Generator 
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jazor" Version="0.1.26" />
+    <PackageReference Include="Jazor" Version="0.1.27" />
   </ItemGroup>
 </Project>
 ```
 
-This opt-in enables the controlled SG tail hook that adapts final generated C# and binds `BuildRenderTree` against the callback compilation. At the current Phase 0 boundary it does not yet lower Razor components into Vue render-function `.mjs` artifacts. That lowering belongs to the following implementation phases and must not be assumed to exist in the current package.
+This opt-in enables the controlled SG tail hook that adapts final generated C# and binds `BuildRenderTree` against the callback compilation. Razor component modules lower to Vue render-function `.mjs` artifacts through the shared compiler/render-context path.
 
 ### Current MSBuild emit behavior
 
@@ -100,7 +100,7 @@ The existing emit targets continue to handle declared ECMAScript modules indepen
 - `JazorEmit` runs after a successful build when enabled, scans the target and copy-local assemblies, and writes modules plus `jazor-manifest.json`.
 - `JazorOutDir` defaults to `JazorDevOutDir`, which defaults to `$(MSBuildProjectDirectory)\jazor\`.
 - During publish, the default non-materialized path switches to `JazorPublishOutDir`, which defaults to `$(MSBuildProjectDirectory)\wwwroot\jazor\`.
-- `JazorToolchain` defaults to `Deno`; bundle builds pass the explicit manifest, artifact root, source root, and output root to that lane.
-- `JazorBundle=true` runs the bundled emit tool after `JazorEmit` and writes the production bundle under `JazorBundleOut`.
+- `JazorToolchain` defaults to `Deno`; bundle builds pass the explicit manifest, artifact root, source root, and output root to the selected `Deno` or `Netpack` lane.
+- `JazorBundle=true` runs the bundled emit tool after `JazorEmit` and writes production bundle assets under the `JazorBundleOut` output root.
 - `JazorCleanEmit` and `JazorFailOnPathConflict` both default to `true`.
 - `JazorPublishMaterializeEnabled=true` copies `JazorOutDir` into the published `wwwroot/jazor` directory and removes a publish-root shadow `jazor` directory.

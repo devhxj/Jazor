@@ -38,6 +38,10 @@ function normalizeAttributeName(name) {
     return normalized;
 }
 
+function isEventAttributeName(name) {
+    return typeof name === "string" && /^on[A-Z]/.test(name);
+}
+
 function normalizeComponentParameterName(name) {
     if (typeof name !== "string" || name.trim().length === 0) {
         fail("addComponentParameter requires a non-empty parameter name");
@@ -152,6 +156,39 @@ function wrapEventHandler(handler, modifiers) {
 
         return handler(event, ...args);
     };
+}
+
+function wrapDomBindHandler(handler, attributeName) {
+    if (typeof handler !== "function") {
+        return handler;
+    }
+
+    return (eventOrValue, ...args) => {
+        const value = eventOrValue !== null &&
+            eventOrValue !== undefined &&
+            typeof eventOrValue === "object" &&
+            eventOrValue.target !== null &&
+            eventOrValue.target !== undefined &&
+            attributeName in eventOrValue.target
+            ? eventOrValue.target[attributeName]
+            : eventOrValue;
+
+        return handler(value, ...args);
+    };
+}
+
+function applyElementDomBind(frame) {
+    if (frame.updatesEventName === null || frame.props === null) {
+        return;
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(frame.props, frame.updatesEventName)) {
+        return;
+    }
+
+    frame.props[frame.updatesEventName] = wrapDomBindHandler(
+        frame.props[frame.updatesEventName],
+        frame.updatesAttributeName);
 }
 
 function applyElementEventModifiers(frame) {
@@ -318,7 +355,8 @@ export function createRenderContextCore(h, Fragment, createStaticVNode) {
                 eventModifiers: null,
                 namedEvents: null,
                 referenceCaptures: null,
-                lastAttributeName: null
+                lastAttributeName: null,
+                updatesEventName: null
             });
             return context;
         },
@@ -501,10 +539,10 @@ export function createRenderContextCore(h, Fragment, createStaticVNode) {
                 fail("setUpdatesAttributeName requires a non-empty attribute name");
             }
 
-            // Blazor uses this as a renderer diff hint for DOM @bind. Vue receives
-            // the authoritative value and event handler through normal props, so
-            // render-context records the hint only to validate call order.
             frame.updatesAttributeName = name;
+            if (frame.kind === "element" && isEventAttributeName(frame.lastAttributeName)) {
+                frame.updatesEventName = frame.lastAttributeName;
+            }
             return context;
         },
 
@@ -596,6 +634,7 @@ export function createRenderContextCore(h, Fragment, createStaticVNode) {
             }
 
             frames.pop();
+            applyElementDomBind(frame);
             applyElementEventModifiers(frame);
             applyReferenceCaptures(frame);
             const vnode = h(frame.name, frame.props, frame.children);

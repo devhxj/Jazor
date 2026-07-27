@@ -23,6 +23,9 @@ internal static class RazorSgVueComponentModuleBuilder
     private static readonly Regex ImportFromPattern = new(
         @"^(?<prefix>\s*import\s+.+?\s+from\s+)(?<quote>[""'])(?<path>\./[^""']+)(\k<quote>)(?<suffix>\s*;?\s*)$",
         RegexOptions.CultureInvariant);
+    private static readonly Regex RelativeImportFromPattern = new(
+        @"^\s*import\s+.+?\s+from\s+(?<quote>[""'])(?<path>(?:\./|\.\./)[^""']+)(\k<quote>)\s*;?\s*$",
+        RegexOptions.CultureInvariant);
     private static readonly SymbolEqualityComparer SymbolComparer = SymbolEqualityComparer.Default;
 
     public static async Task<RazorSgVueComponentModuleArtifact> BuildAsync(
@@ -77,7 +80,8 @@ internal static class RazorSgVueComponentModuleBuilder
             ComputeContentHash(moduleText),
             sourceMapRelativePath,
             sourceMapContent,
-            ComputeContentHash(sourceMapContent));
+            ComputeContentHash(sourceMapContent),
+            moduleBuild.FrontendAssets);
     }
 
     private static ModuleTextBuildResult BuildModuleText(
@@ -115,6 +119,7 @@ internal static class RazorSgVueComponentModuleBuilder
                                       line.Text.Contains("stateHasChanged(", StringComparison.Ordinal));
         var usesReactive = usesState || usesStateHasChanged;
         var builder = new StringBuilder();
+        var frontendAssets = ImmutableArray.CreateBuilder<RazorSgFrontendAsset>();
         var lineMappings = ImmutableArray.CreateBuilder<CompiledLineMapping>();
         var line = 0;
 
@@ -134,7 +139,10 @@ internal static class RazorSgVueComponentModuleBuilder
                 !string.Equals(importLine.Text, "import { defineComponent, h, reactive } from \"vue\";", StringComparison.Ordinal) &&
                 !string.Equals(importLine.Text, "import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal))
             {
-                AppendLine(RebaseRootRelativeImportLine(importLine.Text, relativePath));
+                var rebasedImportLine = RebaseRootRelativeImportLine(importLine.Text, relativePath);
+                AppendLine(rebasedImportLine);
+                if (TryCreateVueSfcAsset(rebasedImportLine, relativePath, out var asset))
+                    frontendAssets.Add(asset);
             }
         }
 
@@ -349,7 +357,67 @@ internal static class RazorSgVueComponentModuleBuilder
 
         return new ModuleTextBuildResult(
             Util.NormalizeLineEndingsToLf(builder.ToString()),
-            lineMappings.ToImmutable());
+            lineMappings.ToImmutable(),
+            frontendAssets
+                .GroupBy(static asset => asset.ArtifactPath, StringComparer.OrdinalIgnoreCase)
+                .Select(static group => group.First())
+                .OrderBy(static asset => asset.ArtifactPath, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(static asset => asset.SourcePath, StringComparer.Ordinal)
+                .ToImmutableArray());
+    }
+
+    private static bool TryCreateVueSfcAsset(
+        string importLine,
+        string importerRelativePath,
+        out RazorSgFrontendAsset asset)
+    {
+        asset = default!;
+        var match = RelativeImportFromPattern.Match(importLine);
+        if (!match.Success)
+            return false;
+
+        var specifier = match.Groups["path"].Value;
+        if (!specifier.EndsWith(".vue.mjs", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        var artifactPath = ResolveImportArtifactPath(specifier.Substring(0, specifier.Length - ".mjs".Length), importerRelativePath);
+        asset = new RazorSgFrontendAsset(
+            SourcePath: artifactPath,
+            ArtifactPath: artifactPath,
+            Kind: "vue-sfc",
+            ContentHash: string.Empty);
+        return true;
+    }
+
+    private static string ResolveImportArtifactPath(string importSpecifier, string importerRelativePath)
+    {
+        var importer = NormalizeGeneratedSourcePath(importerRelativePath);
+        var importerDirectory = Path.GetDirectoryName(importer)?.Replace('\\', '/') ?? string.Empty;
+        var segments = new List<string>();
+        foreach (var segment in SplitPathSegments(importerDirectory))
+            segments.Add(segment);
+
+        foreach (var segment in SplitPathSegments(importSpecifier))
+        {
+            if (segment == ".")
+                continue;
+
+            if (segment == "..")
+            {
+                if (segments.Count == 0)
+                    throw new InvalidOperationException("Vue SFC import path cannot escape the output directory.");
+
+                segments.RemoveAt(segments.Count - 1);
+                continue;
+            }
+
+            segments.Add(segment);
+        }
+
+        if (segments.Count == 0)
+            throw new InvalidOperationException("Vue SFC import path cannot be empty.");
+
+        return string.Join("/", segments);
     }
 
     private static void AppendStateDeclaration(
@@ -1597,7 +1665,8 @@ internal static class RazorSgVueComponentModuleBuilder
 
     private sealed record ModuleTextBuildResult(
         string ModuleText,
-        ImmutableArray<CompiledLineMapping> CompiledLineMappings);
+        ImmutableArray<CompiledLineMapping> CompiledLineMappings,
+        ImmutableArray<RazorSgFrontendAsset> FrontendAssets);
 
     private readonly record struct MappedSourcePosition(
         string SourcePath,
@@ -1635,4 +1704,11 @@ internal sealed record RazorSgVueComponentModuleArtifact(
     string ContentHash,
     string SourceMapRelativePath,
     string SourceMapContent,
-    string MapHash);
+    string MapHash,
+    ImmutableArray<RazorSgFrontendAsset> FrontendAssets);
+
+internal sealed record RazorSgFrontendAsset(
+    string SourcePath,
+    string ArtifactPath,
+    string Kind,
+    string ContentHash);

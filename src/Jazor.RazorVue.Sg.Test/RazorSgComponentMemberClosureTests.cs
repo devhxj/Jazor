@@ -515,6 +515,48 @@ public sealed class RazorSgComponentMemberClosureTests
     }
 
     [TestMethod]
+    public async Task BuildVueComponentModule_ReferencedVueSfcComponentDeclaresFrontendAsset()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/widgets/LocalCard.vue")]
+                public sealed class LocalCard : ComponentBase, IVueComponent
+                {
+                }
+
+                [ECMAScriptModule("./components/pages/parent")]
+                public partial class Counter : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<LocalCard>(0);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+        var closure = BuildClosure(fixture, "Counter");
+        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            fixture.Binding.Components.Single(component => component.ComponentSymbol.Name == "Counter"),
+            closure);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+
+        StringAssert.Contains(script, "from \"../widgets/LocalCard.vue.mjs\";", StringComparison.Ordinal);
+        Assert.HasCount(1, artifact.FrontendAssets);
+        Assert.AreEqual("components/widgets/LocalCard.vue", artifact.FrontendAssets[0].SourcePath);
+        Assert.AreEqual("components/widgets/LocalCard.vue", artifact.FrontendAssets[0].ArtifactPath);
+        Assert.AreEqual("vue-sfc", artifact.FrontendAssets[0].Kind);
+    }
+
+    [TestMethod]
     public async Task BuildVueComponentModule_DynamicTypeOpenComponentFailsWithDiagnostic()
     {
         var fixture = CreateManualGeneratedFixture(
@@ -742,10 +784,12 @@ public sealed class RazorSgComponentMemberClosureTests
         var fixture = CreateManualGeneratedFixture(
             """
             using System;
+            using System.Collections.Generic;
             using ECMAScript;
             using static ECMAScript.Vue3;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
+            using Microsoft.AspNetCore.Components.Web;
 
             namespace Demo.Pages
             {
@@ -782,6 +826,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 {
                     private string last = "initial";
                     private string captured = "none";
+                    private string submitted = "idle";
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -793,19 +838,47 @@ public sealed class RazorSgComponentMemberClosureTests
                             childBuilder.CloseElement();
                         };
 
-                        builder.OpenElement(0, "p");
-                        builder.AddElementReferenceCapture(1, value => captured = "element");
-                        builder.AddContent(2, "Parent: ");
-                        builder.AddContent(3, last);
-                        builder.AddContent(4, " Ref: ");
-                        builder.AddContent(5, captured);
+                        builder.OpenElement(0, "input");
+                        builder.AddAttribute(1, "value", last);
+                        builder.AddAttribute(2, "onchange", EventCallback.Factory.CreateBinder(this, __value => last = __value, last));
+                        builder.SetUpdatesAttributeName("value");
                         builder.CloseElement();
 
-                        builder.OpenComponent<Child>(6);
-                        builder.AddComponentParameter(7, "Title", last);
-                        builder.AddComponentParameter(8, "OnValueChanged", EventCallback.Factory.Create<string>(this, HandleValueChanged));
-                        builder.AddComponentParameter(9, "Detail", detail);
+                        builder.OpenElement(3, "form");
+                        builder.AddMultipleAttributes(4, new Dictionary<string, object>
+                        {
+                            ["class"] = "checkout",
+                            ["onsubmit"] = (Action)Submit
+                        });
+                        builder.SetKey("checkout-key");
+                        builder.AddNamedEvent("onsubmit", "checkout");
+                        builder.AddEventPreventDefaultAttribute(5, "onsubmit", true);
+                        builder.AddEventStopPropagationAttribute(6, "onsubmit", true);
+                        builder.OpenRegion(7);
+                        builder.AddContent(8, "Region: ");
+                        builder.AddContent(9, submitted);
+                        builder.CloseRegion();
+                        builder.CloseElement();
+
+                        builder.OpenElement(10, "p");
+                        builder.AddElementReferenceCapture(11, value => captured = "element");
+                        builder.AddContent(12, "Parent: ");
+                        builder.AddContent(13, last);
+                        builder.AddContent(14, " Ref: ");
+                        builder.AddContent(15, captured);
+                        builder.CloseElement();
+
+                        builder.OpenComponent<Child>(16);
+                        builder.AddComponentParameter(17, "Title", last);
+                        builder.AddComponentParameter(18, "OnValueChanged", EventCallback.Factory.Create<string>(this, HandleValueChanged));
+                        builder.AddComponentParameter(19, "Detail", detail);
+                        builder.AddComponentReferenceCapture(20, value => captured = value is null ? "component:null" : "component:ready");
                         builder.CloseComponent();
+                    }
+
+                    private void Submit()
+                    {
+                        submitted = "submitted";
                     }
 
                     private void HandleValueChanged(string value)
@@ -879,6 +952,19 @@ public sealed class RazorSgComponentMemberClosureTests
 
                 mount();
                 const before = app.textContent;
+                const inputBefore = app.querySelector("input").value;
+                const input = app.querySelector("input");
+                input.value = "typed";
+                input.dispatchEvent(new Event("change", { bubbles: true }));
+                mount();
+                const afterInput = app.textContent;
+                const inputAfter = app.querySelector("input").value;
+                let bubbledSubmit = false;
+                app.addEventListener("submit", () => bubbledSubmit = true);
+                const submitEvent = new Event("submit", { bubbles: true, cancelable: true });
+                app.querySelector("form").dispatchEvent(submitEvent);
+                mount();
+                const afterSubmit = app.textContent;
                 app.querySelector("button").click();
                 mount();
                 const after = app.textContent;
@@ -888,8 +974,17 @@ public sealed class RazorSgComponentMemberClosureTests
 
                 globalThis.__razorVueBrowserSmoke = {
                   before,
+                  inputBefore,
+                  afterInput,
+                  inputAfter,
+                  afterSubmit,
                   after,
                   afterUnmount,
+                  formClass: app.querySelector("form").getAttribute("class"),
+                  submitDefaultPrevented: submitEvent.defaultPrevented,
+                  bubbledSubmit,
+                  inputCount: app.querySelectorAll("input").length,
+                  formCount: app.querySelectorAll("form.checkout").length,
                   buttonCount: app.querySelectorAll("button").length
                 };
                 """);
@@ -934,6 +1029,9 @@ public sealed class RazorSgComponentMemberClosureTests
 
                   if (type !== null && typeof type === "object" && typeof type.setup === "function") {
                     const render = type.setup(props ?? {}, { slots: children ?? {} });
+                    if (props !== null && typeof props.ref === "function") {
+                      props.ref({ type });
+                    }
                     return render();
                   }
 
@@ -1002,9 +1100,18 @@ public sealed class RazorSgComponentMemberClosureTests
                     await page.navigate(`http://127.0.0.1:${server.port}/index.html`);
                     const result = await page.waitForSmoke();
                     assert.deepEqual(result, {
-                      before: "Parent: initial Ref: noneChild: initialSlot: initial",
-                      after: "Parent: updated Ref: elementChild: updatedSlot: updated",
-                      afterUnmount: "Parent: disposed Ref: elementChild: disposedSlot: disposed",
+                      before: "Region: idleParent: initial Ref: noneChild: initialSlot: initial",
+                      inputBefore: "initial",
+                      afterInput: "Region: idleParent: typed Ref: component:readyChild: typedSlot: typed",
+                      inputAfter: "typed",
+                      afterSubmit: "Region: submittedParent: typed Ref: component:readyChild: typedSlot: typed",
+                      after: "Region: submittedParent: updated Ref: component:readyChild: updatedSlot: updated",
+                      afterUnmount: "Region: submittedParent: disposed Ref: component:readyChild: disposedSlot: disposed",
+                      formClass: "checkout",
+                      submitDefaultPrevented: true,
+                      bubbledSubmit: false,
+                      inputCount: 1,
+                      formCount: 1,
                       buttonCount: 1
                     });
                   } finally {
@@ -3141,6 +3248,84 @@ public sealed class RazorSgComponentMemberClosureTests
             if (Directory.Exists(tempRoot))
                 Directory.Delete(tempRoot, recursive: true);
         }
+    }
+
+    [TestMethod]
+    public async Task BuildVueComponentModule_UsesVueSlotDescriptorForNamedRenderFragmentSlot()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using ECMAScript;
+            using ECMAScript.VueContract;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/child")]
+                [VueSlot(nameof(Header), Name = "title")]
+                public partial class Child : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment? Header { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "before");
+                        if (Header != null)
+                        {
+                            builder.AddContent(2, Header);
+                        }
+                        builder.CloseElement();
+                    }
+                }
+
+                [ECMAScriptModule("./components/parent")]
+                public partial class Counter : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderFragment title = child =>
+                        {
+                            child.OpenElement(0, "h1");
+                            child.AddContent(1, "Descriptor title");
+                            child.CloseElement();
+                        };
+
+                        builder.OpenComponent<Child>(2);
+                        builder.AddComponentParameter(3, "Header", title);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+        var child = fixture.Binding.Components.Single(component => component.ComponentSymbol.Name == "Child");
+        var childClosure = BuildClosure(fixture, child.ComponentSymbol.Name);
+        var childArtifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            child,
+            childClosure);
+        var childScript = childArtifact.ModuleText.ReplaceLineEndings("\n");
+
+        StringAssert.Contains(childScript, "if (typeof slots.title === \"function\") {", StringComparison.Ordinal);
+        StringAssert.Contains(childScript, "props.header = (builder) => {", StringComparison.Ordinal);
+        StringAssert.Contains(childScript, "const content = slots.title();", StringComparison.Ordinal);
+        Assert.IsFalse(childScript.Contains("slots.header", StringComparison.Ordinal), childScript);
+        Assert.IsFalse(childScript.Contains("\"header\"", StringComparison.Ordinal), childScript);
+
+        var parent = fixture.Binding.Components.Single(component => component.ComponentSymbol.Name == "Counter");
+        var parentClosure = BuildClosure(fixture, parent.ComponentSymbol.Name);
+        var parentArtifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            parent,
+            parentClosure);
+        var parentScript = parentArtifact.ModuleText.ReplaceLineEndings("\n");
+
+        StringAssert.Contains(parentScript, "\"Header\": \"title\"", StringComparison.Ordinal);
+        StringAssert.Contains(parentScript, "builder.addComponentSlot(\"Header\", title);", StringComparison.Ordinal);
+        Assert.IsFalse(parentScript.Contains("builder.addComponentParameter(\"Header\"", StringComparison.Ordinal), parentScript);
     }
 
     [TestMethod]

@@ -12,7 +12,8 @@ internal sealed class ModuleWriter
         string outputDirectory,
         string manifestPath,
         IReadOnlyList<EmitModuleRecord> modules,
-        bool clean)
+        bool clean,
+        IReadOnlyList<ManifestAssetEntry>? assets = null)
     {
         Directory.CreateDirectory(outputDirectory);
 
@@ -87,6 +88,20 @@ internal sealed class ModuleWriter
                 sourceMapRelativePath,
                 mapHash));
         }
+
+        var nextAssetsByArtifactPath = new Dictionary<string, ManifestAssetEntry>(StringComparer.OrdinalIgnoreCase);
+        foreach (var module in modules)
+        {
+            foreach (var asset in module.FrontendAssets ?? [])
+                nextAssetsByArtifactPath[asset.ArtifactPath] = asset;
+        }
+
+        foreach (var asset in assets ?? [])
+            nextAssetsByArtifactPath[asset.ArtifactPath] = asset;
+
+        nextManifest.Assets.AddRange(nextAssetsByArtifactPath.Values
+            .OrderBy(static asset => asset.ArtifactPath, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static asset => asset.SourcePath, StringComparer.Ordinal));
 
         if (clean && existingManifest is not null)
         {

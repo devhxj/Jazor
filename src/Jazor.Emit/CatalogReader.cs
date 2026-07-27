@@ -92,8 +92,10 @@ internal static class CatalogReader
         if (getModules.Invoke(null, null) is not System.Collections.IEnumerable items)
             throw new InvalidOperationException($"GetModules returned null in VueRenderCatalog '{assembly.Location}'.");
 
+        var assets = ReadVueRenderCatalogAssets(assembly, catalogType);
         var assemblyName = assembly.GetName().Name ?? Path.GetFileNameWithoutExtension(assembly.Location);
         var modules = new List<EmitModuleRecord>();
+        var assetCarrierWritten = false;
         foreach (var item in items)
         {
             if (item is null)
@@ -126,10 +128,43 @@ internal static class CatalogReader
                 ReadString(itemType, item, "ContentHash"),
                 hasSourceMap ? NormalizeRelativePath(sourceMapRelativePath!) : null,
                 hasSourceMap ? sourceMapContent : null,
-                hasSourceMap ? mapHash : null));
+                hasSourceMap ? mapHash : null,
+                assetCarrierWritten ? null : assets));
+            assetCarrierWritten = true;
         }
 
         return modules;
+    }
+
+    private static IReadOnlyList<ManifestAssetEntry> ReadVueRenderCatalogAssets(Assembly assembly, Type catalogType)
+    {
+        var getAssets = catalogType.GetMethod("GetAssets", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+        if (getAssets is null)
+            return [];
+
+        if (getAssets.Invoke(null, null) is not System.Collections.IEnumerable items)
+            throw new InvalidOperationException($"GetAssets returned null in VueRenderCatalog '{assembly.Location}'.");
+
+        var assets = new List<ManifestAssetEntry>();
+        foreach (var item in items)
+        {
+            if (item is null)
+                continue;
+
+            var itemType = item.GetType();
+            assets.Add(new ManifestAssetEntry(
+                NormalizeRelativePath(ReadString(itemType, item, "SourcePath")),
+                NormalizeRelativePath(ReadString(itemType, item, "ArtifactPath")),
+                TryReadString(itemType, item, "Kind") ?? ManifestAssetEntry.KindStatic,
+                TryReadString(itemType, item, "ContentHash") ?? TryReadString(itemType, item, "Hash") ?? string.Empty));
+        }
+
+        return assets
+            .GroupBy(static asset => asset.ArtifactPath, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .OrderBy(static asset => asset.ArtifactPath, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static asset => asset.SourcePath, StringComparer.Ordinal)
+            .ToArray();
     }
 
     private static IReadOnlyList<EmitModuleRecord> ReadRazorVueRuntimeResources(Assembly assembly)

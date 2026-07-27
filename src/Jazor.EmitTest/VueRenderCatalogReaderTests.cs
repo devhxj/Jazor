@@ -140,6 +140,93 @@ public sealed class VueRenderCatalogReaderTests
     }
 
     [TestMethod]
+    public void CatalogReader_TryRead_ReadsVueRenderCatalogFrontendAssets()
+    {
+        var assembly = CompileCatalogAssembly(
+            "VueRenderCatalog.Assets.Tests",
+            """
+            namespace Jazor.Generated
+            {
+                internal static partial class VueRenderCatalog
+                {
+                    internal const int SchemaVersion = 1;
+                    internal const int RuntimeProtocolVersion = 1;
+
+                    internal static System.Collections.IEnumerable GetModules()
+                    {
+                        return _modules;
+                    }
+
+                    internal static System.Collections.IEnumerable GetAssets()
+                    {
+                        return _assets;
+                    }
+
+                    private static readonly GeneratedVueRenderModule[] _modules = new[]
+                    {
+                        new GeneratedVueRenderModule(
+                            componentId: "Demo.Pages.Counter",
+                            relativePath: "components/counter.mjs",
+                            moduleText: "import LocalCard from \"./LocalCard.vue.mjs\";\nexport default {};",
+                            contentHash: "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
+                    };
+
+                    private static readonly GeneratedVueRenderAsset[] _assets = new[]
+                    {
+                        new GeneratedVueRenderAsset(
+                            sourcePath: "components/LocalCard.vue",
+                            artifactPath: "components/LocalCard.vue",
+                            kind: "vue-sfc",
+                            contentHash: "")
+                    };
+
+                    private sealed class GeneratedVueRenderModule
+                    {
+                        public GeneratedVueRenderModule(string componentId, string relativePath, string moduleText, string contentHash)
+                        {
+                            ComponentId = componentId;
+                            RelativePath = relativePath;
+                            ModuleText = moduleText;
+                            ContentHash = contentHash;
+                        }
+
+                        public string ComponentId { get; }
+                        public string RelativePath { get; }
+                        public string ModuleText { get; }
+                        public string ContentHash { get; }
+                    }
+
+                    private sealed class GeneratedVueRenderAsset
+                    {
+                        public GeneratedVueRenderAsset(string sourcePath, string artifactPath, string kind, string contentHash)
+                        {
+                            SourcePath = sourcePath;
+                            ArtifactPath = artifactPath;
+                            Kind = kind;
+                            ContentHash = contentHash;
+                        }
+
+                        public string SourcePath { get; }
+                        public string ArtifactPath { get; }
+                        public string Kind { get; }
+                        public string ContentHash { get; }
+                    }
+                }
+            }
+            """);
+
+        var modules = CatalogReader.TryRead(assembly);
+
+        Assert.IsNotNull(modules);
+        var asset = modules.Single().FrontendAssets?.Single();
+        Assert.IsNotNull(asset);
+        Assert.AreEqual("components/LocalCard.vue", asset.SourcePath);
+        Assert.AreEqual("components/LocalCard.vue", asset.ArtifactPath);
+        Assert.AreEqual(ManifestAssetEntry.KindVueSfc, asset.Kind);
+        Assert.AreEqual(string.Empty, asset.Hash);
+    }
+
+    [TestMethod]
     public void CatalogReader_TryRead_ReadsRazorVueRuntimeEmbeddedResources()
     {
         var assembly = CompileCatalogAssembly(
@@ -428,6 +515,54 @@ public sealed class VueRenderCatalogReaderTests
             CollectionAssert.AreEqual(firstRuntime, File.ReadAllBytes(runtimePath), "Runtime module changed between identical writes.");
             CollectionAssert.AreEqual(firstRuntimeCore, File.ReadAllBytes(runtimeCorePath), "Runtime core module changed between identical writes.");
             CollectionAssert.AreEqual(firstManifest, File.ReadAllBytes(manifestPath), "Manifest changed between identical writes.");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void ModuleWriter_Write_MaterializesVueRenderCatalogFrontendAssetsIntoManifest()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+        var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
+        var manifestPath = Path.Combine(outputDirectory, "jazor-manifest.json");
+        var rootAssemblyPath = Path.Combine(root, "VueRenderCatalog.AssetManifest.Tests.dll");
+        var module = new EmitModuleRecord(
+            SourceAssemblyPath: rootAssemblyPath,
+            AssemblyName: "VueRenderCatalog.AssetManifest.Tests",
+            TypeName: "Demo.Pages.Counter",
+            Id: "Demo.Pages.Counter",
+            RelativePath: "components/counter.mjs",
+            Content: "import LocalCard from \"./LocalCard.vue.mjs\";\nexport default {};\n",
+            Hash: "sha256:counter",
+            FrontendAssets:
+            [
+                new ManifestAssetEntry(
+                    "components/LocalCard.vue",
+                    "components/LocalCard.vue",
+                    ManifestAssetEntry.KindVueSfc,
+                    string.Empty)
+            ]);
+
+        try
+        {
+            var result = new ModuleWriter().Write(
+                rootAssemblyPath,
+                outputDirectory,
+                manifestPath,
+                [module],
+                clean: true);
+
+            Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+            var manifest = ManifestModel.TryLoad(manifestPath);
+            Assert.IsNotNull(manifest);
+            Assert.HasCount(1, manifest.Assets);
+            Assert.AreEqual("components/LocalCard.vue", manifest.Assets[0].SourcePath);
+            Assert.AreEqual("components/LocalCard.vue", manifest.Assets[0].ArtifactPath);
+            Assert.AreEqual(ManifestAssetEntry.KindVueSfc, manifest.Assets[0].Kind);
         }
         finally
         {

@@ -42,7 +42,8 @@ static async Task<int> RunEmitAsync(string[] args)
             options.OutputDirectory,
             options.ManifestPath,
             collectResult.Modules,
-            options.Clean);
+            options.Clean,
+            collectResult.Assets);
 
         if (!writeResult.IsSuccess)
         {
@@ -51,7 +52,7 @@ static async Task<int> RunEmitAsync(string[] args)
         }
 
         Console.WriteLine(
-            $"assemblies={collectResult.AssemblyCount} catalogs={collectResult.CatalogCount} modules={collectResult.Modules.Count} written={writeResult.Written} skipped={writeResult.Skipped} deleted={writeResult.Deleted}");
+            $"assemblies={collectResult.AssemblyCount} catalogs={collectResult.CatalogCount} modules={collectResult.Modules.Count} assets={collectResult.Assets.Count} written={writeResult.Written} skipped={writeResult.Skipped} deleted={writeResult.Deleted}");
         return 0;
     }
     catch (Exception ex)

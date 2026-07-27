@@ -382,6 +382,11 @@ internal static class RazorSourceGeneratorTailOutput
         builder.AppendLine("            return _modules;");
         builder.AppendLine("        }");
         builder.AppendLine();
+        builder.AppendLine("        internal static global::System.Collections.IEnumerable GetAssets()");
+        builder.AppendLine("        {");
+        builder.AppendLine("            return _assets;");
+        builder.AppendLine("        }");
+        builder.AppendLine();
         builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
         builder.AppendLine("        private sealed class GeneratedVueRenderModule");
         builder.AppendLine("        {");
@@ -405,6 +410,23 @@ internal static class RazorSourceGeneratorTailOutput
         builder.AppendLine("            public string MapHash { get; }");
         builder.AppendLine("        }");
         builder.AppendLine();
+        builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
+        builder.AppendLine("        private sealed class GeneratedVueRenderAsset");
+        builder.AppendLine("        {");
+        builder.AppendLine("            public GeneratedVueRenderAsset(string sourcePath, string artifactPath, string kind, string contentHash)");
+        builder.AppendLine("            {");
+        builder.AppendLine("                SourcePath = sourcePath;");
+        builder.AppendLine("                ArtifactPath = artifactPath;");
+        builder.AppendLine("                Kind = kind;");
+        builder.AppendLine("                ContentHash = contentHash;");
+        builder.AppendLine("            }");
+        builder.AppendLine();
+        builder.AppendLine("            public string SourcePath { get; }");
+        builder.AppendLine("            public string ArtifactPath { get; }");
+        builder.AppendLine("            public string Kind { get; }");
+        builder.AppendLine("            public string ContentHash { get; }");
+        builder.AppendLine("        }");
+        builder.AppendLine();
         builder.AppendLine("        private static readonly GeneratedVueRenderModule[] _modules = new GeneratedVueRenderModule[]");
         builder.AppendLine("        {");
 
@@ -418,6 +440,25 @@ internal static class RazorSourceGeneratorTailOutput
             builder.Append("                sourceMapRelativePath: ").Append(EscapeCSharpString(artifact.SourceMapRelativePath)).AppendLine(",");
             builder.Append("                sourceMapContent: ").Append(EscapeCSharpString(artifact.SourceMapContent)).AppendLine(",");
             builder.Append("                mapHash: ").Append(EscapeCSharpString(artifact.MapHash)).AppendLine("),");
+        }
+
+        builder.AppendLine("        };");
+        builder.AppendLine();
+        builder.AppendLine("        private static readonly GeneratedVueRenderAsset[] _assets = new GeneratedVueRenderAsset[]");
+        builder.AppendLine("        {");
+
+        foreach (var asset in artifacts
+                     .SelectMany(static artifact => artifact.FrontendAssets)
+                     .GroupBy(static asset => asset.ArtifactPath, StringComparer.OrdinalIgnoreCase)
+                     .Select(static group => group.First())
+                     .OrderBy(static asset => asset.ArtifactPath, StringComparer.OrdinalIgnoreCase)
+                     .ThenBy(static asset => asset.SourcePath, StringComparer.Ordinal))
+        {
+            builder.AppendLine("            new GeneratedVueRenderAsset(");
+            builder.Append("                sourcePath: ").Append(EscapeCSharpString(asset.SourcePath)).AppendLine(",");
+            builder.Append("                artifactPath: ").Append(EscapeCSharpString(asset.ArtifactPath)).AppendLine(",");
+            builder.Append("                kind: ").Append(EscapeCSharpString(asset.Kind)).AppendLine(",");
+            builder.Append("                contentHash: ").Append(EscapeCSharpString(asset.ContentHash)).AppendLine("),");
         }
 
         builder.AppendLine("        };");

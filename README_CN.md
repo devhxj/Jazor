@@ -34,6 +34,15 @@ Jazor 是一套用 C# 和 Razor 编写 JavaScript / Vue 应用的 .NET 工具链
 
 判断当前状态时，优先看 `docs/03-完成/` 下的状态页和当前测试结果，不要依赖 README 中写死的历史测试数量。
 
+## 最新更新
+
+### 2026-07-27
+
+- RazorVue render-context 已覆盖生成组件的核心功能语义：render surface、props、events、slots、bind、lifecycle、reference、metadata 和真实浏览器 DOM 行为。
+- production bundle 现在支持基于同一 manifest contract 的显式 Deno / Netpack lane，并覆盖 import-backed `.vue` SFC 资产和外部 package consumer 构建。
+
+完整历史见 [release notes](docs/releases/release-notes.md)。
+
 ## 能力概览
 
 - **语义级 C# lowering**：基于 Roslyn `IOperation`，不是语法字符串替换。
@@ -42,7 +51,7 @@ Jazor 是一套用 C# 和 Razor 编写 JavaScript / Vue 应用的 .NET 工具链
 - **ECMAScript 模块输出**：`[ECMAScriptModule]` 类发射为 named-export `.mjs` 模块，并带稳定 import 收集、source-origin 跟踪和 source-map carrier。
 - **RazorVue artifact 生成**：Razor 组件语义从官方 Razor SG 生成 C# 流经 Roslyn 绑定和 compiler-owned `IOperation` lowering。
 - **类型化 Vue authoring**：`ECMAScript.Vue3` 提供 Vue 3 `defineComponent`、`h`、ref/reactivity、生命周期、props、slots 和组件契约绑定。
-- **面向宿主的构建支持**：MSBuild target 当前可发射并物化通用 ECMAScript 模块、发布资产，并通过内置 Deno runtime 打包。RazorVue `.mjs` consumer build 属于当前转型计划，相关 gate 通过前不得假定已完成。
+- **面向宿主的构建支持**：MSBuild target 可发射并物化 ECMAScript/RazorVue 模块、发布资产，并通过显式 Deno 或 Netpack 工具链 lane 完成 production bundle。
 - **已退役 Jolt 边界**：`.jazor` authoring、Jolt LSP/DAP、DevServer/HMR、调试和构建协议均有意不进入本分支。
 
 ## 安装
@@ -57,10 +66,10 @@ dotnet add package Jazor
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.26" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.26" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.26" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.26" />
+  <PackageReference Include="Jazor" Version="0.1.27" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.27" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.27" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.27" />
 </ItemGroup>
 ```
 
@@ -141,8 +150,9 @@ Jolt 已在 `3ee18679fbdf43c13e05d7bfac8857ddcebd19f9` 从转型分支移除。�
 | `JazorDevOutDir` | `$(MSBuildProjectDirectory)\jazor\` | compiler-owned artifact 的默认开发期输出根目录。 |
 | `JazorPublishOutDir` | `$(MSBuildProjectDirectory)\wwwroot\jazor\` | 未启用 publish materialization 时的默认发布期浏览器资产根目录。 |
 | `JazorOutDir` | `$(JazorDevOutDir)` | compiler-owned artifact 的当前选定输出目录。 |
-| `JazorBundle` | `false` | 通过内置 Deno runtime 打包已发射模块。 |
-| `JazorBundleOut` | `$(OutDir)jazor\app.js` | 打包 JavaScript 输出路径。 |
+| `JazorBundle` | `false` | 通过选定的 `JazorToolchain` 打包已发射模块。 |
+| `JazorToolchain` | `Deno` | 显式选择 production 工具链 lane，目前支持 `Deno` 或 `Netpack`。 |
+| `JazorBundleOut` | `$(OutDir)jazor\` | production bundle 资产输出根目录；JavaScript bundle 固定写入该根目录下的 `bundle.js`。 |
 | `JazorCleanEmit` | `true` | 清理输出目录中过期的发射文件。 |
 | `JazorFailOnPathConflict` | `true` | 两个模块声明同一输出路径时构建失败。 |
 | `JazorPublishMaterializeEnabled` | `false` | 发布时把 compiler-owned RazorVue 输出物化到发布资产。 |

@@ -275,6 +275,19 @@ public sealed class ModuleBundlerTests
         var css = await File.ReadAllTextAsync(workspace.OutputCssPath, TestContext.CancellationTokenSource.Token);
         Assert.Contains(".local-card", css);
         Assert.Contains("rgb(10, 20, 30)", css);
+
+        Assert.IsTrue(File.Exists(workspace.OutputMapPath), $"Expected SFC bundle source map: {workspace.OutputMapPath}");
+        using var map = await ReadJsonAsync(workspace.OutputMapPath);
+        var sources = map.RootElement.GetProperty("sources")
+            .EnumerateArray()
+            .Select(static item => item.GetString())
+            .Where(static item => item is not null)
+            .Cast<string>()
+            .ToArray();
+        Assert.IsTrue(
+            sources.Any(static source => source.Contains("LocalCard.vue.mjs", StringComparison.Ordinal) ||
+                                         source.Contains("LocalCard.vue", StringComparison.Ordinal)),
+            map.RootElement.ToString());
     }
 
     [TestMethod]
@@ -382,6 +395,93 @@ public sealed class ModuleBundlerTests
         Assert.Contains("<svg", asset);
     }
 
+    [TestMethod]
+    [TestCategory("Browser")]
+    public async Task BundleAsync_ExplicitVueSfcAsset_RunsRegisteredSfcInRealBrowser()
+    {
+        var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
+        if (browserPath is null)
+        {
+            Assert.Inconclusive(
+                "Real browser SFC smoke requires Microsoft Edge, Chrome, or Chromium. " +
+                "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
+            return;
+        }
+
+        using var workspace = new TestWorkspace();
+        WriteModule(workspace.InputDirectory, "host/app.mjs",
+            """
+            import { createApp, nextTick } from "npm:vue@3";
+            import LocalCard from "./LocalCard.vue";
+
+            export async function mount(selector) {
+              createApp(LocalCard, { title: "Browser SFC" }).mount(selector);
+              await nextTick();
+            }
+            """);
+        WriteModule(workspace.SourceRoot, "components/LocalCard.vue",
+            """
+            <template>
+              <section class="local-card">{{ title }}</section>
+            </template>
+
+            <script>
+            export default {
+              name: "LocalCard",
+              props: {
+                title: {
+                  type: String,
+                  default: "Fallback"
+                }
+              }
+            };
+            </script>
+
+            <style>
+            .local-card {
+              color: rgb(10, 20, 30);
+            }
+            </style>
+            """);
+
+        var manifest = new ManifestModel(
+            RootAssemblyPath: Path.Combine(workspace.RootPath, "Sample.Host.dll"),
+            GeneratedAtUtc: DateTime.UtcNow,
+            Modules:
+            [
+                new ManifestModuleEntry("Sample.Host", "Sample.Host.AppModule", "Sample.Host.AppModule", "host/app.mjs", "hash-1")
+            ]);
+        manifest.Assets.Add(new ManifestAssetEntry(
+            "components/LocalCard.vue",
+            "host/LocalCard.vue",
+            ManifestAssetEntry.KindVueSfc,
+            "hash-asset-1"));
+        manifest.Save(workspace.ManifestPath);
+
+        var bundler = new ModuleBundler();
+        var result = await bundler.BundleAsync(new BundleOptions(
+            workspace.InputDirectory,
+            workspace.ManifestPath,
+            workspace.OutputPath,
+            workspace.SourceRoot));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+        Assert.IsTrue(File.Exists(workspace.OutputPath), $"Expected browser bundle: {workspace.OutputPath}");
+        Assert.IsTrue(File.Exists(workspace.OutputCssPath), $"Expected browser CSS bundle: {workspace.OutputCssPath}");
+
+        WriteBrowserSmokeHarness(workspace.RootPath);
+        var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomAsync(browserPath, Path.Combine(workspace.RootPath, "index.html"));
+        Assert.AreEqual(0, browser.ExitCode, browser.ToString());
+
+        using var smokePayload = BrowserSmokeTestHelper.ReadBrowserSmokePayload(browser, "SFC");
+        var smoke = smokePayload.RootElement;
+        Assert.IsTrue(
+            smoke.GetProperty("ok").GetBoolean(),
+            "Browser SFC smoke failed." + Environment.NewLine + smoke.GetRawText() + Environment.NewLine + browser);
+        Assert.AreEqual("Browser SFC", smoke.GetProperty("text").GetString(), smoke.GetRawText());
+        Assert.AreEqual("rgb(10, 20, 30)", smoke.GetProperty("color").GetString(), smoke.GetRawText());
+    }
+
     private static void WriteModule(string rootDirectory, string relativePath, string content)
     {
         var fullPath = Path.Combine(rootDirectory, relativePath.Replace('/', Path.DirectorySeparatorChar));
@@ -404,6 +504,63 @@ public sealed class ModuleBundlerTests
 
     private static async Task<JsonDocument> ReadJsonAsync(string path)
         => JsonDocument.Parse(await File.ReadAllTextAsync(path, CancellationToken.None));
+
+    private static void WriteBrowserSmokeHarness(string rootPath)
+    {
+        WriteModule(rootPath, "index.html",
+            """
+            <!doctype html>
+            <html lang="en">
+              <head>
+                <meta charset="utf-8">
+                <title>Jazor Explicit SFC Browser Smoke</title>
+                <link rel="stylesheet" href="./bundle.css">
+              </head>
+              <body>
+                <div id="app"></div>
+                <script type="module">
+                  import { mount } from "./bundle.js";
+
+                  function encodeUtf8Base64(value) {
+                    const bytes = new TextEncoder().encode(value);
+                    let binary = "";
+                    for (const byte of bytes) {
+                      binary += String.fromCharCode(byte);
+                    }
+
+                    return btoa(binary);
+                  }
+
+                  function finish(payload) {
+                    document.documentElement.setAttribute(
+                      "data-jazor-smoke",
+                      encodeUtf8Base64(JSON.stringify(payload)));
+                  }
+
+                  try {
+                    await mount("#app");
+                    const card = document.querySelector(".local-card");
+                    if (!(card instanceof HTMLElement)) {
+                      throw new Error("Registered SFC did not render .local-card.");
+                    }
+
+                    finish({
+                      ok: true,
+                      text: card.textContent || "",
+                      color: getComputedStyle(card).color
+                    });
+                  } catch (error) {
+                    finish({
+                      ok: false,
+                      error: error instanceof Error ? (error.stack || error.message) : String(error),
+                      bodyText: document.body ? (document.body.textContent || "") : ""
+                    });
+                  }
+                </script>
+              </body>
+            </html>
+            """);
+    }
 
     private sealed class TestWorkspace : IDisposable
     {

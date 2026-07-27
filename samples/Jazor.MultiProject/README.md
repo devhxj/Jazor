@@ -53,7 +53,7 @@ dotnet run --file .\samples\Jazor.MultiProject\build-local.cs -- --bundle
 This writes:
 
 ```text
-.\Sample.Host\wwwroot\app.bundle.js
+.\Sample.Host\wwwroot\bundle\bundle.js
 ```
 
 The bundled file re-exports the host module members, so in this sample the final bundle exports `boot`.
