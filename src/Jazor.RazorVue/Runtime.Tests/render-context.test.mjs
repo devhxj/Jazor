@@ -212,6 +212,28 @@ test("openComponent lowers to h(component, props) with component parameters", ()
     assert.deepEqual(calls, [result]);
 });
 
+test("openComponent applies descriptor parameter name map when provided", () => {
+    const { createContext } = createHarness();
+    const Child = { name: "Child" };
+    const context = createContext();
+
+    context.openComponent(Child, {
+        Value: "modelValue",
+        ValueChanged: "onUpdate:modelValue"
+    });
+    context.addComponentParameter("Value", "ready");
+    context.addComponentParameter("ValueChanged", "handler");
+    context.addComponentParameter("Title", "Fallback");
+    context.closeComponent();
+
+    const result = context.finish();
+    assert.deepEqual(result.props, {
+        modelValue: "ready",
+        "onUpdate:modelValue": "handler",
+        title: "Fallback"
+    });
+});
+
 test("ChildContent parameter materializes as Vue default slot", () => {
     const { createContext } = createHarness();
     const Child = { name: "Child" };

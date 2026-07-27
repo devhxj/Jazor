@@ -18,6 +18,8 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
 {
     private const string RenderTreeBuilderMetadataName = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";
     private const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
+    private const string VuePropAttributeMetadataName = "ECMAScript.VueContract.VuePropAttribute";
+    private const string VueLibraryEmitAttributeMetadataName = "ECMAScript.VueContract.VueLibraryEmitAttribute";
 
     public override Expression? RewriteInvocationPreorder(IInvocationOperation operation, SenseArgument argument)
     {
@@ -143,7 +145,7 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
             "OpenRegion" => IsSequenceOnlyMethod(method),
             "CloseRegion" => method.Parameters.Length == 0,
             "OpenComponent" => IsGenericOpenComponentMethod(method) &&
-                               TryResolveComponentModulePath(operation.TargetMethod, out _),
+                               TryResolveComponentModulePath(operation.TargetMethod, out _, out _),
             "CloseComponent" => method.Parameters.Length == 0,
             "AddContent" => IsSupportedAddContentMethod(method) || IsRenderFragmentAddContentMethod(method),
             "AddMarkupContent" => IsSupportedStaticAddMarkupContentMethod(method, operation),
@@ -357,27 +359,41 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
         Expression instance,
         IReadOnlyList<Expression> translatedArguments)
     {
-        if (!TryResolveComponentModulePath(operation.TargetMethod, out var modulePath))
+        if (!TryResolveComponentModulePath(operation.TargetMethod, out var modulePath, out var componentType))
             throw CreateUnsupportedException(operation);
 
         var componentImport = argument.BindImportSpecifier(modulePath, "default");
-        return BuildRenderContextCall(
-            operation,
-            instance,
-            translatedArguments,
-            "openComponent",
-            ContextCallArgument.FromExpression(componentImport));
+        var parameterNameMap = BuildComponentParameterNameMapExpression(componentType);
+        return parameterNameMap is null
+            ? BuildRenderContextCall(
+                operation,
+                instance,
+                translatedArguments,
+                "openComponent",
+                ContextCallArgument.FromExpression(componentImport))
+            : BuildRenderContextCall(
+                operation,
+                instance,
+                translatedArguments,
+                "openComponent",
+                ContextCallArgument.FromExpression(componentImport),
+                ContextCallArgument.FromExpression(parameterNameMap));
     }
 
-    private static bool TryResolveComponentModulePath(IMethodSymbol openComponentMethod, out string modulePath)
+    private static bool TryResolveComponentModulePath(
+        IMethodSymbol openComponentMethod,
+        out string modulePath,
+        out INamedTypeSymbol componentType)
     {
         modulePath = string.Empty;
+        componentType = null!;
         if (openComponentMethod.TypeArguments.Length != 1 ||
-            openComponentMethod.TypeArguments[0] is not INamedTypeSymbol componentType)
+            openComponentMethod.TypeArguments[0] is not INamedTypeSymbol resolvedComponentType)
         {
             return false;
         }
 
+        componentType = resolvedComponentType;
         var exportPath = GetECMAScriptModuleExportPath(componentType);
         if (string.IsNullOrWhiteSpace(exportPath))
             return false;
@@ -435,6 +451,92 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
         // Component modules are emitted relative to the jazor output root; keep a stable relative import form.
         return "./" + normalized;
     }
+
+    private static ObjectExpression? BuildComponentParameterNameMapExpression(INamedTypeSymbol componentType)
+    {
+        var names = new SortedDictionary<string, string>(StringComparer.Ordinal);
+        foreach (var attribute in componentType.GetAttributes())
+        {
+            var attributeName = attribute.AttributeClass?.ToDisplayString();
+            if (string.Equals(attributeName, VuePropAttributeMetadataName, StringComparison.Ordinal))
+            {
+                AddDescriptorName(attribute, names, listener: false);
+                continue;
+            }
+
+            if (string.Equals(attributeName, VueLibraryEmitAttributeMetadataName, StringComparison.Ordinal))
+                AddDescriptorName(attribute, names, listener: true);
+        }
+
+        if (names.Count == 0)
+            return null;
+
+        var properties = names.Select(static pair => (Node)new ObjectProperty(
+            PropertyKind.Init,
+            key: CreateStringLiteral(pair.Key),
+            value: CreateStringLiteral(pair.Value),
+            computed: false,
+            shorthand: false,
+            method: false));
+        return new ObjectExpression(NodeList.From(properties));
+    }
+
+    private static void AddDescriptorName(
+        AttributeData attribute,
+        SortedDictionary<string, string> names,
+        bool listener)
+    {
+        if (attribute.ConstructorArguments.Length == 0 ||
+            attribute.ConstructorArguments[0].Value is not string publicName ||
+            string.IsNullOrWhiteSpace(publicName))
+        {
+            return;
+        }
+
+        var name = GetNamedString(attribute, "Name");
+        if (string.IsNullOrWhiteSpace(name))
+            return;
+
+        names[publicName] = listener
+            ? ToVueListenerPropName(name!)
+            : name!;
+    }
+
+    private static string? GetNamedString(AttributeData attribute, string name)
+    {
+        foreach (var argument in attribute.NamedArguments)
+        {
+            if (string.Equals(argument.Key, name, StringComparison.Ordinal) &&
+                argument.Value.Value is string value)
+            {
+                return value.Trim();
+            }
+        }
+
+        return null;
+    }
+
+    private static string ToVueListenerPropName(string eventName)
+    {
+        if (eventName.Length == 0)
+            return eventName;
+
+        return eventName.StartsWith("on", StringComparison.Ordinal) &&
+               eventName.Length > 2 &&
+               char.IsUpper(eventName[2])
+            ? eventName
+            : "on" + char.ToUpperInvariant(eventName[0]) + eventName.Substring(1);
+    }
+
+    private static StringLiteral CreateStringLiteral(string value)
+        => new(value, $"\"{EscapeJavaScriptString(value)}\"");
+
+    private static string EscapeJavaScriptString(string value)
+        => value
+            .Replace("\\", "\\\\")
+            .Replace("\"", "\\\"")
+            .Replace("\r", "\\r")
+            .Replace("\n", "\\n");
 
     private static Expression BuildRenderFragmentInvoke(
         IInvocationOperation operation,

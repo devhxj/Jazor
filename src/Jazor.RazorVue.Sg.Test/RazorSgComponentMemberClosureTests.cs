@@ -1655,6 +1655,165 @@ public sealed class RazorSgComponentMemberClosureTests
     }
 
     [TestMethod]
+    public async Task BuildVueComponentModule_RuntimeUsesComponentBindDescriptorNames()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using ECMAScript;
+            using ECMAScript.VueContract;
+            using ECMAScript.VueContract.Descriptor;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/child")]
+                [VueProp(nameof(Value), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
+                [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
+                public partial class Child : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string Value { get; set; } = "";
+
+                    [Parameter]
+                    public EventCallback<string> ValueChanged { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, Value);
+                    }
+                }
+
+                [ECMAScriptModule("./components/parent")]
+                public partial class Counter : ComponentBase, IVueComponent
+                {
+                    private string text = "initial";
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<Child>(0);
+                        builder.AddComponentParameter(1, "Value", text);
+                        builder.AddComponentParameter(2, "ValueChanged", EventCallback.Factory.CreateBinder(this, __value => text = __value, text));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+        var child = fixture.Binding.Components.Single(component => component.ComponentSymbol.Name == "Child");
+        var childClosure = BuildClosure(fixture, child.ComponentSymbol.Name);
+        var childArtifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            child,
+            childClosure);
+        var childScript = childArtifact.ModuleText.ReplaceLineEndings("\n");
+
+        StringAssert.Contains(childScript, "\"modelValue\"", StringComparison.Ordinal);
+        StringAssert.Contains(childScript, "\"update:modelValue\"", StringComparison.Ordinal);
+        StringAssert.Contains(childScript, "props.modelValue", StringComparison.Ordinal);
+        Assert.IsFalse(childScript.Contains("props.value", StringComparison.Ordinal), childScript);
+
+        var parent = fixture.Binding.Components.Single(component => component.ComponentSymbol.Name == "Counter");
+        var parentClosure = BuildClosure(fixture, parent.ComponentSymbol.Name);
+        var parentArtifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            parent,
+            parentClosure);
+        var parentScript = parentArtifact.ModuleText.ReplaceLineEndings("\n");
+
+        StringAssert.Contains(parentScript, "builder.openComponent(", StringComparison.Ordinal);
+        StringAssert.Contains(parentScript, "\"Value\": \"modelValue\"", StringComparison.Ordinal);
+        StringAssert.Contains(parentScript, "\"ValueChanged\": \"onUpdate:modelValue\"", StringComparison.Ordinal);
+
+        var tempRoot = Path.Combine(
+            Path.GetTempPath(),
+            "Jazor.RazorVue.Sg.Test",
+            Guid.NewGuid().ToString("N"));
+        try
+        {
+            WriteFile(Path.Combine(tempRoot, childArtifact.RelativePath), childArtifact.ModuleText);
+            WriteFile(Path.Combine(tempRoot, parentArtifact.RelativePath), parentArtifact.ModuleText);
+            WriteFile(
+                Path.Combine(tempRoot, "package.json"),
+                """{"type":"module"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "package.json"),
+                """{"type":"module","exports":"./index.mjs"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "index.mjs"),
+                """
+                export const Fragment = Symbol("Fragment");
+                export function createStaticVNode(html, count) {
+                    return { html, count };
+                }
+                export function defineComponent(options) {
+                    return options;
+                }
+                export function reactive(value) {
+                    return value;
+                }
+                export function watch() {
+                    return () => {};
+                }
+                export function onMounted() {}
+                export function onUpdated() {}
+                export function onUnmounted() {}
+                export function h(name, props, children) {
+                    return { name, props, children };
+                }
+                """);
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "package.json"),
+                """{"type":"module"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context-core.mjs"),
+                System.IO.File.ReadAllText(FindRepositoryFile("src/Jazor.RazorVue/Runtime/render-context-core.mjs")));
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context.mjs"),
+                """
+                import { Fragment, createStaticVNode } from "vue";
+                import { createRenderContextCore } from "./render-context-core.mjs";
+
+                export function createRenderContext(h) {
+                    return createRenderContextCore(h, Fragment, createStaticVNode);
+                }
+                """);
+            var testFile = Path.Combine(tempRoot, "module-component-bind-descriptor-runtime.test.mjs");
+            WriteFile(
+                testFile,
+                """
+                import assert from "node:assert/strict";
+                import test from "node:test";
+
+                import component from "./components/parent.mjs";
+
+                test("component bind descriptor maps Razor pair to Vue model prop and update listener", () => {
+                    const render = component.setup({}, { slots: {} });
+                    const first = render();
+
+                    assert.equal(first.props.modelValue, "initial");
+                    assert.equal(typeof first.props["onUpdate:modelValue"], "function");
+                    assert.equal(first.props.value, undefined);
+                    assert.equal(first.props.valueChanged, undefined);
+
+                    first.props["onUpdate:modelValue"]("updated");
+                    const second = render();
+
+                    assert.equal(second.props.modelValue, "updated");
+                    assert.equal(typeof second.props["onUpdate:modelValue"], "function");
+                });
+                """);
+
+            await RunNodeTestAsync(testFile, tempRoot);
+        }
+        finally
+        {
+            if (Directory.Exists(tempRoot))
+                Directory.Delete(tempRoot, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task BuildVueComponentModule_EmitsEventCallbackMetadataFromParameters()
     {
         var fixture = CreateManualGeneratedFixture(
@@ -1955,6 +2114,21 @@ public sealed class RazorSgComponentMemberClosureTests
         return closure!;
     }
 
+    private static RazorSgComponentMemberClosure BuildClosure(ClosureFixture fixture, string componentName)
+    {
+        var component = fixture.Binding.Components.Single(component =>
+            string.Equals(component.ComponentSymbol.Name, componentName, StringComparison.Ordinal));
+        var built = RazorSgComponentMemberClosureBuilder.TryBuild(
+            fixture.Binding,
+            component,
+            out var closure,
+            out var failure);
+
+        Assert.IsTrue(built, failure);
+        Assert.IsNotNull(closure);
+        return closure!;
+    }
+
     private static void AssertHasField(RazorSgComponentMemberClosure closure, string name)
         => Assert.IsTrue(
             closure.StateFields.Any(field => field.Name == name),
@@ -2072,26 +2246,33 @@ public sealed class RazorSgComponentMemberClosureTests
         AssertNoCompilationErrors(compilation);
 
         var semanticModel = compilation.GetSemanticModel(generatedTree);
-        var buildRenderTreeDeclaration = generatedTree.GetRoot()
+        var buildRenderTreeDeclarations = generatedTree.GetRoot()
             .DescendantNodes()
             .OfType<MethodDeclarationSyntax>()
-            .Single(static method => method.Identifier.ValueText == "BuildRenderTree");
-        var buildRenderTreeMethod = semanticModel.GetDeclaredSymbol(buildRenderTreeDeclaration)
-            ?? throw new InvalidOperationException("BuildRenderTree symbol was not available.");
-        var body = semanticModel.GetOperation(buildRenderTreeDeclaration.Body!) as IBlockOperation
-            ?? throw new InvalidOperationException("BuildRenderTree body operation was not available.");
-        var componentSymbol = buildRenderTreeMethod.ContainingType;
+            .Where(static method => method.Identifier.ValueText == "BuildRenderTree")
+            .ToArray();
         var document = new RazorSgGeneratedDocument(
             "Counter.razor.g.cs",
             documentSourcePath,
             SourceText.From(source),
             sourceMappings.IsDefault ? ImmutableArray<RazorSgSourceMapping>.Empty : sourceMappings);
-        var component = new RazorSgBoundComponent(document, componentSymbol, buildRenderTreeMethod, body);
+        var components = buildRenderTreeDeclarations
+            .Select(declaration =>
+            {
+                var method = semanticModel.GetDeclaredSymbol(declaration)
+                    ?? throw new InvalidOperationException("BuildRenderTree symbol was not available.");
+                var body = semanticModel.GetOperation(declaration.Body!) as IBlockOperation
+                    ?? throw new InvalidOperationException("BuildRenderTree body operation was not available.");
+                return new RazorSgBoundComponent(document, method.ContainingType, method, body);
+            })
+            .ToImmutableArray();
+        var component = components.FirstOrDefault(static candidate => candidate.ComponentSymbol.Name == "Counter")
+            ?? components.Single();
         var binding = new RazorSgGeneratedCSharpBinding(
             compilation,
             RazorSgCompilationBindingMode.ReusedHookCompilation,
             ImmutableArray.Create(document),
-            ImmutableArray.Create(component),
+            components,
             ReusedGeneratedTreeCount: 1,
             DerivedGeneratedTreeCount: 0);
 

@@ -31,11 +31,13 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
     private readonly RenderTreeBuilderSemanticWalkerHost _renderTreeBuilderHost = new();
     private readonly string _stateIdentifier;
     private readonly string _propsIdentifier;
+    private readonly IReadOnlyDictionary<string, string>? _parameterRuntimeNames;
 
     public CurrentComponentSemanticWalkerHost(
         INamedTypeSymbol componentType,
         string stateIdentifier = "state",
-        string propsIdentifier = "props")
+        string propsIdentifier = "props",
+        IReadOnlyDictionary<string, string>? parameterRuntimeNames = null)
     {
         _componentType = componentType ?? throw new ArgumentNullException(nameof(componentType));
         if (string.IsNullOrWhiteSpace(stateIdentifier))
@@ -45,6 +47,7 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
 
         _stateIdentifier = stateIdentifier;
         _propsIdentifier = propsIdentifier;
+        _parameterRuntimeNames = parameterRuntimeNames;
     }
 
     public override Expression? RewriteInvocationPreorder(IInvocationOperation operation, SenseArgument argument)
@@ -629,7 +632,20 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         => BuildRuntimeAccess(_stateIdentifier, symbol);
 
     private Expression BuildPropsAccess(ISymbol symbol)
-        => BuildRuntimeAccess(_propsIdentifier, symbol);
+    {
+        var runtimeName = GetParameterRuntimeName(symbol);
+        return IsJavaScriptIdentifierName(runtimeName)
+            ? new MemberExpression(
+                new Identifier(_propsIdentifier),
+                new Identifier(runtimeName),
+                computed: false,
+                optional: false)
+            : new MemberExpression(
+                new Identifier(_propsIdentifier),
+                new StringLiteral(runtimeName, $"\"{EscapeJavaScriptString(runtimeName)}\""),
+                computed: true,
+                optional: false);
+    }
 
     private static Expression BuildRuntimeAccess(string runtimeObjectName, ISymbol symbol)
         => new MemberExpression(
@@ -640,4 +656,36 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
 
     private static string GetMemberName(ISymbol symbol)
         => Util.GetConfigOrSymbolName(symbol);
+
+    private string GetParameterRuntimeName(ISymbol symbol)
+        => _parameterRuntimeNames is not null &&
+           _parameterRuntimeNames.TryGetValue(symbol.Name, out var runtimeName) &&
+           !string.IsNullOrWhiteSpace(runtimeName)
+            ? runtimeName
+            : GetMemberName(symbol);
+
+    private static bool IsJavaScriptIdentifierName(string value)
+    {
+        if (string.IsNullOrEmpty(value) ||
+            !(char.IsLetter(value[0]) || value[0] == '_' || value[0] == '$'))
+        {
+            return false;
+        }
+
+        for (var index = 1; index < value.Length; index++)
+        {
+            var ch = value[index];
+            if (!(char.IsLetterOrDigit(ch) || ch == '_' || ch == '$'))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static string EscapeJavaScriptString(string value)
+        => value
+            .Replace("\\", "\\\\")
+            .Replace("\"", "\\\"")
+            .Replace("\r", "\\r")
+            .Replace("\n", "\\n");
 }

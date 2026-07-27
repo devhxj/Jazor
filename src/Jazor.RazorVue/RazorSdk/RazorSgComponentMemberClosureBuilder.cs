@@ -193,6 +193,8 @@ internal sealed record RazorSgComponentMemberClosure(
 {
     private static readonly SymbolEqualityComparer Comparer = SymbolEqualityComparer.Default;
     private const string ParameterAttributeMetadataName = "Microsoft.AspNetCore.Components.ParameterAttribute";
+    private const string VuePropAttributeMetadataName = "ECMAScript.VueContract.VuePropAttribute";
+    private const string VueLibraryEmitAttributeMetadataName = "ECMAScript.VueContract.VueLibraryEmitAttribute";
 
     public ImmutableArray<ISymbol> OrderedMembers
         => CompilerClosure.Members;
@@ -230,7 +232,11 @@ internal sealed record RazorSgComponentMemberClosure(
         => new(
             AstConverterProfile.RazorVueRuntime,
             MemberFilter: CompilerClosure.ShouldInclude,
-            Host: new CurrentComponentSemanticWalkerHost(ComponentSymbol, stateIdentifier, propsIdentifier));
+            Host: new CurrentComponentSemanticWalkerHost(
+                ComponentSymbol,
+                stateIdentifier,
+                propsIdentifier,
+                BuildParameterRuntimeNameMap(ComponentSymbol)));
 
     private static bool IsParameterProperty(IPropertySymbol property)
         => property.GetAttributes().Any(static attribute =>
@@ -238,4 +244,70 @@ internal sealed record RazorSgComponentMemberClosure(
                 attribute.AttributeClass?.ToDisplayString(),
                 ParameterAttributeMetadataName,
                 StringComparison.Ordinal));
+
+    private static IReadOnlyDictionary<string, string> BuildParameterRuntimeNameMap(INamedTypeSymbol componentSymbol)
+    {
+        var map = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var attribute in componentSymbol.GetAttributes())
+        {
+            var attributeName = attribute.AttributeClass?.ToDisplayString();
+            if (string.Equals(attributeName, VuePropAttributeMetadataName, StringComparison.Ordinal))
+            {
+                AddDescriptorName(attribute, map, listener: false);
+                continue;
+            }
+
+            if (string.Equals(attributeName, VueLibraryEmitAttributeMetadataName, StringComparison.Ordinal))
+                AddDescriptorName(attribute, map, listener: true);
+        }
+
+        return map;
+    }
+
+    private static void AddDescriptorName(
+        AttributeData attribute,
+        Dictionary<string, string> map,
+        bool listener)
+    {
+        if (attribute.ConstructorArguments.Length == 0 ||
+            attribute.ConstructorArguments[0].Value is not string publicName ||
+            string.IsNullOrWhiteSpace(publicName))
+        {
+            return;
+        }
+
+        var name = GetNamedString(attribute, "Name");
+        if (string.IsNullOrWhiteSpace(name))
+            return;
+
+        map[publicName] = listener
+            ? ToVueListenerPropName(name!)
+            : name!;
+    }
+
+    private static string? GetNamedString(AttributeData attribute, string name)
+    {
+        foreach (var argument in attribute.NamedArguments)
+        {
+            if (string.Equals(argument.Key, name, StringComparison.Ordinal) &&
+                argument.Value.Value is string value)
+            {
+                return value.Trim();
+            }
+        }
+
+        return null;
+    }
+
+    private static string ToVueListenerPropName(string eventName)
+    {
+        if (eventName.Length == 0)
+            return eventName;
+
+        return eventName.StartsWith("on", StringComparison.Ordinal) &&
+               eventName.Length > 2 &&
+               char.IsUpper(eventName[2])
+            ? eventName
+            : "on" + char.ToUpperInvariant(eventName[0]) + eventName.Substring(1);
+    }
 }

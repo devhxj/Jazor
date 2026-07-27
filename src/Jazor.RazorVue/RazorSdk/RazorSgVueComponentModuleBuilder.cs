@@ -11,8 +11,11 @@ namespace Jazor.RazorVue.RazorSdk;
 internal static class RazorSgVueComponentModuleBuilder
 {
     private const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
+    private const string ParameterAttributeMetadataName = "Microsoft.AspNetCore.Components.ParameterAttribute";
     private const string EventCallbackMetadataName = "Microsoft.AspNetCore.Components.EventCallback";
     private const string EventCallbackOfTMetadataName = "Microsoft.AspNetCore.Components.EventCallback`1";
+    private const string VuePropAttributeMetadataName = "ECMAScript.VueContract.VuePropAttribute";
+    private const string VueLibraryEmitAttributeMetadataName = "ECMAScript.VueContract.VueLibraryEmitAttribute";
     private static readonly Regex VariableDeclarationPattern = new(
         @"^\s*(?:export\s+)?(?:let|const|var)\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*(?:=\s*(.*))?;\s*$",
         RegexOptions.CultureInvariant);
@@ -619,9 +622,9 @@ internal static class RazorSgVueComponentModuleBuilder
         ref int line)
     {
         // RenderFragment parameters are slot contracts, not Vue props. Keep them out of props: [...].
-        var propNames = closure.ParameterProperties
+        var propNames = GetComponentParameterProperties(closure.ComponentSymbol)
             .Where(static property => !IsRenderFragmentType(property.Type))
-            .Select(static property => Util.GetConfigOrSymbolName(property))
+            .Select(property => GetVueParameterPropName(closure.ComponentSymbol, property))
             .Where(static name => !string.IsNullOrWhiteSpace(name))
             .Distinct(StringComparer.Ordinal)
             .OrderBy(static name => name, StringComparer.Ordinal)
@@ -647,9 +650,9 @@ internal static class RazorSgVueComponentModuleBuilder
         RazorSgComponentMemberClosure closure,
         ref int line)
     {
-        var emitNames = closure.ParameterProperties
+        var emitNames = GetComponentParameterProperties(closure.ComponentSymbol)
             .Where(static property => IsEventCallbackType(property.Type))
-            .Select(static property => GetVueEmitName(Util.GetConfigOrSymbolName(property)))
+            .Select(property => GetVueParameterEmitName(closure.ComponentSymbol, property))
             .Where(static name => !string.IsNullOrWhiteSpace(name))
             .Distinct(StringComparer.Ordinal)
             .OrderBy(static name => name, StringComparer.Ordinal)
@@ -718,6 +721,73 @@ internal static class RazorSgVueComponentModuleBuilder
         => IsChildContentParameter(property)
             ? "default"
             : Util.GetConfigOrSymbolName(property);
+
+    private static IEnumerable<IPropertySymbol> GetComponentParameterProperties(INamedTypeSymbol componentSymbol)
+        => componentSymbol
+            .GetMembers()
+            .OfType<IPropertySymbol>()
+            .Where(static property => property.GetAttributes().Any(static attribute =>
+                string.Equals(
+                    attribute.AttributeClass?.ToDisplayString(),
+                    ParameterAttributeMetadataName,
+                    StringComparison.Ordinal)));
+
+    private static string GetVueParameterPropName(INamedTypeSymbol componentSymbol, IPropertySymbol property)
+        => TryGetClassDescriptorName(
+            componentSymbol,
+            VuePropAttributeMetadataName,
+            property.Name,
+            out var descriptorName)
+            ? descriptorName
+            : Util.GetConfigOrSymbolName(property);
+
+    private static string GetVueParameterEmitName(INamedTypeSymbol componentSymbol, IPropertySymbol property)
+        => TryGetClassDescriptorName(
+            componentSymbol,
+            VueLibraryEmitAttributeMetadataName,
+            property.Name,
+            out var descriptorName)
+            ? descriptorName
+            : GetVueEmitName(Util.GetConfigOrSymbolName(property));
+
+    private static bool TryGetClassDescriptorName(
+        INamedTypeSymbol componentSymbol,
+        string attributeMetadataName,
+        string publicName,
+        out string name)
+    {
+        foreach (var attribute in componentSymbol.GetAttributes())
+        {
+            if (!string.Equals(
+                    attribute.AttributeClass?.ToDisplayString(),
+                    attributeMetadataName,
+                    StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (attribute.ConstructorArguments.Length == 0 ||
+                attribute.ConstructorArguments[0].Value is not string attributePublicName ||
+                !string.Equals(attributePublicName, publicName, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            foreach (var argument in attribute.NamedArguments)
+            {
+                if (string.Equals(argument.Key, "Name", StringComparison.Ordinal) &&
+                    argument.Value.Value is string descriptorName &&
+                    !string.IsNullOrWhiteSpace(descriptorName))
+                {
+                    name = descriptorName.Trim();
+                    return true;
+                }
+            }
+        }
+
+        name = string.Empty;
+        return false;
+    }
 
     private static string GetVueEmitName(string runtimePropName)
     {

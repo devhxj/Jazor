@@ -50,6 +50,15 @@ function normalizeComponentParameterName(name) {
     return `${name[0].toLowerCase()}${name.slice(1)}`;
 }
 
+function normalizeComponentParameterRuntimeName(name, parameterNameMap) {
+    if (parameterNameMap !== null &&
+        Object.prototype.hasOwnProperty.call(parameterNameMap, name)) {
+        return parameterNameMap[name];
+    }
+
+    return normalizeComponentParameterName(name);
+}
+
 function normalizeComponentSlotName(name) {
     if (name === "ChildContent") {
         return "default";
@@ -242,7 +251,7 @@ export function createRenderContextCore(h, Fragment, createStaticVNode) {
             return context;
         },
 
-        openComponent(componentType) {
+        openComponent(componentType, parameterNameMap = null) {
             assertActive("openComponent");
             if (componentType === null || componentType === undefined) {
                 fail("openComponent requires a component type");
@@ -255,6 +264,7 @@ export function createRenderContextCore(h, Fragment, createStaticVNode) {
             frames.push({
                 kind: "component",
                 type: componentType,
+                parameterNameMap,
                 props: null,
                 children: [],
                 childrenStarted: false,
@@ -305,7 +315,7 @@ export function createRenderContextCore(h, Fragment, createStaticVNode) {
             }
 
             frame.props ??= {};
-            frame.props[normalizeComponentParameterName(name)] = value;
+            frame.props[normalizeComponentParameterRuntimeName(name, frame.parameterNameMap)] = value;
             return context;
         },
 
