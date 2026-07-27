@@ -18,12 +18,24 @@ public abstract class SemanticWalkerHost
     public virtual Expression? RewriteObjectCreationPreorder(IObjectCreationOperation operation, SenseArgument argument)
         => null;
 
+    public virtual bool ShouldRewriteObjectCreation(IObjectCreationOperation operation)
+        => false;
+
+    public virtual Expression? RewriteObjectCreation(
+        IObjectCreationOperation operation,
+        SenseArgument argument,
+        IReadOnlyList<Expression> arguments)
+        => null;
+
     public virtual void ObserveTypeReference(ITypeSymbol type, SenseArgument argument)
     {
     }
 
     public virtual VariableDeclarator? RewriteVariableDeclaratorPreorder(IVariableDeclaratorOperation operation, SenseArgument argument)
         => null;
+
+    public virtual bool ShouldSkipVariableDeclarator(IVariableDeclaratorOperation operation, SenseArgument argument)
+        => false;
 
     public virtual Identifier? RewriteLocalDeclarationIdentifier(ILocalSymbol local, IOperation operation, SenseArgument argument)
         => null;
@@ -41,6 +53,13 @@ public abstract class SemanticWalkerHost
         => null;
 
     public virtual Expression? RewriteInvocationPreorder(IInvocationOperation operation, SenseArgument argument)
+        => null;
+
+    public virtual Expression? RewriteInvocationArgumentPreorder(
+        IInvocationOperation operation,
+        IArgumentOperation argumentOperation,
+        int argumentIndex,
+        SenseArgument argument)
         => null;
 
     public virtual bool ShouldSkipLocalFunctionDeclaration(ILocalFunctionOperation operation, SenseArgument argument)

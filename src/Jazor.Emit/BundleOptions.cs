@@ -3,7 +3,8 @@ namespace Jazor.Emit;
 internal sealed record BundleOptions(
     string InputDirectory,
     string ManifestPath,
-    string OutputPath)
+    string OutputPath,
+    string? SourceRoot = null)
 {
     public static bool TryParse(string[] args, out BundleOptions? options, out string? error)
     {

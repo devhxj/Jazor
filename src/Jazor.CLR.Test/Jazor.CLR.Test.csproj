@@ -10,6 +10,7 @@
     <Compile Remove="bin\**\*.cs;obj\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="..\ECMAScript.Contract\ECMAScript.Contract.csproj" />
     <ProjectReference Include="..\Jazor.CLR\Jazor.CLR.csproj" />
   </ItemGroup>

@@ -17,23 +17,93 @@ namespace Jazor.Compiler;
 public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
 {
     private const string RenderTreeBuilderMetadataName = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";
+    private const string RenderTreeBuilderExtensionsMetadataName = "Microsoft.AspNetCore.Components.Web.WebRenderTreeBuilderExtensions";
+    private const string RenderContextModulePath = "@jazor/vue-runtime/render-context.mjs";
     private const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
     private const string VuePropAttributeMetadataName = "ECMAScript.VueContract.VuePropAttribute";
     private const string VueLibraryEmitAttributeMetadataName = "ECMAScript.VueContract.VueLibraryEmitAttribute";
+    private const string VueSlotAttributeMetadataName = "ECMAScript.VueContract.VueSlotAttribute";
+
+    public override Expression? RewriteObjectCreationPreorder(IObjectCreationOperation operation, SenseArgument argument)
+        => TryGetStaticMarkupString(operation, out var markup)
+            ? CreateStringLiteral(markup ?? string.Empty)
+            : null;
+
+    public override bool ShouldRewriteObjectCreation(IObjectCreationOperation operation)
+        => operation.Type is not null &&
+           (IsMarkupString(operation.Type) ||
+            IsRenderTreeBuilder(operation.Type));
+
+    public override Expression? RewriteObjectCreation(
+        IObjectCreationOperation operation,
+        SenseArgument argument,
+        IReadOnlyList<Expression> arguments)
+    {
+        if (operation.Type is not null &&
+            operation.Constructor is not null &&
+            IsMarkupString(operation.Type) &&
+            operation.Constructor.Parameters.Length == 1 &&
+            arguments.Count == 1)
+        {
+            return arguments[0];
+        }
+
+        if (operation.Type is not null &&
+            operation.Constructor is not null &&
+            IsRenderTreeBuilder(operation.Type) &&
+            operation.Constructor.Parameters.Length == 0 &&
+            arguments.Count == 0)
+        {
+            var createRenderContext = argument.BindImportSpecifier(RenderContextModulePath, "createRenderContext");
+            return new CallExpression(
+                createRenderContext,
+                NodeList.From(new Expression[] { new Identifier("h") }),
+                optional: false);
+        }
+
+        return null;
+    }
+
+    public override bool ShouldSkipVariableDeclarator(
+        IVariableDeclaratorOperation operation,
+        SenseArgument argument)
+        => operation.Symbol.Type is not null &&
+           IsSystemType(operation.Symbol.Type) &&
+           operation.Initializer?.Value is { } initializer &&
+           TryResolveTypeOfExpression(initializer, out _) &&
+           TryResolveLocalTypeOfInitializer(operation, operation.Symbol, out _) &&
+           AllLocalReferencesAreOpenComponentTypeArguments(operation, operation.Symbol);
 
     public override Expression? RewriteInvocationPreorder(IInvocationOperation operation, SenseArgument argument)
     {
-        if (!IsRenderTreeBuilderMethod(operation.TargetMethod))
+        if (!IsRenderTreeBuilderMethod(operation.TargetMethod) &&
+            !IsRenderTreeBuilderEventModifierMethod(operation.TargetMethod))
             return null;
 
-        if (IsAddComponentParameterMethod(operation.TargetMethod.OriginalDefinition) &&
-            IsGenericRenderFragmentComponentParameterValue(operation))
-        {
-            throw CreateUnsupportedGenericRenderFragmentComponentParameterException(operation);
-        }
+        if (IsRenderTreeBuilderEventModifierMethod(operation.TargetMethod))
+            return null;
 
         if (!IsSupportedRenderContextMethod(operation))
             throw CreateUnsupportedException(operation);
+
+        return null;
+    }
+
+    public override Expression? RewriteInvocationArgumentPreorder(
+        IInvocationOperation operation,
+        IArgumentOperation argumentOperation,
+        int argumentIndex,
+        SenseArgument argument)
+    {
+        var method = operation.TargetMethod.OriginalDefinition;
+        if (argumentIndex == 1 &&
+            IsRenderTreeBuilderMethod(operation.TargetMethod) &&
+            string.Equals(method.Name, "OpenComponent", StringComparison.Ordinal) &&
+            IsOpenComponentTypeMethod(method) &&
+            TryResolveComponentTypeArgument(operation, out _))
+        {
+            return new NullLiteral("null");
+        }
 
         return null;
     }
@@ -44,6 +114,9 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
         Expression? instance,
         IReadOnlyList<Expression> arguments)
     {
+        if (IsRenderTreeBuilderEventModifierMethod(operation.TargetMethod))
+            return BuildEventModifierCall(operation, instance, arguments);
+
         if (!IsRenderTreeBuilderMethod(operation.TargetMethod))
             return null;
 
@@ -68,6 +141,9 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
             "OpenComponent" when IsGenericOpenComponentMethod(method)
                 => BuildOpenComponentCall(operation, argument, instance, arguments),
 
+            "OpenComponent" when IsOpenComponentTypeMethod(method)
+                => BuildOpenComponentTypeCall(operation, argument, instance, arguments),
+
             "CloseComponent" when method.Parameters.Length == 0
                 => BuildRenderContextCall(operation, instance, arguments, "closeComponent"),
 
@@ -77,7 +153,13 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
             "AddContent" when IsRenderFragmentAddContentMethod(method)
                 => BuildRenderFragmentInvoke(operation, instance, arguments),
 
-            "AddMarkupContent" when IsSupportedStaticAddMarkupContentMethod(method, operation)
+            "AddContent" when IsGenericRenderFragmentAddContentMethod(method)
+                => BuildGenericRenderFragmentInvoke(operation, instance, arguments),
+
+            "AddContent" when IsMarkupStringAddContentMethod(method)
+                => BuildRenderContextCall(operation, instance, arguments, "addMarkupContent", ContextCallArgument.FromSource(1)),
+
+            "AddMarkupContent" when IsAddMarkupContentSignature(method)
                 => BuildRenderContextCall(operation, instance, arguments, "addMarkupContent", ContextCallArgument.FromSource(1)),
 
             "AddAttribute" when IsAddAttributeWithoutValueMethod(method)
@@ -98,6 +180,14 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
                     ContextCallArgument.FromSource(1),
                     ContextCallArgument.FromSource(2)),
 
+            "AddAttribute" when IsAddAttributeFrameMethod(method)
+                => BuildRenderContextCall(
+                    operation,
+                    instance,
+                    arguments,
+                    "addAttributeFrame",
+                    ContextCallArgument.FromSource(1)),
+
             "AddMultipleAttributes" when IsAddMultipleAttributesMethod(method)
                 => BuildRenderContextCall(
                     operation,
@@ -105,6 +195,16 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
                     arguments,
                     "addMultipleAttributes",
                     ContextCallArgument.FromSource(1)),
+
+            "AddComponentParameter" when IsAddComponentParameterMethod(method) &&
+                                        IsGenericRenderFragmentComponentParameterValue(operation)
+                => BuildRenderContextCall(
+                    operation,
+                    instance,
+                    arguments,
+                    "addComponentScopedSlot",
+                    ContextCallArgument.FromSource(1),
+                    ContextCallArgument.FromSource(2)),
 
             "AddComponentParameter" when IsAddComponentParameterMethod(method) &&
                                         IsRenderFragmentComponentParameterValue(operation)
@@ -131,6 +231,36 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
             "SetUpdatesAttributeName" when IsSetUpdatesAttributeNameMethod(method)
                 => BuildRenderContextCall(operation, instance, arguments, "setUpdatesAttributeName", ContextCallArgument.FromSource(0)),
 
+            "SetAttributeValue" when IsSetAttributeValueMethod(method)
+                => BuildRenderContextCall(operation, instance, arguments, "setAttributeValue", ContextCallArgument.FromSource(1)),
+
+            "AddNamedEvent" when IsAddNamedEventMethod(method)
+                => BuildRenderContextCall(
+                    operation,
+                    instance,
+                    arguments,
+                    "addNamedEvent",
+                    ContextCallArgument.FromSource(0),
+                    ContextCallArgument.FromSource(1)),
+
+            "AddElementReferenceCapture" when IsAddElementReferenceCaptureMethod(method)
+                => BuildRenderContextCall(operation, instance, arguments, "addElementReferenceCapture", ContextCallArgument.FromSource(1)),
+
+            "AddComponentReferenceCapture" when IsAddComponentReferenceCaptureMethod(method)
+                => BuildRenderContextCall(operation, instance, arguments, "addComponentReferenceCapture", ContextCallArgument.FromSource(1)),
+
+            "AddComponentRenderMode" when IsAddComponentRenderModeMethod(method)
+                => BuildRenderContextCall(operation, instance, arguments, "addComponentRenderMode", ContextCallArgument.FromSource(0)),
+
+            "Clear" when method.Parameters.Length == 0
+                => BuildRenderContextCall(operation, instance, arguments, "clear"),
+
+            "GetFrames" when method.Parameters.Length == 0
+                => BuildRenderContextCall(operation, instance, arguments, "getFrames"),
+
+            "Dispose" when method.Parameters.Length == 0
+                => BuildRenderContextCall(operation, instance, arguments, "dispose"),
+
             _ => throw CreateUnsupportedException(operation)
         };
     }
@@ -144,18 +274,53 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
             "CloseElement" => method.Parameters.Length == 0,
             "OpenRegion" => IsSequenceOnlyMethod(method),
             "CloseRegion" => method.Parameters.Length == 0,
-            "OpenComponent" => IsGenericOpenComponentMethod(method) &&
-                               TryResolveComponentModulePath(operation.TargetMethod, out _, out _),
+            "OpenComponent" => (IsGenericOpenComponentMethod(method) &&
+                                TryResolveComponentModulePath(operation.TargetMethod, out _, out _)) ||
+                               (IsOpenComponentTypeMethod(method) &&
+                                TryResolveComponentTypeArgument(operation, out var componentType) &&
+                                TryResolveComponentModulePath(componentType, out _)),
             "CloseComponent" => method.Parameters.Length == 0,
-            "AddContent" => IsSupportedAddContentMethod(method) || IsRenderFragmentAddContentMethod(method),
-            "AddMarkupContent" => IsSupportedStaticAddMarkupContentMethod(method, operation),
-            "AddAttribute" => IsAddAttributeWithoutValueMethod(method) || IsAddAttributeWithValueMethod(method),
+            "AddContent" => IsSupportedAddContentMethod(method) ||
+                            IsRenderFragmentAddContentMethod(method) ||
+                            IsGenericRenderFragmentAddContentMethod(method) ||
+                            IsMarkupStringAddContentMethod(method),
+            "AddMarkupContent" => IsAddMarkupContentSignature(method),
+            "AddAttribute" => IsAddAttributeWithoutValueMethod(method) ||
+                              IsAddAttributeWithValueMethod(method) ||
+                              IsAddAttributeFrameMethod(method),
             "AddMultipleAttributes" => IsAddMultipleAttributesMethod(method),
             "AddComponentParameter" => IsAddComponentParameterMethod(method),
             "SetKey" => IsSetKeyMethod(method),
             "SetUpdatesAttributeName" => IsSetUpdatesAttributeNameMethod(method),
+            "SetAttributeValue" => IsSetAttributeValueMethod(method),
+            "AddNamedEvent" => IsAddNamedEventMethod(method),
+            "AddElementReferenceCapture" => IsAddElementReferenceCaptureMethod(method),
+            "AddComponentReferenceCapture" => IsAddComponentReferenceCaptureMethod(method),
+            "AddComponentRenderMode" => IsAddComponentRenderModeMethod(method),
+            "Clear" => method.Parameters.Length == 0,
+            "GetFrames" => method.Parameters.Length == 0,
+            "Dispose" => method.Parameters.Length == 0,
             _ => false
         };
+    }
+
+    private static bool IsRenderTreeBuilderEventModifierMethod(IMethodSymbol method)
+    {
+        var originalMethod = (method.ReducedFrom ?? method).OriginalDefinition;
+        return (string.Equals(originalMethod.Name, "AddEventPreventDefaultAttribute", StringComparison.Ordinal) ||
+                string.Equals(originalMethod.Name, "AddEventStopPropagationAttribute", StringComparison.Ordinal)) &&
+               string.Equals(
+                   originalMethod.ContainingType?.OriginalDefinition.ToDisplayString(Format.NameFormat),
+                   RenderTreeBuilderExtensionsMetadataName,
+                   StringComparison.Ordinal) &&
+               originalMethod.Parameters.Length == 4 &&
+               string.Equals(
+                   originalMethod.Parameters[0].Type.OriginalDefinition.ToDisplayString(Format.NameFormat),
+                   RenderTreeBuilderMetadataName,
+                   StringComparison.Ordinal) &&
+               IsInt32(originalMethod.Parameters[1].Type) &&
+               IsString(originalMethod.Parameters[2].Type) &&
+               originalMethod.Parameters[3].Type.SpecialType == SpecialType.System_Boolean;
     }
 
     private static bool IsRenderTreeBuilderMethod(IMethodSymbol method)
@@ -179,6 +344,11 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
            method.Parameters.Length == 1 &&
            IsInt32(method.Parameters[0].Type);
 
+    private static bool IsOpenComponentTypeMethod(IMethodSymbol method)
+        => method.Parameters.Length == 2 &&
+           IsInt32(method.Parameters[0].Type) &&
+           IsSystemType(method.Parameters[1].Type);
+
     private static bool IsSupportedAddContentMethod(IMethodSymbol method)
     {
         if (method.Parameters.Length != 2 ||
@@ -199,6 +369,16 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
         => method.Parameters.Length == 2 &&
            IsInt32(method.Parameters[0].Type) &&
            IsRenderFragment(method.Parameters[1].Type);
+
+    private static bool IsGenericRenderFragmentAddContentMethod(IMethodSymbol method)
+        => method.Parameters.Length == 3 &&
+           IsInt32(method.Parameters[0].Type) &&
+           IsGenericRenderFragment(method.Parameters[1].Type);
+
+    private static bool IsMarkupStringAddContentMethod(IMethodSymbol method)
+        => method.Parameters.Length == 2 &&
+           IsInt32(method.Parameters[0].Type) &&
+           IsMarkupStringLike(method.Parameters[1].Type);
 
     private static bool IsRenderFragmentComponentParameterValue(IInvocationOperation operation)
         => operation.Arguments.Length == 3 &&
@@ -227,22 +407,6 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
            IsInt32(method.Parameters[0].Type) &&
            IsString(method.Parameters[1].Type);
 
-    private static bool IsSupportedStaticAddMarkupContentMethod(
-        IMethodSymbol method,
-        IInvocationOperation operation)
-    {
-        if (!IsAddMarkupContentSignature(method) ||
-            operation.Arguments.Length != 2)
-        {
-            return false;
-        }
-
-        // v1 only accepts compile-time constant markup so createStaticVNode can be used safely.
-        // Non-constant markup fails in preorder so side-effecting argument expressions are not lowered.
-        return operation.Arguments[1].Value.ConstantValue.HasValue &&
-               operation.Arguments[1].Value.ConstantValue.Value is string or null;
-    }
-
     private static bool IsAddAttributeWithoutValueMethod(IMethodSymbol method)
         => method.Parameters.Length == 2 &&
            IsInt32(method.Parameters[0].Type) &&
@@ -252,6 +416,11 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
         => method.Parameters.Length == 3 &&
            IsInt32(method.Parameters[0].Type) &&
            IsString(method.Parameters[1].Type);
+
+    private static bool IsAddAttributeFrameMethod(IMethodSymbol method)
+        => method.Parameters.Length == 2 &&
+           IsInt32(method.Parameters[0].Type) &&
+           IsRenderTreeFrame(method.Parameters[1].Type);
 
     private static bool IsAddMultipleAttributesMethod(IMethodSymbol method)
         => method.Parameters.Length == 2 &&
@@ -272,6 +441,33 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
         => method.Parameters.Length == 1 &&
            IsString(method.Parameters[0].Type);
 
+    private static bool IsSetAttributeValueMethod(IMethodSymbol method)
+        => method.Parameters.Length == 2 &&
+           IsInt32(method.Parameters[0].Type) &&
+           IsObject(method.Parameters[1].Type);
+
+    private static bool IsAddNamedEventMethod(IMethodSymbol method)
+        => method.Parameters.Length == 2 &&
+           IsString(method.Parameters[0].Type) &&
+           IsString(method.Parameters[1].Type);
+
+    private static bool IsAddElementReferenceCaptureMethod(IMethodSymbol method)
+        => method.Parameters.Length == 2 &&
+           IsInt32(method.Parameters[0].Type) &&
+           IsActionOfElementReference(method.Parameters[1].Type);
+
+    private static bool IsAddComponentReferenceCaptureMethod(IMethodSymbol method)
+        => method.Parameters.Length == 2 &&
+           IsInt32(method.Parameters[0].Type) &&
+           IsActionOfObject(method.Parameters[1].Type);
+
+    private static bool IsAddComponentRenderModeMethod(IMethodSymbol method)
+        => method.Parameters.Length == 1 &&
+           string.Equals(
+               method.Parameters[0].Type.OriginalDefinition.ToDisplayString(Format.NameFormat),
+               "Microsoft.AspNetCore.Components.IComponentRenderMode",
+               StringComparison.Ordinal);
+
     private static bool IsInt32(ITypeSymbol type)
         => type.SpecialType == SpecialType.System_Int32;
 
@@ -280,6 +476,83 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
 
     private static bool IsObject(ITypeSymbol type)
         => type.SpecialType == SpecialType.System_Object;
+
+    private static bool IsSystemType(ITypeSymbol type)
+        => string.Equals(
+            type.OriginalDefinition.ToDisplayString(Format.NameFormat),
+            "System.Type",
+            StringComparison.Ordinal);
+
+    private static bool IsRenderTreeBuilder(ITypeSymbol type)
+        => string.Equals(
+            type.OriginalDefinition.ToDisplayString(Format.NameFormat),
+            RenderTreeBuilderMetadataName,
+            StringComparison.Ordinal);
+
+    private static bool IsMarkupString(ITypeSymbol type)
+        => string.Equals(
+            type.OriginalDefinition.ToDisplayString(Format.NameFormat),
+            "Microsoft.AspNetCore.Components.MarkupString",
+            StringComparison.Ordinal);
+
+    private static bool IsMarkupStringLike(ITypeSymbol type)
+        => IsMarkupString(type) ||
+           type is INamedTypeSymbol namedType &&
+           string.Equals(
+               namedType.OriginalDefinition.ToDisplayString(Format.NameFormat),
+               "System.Nullable<T>",
+               StringComparison.Ordinal) &&
+           namedType.TypeArguments.Length == 1 &&
+           IsMarkupString(namedType.TypeArguments[0]);
+
+    private static bool IsRenderTreeFrame(ITypeSymbol type)
+        => string.Equals(
+            type.OriginalDefinition.ToDisplayString(Format.NameFormat),
+            "Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame",
+            StringComparison.Ordinal);
+
+    private static bool TryGetStaticMarkupString(IOperation operation, out string? markup)
+    {
+        markup = null;
+        switch (operation)
+        {
+            case IConversionOperation conversion:
+                return TryGetStaticMarkupString(conversion.Operand, out markup);
+
+            case IObjectCreationOperation
+            {
+                Constructor.Parameters.Length: 1,
+                Arguments.Length: 1
+            } creation when IsMarkupString(creation.Type!) &&
+                            creation.Arguments[0].Value.ConstantValue.HasValue &&
+                            creation.Arguments[0].Value.ConstantValue.Value is string value:
+                markup = value;
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    private static bool IsActionOfElementReference(ITypeSymbol type)
+        => type is INamedTypeSymbol namedType &&
+           IsSystemAction(namedType) &&
+           namedType.TypeArguments.Length == 1 &&
+           string.Equals(
+               namedType.TypeArguments[0].OriginalDefinition.ToDisplayString(Format.NameFormat),
+               "Microsoft.AspNetCore.Components.ElementReference",
+               StringComparison.Ordinal);
+
+    private static bool IsActionOfObject(ITypeSymbol type)
+        => type is INamedTypeSymbol namedType &&
+           IsSystemAction(namedType) &&
+           namedType.TypeArguments.Length == 1 &&
+           IsObject(namedType.TypeArguments[0]);
+
+    private static bool IsSystemAction(INamedTypeSymbol type)
+        => string.Equals(type.OriginalDefinition.Name, "Action", StringComparison.Ordinal) &&
+           string.Equals(type.OriginalDefinition.ContainingNamespace?.ToDisplayString(), "System", StringComparison.Ordinal) &&
+           type.OriginalDefinition.TypeArguments.Length == 1;
 
     private static bool IsEnumerableOfStringObjectKeyValuePair(ITypeSymbol type)
     {
@@ -306,7 +579,6 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
 
     private static bool IsRenderFragment(ITypeSymbol type)
     {
-        // Match non-generic RenderFragment only; RenderFragment<T> stays unsupported for now.
         var current = type;
         if (current is INamedTypeSymbol { OriginalDefinition: { } original })
             current = original;
@@ -380,6 +652,206 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
                 ContextCallArgument.FromExpression(parameterNameMap));
     }
 
+    private static Expression BuildOpenComponentTypeCall(
+        IInvocationOperation operation,
+        SenseArgument argument,
+        Expression instance,
+        IReadOnlyList<Expression> translatedArguments)
+    {
+        if (!TryResolveComponentTypeArgument(operation, out var componentType) ||
+            !TryResolveComponentModulePath(componentType, out var modulePath))
+        {
+            throw CreateUnsupportedException(operation);
+        }
+
+        var componentImport = argument.BindImportSpecifier(modulePath, "default");
+        var parameterNameMap = BuildComponentParameterNameMapExpression(componentType);
+        var renderContextArguments = parameterNameMap is null
+            ? new[] { ContextCallArgument.FromExpression(componentImport) }
+            : new[]
+            {
+                ContextCallArgument.FromExpression(componentImport),
+                ContextCallArgument.FromExpression(parameterNameMap)
+            };
+
+        if (CanOmitArgumentEvaluation(operation.Arguments[0].Value))
+            return BuildCall(
+                instance,
+                "openComponent",
+                renderContextArguments.Select(argument => argument.Resolve(translatedArguments)).ToArray());
+
+        var receiverParameter = new Identifier("__rtb");
+        var sequenceParameter = new Identifier("__arg0");
+        var bodyArguments = renderContextArguments
+            .Select(argument => argument.Resolve(translatedArguments))
+            .ToArray();
+        var arrow = new ArrowFunctionExpression(
+            NodeList.From<Node>([receiverParameter, sequenceParameter]),
+            BuildCall(receiverParameter, "openComponent", bodyArguments),
+            expression: true,
+            async: false);
+        return new CallExpression(
+            arrow,
+            NodeList.From(new Expression[] { instance, translatedArguments[0] }),
+            optional: false);
+    }
+
+    private static bool TryResolveComponentTypeArgument(
+        IInvocationOperation operation,
+        out INamedTypeSymbol componentType)
+    {
+        componentType = null!;
+        if (operation.Arguments.Length != 2)
+            return false;
+
+        var value = operation.Arguments[1].Value;
+        while (value is IConversionOperation conversion)
+            value = conversion.Operand;
+
+        if (TryResolveTypeOfExpression(value, out componentType))
+            return true;
+
+        if (value is ILocalReferenceOperation localReference &&
+            TryResolveLocalTypeOfInitializer(operation, localReference.Local, out componentType))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryResolveTypeOfExpression(
+        IOperation operation,
+        out INamedTypeSymbol componentType)
+    {
+        componentType = null!;
+        while (operation is IConversionOperation conversion)
+            operation = conversion.Operand;
+
+        if (operation is not ITypeOfOperation typeOf ||
+            typeOf.TypeOperand is not INamedTypeSymbol namedType)
+        {
+            return false;
+        }
+
+        componentType = namedType;
+        return true;
+    }
+
+    private static bool TryResolveLocalTypeOfInitializer(
+        IOperation usage,
+        ILocalSymbol local,
+        out INamedTypeSymbol componentType)
+    {
+        componentType = null!;
+        var root = usage;
+        while (root.Parent is not null)
+            root = root.Parent;
+
+        if (ContainsLocalAssignment(root, local))
+            return false;
+
+        return TryFindLocalInitializer(root, local, out componentType);
+    }
+
+    private static bool TryFindLocalInitializer(
+        IOperation operation,
+        ILocalSymbol local,
+        out INamedTypeSymbol componentType)
+    {
+        componentType = null!;
+        if (operation is IVariableDeclaratorOperation declarator &&
+            SymbolEqualityComparer.Default.Equals(declarator.Symbol, local) &&
+            declarator.Initializer?.Value is { } initializer)
+        {
+            return TryResolveTypeOfExpression(initializer, out componentType);
+        }
+
+        foreach (var child in operation.ChildOperations)
+        {
+            if (TryFindLocalInitializer(child, local, out componentType))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool ContainsLocalAssignment(IOperation operation, ILocalSymbol local)
+    {
+        if (operation is ISimpleAssignmentOperation assignment &&
+            IsLocalReference(assignment.Target, local))
+        {
+            return true;
+        }
+
+        if (operation is ICompoundAssignmentOperation compoundAssignment &&
+            IsLocalReference(compoundAssignment.Target, local))
+        {
+            return true;
+        }
+
+        foreach (var child in operation.ChildOperations)
+        {
+            if (ContainsLocalAssignment(child, local))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool AllLocalReferencesAreOpenComponentTypeArguments(
+        IOperation usage,
+        ILocalSymbol local)
+    {
+        var root = usage;
+        while (root.Parent is not null)
+            root = root.Parent;
+
+        return AllLocalReferencesAreOpenComponentTypeArgumentsCore(root, local);
+    }
+
+    private static bool AllLocalReferencesAreOpenComponentTypeArgumentsCore(
+        IOperation operation,
+        ILocalSymbol local)
+    {
+        if (operation is ILocalReferenceOperation reference &&
+            SymbolEqualityComparer.Default.Equals(reference.Local, local) &&
+            !IsOpenComponentTypeArgumentReference(reference))
+        {
+            return false;
+        }
+
+        foreach (var child in operation.ChildOperations)
+        {
+            if (!AllLocalReferencesAreOpenComponentTypeArgumentsCore(child, local))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool IsOpenComponentTypeArgumentReference(ILocalReferenceOperation reference)
+    {
+        var current = reference.Parent;
+        while (current is IConversionOperation)
+            current = current.Parent;
+
+        return current is IArgumentOperation { Parent: IInvocationOperation invocation } argument &&
+               argument.Parameter is not null &&
+               argument.Parameter.Ordinal == 1 &&
+               string.Equals(invocation.TargetMethod.OriginalDefinition.Name, "OpenComponent", StringComparison.Ordinal) &&
+               IsOpenComponentTypeMethod(invocation.TargetMethod.OriginalDefinition);
+    }
+
+    private static bool IsLocalReference(IOperation operation, ILocalSymbol local)
+    {
+        while (operation is IConversionOperation conversion)
+            operation = conversion.Operand;
+
+        return operation is ILocalReferenceOperation reference &&
+               SymbolEqualityComparer.Default.Equals(reference.Local, local);
+    }
+
     private static bool TryResolveComponentModulePath(
         IMethodSymbol openComponentMethod,
         out string modulePath,
@@ -394,6 +866,19 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
         }
 
         componentType = resolvedComponentType;
+        var exportPath = GetECMAScriptModuleExportPath(componentType);
+        if (string.IsNullOrWhiteSpace(exportPath))
+            return false;
+
+        modulePath = NormalizeModuleImportPath(exportPath!);
+        return true;
+    }
+
+    private static bool TryResolveComponentModulePath(
+        INamedTypeSymbol componentType,
+        out string modulePath)
+    {
+        modulePath = string.Empty;
         var exportPath = GetECMAScriptModuleExportPath(componentType);
         if (string.IsNullOrWhiteSpace(exportPath))
             return false;
@@ -465,7 +950,13 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
             }
 
             if (string.Equals(attributeName, VueLibraryEmitAttributeMetadataName, StringComparison.Ordinal))
+            {
                 AddDescriptorName(attribute, names, listener: true);
+                continue;
+            }
+
+            if (string.Equals(attributeName, VueSlotAttributeMetadataName, StringComparison.Ordinal))
+                AddSlotDescriptorName(attribute, names);
         }
 
         if (names.Count == 0)
@@ -502,6 +993,29 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
             : name!;
     }
 
+    private static void AddSlotDescriptorName(
+        AttributeData attribute,
+        SortedDictionary<string, string> names)
+    {
+        if (attribute.ConstructorArguments.Length == 0 ||
+            attribute.ConstructorArguments[0].Value is not string publicName ||
+            string.IsNullOrWhiteSpace(publicName))
+        {
+            return;
+        }
+
+        if (GetNamedBoolean(attribute, "PatternOnly") == true)
+            return;
+
+        var name = GetNamedBoolean(attribute, "IsDefault") == true
+            ? "default"
+            : GetNamedString(attribute, "Name");
+        if (string.IsNullOrWhiteSpace(name))
+            return;
+
+        names[publicName] = name!;
+    }
+
     private static string? GetNamedString(AttributeData attribute, string name)
     {
         foreach (var argument in attribute.NamedArguments)
@@ -510,6 +1024,20 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
                 argument.Value.Value is string value)
             {
                 return value.Trim();
+            }
+        }
+
+        return null;
+    }
+
+    private static bool? GetNamedBoolean(AttributeData attribute, string name)
+    {
+        foreach (var argument in attribute.NamedArguments)
+        {
+            if (string.Equals(argument.Key, name, StringComparison.Ordinal) &&
+                argument.Value.Value is bool value)
+            {
+                return value;
             }
         }
 
@@ -578,6 +1106,106 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
         return new CallExpression(arrow, NodeList.From(invocationArguments), optional: false);
     }
 
+    private static Expression BuildGenericRenderFragmentInvoke(
+        IInvocationOperation operation,
+        Expression receiver,
+        IReadOnlyList<Expression> translatedArguments)
+    {
+        // RenderFragment<T> is Func<T, RenderFragment>: invoke with the value,
+        // then invoke the returned fragment against the current builder.
+        if (CanUseDirectRenderContextCall(
+                operation,
+                [ContextCallArgument.FromSource(1), ContextCallArgument.FromSource(2)]))
+        {
+            var fragment = ContextCallArgument.FromSource(1).Resolve(translatedArguments);
+            var value = ContextCallArgument.FromSource(2).Resolve(translatedArguments);
+            var directFragmentFactoryCall = new CallExpression(
+                fragment,
+                NodeList.From(new[] { value }),
+                optional: false);
+            return new CallExpression(
+                directFragmentFactoryCall,
+                NodeList.From(new Expression[] { receiver }),
+                optional: false);
+        }
+
+        var receiverParameter = new Identifier("__rtb");
+        var parameterNodes = new List<Node>(translatedArguments.Count + 1)
+        {
+            receiverParameter
+        };
+        var invocationArguments = new List<Expression>(translatedArguments.Count + 1)
+        {
+            receiver
+        };
+        var argumentParameters = new Identifier[translatedArguments.Count];
+        for (var index = 0; index < translatedArguments.Count; index++)
+        {
+            var parameter = new Identifier($"__arg{index}");
+            argumentParameters[index] = parameter;
+            parameterNodes.Add(parameter);
+            invocationArguments.Add(translatedArguments[index]);
+        }
+
+        var fragmentParameter = argumentParameters[1];
+        var valueParameter = argumentParameters[2];
+        var fragmentFactoryCall = new CallExpression(
+            fragmentParameter,
+            NodeList.From(new Expression[] { valueParameter }),
+            optional: false);
+        var arrow = new ArrowFunctionExpression(
+            NodeList.From(parameterNodes),
+            new CallExpression(fragmentFactoryCall, NodeList.From(new Expression[] { receiverParameter }), optional: false),
+            expression: true,
+            async: false);
+        return new CallExpression(arrow, NodeList.From(invocationArguments), optional: false);
+    }
+
+    private static Expression BuildEventModifierCall(
+        IInvocationOperation operation,
+        Expression? instance,
+        IReadOnlyList<Expression> translatedArguments)
+    {
+        var renderContextMethod = string.Equals(
+            operation.TargetMethod.Name,
+            "AddEventPreventDefaultAttribute",
+            StringComparison.Ordinal)
+            ? "addEventPreventDefaultAttribute"
+            : "addEventStopPropagationAttribute";
+
+        if (instance is not null)
+        {
+            return BuildRenderContextCall(
+                operation,
+                instance,
+                translatedArguments,
+                renderContextMethod,
+                ContextCallArgument.FromSource(1),
+                ContextCallArgument.FromSource(2));
+        }
+
+        if (translatedArguments.Count != 4)
+            throw CreateUnsupportedException(operation);
+
+        var renderContextArguments =
+            new[] { ContextCallArgument.FromSource(2), ContextCallArgument.FromSource(3) };
+        if (CanUseDirectRenderContextCall(
+                operation,
+                [ContextCallArgument.FromSource(0), ..renderContextArguments]))
+        {
+            return BuildCall(
+                translatedArguments[0],
+                renderContextMethod,
+                renderContextArguments.Select(argument => argument.Resolve(translatedArguments)).ToArray());
+        }
+
+        return BuildSingleEvaluationCall(
+            translatedArguments,
+            receiverSourceIndex: 0,
+            renderContextMethod,
+            renderContextArguments);
+    }
+
     private static Expression BuildRenderContextCall(
         IInvocationOperation operation,
         Expression receiver,
@@ -598,6 +1226,34 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
             translatedArguments,
             renderContextMethod,
             renderContextArguments);
+    }
+
+    private static Expression BuildSingleEvaluationCall(
+        IReadOnlyList<Expression> translatedArguments,
+        int receiverSourceIndex,
+        string renderContextMethod,
+        IReadOnlyList<ContextCallArgument> renderContextArguments)
+    {
+        var parameterNodes = new List<Node>(translatedArguments.Count);
+        var invocationArguments = new List<Expression>(translatedArguments.Count);
+        var argumentParameters = new Identifier[translatedArguments.Count];
+        for (var index = 0; index < translatedArguments.Count; index++)
+        {
+            var parameter = new Identifier($"__arg{index}");
+            argumentParameters[index] = parameter;
+            parameterNodes.Add(parameter);
+            invocationArguments.Add(translatedArguments[index]);
+        }
+
+        var bodyArguments = renderContextArguments
+            .Select(argument => argument.Resolve(argumentParameters))
+            .ToArray();
+        var arrow = new ArrowFunctionExpression(
+            NodeList.From(parameterNodes),
+            BuildCall(argumentParameters[receiverSourceIndex], renderContextMethod, bodyArguments),
+            expression: true,
+            async: false);
+        return new CallExpression(arrow, NodeList.From(invocationArguments), optional: false);
     }
 
     private static bool CanUseDirectRenderContextCall(
@@ -622,7 +1278,8 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
     }
 
     private static bool CanOmitArgumentEvaluation(IOperation operation)
-        => operation.ConstantValue.HasValue;
+        => operation.ConstantValue.HasValue ||
+           operation.Kind == OperationKind.TypeOf;
 
     private static Expression BuildSingleEvaluationCall(
         Expression receiver,
@@ -688,26 +1345,8 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
             operation.Kind,
             "RenderTreeBuilder method '" +
             signature +
-            "' is not supported by render-context v1 lowering. Supported v1 methods: OpenElement(int, string), CloseElement(), OpenRegion(int), CloseRegion(), OpenComponent<T>(int) for [ECMAScriptModule] components, CloseComponent(), AddContent(int, string/object/RenderFragment), constant AddMarkupContent(int, string), AddAttribute(int, string[, value]), AddMultipleAttributes(int, IEnumerable<KeyValuePair<string, object>>), AddComponentParameter(int, string, object) including non-generic RenderFragment slot parameters, SetKey(object), and SetUpdatesAttributeName(string). Dynamic Type OpenComponent, RenderFragment<T>, and reference capture remain unsupported." +
+                "' is not supported by render-context v1 lowering. Supported v1 methods: OpenElement(int, string), CloseElement(), OpenRegion(int), CloseRegion(), OpenComponent<T>(int) and OpenComponent(int, typeof(T)) for [ECMAScriptModule] components, CloseComponent(), AddContent(int, string/object/RenderFragment/MarkupString), AddContent<TValue>(int, RenderFragment<TValue>, TValue), AddMarkupContent(int, string), AddAttribute(int, string[, value]), AddAttribute(int, RenderTreeFrame), AddMultipleAttributes(int, IEnumerable<KeyValuePair<string, object>>), AddComponentParameter(int, string, object) including RenderFragment and RenderFragment<T> slot parameters, SetKey(object), SetUpdatesAttributeName(string), SetAttributeValue(int, object), AddNamedEvent(string, string), AddElementReferenceCapture(int, Action<ElementReference>), AddComponentReferenceCapture(int, Action<object>), AddComponentRenderMode(IComponentRenderMode), Clear(), GetFrames(), Dispose(), and RenderTreeBuilder(). Dynamic Type OpenComponent remains unsupported." +
             detail);
-    }
-
-    private static OperationTransformationException CreateUnsupportedGenericRenderFragmentComponentParameterException(
-        IInvocationOperation operation)
-    {
-        var parameterNameValue = operation.Arguments.Length > 1
-            ? operation.Arguments[1].Value.ConstantValue
-            : default;
-        var parameterName = parameterNameValue.HasValue &&
-                            parameterNameValue.Value is string name
-            ? name
-            : "<unknown>";
-        return new OperationTransformationException(
-            operation,
-            "RenderTreeBuilder.AddComponentParameter for component slot '" +
-            parameterName +
-            "' uses RenderFragment<T>, which is not supported by render-context v1. " +
-            "Use a non-generic RenderFragment named slot, or wait for typed slot descriptor lowering so slot parameter values can be represented explicitly.");
     }
 
     private readonly struct ContextCallArgument

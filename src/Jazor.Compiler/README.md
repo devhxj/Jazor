@@ -90,7 +90,7 @@ src/Jazor.Compiler/
 修改本项目时，优先遵守这些约束：
 
 1. 先保使用点可观察行为，再考虑 runtime 结构外观。
-2. 对不支持的外部运行时语义，优先显式失败，不做 silent raw-JS fallback。
+2. 对不支持的外部运行时语义，优先显式失败，不做 silent raw-JS 直通。
 3. 稳定 temp 名、import alias、helper 名和 source-origin 锚点属于编译器契约，不是测试便利。
 4. 能稳定用 `Alias` / `Inline` / `Import` 解决的宿主语义，不要冒进塞进 `Compile`。
 5. 需要 temp / import / source-origin / 语句级协议的复杂宿主改写，不要硬塞进当前 `Compile(handler, args)` contract。

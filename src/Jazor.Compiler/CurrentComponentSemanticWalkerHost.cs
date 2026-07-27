@@ -67,6 +67,30 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         return _renderTreeBuilderHost.RewriteInvocationPreorder(operation, argument);
     }
 
+    public override Expression? RewriteObjectCreationPreorder(IObjectCreationOperation operation, SenseArgument argument)
+        => _renderTreeBuilderHost.RewriteObjectCreationPreorder(operation, argument);
+
+    public override bool ShouldRewriteObjectCreation(IObjectCreationOperation operation)
+        => _renderTreeBuilderHost.ShouldRewriteObjectCreation(operation);
+
+    public override Expression? RewriteObjectCreation(
+        IObjectCreationOperation operation,
+        SenseArgument argument,
+        IReadOnlyList<Expression> arguments)
+        => _renderTreeBuilderHost.RewriteObjectCreation(operation, argument, arguments);
+
+    public override bool ShouldSkipVariableDeclarator(
+        IVariableDeclaratorOperation operation,
+        SenseArgument argument)
+        => _renderTreeBuilderHost.ShouldSkipVariableDeclarator(operation, argument);
+
+    public override Expression? RewriteInvocationArgumentPreorder(
+        IInvocationOperation operation,
+        IArgumentOperation argumentOperation,
+        int argumentIndex,
+        SenseArgument argument)
+        => _renderTreeBuilderHost.RewriteInvocationArgumentPreorder(operation, argumentOperation, argumentIndex, argument);
+
     public override Expression? RewriteInvocation(
         IInvocationOperation operation,
         SenseArgument argument,

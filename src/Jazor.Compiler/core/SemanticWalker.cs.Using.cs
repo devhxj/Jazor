@@ -72,12 +72,25 @@ public partial class SemanticWalker
 				else
 					pendingStatements.Add(new NonSpecialExpressionStatement(expr));
 			}
+			else if (IsHostSkippedVariableDeclaration(operation, context))
+				continue;
 			else
 				HandleTransformationFailure<Node>(operation, $"{operation.Kind} could not be translated to JavaScript.");
 		}
 
 		return pendingStatements;
 	}
+
+	private bool IsHostSkippedVariableDeclaration(IOperation operation, SenseArgument context)
+		=> operation switch
+		{
+			IVariableDeclarationGroupOperation group => group.Declarations
+				.SelectMany(static declaration => declaration.Declarators)
+				.All(declarator => Host?.ShouldSkipVariableDeclarator(declarator, context) == true),
+			IVariableDeclarationOperation declaration => declaration.Declarators
+				.All(declarator => Host?.ShouldSkipVariableDeclarator(declarator, context) == true),
+			_ => false
+		};
 
 	public override Node? VisitUsing(IUsingOperation operation, SenseArgument argument)
 	{

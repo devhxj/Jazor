@@ -7,8 +7,9 @@
     <JazorDevOutDir Condition="'$(JazorDevOutDir)' == ''">$(MSBuildProjectDirectory)\jazor\</JazorDevOutDir>
     <JazorPublishOutDir Condition="'$(JazorPublishOutDir)' == ''">$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorPublishOutDir>
     <JazorOutDir Condition="'$(JazorOutDir)' == ''">$(JazorDevOutDir)</JazorOutDir>
+    <JazorToolchain Condition="'$(JazorToolchain)' == ''">Deno</JazorToolchain>
     <JazorBundle Condition="'$(JazorBundle)' == ''">false</JazorBundle>
-    <JazorBundleOut Condition="'$(JazorBundleOut)' == ''">$(OutDir)jazor\app.js</JazorBundleOut>
+    <JazorBundleOut Condition="'$(JazorBundleOut)' == ''">$(OutDir)jazor\</JazorBundleOut>
     <JazorCleanEmit Condition="'$(JazorCleanEmit)' == ''">true</JazorCleanEmit>
     <JazorFailOnPathConflict Condition="'$(JazorFailOnPathConflict)' == ''">true</JazorFailOnPathConflict>
     <JazorPublishMaterializeEnabled Condition="'$(JazorPublishMaterializeEnabled)' == ''">false</JazorPublishMaterializeEnabled>

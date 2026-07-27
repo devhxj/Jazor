@@ -16,6 +16,7 @@ internal static class RazorSgVueComponentModuleBuilder
     private const string EventCallbackOfTMetadataName = "Microsoft.AspNetCore.Components.EventCallback`1";
     private const string VuePropAttributeMetadataName = "ECMAScript.VueContract.VuePropAttribute";
     private const string VueLibraryEmitAttributeMetadataName = "ECMAScript.VueContract.VueLibraryEmitAttribute";
+    private const string VueSlotAttributeMetadataName = "ECMAScript.VueContract.VueSlotAttribute";
     private static readonly Regex VariableDeclarationPattern = new(
         @"^\s*(?:export\s+)?(?:let|const|var)\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*(?:=\s*(.*))?;\s*$",
         RegexOptions.CultureInvariant);
@@ -175,11 +176,19 @@ internal static class RazorSgVueComponentModuleBuilder
                 ? "  setup(props) {"
                 : "  setup() {");
         AppendSlotParameterBridges(builder, closure, ref line);
+        if (usesUnmounted)
+            AppendLine("    let disposed = false;");
         if (usesStateHasChanged)
         {
             AppendLine("    let invalidate = null;");
             AppendLine("    let pendingInvalidations = 0;");
             AppendLine("    const stateHasChanged = () => {");
+            if (usesUnmounted)
+            {
+                AppendLine("      if (disposed) {");
+                AppendLine("        throw new Error(\"RazorVue component is disposed; StateHasChanged cannot run after unmount.\");");
+                AppendLine("      }");
+            }
             AppendLine("      if (invalidate === null) {");
             AppendLine("        pendingInvalidations++;");
             AppendLine("        return;");
@@ -191,6 +200,12 @@ internal static class RazorSgVueComponentModuleBuilder
         if (usesInvokeAsync)
         {
             AppendLine("    const invokeAsync = (workItem) => {");
+            if (usesUnmounted)
+            {
+                AppendLine("      if (disposed) {");
+                AppendLine("        return Promise.reject(new Error(\"RazorVue component is disposed; InvokeAsync cannot run after unmount.\"));");
+                AppendLine("      }");
+            }
             AppendLine("      try {");
             AppendLine("        return Promise.resolve(workItem());");
             AppendLine("      } catch (error) {");
@@ -294,6 +309,7 @@ internal static class RazorSgVueComponentModuleBuilder
                 AppendLine("      scope.dispose();");
             if (hasDisposeAsync)
                 AppendLine("      void scope.disposeAsync();");
+            AppendLine("      disposed = true;");
             AppendLine("    });");
         }
 
@@ -623,7 +639,7 @@ internal static class RazorSgVueComponentModuleBuilder
     {
         // RenderFragment parameters are slot contracts, not Vue props. Keep them out of props: [...].
         var propNames = GetComponentParameterProperties(closure.ComponentSymbol)
-            .Where(static property => !IsRenderFragmentType(property.Type))
+            .Where(static property => !IsAnyRenderFragmentType(property.Type))
             .Select(property => GetVueParameterPropName(closure.ComponentSymbol, property))
             .Where(static name => !string.IsNullOrWhiteSpace(name))
             .Distinct(StringComparer.Ordinal)
@@ -679,11 +695,12 @@ internal static class RazorSgVueComponentModuleBuilder
         ref int line)
     {
         var slotParameters = closure.ParameterProperties
-            .Where(static property => IsRenderFragmentType(property.Type))
+            .Where(static property => IsAnyRenderFragmentType(property.Type))
             .Select(static property => new SlotParameterBridge(
                 property.Name,
                 Util.GetConfigOrSymbolName(property),
-                GetVueSlotName(property)))
+                GetVueSlotName(property),
+                IsGenericRenderFragmentType(property.Type)))
             .Where(static item => !string.IsNullOrWhiteSpace(item.RuntimePropName) &&
                                   !string.IsNullOrWhiteSpace(item.VueSlotName))
             .Distinct()
@@ -693,9 +710,13 @@ internal static class RazorSgVueComponentModuleBuilder
         {
             builder.AppendLine("    if (typeof slots." + item.VueSlotName + " === \"function\") {");
             line++;
-            builder.AppendLine("      props." + item.RuntimePropName + " = (builder) => {");
+            builder.AppendLine(item.IsScoped
+                ? "      props." + item.RuntimePropName + " = (value) => (builder) => {"
+                : "      props." + item.RuntimePropName + " = (builder) => {");
             line++;
-            builder.AppendLine("        const content = slots." + item.VueSlotName + "();");
+            builder.AppendLine(item.IsScoped
+                ? "        const content = slots." + item.VueSlotName + "(value);"
+                : "        const content = slots." + item.VueSlotName + "();");
             line++;
             builder.AppendLine("        if (content !== null && content !== undefined) {");
             line++;
@@ -712,15 +733,63 @@ internal static class RazorSgVueComponentModuleBuilder
 
     private static bool HasSlotParameterBridges(RazorSgComponentMemberClosure closure)
         => closure.ParameterProperties.Any(static property =>
-            IsRenderFragmentType(property.Type) &&
+            IsAnyRenderFragmentType(property.Type) &&
             !string.IsNullOrWhiteSpace(property.Name) &&
             !string.IsNullOrWhiteSpace(Util.GetConfigOrSymbolName(property)) &&
             !string.IsNullOrWhiteSpace(GetVueSlotName(property)));
 
     private static string GetVueSlotName(IPropertySymbol property)
-        => IsChildContentParameter(property)
+        => TryGetClassSlotDescriptorName(property, out var descriptorName)
+            ? descriptorName
+            : IsChildContentParameter(property)
             ? "default"
             : Util.GetConfigOrSymbolName(property);
+
+    private static bool TryGetClassSlotDescriptorName(
+        IPropertySymbol property,
+        out string name)
+    {
+        if (property.ContainingType is not INamedTypeSymbol componentSymbol)
+        {
+            name = string.Empty;
+            return false;
+        }
+
+        foreach (var attribute in componentSymbol.GetAttributes())
+        {
+            if (!string.Equals(
+                    attribute.AttributeClass?.ToDisplayString(),
+                    VueSlotAttributeMetadataName,
+                    StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (attribute.ConstructorArguments.Length == 0 ||
+                attribute.ConstructorArguments[0].Value is not string publicName ||
+                !string.Equals(publicName, property.Name, StringComparison.Ordinal) ||
+                GetNamedBoolean(attribute, "PatternOnly") == true)
+            {
+                continue;
+            }
+
+            if (GetNamedBoolean(attribute, "IsDefault") == true)
+            {
+                name = "default";
+                return true;
+            }
+
+            var descriptorName = GetNamedString(attribute, "Name");
+            if (!string.IsNullOrWhiteSpace(descriptorName))
+            {
+                name = descriptorName!;
+                return true;
+            }
+        }
+
+        name = string.Empty;
+        return false;
+    }
 
     private static IEnumerable<IPropertySymbol> GetComponentParameterProperties(INamedTypeSymbol componentSymbol)
         => componentSymbol
@@ -787,6 +856,35 @@ internal static class RazorSgVueComponentModuleBuilder
 
         name = string.Empty;
         return false;
+    }
+
+    private static string? GetNamedString(AttributeData attribute, string name)
+    {
+        foreach (var argument in attribute.NamedArguments)
+        {
+            if (string.Equals(argument.Key, name, StringComparison.Ordinal) &&
+                argument.Value.Value is string value &&
+                !string.IsNullOrWhiteSpace(value))
+            {
+                return value.Trim();
+            }
+        }
+
+        return null;
+    }
+
+    private static bool? GetNamedBoolean(AttributeData attribute, string name)
+    {
+        foreach (var argument in attribute.NamedArguments)
+        {
+            if (string.Equals(argument.Key, name, StringComparison.Ordinal) &&
+                argument.Value.Value is bool value)
+            {
+                return value;
+            }
+        }
+
+        return null;
     }
 
     private static string GetVueEmitName(string runtimePropName)
@@ -875,11 +973,15 @@ internal static class RazorSgVueComponentModuleBuilder
     private sealed record SlotParameterBridge(
         string SourceName,
         string RuntimePropName,
-        string VueSlotName);
+        string VueSlotName,
+        bool IsScoped);
 
     private static bool IsChildContentParameter(IPropertySymbol property)
         => string.Equals(property.Name, "ChildContent", StringComparison.Ordinal) &&
            IsRenderFragmentType(property.Type);
+
+    private static bool IsAnyRenderFragmentType(ITypeSymbol type)
+        => IsRenderFragmentType(type) || IsGenericRenderFragmentType(type);
 
     private static bool IsRenderFragmentType(ITypeSymbol type)
     {
@@ -889,6 +991,17 @@ internal static class RazorSgVueComponentModuleBuilder
         return string.Equals(
             named.OriginalDefinition.ToDisplayString(),
             "Microsoft.AspNetCore.Components.RenderFragment",
+            StringComparison.Ordinal);
+    }
+
+    private static bool IsGenericRenderFragmentType(ITypeSymbol type)
+    {
+        if (type is not INamedTypeSymbol named || !named.IsGenericType)
+            return false;
+
+        return string.Equals(
+            named.OriginalDefinition.ToDisplayString(),
+            "Microsoft.AspNetCore.Components.RenderFragment<TValue>",
             StringComparison.Ordinal);
     }
 

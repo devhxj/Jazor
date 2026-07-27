@@ -68,6 +68,15 @@ internal sealed class ModuleBundler
             static relativePath => relativePath,
             static relativePath => relativePath,
             StringComparer.OrdinalIgnoreCase);
+        FrontendAssetPreparation assetPreparation;
+        try
+        {
+            assetPreparation = await PrepareFrontendAssetsAsync(manifest, options, bundleWorkspace);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            return BundleResult.Fail(6, $"Frontend assets could not be prepared: {ex.Message}");
+        }
 
         var rootAssemblyName = GetRootAssemblyName(manifest);
         var entryRelativePaths = manifest.Modules
@@ -90,7 +99,7 @@ internal sealed class ModuleBundler
                 Directory.CreateDirectory(targetDirectory);
 
             var content = await File.ReadAllTextAsync(sourcePath);
-            var rewritten = RewriteModuleImports(content, relativePath, knownPaths);
+            var rewritten = RewriteModuleImports(content, relativePath, knownPaths, assetPreparation.ImportRewrites);
             await File.WriteAllTextAsync(targetPath, rewritten, Utf8WithoutBom);
 
             var sourceMapPath = sourcePath + ".map";
@@ -129,6 +138,8 @@ internal sealed class ModuleBundler
 
             await TryRewriteBundleSourceMapAsync(options.OutputPath, bundleWorkspace, relativePaths, tempEntryPath);
             await EnsureBundleSourceMappingUrlAsync(options.OutputPath);
+            await WriteBundleCssAsync(options.OutputPath, assetPreparation.StylePaths);
+            CopyStaticAssetsToOutput(options.OutputPath, assetPreparation.StaticAssets);
             return BundleResult.Success(options.OutputPath, relativePaths.Length);
         }
         catch (Exception ex)
@@ -179,6 +190,143 @@ internal sealed class ModuleBundler
             DenoConfigSerializerOptions);
 
         await File.WriteAllTextAsync(denoConfigPath, denoConfig, Utf8WithoutBom);
+    }
+
+    private static async Task<FrontendAssetPreparation> PrepareFrontendAssetsAsync(
+        ManifestModel manifest,
+        BundleOptions options,
+        string bundleWorkspace)
+    {
+        if (manifest.Assets.Count == 0)
+        {
+            return new FrontendAssetPreparation(
+                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
+                [],
+                []);
+        }
+
+        if (string.IsNullOrWhiteSpace(options.SourceRoot))
+            throw new InvalidOperationException("Manifest frontend assets require an explicit source root.");
+
+        var rewriteByArtifactPath = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var stylePaths = new List<string>();
+        var staticAssets = new List<PreparedStaticAsset>();
+        foreach (var asset in manifest.Assets)
+        {
+            var sourcePath = GetSafePath(options.SourceRoot, asset.SourcePath);
+            var artifactPath = GetSafePath(bundleWorkspace, asset.ArtifactPath);
+            var artifactDirectory = Path.GetDirectoryName(artifactPath);
+            if (!string.IsNullOrWhiteSpace(artifactDirectory))
+                Directory.CreateDirectory(artifactDirectory);
+
+            File.Copy(sourcePath, artifactPath, overwrite: true);
+
+            if (!string.Equals(asset.Kind, ManifestAssetEntry.KindVueSfc, StringComparison.OrdinalIgnoreCase))
+            {
+                staticAssets.Add(new PreparedStaticAsset(sourcePath, asset.ArtifactPath.Replace('\\', '/')));
+                continue;
+            }
+
+            var compiledArtifactPath = artifactPath + ".mjs";
+            var compiledStylePath = artifactPath + ".css";
+            await CompileVueSfcAsync(artifactPath, compiledArtifactPath, compiledStylePath);
+            if (File.Exists(compiledStylePath))
+                stylePaths.Add(compiledStylePath);
+
+            rewriteByArtifactPath[asset.ArtifactPath.Replace('\\', '/')] = asset.ArtifactPath.Replace('\\', '/') + ".mjs";
+        }
+
+        return new FrontendAssetPreparation(rewriteByArtifactPath, stylePaths, staticAssets);
+    }
+
+    private static async Task CompileVueSfcAsync(string inputPath, string outputPath, string styleOutputPath)
+    {
+        var scriptPath = Path.Combine(Path.GetDirectoryName(inputPath)!, "__jazor_compile_sfc__.mjs");
+        await File.WriteAllTextAsync(scriptPath, VueSfcCompilerScript, Utf8WithoutBom);
+
+        try
+        {
+            await Deno.Execute(
+                new DenoExecuteBaseOptions
+                {
+                    WorkingDirectory = Path.GetDirectoryName(inputPath)
+                },
+                [
+                    "run",
+                    "--allow-read",
+                    "--allow-write",
+                    "--allow-net",
+                    "--allow-env",
+                    Path.GetFileName(scriptPath),
+                    inputPath,
+                    outputPath,
+                    styleOutputPath
+                ]);
+        }
+        finally
+        {
+            try
+            {
+                if (File.Exists(scriptPath))
+                    File.Delete(scriptPath);
+            }
+            catch
+            {
+            }
+        }
+    }
+
+    private static string GetSafePath(string root, string relativePath)
+    {
+        var normalizedRoot = EnsureDirectorySeparator(Path.GetFullPath(root));
+        var fullPath = Path.GetFullPath(Path.Combine(normalizedRoot, relativePath.Replace('/', Path.DirectorySeparatorChar)));
+        if (!fullPath.StartsWith(normalizedRoot, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException($"Path escapes frontend toolchain root: '{relativePath}'.");
+
+        return fullPath;
+    }
+
+    private static async Task WriteBundleCssAsync(string outputPath, IReadOnlyList<string> stylePaths)
+    {
+        if (stylePaths.Count == 0)
+            return;
+
+        var cssBuilder = new StringBuilder();
+        foreach (var stylePath in stylePaths)
+        {
+            var css = await File.ReadAllTextAsync(stylePath);
+            if (string.IsNullOrWhiteSpace(css))
+                continue;
+
+            if (cssBuilder.Length > 0)
+                cssBuilder.Append('\n');
+
+            cssBuilder.Append(css.TrimEnd('\r', '\n'));
+            cssBuilder.Append('\n');
+        }
+
+        if (cssBuilder.Length == 0)
+            return;
+
+        var cssOutputPath = Path.ChangeExtension(outputPath, ".css");
+        await File.WriteAllTextAsync(cssOutputPath, cssBuilder.ToString(), Utf8WithoutBom);
+    }
+
+    private static void CopyStaticAssetsToOutput(string outputPath, IReadOnlyList<PreparedStaticAsset> staticAssets)
+    {
+        if (staticAssets.Count == 0)
+            return;
+
+        var outputDirectory = Path.GetDirectoryName(Path.GetFullPath(outputPath)) ?? string.Empty;
+        foreach (var asset in staticAssets)
+        {
+            var targetPath = GetSafePath(outputDirectory, asset.OutputRelativePath);
+            var targetDirectory = Path.GetDirectoryName(targetPath);
+            if (!string.IsNullOrWhiteSpace(targetDirectory))
+                Directory.CreateDirectory(targetDirectory);
+
+            File.Copy(asset.SourcePath, targetPath, overwrite: true);
+        }
     }
 
     private static async Task<SourceMapDocument> BuildEntrySourceMapAsync(string bundleWorkspace, string entryFileName, IReadOnlyList<string> entryRelativePaths)
@@ -416,19 +564,31 @@ internal sealed class ModuleBundler
         }
     }
 
-    private static string RewriteModuleImports(string content, string currentModulePath, IReadOnlyDictionary<string, string> knownPaths)
+    private static string RewriteModuleImports(
+        string content,
+        string currentModulePath,
+        IReadOnlyDictionary<string, string> knownPaths,
+        IReadOnlyDictionary<string, string> assetRewrites)
     {
-        var rewritten = ImportFromPattern.Replace(content, match => RewriteMatch(match, currentModulePath, knownPaths));
-        rewritten = ImportOnlyPattern.Replace(rewritten, match => RewriteMatch(match, currentModulePath, knownPaths));
+        var rewritten = ImportFromPattern.Replace(content, match => RewriteMatch(match, currentModulePath, knownPaths, assetRewrites));
+        rewritten = ImportOnlyPattern.Replace(rewritten, match => RewriteMatch(match, currentModulePath, knownPaths, assetRewrites));
         return rewritten;
     }
 
-    private static string RewriteMatch(Match match, string currentModulePath, IReadOnlyDictionary<string, string> knownPaths)
+    private static string RewriteMatch(
+        Match match,
+        string currentModulePath,
+        IReadOnlyDictionary<string, string> knownPaths,
+        IReadOnlyDictionary<string, string> assetRewrites)
     {
         var importPath = match.Groups["path"].Value.Replace('\\', '/');
         if (importPath.StartsWith("./", StringComparison.Ordinal) ||
-            importPath.StartsWith("../", StringComparison.Ordinal) ||
-            importPath.StartsWith("/", StringComparison.Ordinal) ||
+            importPath.StartsWith("../", StringComparison.Ordinal))
+        {
+            return RewriteRelativeAssetMatch(match, currentModulePath, importPath, assetRewrites);
+        }
+
+        if (importPath.StartsWith("/", StringComparison.Ordinal) ||
             importPath.Contains(':', StringComparison.Ordinal))
         {
             return match.Value;
@@ -451,6 +611,121 @@ internal sealed class ModuleBundler
 
         return $"{match.Groups["prefix"].Value}{relativePath}{match.Groups["suffix"].Value}";
     }
+
+    private static string RewriteRelativeAssetMatch(
+        Match match,
+        string currentModulePath,
+        string importPath,
+        IReadOnlyDictionary<string, string> assetRewrites)
+    {
+        if (assetRewrites.Count == 0)
+            return match.Value;
+
+        var currentDirectory = Path.GetDirectoryName(currentModulePath.Replace('/', Path.DirectorySeparatorChar))?.Replace('\\', '/') ?? string.Empty;
+        var normalizedImport = NormalizeArtifactImportPath(currentDirectory, importPath);
+        if (!assetRewrites.TryGetValue(normalizedImport, out var rewrittenTarget))
+            return match.Value;
+
+        var relativePath = Path.GetRelativePath(
+            string.IsNullOrEmpty(currentDirectory) ? "." : currentDirectory,
+            rewrittenTarget.Replace('/', Path.DirectorySeparatorChar))
+            .Replace('\\', '/');
+
+        if (!relativePath.StartsWith("./", StringComparison.Ordinal) &&
+            !relativePath.StartsWith("../", StringComparison.Ordinal))
+        {
+            relativePath = "./" + relativePath;
+        }
+
+        return $"{match.Groups["prefix"].Value}{relativePath}{match.Groups["suffix"].Value}";
+    }
+
+    private static string NormalizeArtifactImportPath(string currentDirectory, string importPath)
+    {
+        var parts = new List<string>();
+        foreach (var segment in (currentDirectory + "/" + importPath).Split('/', StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (segment == ".")
+                continue;
+
+            if (segment == "..")
+            {
+                if (parts.Count > 0)
+                    parts.RemoveAt(parts.Count - 1);
+
+                continue;
+            }
+
+            parts.Add(segment);
+        }
+
+        return string.Join("/", parts);
+    }
+
+    private const string VueSfcCompilerScript =
+        """
+        import { parse, compileScript, compileTemplate, compileStyle } from "npm:@vue/compiler-sfc@3";
+
+        const [inputPath, outputPath, styleOutputPath] = Deno.args;
+        const source = await Deno.readTextFile(inputPath);
+        const parsed = parse(source, { filename: inputPath });
+        if (parsed.errors.length > 0) {
+          throw new Error(parsed.errors.map(error => String(error)).join("\n"));
+        }
+
+        const descriptor = parsed.descriptor;
+        const id = "jazor-" + await digest(inputPath);
+        const script = compileScript(descriptor, { id });
+        const template = compileTemplate({
+          id,
+          filename: inputPath,
+          source: descriptor.template ? descriptor.template.content : "",
+          compilerOptions: {
+            bindingMetadata: script.bindings
+          }
+        });
+        if (template.errors.length > 0) {
+          throw new Error(template.errors.map(error => String(error)).join("\n"));
+        }
+
+        const scriptCode = script.content.replace(/\bexport\s+default\b/, "const __sfc__ =");
+        const templateCode = template.code.replaceAll('from "vue"', 'from "npm:vue@3"').replaceAll("from 'vue'", "from 'npm:vue@3'");
+        await Deno.writeTextFile(outputPath, `${scriptCode}\n${templateCode}\n__sfc__.render = render;\nexport default __sfc__;\n`);
+
+        const styles = [];
+        for (const style of descriptor.styles) {
+          const compiledStyle = compileStyle({
+            id,
+            filename: inputPath,
+            source: style.content,
+            scoped: style.scoped
+          });
+          if (compiledStyle.errors.length > 0) {
+            throw new Error(compiledStyle.errors.map(error => String(error)).join("\n"));
+          }
+          if (compiledStyle.code.trim().length > 0) {
+            styles.push(compiledStyle.code.trim());
+          }
+        }
+        if (styles.length > 0) {
+          await Deno.writeTextFile(styleOutputPath, styles.join("\n"));
+        }
+
+        async function digest(value) {
+          const bytes = new TextEncoder().encode(value);
+          const hash = await crypto.subtle.digest("SHA-256", bytes);
+          return Array.from(new Uint8Array(hash)).map(item => item.toString(16).padStart(2, "0")).join("").slice(0, 8);
+        }
+        """;
+
+    private sealed record FrontendAssetPreparation(
+        IReadOnlyDictionary<string, string> ImportRewrites,
+        IReadOnlyList<string> StylePaths,
+        IReadOnlyList<PreparedStaticAsset> StaticAssets);
+
+    private sealed record PreparedStaticAsset(
+        string SourcePath,
+        string OutputRelativePath);
 }
 
 internal sealed record BundleResult(

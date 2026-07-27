@@ -18,7 +18,7 @@
 ## Boundaries
 
 - production 输入只来自 official Razor SG 的最终生成文档及 callback compilation。
-- 不在 analyzer 内私自运行 Razor SG，不回读 `.razor` 文件，不从零创建 compilation，也不维护第二条 HostOutput/fallback 生成主线。
+- 不在 analyzer 内私自运行 Razor SG，不回读 `.razor` 文件，不从零创建 compilation，也不维护第二条 HostOutput 生成主线。
 - `RazorCodeDocument` 反射必须保留在 final-document adapter 边界，用于跨 Razor SDK load context 读取最终 C# 文档与 source mappings；它不遍历 Razor DR/IR 节点。
 - 本项目不再拥有 Razor-to-SFC frontend、catalog/artifact lowering、RazorVue authoring analyzer 或 Jolt/Vue RPC 协议。
 - `Jazor.Analyzer` 负责 generator 宿主、受控 tail hook 注册、兼容性校验和诊断。

@@ -88,6 +88,9 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitVariableDeclarator(IVariableDeclaratorOperation operation, SenseArgument argument)
 	{
+		if (Host?.ShouldSkipVariableDeclarator(operation, argument) == true)
+			return null;
+
 		if (Host?.RewriteVariableDeclaratorPreorder(operation, argument) is VariableDeclarator preorderHostDeclarator)
 			return WithOriginIfMissing(preorderHostDeclarator, operation);
 
@@ -116,6 +119,9 @@ public partial class SemanticWalker
 		foreach (var declarator in operation.Declarators)
 			Translate(declarators, declarator, argument);
 
+		if (declarators.Count == 0)
+			return null;
+
 		return new VariableDeclaration(VariableDeclarationKind.Let, NodeList.From(declarators));
 	}
 
@@ -138,6 +144,9 @@ public partial class SemanticWalker
 		foreach (var declaration in operation.Declarations)
 			foreach (var declarator in declaration.Declarators)
 				Translate(declarators, declarator, argument);
+
+		if (declarators.Count == 0)
+			return null;
 
 		return new VariableDeclaration(VariableDeclarationKind.Let, NodeList.From(declarators));
 	}

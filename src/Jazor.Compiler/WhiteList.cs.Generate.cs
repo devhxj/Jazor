@@ -80,6 +80,7 @@ internal static partial class WhiteList
 		types["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder"] = new(Op.Allowed);
 		types["System.Type"] = new(Op.Allowed);
 		types["void"] = new(Op.Allowed);
+		types["Microsoft.AspNetCore.Components.Web.WebRenderTreeBuilderExtensions"] = new(Op.Allowed);
 		
 		// 初始化成员
 		members["static extern ECMAScript.Global.Undefined<T>()"] = new(Op.Inline, "undefined");
@@ -1345,6 +1346,7 @@ internal static partial class WhiteList
 		members["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int, Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame)"] = new(Op.Allowed);
 		members["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddMultipleAttributes(int, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>>)"] = new(Op.Allowed);
 		members["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetUpdatesAttributeName(string)"] = new(Op.Allowed);
+		members["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetAttributeValue(int, object)"] = new(Op.Allowed);
 		members["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.OpenComponent<TComponent>(int)"] = new(Op.Allowed);
 		members["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.OpenComponent(int, System.Type)"] = new(Op.Allowed);
 		members["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentParameter(int, string, object)"] = new(Op.Allowed);
@@ -1935,5 +1937,7 @@ internal static partial class WhiteList
 		members["System.WeakReference.WeakReference(object)"] = new(Op.Inline, "new WeakRef(__arg1)");
 		members["virtual System.WeakReference.IsAlive.get"] = new(Op.Inline, "(__arg1.deref() !== undefined)");
 		members["virtual System.WeakReference.Target.get"] = new(Op.Inline, "__arg1.deref()");
+		members["Microsoft.AspNetCore.Components.Web.WebRenderTreeBuilderExtensions.AddEventPreventDefaultAttribute(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder, int, string, bool)"] = new(Op.Allowed);
+		members["Microsoft.AspNetCore.Components.Web.WebRenderTreeBuilderExtensions.AddEventStopPropagationAttribute(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder, int, string, bool)"] = new(Op.Allowed);
 	}
 }

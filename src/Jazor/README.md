@@ -64,12 +64,13 @@ The final executable or web host project enables emit and optionally bundling:
 <PropertyGroup>
   <JazorEmit>true</JazorEmit>
   <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\generated\</JazorOutDir>
+  <JazorToolchain>Deno</JazorToolchain>
   <JazorBundle>false</JazorBundle>
 </PropertyGroup>
 ```
 
 - `JazorEmit` scans the host output and referenced assemblies, emitting all declared modules together.
-- `JazorBundle=true` bundles emitted modules through the bundled Deno runtime — no global Deno install needed on the consumer machine.
+- `JazorBundle=true` bundles emitted modules through the selected `JazorToolchain`; `Deno` uses the bundled runtime, so no global Deno install is needed on the consumer machine.
 
 ### Razor integration status
 
@@ -99,6 +100,7 @@ The existing emit targets continue to handle declared ECMAScript modules indepen
 - `JazorEmit` runs after a successful build when enabled, scans the target and copy-local assemblies, and writes modules plus `jazor-manifest.json`.
 - `JazorOutDir` defaults to `JazorDevOutDir`, which defaults to `$(MSBuildProjectDirectory)\jazor\`.
 - During publish, the default non-materialized path switches to `JazorPublishOutDir`, which defaults to `$(MSBuildProjectDirectory)\wwwroot\jazor\`.
-- `JazorBundle=true` runs the bundled emit tool after `JazorEmit` and writes to `JazorBundleOut`.
+- `JazorToolchain` defaults to `Deno`; bundle builds pass the explicit manifest, artifact root, source root, and output root to that lane.
+- `JazorBundle=true` runs the bundled emit tool after `JazorEmit` and writes the production bundle under `JazorBundleOut`.
 - `JazorCleanEmit` and `JazorFailOnPathConflict` both default to `true`.
 - `JazorPublishMaterializeEnabled=true` copies `JazorOutDir` into the published `wwwroot/jazor` directory and removes a publish-root shadow `jazor` directory.

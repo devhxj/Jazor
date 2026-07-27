@@ -114,6 +114,64 @@ public sealed class CurrentComponentSemanticWalkerHostTest
     }
 
     [TestMethod]
+    public void RewriteCurrentComponentMembers_DelegatesRenderTreeBuilderObjectAndArgumentHooks()
+    {
+        var fixture = CompileComponent(
+            """
+            [ECMAScriptModule("./components/child")]
+            public sealed class Child : ComponentBase
+            {
+            }
+
+            public sealed class Counter : ComponentBase
+            {
+                private string ReadMarkup() => "<em>raw</em>";
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.AddContent(0, new MarkupString(ReadMarkup()));
+                    builder.OpenComponent(1, typeof(Child));
+                    builder.CloseComponent();
+                    var childType = typeof(Child);
+                    builder.OpenComponent(2, childType);
+                    builder.CloseComponent();
+                    var nested = new RenderTreeBuilder();
+                    nested.AddContent(0, new MarkupString(ReadMarkup()));
+                }
+            }
+            """);
+
+        var walker = new SemanticWalker(true)
+        {
+            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+        };
+        var argument = new SenseArgument(UseImportAliases: true);
+        var body = walker.Visit(fixture.BuildRenderTreeBody, argument)?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+        Assert.IsNotNull(body);
+
+        var imports = argument.FlushImportSpecifiers()
+            .Select(static pair =>
+            {
+                var names = string.Join(
+                    ", ",
+                    pair.Value.Select(static specifier => specifier.ToECMAScript()));
+                return "import " + names + " from \"" + pair.Key + "\";";
+            });
+        var script = string.Join("\n", imports.Concat([body!])).ReplaceLineEndings("\n");
+
+        StringAssert.Contains(script, "builder.addMarkupContent(readMarkup());", StringComparison.Ordinal);
+        StringAssert.Contains(script, "from \"./components/child.mjs\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, "@jazor/vue-runtime/render-context.mjs", StringComparison.Ordinal);
+        StringAssert.Contains(script, "let nested = createRenderContext(h);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "nested.addMarkupContent(readMarkup());", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("childType", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("typeof", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("MarkupString", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("from \"./components/child\";", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("new RenderTreeBuilder", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
     public void RewriteCurrentComponentMembers_UnwrapsEventCallbackFactoryCreateHandler()
     {
         var fixture = CompileComponent(

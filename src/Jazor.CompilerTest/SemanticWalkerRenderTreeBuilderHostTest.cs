@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using System.Reflection;
 using Acornima.Ast;
 using ECMAScript;
 using Jazor.Compiler;
@@ -13,6 +14,82 @@ namespace Jazor.ComplierTest;
 [TestClass]
 public sealed class SemanticWalkerRenderTreeBuilderHostTest
 {
+    [TestMethod]
+    public void RenderTreeBuilderPublicSurface_MatchesSupportedRenderContextHostSurface()
+    {
+        var actual = typeof(RenderTreeBuilder)
+            .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)
+            .Select(GetMethodSurfaceSignature)
+            .Concat(
+                typeof(RenderTreeBuilder)
+                    .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)
+                    .Select(static _ => "RenderTreeBuilder()"))
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        var expected = new[]
+            {
+                "AddAttribute(int, Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame)",
+                "AddAttribute(int, string)",
+                "AddAttribute(int, string, Microsoft.AspNetCore.Components.EventCallback)",
+                "AddAttribute(int, string, object)",
+                "AddAttribute(int, string, string)",
+                "AddAttribute(int, string, System.MulticastDelegate)",
+                "AddAttribute(int, string, bool)",
+                "AddAttribute<TArgument>(int, string, Microsoft.AspNetCore.Components.EventCallback<TArgument>)",
+                "AddComponentParameter(int, string, object)",
+                "AddComponentReferenceCapture(int, System.Action<object>)",
+                "AddComponentRenderMode(Microsoft.AspNetCore.Components.IComponentRenderMode)",
+                "AddContent(int, Microsoft.AspNetCore.Components.MarkupString)",
+                "AddContent(int, Microsoft.AspNetCore.Components.RenderFragment)",
+                "AddContent(int, System.Nullable<Microsoft.AspNetCore.Components.MarkupString>)",
+                "AddContent(int, object)",
+                "AddContent(int, string)",
+                "AddContent<TValue>(int, Microsoft.AspNetCore.Components.RenderFragment<TValue>, TValue)",
+                "AddElementReferenceCapture(int, System.Action<Microsoft.AspNetCore.Components.ElementReference>)",
+                "AddMarkupContent(int, string)",
+                "AddMultipleAttributes(int, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>>)",
+                "AddNamedEvent(string, string)",
+                "Clear()",
+                "CloseComponent()",
+                "CloseElement()",
+                "CloseRegion()",
+                "Dispose()",
+                "GetFrames()",
+                "OpenComponent(int, System.Type)",
+                "OpenComponent<TComponent>(int)",
+                "OpenElement(int, string)",
+                "OpenRegion(int)",
+                "RenderTreeBuilder()",
+                "SetAttributeValue(int, object)",
+                "SetKey(object)",
+                "SetUpdatesAttributeName(string)"
+            }
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        CollectionAssert.AreEqual(expected, actual, string.Join(Environment.NewLine, actual));
+    }
+
+    [TestMethod]
+    public void WebRenderTreeBuilderExtensionsPublicSurface_MatchesSupportedRenderContextHostSurface()
+    {
+        var actual = typeof(Microsoft.AspNetCore.Components.Web.WebRenderTreeBuilderExtensions)
+            .GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly)
+            .Select(static method => method.Name + "(" + string.Join(", ", method.GetParameters().Select(static parameter => GetTypeSurfaceName(parameter.ParameterType))) + ")")
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+        var expected = new[]
+            {
+                "AddEventPreventDefaultAttribute(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder, int, string, bool)",
+                "AddEventStopPropagationAttribute(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder, int, string, bool)"
+            }
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        CollectionAssert.AreEqual(expected, actual, string.Join(Environment.NewLine, actual));
+    }
+
     [TestMethod]
     public void RewriteInvocation_MinimalElementSurface_EmitsRenderContextCalls()
     {
@@ -43,6 +120,54 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
         Assert.IsFalse(script.Contains("AddAttribute", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("AddContent", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("CloseElement", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteInvocation_AddAttributeAndAddContentOverloadMatrix_EmitsRenderContextCalls()
+    {
+        var script = CompileWithRenderTreeBuilderHost(
+            """
+            class TestClass
+            {
+                void TestMethod(
+                    RenderTreeBuilder builder,
+                    bool enabled,
+                    string text,
+                    object value,
+                    MulticastDelegate handler,
+                    EventCallback callback,
+                    EventCallback<int> typedCallback)
+                {
+                    builder.OpenElement(0, "input");
+                    builder.AddAttribute(1, "required");
+                    builder.AddAttribute(2, "disabled", enabled);
+                    builder.AddAttribute(3, "title", text);
+                    builder.AddAttribute(4, "data-value", value);
+                    builder.AddAttribute(5, "onclick", handler);
+                    builder.AddAttribute(6, "onchange", callback);
+                    builder.AddAttribute(7, "oninput", typedCallback);
+                    builder.AddContent(8, text);
+                    builder.AddContent(9, value);
+                    builder.CloseElement();
+                }
+            }
+            """);
+
+        AssertCallOrder(
+            script,
+            "builder.openElement(\"input\");",
+            "builder.addAttribute(\"required\", true);",
+            "builder.addAttribute(\"disabled\", enabled);",
+            "builder.addAttribute(\"title\", text);",
+            "builder.addAttribute(\"data-value\", value);",
+            "builder.addAttribute(\"onclick\", handler);",
+            "builder.addAttribute(\"onchange\", callback);",
+            "builder.addAttribute(\"oninput\", typedCallback);",
+            "builder.addContent(text);",
+            "builder.addContent(value);",
+            "builder.closeElement();");
+        Assert.IsFalse(script.Contains("AddAttribute", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("AddContent", StringComparison.Ordinal), script);
     }
 
     [TestMethod]
@@ -183,6 +308,171 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
             "builder.setUpdatesAttributeName(\"value\");",
             "builder.closeElement();");
         Assert.IsFalse(script.Contains("SetUpdatesAttributeName", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteInvocation_AddNamedEvent_LowersToRenderContextProtocol()
+    {
+        var script = CompileWithRenderTreeBuilderHost(
+            """
+            class TestClass
+            {
+                void TestMethod(RenderTreeBuilder builder)
+                {
+                    builder.OpenElement(0, "form");
+                    builder.AddNamedEvent("onsubmit", "checkout");
+                    builder.CloseElement();
+                }
+            }
+            """);
+
+        AssertCallOrder(
+            script,
+            "builder.openElement(\"form\");",
+            "builder.addNamedEvent(\"onsubmit\", \"checkout\");",
+            "builder.closeElement();");
+        Assert.IsFalse(script.Contains("AddNamedEvent", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteInvocation_AddNamedEvent_PreservesArgumentEvaluation()
+    {
+        var script = CompileWithRenderTreeBuilderHost(
+            """
+            class TestClass
+            {
+                string NextEventType() => "onsubmit";
+
+                string NextAssignedName() => "checkout";
+
+                void TestMethod(RenderTreeBuilder builder)
+                {
+                    builder.AddNamedEvent(NextEventType(), NextAssignedName());
+                }
+            }
+            """);
+
+        StringAssert.Contains(
+            script,
+            "builder.addNamedEvent(this.nextEventType(), this.nextAssignedName());",
+            StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void RewriteInvocation_EventModifiers_LowerExtensionMethodsToRenderContextProtocol()
+    {
+        var script = CompileWithRenderTreeBuilderHost(
+            """
+            class TestClass
+            {
+                void TestMethod(RenderTreeBuilder builder)
+                {
+                    builder.OpenElement(0, "form");
+                    builder.AddAttribute(1, "onsubmit", () => { });
+                    builder.AddEventPreventDefaultAttribute(2, "onsubmit", true);
+                    builder.AddEventStopPropagationAttribute(3, "onsubmit", true);
+                    builder.CloseElement();
+                }
+            }
+            """);
+
+        AssertCallOrder(
+            script,
+            "builder.openElement(\"form\");",
+            "builder.addAttribute(\"onsubmit\", () => {",
+            "builder.addEventPreventDefaultAttribute(\"onsubmit\", true);",
+            "builder.addEventStopPropagationAttribute(\"onsubmit\", true);",
+            "builder.closeElement();");
+        Assert.IsFalse(script.Contains("AddEventPreventDefaultAttribute", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("AddEventStopPropagationAttribute", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteInvocation_EventModifiers_PreserveErasedSequenceAndValueEvaluation()
+    {
+        var script = CompileWithRenderTreeBuilderHost(
+            """
+            class TestClass
+            {
+                int NextSequence() => 0;
+
+                string NextEventName() => "onclick";
+
+                bool NextValue() => true;
+
+                void TestMethod(RenderTreeBuilder builder)
+                {
+                    builder.AddEventPreventDefaultAttribute(NextSequence(), NextEventName(), NextValue());
+                }
+            }
+            """);
+
+        StringAssert.Contains(
+            script,
+            "((__arg0, __arg1, __arg2, __arg3) => __arg0.addEventPreventDefaultAttribute(__arg2, __arg3))(builder, this.nextSequence(), this.nextEventName(), this.nextValue());",
+            StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void RewriteInvocation_ReferenceCaptures_LowerToRenderContextProtocol()
+    {
+        var script = CompileWithRenderTreeBuilderHost(
+            """
+            [ECMAScriptModule("./components/child")]
+            class Child : ComponentBase
+            {
+            }
+
+            class TestClass
+            {
+                void TestMethod(RenderTreeBuilder builder)
+                {
+                    object component = null;
+
+                    builder.OpenElement(0, "input");
+                    builder.AddElementReferenceCapture(1, value => { });
+                    builder.CloseElement();
+
+                    builder.OpenComponent<Child>(2);
+                    builder.AddComponentReferenceCapture(3, value => component = value);
+                    builder.CloseComponent();
+                }
+            }
+            """);
+
+        AssertCallOrder(
+            script,
+            "builder.openElement(\"input\");",
+            "builder.addElementReferenceCapture(value => {",
+            "builder.closeElement();",
+            "builder.openComponent(",
+            "builder.addComponentReferenceCapture(value => {",
+            "component = value;",
+            "builder.closeComponent();");
+        Assert.IsFalse(script.Contains("AddElementReferenceCapture", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("AddComponentReferenceCapture", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteInvocation_ElementReferenceCapture_PreservesErasedSequenceEvaluation()
+    {
+        var script = CompileWithRenderTreeBuilderHost(
+            """
+            class TestClass
+            {
+                int NextSequence() => 0;
+
+                void TestMethod(RenderTreeBuilder builder)
+                {
+                    builder.AddElementReferenceCapture(NextSequence(), value => { });
+                }
+            }
+            """);
+
+        StringAssert.Contains(
+            script,
+            "((__rtb, __arg0, __arg1) => __rtb.addElementReferenceCapture(__arg1))(builder, this.nextSequence(), value => {",
+            StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -345,6 +635,62 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
     }
 
     [TestMethod]
+    public void RewriteInvocation_GenericRenderFragmentAddContent_InvokesFragmentFactoryAgainstCurrentBuilder()
+    {
+        var script = CompileWithRenderTreeBuilderHost(
+            """
+            class TestClass
+            {
+                void TestMethod(RenderTreeBuilder builder, string value)
+                {
+                    RenderFragment<string> template = item => child =>
+                    {
+                        child.OpenElement(0, "span");
+                        child.AddContent(1, item);
+                        child.CloseElement();
+                    };
+                    builder.OpenElement(2, "div");
+                    builder.AddContent(3, template, value);
+                    builder.CloseElement();
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "builder.openElement(\"div\");", StringComparison.Ordinal);
+        StringAssert.Contains(script, "template(value)(builder);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "builder.closeElement();", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("AddContent(3, template, value)", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteInvocation_GenericRenderFragmentAddContent_PreservesErasedSequenceAndValueEvaluation()
+    {
+        var script = CompileWithRenderTreeBuilderHost(
+            """
+            class TestClass
+            {
+                int NextSequence() => 0;
+
+                string NextValue() => "next";
+
+                void TestMethod(RenderTreeBuilder builder)
+                {
+                    RenderFragment<string> template = item => child =>
+                    {
+                        child.AddContent(0, item);
+                    };
+                    builder.AddContent(NextSequence(), template, NextValue());
+                }
+            }
+            """);
+
+        StringAssert.Contains(
+            script,
+            "((__rtb, __arg0, __arg1, __arg2) => __arg1(__arg2)(__rtb))(builder, this.nextSequence(), template, this.nextValue());",
+            StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public void RewriteInvocation_OpenComponentWithModuleAttribute_LowersToDefaultImportAndProtocol()
     {
         var script = CompileWithRenderTreeBuilderHost(
@@ -409,9 +755,9 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
     }
 
     [TestMethod]
-    public void RewriteInvocation_GenericRenderFragmentComponentParameter_FailsWithTypedSlotDiagnostic()
+    public void RewriteInvocation_GenericRenderFragmentComponentParameter_LowersToScopedSlotProtocol()
     {
-        var block = GetBlockOperation(
+        var script = CompileWithRenderTreeBuilderHost(
             """
             [ECMAScriptModule("./components/child")]
             class Child : ComponentBase
@@ -433,16 +779,43 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
             }
             """);
 
-        var walker = new SemanticWalker(true)
-        {
-            Host = new RenderTreeBuilderSemanticWalkerHost()
-        };
+        StringAssert.Contains(script, "builder.openComponent(", StringComparison.Ordinal);
+        StringAssert.Contains(script, "builder.addComponentScopedSlot(\"Header\", header);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "builder.closeComponent();", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("builder.addComponentParameter(\"Header\"", StringComparison.Ordinal), script);
+    }
 
-        var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
-        StringAssert.Contains(exception.Message, "AddComponentParameter", StringComparison.Ordinal);
-        StringAssert.Contains(exception.Message, "Header", StringComparison.Ordinal);
-        StringAssert.Contains(exception.Message, "RenderFragment<T>", StringComparison.Ordinal);
-        StringAssert.Contains(exception.Message, "typed slot descriptor", StringComparison.Ordinal);
+    [TestMethod]
+    public void RewriteInvocation_RenderFragmentComponentParameter_UsesVueSlotDescriptorNameMap()
+    {
+        var script = CompileWithRenderTreeBuilderHost(
+            """
+            [ECMAScriptModule("./components/child")]
+            [ECMAScript.VueContract.VueSlot(nameof(TitleContent), Name = "title")]
+            class Child : ComponentBase
+            {
+                [Parameter]
+                public RenderFragment<string> TitleContent { get; set; }
+            }
+
+            class TestClass
+            {
+                void TestMethod(RenderTreeBuilder builder)
+                {
+                    RenderFragment<string> title = value => child =>
+                    {
+                        child.AddContent(0, value);
+                    };
+                    builder.OpenComponent<Child>(1);
+                    builder.AddComponentParameter(2, "TitleContent", title);
+                    builder.CloseComponent();
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "\"TitleContent\": \"title\"", StringComparison.Ordinal);
+        StringAssert.Contains(script, "builder.addComponentScopedSlot(\"TitleContent\", title);", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("titleContent", StringComparison.Ordinal), script);
     }
 
     [TestMethod]
@@ -476,17 +849,87 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
     }
 
     [TestMethod]
-    public void RewriteInvocation_DynamicAddMarkupContent_FailsBeforeArgumentLowering()
+    public void RewriteInvocation_OpenComponentWithLocalTypeOf_LowersToDefaultImportAndProtocol()
     {
-        var block = GetBlockOperation(
+        var script = CompileWithRenderTreeBuilderHost(
             """
+            [ECMAScriptModule("./components/child")]
+            class Child : ComponentBase
+            {
+            }
+
+            class TestClass
+            {
+                void TestMethod(RenderTreeBuilder builder)
+                {
+                    var childType = typeof(Child);
+                    builder.OpenComponent(0, childType);
+                    builder.CloseComponent();
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "from \"./components/child.mjs\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, "builder.openComponent(", StringComparison.Ordinal);
+        StringAssert.Contains(script, "builder.closeComponent();", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("OpenComponent", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("childType", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteInvocation_OpenComponentWithLocalTypeOf_PreservesErasedSequenceEvaluation()
+    {
+        var script = CompileWithRenderTreeBuilderHost(
+            """
+            [ECMAScriptModule("./components/child")]
+            class Child : ComponentBase
+            {
+            }
+
             class TestClass
             {
                 int NextSequence() => 0;
 
                 void TestMethod(RenderTreeBuilder builder)
                 {
-                    builder.AddMarkupContent(NextSequence(), System.IO.File.ReadAllText("raw.html"));
+                    var childType = typeof(Child);
+                    builder.OpenComponent(NextSequence(), childType);
+                    builder.CloseComponent();
+                }
+            }
+            """);
+
+        StringAssert.Contains(
+            script,
+            "((__rtb, __arg0) => __rtb.openComponent(",
+            StringComparison.Ordinal);
+        StringAssert.Contains(script, ")(builder, this.nextSequence());", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("childType", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteInvocation_OpenComponentWithReassignedLocalType_FailsWithActionableDiagnostic()
+    {
+        var block = GetBlockOperation(
+            """
+            [ECMAScriptModule("./components/child")]
+            class Child : ComponentBase
+            {
+            }
+
+            [ECMAScriptModule("./components/other")]
+            class Other : ComponentBase
+            {
+            }
+
+            class TestClass
+            {
+                void TestMethod(RenderTreeBuilder builder)
+                {
+                    var childType = typeof(Child);
+                    childType = typeof(Other);
+                    builder.OpenComponent(0, childType);
+                    builder.CloseComponent();
                 }
             }
             """);
@@ -497,15 +940,66 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
         };
 
         var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
-        StringAssert.Contains(exception.Message, "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddMarkupContent(int, string)", StringComparison.Ordinal);
-        StringAssert.Contains(exception.Message, "render-context v1", StringComparison.Ordinal);
-        StringAssert.Contains(exception.Message, "constant AddMarkupContent", StringComparison.Ordinal);
+        StringAssert.Contains(exception.Message, "Dynamic Type OpenComponent", StringComparison.Ordinal);
     }
 
     [TestMethod]
-    public void RewriteInvocation_MarkupStringContent_FailsUntilRawMarkupSurfaceIsDesigned()
+    public void RewriteInvocation_OpenComponentWithParameterType_FailsWithActionableDiagnostic()
     {
         var block = GetBlockOperation(
+            """
+            [ECMAScriptModule("./components/child")]
+            class Child : ComponentBase
+            {
+            }
+
+            class TestClass
+            {
+                void TestMethod(RenderTreeBuilder builder, Type childType)
+                {
+                    builder.OpenComponent(0, childType);
+                    builder.CloseComponent();
+                }
+            }
+            """);
+
+        var walker = new SemanticWalker(true)
+        {
+            Host = new RenderTreeBuilderSemanticWalkerHost()
+        };
+
+        var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
+        StringAssert.Contains(exception.Message, "Dynamic Type OpenComponent", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void RewriteInvocation_DynamicAddMarkupContent_LowersToRenderContextProtocol()
+    {
+        var script = CompileWithRenderTreeBuilderHost(
+            """
+            class TestClass
+            {
+                int NextSequence() => 0;
+                string ReadMarkup() => "<strong>raw</strong>";
+
+                void TestMethod(RenderTreeBuilder builder)
+                {
+                    builder.AddMarkupContent(NextSequence(), ReadMarkup());
+                }
+            }
+            """);
+
+        StringAssert.Contains(
+            script,
+            "((__rtb, __arg0, __arg1) => __rtb.addMarkupContent(__arg1))(builder, this.nextSequence(), this.readMarkup());",
+            StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("AddMarkupContent", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteInvocation_MarkupStringContent_LowersConstantMarkupToRenderContextProtocol()
+    {
+        var script = CompileWithRenderTreeBuilderHost(
             """
             class TestClass
             {
@@ -516,15 +1010,164 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
             }
             """);
 
-        var walker = new SemanticWalker(true)
-        {
-            Host = new RenderTreeBuilderSemanticWalkerHost()
-        };
-
-        var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
-        StringAssert.Contains(exception.Message, "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int, Microsoft.AspNetCore.Components.MarkupString)", StringComparison.Ordinal);
-        StringAssert.Contains(exception.Message, "render-context v1", StringComparison.Ordinal);
+        StringAssert.Contains(script, "builder.addMarkupContent(\"<strong>raw</strong>\");", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("MarkupString", StringComparison.Ordinal), script);
     }
+
+    [TestMethod]
+    public void RewriteInvocation_MarkupStringContent_PreservesErasedSequenceEvaluation()
+    {
+        var script = CompileWithRenderTreeBuilderHost(
+            """
+            class TestClass
+            {
+                int NextSequence() => 0;
+
+                void TestMethod(RenderTreeBuilder builder)
+                {
+                    builder.AddContent(NextSequence(), new MarkupString("<em>raw</em>"));
+                }
+            }
+            """);
+
+        StringAssert.Contains(
+            script,
+            "((__rtb, __arg0, __arg1) => __rtb.addMarkupContent(__arg1))(builder, this.nextSequence(), \"<em>raw</em>\");",
+            StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void RewriteInvocation_DynamicMarkupStringContent_LowersToRenderContextProtocol()
+    {
+        var script = CompileWithRenderTreeBuilderHost(
+            """
+            class TestClass
+            {
+                string ReadMarkup() => "<strong>raw</strong>";
+
+                void TestMethod(RenderTreeBuilder builder)
+                {
+                    builder.AddContent(0, new MarkupString(ReadMarkup()));
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "builder.addMarkupContent(this.readMarkup());", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("MarkupString", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteInvocation_NullableMarkupStringContent_LowersToRenderContextProtocol()
+    {
+        var script = CompileWithRenderTreeBuilderHost(
+            """
+            class TestClass
+            {
+                void TestMethod(RenderTreeBuilder builder, MarkupString? markup)
+                {
+                    builder.AddContent(0, markup);
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "builder.addMarkupContent(markup);", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("AddContent", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteInvocation_RemainingRenderTreeBuilderSurface_LowersToRenderContextProtocol()
+    {
+        var script = CompileWithRenderTreeBuilderHost(
+            """
+            [ECMAScriptModule("./components/child")]
+            class Child : ComponentBase
+            {
+            }
+
+            class TestClass
+            {
+                void TestMethod(
+                    RenderTreeBuilder builder,
+                    Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame frame,
+                    IComponentRenderMode renderMode)
+                {
+                    builder.OpenElement(0, "input");
+                    builder.AddAttribute(1, "value", "before");
+                    builder.SetAttributeValue(2, "after");
+                    builder.AddAttribute(3, frame);
+                    builder.CloseElement();
+                    builder.OpenComponent(2, typeof(Child));
+                    builder.AddAttribute(3, "Title", "from attribute");
+                    builder.AddComponentRenderMode(renderMode);
+                    builder.CloseComponent();
+                    builder.GetFrames();
+                    builder.Clear();
+                    builder.Dispose();
+                    var nested = new RenderTreeBuilder();
+                    nested.AddContent(0, "local");
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "builder.addAttributeFrame(frame);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "builder.setAttributeValue(\"after\");", StringComparison.Ordinal);
+        StringAssert.Contains(script, "builder.openComponent(", StringComparison.Ordinal);
+        StringAssert.Contains(script, "builder.addAttribute(\"Title\", \"from attribute\");", StringComparison.Ordinal);
+        StringAssert.Contains(script, "builder.addComponentRenderMode(renderMode);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "builder.getFrames();", StringComparison.Ordinal);
+        StringAssert.Contains(script, "builder.clear();", StringComparison.Ordinal);
+        StringAssert.Contains(script, "builder.dispose();", StringComparison.Ordinal);
+        StringAssert.Contains(script, "@jazor/vue-runtime/render-context.mjs", StringComparison.Ordinal);
+        StringAssert.Contains(script, "from \"./components/child.mjs\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, "let nested = createRenderContext(h);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "nested.addContent(\"local\");", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("AddComponentRenderMode", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("GetFrames", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("new RenderTreeBuilder", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("from \"./components/child\";", StringComparison.Ordinal), script);
+    }
+
+    private static string GetMethodSurfaceSignature(MethodInfo method)
+    {
+        var genericArguments = method.IsGenericMethodDefinition
+            ? "<" + string.Join(", ", method.GetGenericArguments().Select(static argument => argument.Name)) + ">"
+            : string.Empty;
+        var parameters = string.Join(
+            ", ",
+            method.GetParameters().Select(static parameter => GetTypeSurfaceName(parameter.ParameterType)));
+        return method.Name + genericArguments + "(" + parameters + ")";
+    }
+
+    private static string GetTypeSurfaceName(Type type)
+    {
+        if (type.IsGenericParameter)
+            return type.Name;
+
+        if (!type.IsGenericType)
+            return GetNonGenericTypeSurfaceName(type);
+
+        var definition = type.GetGenericTypeDefinition();
+        var definitionName = definition.FullName ?? definition.Name;
+        var tickIndex = definitionName.IndexOf('`');
+        if (tickIndex >= 0)
+            definitionName = definitionName.Substring(0, tickIndex);
+
+        var arguments = string.Join(
+            ", ",
+            type.GetGenericArguments().Select(static argument => GetTypeSurfaceName(argument)));
+        return definitionName.Replace('+', '.') + "<" + arguments + ">";
+    }
+
+    private static string GetNonGenericTypeSurfaceName(Type type)
+        => type == typeof(int)
+            ? "int"
+            : type == typeof(string)
+                ? "string"
+                : type == typeof(bool)
+                    ? "bool"
+                    : type == typeof(object)
+                        ? "object"
+                        : (type.FullName ?? type.Name).Replace('+', '.');
 
     private static string CompileWithRenderTreeBuilderHost(string code)
     {
@@ -559,11 +1202,14 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
             global using static ECMAScript.Global;
             global using Microsoft.AspNetCore.Components;
             global using Microsoft.AspNetCore.Components.Rendering;
+            global using Microsoft.AspNetCore.Components.Web;
             """;
 
         var references = TestMetadataReferences.Net11
             .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location))
-            .Add(MetadataReference.CreateFromFile(typeof(RenderTreeBuilder).Assembly.Location));
+            .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.VueSlotAttribute).Assembly.Location))
+            .Add(MetadataReference.CreateFromFile(typeof(RenderTreeBuilder).Assembly.Location))
+            .Add(MetadataReference.CreateFromFile(typeof(Microsoft.AspNetCore.Components.Web.MouseEventArgs).Assembly.Location));
         var compilation = CSharpCompilation.Create(
             assemblyName: "TestAssembly",
             syntaxTrees:

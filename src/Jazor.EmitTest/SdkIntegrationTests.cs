@@ -726,7 +726,7 @@ public sealed class SdkIntegrationTests
                 <JazorEmit>true</JazorEmit>
                 <JazorBundle>true</JazorBundle>
                 <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
-                <JazorBundleOut>$(MSBuildProjectDirectory)\wwwroot\app.bundle.js</JazorBundleOut>
+                <JazorBundleOut>$(MSBuildProjectDirectory)\wwwroot\bundle\</JazorBundleOut>
               </PropertyGroup>
 
               <ItemGroup>
@@ -836,8 +836,8 @@ public sealed class SdkIntegrationTests
         var moduleRoot = Path.Combine(outputRoot, "jazor");
         var manifestPath = Path.Combine(moduleRoot, "jazor-manifest.json");
         var modulePath = Path.Combine(moduleRoot, "host", "app.mjs");
-        var bundlePath = Path.Combine(outputRoot, "app.bundle.js");
-        var bundleSourceMapPath = Path.Combine(outputRoot, "app.bundle.js.map");
+        var bundlePath = Path.Combine(outputRoot, "bundle", "bundle.js");
+        var bundleSourceMapPath = Path.Combine(outputRoot, "bundle", "bundle.js.map");
 
         Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
         Assert.IsTrue(File.Exists(modulePath), $"Module was not generated: {modulePath}");
@@ -867,7 +867,7 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(bundle, "/bundle-home");
         StringAssert.Contains(bundle, "/bundle-users");
         StringAssert.Contains(bundle, "bundle-user");
-        StringAssert.Contains(bundle, "sourceMappingURL=app.bundle.js.map");
+        StringAssert.Contains(bundle, "sourceMappingURL=bundle.js.map");
         Assert.IsFalse(
             bundle.Contains("from \"npm:vue-router@4\"", StringComparison.Ordinal),
             "Bundle should not keep unresolved vue-router imports.");

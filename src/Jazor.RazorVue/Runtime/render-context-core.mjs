@@ -67,6 +67,15 @@ function normalizeComponentSlotName(name) {
     return normalizeComponentParameterName(name);
 }
 
+function normalizeComponentSlotRuntimeName(name, parameterNameMap) {
+    if (parameterNameMap !== null &&
+        Object.prototype.hasOwnProperty.call(parameterNameMap, name)) {
+        return parameterNameMap[name];
+    }
+
+    return normalizeComponentSlotName(name);
+}
+
 function readAttributeEntries(attributes, operation) {
     if (attributes === null || attributes === undefined) {
         return [];
@@ -105,6 +114,16 @@ function readAttributeEntries(attributes, operation) {
     return Object.entries(attributes);
 }
 
+function readAttributeFrame(frame) {
+    if (frame === null || frame === undefined || typeof frame !== "object") {
+        fail("addAttributeFrame requires a RenderTreeFrame-like object");
+    }
+
+    const name = frame.AttributeName ?? frame.attributeName ?? frame.name;
+    const value = frame.AttributeValue ?? frame.attributeValue ?? frame.value;
+    return [name, value];
+}
+
 function applyFrameAttribute(frame, name, value, operation) {
     if (typeof name !== "string" || name.trim().length === 0) {
         fail(`${operation} requires non-empty string attribute names`);
@@ -113,8 +132,71 @@ function applyFrameAttribute(frame, name, value, operation) {
     frame.props ??= {};
     const runtimeName = frame.kind === "element"
         ? normalizeAttributeName(name)
-        : name;
+        : normalizeComponentParameterRuntimeName(name, frame.parameterNameMap);
     frame.props[runtimeName] = value;
+    frame.lastAttributeName = runtimeName;
+}
+
+function wrapEventHandler(handler, modifiers) {
+    if (typeof handler !== "function") {
+        return handler;
+    }
+
+    return (event, ...args) => {
+        if (modifiers.preventDefault) {
+            event?.preventDefault?.();
+        }
+        if (modifiers.stopPropagation) {
+            event?.stopPropagation?.();
+        }
+
+        return handler(event, ...args);
+    };
+}
+
+function applyElementEventModifiers(frame) {
+    if (frame.eventModifiers === null || frame.props === null) {
+        return;
+    }
+
+    for (const [eventName, modifiers] of Object.entries(frame.eventModifiers)) {
+        if (!Object.prototype.hasOwnProperty.call(frame.props, eventName)) {
+            continue;
+        }
+
+        frame.props[eventName] = wrapEventHandler(frame.props[eventName], modifiers);
+    }
+}
+
+function appendReferenceCapture(frame, action, operation) {
+    if (action === null || action === undefined) {
+        return;
+    }
+    if (typeof action !== "function") {
+        fail(`${operation} requires a reference capture function or nullish value`);
+    }
+
+    frame.referenceCaptures ??= [];
+    frame.referenceCaptures.push(action);
+}
+
+function validateNonEmptyString(value, operation, parameterName) {
+    if (typeof value !== "string" || value.trim().length === 0) {
+        fail(`${operation} requires a non-empty ${parameterName} string`);
+    }
+}
+
+function applyReferenceCaptures(frame) {
+    if (frame.referenceCaptures === null) {
+        return;
+    }
+
+    frame.props ??= {};
+    frame.props.ref = (value) => {
+        for (const action of frame.referenceCaptures) {
+            action(value);
+        }
+    };
 }
 
 function countRootNodes(html) {
@@ -172,8 +254,8 @@ export function createRenderContextCore(h, Fragment, createStaticVNode) {
         return frame;
     }
 
-    function addRenderFragmentSlot(frame, name, fragment, operation) {
-        const slotName = normalizeComponentSlotName(name);
+    function addRenderFragmentSlot(frame, name, fragment, operation, scoped = false) {
+        const slotName = normalizeComponentSlotRuntimeName(name, frame.parameterNameMap);
         if (fragment !== null && fragment !== undefined && typeof fragment !== "function") {
             fail(`${operation} ${name} requires a RenderFragment function or nullish value`);
         }
@@ -187,7 +269,7 @@ export function createRenderContextCore(h, Fragment, createStaticVNode) {
             fail(`${operation} cannot set slot ${name} more than once for the current component`);
         }
 
-        frame.slotFragments[slotName] = fragment;
+        frame.slotFragments[slotName] = { fragment, scoped };
     }
 
     function appendToParent(value) {
@@ -232,7 +314,11 @@ export function createRenderContextCore(h, Fragment, createStaticVNode) {
                 props: null,
                 children: [],
                 childrenStarted: false,
-                updatesAttributeName: null
+                updatesAttributeName: null,
+                eventModifiers: null,
+                namedEvents: null,
+                referenceCaptures: null,
+                lastAttributeName: null
             });
             return context;
         },
@@ -269,20 +355,70 @@ export function createRenderContextCore(h, Fragment, createStaticVNode) {
                 children: [],
                 childrenStarted: false,
                 slotFragments: null,
-                updatesAttributeName: null
+                updatesAttributeName: null,
+                referenceCaptures: null,
+                lastAttributeName: null
             });
             return context;
         },
 
         addAttribute(name, value) {
             assertActive("addAttribute");
-            const frame = currentElementFrame("addAttribute");
+            const frame = currentPropFrame("addAttribute");
             if (frame.childrenStarted) {
-                fail(`addAttribute cannot run after child content has started for <${frame.name}>`);
+                const target = frame.kind === "element" ? `<${frame.name}>` : "the current component";
+                fail(`addAttribute cannot run after child content has started for ${target}`);
             }
 
             frame.props ??= {};
             applyFrameAttribute(frame, name, value, "addAttribute");
+            return context;
+        },
+
+        addEventPreventDefaultAttribute(eventName, value) {
+            assertActive("addEventPreventDefaultAttribute");
+            const frame = currentElementFrame("addEventPreventDefaultAttribute");
+            if (frame.childrenStarted) {
+                fail(`addEventPreventDefaultAttribute cannot run after child content has started for <${frame.name}>`);
+            }
+            if (!value) {
+                return context;
+            }
+
+            const runtimeName = normalizeAttributeName(eventName);
+            frame.eventModifiers ??= {};
+            frame.eventModifiers[runtimeName] ??= {};
+            frame.eventModifiers[runtimeName].preventDefault = true;
+            return context;
+        },
+
+        addEventStopPropagationAttribute(eventName, value) {
+            assertActive("addEventStopPropagationAttribute");
+            const frame = currentElementFrame("addEventStopPropagationAttribute");
+            if (frame.childrenStarted) {
+                fail(`addEventStopPropagationAttribute cannot run after child content has started for <${frame.name}>`);
+            }
+            if (!value) {
+                return context;
+            }
+
+            const runtimeName = normalizeAttributeName(eventName);
+            frame.eventModifiers ??= {};
+            frame.eventModifiers[runtimeName] ??= {};
+            frame.eventModifiers[runtimeName].stopPropagation = true;
+            return context;
+        },
+
+        addAttributeFrame(attributeFrame) {
+            assertActive("addAttributeFrame");
+            const frame = currentPropFrame("addAttributeFrame");
+            if (frame.childrenStarted) {
+                const target = frame.kind === "element" ? `<${frame.name}>` : "the current component";
+                fail(`addAttributeFrame cannot run after child content has started for ${target}`);
+            }
+
+            const [name, value] = readAttributeFrame(attributeFrame);
+            applyFrameAttribute(frame, name, value, "addAttributeFrame");
             return context;
         },
 
@@ -330,6 +466,17 @@ export function createRenderContextCore(h, Fragment, createStaticVNode) {
             return context;
         },
 
+        addComponentScopedSlot(name, fragmentFactory) {
+            assertActive("addComponentScopedSlot");
+            const frame = currentComponentFrame("addComponentScopedSlot");
+            if (frame.childrenStarted) {
+                fail("addComponentScopedSlot cannot run after child content has started for the current component");
+            }
+
+            addRenderFragmentSlot(frame, name, fragmentFactory, "addComponentScopedSlot", true);
+            return context;
+        },
+
         setKey(value) {
             assertActive("setKey");
             const frame = currentPropFrame("setKey");
@@ -361,6 +508,69 @@ export function createRenderContextCore(h, Fragment, createStaticVNode) {
             return context;
         },
 
+        setAttributeValue(value) {
+            assertActive("setAttributeValue");
+            const frame = currentPropFrame("setAttributeValue");
+            if (frame.childrenStarted) {
+                const target = frame.kind === "element" ? `<${frame.name}>` : "the current component";
+                fail(`setAttributeValue cannot run after child content has started for ${target}`);
+            }
+            if (frame.lastAttributeName === null) {
+                fail("setAttributeValue requires a previous attribute on the current element or component");
+            }
+
+            frame.props ??= {};
+            frame.props[frame.lastAttributeName] = value;
+            return context;
+        },
+
+        addNamedEvent(eventType, assignedName) {
+            assertActive("addNamedEvent");
+            const frame = currentElementFrame("addNamedEvent");
+            if (frame.childrenStarted) {
+                fail(`addNamedEvent cannot run after child content has started for <${frame.name}>`);
+            }
+
+            validateNonEmptyString(eventType, "addNamedEvent", "event type");
+            validateNonEmptyString(assignedName, "addNamedEvent", "assigned name");
+            frame.namedEvents ??= {};
+            frame.namedEvents[normalizeAttributeName(eventType)] = assignedName;
+            return context;
+        },
+
+        addElementReferenceCapture(action) {
+            assertActive("addElementReferenceCapture");
+            const frame = currentElementFrame("addElementReferenceCapture");
+            if (frame.childrenStarted) {
+                fail(`addElementReferenceCapture cannot run after child content has started for <${frame.name}>`);
+            }
+
+            appendReferenceCapture(frame, action, "addElementReferenceCapture");
+            return context;
+        },
+
+        addComponentReferenceCapture(action) {
+            assertActive("addComponentReferenceCapture");
+            const frame = currentComponentFrame("addComponentReferenceCapture");
+            if (frame.childrenStarted) {
+                fail("addComponentReferenceCapture cannot run after child content has started for the current component");
+            }
+
+            appendReferenceCapture(frame, action, "addComponentReferenceCapture");
+            return context;
+        },
+
+        addComponentRenderMode(renderMode) {
+            assertActive("addComponentRenderMode");
+            const frame = currentComponentFrame("addComponentRenderMode");
+            if (frame.childrenStarted) {
+                fail("addComponentRenderMode cannot run after child content has started for the current component");
+            }
+
+            frame.renderMode = renderMode;
+            return context;
+        },
+
         addContent(value) {
             assertActive("addContent");
             appendToParent(value);
@@ -386,6 +596,8 @@ export function createRenderContextCore(h, Fragment, createStaticVNode) {
             }
 
             frames.pop();
+            applyElementEventModifiers(frame);
+            applyReferenceCaptures(frame);
             const vnode = h(frame.name, frame.props, frame.children);
             appendToParent(vnode);
             return context;
@@ -420,10 +632,20 @@ export function createRenderContextCore(h, Fragment, createStaticVNode) {
             if (frame.slotFragments !== null) {
                 // RenderFragment protocol -> Vue slot functions that return VNodes.
                 children = {};
-                for (const [slotName, slotFragment] of Object.entries(frame.slotFragments)) {
-                    children[slotName] = () => {
+                for (const [slotName, slot] of Object.entries(frame.slotFragments)) {
+                    children[slotName] = (...slotArgs) => {
                         const nested = createRenderContextCore(h, Fragment, createStaticVNode);
-                        slotFragment(nested);
+                        if (slot.scoped) {
+                            const scopedFragment = slot.fragment(...slotArgs);
+                            if (scopedFragment !== null && scopedFragment !== undefined) {
+                                if (typeof scopedFragment !== "function") {
+                                    fail(`scoped slot ${slotName} requires RenderFragment<T> to return a RenderFragment function or nullish value`);
+                                }
+                                scopedFragment(nested);
+                            }
+                        } else {
+                            slot.fragment(nested);
+                        }
                         return nested.finish();
                     };
                 }
@@ -434,10 +656,30 @@ export function createRenderContextCore(h, Fragment, createStaticVNode) {
                         ? frame.children[0]
                         : frame.children;
             }
+            applyReferenceCaptures(frame);
             const vnode = children === undefined
                 ? h(frame.type, frame.props)
                 : h(frame.type, frame.props, children);
             appendToParent(vnode);
+            return context;
+        },
+
+        clear() {
+            roots.length = 0;
+            frames.length = 0;
+            finished = false;
+            return context;
+        },
+
+        getFrames() {
+            return {
+                roots: roots.slice(),
+                frames: frames.map((frame) => ({ ...frame })),
+                finished
+            };
+        },
+
+        dispose() {
             return context;
         },
 

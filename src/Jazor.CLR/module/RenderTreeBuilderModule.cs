@@ -60,6 +60,9 @@ public static class RenderTreeBuilderModule
 	[Jazor(Op.Allowed ,"Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetUpdatesAttributeName(string)")]
 	public extern static void _92e64559bb857d1a(object instance, string updatesAttributeName);
 
+	[Jazor(Op.Allowed ,"Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetAttributeValue(int, object)")]
+	public extern static void _3316fc4656366ed7(object instance, Number sequence, object? value);
+
 	[Jazor(Op.Allowed ,"Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.OpenComponent<TComponent>(int)")]
 	public extern static void _c79a1a2386a24d3e<TComponent>(object instance, Number sequence);
 

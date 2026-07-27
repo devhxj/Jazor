@@ -39,13 +39,14 @@
       <_JazorSelectedOutDir Condition="'$(_IsPublishing)' == 'true' and '$(_JazorResolvedRequestedOutDir)' == '$(_JazorDefaultDevOutDir)' and '$(JazorPublishMaterializeEnabled)' != 'true'">$(JazorPublishOutDir)</_JazorSelectedOutDir>
       <_JazorSelectedOutDir Condition="'$(_JazorSelectedOutDir)' == ''">$(JazorOutDir)</_JazorSelectedOutDir>
       <JazorManifestPath Condition="'$(JazorManifestPath)' == ''">$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(_JazorSelectedOutDir)')), '[\\/]+$', ''))\jazor-manifest.json</JazorManifestPath>
-      <_JazorBundleOut>$([System.IO.Path]::GetFullPath('$(JazorBundleOut)'))</_JazorBundleOut>
+      <_JazorBundleOutRoot>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorBundleOut)')), '[\\/]+$', ''))</_JazorBundleOutRoot>
       <_JazorEmitOutDirForBundle>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(_JazorSelectedOutDir)')), '[\\/]+$', ''))</_JazorEmitOutDirForBundle>
       <_JazorManifestPathForBundle>$([System.IO.Path]::GetFullPath('$(JazorManifestPath)'))</_JazorManifestPathForBundle>
+      <_JazorToolchainSourceRoot>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)'))</_JazorToolchainSourceRoot>
       <JazorEmitToolPath Condition="'$(JazorEmitToolPath)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\tools\$(JazorEmitToolTargetFramework)\Jazor.Emit.dll'))</JazorEmitToolPath>
     </PropertyGroup>
 
-    <Exec Command="dotnet &quot;$(JazorEmitToolPath)&quot; bundle --in &quot;$(_JazorEmitOutDirForBundle)&quot; --manifest &quot;$(_JazorManifestPathForBundle)&quot; --out &quot;$(_JazorBundleOut)&quot;" />
+    <Exec Command="dotnet &quot;$(JazorEmitToolPath)&quot; toolchain build --toolchain &quot;$(JazorToolchain)&quot; --manifest &quot;$(_JazorManifestPathForBundle)&quot; --artifacts &quot;$(_JazorEmitOutDirForBundle)&quot; --source-root &quot;$(_JazorToolchainSourceRoot)&quot; --out-root &quot;$(_JazorBundleOutRoot)&quot;" />
   </Target>
 
   <Target Name="JazorPublishMaterialize"

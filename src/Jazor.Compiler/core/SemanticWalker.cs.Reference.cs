@@ -2759,6 +2759,12 @@ private bool TryExpandEcmascriptParamsArgument(
 			if (isTrailingEcmascriptDefaultArgument)
 				continue;
 
+			if (Host?.RewriteInvocationArgumentPreorder(operation, arg, index, argContext) is Expression hostArgument)
+			{
+				arguments.Add(hostArgument);
+				continue;
+			}
+
 			if (TryExpandEcmascriptParamsArgument(operation.TargetMethod, arg, argContext, arguments))
 				continue;
 

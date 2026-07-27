@@ -6,16 +6,17 @@ WBS、里程碑、阶段拆分，以及各工作流的当前执行进度。
 
 | 文件 | 说明 |
 |------|------|
-| `Jazor 架构转型开发计划.md` | 当前唯一 Razor-to-Vue 主线计划：官方 Razor SG generated C# -> Roslyn `IOperation` -> Vue render-function `.mjs` |
+| `Jazor 架构转型开发计划.md` | 当前唯一 Razor-to-Vue 主线计划：官方 Razor SG generated C# -> Roslyn `IOperation` -> render-context v1 -> Vue render-function/VNode `.mjs` |
+| `razorvue-transition/` | RazorVue 转型计划分片；单文件保持 10KB 以下 |
 | `RazorSgFinalDocument.G0.DecisionRecord.md` | G0 决策与证据记录；确认最终生成文档和 callback compilation 派生链 |
 | `workstream-dashboard.md` | 全局工作流总览（依赖、并行策略、执行门槛） |
 | `jazor-component-runtime-plan-2026-07-06.md` | 历史 Component Runtime 探索，不是当前执行主线 |
 
 ## 当前主线定位
 
-当前转型分支的唯一 Razor-to-Vue 主线是：官方 Razor Source Generator 最终生成文档（generated C#） -> Roslyn `IOperation` -> Vue render-function `.mjs`。G0 已通过，Task 0.5 正在清理旧入口并锁定项目图。
+当前转型分支的唯一 Razor-to-Vue 主线是：官方 Razor Source Generator 最终生成文档（generated C#） -> Roslyn `IOperation` -> render-context v1 -> Vue render-function/VNode `.mjs`。G0 已通过，Task 0.5 正在清理旧入口并锁定项目图。
 
-以下旧路径已经退役，不是旁路或 fallback：
+以下旧路径已经退役，不是当前生产路线：
 
 - 旧 Razor IR/SFC 管线仅保留历史材料，生产输入必须是官方 Razor SG generated C#。
 - Jolt 已在 `3ee18679fbdf43c13e05d7bfac8857ddcebd19f9` 从当前分支退役；维护与比较使用基线 `d68aecbb00b23aa35735c9a269b2e987c7815b05`。

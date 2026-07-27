@@ -59,6 +59,22 @@ public sealed class LegacyRazorVueContractRetirementTests
         }
     }
 
+    [TestMethod]
+    public void SdkTargets_InvokeExplicitFrontendToolchainContractForBundles()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var targets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "buildTransitive", "Jazor.targets"));
+        var props = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "buildTransitive", "Jazor.props"));
+
+        StringAssert.Contains(props, "<JazorToolchain Condition=\"'$(JazorToolchain)' == ''\">Deno</JazorToolchain>", StringComparison.Ordinal);
+        StringAssert.Contains(targets, "toolchain build --toolchain", StringComparison.Ordinal);
+        StringAssert.Contains(targets, "--manifest", StringComparison.Ordinal);
+        StringAssert.Contains(targets, "--artifacts", StringComparison.Ordinal);
+        StringAssert.Contains(targets, "--source-root", StringComparison.Ordinal);
+        StringAssert.Contains(targets, "--out-root", StringComparison.Ordinal);
+        Assert.IsFalse(targets.Contains(" bundle --in ", StringComparison.Ordinal), targets);
+    }
+
     private static string FindRepositoryRoot()
     {
         for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)

@@ -25,7 +25,8 @@ internal sealed record ManifestModel
             RootAssemblyPath,
             GeneratedAtUtc,
             Modules,
-            entries: null)
+            entries: null,
+            assets: null)
     {
     }
 
@@ -37,7 +38,8 @@ internal sealed record ManifestModel
             RootAssemblyPath,
             generatedAtUtc: null,
             Modules,
-            entries: null)
+            entries: null,
+            assets: null)
     {
     }
 
@@ -48,7 +50,8 @@ internal sealed record ManifestModel
         string rootAssemblyPath,
         DateTime? generatedAtUtc,
         List<ManifestModuleEntry> modules,
-        List<string>? entries)
+        List<string>? entries,
+        List<ManifestAssetEntry>? assets)
     {
         SchemaVersion = schemaVersion;
         RuntimeProtocolVersion = runtimeProtocolVersion;
@@ -59,6 +62,7 @@ internal sealed record ManifestModel
         GeneratedAtUtc = generatedAtUtc;
         Modules = NormalizeModules(modules ?? []);
         Entries = NormalizeEntries(entries, Modules, RootAssemblyName);
+        Assets = NormalizeAssets(assets ?? []);
     }
 
     public int SchemaVersion { get; init; }
@@ -74,6 +78,8 @@ internal sealed record ManifestModel
     public List<string> Entries { get; init; }
 
     public List<ManifestModuleEntry> Modules { get; init; }
+
+    public List<ManifestAssetEntry> Assets { get; init; }
 
     public static ManifestModel? TryLoad(string manifestPath)
     {
@@ -100,6 +106,7 @@ internal sealed record ManifestModel
             DeriveRootAssemblyName(rootAssemblyPath, modules);
         var generatedAtUtc = ReadOptionalDateTime(root, "generatedAtUtc", "GeneratedAtUtc");
         var entries = ReadEntries(root);
+        var assets = ReadAssets(root);
 
         return new ManifestModel(
             schemaVersion,
@@ -108,7 +115,8 @@ internal sealed record ManifestModel
             rootAssemblyPath,
             generatedAtUtc,
             modules,
-            entries);
+            entries,
+            assets);
     }
 
     public void Save(string manifestPath)
@@ -119,6 +127,17 @@ internal sealed record ManifestModel
 
         var normalizedModules = NormalizeModules(Modules);
         var normalizedEntries = NormalizeEntries(Entries, normalizedModules, RootAssemblyName);
+        var normalizedAssets = NormalizeAssets(Assets);
+        var fileAssets = normalizedAssets.Count == 0
+            ? null
+            : normalizedAssets
+                .Select(static asset => new ManifestAssetFileEntry(
+                    asset.SourcePath,
+                    asset.ArtifactPath,
+                    asset.Kind,
+                    asset.Hash))
+                .ToList();
+
         var fileModel = new ManifestFileModel(
             CurrentSchemaVersion,
             CurrentRuntimeProtocolVersion,
@@ -133,7 +152,8 @@ internal sealed record ManifestModel
                     module.Hash,
                     module.SourceMapPath,
                     module.MapHash))
-                .ToList());
+                .ToList(),
+            fileAssets);
 
         File.WriteAllText(manifestPath, JsonSerializer.Serialize(fileModel, JsonOptions));
     }
@@ -184,6 +204,30 @@ internal sealed record ManifestModel
         }
 
         return entries;
+    }
+
+    private static List<ManifestAssetEntry>? ReadAssets(JsonElement root)
+    {
+        if (!TryGetProperty(root, out var assetsElement, "assets", "Assets") ||
+            assetsElement.ValueKind != JsonValueKind.Array)
+        {
+            return null;
+        }
+
+        var assets = new List<ManifestAssetEntry>();
+        foreach (var assetElement in assetsElement.EnumerateArray())
+        {
+            if (assetElement.ValueKind != JsonValueKind.Object)
+                continue;
+
+            assets.Add(new ManifestAssetEntry(
+                ReadRequiredString(assetElement, "source", "sourcePath", "SourcePath"),
+                ReadRequiredString(assetElement, "path", "artifactPath", "ArtifactPath"),
+                ReadOptionalString(assetElement, "kind", "Kind") ?? ManifestAssetEntry.KindStatic,
+                ReadOptionalString(assetElement, "contentHash", "hash", "Hash")));
+        }
+
+        return assets;
     }
 
     private static List<ManifestModuleEntry> NormalizeModules(IEnumerable<ManifestModuleEntry> modules)
@@ -237,6 +281,36 @@ internal sealed record ManifestModel
             .Select(NormalizeRelativePath)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(static entry => entry, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private static List<ManifestAssetEntry> NormalizeAssets(IEnumerable<ManifestAssetEntry> assets)
+    {
+        var normalizedAssets = new List<ManifestAssetEntry>();
+        var indexByArtifactPath = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var asset in assets)
+        {
+            var normalizedAsset = asset with
+            {
+                SourcePath = NormalizeRelativePath(asset.SourcePath),
+                ArtifactPath = NormalizeRelativePath(asset.ArtifactPath),
+                Kind = string.IsNullOrWhiteSpace(asset.Kind) ? ManifestAssetEntry.KindStatic : asset.Kind
+            };
+
+            if (indexByArtifactPath.TryGetValue(normalizedAsset.ArtifactPath, out var existingIndex))
+            {
+                normalizedAssets[existingIndex] = normalizedAsset;
+                continue;
+            }
+
+            indexByArtifactPath.Add(normalizedAsset.ArtifactPath, normalizedAssets.Count);
+            normalizedAssets.Add(normalizedAsset);
+        }
+
+        return normalizedAssets
+            .OrderBy(static asset => asset.ArtifactPath, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static asset => asset.SourcePath, StringComparer.Ordinal)
             .ToList();
     }
 
@@ -364,7 +438,8 @@ internal sealed record ManifestModel
         int RuntimeProtocolVersion,
         string RootAssemblyName,
         List<string> Entries,
-        List<ManifestModuleFileEntry> Modules);
+        List<ManifestModuleFileEntry> Modules,
+        List<ManifestAssetFileEntry>? Assets);
 
     private sealed record ManifestModuleFileEntry(
         string AssemblyName,
@@ -374,6 +449,12 @@ internal sealed record ManifestModel
         string ContentHash,
         string? SourceMap = null,
         string? SourceMapHash = null);
+
+    private sealed record ManifestAssetFileEntry(
+        string Source,
+        string Path,
+        string Kind,
+        string? ContentHash = null);
 }
 
 internal sealed record ManifestModuleEntry(
@@ -384,3 +465,13 @@ internal sealed record ManifestModuleEntry(
     string Hash,
     string? SourceMapPath = null,
     string? MapHash = null);
+
+internal sealed record ManifestAssetEntry(
+    string SourcePath,
+    string ArtifactPath,
+    string Kind,
+    string? Hash = null)
+{
+    public const string KindStatic = "static";
+    public const string KindVueSfc = "vue-sfc";
+}

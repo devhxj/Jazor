@@ -213,6 +213,175 @@ public sealed class ModuleBundlerTests
         CollectionAssert.Contains(sourcesContent, "<div>@Value</div>");
     }
 
+    [TestMethod]
+    public async Task BundleAsync_ExplicitVueSfcAsset_CompilesAndRewritesRegisteredImport()
+    {
+        using var workspace = new TestWorkspace();
+        WriteModule(workspace.InputDirectory, "host/app.mjs",
+            """
+            import LocalCard from "./LocalCard.vue";
+
+            export const ComponentName = LocalCard.name;
+            export default LocalCard;
+            """);
+        WriteModule(workspace.SourceRoot, "components/LocalCard.vue",
+            """
+            <template>
+              <section class="local-card">Hello from SFC</section>
+            </template>
+
+            <script>
+            export default {
+              name: "LocalCard"
+            };
+            </script>
+
+            <style>
+            .local-card {
+              color: rgb(10, 20, 30);
+            }
+            </style>
+            """);
+
+        var manifest = new ManifestModel(
+            RootAssemblyPath: Path.Combine(workspace.RootPath, "Sample.Host.dll"),
+            GeneratedAtUtc: DateTime.UtcNow,
+            Modules:
+            [
+                new ManifestModuleEntry("Sample.Host", "Sample.Host.AppModule", "Sample.Host.AppModule", "host/app.mjs", "hash-1")
+            ]);
+        manifest.Assets.Add(new ManifestAssetEntry(
+            "components/LocalCard.vue",
+            "host/LocalCard.vue",
+            ManifestAssetEntry.KindVueSfc,
+            "hash-asset-1"));
+        manifest.Save(workspace.ManifestPath);
+
+        var bundler = new ModuleBundler();
+        var result = await bundler.BundleAsync(new BundleOptions(
+            workspace.InputDirectory,
+            workspace.ManifestPath,
+            workspace.OutputPath,
+            workspace.SourceRoot));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var script = await File.ReadAllTextAsync(workspace.OutputPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("LocalCard", script);
+        Assert.Contains("Hello from SFC", script);
+        Assert.DoesNotContain("./LocalCard.vue", script);
+
+        Assert.IsTrue(File.Exists(workspace.OutputCssPath), $"Expected SFC style bundle: {workspace.OutputCssPath}");
+        var css = await File.ReadAllTextAsync(workspace.OutputCssPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains(".local-card", css);
+        Assert.Contains("rgb(10, 20, 30)", css);
+    }
+
+    [TestMethod]
+    public async Task BundleAsync_RegisteredAssetWithoutSourceRoot_ReturnsFailure()
+    {
+        using var workspace = new TestWorkspace();
+        WriteModule(workspace.InputDirectory, "host/app.mjs",
+            """
+            export const Ready = true;
+            """);
+
+        var manifest = new ManifestModel(
+            RootAssemblyPath: Path.Combine(workspace.RootPath, "Sample.Host.dll"),
+            GeneratedAtUtc: DateTime.UtcNow,
+            Modules:
+            [
+                new ManifestModuleEntry("Sample.Host", "Sample.Host.AppModule", "Sample.Host.AppModule", "host/app.mjs", "hash-1")
+            ]);
+        manifest.Assets.Add(new ManifestAssetEntry(
+            "components/LocalCard.vue",
+            "host/LocalCard.vue",
+            ManifestAssetEntry.KindVueSfc,
+            "hash-asset-1"));
+        manifest.Save(workspace.ManifestPath);
+
+        var bundler = new ModuleBundler();
+        var result = await bundler.BundleAsync(new BundleOptions(
+            workspace.InputDirectory,
+            workspace.ManifestPath,
+            workspace.OutputPath));
+
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(6, result.ExitCode);
+        StringAssert.Contains(result.Error, "explicit source root", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void ManifestModel_SaveAndLoad_PreservesExplicitFrontendAssets()
+    {
+        using var workspace = new TestWorkspace();
+        var manifest = new ManifestModel(
+            RootAssemblyPath: Path.Combine(workspace.RootPath, "Sample.Host.dll"),
+            GeneratedAtUtc: DateTime.UtcNow,
+            Modules:
+            [
+                new ManifestModuleEntry("Sample.Host", "Sample.Host.AppModule", "Sample.Host.AppModule", "host/app.mjs", "hash-1")
+            ]);
+        manifest.Assets.Add(new ManifestAssetEntry(
+            "components\\LocalCard.vue",
+            "host/LocalCard.vue",
+            ManifestAssetEntry.KindVueSfc,
+            "hash-asset-1"));
+
+        manifest.Save(workspace.ManifestPath);
+
+        var loaded = ManifestModel.TryLoad(workspace.ManifestPath);
+
+        Assert.IsNotNull(loaded);
+        Assert.HasCount(1, loaded.Assets);
+        Assert.AreEqual("components/LocalCard.vue", loaded.Assets[0].SourcePath);
+        Assert.AreEqual("host/LocalCard.vue", loaded.Assets[0].ArtifactPath);
+        Assert.AreEqual(ManifestAssetEntry.KindVueSfc, loaded.Assets[0].Kind);
+        Assert.AreEqual("hash-asset-1", loaded.Assets[0].Hash);
+    }
+
+    [TestMethod]
+    public async Task BundleAsync_StaticManifestAsset_CopiesToOutputRoot()
+    {
+        using var workspace = new TestWorkspace();
+        WriteModule(workspace.InputDirectory, "host/app.mjs",
+            """
+            export const Ready = true;
+            """);
+        WriteModule(workspace.SourceRoot, "assets/logo.svg",
+            """
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"></svg>
+            """);
+
+        var manifest = new ManifestModel(
+            RootAssemblyPath: Path.Combine(workspace.RootPath, "Sample.Host.dll"),
+            GeneratedAtUtc: DateTime.UtcNow,
+            Modules:
+            [
+                new ManifestModuleEntry("Sample.Host", "Sample.Host.AppModule", "Sample.Host.AppModule", "host/app.mjs", "hash-1")
+            ]);
+        manifest.Assets.Add(new ManifestAssetEntry(
+            "assets/logo.svg",
+            "assets/logo.svg",
+            ManifestAssetEntry.KindStatic,
+            "hash-asset-1"));
+        manifest.Save(workspace.ManifestPath);
+
+        var bundler = new ModuleBundler();
+        var result = await bundler.BundleAsync(new BundleOptions(
+            workspace.InputDirectory,
+            workspace.ManifestPath,
+            workspace.OutputPath,
+            workspace.SourceRoot));
+
+        Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+
+        var outputAssetPath = Path.Combine(workspace.RootPath, "assets", "logo.svg");
+        Assert.IsTrue(File.Exists(outputAssetPath), $"Expected static asset output: {outputAssetPath}");
+        var asset = await File.ReadAllTextAsync(outputAssetPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("<svg", asset);
+    }
+
     private static void WriteModule(string rootDirectory, string relativePath, string content)
     {
         var fullPath = Path.Combine(rootDirectory, relativePath.Replace('/', Path.DirectorySeparatorChar));
@@ -242,21 +411,28 @@ public sealed class ModuleBundlerTests
         {
             RootPath = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
             InputDirectory = Path.Combine(RootPath, "modules");
+            SourceRoot = Path.Combine(RootPath, "src");
             ManifestPath = Path.Combine(InputDirectory, "jazor-manifest.json");
             OutputPath = Path.Combine(RootPath, "bundle.js");
             OutputMapPath = Path.Combine(RootPath, "bundle.js.map");
+            OutputCssPath = Path.Combine(RootPath, "bundle.css");
             Directory.CreateDirectory(InputDirectory);
+            Directory.CreateDirectory(SourceRoot);
         }
 
         public string RootPath { get; }
 
         public string InputDirectory { get; }
 
+        public string SourceRoot { get; }
+
         public string ManifestPath { get; }
 
         public string OutputPath { get; }
 
         public string OutputMapPath { get; }
+
+        public string OutputCssPath { get; }
 
         public void Dispose()
         {

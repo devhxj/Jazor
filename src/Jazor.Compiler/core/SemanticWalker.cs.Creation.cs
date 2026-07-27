@@ -1912,6 +1912,15 @@ public partial class SemanticWalker
 		if (Host?.RewriteObjectCreationPreorder(operation, argument) is Expression preorderHostExpression)
 			return WithOriginIfMissing(preorderHostExpression, operation);
 
+		if (Host is not null && Host.ShouldRewriteObjectCreation(operation))
+		{
+			var arguments = operation.Arguments
+				.Select(arg => Translate<Expression>(arg.Value, argument))
+				.ToArray();
+			if (Host.RewriteObjectCreation(operation, argument, arguments) is Expression hostExpression)
+				return WithOriginIfMissing(hostExpression, operation);
+		}
+
 		return BuildObjectCreation(null, operation, argument);
 	}
 
