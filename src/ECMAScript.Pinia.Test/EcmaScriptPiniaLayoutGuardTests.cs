@@ -88,10 +88,16 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "AssertNoBuildPackInputsExist");
 		StringAssert.Contains(source, "GetNoBuildPackInputRoots");
 		StringAssert.Contains(source, "PackageCatalog.ResolveSelectedPackages");
-		StringAssert.Contains(source, "Default package set: Jazor, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.Vuetify, ECMAScript.TDesign");
+		StringAssert.Contains(source, "Default package set: Jazor, Jazor.Vue, Jazor.Css, Jazor.Admin, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.Vuetify, ECMAScript.TDesign");
 		StringAssert.Contains(source, "Selected packages: ");
 		StringAssert.Contains(source, "case \"--package\"");
+		StringAssert.Contains(source, "case \"--package-version\"");
+		StringAssert.Contains(source, "-p:MinVerVersionOverride=");
+		StringAssert.Contains(source, "-p:JazorPackageVersion=");
 		StringAssert.Contains(source, "PackageAliases");
+		StringAssert.Contains(source, "[\"jazor-vue\"] = \"Jazor.Vue\"");
+		StringAssert.Contains(source, "[\"jazor-css\"] = \"Jazor.Css\"");
+		StringAssert.Contains(source, "[\"admin\"] = \"Jazor.Admin\"");
 		StringAssert.Contains(source, "[\"tdesign\"] = \"ECMAScript.TDesign\"");
 		StringAssert.Contains(source, "RequiresJazorEmitPublishOutput: true");
 		StringAssert.Contains(source, "DisableJazorPreparePackageArtifactsOnNoBuild: true");

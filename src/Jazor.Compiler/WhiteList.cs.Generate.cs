@@ -77,6 +77,7 @@ internal static partial class WhiteList
 		types["System.ValueTuple"] = new(Op.Alias, "Object");
 		types["System.WeakReference"] = new(Op.Alias, "WeakRef");
 		types["Microsoft.AspNetCore.Components.EventCallback"] = new(Op.Allowed);
+		types["Microsoft.AspNetCore.Components.EventCallback<TValue>"] = new(Op.Allowed);
 		types["Microsoft.AspNetCore.Components.EventCallbackFactory"] = new(Op.Allowed);
 		types["System.Nullable<T>"] = new(Op.Allowed);
 		types["Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder"] = new(Op.Allowed);
@@ -952,8 +953,12 @@ internal static partial class WhiteList
 		members["virtual System.Collections.Generic.EqualityComparer<T>.Equals(T, T)"] = new(Op.Import, "_4614e5ce6b42a7ad", "System/Collections/Generic/EqualityComparerT1Module.js");
 		members["virtual System.Collections.Generic.EqualityComparer<T>.GetHashCode(T)"] = new(Op.Import, "_2c3736bd7d205921", "System/Collections/Generic/EqualityComparerT1Module.js");
 		members["static readonly Microsoft.AspNetCore.Components.EventCallback.Factory"] = new(Op.Allowed);
+		members["Microsoft.AspNetCore.Components.EventCallback.InvokeAsync()"] = new(Op.Allowed);
+		members["Microsoft.AspNetCore.Components.EventCallback<TValue>.InvokeAsync(TValue)"] = new(Op.Allowed);
 		members["Microsoft.AspNetCore.Components.EventCallbackFactory.Create(object, System.Action)"] = new(Op.Allowed);
 		members["Microsoft.AspNetCore.Components.EventCallbackFactory.Create<TValue>(object, System.Action<TValue>)"] = new(Op.Allowed);
+		members["Microsoft.AspNetCore.Components.EventCallbackFactory.Create(object, System.Func<System.Threading.Tasks.Task>)"] = new(Op.Allowed);
+		members["Microsoft.AspNetCore.Components.EventCallbackFactory.Create<TValue>(object, System.Func<TValue, System.Threading.Tasks.Task>)"] = new(Op.Allowed);
 		members["System.Exception.Exception()"] = new(Op.Inline, "new Error()");
 		members["System.Exception.Exception(string)"] = new(Op.Inline, "new Error(__arg1)");
 		members["virtual System.Exception.Message.get"] = new(Op.Inline, "__arg1.message");

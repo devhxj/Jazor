@@ -18,7 +18,7 @@
 
 剩余问题已经不再属于 Phase 1，而主要是：
 
-1. 如何让 Razor / Jolt 等上层工作流复用 Phase 1 contract；
+1. 如何让 RazorVue 上层工作流稳定复用 Phase 1 contract；
 2. 哪些高层 authoring convenience 需要先设计再实现；
 3. 如何把 `ECMAScript.Vue3` 沉淀成可复制的外部库模板。
 
@@ -119,7 +119,7 @@ runtime binding 已覆盖，但 authoring 体验还不完整。
 - special elements（`<component>` / `<slot>` / `<template>`）；
 - SSR renderer / hydration pipeline；
 - custom renderer；
-- `.vue` / Jolt / RazorVue 的专用工程化 authoring。
+- `.vue` 文件编译、SSR 与 custom renderer 等独立工作流不属于本项目的 host binding 交付范围。
 
 ## 6. 推荐推进顺序
 

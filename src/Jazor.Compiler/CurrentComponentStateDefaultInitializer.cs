@@ -6,16 +6,13 @@ using Microsoft.CodeAnalysis;
 namespace Jazor.Compiler;
 
 /// <summary>
-/// Formats C# default values for RazorVue current-component state slots.
+/// Creates C# default values for RazorVue current-component state slots.
 /// This keeps CLR default-value semantics in the compiler layer while the
 /// RazorVue artifact builder owns only Vue render-function framing.
 /// </summary>
 public static class CurrentComponentStateDefaultInitializer
 {
-    public static string Format(ITypeSymbol type)
-        => CreateExpression(type).ToKnRECMAScript();
-
-    private static Expression CreateExpression(ITypeSymbol type)
+    public static Expression CreateExpression(ITypeSymbol type)
     {
         if (type is null)
             throw new ArgumentNullException(nameof(type));
@@ -38,7 +35,7 @@ public static class CurrentComponentStateDefaultInitializer
         return type.SpecialType switch
         {
             SpecialType.System_Boolean => new BooleanLiteral(false, "false"),
-            SpecialType.System_Char => new StringLiteral("\0", "\"\\0\""),
+            SpecialType.System_Char => JavaScriptAstFactory.CreateStringLiteral("\0"),
             SpecialType.System_SByte or
             SpecialType.System_Byte or
             SpecialType.System_Int16 or

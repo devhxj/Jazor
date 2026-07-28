@@ -12,11 +12,11 @@
 official Razor SG generated C#
     -> Roslyn IOperation
     -> Jazor.Compiler / SemanticWalker
-    -> render-context v1
-    -> Vue render-function/VNode .mjs
+    -> direct Vue h()/Fragment VNode emitter
+    -> Vue render-function .mjs
 ```
 
-直接目标是尽快把功能代码闭环落地，复用 Vuetify、Vue Router、Pinia 和手写 SFC 生态。性能采样和调优排在功能闭环之后。
+功能代码闭环和首份 G2 baseline 已落地。当前直接目标是稳定 Vue render-function emitter；render-context v1 仅作为验证参照，Vuetify、Vue Router 与 Pinia 继续复用统一的 host binding 与 production module 主线。
 
 ## 快速入口
 
@@ -32,22 +32,22 @@ official Razor SG generated C#
 
 ## 当前优先级
 
-1. 补齐 `RenderTreeBuilder` public surface 的快速功能实现。
-2. 保持 render-context v1 行为确定，补 focused tests。
-3. 补 component props/events/slots/bind/lifecycle 的 generated C# lowering。
-4. 让 Deno 和 Netpack 都消费同一个 manifest 完成最小 production build smoke。
-5. 功能闭环后再做 browser heap、throughput、gzip 和旧线 baseline。
+1. 推进 direct VNode emitter P0：线性 element/content/attribute lowering 直接生成 setup-scoped `h(...)`。
+2. 用 G2 benchmark 对比 direct emitter 的 runtime/browser/generated artifact/release performance report。
+3. 根据报告拆分 component、slot、markup、bulk attrs、patch flags / block-level optimization。
+4. 保持 Deno/Netpack production toolchain 主线稳定。
+5. Dev/HMR 与阈值优化在 baseline 后单独排期。
 
 ## 工作流状态
 
 | 工作流 | 当前判断 | 下一步 |
 |---|---|---|
-| Razor-to-Vue | G0/G1 已通过，当前主攻 G2-F 功能 Gate | 继续 RenderTreeBuilder 和 component surface |
-| Compiler | 已接 RenderTreeBuilder host 与 current-component host | 补 accepted overload breadth 和 diagnostics |
-| RazorVue | 已接 generated C# binder、component module framing、runtime assets | 补 component catalog/slot/bind/lifecycle breadth |
-| Emit | 已接 VueRenderCatalog、manifest、runtime materialization | 保持 deterministic output，补 toolchain smoke |
-| Toolchain | Deno/Netpack 都保留为显式 lane | 冻结共同 request/result contract |
-| Vuetify | 当前选择传统 Vue 的核心理由 | 先保证 component boundary 能承载 Vuetify wrapper |
+| Razor-to-Vue | G2-F 功能 Gate 和首份 G2-P baseline 已闭环，当前主攻 direct VNode emitter P0 | 扩 direct element/content/attribute coverage |
+| Compiler | 已接 RenderTreeBuilder host 与 current-component host | 继续让 C# expression/member semantics 走 SemanticWalker |
+| RazorVue | 已接 generated C# binder、component module framing、direct P0 emitter、runtime assets | 对比 direct 与 oracle 行为/性能 |
+| Emit | 已接 VueRenderCatalog、manifest、runtime materialization | 保持 artifact contract 稳定 |
+| Toolchain | Deno/Netpack 都保留为显式 lane | 保持共同 request/result contract |
+| Vuetify | 当前选择传统 Vue 的核心理由 | 保持 package import smoke，暂不扩生态面 |
 
 ## 路线规则
 
@@ -64,15 +64,15 @@ official Razor SG generated C#
 |---|---|
 | G0 | 通过：SG generated C# + hook compilation derivation |
 | G1 | 通过：真实 Counter browser 首切片 |
-| G2-F | 进行中：功能 surface、component contract、lifecycle |
-| G2-P | 推迟：功能闭环后执行性能采样和阈值判定 |
-| G3 | 待做：Deno production + mixed SFC |
-| G4 | 待做：Deno dev/HMR + Netpack production smoke |
-| G5 | 待做：package consumer、sample、platform matrix |
+| G2-F | 通过：功能 surface、component contract、lifecycle、production toolchain smoke |
+| G2-P | 当前：执行性能采样和阈值判定 |
+| G3 | 已并入 production toolchain smoke：Deno Bundle 与 render-function module |
+| G4 | 部分通过：Netpack production 已过；Deno dev/HMR 待单独排期 |
+| G5 | 部分通过：package consumer 已过；platform matrix 待单独排期 |
 
 ## 维护规则
 
 - 本文件只保留仓库级状态，不记录长命令输出。
 - 单文件必须小于 10KB。
 - 长表格或专项细节放入 `razorvue-transition/` 分片。
-- 历史 Jolt、Razor IR、Razor-to-SFC 和 Component Runtime 文件不属于当前生产路线。
+- Razor IR 与 Razor-to-SFC 不属于当前生产路线。

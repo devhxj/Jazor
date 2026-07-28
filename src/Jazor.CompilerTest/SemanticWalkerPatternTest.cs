@@ -609,6 +609,39 @@ public sealed class SemanticWalkerPatternTest
 }", script);
   }
 
+  [TestMethod]
+  public void Visit_DiscardPattern_WithGuard_ContinuesToFollowingArm()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int value = -1;
+                    string result = value switch
+                    {
+                        _ when value > 0 => ""positive"",
+                        _ => ""fallback""
+                    };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let value = -1;
+  let result = (() => {
+    const v$0 = value;
+    if (value > 0)
+      return ""positive"";
+    return ""fallback"";
+  })();
+}", script);
+  }
+
   /// <summary>
   /// 测试 VisitDiscardPattern - 丢弃模式（直接调用）
   /// 丢弃模式总是返回 true，表示总是匹配
@@ -1160,7 +1193,7 @@ public sealed class SemanticWalkerPatternTest
     AssertScriptEqual(
 @"{
   let person = { Name: ""John"", Age: 30 };
-  let result = person != null && (""Name"" in person && person.Name === ""John"");
+  let result = person != null && ""Name"" in person && person.Name === ""John"";
 }", script);
 
   }
@@ -1225,6 +1258,33 @@ public sealed class SemanticWalkerPatternTest
 
   }
 
+  [TestMethod]
+  public void Visit_RecursivePattern_InsideDisjunction_EmitsSingleNullGuard()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new { Name = ""John"", Age = 30 };
+                    int c = 1;
+                    bool result = obj is null || obj is { Name: ""John"", Age: > 18 } || c > 0;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(
+@"{
+  let obj = { Name: ""John"", Age: 30 };
+  let c = 1;
+  let result = obj == null || obj != null && ""Name"" in obj && obj.Name === ""John"" && ""Age"" in obj && obj.Age > 18 || c > 0;
+}", script);
+  }
+
   /// <summary>
   /// 测试 VisitRecursivePattern - 递归模式（直接调用）
   /// </summary>
@@ -1253,7 +1313,7 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     AssertScriptEqual(
-@"obj != null && (""Name"" in obj && obj.Name === ""John"") && (obj != null && (""Age"" in obj && obj.Age > 18))", script);
+@"obj != null && ""Name"" in obj && obj.Name === ""John"" && ""Age"" in obj && obj.Age > 18", script);
 
   }
 
@@ -2055,9 +2115,9 @@ public sealed class SemanticWalkerPatternTest
   let person = { Name: ""John"", Age: 30 };
   let result = (() => {
     const v$0 = person;
-    if (v$0 != null && (""Name"" in v$0 && v$0.Name === ""John""))
+    if (v$0 != null && ""Name"" in v$0 && v$0.Name === ""John"")
       return ""Hello John"";
-    if (v$0 != null && (""Age"" in v$0 && v$0.Age > 18))
+    if (v$0 != null && ""Age"" in v$0 && v$0.Age > 18)
       return ""Adult"";
     return ""Unknown"";
   })();
@@ -2153,7 +2213,7 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(
 @"{
   let obj = ""hello"";
-  let result = typeof obj === ""string"" && (obj != null && (""length"" in obj && obj.length > 0));
+  let result = typeof obj === ""string"" && obj != null && ""length"" in obj && obj.length > 0;
 }", script);
 
   }
@@ -3237,7 +3297,7 @@ public sealed class SemanticWalkerPatternTest
     AssertScriptEqual(
 @"{
   let obj = { Name: ""Test"", Value: 42 };
-  let result = obj != null && (""Name"" in obj && obj.Name === ""Test"");
+  let result = obj != null && ""Name"" in obj && obj.Name === ""Test"";
 }", script);
 
   }
@@ -3572,7 +3632,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    AssertStringContainsJsNaming(script, "\"Inner\" in data && (data.Inner != null && (\"Value\" in data.Inner && data.Inner.Value === 42))", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "\"Inner\" in data && (data.Inner != null && \"Value\" in data.Inner && data.Inner.Value === 42)", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -3607,9 +3667,9 @@ public sealed class SemanticWalkerPatternTest
   let result = (() => {
     let x;
     const v$0 = obj;
-    if (v$0 != null && (""X"" in v$0 && v$0.X === 1) && (v$0 != null && (""Y"" in v$0 && v$0.Y === 2)))
+    if (v$0 != null && ""X"" in v$0 && v$0.X === 1 && ""Y"" in v$0 && v$0.Y === 2)
       return ""Point (1,2)"";
-    if (v$0 != null && (""X"" in v$0 && (x = v$0.X, true)) && x > 0)
+    if (v$0 != null && ""X"" in v$0 && (x = v$0.X, true) && x > 0)
       return ""Positive X"";
     return ""Other"";
   })();
@@ -3863,7 +3923,7 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    StringAssert.Contains(script, "(\"length\" in value && (value.length > 0 && value.length < 10))", StringComparison.Ordinal);
+    StringAssert.Contains(script, "\"length\" in value && (value.length > 0 && value.length < 10)", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -3890,7 +3950,7 @@ line2"";
     Assert.AreEqual(
 @"{
   let value = """";
-  let result = typeof value === ""string"" && (value != null && (""length"" in value && value.length === 0));
+  let result = typeof value === ""string"" && value != null && ""length"" in value && value.length === 0;
 }", script);
 
   }
@@ -5174,9 +5234,9 @@ line2"";
   let result = (() => {
     let v;
     const v$0 = obj;
-    if (v$0 != null && (""Value"" in v$0 && (v = v$0.Value, true)) && v > 0)
+    if (v$0 != null && ""Value"" in v$0 && (v = v$0.Value, true) && v > 0)
       return ""Positive"";
-    if (v$0 != null && (""Value"" in v$0 && (v = v$0.Value, true)) && v < 0)
+    if (v$0 != null && ""Value"" in v$0 && (v = v$0.Value, true) && v < 0)
       return ""Negative"";
     return ""Zero"";
   })();
@@ -5211,7 +5271,7 @@ line2"";
 
     AssertScriptEqual(@"{
   let matrix = [[1, 2], [3, 4]];
-  let result = Array.isArray(matrix) && (matrix != null && (""length"" in matrix && matrix.length > 0));
+  let result = Array.isArray(matrix) && matrix != null && ""length"" in matrix && matrix.length > 0;
 }", script);
   }
 
@@ -5391,7 +5451,7 @@ line2"";
     AssertScriptEqual(
 @"{
   let obj = { Value: null };
-  let result = obj != null && (""Value"" in obj && !(obj.Value == null));
+  let result = obj != null && ""Value"" in obj && !(obj.Value == null);
 }", script);
 
   }
@@ -5419,7 +5479,7 @@ line2"";
 
     AssertStringContainsJsNaming(script, "let v;", StringComparison.Ordinal);
     AssertContainsCount(script, "obj.Inner", 3);
-    AssertStringContainsJsNaming(script, "\"Inner\" in obj && (obj.Inner != null && (\"Value\" in obj.Inner && (v = obj.Inner.Value, true)))", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "\"Inner\" in obj && (obj.Inner != null && \"Value\" in obj.Inner && (v = obj.Inner.Value, true))", StringComparison.Ordinal);
   }
 
   #endregion
@@ -5881,7 +5941,7 @@ line2"";
     Assert.AreEqual(
 @"{
   let obj = 42;
-  let result = typeof obj === ""number"" && obj > 0 || typeof obj === ""string"" && (obj != null && (""length"" in obj && obj.length > 0));
+  let result = typeof obj === ""number"" && obj > 0 || typeof obj === ""string"" && obj != null && ""length"" in obj && obj.length > 0;
 }", script);
 
   }
@@ -6487,7 +6547,7 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     AssertContainsCount(script, "person.Address", 4);
-    AssertStringContainsJsNaming(script, "(person.Address instanceof Address && (person.Address != null && (\"City\" in person.Address && person.Address.City === \"NYC\"))))", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "(person.Address instanceof Address && person.Address != null && \"City\" in person.Address && person.Address.City === \"NYC\")", StringComparison.Ordinal);
     AssertStringContainsJsNaming(script, "console.log(\"New Yorker\");", StringComparison.Ordinal);
   }
 
@@ -7156,7 +7216,7 @@ line2"";
     v$0.Name = ""John"";
     return v$0;
   })();
-  if (person instanceof Person && (person != null && (""Name"" in person && person.Name === ""John""))) {
+  if (person instanceof Person && person != null && ""Name"" in person && person.Name === ""John"") {
     console.log(""found"");
   }
 }", script);
@@ -7226,7 +7286,7 @@ line2"";
 
     AssertScriptEqual(@"{
   let person = { name: ""John"", age: 20 };
-  if (person != null && (""name"" in person && person.name === ""John"")) {
+  if (person != null && ""name"" in person && person.name === ""John"") {
     console.log(""found"");
   }
 }", script);
@@ -7339,7 +7399,7 @@ line2"";
 
     AssertScriptEqual(@"{
   let now = _ee9dd166a34a2fa5();
-  if (now !== null && typeof now === ""object"" && (now.date instanceof Date && typeof now.kind === ""number"" && typeof now.subMillisecondTicks === ""bigint"") && (now != null && _9d56b09432f81c05(now) === 2024)) {
+  if (now !== null && typeof now === ""object"" && (now.date instanceof Date && typeof now.kind === ""number"" && typeof now.subMillisecondTicks === ""bigint"") && now != null && _9d56b09432f81c05(now) === 2024) {
     console.log(""match"");
   }
 }", script);

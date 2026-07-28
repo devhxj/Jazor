@@ -1,11 +1,37 @@
 <Project>
+  <Target Name="_ResolveJazorEmitTool">
+    <PropertyGroup>
+      <_JazorPackagedToolPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\tools\net11.0\Jazor.Emit.dll'))</_JazorPackagedToolPath>
+      <_JazorToolPath Condition="Exists('$(_JazorPackagedToolPath)')">$(_JazorPackagedToolPath)</_JazorToolPath>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(_JazorToolPath)' == ''">
+      <_JazorEmitToolProjectReference Include="@(ProjectReference)"
+                                      Condition="'%(ProjectReference.Filename)' == 'Jazor.Emit'" />
+    </ItemGroup>
+
+    <MSBuild Projects="@(_JazorEmitToolProjectReference)"
+             Targets="GetTargetPath"
+             BuildInParallel="false"
+             Condition="'$(_JazorToolPath)' == '' and '@(_JazorEmitToolProjectReference)' != ''">
+      <Output TaskParameter="TargetOutputs" ItemName="_JazorEmitToolTarget" />
+    </MSBuild>
+
+    <PropertyGroup>
+      <_JazorToolPath Condition="'$(_JazorToolPath)' == '' and '@(_JazorEmitToolTarget)' != ''">@(_JazorEmitToolTarget)</_JazorToolPath>
+    </PropertyGroup>
+
+    <Error Condition="!Exists('$(_JazorToolPath)')"
+           Text="Could not locate Jazor.Emit. Install the Jazor package with its tools assets, or add a ProjectReference to Jazor.Emit for repository source builds." />
+  </Target>
+
   <Target Name="JazorDebug"
           AfterTargets="Build"
+          DependsOnTargets="_ResolveJazorEmitTool"
           Condition="'$(DesignTimeBuild)' != 'true' and '$(JazorMode)' == 'debug' and Exists('$(TargetPath)')">
     <PropertyGroup>
       <_JazorDebugOutputDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorDir)')), '[\\/]+$', ''))</_JazorDebugOutputDir>
       <_JazorDebugManifestPath>$(_JazorDebugOutputDir)\jazor-manifest.json</_JazorDebugManifestPath>
-      <_JazorToolPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\tools\net11.0\Jazor.Emit.dll'))</_JazorToolPath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -21,13 +47,13 @@
 
   <Target Name="JazorRelease"
           AfterTargets="Build"
+          DependsOnTargets="_ResolveJazorEmitTool"
           Condition="'$(DesignTimeBuild)' != 'true' and '$(JazorMode)' == 'release' and Exists('$(TargetPath)')">
     <PropertyGroup>
       <_JazorReleaseArtifactDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)jazor-release')), '[\\/]+$', ''))</_JazorReleaseArtifactDir>
       <_JazorReleaseManifestPath>$(_JazorReleaseArtifactDir)\jazor-manifest.json</_JazorReleaseManifestPath>
       <_JazorReleaseOutputDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorDir)')), '[\\/]+$', ''))</_JazorReleaseOutputDir>
       <_JazorToolSourceRoot>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)'))</_JazorToolSourceRoot>
-      <_JazorToolPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\tools\net11.0\Jazor.Emit.dll'))</_JazorToolPath>
     </PropertyGroup>
 
     <ItemGroup>

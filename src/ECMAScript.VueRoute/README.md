@@ -1,13 +1,15 @@
 # ECMAScript.VueRoute
 
+> Purpose: standalone Vue Router 4 binding and strongly typed C# authoring surface.
+
 `ECMAScript.VueRoute` 是参照 `ECMAScript.Vue3` 风格建立的独立外部库项目，负责把 `vue-router` 4 的高频运行时 API 映射成可在 C# / Jazor authoring 中直接使用的宿主绑定。
 
 ## Install
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.26" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.26" />
+  <PackageReference Include="Jazor" Version="0.1.31" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.31" />
 </ItemGroup>
 ```
 
@@ -19,6 +21,7 @@
 - `useRouter()` / `useRoute()` / `useLink()`
 - 官方公开注入 key：`routerKey` / `routeLocationKey` / `routerViewLocationKey` / `matchedRouteKey` / `viewDepthKey`
 - `RouterLink` / `RouterView`
+- `VueRouterLink` Razor authoring proxy，使用强类型 `RouteLocationRaw` 目标并生成真实的 `RouterLink` 组件导入
 - 路由记录、路由位置、基础查询参数/路由参数对象
 - 常用导航 API：`push` / `replace` / `resolve` / `beforeEach` / `beforeResolve` / `afterEach`
 

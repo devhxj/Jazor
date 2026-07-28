@@ -63,6 +63,55 @@ public sealed class RazorVueAnalyzerScopeTests
         Assert.IsTrue(diagnostics.Any(static diagnostic => diagnostic.Id == "JAZOR001"));
     }
 
+    [TestMethod]
+    public async Task VueDescriptorNamedArguments_DoNotTriggerRuntimeWhitelistDiagnostics()
+    {
+        var diagnostics = await AnalyzeAsync(
+            """
+            using ECMAScript;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using static ECMAScript.Vue3;
+
+            [ECMAScriptModule("./components/counter")]
+            [VueProp(nameof(Title), Name = "runtimeTitle", Required = true)]
+            public sealed class Counter : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public string Title { get; set; } = string.Empty;
+            }
+            """);
+
+        Assert.IsFalse(diagnostics.Any(static diagnostic => diagnostic.Id == "JAZOR001"),
+            string.Join(Environment.NewLine, diagnostics));
+    }
+
+    [TestMethod]
+    public async Task VueLibraryComponentTypeArgument_IsAcceptedAsHostComponent()
+    {
+        var diagnostics = await AnalyzeAsync(
+            """
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using static ECMAScript.Vue3;
+
+            [ECMAScriptModule("./components/counter")]
+            public sealed class Counter : ComponentBase, IVueComponent
+            {
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.OpenComponent<VueRouterLink>(0);
+                    builder.AddComponentParameter(1, nameof(VueRouterLink.To), (RouteLocationRaw)"/");
+                    builder.CloseComponent();
+                }
+            }
+            """);
+
+        Assert.IsFalse(diagnostics.Any(static diagnostic => diagnostic.Id == "JAZOR001"),
+            string.Join(Environment.NewLine, diagnostics));
+    }
+
     private static async Task<ImmutableArray<Diagnostic>> AnalyzeAsync(string source)
     {
         var compilation = CSharpCompilation.Create(

@@ -15,7 +15,7 @@
 
 - `src/ECMAScript/`
 - `src/Jazor.CLR/`
-- `src/ECMAScript.Vue/`
+- `src/ECMAScript.Vue3/`
 - `src/ECMAScript.Vuetify/`
 
 生成器按源码扫描工作，不依赖运行时反射装载这些项目。
@@ -49,7 +49,7 @@
 dotnet run --project src/Jazor.Compiler.Generator/Jazor.Compiler.Generator.csproj
 ```
 
-修改 `Jazor.CLR`、`ECMAScript`、`ECMAScript.Vue`、`ECMAScript.Vuetify` 中的 `[Jazor]` 声明后，都应该重新执行一次。
+修改 `Jazor.CLR`、`ECMAScript`、`ECMAScript.Vue3`、`ECMAScript.Vuetify` 中的 `[Jazor]` 声明后，都应该重新执行一次。
 
 ## Output Files
 

@@ -25,8 +25,8 @@ public partial class SemanticWalker
 			{
 				null => Null,
 				bool b => new BooleanLiteral(b, b.ToString().ToLower()),
-				char c => new StringLiteral(c.ToString(), $"'{c}'"),
-				string s => new StringLiteral(s, $"'{s}'"),
+				char c => CreateStringLiteral(c.ToString()),
+				string s => CreateStringLiteral(s),
 				sbyte sb => new NumericLiteral(sb, sb.ToString()),
 				byte b => new NumericLiteral(b, b.ToString()),
 				short s => new NumericLiteral(s, s.ToString()),

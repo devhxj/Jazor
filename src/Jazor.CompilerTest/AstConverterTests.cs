@@ -7085,9 +7085,15 @@ export function readFile(value) {
                 [System.Runtime.CompilerServices.Union]
                 public readonly struct SystemUnionMarker : System.Runtime.CompilerServices.IUnion
                 {
+                    public SystemUnionMarker(string value)
+                    {
+                    }
+
                     public string? AsString => default;
 
                     public object? Value => default;
+
+                    public static implicit operator SystemUnionMarker(string value) => default;
                 }
             }
             """;
@@ -7257,9 +7263,15 @@ export function readValue(value) {
                 [System.Runtime.CompilerServices.Union]
                 public readonly struct PlainSystemUnion : System.Runtime.CompilerServices.IUnion
                 {
+                    public PlainSystemUnion(string value)
+                    {
+                    }
+
                     public string? AsString => default;
 
                     public object? Value => default;
+
+                    public static implicit operator PlainSystemUnion(string value) => default;
                 }
             }
             """;
@@ -15730,7 +15742,9 @@ export function create() {{
         Assert.IsNotNull(script);
         Assert.IsFalse(script.Contains("import {", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("export const RuntimeModule = {", StringComparison.Ordinal), script);
-        StringAssert.Contains(script, "this.items = materializeArray(collection);");
+        StringAssert.Contains(script, "get items() {");
+        StringAssert.Contains(script, "= materializeArray(collection);");
+        Assert.IsFalse(script.Contains("this.items =", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "return new JQueue(\"$ctor_");
     }
 

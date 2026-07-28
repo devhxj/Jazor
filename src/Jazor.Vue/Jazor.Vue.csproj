@@ -1,0 +1,66 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <PackageId>Jazor.Vue</PackageId>
+    <Authors>hanxj</Authors>
+    <Description>Opt-in Razor-to-Vue generator-driver integration for Jazor.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/devhxj/Jazor</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/devhxj/Jazor</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageTags>jazor;razor;vue;source-generator</PackageTags>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == '' and '$(DOTNET_CLI_HOME)' != ''">$([System.IO.Path]::Combine('$(DOTNET_CLI_HOME)', '.nuget', 'packages'))\</NuGetPackageRoot>
+    <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == '' and '$(UserProfile)' != ''">$([System.IO.Path]::Combine('$(UserProfile)', '.nuget', 'packages'))\</NuGetPackageRoot>
+    <JazorVuePackageBuildOutputRoot Condition="'$(JazorVuePackageBuildOutputRoot)' == '' and '$(JazorIsolatedBaseOutputRoot)' != ''">$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseOutputRoot)'))</JazorVuePackageBuildOutputRoot>
+    <JazorVuePackageBuildOutputRoot Condition="'$(JazorVuePackageBuildOutputRoot)' == ''">$(MSBuildThisFileDirectory)..\</JazorVuePackageBuildOutputRoot>
+    <JazorVuePackageArtifactRestoreProperties>Configuration=$(Configuration);BuildInParallel=false</JazorVuePackageArtifactRestoreProperties>
+    <JazorVuePackageArtifactBuildProperties>$(JazorVuePackageArtifactRestoreProperties);BuildProjectReferences=false</JazorVuePackageArtifactBuildProperties>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="" />
+    <None Include="..\..\LICENSE.txt" Pack="true" PackagePath="" />
+    <None Include="..\..\NOTICE.txt" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MinVer" Version="7.*" PrivateAssets="All" />
+    <PackageReference Include="Acornima.Extras" Version="$(AcornimaVersion)" GeneratePathProperty="true" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(JazorVuePackageBuildOutputRoot)Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
+    <None Include="$(JazorVuePackageBuildOutputRoot)Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_JazorVuePackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.Contract\ECMAScript.Contract.csproj" />
+    <_JazorVuePackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.Common\Jazor.Common.csproj" />
+    <_JazorVuePackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.VueContract\ECMAScript.VueContract.csproj" />
+    <_JazorVuePackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript\ECMAScript.csproj" />
+    <_JazorVuePackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
+    <_JazorVuePackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.Compiler\Jazor.Compiler.csproj" />
+    <_JazorVuePackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.RazorVue\Jazor.RazorVue.csproj" />
+  </ItemGroup>
+
+  <Target Name="PrepareJazorVuePackageArtifacts"
+          BeforeTargets="GenerateNuspec"
+          Condition="'$(JazorVuePreparePackageArtifacts)' != 'false'">
+    <MSBuild Projects="@(_JazorVuePackageBuildProject)"
+             Targets="Restore"
+             BuildInParallel="false"
+             Properties="$(JazorVuePackageArtifactRestoreProperties)"
+             RemoveProperties="TargetFramework;TargetFrameworkIdentifier;TargetFrameworkVersion;TargetFrameworkProfile;TargetPlatformIdentifier;TargetPlatformVersion;RuntimeIdentifier;SelfContained;PublishSingleFile;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath;ExcludeRestorePackageImports" />
+    <MSBuild Projects="@(_JazorVuePackageBuildProject)"
+             Targets="Build"
+             BuildInParallel="false"
+             Properties="$(JazorVuePackageArtifactBuildProperties)"
+             RemoveProperties="TargetFramework;TargetFrameworkIdentifier;TargetFrameworkVersion;TargetFrameworkProfile;TargetPlatformIdentifier;TargetPlatformVersion;RuntimeIdentifier;SelfContained;PublishSingleFile;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath;ExcludeRestorePackageImports" />
+  </Target>
+</Project>

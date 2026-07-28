@@ -79,6 +79,9 @@ jobs:
             --configuration Release `
             --output-directory 'artifacts/packages' `
             --package jazor `
+            --package jazor-vue `
+            --package jazor-css `
+            --package admin `
             --package pinia `
             --package pinia-testing `
             --package vueroute `

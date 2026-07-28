@@ -160,113 +160,35 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private IEnumerable<ImportDeclaration> BuildImportDeclarations(IReadOnlyList<Statement> members)
     {
-        var memberScript = BuildImportReferenceSearchText(members);
+        var referencedIdentifiers = CollectReferencedIdentifiers(members);
         foreach (var pair in _imports.OrderBy(static pair => pair.Key, System.StringComparer.Ordinal))
         {
             var uniqueSpecifiers = pair.Value
-                .GroupBy(static specifier => specifier.ToECMAScript(), System.StringComparer.Ordinal)
-                .Select(static group => group.First())
-                .Where(specifier => ShouldRetainImportSpecifier(specifier, memberScript))
+                .Where(specifier => ShouldRetainImportSpecifier(specifier, referencedIdentifiers))
                 .ToArray();
 
-            var defaultSpecifier = uniqueSpecifiers
-                .OfType<ImportDefaultSpecifier>()
-                .OrderBy(static specifier => specifier.Local.Name, System.StringComparer.Ordinal)
-                .FirstOrDefault();
-
-            var namespaceSpecifier = uniqueSpecifiers
-                .OfType<ImportNamespaceSpecifier>()
-                .OrderBy(static specifier => specifier.Local.Name, System.StringComparer.Ordinal)
-                .FirstOrDefault();
-
-            var namedSpecifiers = uniqueSpecifiers
-                .OfType<ImportSpecifier>()
-                .OrderBy(static specifier => specifier.ToECMAScript(), System.StringComparer.Ordinal)
-                .Select(static specifier =>
-                {
-                    var imported = specifier.Imported.ToECMAScript();
-                    var local = specifier.Local.Name;
-                    return string.Equals(imported, local, System.StringComparison.Ordinal)
-                        ? imported
-                        : $"{imported} as {local}";
-                })
-                .ToArray();
-
-            var importClauseParts = new List<string>();
-            if (defaultSpecifier is not null)
-                importClauseParts.Add(defaultSpecifier.Local.Name);
-            if (namespaceSpecifier is not null)
-                importClauseParts.Add("* as " + namespaceSpecifier.Local.Name);
-            if (namedSpecifiers.Length > 0)
-                importClauseParts.Add("{ " + string.Join(", ", namedSpecifiers) + " }");
-
-            if (importClauseParts.Count == 0)
-                continue;
-
-            var modulePath = EscapeJavaScriptString(pair.Key);
-            var importClause = string.Join(", ", importClauseParts);
-            var importScript = $"import {importClause} from \"{modulePath}\";";
-            var importStatement = new Parser().ParseModule(importScript).Body.Single() as ImportDeclaration;
-            if (importStatement is null)
-                throw new NotSupportedException($"Jazor 无法生成模块导入：{pair.Key}");
-
-            yield return importStatement;
+            foreach (var declaration in ImportDeclarationFactory.Create(
+                         pair.Key,
+                         uniqueSpecifiers))
+            {
+                yield return declaration;
+            }
         }
     }
 
-    private static string BuildImportReferenceSearchText(IReadOnlyList<Statement> members)
-    {
-        if (members.Count == 0)
-            return string.Empty;
+    private static HashSet<string> CollectReferencedIdentifiers(IReadOnlyList<Statement> members)
+        => AstReferenceAnalysis.CollectIdentifiers(members);
 
-        var builder = new StringBuilder();
-        foreach (var member in members)
-        {
-            if (builder.Length > 0)
-                builder.Append('\n');
-
-            builder.Append(member.ToECMAScript());
-        }
-
-        return builder.ToString();
-    }
-
-    private static bool ShouldRetainImportSpecifier(ImportDeclarationSpecifier specifier, string memberScript)
+    private static bool ShouldRetainImportSpecifier(
+        ImportDeclarationSpecifier specifier,
+        HashSet<string> referencedIdentifiers)
         => specifier switch
         {
-            ImportSpecifier named => IsImportedBindingReferenced(memberScript, named.Local.Name),
-            ImportDefaultSpecifier @default => IsImportedBindingReferenced(memberScript, @default.Local.Name),
-            ImportNamespaceSpecifier @namespace => IsImportedBindingReferenced(memberScript, @namespace.Local.Name),
+            ImportSpecifier named => referencedIdentifiers.Contains(named.Local.Name),
+            ImportDefaultSpecifier @default => referencedIdentifiers.Contains(@default.Local.Name),
+            ImportNamespaceSpecifier @namespace => referencedIdentifiers.Contains(@namespace.Local.Name),
             _ => true
         };
-
-    /// <summary>
-    /// 某些 lowering 路径会先绑定宿主类型导入，随后再折叠成更窄的 named import /
-    /// 直接调用表达式。这里在最终发射 import declaration 前做一次保守裁剪，
-    /// 避免把已经没有运行时引用的根宿主（例如 RuntimeModule）继续留在模块头。
-    /// </summary>
-    private static bool IsImportedBindingReferenced(string memberScript, string localName)
-    {
-        if (string.IsNullOrEmpty(memberScript) || string.IsNullOrEmpty(localName))
-            return false;
-
-        var index = 0;
-        while ((index = memberScript.IndexOf(localName, index, System.StringComparison.Ordinal)) >= 0)
-        {
-            var before = index == 0 ? '\0' : memberScript[index - 1];
-            var afterIndex = index + localName.Length;
-            var after = afterIndex >= memberScript.Length ? '\0' : memberScript[afterIndex];
-            if (!IsJavaScriptIdentifierPart(before) && !IsJavaScriptIdentifierPart(after))
-                return true;
-
-            index++;
-        }
-
-        return false;
-    }
-
-    private static bool IsJavaScriptIdentifierPart(char value)
-        => value == '$' || value == '_' || char.IsLetterOrDigit(value);
 
     private void MergeImports(in SenseArgument argument)
     {
@@ -275,10 +197,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             if (_imports.TryGetValue(pair.Key, out var list))
             {
                 foreach (var specifier in pair.Value)
-                {
-                    if (!list.Any(existing => existing.ToECMAScript() == specifier.ToECMAScript()))
-                        list.Add(specifier);
-                }
+                    list.Add(specifier);
             }
             else
                 _imports.Add(pair.Key, [.. pair.Value]);
@@ -891,7 +810,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 new NonLogicalBinaryExpression(
                     Operator.StrictEquality,
                     ctorIdentifier,
-                    new StringLiteral(lowering.HelperName, $"\"{lowering.HelperName}\"")),
+                    JavaScriptAstFactory.CreateStringLiteral(lowering.HelperName)),
                 new NestedBlockStatement(NodeList.From(branchStatements)),
                 null));
         }
@@ -900,9 +819,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             new NewExpression(
                 new Identifier("Error"),
                 NodeList.From<Expression>(
-                    new StringLiteral(
-                        $"No matching constructor overload for {containingType.Name}.",
-                        $"\"No matching constructor overload for {containingType.Name}.\"")))));
+                    JavaScriptAstFactory.CreateStringLiteral(
+                        $"No matching constructor overload for {containingType.Name}.")))));
 
         return new MethodDefinition(
             PropertyKind.Method,
@@ -1276,7 +1194,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             HasMultipleExplicitConstructors(baseType))
         {
             var helperName = GetMemberConstructorHelperName(baseConstructor);
-            arguments.Add(new StringLiteral(helperName, $"\"{helperName}\""));
+            arguments.Add(JavaScriptAstFactory.CreateStringLiteral(helperName));
         }
 
         var body = new FunctionBody(
@@ -1335,7 +1253,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 .ToList();
 
         if (baseConstructorSymbol is not null && HasMultipleExplicitConstructors(baseConstructorSymbol.ContainingType))
-            arguments.Insert(0, new StringLiteral(GetMemberConstructorHelperName(baseConstructorSymbol), $"\"{GetMemberConstructorHelperName(baseConstructorSymbol)}\""));
+            arguments.Insert(0, JavaScriptAstFactory.CreateStringLiteral(GetMemberConstructorHelperName(baseConstructorSymbol)));
 
         return NodeList.From(arguments);
     }
@@ -1550,8 +1468,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         {
             null => new NullLiteral("null"),
             bool b => new BooleanLiteral(b, b.ToString().ToLowerInvariant()),
-            char c => new StringLiteral(c.ToString(), $"\"{EscapeJavaScriptString(c.ToString())}\""),
-            string s => new StringLiteral(s, $"\"{EscapeJavaScriptString(s)}\""),
+            char c => JavaScriptAstFactory.CreateStringLiteral(c.ToString()),
+            string s => JavaScriptAstFactory.CreateStringLiteral(s),
             sbyte sb => new NumericLiteral(sb, sb.ToString(CultureInfo.InvariantCulture)),
             byte b => new NumericLiteral(b, b.ToString(CultureInfo.InvariantCulture)),
             short s => new NumericLiteral(s, s.ToString(CultureInfo.InvariantCulture)),
@@ -1581,21 +1499,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
         expression = null!;
         return false;
-    }
-
-    private static string EscapeJavaScriptString(string value)
-    {
-        return value
-            .Replace("\\", "\\\\")
-            .Replace("\"", "\\\"")
-            .Replace("\0", "\\0")
-            .Replace("\a", "\\a")
-            .Replace("\b", "\\b")
-            .Replace("\f", "\\f")
-            .Replace("\n", "\\n")
-            .Replace("\r", "\\r")
-            .Replace("\t", "\\t")
-            .Replace("\v", "\\v");
     }
 
     private sealed record ModuleNamePlan(

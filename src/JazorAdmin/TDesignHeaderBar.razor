@@ -1,0 +1,32 @@
+@inherits AdminComponentBase
+
+<div class="@RootCssClass" style="@CssStyle" @attributes="AdditionalAttributes">
+    <div class='@("jazor-admin-tdesign-header__main")'>
+        @if (Logo is not null)
+        {
+            <div class='@("jazor-admin-tdesign-header__logo")'>@Logo</div>
+        }
+
+        <div class='@("jazor-admin-tdesign-header__titles")'>
+            @if (!string.IsNullOrWhiteSpace(Title))
+            {
+                <div class='@("jazor-admin-tdesign-header__title")'>@Title</div>
+            }
+            @if (!string.IsNullOrWhiteSpace(Subtitle))
+            {
+                <div class='@("jazor-admin-tdesign-header__subtitle")'>@Subtitle</div>
+            }
+        </div>
+    </div>
+
+    @if (Navigation is not null)
+    {
+        <div class='@("jazor-admin-tdesign-header__navigation")'
+             data-shell-region="navigation">@Navigation</div>
+    }
+
+    <div class='@("jazor-admin-tdesign-header__actions")'>
+        @Actions
+        @UserRegion
+    </div>
+</div>

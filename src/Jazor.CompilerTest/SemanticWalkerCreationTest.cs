@@ -746,7 +746,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitInterpolatedString(operation, new());
         var script = node?.ToECMAScript();
 
-        AssertScriptEqual("'Hello, World!'", script);
+        AssertScriptEqual("\"Hello, World!\"", script);
     }
 
     [TestMethod]

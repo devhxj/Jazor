@@ -218,7 +218,7 @@ public sealed class SemanticWalkerStringTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  let message = 'Hello World';
+  let message = ""Hello World"";
 }", script);
 	}
 
@@ -845,8 +845,7 @@ public sealed class SemanticWalkerStringTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let message = 'Line1
-Line2';
+  let message = ""Line1\nLine2"";
 }", script);
 
 	}
@@ -873,7 +872,7 @@ Line2';
 		var node = walker.Visit(block, new());
 		var script = node?.ToECMAScript();
 
-		Assert.AreEqual("{let message='Text\r\nMore'}", script);
+		Assert.AreEqual("{let message=\"Text\\r\\nMore\"}", script);
 	}
 
 	/// <summary>

@@ -13,7 +13,7 @@
 - Remove stale module and source-map files when clean output is requested.
 - Bundle manifest modules through `DenoHost` while preserving root-assembly exports and chained source maps.
 
-RazorVue catalog, SFC, bridge, consumer-entry, host-sidecar, and update-plan contracts were retired after the Razor SG G0 gate. They are not part of this tool's CLI or manifest model.
+`Jazor.Emit` 不负责 Razor Hook、官方 Razor Source Generator 的运行、Compiler lowering 或开发服务器协议。它只消费上游已完成的 catalog，并将模块图物化为调试文件或生产 Bundle。
 
 ## Key Files
 

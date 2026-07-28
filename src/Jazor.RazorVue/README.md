@@ -18,14 +18,16 @@
 
 - production 输入只来自 `GeneratorDriver.RunGeneratorsAndUpdateCompilation` 返回的最终 compilation。
 - 不在 analyzer 内私自运行 Razor SG，不回读 `.razor` 文件，不从零创建或二次解析 generated C# compilation，也不维护 HostOutput 生成主线。
-- 本项目不再拥有 Razor-to-SFC frontend、catalog/artifact lowering、RazorVue authoring analyzer 或 Jolt/Vue RPC 协议。
-- `Jazor.RazorVue.Generator` 负责 generator driver 完成边界的 hook 和诊断。
+- 本项目不拥有 Razor-to-SFC frontend、RazorVue authoring analyzer 或宿主 RPC 协议。
+- `Generation/` 负责 generator driver 完成边界的 hook、入口和诊断；它与 lowering 编译到同一个 `Jazor.RazorVue` analyzer 程序集，但保持独立的内部职责边界。
 - 后续 render-function lowering 通过 `Jazor.Compiler` 的正式翻译入口消费这里提供的 Roslyn 语义，不在适配层手拼 JavaScript 或 Acornima AST。
 - `Runtime/` 下的 render-context v1 JavaScript 作为 `@jazor/vue-runtime` 资产嵌入程序集；它负责 frame stack、VNode materialization、Vue runtime framing，以及将 RenderTreeBuilder event attribute（如 `onclick` / `@onclick`）规范化为 Vue `h()` handler prop（如 `onClick`）。
 - `.mjs`、source map、manifest 和 bundle 的物化属于 `Jazor.Emit`。
 
 ## Current Layout
 
+- `Generation/RazorVueGenerator.cs`: analyzer generator 入口与 driver hook 初始化。
+- `Generation/RazorSourceGeneratorTailOutput.cs`: final compilation -> render catalog carrier。
 - `RazorSdk/RazorSgGeneratedCSharpBinder.cs`: final generated C# 与 `BuildRenderTree` 语义绑定。
 - `RazorSdk/RazorSgComponentCandidateSelector.cs`: RazorVue 组件发现、筛选与唯一匹配。
 - `RazorSdk/RazorSgComponentMemberClosureBuilder.cs`: SG binding -> compiler current-component closure/options 适配。
@@ -38,7 +40,6 @@
 ```powershell
 dotnet build src/Jazor.RazorVue/Jazor.RazorVue.csproj --no-restore -v minimal
 dotnet build src/Jazor.Analyzer/Jazor.Analyzer.csproj --no-restore -v minimal
-dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --no-restore --filter "FullyQualifiedName~RazorVueLegacySourceRetirementTests"
 dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --no-restore --filter 'ComponentMemberClosure|FinalDocument|GeneratedCSharpBinder' -v minimal /nr:false /p:UseSharedCompilation=false
 dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --no-restore --filter 'BuildVueComponentModule_SourceMapChainsCompilerSegmentsToOriginalRazor|BuildVueComponentModule_UsesCSharpDefaultsForUninitializedState|BuildVueComponentModule_EmitsSetupScopedRenderFunction|BuildVueComponentModule_RuntimeKeepsStateInitializerOnceAndStableHandler' -v minimal /nr:false /p:UseSharedCompilation=false
 ```

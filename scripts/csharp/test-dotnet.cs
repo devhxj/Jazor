@@ -8,12 +8,14 @@ var dotnetCliHome = Path.Combine(repoRoot, ".dotnet");
 
 var compilerTestProject = Path.Combine(repoRoot, "src", "Jazor.CompilerTest", "Jazor.CompilerTest.csproj");
 var clrTestProject = Path.Combine(repoRoot, "src", "Jazor.CLR.Test", "Jazor.CLR.Test.csproj");
+var cssTestProject = Path.Combine(repoRoot, "src", "Jazor.Css.Test", "Jazor.Css.Test.csproj");
 var piniaTestProject = Path.Combine(repoRoot, "src", "ECMAScript.Pinia.Test", "ECMAScript.Pinia.Test.csproj");
 var piniaTestingTestProject = Path.Combine(repoRoot, "src", "ECMAScript.Pinia.Testing.Test", "ECMAScript.Pinia.Testing.Test.csproj");
 var vueRouteTestProject = Path.Combine(repoRoot, "src", "ECMAScript.VueRoute.Test", "ECMAScript.VueRoute.Test.csproj");
 var razorSgTestProject = Path.Combine(repoRoot, "src", "Jazor.RazorVue.Sg.Test", "Jazor.RazorVue.Sg.Test.csproj");
 var emitTestProject = Path.Combine(repoRoot, "src", "Jazor.EmitTest", "Jazor.EmitTest.csproj");
 var renderContextTestScript = Path.Combine("scripts", "csharp", "test-render-context.cs");
+var cssBrowserTestScript = Path.Combine("scripts", "csharp", "verify-jazor-css-browser.cs");
 
 if (options.Project == "render-context")
 {
@@ -23,6 +25,15 @@ if (options.Project == "render-context")
     }
 
     await ScriptHelpers.RunDotNetAsync(["run", "--file", renderContextTestScript], repoRoot, dotnetCliHome);
+    return;
+}
+
+if (options.Project == "css-browser")
+{
+    if (!string.IsNullOrWhiteSpace(options.Filter))
+        throw new InvalidOperationException("--filter is not supported for the Jazor.Css browser smoke.");
+
+    await ScriptHelpers.RunDotNetAsync(["run", "--file", cssBrowserTestScript], repoRoot, dotnetCliHome);
     return;
 }
 
@@ -73,6 +84,7 @@ var testTargets = options.Project switch
 {
     "compiler" => new[] { compilerTestProject },
     "clr" => new[] { clrTestProject },
+    "css" => new[] { cssTestProject },
     "pinia" => new[] { piniaTestProject },
     "pinia-testing" => new[] { piniaTestingTestProject },
     "vueroute" => new[] { vueRouteTestProject },
@@ -82,6 +94,7 @@ var testTargets = options.Project switch
     {
         compilerTestProject,
         clrTestProject,
+        cssTestProject,
         piniaTestProject,
         piniaTestingTestProject,
         vueRouteTestProject,
@@ -89,6 +102,14 @@ var testTargets = options.Project switch
         emitTestProject
     }
 };
+
+if (testTargets.Contains(cssTestProject, StringComparer.OrdinalIgnoreCase))
+{
+    await ScriptHelpers.RunDotNetAsync(
+        ["run", "--file", Path.Combine("scripts", "csharp", "generate-jazor-css-properties.cs"), "--", "--check"],
+        repoRoot,
+        dotnetCliHome);
+}
 
 var sharedBuildPathArguments = ScriptHelpers.GetSharedBuildPathArguments(repoRoot, options.BaseOutputPath, options.BaseIntermediateOutputPath);
 var buildTarget = testTargets.Length > 1 ? Path.Combine(repoRoot, "Jazor.slnx") : testTargets[0];
@@ -177,8 +198,8 @@ internal sealed record ScriptArguments
         var normalized = project.Trim().ToLowerInvariant();
         var supported = new HashSet<string>(StringComparer.Ordinal)
         {
-            "all", "compiler", "clr", "pinia", "pinia-testing", "vueroute", "razor-sg",
-            "emit", "render-context", "wiki", "wiki-publish", "wiki-browser", "wiki-browser-publish"
+            "all", "compiler", "clr", "css", "pinia", "pinia-testing", "vueroute", "razor-sg",
+            "emit", "render-context", "css-browser", "wiki", "wiki-publish", "wiki-browser", "wiki-browser-publish"
         };
 
         if (!supported.Contains(normalized))
@@ -204,7 +225,7 @@ internal sealed record ScriptArguments
     {
         Console.WriteLine("Usage: dotnet run --file scripts/csharp/test-dotnet.cs -- [options]");
         Console.WriteLine("Options:");
-        Console.WriteLine("  --project <all|compiler|clr|pinia|pinia-testing|vueroute|razor-sg|emit|render-context|wiki|wiki-publish|wiki-browser|wiki-browser-publish>");
+        Console.WriteLine("  --project <all|compiler|clr|css|css-browser|pinia|pinia-testing|vueroute|razor-sg|emit|render-context|wiki|wiki-publish|wiki-browser|wiki-browser-publish>");
         Console.WriteLine("  --configuration <Debug|Release>");
         Console.WriteLine("  --filter <expression>");
         Console.WriteLine("  --base-output-path <path>");

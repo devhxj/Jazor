@@ -70,6 +70,27 @@ public static class Util
             sourceRootPath,
             readSourceContent);
 
+    internal static GeneratedJavaScriptLayout ToKnRECMAScriptWithSourceMapAndNodePositions(
+        this Node node,
+        string generatedFileName = "module.mjs",
+        bool includeSourcesContent = true,
+        string? sourceRootPath = null,
+        Func<string, string?>? readSourceContent = null)
+        => SourceMapEmitter.EmitWithNodePositions(
+            node,
+            KnRJavaScriptTextFormatterOptions.Default,
+            AstToJavaScriptOptions.Default,
+            generatedFileName,
+            includeSourcesContent,
+            sourceRootPath,
+            readSourceContent);
+
+    internal static GeneratedJavaScriptNodeLayout ToKnRECMAScriptWithNodePositions(this Node node)
+        => SourceMapEmitter.EmitNodeLayout(
+            node,
+            KnRJavaScriptTextFormatterOptions.Default,
+            AstToJavaScriptOptions.Default);
+
     /// <summary>
     /// 以默认 writer 选项输出 ECMAScript 文本。
     /// </summary>

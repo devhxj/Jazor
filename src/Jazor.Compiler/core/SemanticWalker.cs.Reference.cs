@@ -489,7 +489,7 @@ public partial class SemanticWalker
 		// 两边已经一致时，通常交给普通路径继续输出即可。
 		// 但“具体宿主是从泛型约束恢复出来”的场景例外：普通路径会退回声明宿主，
 		// 例如又变回 TypedArray.BYTES_PER_ELEMENT，因此这里仍要显式输出运行时宿主。
-		if (syntaxHost.ToECMAScript() == runtimeHost.ToECMAScript())
+		if (AstReferenceAnalysis.AreEquivalentReference(syntaxHost, runtimeHost))
 		{
 			if (specializedRuntimeHostType is null)
 				return false;
@@ -1081,7 +1081,7 @@ public partial class SemanticWalker
 			(inner[0] == '\'' && inner[inner.Length - 1] == '\''))
 		{
 			var literal = inner.Substring(1, inner.Length - 2);
-			property = new StringLiteral(literal, $"\"{EscapeJavaScriptString(literal)}\"");
+			property = CreateStringLiteral(literal);
 			return true;
 		}
 
@@ -1096,19 +1096,17 @@ public partial class SemanticWalker
 
 	private static ThrowStatement BuildThrowErrorStatement(string message)
 	{
-		var escapedMessage = message.Replace("\\", "\\\\").Replace("\"", "\\\"");
 		var errorExpression = new NewExpression(
 			new Identifier("Error"),
-			NodeList.From<Expression>(new StringLiteral(message, $"\"{escapedMessage}\"")));
+			NodeList.From<Expression>(CreateStringLiteral(message)));
 		return new ThrowStatement(errorExpression);
 	}
 
 	private static ThrowStatement BuildThrowTypeErrorStatement(string message)
 	{
-		var escapedMessage = message.Replace("\\", "\\\\").Replace("\"", "\\\"");
 		var errorExpression = new NewExpression(
 			new Identifier("TypeError"),
-			NodeList.From<Expression>(new StringLiteral(message, $"\"{escapedMessage}\"")));
+			NodeList.From<Expression>(CreateStringLiteral(message)));
 		return new ThrowStatement(errorExpression);
 	}
 
@@ -1465,7 +1463,7 @@ private bool TryExpandEcmascriptParamsArgument(
 					"PadRight" when arguments.Count == 2 =>
 						BuildInstanceMethodCall(instance, "padEnd", arguments[0], arguments[1]),
 					"ToCharArray" when arguments.Count == 0 =>
-						BuildInstanceMethodCall(instance, "split", new StringLiteral("", "\"\"")),
+						BuildInstanceMethodCall(instance, "split", CreateStringLiteral("")),
 					"ToCharArray" when arguments.Count == 2 =>
 						BuildInstanceMethodCall(
 							BuildInstanceMethodCall(
@@ -1474,7 +1472,7 @@ private bool TryExpandEcmascriptParamsArgument(
 								arguments[0],
 								new NonLogicalBinaryExpression(Operator.Addition, arguments[0], arguments[1])),
 							"split",
-							new StringLiteral("", "\"\"")),
+							CreateStringLiteral("")),
 					"ToLowerInvariant" when arguments.Count == 0 =>
 						BuildInstanceMethodCall(instance, "toLowerCase"),
 					"ToUpperInvariant" when arguments.Count == 0 =>

@@ -34,13 +34,17 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
     private readonly string _propsIdentifier;
     private readonly IReadOnlyDictionary<string, string>? _parameterRuntimeNames;
     private readonly IReadOnlyDictionary<ISymbol, string>? _memberRuntimeNames;
+    private readonly Func<IParameterReferenceOperation, SenseArgument, Expression?>? _parameterReferenceRewriter;
+    private readonly Func<ILocalReferenceOperation, SenseArgument, Expression?>? _localReferenceRewriter;
 
     public CurrentComponentSemanticWalkerHost(
         INamedTypeSymbol componentType,
         string stateIdentifier = "state",
         string propsIdentifier = "props",
         IReadOnlyDictionary<string, string>? parameterRuntimeNames = null,
-        IReadOnlyDictionary<ISymbol, string>? memberRuntimeNames = null)
+        IReadOnlyDictionary<ISymbol, string>? memberRuntimeNames = null,
+        Func<IParameterReferenceOperation, SenseArgument, Expression?>? parameterReferenceRewriter = null,
+        Func<ILocalReferenceOperation, SenseArgument, Expression?>? localReferenceRewriter = null)
     {
         _componentType = componentType ?? throw new ArgumentNullException(nameof(componentType));
         if (string.IsNullOrWhiteSpace(stateIdentifier))
@@ -52,7 +56,19 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         _propsIdentifier = propsIdentifier;
         _parameterRuntimeNames = parameterRuntimeNames;
         _memberRuntimeNames = memberRuntimeNames;
+        _parameterReferenceRewriter = parameterReferenceRewriter;
+        _localReferenceRewriter = localReferenceRewriter;
     }
+
+    public override Expression? RewriteParameterReference(
+        IParameterReferenceOperation operation,
+        SenseArgument argument)
+        => _parameterReferenceRewriter?.Invoke(operation, argument);
+
+    public override Expression? RewriteLocalReference(
+        ILocalReferenceOperation operation,
+        SenseArgument argument)
+        => _localReferenceRewriter?.Invoke(operation, argument);
 
     public override Expression? RewriteInvocationPreorder(IInvocationOperation operation, SenseArgument argument)
     {
@@ -113,11 +129,17 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         if (IsRazorRuntimeHelpersTypeCheck(operation.TargetMethod))
             return RewriteRazorRuntimeHelpersTypeCheck(operation, arguments);
 
+        if (IsSingleValueBindConverterFormatValue(operation) && arguments.Count > 0)
+            return arguments[0];
+
         // VisitInvocation calls this before RejectUnsupportedRuntimeFallback.
-        if (IsEventCallbackInvoke(operation.TargetMethod) &&
-            TryGetCurrentComponentEventCallbackParameter(operation.Instance) is IPropertySymbol eventCallbackParameter)
+        if (IsEventCallbackInvoke(operation.TargetMethod))
         {
-            return RewriteEventCallbackInvoke(eventCallbackParameter, arguments);
+            if (TryGetCurrentComponentEventCallbackParameter(operation.Instance) is IPropertySymbol eventCallbackParameter)
+                return RewriteEventCallbackInvoke(eventCallbackParameter, arguments);
+
+            if (instance is not null)
+                return RewriteEventCallbackInvoke(instance, arguments);
         }
 
         if (TryRewriteCurrentComponentPropertyAccessorInvocation(operation, arguments, out var propertyAccessorExpression))
@@ -397,6 +419,7 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         {
             IConversionOperation conversion => RewriteEventCallbackHandler(conversion.Operand, argument),
             IDelegateCreationOperation delegateCreation => RewriteEventCallbackHandler(delegateCreation.Target, argument),
+            IConditionalOperation conditional => RewriteConditionalEventCallbackHandler(conditional, argument),
             IAnonymousFunctionOperation anonymousFunction
                 => RewriteBinderHandler(anonymousFunction) ??
                    RewriteEventCallbackLambdaHandler(anonymousFunction, argument),
@@ -409,6 +432,25 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
                     => BuildPropsAccess(propertyReference.Property),
             _ => null
         };
+
+    private Expression? RewriteConditionalEventCallbackHandler(
+        IConditionalOperation operation,
+        SenseArgument argument)
+    {
+        if (operation.WhenFalse is null)
+            return null;
+
+        var walker = new SemanticWalker(true)
+        {
+            Host = this
+        };
+        var test = walker.Visit(operation.Condition, argument) as Expression;
+        var consequent = RewriteEventCallbackHandler(operation.WhenTrue, argument);
+        var alternate = RewriteEventCallbackHandler(operation.WhenFalse, argument);
+        return test is not null && consequent is not null && alternate is not null
+            ? new ConditionalExpression(test, consequent, alternate)
+            : null;
+    }
 
     private Expression? RewriteEventCallbackLambdaHandler(
         IAnonymousFunctionOperation anonymousFunction,
@@ -428,6 +470,21 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
                method.ContainingType?.OriginalDefinition.ToDisplayString(Format.NameFormat),
                EventCallbackFactoryMetadataName,
                StringComparison.Ordinal);
+
+    private static bool IsBindConverterFormatValue(IMethodSymbol method)
+        => method.IsStatic &&
+           string.Equals(method.Name, "FormatValue", StringComparison.Ordinal) &&
+           method.ContainingType is { Name: "BindConverter" } containingType &&
+           string.Equals(
+               containingType.ContainingNamespace?.ToDisplayString(),
+               "Microsoft.AspNetCore.Components",
+               StringComparison.Ordinal);
+
+    private static bool IsSingleValueBindConverterFormatValue(IInvocationOperation operation)
+        => IsBindConverterFormatValue(operation.TargetMethod) &&
+           operation.Arguments.Length > 0 &&
+           operation.Arguments[0].ArgumentKind != ArgumentKind.DefaultValue &&
+           operation.Arguments.Skip(1).All(static argument => argument.ArgumentKind == ArgumentKind.DefaultValue);
 
     private static bool IsEventCallbackFactoryCreateBinder(IMethodSymbol method)
         => string.Equals(method.Name, "CreateBinder", StringComparison.Ordinal) &&
@@ -539,11 +596,16 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
     private Expression RewriteEventCallbackInvoke(IPropertySymbol parameter, IReadOnlyList<Expression> arguments)
     {
         // EventCallback parameters lower as optional Vue listener props: props.onX?.(args...)
-        return new CallExpression(
-            BuildPropsAccess(parameter),
+        return RewriteEventCallbackInvoke(BuildPropsAccess(parameter), arguments);
+    }
+
+    private static Expression RewriteEventCallbackInvoke(
+        Expression callback,
+        IReadOnlyList<Expression> arguments)
+        => new CallExpression(
+            callback,
             NodeList.From(arguments),
             optional: true);
-    }
 
     private bool IsStateHasChangedInvocation(IMethodSymbol method, IOperation? instance)
     {
@@ -766,7 +828,7 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
                 optional: false)
             : new MemberExpression(
                 new Identifier(_propsIdentifier),
-                new StringLiteral(runtimeName, $"\"{EscapeJavaScriptString(runtimeName)}\""),
+                JavaScriptAstFactory.CreateStringLiteral(runtimeName),
                 computed: true,
                 optional: false);
     }
@@ -810,10 +872,4 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         return true;
     }
 
-    private static string EscapeJavaScriptString(string value)
-        => value
-            .Replace("\\", "\\\\")
-            .Replace("\"", "\\\"")
-            .Replace("\r", "\\r")
-            .Replace("\n", "\\n");
 }

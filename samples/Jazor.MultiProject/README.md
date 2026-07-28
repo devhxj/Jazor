@@ -1,5 +1,7 @@
 # Jazor.MultiProject
 
+> Purpose: multi-project module discovery and output-mode reference sample.
+
 This sample shows the recommended SDK layout for a multi-project solution:
 
 - `Sample.Contracts`: shared module library.
@@ -40,7 +42,7 @@ The script uses `Rebuild` on the host so local package/output caching does not l
 
 Generated output includes modules from all referenced projects that declare `[ECMAScriptModule]`.
 
-## Bundle with DenoHost
+## Production Bundle
 
 `JazorMode=release` uses `DenoHost`, so the sample does not depend on a globally installed `deno`.
 

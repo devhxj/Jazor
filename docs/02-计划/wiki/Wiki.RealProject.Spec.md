@@ -6,7 +6,7 @@
 
 目标用户：
 
-- 仓库维护者，需要一个真实站点承载 `Jazor` / `RazorVue` / `Jolt` 的产品与工程文档；
+- 仓库维护者，需要一个真实站点承载 `Jazor`、Razor-to-Vue、Compiler、Emit 与 ASP.NET Core 集成的产品与工程文档；
 - 新接入工程师，需要稳定的导航、路由、索引与部署说明；
 - 当前仓库自身，需要一个真实站点证明 H-function authoring 可以承载生产级页面结构，而不只是 sample。
 
@@ -30,7 +30,7 @@
 - Host: ASP.NET Core (`src/Wiki/Program.cs`)
 - Frontend authoring: `ECMAScript.Vue3`
 - UI bootstrap: `ECMAScript.Vuetify` runtime bootstrap retained
-- Emit: `JazorEmit` -> `wwwroot/jazor`
+- Output: `JazorMode=debug` -> `wwwroot/jazor`
 - Delivery: static `index.html` + emitted ESM modules
 
 ## Commands

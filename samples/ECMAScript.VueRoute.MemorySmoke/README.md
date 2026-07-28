@@ -1,5 +1,7 @@
 # ECMAScript.VueRoute.MemorySmoke
 
+> Purpose: external Vue Router binding, generated module, Deno Bundle, and browser-runtime smoke sample.
+
 This sample demonstrates the current `ECMAScript.VueRoute` consumer path with a Deno-based frontend:
 
 - author Vue Router 4 route tables, guards, links, and router-view composition in C#

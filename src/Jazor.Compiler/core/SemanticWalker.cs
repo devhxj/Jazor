@@ -1297,7 +1297,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 		if (location is null)
 			throw new ArgumentNullException(nameof(location));
 
-		var lineSpan = location.GetLineSpan();
+		var lineSpan = location.GetMappedLineSpan();
 		var sourcePath = !string.IsNullOrWhiteSpace(lineSpan.Path)
 			? lineSpan.Path
 			: location.SourceTree?.FilePath;

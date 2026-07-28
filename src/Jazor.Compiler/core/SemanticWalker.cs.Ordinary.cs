@@ -1450,7 +1450,7 @@ public partial class SemanticWalker
 		if (string.IsNullOrEmpty(name) || name is null)
 			return HandleTransformationFailure<Node>(operation.Argument, "NameOf expression could not be translated to JavaScript.");
 
-		return new StringLiteral(name, $"\"{name}\"");
+		return CreateStringLiteral(name);
 	}
 
 	/// <summary>
@@ -1548,7 +1548,7 @@ public partial class SemanticWalker
 		return type.SpecialType switch
 		{
 			SpecialType.System_Boolean => new BooleanLiteral(false, "false"),
-			SpecialType.System_Char => new StringLiteral("\0", "\"\\0\""),
+			SpecialType.System_Char => CreateStringLiteral("\0"),
 			SpecialType.System_String => Null,
 			SpecialType.System_SByte or
 			SpecialType.System_Byte or
@@ -1582,50 +1582,7 @@ public partial class SemanticWalker
 	}
 
 	private static StringLiteral CreateStringLiteral(string value)
-	{
-		if (string.IsNullOrEmpty(value))
-			return new StringLiteral("", "\"\"");
-
-		var escaped = new System.Text.StringBuilder();
-		foreach (char c in value)
-		{
-			switch (c)
-			{
-				case '\0':
-					escaped.Append("\\0");
-					break;
-				case '\b':
-					escaped.Append("\\b");
-					break;
-				case '\f':
-					escaped.Append("\\f");
-					break;
-				case '\n':
-					escaped.Append("\\n");
-					break;
-				case '\r':
-					escaped.Append("\\r");
-					break;
-				case '\t':
-					escaped.Append("\\t");
-					break;
-				case '\v':
-					escaped.Append("\\v");
-					break;
-				case '\\':
-					escaped.Append("\\\\");
-					break;
-				case '"':
-					escaped.Append("\\\"");
-					break;
-				default:
-					escaped.Append(c);
-					break;
-			}
-		}
-
-		return new StringLiteral(value, $"\"{escaped}\"");
-	}
+		=> JavaScriptAstFactory.CreateStringLiteral(value);
 
 	private void RejectUnsupportedDefaultValueTypeIfNeeded(IOperation operation, ITypeSymbol type)
 	{

@@ -2,9 +2,9 @@
 
 > Status: 活跃计划
 > Updated: 2026-05-05
-> Positioning: 记录从 Vue3 Phase 1 到 Phase 2/3 的过渡状态。Phase 1 完成项保留为历史完成记录；当前活跃关注点是 Razor -> `H(...)` 规范层与后续 Jolt 工程化协同。
+> Positioning: `ECMAScript.Vue3` host binding 与 `H(...)` authoring 的活跃实施计划。
 
-## 0. 三阶段总路线（H -> Razor->H -> Jolt）
+## 0. 实施路线（H -> RazorVue）
 
 `ECMAScript.Vue3` 按三阶段推进，防止把“库映射问题”和“工程化 authoring 问题”混在一个阶段里：
 
@@ -16,9 +16,9 @@
    - 目标是把 Razor authoring 稳定映射到 Phase 1 的 `H(...)` 规范层。
    - 重点是 canonical shape、诊断边界、语义一致性，而不是再扩张 `H(...)` overload。
 
-3. **Phase 3: Jolt 工程化协同（规划）**
-   - 在 Jolt 中承接 authoring、构建、调试的工程化闭环。
-   - 仍保持 Vue3 为外部库：不把 Vue 命名语义反向注入 compiler 核心。
+3. **交付与验证**
+   - 由 `Jazor.Vue`、RazorVue、Compiler 与 Emit 组成完整构建闭环。
+   - `ECMAScript.Vue3` 仍保持为外部库 binding，不把 Vue 命名语义反向注入 compiler 核心。
 
 ## 1. 计划目标
 
@@ -246,23 +246,23 @@
 重点：
 
 - Options API full surface、custom elements 的完整 authoring 策略先设计再实现。
-- SFC、template、SSR renderer、custom renderer 保持 separate workstream。
+- SFC、template、SSR renderer、custom renderer 保持独立工作流，不进入 `ECMAScript.Vue3` host binding。
 
 ## 5. 当前主线执行顺序（Phase 2 / Phase 3）
 
 1. Razor -> `H(...)` canonical lowering
-2. 基于 canonical `H(...)` 的 RazorVue 库模式 design-time SFC artifact 方案落地
+2. 基于 canonical `H(...)` 的 RazorVue render-function module 方案落地
 3. Razor 产物与手写 `H(...)` diagnostics 对齐
 4. 外部库 layout/proxy/doc guard 模板化
 5. higher-level `v-model` convenience 设计
 6. Options API 长尾与 custom elements authoring 策略
-7. Phase 3 的 Jolt 工程化协同
+7. RazorVue 与 Emit 的集成验证
 
 理由：
 
 - Phase 1 已完成，后续不应再把 canonical `H(...)` / object-literal / read-side bag 当作待设计项反复回填。
 - 下一阶段的核心是承接已完成 contract，而不是继续扩张 compiler Vue 特路。
-- 先把 Razor/Jolt 等上层工作流压到 Phase 1 contract 上，再讨论更高层 ergonomics。
+- 先把 RazorVue 上层工作流压到 Phase 1 contract 上，再讨论更高层 ergonomics。
 - 其中 RazorVue `h(...)` 发射已完成最小 arity 对齐：`h(component)` / `h(component, props)` / `h(component, slots)` / `h(element, child)` 等 canonical 形态不再携带多余 `null` 占位。
 - RazorVue 当前转型主线不再把库模式主工件改为 `.vue` SFC；Razor 组件输出合同是 render-function `.mjs`。Vue3 authoring 工作不得重新引入独立于 compiler mainline 的 SFC 模板语义。
 
@@ -274,11 +274,11 @@
 - object-literal / dictionary 路线（indexer / `Add(string, ...)` / initializer）具备统一语义和诊断边界。
 - read-side bag（`VueAttributeBag` / `VueSlotBag`）可覆盖 Razor 映射的基础读取场景。
 
-进入 Phase 3（Jolt）前至少满足：
+进入交付验证阶段前至少满足：
 
 - Razor -> H 产物在 compiler 输出语义上可预测、可诊断、可回归测试。
-- Jolt 只承接工程化闭环，不接管 Vue3 API 语义定义。
-- Vue3 相关语义变化能回流到 `ECMAScript.Vue3` 文档与测试，而不是散落到 Jolt 私有逻辑。
+- RazorVue 与 Emit 只承接工程化闭环，不接管 Vue3 API 语义定义。
+- Vue3 相关语义变化能回流到 `ECMAScript.Vue3` 文档与测试，而不是散落到消费侧私有逻辑。
 
 ## 6. 验证要求
 

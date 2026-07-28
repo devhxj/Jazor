@@ -7171,7 +7171,7 @@ var __toESM = (mod, isNodeMode, target2) => (target2 = mod != null ? __create(__
   // file that has been converted to a CommonJS file using a Babel-
   // compatible transform (i.e. "__esModule" has not been set), then set
   // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target2, "default", {
+  1 ? __defProp(target2, "default", {
     value: mod,
     enumerable: true
   }) : target2,
@@ -7674,10 +7674,6 @@ var Hookable = class {
 function createHooks() {
   return new Hookable();
 }
-
-// node_modules/.deno/birpc@2.9.0/node_modules/birpc/dist/index.mjs
-var { clearTimeout: clearTimeout2, setTimeout: setTimeout2 } = globalThis;
-var random = Math.random.bind(Math);
 
 // node_modules/.deno/@vue+devtools-kit@7.7.9/node_modules/@vue/devtools-kit/dist/index.js
 var __create2 = Object.create;

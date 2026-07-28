@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Acornima;
 using Acornima.Ast;
 using Jazor.Common;
 using Jazor.Compiler;
@@ -11,11 +12,13 @@ namespace Jazor.RazorVue.RazorSdk;
 internal static class RazorSgDirectRenderOperationEmitter
 {
     private const string RenderTreeBuilderMetadataName = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";
+    private const string MarkupStringMetadataName = "Microsoft.AspNetCore.Components.MarkupString";
     private const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
     private const string VueLibraryComponentAttributeMetadataName = "ECMAScript.VueContract.VueLibraryComponentAttribute";
     private const string VuePropAttributeMetadataName = "ECMAScript.VueContract.VuePropAttribute";
     private const string VueLibraryEmitAttributeMetadataName = "ECMAScript.VueContract.VueLibraryEmitAttribute";
     private const string VueSlotAttributeMetadataName = "ECMAScript.VueContract.VueSlotAttribute";
+    private const string ParameterAttributeMetadataName = "Microsoft.AspNetCore.Components.ParameterAttribute";
     private static readonly SymbolEqualityComparer SymbolComparer = SymbolEqualityComparer.Default;
 
     public static bool TryEmit(
@@ -24,6 +27,7 @@ internal static class RazorSgDirectRenderOperationEmitter
         IMethodSymbol buildRenderTreeMethod,
         IBlockOperation buildRenderTreeBody,
         IReadOnlyDictionary<ISymbol, string>? declaredNames,
+        RazorSgVueInjectRegistry injectRegistry,
         out RazorSgDirectRenderOperationBuildResult result,
         out string? failure)
     {
@@ -35,6 +39,8 @@ internal static class RazorSgDirectRenderOperationEmitter
             throw new ArgumentNullException(nameof(buildRenderTreeMethod));
         if (buildRenderTreeBody is null)
             throw new ArgumentNullException(nameof(buildRenderTreeBody));
+        if (injectRegistry is null)
+            throw new ArgumentNullException(nameof(injectRegistry));
 
         result = default!;
         failure = null;
@@ -47,17 +53,17 @@ internal static class RazorSgDirectRenderOperationEmitter
                 return false;
             }
 
-            var lowered = new Emitter(compilation, componentSymbol, declaredNames)
+            var lowered = new Emitter(compilation, componentSymbol, declaredNames, injectRegistry)
                 .EmitBlock(buildRenderTreeBody, BuilderBinding.ForSymbol(buildRenderTreeMethod.Parameters[0]));
             result = new RazorSgDirectRenderOperationBuildResult(
                 lowered.RenderExpression,
-                lowered.PreludeLines,
+                lowered.PreludeStatements,
                 UsesFragment: lowered.UsesFragment,
                 UsesStaticVNode: lowered.UsesStaticVNode,
-                UsesProps: lowered.RenderExpression.Contains("props.", StringComparison.Ordinal) ||
-                           lowered.PreludeLines.Any(static line => line.Contains("props.", StringComparison.Ordinal)),
+                UsesProps: AstReferenceAnalysis.ReferencesIdentifier(lowered.RenderExpression, "props") ||
+                           lowered.PreludeStatements.Any(static statement => AstReferenceAnalysis.ReferencesIdentifier(statement, "props")),
                 UsesSlots: lowered.UsesSlots,
-                lowered.ImportLines);
+                lowered.ImportDeclarations);
             return true;
         }
         catch (OperationTransformationException exception)
@@ -78,11 +84,14 @@ internal static class RazorSgDirectRenderOperationEmitter
         private readonly INamedTypeSymbol _componentSymbol;
         private readonly SemanticWalker _walker;
         private readonly SenseArgument _argument;
-        private readonly SortedDictionary<string, ImportBinding> _imports = new(StringComparer.Ordinal);
-        private readonly List<string> _preludeLines = new();
+        private readonly List<Statement> _preludeStatements = new();
+        private readonly List<VariableDeclaration> _renderFragmentPreludeDeclarations = new();
         private readonly Dictionary<string, int> _localNameCounts = new(StringComparer.Ordinal);
         private readonly ImmutableDictionary<IPropertySymbol, string> _componentSlotNames;
+        private readonly RazorSgVueInjectRegistry _injectRegistry;
+        private EmitContext? _activeExpressionContext;
         private readonly HashSet<IMethodSymbol> _activeRenderFragmentHelpers = new(SymbolComparer);
+        private readonly HashSet<IPropertySymbol> _activeRenderFragmentProperties = new(SymbolComparer);
         private readonly HashSet<IMethodSymbol> _activeRenderObjectHelpers = new(SymbolComparer);
         private readonly Dictionary<IMethodSymbol, string> _renderFragmentHelperFunctionNames = new(SymbolComparer);
         private readonly HashSet<IMethodSymbol> _emittingRenderFragmentHelperFunctions = new(SymbolComparer);
@@ -94,7 +103,8 @@ internal static class RazorSgDirectRenderOperationEmitter
         public Emitter(
             Compilation compilation,
             INamedTypeSymbol componentSymbol,
-            IReadOnlyDictionary<ISymbol, string>? declaredNames)
+            IReadOnlyDictionary<ISymbol, string>? declaredNames,
+            RazorSgVueInjectRegistry injectRegistry)
         {
             _compilation = compilation;
             _componentSymbol = componentSymbol;
@@ -103,10 +113,13 @@ internal static class RazorSgDirectRenderOperationEmitter
                 Host = new CurrentComponentSemanticWalkerHost(
                     componentSymbol,
                     parameterRuntimeNames: BuildComponentParameterNameMap(componentSymbol),
-                    memberRuntimeNames: declaredNames)
+                    memberRuntimeNames: declaredNames,
+                    parameterReferenceRewriter: RewriteDirectParameterReference,
+                    localReferenceRewriter: RewriteDirectLocalReference)
             };
             _argument = new SenseArgument(Sense.Any, UseImportAliases: true);
             _componentSlotNames = BuildComponentSlotNameMap(componentSymbol);
+            _injectRegistry = injectRegistry;
         }
 
         public LoweredRender EmitBlock(IBlockOperation block, BuilderBinding builder)
@@ -118,17 +131,21 @@ internal static class RazorSgDirectRenderOperationEmitter
                 ImmutableDictionary<ILocalSymbol, string>.Empty.WithComparers(SymbolComparer),
                 ImmutableDictionary<ILocalSymbol, DirectRenderFragment>.Empty.WithComparers(SymbolComparer),
                 ImmutableDictionary<ILocalSymbol, DirectRenderObject>.Empty.WithComparers(SymbolComparer),
-                _preludeLines,
-                AllowPreludeDeclarations: true);
+                ImmutableDictionary<ILocalSymbol, INamedTypeSymbol>.Empty.WithComparers(SymbolComparer),
+                ImmutableHashSet<ILocalSymbol>.Empty.WithComparer(SymbolComparer),
+                _preludeStatements,
+                AllowPreludeDeclarations: true,
+                Argument: _argument.WithNewScope());
             var state = new RenderState();
             _ = EmitOperations(block.Operations, context, state);
             if (state.Stack.Count != 0)
                 throw Unsupported(block, "RazorVue direct render operation lowering found unclosed RenderTreeBuilder frames.");
 
-            var renderExpression = state.ToRenderExpression();
+            var renderExpression = WrapWithExpressionScope(context.Argument, [], state.ToRenderExpression());
+            PruneUnreferencedRenderFragmentDeclarations(_preludeStatements, renderExpression);
             var usesFragment = _usesFragment || state.UsesFragment || state.Roots.Count > 1;
             var usesStaticVNode = _usesStaticVNode || state.UsesStaticVNode;
-            return new LoweredRender(renderExpression, _preludeLines.ToImmutableArray(), usesFragment, usesStaticVNode, _usesSlots, BuildImportLines());
+            return new LoweredRender(renderExpression, _preludeStatements.ToImmutableArray(), usesFragment, usesStaticVNode, _usesSlots, BuildImportDeclarations());
         }
 
         private EmitContext EmitOperations(
@@ -181,8 +198,18 @@ internal static class RazorSgDirectRenderOperationEmitter
             while (expression is IConversionOperation conversion)
                 expression = conversion.Operand;
 
+            if (expression is ISimpleAssignmentOperation { Target: IDiscardOperation } discardAssignment)
+            {
+                expression = discardAssignment.Value;
+                while (expression is IConversionOperation discardedConversion)
+                    expression = discardedConversion.Operand;
+            }
+
             if (expression is not IInvocationOperation invocation)
                 throw Unsupported(expression, "RazorVue direct render operation lowering only supports invocation statements.");
+
+            if (IsSecondaryBuilderInvocation(invocation, context))
+                return;
 
             if (TryEmitHelperInvocation(invocation, context, state))
                 return;
@@ -192,6 +219,12 @@ internal static class RazorSgDirectRenderOperationEmitter
 
             if (TryEmitRenderTreeBuilderInvocation(invocation, context, state))
                 return;
+
+            if (context.AllowPreludeDeclarations && state.Stack.Count == 0 && state.Roots.Count == 0)
+            {
+                context.PreludeStatements.Add(new NonSpecialExpressionStatement(LowerExpression(invocation, context)));
+                return;
+            }
 
             throw Unsupported(invocation, "RazorVue direct render operation lowering does not support invocation '" +
                                           invocation.TargetMethod.OriginalDefinition.ToDisplayString(Format.NameFormat) +
@@ -203,12 +236,14 @@ internal static class RazorSgDirectRenderOperationEmitter
             EmitContext context,
             RenderState state)
         {
-            if (!context.AllowPreludeDeclarations || state.Stack.Count != 0 || state.Roots.Count != 0)
-                throw Unsupported(declarationGroup, "Local declarations in direct render lowering are only supported before RenderTreeBuilder output begins.");
-
             var localAliases = context.LocalAliases;
             var localRenderFragments = context.LocalRenderFragments;
             var localRenderObjects = context.LocalRenderObjects;
+            var localComponentTypes = context.LocalComponentTypes;
+            var secondaryBuilders = context.SecondaryBuilders;
+            var preludeStatements = state.Roots.Count == 0
+                ? context.PreludeStatements
+                : state.PendingPreludeStatements;
             foreach (var declaration in declarationGroup.Declarations)
             {
                 foreach (var declarator in declaration.Declarators)
@@ -216,16 +251,52 @@ internal static class RazorSgDirectRenderOperationEmitter
                     if (declarator.Initializer is null)
                         throw Unsupported(declarator, "Local declarations in direct render lowering must have an initializer.");
 
-                    var localName = CreateUniqueLocalName(declarator.Symbol.Name);
-                    var valueExpression = LowerExpression(declarator.Initializer.Value, context with
+                    if (TryResolveTypeOfExpression(declarator.Initializer.Value, localComponentTypes, out var componentType))
                     {
-                        LocalAliases = localAliases
-                    });
-                    context.PreludeLines.Add("const " + localName + " = " + valueExpression + ";");
+                        localComponentTypes = localComponentTypes.SetItem(declarator.Symbol, componentType);
+                        continue;
+                    }
+
+                    if (IsRenderTreeBuilder(declarator.Symbol.Type))
+                    {
+                        secondaryBuilders = secondaryBuilders.Add(declarator.Symbol);
+                        continue;
+                    }
+
+                    if (!context.AllowPreludeDeclarations || state.Stack.Count != 0)
+                    {
+                        var location = declarator.Syntax.GetLocation().GetMappedLineSpan();
+                        var source = location.IsValid
+                            ? location.Path + "(" + (location.StartLinePosition.Line + 1) + "," + (location.StartLinePosition.Character + 1) + ")"
+                            : "<unknown source>";
+                        throw Unsupported(
+                            declarator,
+                            "Runtime local declarations in direct render lowering are only supported outside open RenderTreeBuilder frames. Declaration: '" +
+                            declarator.Syntax.ToString().Replace('\r', ' ').Replace('\n', ' ') +
+                            "'. Source: " + source + ".");
+                    }
+
+                    var localName = CreateUniqueLocalName(declarator.Symbol.Name);
+                    var declarationContext = context with
+                    {
+                        LocalAliases = localAliases,
+                        LocalRenderFragments = localRenderFragments,
+                        LocalRenderObjects = localRenderObjects,
+                        LocalComponentTypes = localComponentTypes,
+                        SecondaryBuilders = secondaryBuilders
+                    };
+                    var valueExpression = LowerExpression(declarator.Initializer.Value, declarationContext);
+                    var runtimeDeclaration = new VariableDeclaration(
+                        VariableDeclarationKind.Const,
+                        NodeList.From(new VariableDeclarator(new Identifier(localName), valueExpression)));
+                    preludeStatements.Add(runtimeDeclaration);
                     localAliases = localAliases.SetItem(declarator.Symbol, localName);
-                    if (TryResolveRenderFragmentExpression(declarator.Initializer.Value, context, out var renderFragment))
+                    if (TryResolveRenderFragmentExpression(declarator.Initializer.Value, declarationContext, out var renderFragment))
+                    {
                         localRenderFragments = localRenderFragments.SetItem(declarator.Symbol, renderFragment);
-                    if (TryResolveRenderObjectExpression(declarator.Initializer.Value, context, out var renderObject))
+                        _renderFragmentPreludeDeclarations.Add(runtimeDeclaration);
+                    }
+                    if (TryResolveRenderObjectExpression(declarator.Initializer.Value, declarationContext, out var renderObject))
                         localRenderObjects = localRenderObjects.SetItem(declarator.Symbol, renderObject);
                 }
             }
@@ -234,7 +305,9 @@ internal static class RazorSgDirectRenderOperationEmitter
             {
                 LocalAliases = localAliases,
                 LocalRenderFragments = localRenderFragments,
-                LocalRenderObjects = localRenderObjects
+                LocalRenderObjects = localRenderObjects,
+                LocalComponentTypes = localComponentTypes,
+                SecondaryBuilders = secondaryBuilders
             };
         }
 
@@ -249,7 +322,7 @@ internal static class RazorSgDirectRenderOperationEmitter
                 IsTerminatingWithoutOutput(conditional.WhenTrue) &&
                 IsNoOutputOperation(conditional.WhenFalse))
             {
-                state.AddGuard("!(" + condition + ")");
+                state.AddGuard(new NonUpdateUnaryExpression(Operator.LogicalNot, condition));
                 return;
             }
 
@@ -265,21 +338,21 @@ internal static class RazorSgDirectRenderOperationEmitter
 
             var whenTrue = EmitChildContentExpression(conditional.WhenTrue, context);
             var whenFalse = conditional.WhenFalse is null
-                ? new DirectRenderFragmentBody("null", UsesFragment: false, UsesStaticVNode: false)
+                ? new DirectRenderFragmentBody(Null(), UsesFragment: false, UsesStaticVNode: false)
                 : EmitChildContentExpression(conditional.WhenFalse, context);
-            state.AddChild(condition + " ? " + whenTrue.RenderExpression + " : " + whenFalse.RenderExpression);
+            state.AddChild(new ConditionalExpression(condition, whenTrue.RenderExpression, whenFalse.RenderExpression));
             state.UsesFragment = state.UsesFragment || whenTrue.UsesFragment || whenFalse.UsesFragment;
             state.UsesStaticVNode = state.UsesStaticVNode || whenTrue.UsesStaticVNode || whenFalse.UsesStaticVNode;
 
             if (state.Stack.Count == 0 && IsTerminatingOperation(conditional.WhenTrue) && !IsTerminatingOperation(conditional.WhenFalse))
-                state.AddGuard("!(" + condition + ")");
+                state.AddGuard(new NonUpdateUnaryExpression(Operator.LogicalNot, condition));
             else if (state.Stack.Count == 0 && !IsTerminatingOperation(conditional.WhenTrue) && IsTerminatingOperation(conditional.WhenFalse))
                 state.AddGuard(condition);
         }
 
         private bool TryEmitConditionalAttribute(
             IConditionalOperation conditional,
-            string condition,
+            Expression condition,
             EmitContext context,
             RenderState state)
         {
@@ -290,43 +363,57 @@ internal static class RazorSgDirectRenderOperationEmitter
                 return false;
             }
 
-            if (TryGetSingleAddAttributeInvocation(conditional.WhenTrue, out var whenTrueAttribute) &&
-                IsNoOutputOperation(conditional.WhenFalse))
-            {
-                EmitConditionalAttribute(whenTrueAttribute, condition, conditionWhenPresent: true, context, frame);
-                return true;
-            }
+            if (!TryGetAttributeInvocations(conditional.WhenTrue, out var whenTrueInvocations) ||
+                !TryGetAttributeInvocations(conditional.WhenFalse, out var whenFalseInvocations) ||
+                whenTrueInvocations.Any(invocation => !TryGetRenderTreeBuilderReceiver(invocation, context, out _)) ||
+                whenFalseInvocations.Any(invocation => !TryGetRenderTreeBuilderReceiver(invocation, context, out _)) ||
+                whenTrueInvocations.Length == 0 && whenFalseInvocations.Length == 0)
+                return false;
 
-            if (IsNoOutputOperation(conditional.WhenTrue) &&
-                conditional.WhenFalse is not null &&
-                TryGetSingleAddAttributeInvocation(conditional.WhenFalse, out var whenFalseAttribute))
-            {
-                EmitConditionalAttribute(whenFalseAttribute, condition, conditionWhenPresent: false, context, frame);
-                return true;
-            }
-
-            return false;
+            frame.AddConditionalAttributes(
+                condition,
+                BuildConditionalAttributes(whenTrueInvocations, context, frame),
+                BuildConditionalAttributes(whenFalseInvocations, context, frame));
+            _usesMergeProps = true;
+            return true;
         }
 
-        private void EmitConditionalAttribute(
-            IInvocationOperation invocation,
-            string condition,
-            bool conditionWhenPresent,
+        private ImmutableArray<DirectAttribute> BuildConditionalAttributes(
+            ImmutableArray<IInvocationOperation> invocations,
             EmitContext context,
             PropFrame frame)
         {
-            EnsureSignature(invocation, invocation.Arguments.Length is 2 or 3);
-            RequireOmittableSequence(invocation.Arguments[0].Value);
-            if (!TryGetConstantString(invocation.Arguments[1].Value, out var name))
-                throw Unsupported(invocation.Arguments[1].Value, "Attribute names must be compile-time strings for direct render lowering.");
+            var attributes = ImmutableArray.CreateBuilder<DirectAttribute>(invocations.Length);
+            foreach (var invocation in invocations)
+            {
+                EnsureSignature(invocation, invocation.Arguments.Length is 2 or 3);
+                RequireOmittableSequence(invocation.Arguments[0].Value);
+                if (!TryGetConstantString(invocation.Arguments[1].Value, out var name))
+                    throw Unsupported(invocation.Arguments[1].Value, "Attribute names must be compile-time strings for direct render lowering.");
 
-            var value = invocation.Arguments.Length == 2
-                ? "true"
-                : LowerExpression(invocation.Arguments[2].Value, context);
-            var guardedValue = conditionWhenPresent
-                ? condition + " ? " + value + " : null"
-                : condition + " ? null : " + value;
-            frame.AddAttribute(new DirectAttribute(frame.NormalizeAttributeName(name), guardedValue));
+                var methodName = invocation.TargetMethod.OriginalDefinition.Name;
+                if (string.Equals(methodName, "AddComponentParameter", StringComparison.Ordinal) &&
+                    frame is not ComponentFrame)
+                {
+                    throw Unsupported(invocation, "AddComponentParameter requires an open component.");
+                }
+
+                if (invocation.Arguments.Length == 3 &&
+                    (IsRenderFragmentOperationValue(invocation.Arguments[2].Value) ||
+                     IsGenericRenderFragmentOperationValue(invocation.Arguments[2].Value)))
+                {
+                    throw Unsupported(
+                        invocation.Arguments[2].Value,
+                        "Conditional RenderFragment component parameters are not supported by direct render lowering.");
+                }
+
+                var value = invocation.Arguments.Length == 2
+                    ? new BooleanLiteral(true, "true")
+                    : LowerExpression(invocation.Arguments[2].Value, context);
+                attributes.Add(new DirectAttribute(frame.NormalizeAttributeName(name), value));
+            }
+
+            return attributes.ToImmutable();
         }
 
         private void EmitForEachLoop(IForEachLoopOperation forEachLoop, EmitContext context, RenderState state)
@@ -341,7 +428,15 @@ internal static class RazorSgDirectRenderOperationEmitter
                 LocalAliases = context.LocalAliases.SetItem(loopVariable, itemName)
             };
             var body = EmitChildContentExpression(forEachLoop.Body, loopContext);
-            state.AddChild("Array.from(" + collection + " ?? [], " + itemName + " => " + body.RenderExpression + ")");
+            var mapper = new ArrowFunctionExpression(
+                NodeList.From<Node>(new Identifier(itemName)),
+                body.RenderExpression,
+                expression: true,
+                async: false);
+            state.AddChild(Call(
+                new MemberExpression(new Identifier("Array"), new Identifier("from"), computed: false, optional: false),
+                new LogicalExpression(Operator.NullishCoalescing, collection, CreateArray([])),
+                mapper));
             state.UsesFragment = state.UsesFragment || body.UsesFragment;
             state.UsesStaticVNode = state.UsesStaticVNode || body.UsesStaticVNode;
         }
@@ -351,11 +446,13 @@ internal static class RazorSgDirectRenderOperationEmitter
             return WithScopedLocalNames(() =>
             {
                 var childState = new RenderState();
-                var preludeLines = new List<string>();
+                var preludeStatements = new List<Statement>();
+                var childArgument = context.Argument.WithNewScope();
                 _ = EmitOperation(operation, context with
                 {
-                    PreludeLines = preludeLines,
-                    AllowPreludeDeclarations = true
+                    PreludeStatements = preludeStatements,
+                    AllowPreludeDeclarations = true,
+                    Argument = childArgument
                 }, childState);
                 if (childState.Stack.Count != 0)
                 {
@@ -370,7 +467,7 @@ internal static class RazorSgDirectRenderOperationEmitter
                     childState.UsesFragment = true;
 
                 return new DirectRenderFragmentBody(
-                    WrapWithPrelude(preludeLines, childState.ToRenderExpression()),
+                    WrapWithExpressionScope(childArgument, preludeStatements, childState.ToRenderExpression()),
                     childState.UsesFragment,
                     childState.UsesStaticVNode);
             });
@@ -386,18 +483,22 @@ internal static class RazorSgDirectRenderOperationEmitter
             return WithScopedLocalNames(() =>
             {
                 var slotState = new RenderState();
-                var preludeLines = new List<string>();
+                var preludeStatements = new List<Statement>();
+                var slotArgument = context.Argument.WithNewScope();
                 _ = EmitOperation(
                     body,
                     new EmitContext(
-                    BuilderBinding.ForSymbol(builder),
-                    context.Substitutions,
-                    context.ParameterAliases,
-                    context.LocalAliases,
-                    context.LocalRenderFragments,
-                    context.LocalRenderObjects,
-                        preludeLines,
-                        AllowPreludeDeclarations: true),
+                        BuilderBinding.ForSymbol(builder),
+                        context.Substitutions,
+                        context.ParameterAliases,
+                        context.LocalAliases,
+                        context.LocalRenderFragments,
+                        context.LocalRenderObjects,
+                        context.LocalComponentTypes,
+                        context.SecondaryBuilders,
+                        preludeStatements,
+                        AllowPreludeDeclarations: true,
+                        Argument: slotArgument),
                     slotState);
                 if (slotState.Stack.Count != 0)
                 {
@@ -411,7 +512,7 @@ internal static class RazorSgDirectRenderOperationEmitter
 
                 var usesFragment = slotState.UsesFragment || slotState.Roots.Count > 1;
                 return new DirectRenderFragmentBody(
-                    WrapWithPrelude(preludeLines, slotState.ToRenderExpression()),
+                    WrapWithExpressionScope(slotArgument, preludeStatements, slotState.ToRenderExpression()),
                     usesFragment,
                     slotState.UsesStaticVNode);
             });
@@ -448,9 +549,10 @@ internal static class RazorSgDirectRenderOperationEmitter
                 case "OpenComponent":
                     EnsureSignature(invocation, method.Name == "OpenComponent");
                     RequireOmittableSequence(invocation.Arguments[0].Value);
-                    var componentType = ResolveOpenComponentType(invocation);
+                    var componentType = ResolveOpenComponentType(invocation, context);
+                    var runtimeComponentType = _injectRegistry.ResolveImplementation(componentType);
                     var componentExpression = BindComponentImport(componentType);
-                    var parameterNameMap = BuildComponentParameterNameMap(componentType);
+                    var parameterNameMap = BuildComponentParameterNameMap(runtimeComponentType);
                     state.StartChildren();
                     state.Stack.Push(new ComponentFrame(componentExpression, parameterNameMap));
                     return true;
@@ -493,7 +595,28 @@ internal static class RazorSgDirectRenderOperationEmitter
                     RequireOmittableSequence(invocation.Arguments[0].Value);
                     var markup = LowerExpression(invocation.Arguments[1].Value, context);
                     state.UsesStaticVNode = true;
-                    state.AddChild("createStaticVNode(" + markup + ", 1)");
+                    state.AddChild(Call("createStaticVNode", markup, new NumericLiteral(1, "1")));
+                    return true;
+
+                case "AddElementReferenceCapture":
+                    EmitReferenceCapture(invocation, context, state, component: false);
+                    return true;
+
+                case "AddComponentReferenceCapture":
+                    EmitReferenceCapture(invocation, context, state, component: true);
+                    return true;
+
+                case "AddComponentRenderMode":
+                    EmitComponentRenderMode(invocation, context, state);
+                    return true;
+
+                case "Clear":
+                    EnsureSignature(invocation, invocation.Arguments.Length == 0);
+                    state.Clear();
+                    return true;
+
+                case "Dispose":
+                    EnsureSignature(invocation, invocation.Arguments.Length == 0);
                     return true;
 
                 case "SetAttributeValue":
@@ -601,7 +724,7 @@ internal static class RazorSgDirectRenderOperationEmitter
 
             var substitutions = context.Substitutions.ToBuilder();
             for (var index = 1; index < invocation.Arguments.Length && index < method.Parameters.Length; index++)
-                substitutions[method.Parameters[index]] = invocation.Arguments[index].Value;
+                AddParameterSubstitution(substitutions, method, index, invocation.Arguments[index].Value);
 
             var helperContext = new EmitContext(
                 BuilderBinding.ForSymbol(method.Parameters[0]),
@@ -610,8 +733,11 @@ internal static class RazorSgDirectRenderOperationEmitter
                 context.LocalAliases,
                 context.LocalRenderFragments,
                 context.LocalRenderObjects,
-                context.PreludeLines,
-                AllowPreludeDeclarations: false);
+                context.LocalComponentTypes,
+                context.SecondaryBuilders,
+                context.PreludeStatements,
+                AllowPreludeDeclarations: false,
+                Argument: context.Argument);
             _ = EmitOperations(body.Operations, helperContext, state);
             return true;
         }
@@ -631,7 +757,10 @@ internal static class RazorSgDirectRenderOperationEmitter
             if (!TryResolveRenderFragmentContentExpression(invocation.Instance, context, out var expression))
                 throw Unsupported(invocation, "RenderFragment.Invoke direct lowering requires a known inline, slot, or component-local RenderFragment source.");
 
-            state.AddChild(expression.RenderExpression);
+            if (expression.ReturnsVueSlotContent)
+                state.AddChildSequence(expression.RenderExpression);
+            else
+                state.AddChild(expression.RenderExpression);
             state.UsesFragment = state.UsesFragment || expression.UsesFragment;
             state.UsesStaticVNode = state.UsesStaticVNode || expression.UsesStaticVNode;
             return true;
@@ -648,8 +777,20 @@ internal static class RazorSgDirectRenderOperationEmitter
             if (!TryGetConstantString(nameOperation, out var name))
                 throw Unsupported(nameOperation, "Attribute names must be compile-time strings for direct render lowering.");
 
+            if (frame is ComponentFrame componentFrame &&
+                invocation.Arguments.Length == 3 &&
+                TryEmitComponentParameterValue(
+                    componentFrame,
+                    name,
+                    invocation.Arguments[2].Value,
+                    context,
+                    state))
+            {
+                return;
+            }
+
             var value = invocation.Arguments.Length == 2
-                ? "true"
+                ? new BooleanLiteral(true, "true")
                 : LowerExpression(invocation.Arguments[2].Value, context);
             frame.AddAttribute(new DirectAttribute(frame.NormalizeAttributeName(name), value));
         }
@@ -664,35 +805,45 @@ internal static class RazorSgDirectRenderOperationEmitter
             if (!TryGetConstantString(invocation.Arguments[1].Value, out var name))
                 throw Unsupported(invocation.Arguments[1].Value, "Component parameter names must be compile-time strings for direct render lowering.");
 
-            if (IsGenericRenderFragmentOperationValue(invocation.Arguments[2].Value))
-                throw Unsupported(invocation.Arguments[2].Value, "Generic RenderFragment<T> scoped slots are not supported by direct render operation lowering yet.");
-
-            if (TryGetRenderFragmentBody(invocation.Arguments[2].Value, out var slotBuilder, out var slotBody))
+            if (TryEmitComponentParameterValue(
+                    frame,
+                    name,
+                    invocation.Arguments[2].Value,
+                    context,
+                    state))
             {
-                var slot = EmitRenderFragmentBodyExpression(slotBuilder, slotBody, context, invocation.Arguments[2].Value, "RenderFragment slot '" + name + "'");
-                frame.Slots.Add(new DirectSlot(frame.NormalizeSlotName(name), null, slot.RenderExpression));
-                state.UsesFragment = state.UsesFragment || slot.UsesFragment;
-                state.UsesStaticVNode = state.UsesStaticVNode || slot.UsesStaticVNode;
                 return;
             }
-
-            if (TryResolveRenderFragmentContentExpression(invocation.Arguments[2].Value, context, out var forwardedSlotExpression))
-            {
-                frame.Slots.Add(new DirectSlot(frame.NormalizeSlotName(name), null, forwardedSlotExpression.RenderExpression));
-                state.UsesFragment = state.UsesFragment || forwardedSlotExpression.UsesFragment;
-                state.UsesStaticVNode = state.UsesStaticVNode || forwardedSlotExpression.UsesStaticVNode;
-                return;
-            }
-
-            if (string.Equals(name, "ChildContent", StringComparison.Ordinal))
-                throw Unsupported(invocation, "ChildContent component parameter must be a RenderFragment for direct render lowering.");
-
-            if (IsRenderFragmentOperationValue(invocation.Arguments[2].Value))
-                throw Unsupported(invocation.Arguments[2].Value, "RenderFragment component parameters must be inline lambdas for direct render lowering.");
 
             frame.AddAttribute(new DirectAttribute(
                 frame.NormalizeAttributeName(name),
                 LowerExpression(invocation.Arguments[2].Value, context)));
+        }
+
+        private bool TryEmitComponentParameterValue(
+            ComponentFrame frame,
+            string name,
+            IOperation valueOperation,
+            EmitContext context,
+            RenderState state)
+        {
+            if (TryResolveRenderFragmentContentExpression(valueOperation, context, out var forwardedSlotExpression))
+            {
+                frame.Slots.Add(new DirectSlot(
+                    frame.NormalizeSlotName(name),
+                    forwardedSlotExpression));
+                state.UsesFragment = state.UsesFragment || forwardedSlotExpression.UsesFragment;
+                state.UsesStaticVNode = state.UsesStaticVNode || forwardedSlotExpression.UsesStaticVNode;
+                return true;
+            }
+
+            if (string.Equals(name, "ChildContent", StringComparison.Ordinal))
+                throw Unsupported(valueOperation, "ChildContent component parameter must be a RenderFragment for direct render lowering.");
+
+            if (IsRenderFragmentOperationValue(valueOperation) || IsGenericRenderFragmentOperationValue(valueOperation))
+                throw Unsupported(valueOperation, "RenderFragment component parameters require a resolvable inline, local, helper, or component-slot source.");
+
+            return false;
         }
 
         private void EmitAddMultipleAttributes(IInvocationOperation invocation, EmitContext context, RenderState state)
@@ -763,7 +914,7 @@ internal static class RazorSgDirectRenderOperationEmitter
                 throw Unsupported(invocation.Arguments[eventNameArgumentIndex].Value, "Event modifier names must be compile-time strings for direct render lowering.");
 
             var value = LowerExpression(invocation.Arguments[valueArgumentIndex].Value, context);
-            if (!string.Equals(value, "false", StringComparison.Ordinal))
+            if (value is not BooleanLiteral { Value: false })
                 frame.SetEventModifier(eventName, preventDefault, stopPropagation);
         }
 
@@ -787,30 +938,108 @@ internal static class RazorSgDirectRenderOperationEmitter
         {
             EnsureSignature(invocation, invocation.Arguments.Length >= 2);
             RequireOmittableSequence(invocation.Arguments[0].Value);
-            if (IsGenericRenderFragmentOperationValue(invocation.Arguments[1].Value))
-                throw Unsupported(invocation.Arguments[1].Value, "Generic RenderFragment<T> content is not supported by direct render operation lowering yet.");
 
-            if (TryGetRenderFragmentBody(invocation.Arguments[1].Value, out var slotBuilder, out var slotBody))
+            if (invocation.Arguments.Length == 3)
             {
-                var slot = EmitRenderFragmentBodyExpression(slotBuilder, slotBody, context, invocation.Arguments[1].Value, "RenderFragment content");
-                state.AddChild(slot.RenderExpression);
-                state.UsesFragment = state.UsesFragment || slot.UsesFragment;
-                state.UsesStaticVNode = state.UsesStaticVNode || slot.UsesStaticVNode;
+                if (!IsGenericRenderFragmentOperationValue(invocation.Arguments[1].Value))
+                {
+                    throw Unsupported(invocation, "AddContent<TValue> requires a resolvable RenderFragment<TValue> source.");
+                }
+
+                var valueExpression = LowerExpression(invocation.Arguments[2].Value, context);
+                if (TryResolveComponentSlot(invocation.Arguments[1].Value, out var componentSlotName, out var genericSlot) &&
+                    genericSlot)
+                {
+                    _usesSlots = true;
+                    state.AddChildSequence(BuildSlotInvocationExpression(componentSlotName, valueExpression));
+                    return;
+                }
+
+                if (!TryResolveRenderFragmentContentExpression(invocation.Arguments[1].Value, context, out var scopedFragment) ||
+                    scopedFragment.ParameterName is null)
+                {
+                    throw Unsupported(invocation, "AddContent<TValue> requires a resolvable RenderFragment<TValue> source.");
+                }
+
+                var scopedContent = InvokeRenderFragment(scopedFragment, valueExpression);
+                if (scopedFragment.ReturnsVueSlotContent)
+                    state.AddChildSequence(scopedContent);
+                else
+                    state.AddChild(scopedContent);
+                state.UsesFragment = state.UsesFragment || scopedFragment.UsesFragment;
+                state.UsesStaticVNode = state.UsesStaticVNode || scopedFragment.UsesStaticVNode;
                 return;
             }
 
             if (TryResolveRenderFragmentContentExpression(invocation.Arguments[1].Value, context, out var slotExpression))
             {
-                state.AddChild(slotExpression.RenderExpression);
+                if (slotExpression.ReturnsVueSlotContent)
+                    state.AddChildSequence(slotExpression.RenderExpression);
+                else
+                    state.AddChild(slotExpression.RenderExpression);
                 state.UsesFragment = state.UsesFragment || slotExpression.UsesFragment;
                 state.UsesStaticVNode = state.UsesStaticVNode || slotExpression.UsesStaticVNode;
                 return;
             }
 
-            if (IsRenderFragmentOperationValue(invocation.Arguments[1].Value))
-                throw Unsupported(invocation.Arguments[1].Value, "RenderFragment content must be an inline lambda for direct render lowering.");
+            if (IsRenderFragmentOperationValue(invocation.Arguments[1].Value) ||
+                IsGenericRenderFragmentOperationValue(invocation.Arguments[1].Value))
+            {
+                throw Unsupported(invocation.Arguments[1].Value, "RenderFragment content requires a resolvable inline, local, helper, or component-slot source.");
+            }
+
+            if (IsMarkupStringOperationValue(invocation.Arguments[1].Value))
+            {
+                state.UsesStaticVNode = true;
+                state.AddChild(Call(
+                    "createStaticVNode",
+                    LowerExpression(invocation.Arguments[1].Value, context),
+                    new NumericLiteral(1, "1")));
+                return;
+            }
 
             state.AddChild(LowerExpression(invocation.Arguments[1].Value, context));
+        }
+
+        private void EmitReferenceCapture(
+            IInvocationOperation invocation,
+            EmitContext context,
+            RenderState state,
+            bool component)
+        {
+            EnsureSignature(invocation, invocation.Arguments.Length == 2);
+            RequireOmittableSequence(invocation.Arguments[0].Value);
+            if (state.Stack.Count == 0 ||
+                state.Stack.Peek() is not PropFrame frame ||
+                frame.ChildrenStarted ||
+                component != (frame is ComponentFrame))
+            {
+                throw Unsupported(
+                    invocation,
+                    component
+                        ? "Component reference captures require the current open component before children."
+                        : "Element reference captures require the current open element before children.");
+            }
+
+            frame.AddReferenceCapture(LowerExpression(invocation.Arguments[1].Value, context));
+        }
+
+        private void EmitComponentRenderMode(
+            IInvocationOperation invocation,
+            EmitContext context,
+            RenderState state)
+        {
+            EnsureSignature(invocation, invocation.Arguments.Length == 1);
+            if (state.Stack.Count == 0 ||
+                state.Stack.Peek() is not ComponentFrame frame ||
+                frame.ChildrenStarted)
+            {
+                throw Unsupported(invocation, "Component render mode metadata requires the current open component before children.");
+            }
+
+            // Vue has no server render-mode equivalent. Lowering the argument still
+            // validates its C# semantics while the metadata itself is intentionally erased.
+            _ = LowerExpression(invocation.Arguments[0].Value, context);
         }
 
         private bool TryEmitKnownMultipleAttributes(IOperation operation, EmitContext context, PropFrame frame)
@@ -889,7 +1118,7 @@ internal static class RazorSgDirectRenderOperationEmitter
                 ? 1
                 : 0;
 
-        private string LowerExpression(IOperation operation, EmitContext context)
+        private Expression LowerExpression(IOperation operation, EmitContext context)
         {
             while (operation is IConversionOperation conversion)
                 operation = conversion.Operand;
@@ -903,21 +1132,56 @@ internal static class RazorSgDirectRenderOperationEmitter
             if (operation is IParameterReferenceOperation aliasedParameterReference &&
                 context.ParameterAliases.TryGetValue(aliasedParameterReference.Parameter, out var parameterAlias))
             {
-                return parameterAlias;
+                return new Identifier(parameterAlias);
             }
 
             if (operation is ILocalReferenceOperation localReference &&
                 context.LocalAliases.TryGetValue(localReference.Local, out var localAlias))
             {
-                return localAlias;
+                return new Identifier(localAlias);
             }
 
-            var node = _walker.Visit(operation, _argument)
-                ?? throw Unsupported(operation, "Expression did not produce a JavaScript node.");
-            if (node is not Expression)
-                throw Unsupported(operation, "Expression did not lower to a JavaScript expression.");
+            var previousContext = _activeExpressionContext;
+            _activeExpressionContext = context;
+            try
+            {
+                var node = _walker.Visit(operation, context.Argument)
+                    ?? throw Unsupported(operation, "Expression did not produce a JavaScript node.");
+                if (node is not Expression expression)
+                    throw Unsupported(operation, "Expression did not lower to a JavaScript expression.");
 
-            return node.ToKnRECMAScript().Trim();
+                return expression;
+            }
+            finally
+            {
+                _activeExpressionContext = previousContext;
+            }
+        }
+
+        private Expression? RewriteDirectParameterReference(
+            IParameterReferenceOperation operation,
+            SenseArgument argument)
+        {
+            var context = _activeExpressionContext;
+            if (context is null)
+                return null;
+
+            if (context.Substitutions.TryGetValue(operation.Parameter, out var substituted))
+                return _walker.Visit(substituted, argument) as Expression;
+
+            return context.ParameterAliases.TryGetValue(operation.Parameter, out var alias)
+                ? new Identifier(alias)
+                : null;
+        }
+
+        private Expression? RewriteDirectLocalReference(
+            ILocalReferenceOperation operation,
+            SenseArgument argument)
+        {
+            var context = _activeExpressionContext;
+            return context is not null && context.LocalAliases.TryGetValue(operation.Local, out var alias)
+                ? new Identifier(alias)
+                : null;
         }
 
         private bool TryResolveRenderFragmentContentExpression(
@@ -948,6 +1212,45 @@ internal static class RazorSgDirectRenderOperationEmitter
                 return TryResolveRenderFragmentExpression(substituted, context, out renderFragment);
             }
 
+            if (TryGetRenderFragmentBody(operation, out var builder, out var body))
+            {
+                var lowered = EmitRenderFragmentBodyExpression(
+                    builder,
+                    body,
+                    context,
+                    operation,
+                    "RenderFragment content");
+                renderFragment = new DirectRenderFragment(
+                    lowered.RenderExpression,
+                    null,
+                    lowered.UsesFragment,
+                    lowered.UsesStaticVNode);
+                return true;
+            }
+
+            if (TryGetGenericRenderFragmentBody(operation, out var valueParameter, out builder, out body))
+            {
+                var parameterName = SanitizeJavaScriptIdentifierPart(valueParameter.Name, "value");
+                var lowered = EmitRenderFragmentBodyExpression(
+                    builder,
+                    body,
+                    context with
+                    {
+                        ParameterAliases = context.ParameterAliases.SetItem(valueParameter, parameterName)
+                    },
+                    operation,
+                    "RenderFragment<T> content");
+                renderFragment = new DirectRenderFragment(
+                    lowered.RenderExpression,
+                    parameterName,
+                    lowered.UsesFragment,
+                    lowered.UsesStaticVNode);
+                return true;
+            }
+
+            if (TryResolveRenderFragmentMethodReference(operation, context, out renderFragment))
+                return true;
+
             if (operation is ILocalReferenceOperation localReference)
             {
                 if (context.LocalRenderFragments.TryGetValue(localReference.Local, out var localRenderFragment))
@@ -965,16 +1268,32 @@ internal static class RazorSgDirectRenderOperationEmitter
                 TryResolveRenderFragmentExpression(conditional.WhenFalse, context, out var whenFalse))
             {
                 var condition = LowerExpression(conditional.Condition, context);
+                var parameterName = whenTrue.ParameterName ?? whenFalse.ParameterName;
+                var whenTrueExpression = parameterName is null
+                    ? whenTrue.RenderExpression
+                    : InvokeRenderFragment(whenTrue, new Identifier(parameterName));
+                var whenFalseExpression = parameterName is null
+                    ? whenFalse.RenderExpression
+                    : InvokeRenderFragment(whenFalse, new Identifier(parameterName));
                 renderFragment = new DirectRenderFragment(
-                    condition + " ? " + whenTrue.RenderExpression + " : " + whenFalse.RenderExpression,
+                    new ConditionalExpression(condition, whenTrueExpression, whenFalseExpression),
+                    parameterName,
                     whenTrue.UsesFragment || whenFalse.UsesFragment,
-                    whenTrue.UsesStaticVNode || whenFalse.UsesStaticVNode);
+                    whenTrue.UsesStaticVNode || whenFalse.UsesStaticVNode,
+                    Selection: new ConditionalRenderFragmentSelection(
+                        condition,
+                        whenTrue,
+                        whenFalse),
+                    ReturnsVueSlotContent: whenTrue.ReturnsVueSlotContent || whenFalse.ReturnsVueSlotContent);
                 return true;
             }
 
             if (operation.ConstantValue.HasValue && operation.ConstantValue.Value is null)
             {
-                renderFragment = new DirectRenderFragment("null");
+                renderFragment = new DirectRenderFragment(
+                    Null(),
+                    AvailabilityCondition: new BooleanLiteral(false, "false"),
+                    RenderExpressionWhenAvailable: Null());
                 return true;
             }
 
@@ -984,25 +1303,210 @@ internal static class RazorSgDirectRenderOperationEmitter
                 return true;
             }
 
+            if (operation is IPropertyReferenceOperation currentComponentProperty &&
+                TryResolveCurrentComponentRenderFragmentProperty(
+                    currentComponentProperty,
+                    context,
+                    out renderFragment))
+            {
+                return true;
+            }
+
+            if (TryResolveComponentSlot(operation, out var propertySlotName, out var genericPropertySlot))
+            {
+                _usesSlots = true;
+                if (genericPropertySlot)
+                {
+                    const string parameterName = "value";
+                    renderFragment = new DirectRenderFragment(
+                        BuildSlotInvocationExpression(propertySlotName, new Identifier(parameterName)),
+                        parameterName,
+                        AvailabilityCondition: BuildSlotAvailabilityCondition(propertySlotName),
+                        RenderExpressionWhenAvailable: BuildSlotCallExpression(
+                            propertySlotName,
+                            new Identifier(parameterName)),
+                        ReturnsVueSlotContent: true);
+                }
+                else
+                {
+                    renderFragment = new DirectRenderFragment(
+                        BuildSlotInvocationExpression(propertySlotName),
+                        AvailabilityCondition: BuildSlotAvailabilityCondition(propertySlotName),
+                        RenderExpressionWhenAvailable: BuildSlotCallExpression(propertySlotName),
+                        ReturnsVueSlotContent: true);
+                }
+                return true;
+            }
+
             if (operation is IPropertyReferenceOperation propertyReference)
             {
-                var property = propertyReference.Property.OriginalDefinition;
-                if (_componentSlotNames.TryGetValue(property, out var propertySlotName))
-                {
-                    _usesSlots = true;
-                    renderFragment = new DirectRenderFragment(BuildSlotInvocationExpression(propertySlotName));
-                    return true;
-                }
-
                 if (propertyReference.Instance is not null &&
                     TryResolveRenderObjectExpression(propertyReference.Instance, context, out var renderObject) &&
-                    renderObject.RenderFragments.TryGetValue(property, out var objectRenderFragment))
+                    renderObject.RenderFragments.TryGetValue(
+                        propertyReference.Property.OriginalDefinition,
+                        out var objectRenderFragment))
                 {
                     renderFragment = objectRenderFragment;
                     return true;
                 }
             }
 
+            return false;
+        }
+
+        private bool TryResolveRenderFragmentMethodReference(
+            IOperation operation,
+            EmitContext context,
+            out DirectRenderFragment renderFragment)
+        {
+            renderFragment = default;
+            while (operation is IConversionOperation conversion)
+                operation = conversion.Operand;
+            if (operation is IDelegateCreationOperation delegateCreation)
+                operation = delegateCreation.Target;
+            if (operation is not IMethodReferenceOperation methodReference)
+                return false;
+
+            var method = methodReference.Method;
+            if (!method.ReturnsVoid ||
+                method.Parameters.Length != 1 ||
+                !IsRenderTreeBuilder(method.Parameters[0].Type) ||
+                method.DeclaringSyntaxReferences.Length != 1 ||
+                !IsCurrentComponentMethod(method) ||
+                !method.IsStatic && methodReference.Instance is not IInstanceReferenceOperation)
+            {
+                return false;
+            }
+
+            if (!_activeRenderFragmentHelpers.Add(method.OriginalDefinition))
+            {
+                throw Unsupported(
+                    methodReference,
+                    "Recursive RenderFragment method group '" + method.Name +
+                    "' is not supported by direct render operation lowering.");
+            }
+
+            try
+            {
+                if (method.DeclaringSyntaxReferences[0].GetSyntax() is not MethodDeclarationSyntax declaration)
+                    return false;
+
+                var model = _compilation.GetSemanticModel(declaration.SyntaxTree);
+                IOperation? methodBody = declaration.Body is not null
+                    ? model.GetOperation(declaration.Body)
+                    : declaration.ExpressionBody is { Expression: { } expression }
+                        ? model.GetOperation(expression)
+                        : null;
+                if (methodBody is null)
+                    return false;
+                if (ContainsMethodInvocation(methodBody, method))
+                {
+                    throw Unsupported(
+                        methodReference,
+                        "Recursive RenderFragment method group '" + method.Name +
+                        "' is not supported by direct render operation lowering.");
+                }
+
+                var lowered = EmitRenderFragmentBodyExpression(
+                    method.Parameters[0],
+                    methodBody,
+                    context,
+                    methodReference,
+                    "RenderFragment method group");
+                renderFragment = new DirectRenderFragment(
+                    lowered.RenderExpression,
+                    UsesFragment: lowered.UsesFragment,
+                    UsesStaticVNode: lowered.UsesStaticVNode);
+                return true;
+            }
+            finally
+            {
+                _activeRenderFragmentHelpers.Remove(method.OriginalDefinition);
+            }
+        }
+
+        private bool TryResolveCurrentComponentRenderFragmentProperty(
+            IPropertyReferenceOperation propertyReference,
+            EmitContext context,
+            out DirectRenderFragment renderFragment)
+        {
+            renderFragment = default;
+            var property = propertyReference.Property;
+            if (!IsAnyRenderFragmentType(property.Type) ||
+                property.DeclaringSyntaxReferences.Length != 1 ||
+                !SymbolComparer.Equals(
+                    property.ContainingType?.OriginalDefinition,
+                    _componentSymbol.OriginalDefinition) ||
+                !property.IsStatic && propertyReference.Instance is not IInstanceReferenceOperation)
+            {
+                return false;
+            }
+
+            if (!_activeRenderFragmentProperties.Add(property.OriginalDefinition))
+            {
+                throw Unsupported(
+                    propertyReference,
+                    "Recursive RenderFragment property '" + property.Name +
+                    "' is not supported by direct render operation lowering.");
+            }
+
+            try
+            {
+                if (!TryGetReturnedPropertyValue(property, out var returnedValue))
+                    return false;
+
+                return TryResolveRenderFragmentExpression(returnedValue, context, out renderFragment);
+            }
+            finally
+            {
+                _activeRenderFragmentProperties.Remove(property.OriginalDefinition);
+            }
+        }
+
+        private bool TryGetReturnedPropertyValue(IPropertySymbol property, out IOperation returnedValue)
+        {
+            returnedValue = null!;
+            if (property.DeclaringSyntaxReferences[0].GetSyntax() is not PropertyDeclarationSyntax declaration)
+                return false;
+
+            var model = _compilation.GetSemanticModel(declaration.SyntaxTree);
+            IOperation? operation = declaration.ExpressionBody is { Expression: { } propertyExpression }
+                ? model.GetOperation(propertyExpression)
+                : declaration.AccessorList?.Accessors
+                    .Where(static accessor => accessor.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.GetAccessorDeclaration))
+                    .Select(accessor => accessor.ExpressionBody is { Expression: { } getterExpression }
+                        ? model.GetOperation(getterExpression)
+                        : accessor.Body is not null
+                            ? TryGetSingleReturnValue(model.GetOperation(accessor.Body))
+                            : null)
+                    .SingleOrDefault();
+            if (operation is null)
+                return false;
+
+            returnedValue = operation;
+            return true;
+        }
+
+        private bool TryResolveComponentSlot(
+            IOperation operation,
+            out string slotName,
+            out bool generic)
+        {
+            while (operation is IConversionOperation conversion)
+                operation = conversion.Operand;
+            if (operation is IDelegateCreationOperation delegateCreation)
+                operation = delegateCreation.Target;
+
+            if (operation is IPropertyReferenceOperation propertyReference &&
+                _componentSlotNames.TryGetValue(propertyReference.Property.OriginalDefinition, out var resolvedSlotName))
+            {
+                slotName = resolvedSlotName!;
+                generic = IsGenericRenderFragmentType(propertyReference.Property.Type);
+                return true;
+            }
+
+            slotName = string.Empty;
+            generic = false;
             return false;
         }
 
@@ -1079,7 +1583,7 @@ internal static class RazorSgDirectRenderOperationEmitter
 
                 var substitutions = context.Substitutions.ToBuilder();
                 for (var index = 0; index < invocation.Arguments.Length && index < method.Parameters.Length; index++)
-                    substitutions[method.Parameters[index]] = invocation.Arguments[index].Value;
+                    AddParameterSubstitution(substitutions, method, index, invocation.Arguments[index].Value);
 
                 var helperContext = new EmitContext(
                     context.Builder,
@@ -1088,8 +1592,11 @@ internal static class RazorSgDirectRenderOperationEmitter
                     context.LocalAliases,
                     context.LocalRenderFragments,
                     context.LocalRenderObjects,
-                    context.PreludeLines,
-                    AllowPreludeDeclarations: false);
+                    context.LocalComponentTypes,
+                    context.SecondaryBuilders,
+                    context.PreludeStatements,
+                    AllowPreludeDeclarations: false,
+                    Argument: context.Argument);
 
                 return TryResolveReturnedRenderObject(bodyOperation, helperContext, out renderObject);
             }
@@ -1194,7 +1701,7 @@ internal static class RazorSgDirectRenderOperationEmitter
                 {
                     if (initializer is ISimpleAssignmentOperation assignment &&
                         assignment.Target is IPropertyReferenceOperation propertyReference &&
-                        IsRenderFragmentType(propertyReference.Property.Type) &&
+                        IsAnyRenderFragmentType(propertyReference.Property.Type) &&
                         TryResolveRenderFragmentExpression(assignment.Value, context, out var renderFragment))
                     {
                         builder[propertyReference.Property.OriginalDefinition] = renderFragment;
@@ -1237,7 +1744,7 @@ internal static class RazorSgDirectRenderOperationEmitter
                         }
                     } ||
                     propertyReference.Instance is not IInstanceReferenceOperation ||
-                    !IsRenderFragmentType(propertyReference.Property.Type))
+                    !IsAnyRenderFragmentType(propertyReference.Property.Type))
                 {
                     continue;
                 }
@@ -1277,9 +1784,9 @@ internal static class RazorSgDirectRenderOperationEmitter
                     .Select(argument => LowerExpression(argument.Value, context))
                     .ToArray();
                 renderFragment = new DirectRenderFragment(
-                    helper.FunctionName + "(" + string.Join(", ", arguments) + ")",
-                    helper.UsesFragment,
-                    helper.UsesStaticVNode);
+                    Call(new Identifier(helper.FunctionName), arguments),
+                    UsesFragment: helper.UsesFragment,
+                    UsesStaticVNode: helper.UsesStaticVNode);
                 return true;
             }
 
@@ -1288,14 +1795,15 @@ internal static class RazorSgDirectRenderOperationEmitter
 
             var substitutions = context.Substitutions.ToBuilder();
             for (var index = 0; index < invocation.Arguments.Length && index < method.Parameters.Length; index++)
-                substitutions[method.Parameters[index]] = invocation.Arguments[index].Value;
+                AddParameterSubstitution(substitutions, method, index, invocation.Arguments[index].Value);
 
             try
             {
                 renderFragment = WithScopedLocalNames(() =>
                 {
                     var fragmentState = new RenderState();
-                    var preludeLines = new List<string>();
+                    var preludeStatements = new List<Statement>();
+                    var fragmentArgument = context.Argument.WithNewScope();
                     _ = EmitOperation(
                         body,
                         new EmitContext(
@@ -1305,16 +1813,19 @@ internal static class RazorSgDirectRenderOperationEmitter
                             context.LocalAliases,
                             context.LocalRenderFragments,
                             context.LocalRenderObjects,
-                            preludeLines,
-                            AllowPreludeDeclarations: true),
+                            context.LocalComponentTypes,
+                            context.SecondaryBuilders,
+                            preludeStatements,
+                            AllowPreludeDeclarations: true,
+                            Argument: fragmentArgument),
                         fragmentState);
                     if (fragmentState.Stack.Count != 0)
                         throw Unsupported(invocation, "RenderFragment helper '" + method.Name + "' left unclosed " + fragmentState.Stack.Peek().Describe() + " frames.");
 
                     return new DirectRenderFragment(
-                        WrapWithPrelude(preludeLines, fragmentState.ToRenderExpression()),
-                        fragmentState.UsesFragment || fragmentState.Roots.Count > 1,
-                        fragmentState.UsesStaticVNode);
+                        WrapWithExpressionScope(fragmentArgument, preludeStatements, fragmentState.ToRenderExpression()),
+                        UsesFragment: fragmentState.UsesFragment || fragmentState.Roots.Count > 1,
+                        UsesStaticVNode: fragmentState.UsesStaticVNode);
                 });
                 return true;
             }
@@ -1354,7 +1865,8 @@ internal static class RazorSgDirectRenderOperationEmitter
                 var lowered = WithScopedLocalNames(() =>
                 {
                     var functionState = new RenderState();
-                    var preludeLines = new List<string>();
+                    var preludeStatements = new List<Statement>();
+                    var functionArgument = context.Argument.WithNewScope();
                     _ = EmitOperation(
                         body,
                         new EmitContext(
@@ -1364,28 +1876,32 @@ internal static class RazorSgDirectRenderOperationEmitter
                             ImmutableDictionary<ILocalSymbol, string>.Empty.WithComparers(SymbolComparer),
                             context.LocalRenderFragments,
                             context.LocalRenderObjects,
-                            preludeLines,
-                            AllowPreludeDeclarations: true),
+                            context.LocalComponentTypes,
+                            context.SecondaryBuilders,
+                            preludeStatements,
+                            AllowPreludeDeclarations: true,
+                            Argument: functionArgument),
                         functionState);
                     if (functionState.Stack.Count != 0)
                         throw Unsupported(body, "RenderFragment helper '" + method.Name + "' left unclosed " + functionState.Stack.Peek().Describe() + " frames.");
 
                     return new DirectRenderFragmentBody(
-                        WrapWithPrelude(preludeLines, functionState.ToRenderExpression()),
+                        WrapWithExpressionScope(functionArgument, preludeStatements, functionState.ToRenderExpression()),
                         functionState.UsesFragment || functionState.Roots.Count > 1,
                         functionState.UsesStaticVNode);
                 });
 
                 _usesFragment = _usesFragment || lowered.UsesFragment;
                 _usesStaticVNode = _usesStaticVNode || lowered.UsesStaticVNode;
-                context.PreludeLines.Add(
-                    "function " +
-                    functionName +
-                    "(" +
-                    string.Join(", ", parameterNames) +
-                    ") { return " +
-                    lowered.RenderExpression +
-                    "; }");
+                var functionBody = new FunctionBody(
+                    NodeList.From<Statement>(new ReturnStatement(lowered.RenderExpression)),
+                    strict: true);
+                _preludeStatements.Add(new FunctionDeclaration(
+                    new Identifier(functionName),
+                    NodeList.From<Node>(parameterNames.Select(static name => (Node)new Identifier(name))),
+                    functionBody,
+                    generator: false,
+                    async: false));
                 return new DirectRenderFunction(functionName, lowered.UsesFragment, lowered.UsesStaticVNode);
             }
             finally
@@ -1396,6 +1912,16 @@ internal static class RazorSgDirectRenderOperationEmitter
 
         private bool IsCurrentComponentMethod(IMethodSymbol method)
             => SymbolComparer.Equals(method.ContainingType?.OriginalDefinition, _componentSymbol.OriginalDefinition);
+
+        private static void AddParameterSubstitution(
+            ImmutableDictionary<IParameterSymbol, IOperation>.Builder substitutions,
+            IMethodSymbol method,
+            int index,
+            IOperation value)
+        {
+            substitutions[method.Parameters[index]] = value;
+            substitutions[method.OriginalDefinition.Parameters[index]] = value;
+        }
 
         private static bool ContainsMethodInvocation(IOperation operation, IMethodSymbol method)
         {
@@ -1453,39 +1979,34 @@ internal static class RazorSgDirectRenderOperationEmitter
             return returnedValue;
         }
 
-        private string BindComponentImport(INamedTypeSymbol componentType)
+        private Expression BindComponentImport(INamedTypeSymbol componentType)
         {
-            var descriptor = ResolveComponentImport(componentType);
-            var key = descriptor.ImportSpecifier + "\0" + descriptor.ExportName;
-            if (_imports.TryGetValue(key, out var existing))
-                return existing.LocalName;
-
-            var localName = "i$" + Format.HashName(key).TrimStart('_');
-            _imports.Add(key, new ImportBinding(descriptor.ImportSpecifier, descriptor.ExportName, localName));
-            return localName;
+            var runtimeComponentType = _injectRegistry.ResolveImplementation(componentType);
+            var descriptor = ResolveComponentImport(runtimeComponentType);
+            return _argument
+                .BindImportSpecifier(descriptor.ImportSpecifier, descriptor.ExportName);
         }
 
-        private ImmutableArray<string> BuildImportLines()
+        private ImmutableArray<ImportDeclaration> BuildImportDeclarations()
         {
-            var lines = ImmutableArray.CreateBuilder<string>();
+            var groupedSpecifiers = new Dictionary<string, List<ImportDeclarationSpecifier>>(StringComparer.Ordinal);
             if (_usesMergeProps)
-                lines.Add("import { mergeProps } from \"vue\";");
+                groupedSpecifiers["vue"] = [new ImportSpecifier(new Identifier("mergeProps"))];
 
             foreach (var pair in _argument.FlushImportSpecifiers())
             {
-                var specifiers = string.Join(", ", pair.Value.Select(static specifier => specifier.ToKnRECMAScript().Trim()));
-                lines.Add("import { " + specifiers + " } from \"" + pair.Key + "\";");
+                if (!groupedSpecifiers.TryGetValue(pair.Key, out var specifiers))
+                {
+                    specifiers = new List<ImportDeclarationSpecifier>();
+                    groupedSpecifiers.Add(pair.Key, specifiers);
+                }
+                specifiers.AddRange(pair.Value);
             }
 
-            foreach (var binding in _imports.Values)
-            {
-                var specifier = string.Equals(binding.ExportName, "default", StringComparison.Ordinal)
-                    ? "default as " + binding.LocalName
-                    : binding.ExportName + " as " + binding.LocalName;
-                lines.Add("import { " + specifier + " } from \"" + binding.ImportSpecifier + "\";");
-            }
-
-            return lines.ToImmutable();
+            var declarations = ImmutableArray.CreateBuilder<ImportDeclaration>();
+            foreach (var pair in groupedSpecifiers.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
+                declarations.AddRange(ImportDeclarationFactory.Create(pair.Key, pair.Value));
+            return declarations.ToImmutable();
         }
 
         private string CreateUniqueLocalName(string name)
@@ -1529,13 +2050,103 @@ internal static class RazorSgDirectRenderOperationEmitter
             }
         }
 
-        private static string WrapWithPrelude(IReadOnlyList<string> preludeLines, string expression)
+        private Expression WrapWithExpressionScope(
+            SenseArgument argument,
+            List<Statement> preludeStatements,
+            Expression expression)
         {
-            if (preludeLines.Count == 0)
-                return expression;
+            PruneUnreferencedRenderFragmentDeclarations(preludeStatements, expression);
+            if (argument.HasVarDeclarator)
+            {
+                preludeStatements.Insert(0, new VariableDeclaration(
+                        VariableDeclarationKind.Let,
+                        argument.FlushVarDeclarator()));
+            }
 
-            return "(() => { " + string.Join(" ", preludeLines) + " return " + expression + "; })()";
+            return WrapWithStatements(preludeStatements, expression);
         }
+
+        private void PruneUnreferencedRenderFragmentDeclarations(
+            List<Statement> preludeStatements,
+            Expression expression)
+        {
+            var candidates = preludeStatements
+                .OfType<VariableDeclaration>()
+                .Where(IsTrackedRenderFragmentDeclaration)
+                .Select(static declaration =>
+                {
+                    if (declaration.Declarations.Count != 1 ||
+                        declaration.Declarations[0].Id is not Identifier identifier)
+                    {
+                        throw new InvalidOperationException(
+                            "Tracked RenderFragment declarations must contain one identifier binding.");
+                    }
+
+                    return new RenderFragmentDeclarationCandidate(
+                        declaration,
+                        identifier.Name,
+                        declaration.Declarations[0].Init);
+                })
+                .ToArray();
+            if (candidates.Length == 0)
+                return;
+
+            var roots = new List<Node> { expression };
+            roots.AddRange(preludeStatements.Where(statement =>
+                !candidates.Any(candidate => ReferenceEquals(candidate.Declaration, statement))));
+            var referencedNames = AstReferenceAnalysis.CollectIdentifiers(roots);
+            var liveDeclarations = new HashSet<VariableDeclaration>();
+            var changed = true;
+            while (changed)
+            {
+                changed = false;
+                foreach (var candidate in candidates)
+                {
+                    if (!referencedNames.Contains(candidate.Name) ||
+                        !liveDeclarations.Add(candidate.Declaration))
+                    {
+                        continue;
+                    }
+
+                    changed = true;
+                    if (candidate.Initializer is not null)
+                    {
+                        referencedNames.UnionWith(
+                            AstReferenceAnalysis.CollectIdentifiers([candidate.Initializer]));
+                    }
+                }
+            }
+
+            preludeStatements.RemoveAll(statement =>
+                candidates.Any(candidate =>
+                    ReferenceEquals(candidate.Declaration, statement) &&
+                    !liveDeclarations.Contains(candidate.Declaration)));
+        }
+
+        private bool IsTrackedRenderFragmentDeclaration(VariableDeclaration declaration)
+            => _renderFragmentPreludeDeclarations.Any(candidate => ReferenceEquals(candidate, declaration));
+
+        private sealed record RenderFragmentDeclarationCandidate(
+            VariableDeclaration Declaration,
+            string Name,
+            Expression? Initializer);
+    }
+
+    private static Expression WrapWithStatements(IReadOnlyList<Statement> statements, Expression expression)
+    {
+        if (statements.Count == 0)
+            return expression;
+
+        var bodyStatements = new List<Statement>(statements.Count + 1);
+        bodyStatements.AddRange(statements);
+        bodyStatements.Add(new ReturnStatement(expression));
+        var body = new FunctionBody(NodeList.From(bodyStatements), strict: true);
+        var arrow = new ArrowFunctionExpression(
+            NodeList.From<Node>(),
+            body,
+            expression: false,
+            async: false);
+        return new CallExpression(arrow, NodeList.From<Expression>(), optional: false);
     }
 
     private static bool TryGetRenderFragmentBody(
@@ -1562,6 +2173,48 @@ internal static class RazorSgDirectRenderOperationEmitter
         body = lambda.Body;
         return true;
     }
+
+    private static bool TryGetGenericRenderFragmentBody(
+        IOperation operation,
+        out IParameterSymbol valueParameter,
+        out IParameterSymbol builder,
+        out IOperation body)
+    {
+        valueParameter = null!;
+        builder = null!;
+        body = null!;
+        while (operation is IConversionOperation conversion)
+            operation = conversion.Operand;
+
+        if (operation is IDelegateCreationOperation delegateCreation)
+            operation = delegateCreation.Target;
+
+        if (operation is not IAnonymousFunctionOperation lambda ||
+            lambda.Symbol.Parameters.Length != 1 ||
+            IsRenderTreeBuilder(lambda.Symbol.Parameters[0].Type))
+        {
+            return false;
+        }
+
+        var returnedOperation = TryGetSingleReturnedValue(lambda.Body);
+        if (returnedOperation is null ||
+            !TryGetRenderFragmentBody(returnedOperation, out builder, out body))
+        {
+            return false;
+        }
+
+        valueParameter = lambda.Symbol.Parameters[0];
+        return true;
+    }
+
+    private static IOperation? TryGetSingleReturnedValue(IOperation operation)
+        => operation is IBlockOperation
+           {
+               Operations.Length: 1
+           } block &&
+           block.Operations[0] is IReturnOperation { ReturnedValue: not null } returnOperation
+            ? returnOperation.ReturnedValue
+            : null;
 
     private static bool IsGenericRenderFragmentOperationValue(IOperation operation)
     {
@@ -1591,6 +2244,42 @@ internal static class RazorSgDirectRenderOperationEmitter
         return operation.Type is INamedTypeSymbol named &&
                !named.IsGenericType &&
                string.Equals(named.OriginalDefinition.ToDisplayString(), "Microsoft.AspNetCore.Components.RenderFragment", StringComparison.Ordinal);
+    }
+
+    private static bool IsGenericRenderFragmentType(ITypeSymbol? type)
+        => type is INamedTypeSymbol named &&
+           named.OriginalDefinition.TypeParameters.Length == 1 &&
+           string.Equals(named.Name, "RenderFragment", StringComparison.Ordinal) &&
+           string.Equals(
+               named.ContainingNamespace?.ToDisplayString(),
+               "Microsoft.AspNetCore.Components",
+               StringComparison.Ordinal);
+
+    private static bool IsMarkupStringOperationValue(IOperation operation)
+    {
+        while (operation is IConversionOperation conversion)
+            operation = conversion.Operand;
+
+        var type = operation.Type;
+        if (type is null)
+            return false;
+
+        if (string.Equals(
+                type.OriginalDefinition.ToDisplayString(Format.NameFormat),
+                MarkupStringMetadataName,
+                StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        return type is INamedTypeSymbol nullable &&
+               nullable.IsGenericType &&
+               nullable.TypeArguments.Length == 1 &&
+               nullable.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T &&
+               string.Equals(
+                   nullable.TypeArguments[0].OriginalDefinition.ToDisplayString(Format.NameFormat),
+                   MarkupStringMetadataName,
+                   StringComparison.Ordinal);
     }
 
     private static bool IsTerminatingWithoutOutput(IOperation? operation)
@@ -1631,37 +2320,71 @@ internal static class RazorSgDirectRenderOperationEmitter
         return operation is IBlockOperation block && block.Operations.Length == 0;
     }
 
-    private static bool TryGetSingleAddAttributeInvocation(
+    private static bool TryGetAttributeInvocations(
+        IOperation? operation,
+        out ImmutableArray<IInvocationOperation> invocations)
+    {
+        if (operation is null)
+        {
+            invocations = ImmutableArray<IInvocationOperation>.Empty;
+            return true;
+        }
+
+        var builder = ImmutableArray.CreateBuilder<IInvocationOperation>();
+        if (operation is IBlockOperation block)
+        {
+            foreach (var child in block.Operations)
+            {
+                if (!TryGetAttributeInvocation(child, out var invocation))
+                {
+                    invocations = default;
+                    return false;
+                }
+
+                builder.Add(invocation);
+            }
+
+            invocations = builder.ToImmutable();
+            return true;
+        }
+
+        if (!TryGetAttributeInvocation(operation, out var singleInvocation))
+        {
+            invocations = default;
+            return false;
+        }
+
+        builder.Add(singleInvocation);
+        invocations = builder.ToImmutable();
+        return true;
+    }
+
+    private static bool TryGetAttributeInvocation(
         IOperation operation,
         out IInvocationOperation invocation)
     {
         invocation = null!;
-        if (operation is IBlockOperation block)
-        {
-            if (block.Operations.Length != 1)
-                return false;
-
-            operation = block.Operations[0];
-        }
-
         if (operation is IExpressionStatementOperation statement)
             operation = statement.Operation;
 
         while (operation is IConversionOperation conversion)
             operation = conversion.Operand;
 
-        if (operation is not IInvocationOperation candidate ||
-            !IsRenderTreeBuilderMethod(candidate.TargetMethod) ||
-            !string.Equals(candidate.TargetMethod.OriginalDefinition.Name, "AddAttribute", StringComparison.Ordinal))
-        {
+        if (operation is not IInvocationOperation candidate || !IsRenderTreeBuilderMethod(candidate.TargetMethod))
             return false;
-        }
+
+        var methodName = candidate.TargetMethod.OriginalDefinition.Name;
+        if (!string.Equals(methodName, "AddAttribute", StringComparison.Ordinal) &&
+            !string.Equals(methodName, "AddComponentParameter", StringComparison.Ordinal))
+            return false;
 
         invocation = candidate;
         return true;
     }
 
-    private static INamedTypeSymbol ResolveOpenComponentType(IInvocationOperation invocation)
+    private static INamedTypeSymbol ResolveOpenComponentType(
+        IInvocationOperation invocation,
+        EmitContext context)
     {
         if (invocation.TargetMethod.TypeArguments.Length == 1 &&
             invocation.TargetMethod.TypeArguments[0] is INamedTypeSymbol genericComponentType)
@@ -1670,7 +2393,10 @@ internal static class RazorSgDirectRenderOperationEmitter
         }
 
         if (invocation.Arguments.Length == 2 &&
-            TryResolveTypeOfExpression(invocation.Arguments[1].Value, out var componentType))
+            TryResolveTypeOfExpression(
+                invocation.Arguments[1].Value,
+                context.LocalComponentTypes,
+                out var componentType))
         {
             return componentType;
         }
@@ -1678,7 +2404,10 @@ internal static class RazorSgDirectRenderOperationEmitter
         throw Unsupported(invocation, "OpenComponent must use a generic component type or typeof(T) for direct render lowering.");
     }
 
-    private static bool TryResolveTypeOfExpression(IOperation operation, out INamedTypeSymbol componentType)
+    private static bool TryResolveTypeOfExpression(
+        IOperation operation,
+        IReadOnlyDictionary<ILocalSymbol, INamedTypeSymbol> localComponentTypes,
+        out INamedTypeSymbol componentType)
     {
         componentType = null!;
         while (operation is IConversionOperation conversion)
@@ -1690,7 +2419,28 @@ internal static class RazorSgDirectRenderOperationEmitter
             return true;
         }
 
+        if (operation is ILocalReferenceOperation localReference &&
+            localComponentTypes.TryGetValue(localReference.Local, out componentType))
+        {
+            return true;
+        }
+
         return false;
+    }
+
+    private static bool IsSecondaryBuilderInvocation(
+        IInvocationOperation invocation,
+        EmitContext context)
+    {
+        IOperation? receiver = invocation.Instance;
+        if (receiver is null && invocation.Arguments.Length > 0 && IsRenderTreeBuilderMethod(invocation.TargetMethod))
+            receiver = invocation.Arguments[0].Value;
+
+        while (receiver is IConversionOperation conversion)
+            receiver = conversion.Operand;
+
+        return receiver is ILocalReferenceOperation localReference &&
+               context.SecondaryBuilders.Contains(localReference.Local);
     }
 
     private static bool TryResolveLoopControlVariable(IOperation operation, out ILocalSymbol local)
@@ -1825,7 +2575,12 @@ internal static class RazorSgDirectRenderOperationEmitter
             foreach (var member in current.GetMembers())
             {
                 if (member is not IPropertySymbol property ||
-                    !IsRenderFragmentType(property.Type))
+                    !IsAnyRenderFragmentType(property.Type) ||
+                    !property.GetAttributes().Any(static attribute =>
+                        string.Equals(
+                            attribute.AttributeClass?.ToDisplayString(),
+                            ParameterAttributeMetadataName,
+                            StringComparison.Ordinal)))
                 {
                     continue;
                 }
@@ -1848,6 +2603,9 @@ internal static class RazorSgDirectRenderOperationEmitter
         => type is INamedTypeSymbol named &&
            !named.IsGenericType &&
            string.Equals(named.OriginalDefinition.ToDisplayString(), "Microsoft.AspNetCore.Components.RenderFragment", StringComparison.Ordinal);
+
+    private static bool IsAnyRenderFragmentType(ITypeSymbol type)
+        => IsRenderFragmentType(type) || IsGenericRenderFragmentType(type);
 
     private static void AddDescriptorName(
         AttributeData attribute,
@@ -1915,39 +2673,109 @@ internal static class RazorSgDirectRenderOperationEmitter
             ? eventName
             : "on" + char.ToUpperInvariant(eventName[0]) + eventName.Substring(1);
 
-    private static string BuildSlotInvocationExpression(string slotName)
+    private static Expression BuildSlotInvocationExpression(
+        string slotName,
+        params Expression[] arguments)
     {
-        var slotAccess = FormatSlotAccessExpression(slotName);
-        return "(typeof " + slotAccess + " === \"function\" ? " + slotAccess + "() : null)";
+        return new ConditionalExpression(
+            BuildSlotAvailabilityCondition(slotName),
+            BuildSlotCallExpression(slotName, arguments),
+            Null());
     }
 
-    private static string FormatSlotAccessExpression(string slotName)
+    private static Expression BuildSlotAvailabilityCondition(string slotName)
+        => new NonLogicalBinaryExpression(
+            Operator.StrictEquality,
+            new NonUpdateUnaryExpression(Operator.TypeOf, FormatSlotAccessExpression(slotName)),
+            StringLiteral("function"));
+
+    private static Expression BuildSlotCallExpression(
+        string slotName,
+        params Expression[] arguments)
+        => Call(FormatSlotAccessExpression(slotName), arguments);
+
+    private static Expression InvokeRenderFragment(
+        DirectRenderFragment fragment,
+        Expression argument)
+    {
+        if (fragment.ParameterName is null)
+            return fragment.RenderExpression;
+
+        var function = new ArrowFunctionExpression(
+            NodeList.From<Node>(new Identifier(fragment.ParameterName)),
+            fragment.RenderExpression,
+            expression: true,
+            async: false);
+        return Call(function, argument);
+    }
+
+    private static Expression FormatSlotAccessExpression(string slotName)
         => IsIdentifierName(slotName)
-            ? "slots." + slotName
-            : "slots[" + "\"" + EscapeJavaScriptString(slotName) + "\"" + "]";
+            ? new MemberExpression(new Identifier("slots"), new Identifier(slotName), computed: false, optional: false)
+            : new MemberExpression(new Identifier("slots"), StringLiteral(slotName), computed: true, optional: false);
 
-    private static string BuildDirectDomBindHandler(string handlerExpression, string attributeName)
+    private static Expression BuildDirectDomBindHandler(Expression handlerExpression, string attributeName)
     {
-        var escapedAttributeName = "\"" + EscapeJavaScriptString(attributeName) + "\"";
-        return "(eventOrValue, ...args) => { const value = eventOrValue !== null && eventOrValue !== undefined && typeof eventOrValue === \"object\" && eventOrValue.target !== null && eventOrValue.target !== undefined && " +
-               escapedAttributeName +
-               " in eventOrValue.target ? eventOrValue.target[" +
-               escapedAttributeName +
-               "] : eventOrValue; return (" +
-               handlerExpression +
-               ")(value, ...args); }";
+        var eventOrValue = new Identifier("eventOrValue");
+        var args = new Identifier("args");
+        var target = new MemberExpression(eventOrValue, new Identifier("target"), computed: false, optional: false);
+        var condition = LogicalAnd(
+            new NonLogicalBinaryExpression(Operator.StrictInequality, eventOrValue, Null()),
+            new NonLogicalBinaryExpression(Operator.StrictInequality, eventOrValue, new Identifier("undefined")),
+            new NonLogicalBinaryExpression(
+                Operator.StrictEquality,
+                new NonUpdateUnaryExpression(Operator.TypeOf, eventOrValue),
+                StringLiteral("object")),
+            new NonLogicalBinaryExpression(Operator.StrictInequality, target, Null()),
+            new NonLogicalBinaryExpression(Operator.StrictInequality, target, new Identifier("undefined")),
+            new NonLogicalBinaryExpression(Operator.In, StringLiteral(attributeName), target));
+        var value = new Identifier("value");
+        var valueExpression = new ConditionalExpression(
+            condition,
+            new MemberExpression(target, StringLiteral(attributeName), computed: true, optional: false),
+            eventOrValue);
+        var declaration = new VariableDeclaration(
+            VariableDeclarationKind.Const,
+            NodeList.From(new VariableDeclarator(value, valueExpression)));
+        var invocation = new CallExpression(
+            handlerExpression,
+            NodeList.From<Expression>(value, new SpreadElement(args)),
+            optional: false);
+        var body = new FunctionBody(
+            NodeList.From<Statement>(declaration, new ReturnStatement(invocation)),
+            strict: true);
+        return new ArrowFunctionExpression(
+            NodeList.From<Node>(eventOrValue, new RestElement(args)),
+            body,
+            expression: false,
+            async: false);
     }
 
-    private static string BuildDirectEventModifierHandler(string handlerExpression, DirectEventModifier modifier)
+    private static Expression BuildDirectEventModifierHandler(Expression handlerExpression, DirectEventModifier modifier)
     {
-        var statements = new List<string>();
+        var eventParameter = new Identifier("event");
+        var args = new Identifier("args");
+        var statements = new List<Statement>();
         if (modifier.PreventDefault)
-            statements.Add("event?.preventDefault?.();");
+            statements.Add(new NonSpecialExpressionStatement(OptionalMethodCall(eventParameter, "preventDefault")));
         if (modifier.StopPropagation)
-            statements.Add("event?.stopPropagation?.();");
-        statements.Add("return (" + handlerExpression + ")(event, ...args);");
-        return "(event, ...args) => { " + string.Join(" ", statements) + " }";
+            statements.Add(new NonSpecialExpressionStatement(OptionalMethodCall(eventParameter, "stopPropagation")));
+        statements.Add(new ReturnStatement(new CallExpression(
+            handlerExpression,
+            NodeList.From<Expression>(eventParameter, new SpreadElement(args)),
+            optional: false)));
+        return new ArrowFunctionExpression(
+            NodeList.From<Node>(eventParameter, new RestElement(args)),
+            new FunctionBody(NodeList.From(statements), strict: true),
+            expression: false,
+            async: false);
     }
+
+    private static CallExpression OptionalMethodCall(Expression receiver, string methodName)
+        => new(
+            new MemberExpression(receiver, new Identifier(methodName), computed: false, optional: true),
+            NodeList.From<Expression>(),
+            optional: true);
 
     private static bool IsDirectEventAttributeName(string name)
         => name.StartsWith("on", StringComparison.Ordinal) &&
@@ -2014,23 +2842,26 @@ internal static class RazorSgDirectRenderOperationEmitter
 
     private sealed class RenderState
     {
-        public List<string> Roots { get; } = new();
+        public List<Expression> Roots { get; } = new();
 
         public Stack<Frame> Stack { get; } = new();
 
-        private List<string> Guards { get; } = new();
+        public List<Statement> PendingPreludeStatements { get; } = new();
+
+        private List<Expression> Guards { get; } = new();
 
         public bool UsesFragment { get; set; }
 
         public bool UsesStaticVNode { get; set; }
 
-        public string ToRenderExpression()
+        public Expression ToRenderExpression()
         {
             return Roots.Count switch
             {
-                0 => "null",
+                0 => Null(),
+                1 when Roots[0] is SpreadElement spread => spread.Argument,
                 1 => Roots[0],
-                _ => "h(Fragment, null, [" + string.Join(", ", Roots) + "])"
+                _ => CreateFragment(Roots)
             };
         }
 
@@ -2040,10 +2871,12 @@ internal static class RazorSgDirectRenderOperationEmitter
                 Stack.Peek().ChildrenStarted = true;
         }
 
-        public void AddChild(string expression)
+        public void AddChild(Expression expression)
         {
             if (Stack.Count == 0)
             {
+                expression = WrapWithStatements(PendingPreludeStatements, expression);
+                PendingPreludeStatements.Clear();
                 Roots.Add(ApplyGuards(expression));
                 return;
             }
@@ -2051,20 +2884,45 @@ internal static class RazorSgDirectRenderOperationEmitter
             Stack.Peek().Children.Add(expression);
         }
 
-        public void AddGuard(string expression)
+        public void AddChildSequence(Expression expression)
+        {
+            if (Stack.Count == 0)
+            {
+                expression = WrapWithStatements(PendingPreludeStatements, expression);
+                PendingPreludeStatements.Clear();
+                expression = VueSlotAstFactory.NormalizeContent(ApplyGuards(expression));
+                Roots.Add(new SpreadElement(expression));
+                return;
+            }
+
+            Stack.Peek().Children.Add(new SpreadElement(
+                VueSlotAstFactory.NormalizeContent(expression)));
+        }
+
+        public void AddGuard(Expression expression)
         {
             Guards.Add(expression);
         }
 
-        private string ApplyGuards(string expression)
+        public void Clear()
+        {
+            Roots.Clear();
+            Stack.Clear();
+            PendingPreludeStatements.Clear();
+            Guards.Clear();
+            UsesFragment = false;
+            UsesStaticVNode = false;
+        }
+
+        private Expression ApplyGuards(Expression expression)
         {
             if (Guards.Count == 0)
                 return expression;
 
-            var guard = Guards.Count == 1
-                ? Guards[0]
-                : string.Join(" && ", Guards.Select(static item => "(" + item + ")"));
-            return guard + " ? " + expression + " : null";
+            var guard = Guards[0];
+            for (var index = 1; index < Guards.Count; index++)
+                guard = new LogicalExpression(Operator.LogicalAnd, guard, Guards[index]);
+            return new ConditionalExpression(guard, expression, Null());
         }
 
         public void Close<TFrame>(IOperation operation)
@@ -2084,9 +2942,9 @@ internal static class RazorSgDirectRenderOperationEmitter
     {
         public bool ChildrenStarted { get; set; }
 
-        public List<string> Children { get; } = new();
+        public List<Expression> Children { get; } = new();
 
-        public abstract string ToRenderExpression();
+        public abstract Expression ToRenderExpression();
 
         public virtual string Describe()
             => GetType().Name;
@@ -2094,51 +2952,67 @@ internal static class RazorSgDirectRenderOperationEmitter
 
     private abstract class PropFrame : Frame
     {
-        private readonly List<DirectAttribute> _attributes = new();
-        private readonly List<string> _multipleAttributes = new();
+        private readonly List<PropSource> _propSources = new();
+        private readonly List<Expression> _referenceCaptures = new();
         private string? _lastAttributeName;
 
-        protected IReadOnlyList<DirectAttribute> Attributes
-            => _attributes;
+        protected IEnumerable<DirectAttribute> Attributes
+            => _propSources
+                .OfType<AttributePropSource>()
+                .Select(static source => source.Attribute);
 
         public void AddAttribute(DirectAttribute attribute)
         {
-            for (var index = _attributes.Count - 1; index >= 0; index--)
-            {
-                if (string.Equals(_attributes[index].Name, attribute.Name, StringComparison.Ordinal))
-                {
-                    _attributes[index] = attribute;
-                    _lastAttributeName = attribute.Name;
-                    return;
-                }
-            }
-
-            _attributes.Add(attribute);
+            _propSources.Add(new AttributePropSource(attribute));
             _lastAttributeName = attribute.Name;
         }
 
-        public void AddMultipleAttributes(string attributesExpression)
+        public void AddMultipleAttributes(Expression attributesExpression)
         {
-            if (string.Equals(attributesExpression, "null", StringComparison.Ordinal) ||
-                string.Equals(attributesExpression, "undefined", StringComparison.Ordinal))
+            if (attributesExpression is NullLiteral ||
+                attributesExpression is Identifier { Name: "undefined" })
             {
                 return;
             }
 
-            _multipleAttributes.Add(attributesExpression);
+            _propSources.Add(new MultipleAttributesPropSource(attributesExpression));
             _lastAttributeName = null;
         }
 
-        public bool TrySetLastAttributeValue(string valueExpression)
+        public void AddConditionalAttributes(
+            Expression condition,
+            ImmutableArray<DirectAttribute> whenTrue,
+            ImmutableArray<DirectAttribute> whenFalse)
+        {
+            if (whenTrue.Length == 0 && whenFalse.Length == 0)
+                return;
+
+            _propSources.Add(new ConditionalAttributesPropSource(condition, whenTrue, whenFalse));
+            _lastAttributeName = null;
+        }
+
+        public void AddReferenceCapture(Expression capture)
+        {
+            if (capture is NullLiteral || capture is Identifier { Name: "undefined" })
+                return;
+
+            _referenceCaptures.Add(capture);
+        }
+
+        public bool TrySetLastAttributeValue(Expression valueExpression)
         {
             if (_lastAttributeName is null)
                 return false;
 
-            for (var index = _attributes.Count - 1; index >= 0; index--)
+            for (var index = _propSources.Count - 1; index >= 0; index--)
             {
-                if (string.Equals(_attributes[index].Name, _lastAttributeName, StringComparison.Ordinal))
+                if (_propSources[index] is AttributePropSource source &&
+                    string.Equals(source.Attribute.Name, _lastAttributeName, StringComparison.Ordinal))
                 {
-                    _attributes[index] = _attributes[index] with { ValueExpression = valueExpression };
+                    _propSources[index] = source with
+                    {
+                        Attribute = source.Attribute with { ValueExpression = valueExpression }
+                    };
                     return true;
                 }
             }
@@ -2148,35 +3022,92 @@ internal static class RazorSgDirectRenderOperationEmitter
 
         public abstract string NormalizeAttributeName(string name);
 
-        protected virtual string FormatAttributeValueExpression(DirectAttribute attribute)
+        protected virtual Expression FormatAttributeValueExpression(DirectAttribute attribute)
             => attribute.ValueExpression;
 
-        protected string FormatPropsExpression()
+        protected Expression FormatPropsExpression()
         {
-            var explicitProps = _attributes.Count == 0
-                ? "null"
-                : "{ " + string.Join(", ", _attributes.Select(attribute =>
-                    FormatJavaScriptPropertyName(attribute.Name) + ": " + FormatAttributeValueExpression(attribute))) + " }";
-            if (_multipleAttributes.Count == 0)
-                return explicitProps;
+            var arguments = new List<Expression>();
+            var properties = new List<Node>();
 
-            var arguments = new List<string>(_multipleAttributes.Count + 1)
+            foreach (var source in _propSources)
             {
-                explicitProps
+                switch (source)
+                {
+                    case AttributePropSource attribute:
+                        properties.Add(CreateAttributeProperty(attribute.Attribute));
+                        break;
+
+                    case MultipleAttributesPropSource multipleAttributes:
+                        FlushProperties(arguments, properties);
+                        arguments.Add(multipleAttributes.Expression);
+                        break;
+
+                    case ConditionalAttributesPropSource conditionalAttributes:
+                        FlushProperties(arguments, properties);
+                        arguments.Add(new ConditionalExpression(
+                            conditionalAttributes.Condition,
+                            CreateAttributeObject(conditionalAttributes.WhenTrue),
+                            CreateAttributeObject(conditionalAttributes.WhenFalse)));
+                        break;
+
+                    default:
+                        throw new NotSupportedException("Unsupported direct render prop source: " + source.GetType().Name);
+                }
+            }
+
+            if (_referenceCaptures.Count > 0)
+                properties.Add(CreateObjectProperty("ref", FormatReferenceCaptureExpression()));
+            FlushProperties(arguments, properties);
+
+            return arguments.Count switch
+            {
+                0 => Null(),
+                1 => arguments[0],
+                _ => Call("mergeProps", arguments)
             };
-            arguments.AddRange(_multipleAttributes);
-            return "mergeProps(" + string.Join(", ", arguments) + ")";
+        }
+
+        private ObjectProperty CreateAttributeProperty(DirectAttribute attribute)
+            => CreateObjectProperty(attribute.Name, FormatAttributeValueExpression(attribute));
+
+        private ObjectExpression CreateAttributeObject(IEnumerable<DirectAttribute> attributes)
+            => new(NodeList.From<Node>(attributes.Select(CreateAttributeProperty)));
+
+        private static void FlushProperties(List<Expression> arguments, List<Node> properties)
+        {
+            if (properties.Count == 0)
+                return;
+
+            arguments.Add(new ObjectExpression(NodeList.From(properties)));
+            properties.Clear();
+        }
+
+        private Expression FormatReferenceCaptureExpression()
+        {
+            if (_referenceCaptures.Count == 1)
+                return _referenceCaptures[0];
+
+            var value = new Identifier("value");
+            var statements = _referenceCaptures
+                .Select(capture => (Statement)new NonSpecialExpressionStatement(Call(capture, value)))
+                .ToArray();
+            return new ArrowFunctionExpression(
+                NodeList.From<Node>(value),
+                new FunctionBody(NodeList.From(statements), strict: true),
+                expression: false,
+                async: false);
         }
     }
 
     private sealed class ElementFrame : PropFrame
     {
-        private readonly string _tagExpression;
+        private readonly Expression _tagExpression;
         private readonly Dictionary<string, DirectEventModifier> _eventModifiers = new(StringComparer.Ordinal);
         private string? _updatesAttributeName;
         private string? _updatesEventName;
 
-        public ElementFrame(string tagExpression, string tagName)
+        public ElementFrame(Expression tagExpression, string tagName)
         {
             _tagExpression = tagExpression;
             TagName = tagName;
@@ -2187,8 +3118,8 @@ internal static class RazorSgDirectRenderOperationEmitter
         public override string NormalizeAttributeName(string name)
             => NormalizeDirectElementAttributeName(name);
 
-        public override string ToRenderExpression()
-            => "h(" + _tagExpression + ", " + FormatPropsExpression() + ", " + FormatChildrenExpression() + ")";
+        public override Expression ToRenderExpression()
+            => Call("h", _tagExpression, FormatPropsExpression(), FormatChildrenExpression());
 
         public override string Describe()
             => "ElementFrame('" + TagName + "')";
@@ -2210,7 +3141,7 @@ internal static class RazorSgDirectRenderOperationEmitter
                 existing.StopPropagation || stopPropagation);
         }
 
-        protected override string FormatAttributeValueExpression(DirectAttribute attribute)
+        protected override Expression FormatAttributeValueExpression(DirectAttribute attribute)
         {
             var value = attribute.ValueExpression;
             if (_updatesAttributeName is not null &&
@@ -2225,17 +3156,17 @@ internal static class RazorSgDirectRenderOperationEmitter
             return value;
         }
 
-        private string FormatChildrenExpression()
-            => Children.Count == 0 ? "null" : "[" + string.Join(", ", Children) + "]";
+        private Expression FormatChildrenExpression()
+            => Children.Count == 0 ? Null() : CreateArray(Children);
     }
 
     private sealed class ComponentFrame : PropFrame
     {
-        private readonly string _componentExpression;
+        private readonly Expression _componentExpression;
         private readonly ImmutableDictionary<string, string> _parameterNameMap;
 
         public ComponentFrame(
-            string componentExpression,
+            Expression componentExpression,
             ImmutableDictionary<string, string> parameterNameMap)
         {
             _componentExpression = componentExpression;
@@ -2259,34 +3190,118 @@ internal static class RazorSgDirectRenderOperationEmitter
                 : NormalizeDirectComponentParameterName(name);
         }
 
-        public override string ToRenderExpression()
+        public override Expression ToRenderExpression()
         {
             var props = FormatPropsExpression();
             if (Slots.Count > 0)
             {
-                var slots = "{ " + string.Join(", ", Slots.Select(slot =>
-                    FormatJavaScriptPropertyName(slot.Name) + ": () => " + slot.RenderExpression)) + " }";
-                return "h(" + _componentExpression + ", " + props + ", " + slots + ")";
+                var slotMembers = new List<Node>(Slots.Count);
+                foreach (var slot in Slots)
+                {
+                    if (slot.Fragment.Selection is null &&
+                        slot.Fragment.AvailabilityCondition is null)
+                    {
+                        slotMembers.Add(CreateSlotProperty(slot, slot.Fragment));
+                        continue;
+                    }
+
+                    slotMembers.Add(new SpreadElement(
+                        CreateSlotProjectionExpression(slot, slot.Fragment)));
+                }
+
+                var slots = new ObjectExpression(NodeList.From(slotMembers));
+                return Call("h", _componentExpression, props, slots);
             }
 
             if (Children.Count == 0)
-                return "h(" + _componentExpression + ", " + props + ")";
+                return Call("h", _componentExpression, props);
 
             var children = Children.Count == 1
                 ? Children[0]
-                : "[" + string.Join(", ", Children) + "]";
-            return "h(" + _componentExpression + ", " + props + ", " + children + ")";
+                : CreateArray(Children);
+            return Call("h", _componentExpression, props, children);
+        }
+
+        private static Expression CreateSlotProjectionExpression(
+            DirectSlot slot,
+            DirectRenderFragment fragment)
+        {
+            if (fragment.Selection is { } selection)
+            {
+                return new ConditionalExpression(
+                    selection.Condition,
+                    CreateSlotProjectionExpression(slot, selection.WhenTrue),
+                    CreateSlotProjectionExpression(slot, selection.WhenFalse));
+            }
+
+            if (fragment.AvailabilityCondition is BooleanLiteral availability)
+            {
+                return availability.Value
+                    ? CreateSlotPropertyObject(slot, fragment)
+                    : new ObjectExpression(NodeList.Empty<Node>());
+            }
+
+            var propertyObject = CreateSlotPropertyObject(slot, fragment);
+            return fragment.AvailabilityCondition is null
+                ? propertyObject
+                : new ConditionalExpression(
+                    fragment.AvailabilityCondition,
+                    propertyObject,
+                    new ObjectExpression(NodeList.Empty<Node>()));
+        }
+
+        private static ObjectExpression CreateSlotPropertyObject(
+            DirectSlot slot,
+            DirectRenderFragment fragment)
+        {
+            var propertyObject = new ObjectExpression(NodeList.From<Node>(
+                CreateSlotProperty(slot, fragment)));
+            return propertyObject;
+        }
+
+        private static Property CreateSlotProperty(
+            DirectSlot slot,
+            DirectRenderFragment fragment)
+            => CreateObjectProperty(
+                slot.Name,
+                new ArrowFunctionExpression(
+                    slot.Fragment.ParameterName is null
+                        ? NodeList.From<Node>()
+                        : NodeList.From<Node>(new Identifier(slot.Fragment.ParameterName)),
+                    NormalizeSlotRenderExpression(
+                        BindSlotRenderExpression(slot.Fragment.ParameterName, fragment)),
+                    expression: true,
+                    async: false));
+
+        private static Expression BindSlotRenderExpression(
+            string? slotParameterName,
+            DirectRenderFragment fragment)
+        {
+            var renderExpression = fragment.RenderExpressionWhenAvailable ?? fragment.RenderExpression;
+            if (slotParameterName is null ||
+                fragment.ParameterName is null ||
+                string.Equals(slotParameterName, fragment.ParameterName, StringComparison.Ordinal))
+            {
+                return renderExpression;
+            }
+
+            var function = new ArrowFunctionExpression(
+                NodeList.From<Node>(new Identifier(fragment.ParameterName)),
+                renderExpression,
+                expression: true,
+                async: false);
+            return Call(function, new Identifier(slotParameterName));
         }
     }
 
     private sealed class RegionFrame : Frame
     {
-        public override string ToRenderExpression()
+        public override Expression ToRenderExpression()
             => Children.Count switch
             {
-                0 => "null",
+                0 => Null(),
                 1 => Children[0],
-                _ => "h(Fragment, null, [" + string.Join(", ", Children) + "])"
+                _ => CreateFragment(Children)
             };
     }
 
@@ -2297,8 +3312,11 @@ internal static class RazorSgDirectRenderOperationEmitter
         ImmutableDictionary<ILocalSymbol, string> LocalAliases,
         ImmutableDictionary<ILocalSymbol, DirectRenderFragment> LocalRenderFragments,
         ImmutableDictionary<ILocalSymbol, DirectRenderObject> LocalRenderObjects,
-        List<string> PreludeLines,
+        ImmutableDictionary<ILocalSymbol, INamedTypeSymbol> LocalComponentTypes,
+        ImmutableHashSet<ILocalSymbol> SecondaryBuilders,
+        List<Statement> PreludeStatements,
         bool AllowPreludeDeclarations,
+        SenseArgument Argument,
         bool IsTerminated = false);
 
     private readonly record struct BuilderBinding(ISymbol Symbol)
@@ -2327,17 +3345,12 @@ internal static class RazorSgDirectRenderOperationEmitter
     }
 
     private sealed record LoweredRender(
-        string RenderExpression,
-        ImmutableArray<string> PreludeLines,
+        Expression RenderExpression,
+        ImmutableArray<Statement> PreludeStatements,
         bool UsesFragment,
         bool UsesStaticVNode,
         bool UsesSlots,
-        ImmutableArray<string> ImportLines);
-
-    private sealed record ImportBinding(
-        string ImportSpecifier,
-        string ExportName,
-        string LocalName);
+        ImmutableArray<ImportDeclaration> ImportDeclarations);
 
     private readonly record struct ComponentImportDescriptor(
         string ImportSpecifier,
@@ -2345,17 +3358,37 @@ internal static class RazorSgDirectRenderOperationEmitter
 
     private sealed record DirectAttribute(
         string Name,
-        string ValueExpression);
+        Expression ValueExpression);
+
+    private abstract record PropSource;
+
+    private sealed record AttributePropSource(DirectAttribute Attribute) : PropSource;
+
+    private sealed record MultipleAttributesPropSource(Expression Expression) : PropSource;
+
+    private sealed record ConditionalAttributesPropSource(
+        Expression Condition,
+        ImmutableArray<DirectAttribute> WhenTrue,
+        ImmutableArray<DirectAttribute> WhenFalse) : PropSource;
 
     private sealed record DirectSlot(
         string Name,
-        string? ParameterName,
-        string RenderExpression);
+        DirectRenderFragment Fragment);
+
+    private sealed record ConditionalRenderFragmentSelection(
+        Expression Condition,
+        DirectRenderFragment WhenTrue,
+        DirectRenderFragment WhenFalse);
 
     private readonly record struct DirectRenderFragment(
-        string RenderExpression,
+        Expression RenderExpression,
+        string? ParameterName = null,
         bool UsesFragment = false,
-        bool UsesStaticVNode = false);
+        bool UsesStaticVNode = false,
+        Expression? AvailabilityCondition = null,
+        Expression? RenderExpressionWhenAvailable = null,
+        ConditionalRenderFragmentSelection? Selection = null,
+        bool ReturnsVueSlotContent = false);
 
     private readonly record struct DirectRenderFunction(
         string FunctionName,
@@ -2366,13 +3399,62 @@ internal static class RazorSgDirectRenderOperationEmitter
         ImmutableDictionary<IPropertySymbol, DirectRenderFragment> RenderFragments);
 
     private readonly record struct DirectRenderFragmentBody(
-        string RenderExpression,
+        Expression RenderExpression,
         bool UsesFragment,
         bool UsesStaticVNode);
 
     private readonly record struct DirectEventModifier(
         bool PreventDefault,
         bool StopPropagation);
+
+    private static NullLiteral Null()
+        => new("null");
+
+    private static StringLiteral StringLiteral(string value)
+        => JavaScriptAstFactory.CreateStringLiteral(value);
+
+    private static CallExpression Call(string name, params Expression[] arguments)
+        => Call(name, (IEnumerable<Expression>)arguments);
+
+    private static CallExpression Call(string name, IEnumerable<Expression> arguments)
+        => new(new Identifier(name), NodeList.From(arguments), optional: false);
+
+    private static CallExpression Call(Expression callee, params Expression[] arguments)
+        => new(callee, NodeList.From(arguments), optional: false);
+
+    private static Expression LogicalAnd(params Expression[] expressions)
+    {
+        if (expressions.Length == 0)
+            return new BooleanLiteral(true, "true");
+
+        var result = expressions[0];
+        for (var index = 1; index < expressions.Length; index++)
+            result = new LogicalExpression(Operator.LogicalAnd, result, expressions[index]);
+        return result;
+    }
+
+    private static ArrayExpression CreateArray(IEnumerable<Expression> expressions)
+        => new(NodeList.From<Expression?>(expressions.Select(static expression => (Expression?)expression)));
+
+    private static Expression NormalizeSlotRenderExpression(Expression expression)
+        => VueSlotAstFactory.NormalizeContent(expression);
+
+    private static Expression CreateFragment(IEnumerable<Expression> children)
+        => Call("h", new Identifier("Fragment"), Null(), CreateArray(children));
+
+    private static ObjectProperty CreateObjectProperty(string name, Expression value)
+        => new(
+            PropertyKind.Init,
+            CreateObjectPropertyKey(name),
+            value,
+            computed: false,
+            shorthand: false,
+            method: false);
+
+    private static Expression CreateObjectPropertyKey(string name)
+        => IsIdentifierName(name)
+            ? new Identifier(name)
+            : StringLiteral(name);
 
     private static string NormalizeDirectElementAttributeName(string name)
     {
@@ -2399,9 +3481,6 @@ internal static class RazorSgDirectRenderOperationEmitter
             ? name
             : char.ToLowerInvariant(name[0]) + name.Substring(1);
 
-    private static string FormatJavaScriptPropertyName(string name)
-        => IsIdentifierName(name) ? name : "\"" + EscapeJavaScriptString(name) + "\"";
-
     private static bool IsIdentifierName(string value)
     {
         if (string.IsNullOrEmpty(value) ||
@@ -2420,19 +3499,13 @@ internal static class RazorSgDirectRenderOperationEmitter
         return true;
     }
 
-    private static string EscapeJavaScriptString(string value)
-        => value
-            .Replace("\\", "\\\\")
-            .Replace("\"", "\\\"")
-            .Replace("\r", "\\r")
-            .Replace("\n", "\\n");
 }
 
 internal sealed record RazorSgDirectRenderOperationBuildResult(
-    string RenderExpression,
-    ImmutableArray<string> PreludeLines,
+    Expression RenderExpression,
+    ImmutableArray<Statement> PreludeStatements,
     bool UsesFragment,
     bool UsesStaticVNode,
     bool UsesProps,
     bool UsesSlots,
-    ImmutableArray<string> ImportLines);
+    ImmutableArray<ImportDeclaration> ImportDeclarations);

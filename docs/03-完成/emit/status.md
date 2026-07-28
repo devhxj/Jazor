@@ -5,9 +5,9 @@
 
 ## 总结
 
-`Jazor.Emit` 现在是构建后的 generic module materialization 层。它读取 compiler-produced ECMAScript module catalog、`Jazor.Generated.VueRenderCatalog`、source-map carrier、CLR runtime catalog 与 RazorVue embedded runtime assets，写出 `.mjs`、可选 `.mjs.map` 和 canonical schema-v1 `jazor-manifest.json`，并在 bundle 模式下通过 Deno-backed path 组装浏览器入口。
+`Jazor.Emit` 是构建后的模块物化层。它读取编译器生成的 ECMAScript module catalog、`Jazor.Generated.VueRenderCatalog`、source-map carrier、CLR runtime catalog 与 RazorVue embedded runtime assets，写出 `.mjs`、可选 `.mjs.map` 和 canonical schema-v1 `jazor-manifest.json`，并在 release 模式下通过 Deno-backed path 组装浏览器生产包。
 
-RazorVue catalog、SFC bridge、consumer-entry、host sidecar、update-plan 和 Jolt handoff 合同已随 Razor SG G0 后清理退役，不再属于当前 emit CLI 或 manifest model。
+`Jazor.Emit` 不负责 Razor Hook、官方 Razor Source Generator 的运行、Compiler lowering 或开发服务器协议。它只消费上游已完成的 catalog，并将确定的模块图物化为调试文件或生产 Bundle。
 
 ## 当前状态判断
 
@@ -35,7 +35,7 @@ RazorVue catalog、SFC bridge、consumer-entry、host sidecar、update-plan 和 
 
 ### 3. 当前收口重点
 
-当前最重要的是保持旧 RazorVue/Jolt manifest 形状退役后的收敛：
+当前最重要的是保持 manifest 形状的收敛：
 
 - `ManifestModel` 只描述 generic module output；新写 manifest 使用 `schemaVersion`、`runtimeProtocolVersion`、`rootAssemblyName`、`entries`、module `path/contentHash` 字段，不写入 wall-clock 或机器绝对 root path。
 - `ModuleWriter` 负责 module、map、canonical manifest 和 stale cleanup；Vue render component 从下一次 manifest 移除时，旧 `.mjs` 与 `.mjs.map` 的删除已有独立 writer 覆盖，并已补外部 Razor SG package consumer 的二次 build 删除回归；同一 Vue render catalog 重复物化时，component `.mjs`、`.mjs.map`、runtime assets 与 manifest 的 byte-for-byte 稳定已有 writer 覆盖；Counter 外部 Razor SG consumer 的连续 clean build 产物相对路径 + SHA256 清单一致性已有 SDK integration 覆盖，且第二轮前会显式删除 `wwwroot/jazor`，避免依赖旧产物残留。

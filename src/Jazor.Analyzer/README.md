@@ -3,7 +3,7 @@
 > Status: active reference
 > Positioning: Roslyn analyzer and Razor SG hook host for whitelist validation.
 
-`Jazor.Analyzer` 承载 `ECMAScript` / `Jazor.Compiler` 主线的静态诊断，以及 RazorVue 使用的 Razor SG hook/bootstrap 生成器。它不再承载旧 RazorVue authoring 诊断、IR/SFC 语义模型或 Vue 分析 RPC 宿主。
+`Jazor.Analyzer` 承载 `ECMAScript` / `Jazor.Compiler` 主线的静态诊断，以及 RazorVue 使用的 Razor SG hook/bootstrap 生成器。它不承载 Razor IR、SFC 语义模型或宿主 RPC。
 
 ## Responsibilities
 
@@ -16,7 +16,7 @@
 - `Jazor.Analyzer` 可以比 `Jazor.Compiler` 更严格，但编译器仍是最终 runtime-sensitive 验证层。
 - `ECMAScript.Contract` 提供最小契约，如 `Op` 和 `JazorAttribute`。
 - `Jazor.Common` 提供 `Format` 与 `SourceMaps` 等真正通用实现。
-- `Jazor.RazorVue` 提供 Razor SDK final-document 绑定边界；RazorVue generator 的历史命名空间 `Jazor.RazorVue.Analysis` 仍由本程序集承载。
+- `Jazor.RazorVue` 提供 Razor SDK final-document 绑定边界；本程序集只承载 Hook 所需的分析器入口。
 
 ## Current Layout
 

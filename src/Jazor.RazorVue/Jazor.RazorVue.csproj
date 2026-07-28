@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
     <AssemblyName>Jazor.RazorVue</AssemblyName>
     <RootNamespace>Jazor.RazorVue</RootNamespace>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <ItemGroup>

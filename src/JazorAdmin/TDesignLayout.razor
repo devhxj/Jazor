@@ -1,0 +1,64 @@
+@inherits AdminContentComponentBase
+
+<TLayout CssClass="@RootCssClass"
+         CssStyle="@CssStyle"
+         data-shell-region="layout"
+         data-shell-layout="@LayoutContractValue"
+         data-shell-collapsed="@Collapsed"
+         @attributes="AdditionalAttributes">
+    @if (IsSidebarLayout)
+    {
+        <TAside Width="@(Collapsed ? "64px" : "240px")"
+                data-shell-region="sidebar">
+            @if (Sidebar is not null)
+            {
+                @Sidebar
+            }
+            else
+            {
+                <TDesignSidebarMenu Items="@NavItems"
+                                        Collapsed="@Collapsed"
+                                        SelectedKey="@SelectedKey"
+                                        ExpandedKeys="@ExpandedKeys"
+                                        SelectedKeyChanged="@SelectedKeyChanged"
+                                        ExpandedKeysChanged="@ExpandedKeysChanged"
+                                        Logo="@Logo" />
+            }
+        </TAside>
+    }
+
+    <TLayout data-shell-region="main">
+        <THeader Height="64px" data-shell-region="header">
+            <div class='@("jazor-admin-tdesign-layout__header")'>
+                @if (IsSidebarLayout)
+                {
+                    <TButton Text="@EffectiveCollapseLabel"
+                             Variant="@TDesignButtonVariant.Text"
+                             data-shell-command="toggle-sidebar"
+                             aria-label="@EffectiveCollapseLabel"
+                             title="@EffectiveCollapseLabel"
+                             aria-expanded="@(!Collapsed)"
+                             OnClick="@ToggleCollapsed" />
+                }
+
+                @if (Header is not null)
+                {
+                    @Header
+                }
+                else
+                {
+                    <TDesignHeaderBar Title="@Title"
+                                          Subtitle="@Subtitle"
+                                          Logo="@Logo"
+                                          Navigation="@HeaderNavigation"
+                                          Actions="@HeaderActions"
+                                          UserRegion="@UserRegion" />
+                }
+            </div>
+        </THeader>
+
+        <TContent data-shell-region="content">
+            @ChildContent
+        </TContent>
+    </TLayout>
+</TLayout>

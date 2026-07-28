@@ -10,15 +10,16 @@
 
 目标不是重复设计讨论，而是把 sourcemap 后续 rollout 与 refinement 拆成可执行步骤。
 
-当前 narrower active lane：
+当前关联入口：
 
 - [SourceMap 状态（2026-04-06）](../../03-完成/sourcemap/status.md)
-- [Phase 2: 编译管道统一 + Source Map](../jolt/phase2-sourcemap.md)
+- [SourceMap 目标与设计](../../01-目标/compiler/sourcemap/SourceMap.Design.md)
+- [RazorVue 工具链计划](../razorvue-transition/04-工具链.md)
 
 说明：
 
-- 原先单独的 RazorVue sourcemap / bundle chaining 执行计划已不再作为独立入口维护；
-- 当前应以 sourcemap 状态页 + Jolt/Deno 现行实施计划的组合来理解 narrower active lane。
+- 原先分散在不同路线下的 sourcemap / bundle chaining 计划不再作为独立入口维护；
+- 当前应以 SourceMap 设计、状态页、`Jazor.Emit` 物化契约和 RazorVue 工具链计划为准。
 
 ## 2. 当前基线与启动前门槛
 

@@ -1110,9 +1110,9 @@ public sealed class SemanticWalkerSwitchTest
   let result = (() => {
     let x;
     const v$0 = point;
-    if (v$0 != null && (""X"" in v$0 && v$0.X === 0) && (v$0 != null && (""Y"" in v$0 && v$0.Y === 0)))
+    if (v$0 != null && ""X"" in v$0 && v$0.X === 0 && ""Y"" in v$0 && v$0.Y === 0)
       return ""origin"";
-    if (v$0 != null && (""X"" in v$0 && (x = v$0.X, true)) && x > 0)
+    if (v$0 != null && ""X"" in v$0 && (x = v$0.X, true) && x > 0)
       return ""right"";
     return ""other"";
   })();
@@ -2437,9 +2437,9 @@ public sealed class SemanticWalkerSwitchTest
 			@"{
   return (() => {
     const v$0 = p;
-    if (v$0 instanceof Person && (v$0 != null && (""Name"" in v$0 && v$0.Name === ""Alice"")))
+    if (v$0 instanceof Person && v$0 != null && ""Name"" in v$0 && v$0.Name === ""Alice"")
       return ""Hi Alice"";
-    if (v$0 instanceof Person && (v$0 != null && (""Name"" in v$0 && v$0.Name === ""Bob"")))
+    if (v$0 instanceof Person && v$0 != null && ""Name"" in v$0 && v$0.Name === ""Bob"")
       return ""Hey Bob"";
     return ""Hello stranger"";
   })();
@@ -2524,9 +2524,9 @@ public sealed class SemanticWalkerSwitchTest
 			@"{
   return (() => {
     const v$0 = p;
-    if (v$0 != null && (""name"" in v$0 && v$0.name === ""Alice""))
+    if (v$0 != null && ""name"" in v$0 && v$0.name === ""Alice"")
       return ""Hi Alice"";
-    if (v$0 != null && (""name"" in v$0 && v$0.name === ""Bob""))
+    if (v$0 != null && ""name"" in v$0 && v$0.name === ""Bob"")
       return ""Hey Bob"";
     return ""Hello stranger"";
   })();

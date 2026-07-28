@@ -183,4 +183,4 @@ builder.CloseComponent();
 - 本程序集当前显式支持 Vuetify 3.8.0 labs 入口的 9 个 runtime exports：`VCalendar`、`VDateInput`、`VFileUpload`、`VIconBtn`、`VPicker`、`VPullToRefresh`、`VStepperVertical`、`VTimePicker`、`VTreeview`。这些已纳入当前 production surface，但 labs API 本身仍是版本敏感区域，不承诺等同 Vuetify 稳定组件的全量 prop/event/slot 镜像。
 - `VSelect` / `VAutocomplete` / `VCombobox` 当前以 `SelectedValue` 并行入口覆盖复杂 `modelValue`，没有把 `ModelValue` 破坏性改为泛型。后续如果 RazorVue 组件解析安全支持泛型库组件，可再评估把这组三组件升级为泛型 authoring API；升级前必须保持现有 `ModelValue string?` 兼容入口。
 - 部分布局枚举类 props 为了保持 Razor 字面量易用性仍保留 `string?`，例如 `VRow.Align` / `VRow.Justify`。后续如要强约束，应设计不破坏 `<VRow Justify="center">` 的 authoring 迁移策略。
-- 本清单确认的是代理层、编译降级和类型合同。最终业务上线仍需要目标应用跑完整 RazorVue/Jolt/emit 集成验证。
+- 本清单确认的是代理层、编译降级和类型合同。最终业务上线仍需要目标应用跑完整 RazorVue/Emit 集成验证。

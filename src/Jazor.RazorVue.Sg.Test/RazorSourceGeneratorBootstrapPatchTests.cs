@@ -1,5 +1,5 @@
 using System.Text;
-using Jazor.RazorVue.Generator;
+using Jazor.RazorVue.Generation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -61,7 +61,7 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
         Assert.AreEqual(0, diagnostics.Length, string.Join(Environment.NewLine, diagnostics));
         Assert.IsTrue(outputCompilation.SyntaxTrees.Any(static tree => tree.FilePath.EndsWith("_razor.g.cs", StringComparison.Ordinal)));
         var catalog = outputCompilation.SyntaxTrees.SingleOrDefault(
-            static tree => tree.FilePath == "Jazor.Generated.VueRenderCatalog.g.cs");
+            static tree => tree.FilePath == "obj/Jazor.RazorVue/Jazor.Generated.VueRenderCatalog.g.cs");
         Assert.IsNotNull(catalog);
         StringAssert.Contains(catalog!.GetText().ToString(), "components/counter.mjs");
         Assert.AreEqual(

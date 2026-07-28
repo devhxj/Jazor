@@ -1,5 +1,7 @@
 # ECMAScript.ElementPlus
 
+> Purpose: standalone Element Plus binding and RazorVue authoring surface.
+
 Conservative first-slice bindings for `element-plus`.
 
 Scope of this package:
@@ -9,3 +11,7 @@ Scope of this package:
 - Strongly typed RazorVue authoring surface without `object` catch-all props
 
 Current package contract intentionally avoids weak catch-all choice wrappers. Rich content is exposed through verified slots, while high-frequency scalar props stay strongly typed.
+
+## Boundary
+
+This package defines host bindings and component contracts. Razor SG integration, render-function lowering, and output materialization remain owned by `Jazor.Vue`, `Jazor.RazorVue`, and `Jazor.Emit` respectively.

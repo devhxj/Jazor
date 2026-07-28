@@ -552,7 +552,7 @@ public sealed class OptimizerTest
     /// 说明: obj != null 在表达式中出现两次，应该去重为一个，并保持在最前面的位置
     /// </summary>
     [TestMethod]
-    public void OptimizeLogical_PreservesOperandOrder_ComplexPatternMatch()
+    public void OptimizeLogical_ComplexPatternMatch_PreservesPotentialProxyEffects()
     {
         // Arrange: 构建类似 C# 属性模式匹配的表达式
         // C# 原始代码可能类似于: obj is { Name: "John" } && obj is { Age: > 18 }
@@ -564,11 +564,10 @@ public sealed class OptimizerTest
         var result = Optimizer.OptimizeLogical(expr);
         var script = result.ToKnRECMAScript();
 
-        // Assert: 验证去重后的结果
-        // 1. obj != null 应该只出现一次，且在最前面
-        // 2. 其他操作数顺序保持不变
+        // Assert: `in` and member access may invoke proxy/getter behavior, so the
+        // optimizer must preserve both null checks and the original evaluation order.
         Assert.AreEqual(
-@"obj != null && ""Name"" in obj && obj.Name === ""John"" && ""Age"" in obj && obj.Age > 18", script);
+@"obj != null && (""Name"" in obj && obj.Name === ""John"") && (obj != null && (""Age"" in obj && obj.Age > 18))", script);
     }
 
     /// <summary>
@@ -698,7 +697,7 @@ public sealed class OptimizerTest
     /// 注意：由于 && 优先级高于 ||，括号可以省略
     /// </summary>
     [TestMethod]
-    public void OptimizeLogical_MixedOrAndAnd_DeduplicatesAndSide()
+    public void OptimizeLogical_MixedOrAndAnd_PreservesPotentialProxyEffects()
     {
         // Arrange: 混合 || 和 && 的复杂表达式
         var expr = new Parser()
@@ -708,10 +707,10 @@ public sealed class OptimizerTest
         var result = Optimizer.OptimizeLogical(expr);
         var script = result.ToKnRECMAScript();
 
-        // Assert: || 结构保持，中间 && 部分的 obj != null 去重
-        // 由于 && 优先级高于 ||，括号可以省略
+        // Assert: the proxy-sensitive `in` and member operations keep their
+        // surrounding checks and evaluation order intact.
         Assert.AreEqual(
-@"obj == null || obj != null && ""Name"" in obj && obj.Name === ""John"" && ""Age"" in obj && obj.Age > 18 || c > 0", script);
+@"obj == null || obj != null && (""Name"" in obj && obj.Name === ""John"") && (obj != null && (""Age"" in obj && obj.Age > 18)) || c > 0", script);
     }
 
     #endregion
@@ -867,7 +866,7 @@ public sealed class OptimizerTest
     /// 测试对象属性访问副作用
     /// </summary>
     [TestMethod]
-    public void OptimizeLogical_PropertyAccess_PureExpression()
+    public void OptimizeLogical_PropertyAccess_PreservesPotentialGetterEffects()
     {
         // Arrange: obj.prop && obj.prop
         var obj = new Identifier("obj");
@@ -878,8 +877,8 @@ public sealed class OptimizerTest
         // Act
         var result = Optimizer.OptimizeLogical(expr);
 
-        // Assert: 纯属性访问可以优化
-        Assert.IsInstanceOfType<MemberExpression>(result);
+        // Assert: property access can execute a getter or proxy trap.
+        Assert.IsInstanceOfType<LogicalExpression>(result);
     }
 
     #endregion

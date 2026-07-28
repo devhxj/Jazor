@@ -1,145 +1,50 @@
-# .NET 11 / C# 15 Union Migration Status
+# .NET 11 / C# 15 编译器兼容状态
 
-> Status: historical migration snapshot; not the current RazorVue architecture source of truth
-> Date: 2026-05-13
+> Status: 当前状态快照
+> Date: 2026-07-28
+> Scope: .NET 11 preview SDK、Roslyn 操作模型与 C# 15 union 合同
 
-This file records the older .NET 11 / C# 15 union migration branch state. RazorIr, Jolt, SFC manifest, and pre-G0 sample verification references below are historical evidence only. For the current RazorVue production path, use official Razor SG generated C# -> Roslyn `IOperation` -> Vue render-function `.mjs`; Razor DR/IR, generated SFC output, Jolt, and consumer-entry bridge paths are not fallback routes on the active transformation branch.
+## 当前基线
 
-## Current Decisions
+- 解决方案按 `global.json` 固定的 .NET 11 preview SDK 构建。
+- Roslyn 相关包与 SDK 编译器表面保持一致，避免分析器因版本不匹配而被跳过。
+- union 优先使用 SDK 提供的 `System.Runtime.CompilerServices.UnionAttribute` 与 `IUnion`；只有语言原生 union 无法保持精确分支投影时，才使用带标签的显式 fallback。
+- collection-expression 场景使用官方 `CollectionBuilderAttribute` 合同，不引入仓库自定义替代属性。
+- 编译器与分析器共享对象字面量宿主判定，但分析器仍可在运行时敏感操作之前更早报告诊断。
 
-- Target SDK is `11.0.100-preview.3.26207.106` via `global.json`; prerelease SDK usage is intentional.
-- Roslyn package alignment follows the SDK compiler surface: `CodeAnalysisVersion` is `5.7.0-1.26207.106`. The attempted `5.8.0-1.26257.103` line was rejected because SDK Roslyn `5.7.0.0` skipped newer analyzers with `CS9057`.
-- The target .NET 11 preview SDK now provides the runtime union contract through `System.Runtime.CompilerServices.UnionAttribute` / `IUnion`. The repository-local `CSharpUnionPreviewShim` is retired and must not be reintroduced; generated/manual fallback wrappers should reference the SDK-provided types.
-- Official union projection is allowed only for safe erased-value host wrappers. Object, interface, delegate, nullable-boundary, or C# binding-hostile branches must keep explicit strong `From(...)` factories or overloads.
-- Sequence/array union authoring must preserve collection-expression ergonomics. Keep the official `System.Runtime.CompilerServices.CollectionBuilderAttribute` plus generated builder classes for collection unions so consumers can write `ConstrainDOMString value = ["a", "b"];`; do not introduce a custom `ArrayAttribute` because the C# compiler recognizes the official collection-builder contract, not project-local aliases.
-- In-memory Roslyn test compilation references are aligned to .NET 11 via `Basic.Reference.Assemblies.Net110`; new tests should not reintroduce `Net100.References.All`.
-- Analyzer support must mirror proven compiler host surfaces narrowly. Do not suppress `JAZOR001` or widen arbitrary CLR indexers to make Vue/WebIDL authoring compile.
+## Razor-to-Vue 输入边界
 
-## Historical Completed Snapshot
+当前 Razor-to-Vue 主线不读取 Razor IR，也不依赖 `RazorCodeDocument`、`RazorCSharpDocument` 或生成 C# 的二次解析。正式输入是官方 Razor Source Generator 完成后的最终 Roslyn `Compilation`：
 
-- Solution/project target migration is on the `net11.0` preview path where needed.
-- The repository-local C# union preview shim was removed after the target SDK exposed the official `System.Runtime.CompilerServices.UnionAttribute` / `IUnion` types.
-- Compiler recognizes `[Union]` / `IUnion` as host-erased union markers without widening arbitrary object contracts.
-- WebIDL generator emits C# native `readonly union` for safe non-nullable union branches, retains official collection-builder support for sequence branches, keeps nullable branch sets on the hand-tagged fallback, and preserves explicit factories for unsafe object/interface/delegate branches.
-- Generated WebIDL output was refreshed and passed ECMAScript build validation.
-- Representative Vue union `VueNamesOrOptions` now uses the official-preview union contract while retaining collection-builder authoring.
-- VueRoute `RouterViewDepthValue` now uses the C# native `readonly union` contract for the safe erased `Number | IVueRef<Number>` value domain while retaining existing numeric convenience conversions and strongly typed `IVueRef<TNumber>` factory helpers.
-- VueRoute hand-tagged wrappers that still require precise branch identity remain intentionally unmigrated: `RouterErrorValue` keeps the `IObject` object-boundary factory, `RouterScrollResult` keeps exact projections across overlapping `ScrollPositionCoordinates` / `ScrollPositionElement`, and `RouterScrollHandler` keeps delegate factory entry points.
-- Roslyn operation-surface audit now explicitly rejects the new collection-expression placeholder operation and has a reflection guard for visitor coverage drift.
-- Root `NuGet.config` is present for `nuget.org` plus the preview `dotnet-tools` feed.
-- Roslyn packages are aligned to SDK compiler version `5.7.0-1.26207.106`, restoring analyzer execution instead of `CS9057` analyzer skips.
-- Razor source-generator integration compatibility is matched by structural ABI, not IL hash. The hard gate is the expected SDK generator type, `IIncrementalGenerator`, and public instance `Initialize(IncrementalGeneratorInitializationContext): void`; the optional `Initialize` IL SHA-256 is retained only as diagnostic/probe metadata.
-- Razor source-generator compatibility guard coverage now includes positive current-SDK probing plus negative structural ABI cases for generator type name, `IIncrementalGenerator`, `Initialize` parameter type, return type, visibility, staticness, and declared method surface. This prevents reintroducing hash-based or overly loose compatibility gates.
-- Historical RazorIr external-build tests resolved SDK versions semantically and derived `TargetFramework` / `RazorLangVersion` from the resolved SDK major version. Those tests are no longer the current RazorVue production verification lane.
-- Historical RazorIr load-timing fixtures stopped falling back to SDK `10.0.203`. Those fixtures belonged to the retired RazorIr line.
-- On CoreCLR 11, the old Lib.Harmony/private fallback probe was removed. The current branch goes further: RazorVue no longer consumes in-memory Razor IR or generates SFC output; the official SG tail hook is used to reach generated C# and Roslyn `IOperation`.
-- Razor 11 component-attribute binding differences are handled at the authored surface with explicit strong expressions, not by weakening component APIs. Static values for non-`string` parameters such as `VuetifyTextValue`, `[String]` enums, and other host value wrappers must be written as typed C# expressions when Razor cannot legally bind an HTML-style literal.
-- Jolt and RazorIr SDK toolset probing no longer assumes `tasks\net10.0`. They locate `Microsoft.NET.Sdk.Razor.Tasks.dll` under the resolved SDK and sort known TFMs so modern `netX.0` task assets win over legacy `net4xx` assets while still preserving fallback compatibility when only older task assets exist.
-- Packaging, sample smoke scripts, Deno runtime probing, Razor load-timing fixtures, and package layout guards now target `net11.0` / Razor `11.0` paths for current toolchain artifacts.
-- NuGet package verification now derives the produced package version from the actual `.nupkg`, which keeps the script compatible with MinVer-generated prerelease package versions.
-- Single-file C# diagnostic scripts under `scripts/csharp` are aligned with the SDK Roslyn package line and the Razor generator result probe now resolves the Razor compiler assembly from `global.json` / `dotnet --info` instead of hard-coding a preview SDK path.
-- Compiler and analyzer now share the object-literal host predicate through `Jazor.Compiler.Util.IsObjectLiteralHostType`.
-- `Jazor.Analyzer` accepts only the supported indexer slice:
-  - object/collection initializer indexer assignments on object-literal host types such as `VueDictionary<TValue>` and `VueEventHandlers<TEvent>`
-  - ECMAScript record-proxy single-parameter indexer reads and simple assignments already supported by compiler lowering
-- `Jazor.Analyzer` now also accepts the supported collection-initializer `Add(key, value)` slice on object-literal host types only. This covers `VueDictionary`, `PiniaStateMapper`, and structural-record object-literal authoring while keeping ordinary runtime `.Add(...)` invocations guarded by `JAZOR001`.
-- Ordinary unmarked record indexer reads and assignments still report `JAZOR001`.
-- Focused analyzer regressions were added for Vue dictionary initializers, Vue event-handler initializers, object-literal `Add(key, value)` initializers, structural-record collection initializer `Add(key, value)`, ECMAScript record-proxy reads/assignments, and unmarked record indexer reads/assignments.
-- `Jazor.Analyzer` operation registration is now centralized in `AnalysisOperationKinds`; the stale `DelegateCreation` registration was removed because `AnalysisOperationAction` had no handler for it. `JazorAnalyzerSurfaceTests` guards the registered `OperationKind` set against the actual switch cases and duplicate registrations.
-- In-memory reference assembly consumers were moved from `Basic.Reference.Assemblies.Net100` to `Basic.Reference.Assemblies.Net110`.
-- Checked-in sample manifests for Pinia, VueRoute, MultiProject, and RazorVue TodoList were refreshed through their build pipelines so `RootAssemblyPath` points to `net11.0` output instead of stale `net10.0` output.
-- `SampleGeneratedArtifactLayoutTests` now guards checked-in sample manifest layout: standard manifests must target `net11.0`, must not contain stale `net10.0`, and every declared module/source-map path must exist under the manifest output root. RazorVue SFC manifests are also checked for declared module/source-map/origin files and safe relative SFC imports.
-- `scripts/csharp/wiki-build-local.cs` now accepts `BaseOutputPath` and `BaseIntermediateOutputPath`, forwards them as isolated build roots, and disables shared compilation/node reuse for deterministic smoke-script reuse.
+```text
+官方 Razor Source Generator
+    -> 最终 Compilation
+    -> Jazor.Vue Hook
+    -> BuildRenderTree 绑定与 Roslyn IOperation
+    -> Vue render-function .mjs
+```
 
-## Historical Verification Log
+因此，RazorVue、Compiler 与 Emit 的当前验证应分别使用：
 
-- `dotnet build src\Jazor.Compiler\Jazor.Compiler.csproj --no-restore -v minimal -p:UseSharedCompilation=false` passed.
-- `dotnet build src\Jazor.Analyzer\Jazor.Analyzer.csproj --no-restore -v minimal -p:UseSharedCompilation=false` passed.
-- `dotnet build src\Wiki\Wiki.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors. This confirms the original Vue dictionary/event-handler analyzer diagnostics are fixed in the consuming project.
-- `dotnet build Jazor.slnx -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors after warning cleanup.
-- Focused analyzer tests passed:
-  - `Jazor_VueDictionaryIndexerInitializer_IsAccepted`
-  - `Jazor_VueEventHandlersIndexerInitializer_IsAccepted`
-  - `Jazor_ECMAScriptRecordProxyIndexerRead_IsAccepted`
-  - `Jazor_ECMAScriptRecordProxyIndexerAssignment_IsAccepted`
-  - `Jazor_UnmarkedRecordIndexerRead_ReportsJAZOR001`
-  - `Jazor_UnmarkedRecordIndexerAssignment_ReportsJAZOR001`
-- Focused compiler tests passed:
-  - `Convert_ClassUsingVueObjectDictionarySurface_FlattensIntoObjectLiteralMembers`
-  - `Convert_ClassUsingVueObjectEventHandlers_FlattensEventListeners`
-  - `Visit_ECMAScriptRecordProxyIndexerAccess_AllowsJavaScriptComputedAccess`
-  - `Visit_ECMAScriptRecordProxyIndexerAssignment_AllowsJavaScriptComputedAssignment`
-  - `VisitObjectCreation_VueDictionaryIndexer_StaticNullLiteral_IsOmitted`
-- Migration guard tests passed:
-  - `SemanticWalkerNotSupportTest`
-  - `Convert_ClassUsingSystemUnionMarkerProjection_GeneratesNativeValue`
-  - `Convert_ClassUsingSystemUnionMarkerWithoutECMAScriptMarker_ThrowsUnsupportedExternalPropertyAccess`
-  - `Convert_ClassUsingVueNamesOrOptionsValueProjection_GeneratesNativeValue`
-- `dotnet test src\ECMAScript.WebIDL.GeneratorTest\ECMAScript.WebIDL.GeneratorTest.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed: 27/27 tests. This includes the Roslyn compile probe proving `ConstrainDOMString value = ["a", "b"];` binds through the generated native union collection-builder contract.
-- `dotnet build src\ECMAScript\ECMAScript.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors after regenerating WebIDL native unions.
-- `dotnet build src\Wiki\Wiki.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors after enabling preview language version for Wiki's native-union authoring.
-- `dotnet build Jazor.slnx -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors after the WebIDL native-union generator migration and Wiki preview language-version fix.
-- `dotnet build src\Jazor.EmitTest\Jazor.EmitTest.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors after removing the redundant `Microsoft.AspNetCore.Components` package reference covered by `Microsoft.AspNetCore.App`.
-- `dotnet build src\Jazor.RazorVue.RazorIr.Test\Jazor.RazorVue.RazorIr.Test.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors after explicit nullable guards.
-- `dotnet build src\Jazor.RazorVue.Test\Jazor.RazorVue.Test.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors after the same Razor source-document path guard.
-- `dotnet build src\Jazor.Analyzer\Jazor.Analyzer.csproj --no-restore -v minimal -p:UseSharedCompilation=false -m:1` passed after making Razor SG IL fingerprint collection best-effort.
-- `dotnet test src\Jazor.RazorVue.RazorIr.Test\Jazor.RazorVue.RazorIr.Test.csproj --filter 'FullyQualifiedName~RazorSourceGeneratorCompatibilityProbeTests' -v minimal -p:UseSharedCompilation=false -m:1 -p:JazorIsolatedBaseOutputRoot='D:\repository\own\jazor\Jazor\.dotnet-out\razorir-compat-net11-v2\' -p:JazorIsolatedBaseIntermediateOutputRoot='D:\repository\own\jazor\Jazor\.dotnet-obj\razorir-compat-net11-v2\'` passed: 12/12 tests. This covers current SDK ABI probing, exact `Initialize(IncrementalGeneratorInitializationContext)` matching, hash/fingerprint diagnostic-only behavior, and structural ABI rejection cases.
-- `dotnet test src\Jazor.RazorVue.RazorIr.Test\Jazor.RazorVue.RazorIr.Test.csproj --no-build --filter 'FullyQualifiedName~ExternalBuild_RazorSgIntegrationDisabled_DoesNotEmitTailOutput' -v minimal -p:UseSharedCompilation=false -m:1` passed on CoreCLR 11.
-- `dotnet test src\Jazor.RazorVue.RazorIr.Test\Jazor.RazorVue.RazorIr.Test.csproj --no-build --filter 'FullyQualifiedName~ExternalBuild_BootstrapHook_CanObserveOfficialRegisterHostOutput' -v minimal -p:UseSharedCompilation=false -m:1` passed on CoreCLR 11 through the official Razor SG tail hook trace and tail output generation.
-- `dotnet test src\Jazor.RazorVue.RazorIr.Test\Jazor.RazorVue.RazorIr.Test.csproj --no-build --filter 'FullyQualifiedName~RazorSourceGeneratorCompatibilityProbeTests|FullyQualifiedName~RazorSourceGeneratorBootstrapPatchTests|FullyQualifiedName~RazorSdkToolsetProbeTests|FullyQualifiedName~RazorSourceGeneratorHostOutputTests|FullyQualifiedName~RazorSourceGeneratorCarrierBridgeTests' -v minimal -p:UseSharedCompilation=false -m:1` passed: 11/11 tests.
-- `dotnet test src\Jazor.CompilerTest\Jazor.CompilerTest.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed: 1878/1878 tests.
-- `dotnet test src\Jazor.RazorVue.Test\Jazor.RazorVue.Test.csproj --no-build -v minimal -p:UseSharedCompilation=false -m:1` passed: 605/605 tests.
-- `dotnet test src\Jazor.RazorVue.Test\Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~Jazor_VueDictionaryAddInitializer_IsAccepted|FullyQualifiedName~Jazor_PiniaStateMapperAddInitializer_IsAccepted|FullyQualifiedName~Jazor_ObjectLiteralAddOutsideInitializer_ReportsJAZOR001|FullyQualifiedName~Jazor_ObjectLiteralAddNestedInsideInitializerValue_ReportsJAZOR001|FullyQualifiedName~Jazor_StructuralRecordAddInitializer_IsAccepted|FullyQualifiedName~Jazor_StructuralRecordAddOutsideInitializer_ReportsJAZOR001' -v minimal -p:UseSharedCompilation=false -m:1` passed: 6/6 tests.
-- `dotnet test src\Jazor.RazorVue.Test\Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~JazorAnalyzerSurfaceTests' -v minimal -p:UseSharedCompilation=false -m:1` passed: 2/2 tests.
-- `dotnet build src\Jazor.Analyzer\Jazor.Analyzer.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors.
-- `dotnet build src\Jazor.RazorVue.Test\Jazor.RazorVue.Test.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors.
-- `dotnet build Jazor.slnx -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors after centralizing analyzer operation registration.
-- `dotnet test src\Jazor.EmitTest\Jazor.EmitTest.csproj --filter 'FullyQualifiedName~SampleGeneratedArtifactLayoutTests' -v minimal -p:UseSharedCompilation=false -m:1` passed: 1/1 test.
-- `dotnet build Jazor.slnx -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors after the analyzer object-literal Add guard and sample manifest guard updates.
-- `dotnet run --file .\scripts\csharp\wiki-build-local.cs -- --base-output-path '.tmp\wiki-buildlocal-out' --base-intermediate-output-path '.tmp\wiki-buildlocal-obj'` passed with 0 warnings and 0 errors, proving the Wiki build-local script can be reused by isolated smoke/browser verification lanes.
-- Sample refresh scripts passed for `samples\Jazor.MultiProject\build-local.cs`, `samples\ECMAScript.Pinia.Counter\build-local.cs`, `samples\ECMAScript.VueRoute.MemorySmoke\build-local.cs`, and `samples\RazorVue.TodoList\build-local.cs`. The first Pinia refresh exposed the object-literal `Add(key, value)` analyzer gap; the rerun passed after the analyzer fix.
-- `dotnet test src\Jazor.EmitTest\Jazor.EmitTest.csproj --filter 'FullyQualifiedName~Build_LocalPackages_RazorVueTodoListSample_PureDenoPipeline_PassesInIsolatedWorkspace|FullyQualifiedName~Build_LocalPackages_WithExternalRazorSgSfcConsumer_EmitsVueSfcArtifacts|FullyQualifiedName~Build_LocalPackages_WithExternalRazorSgSfcConsumer_PureDenoPipeline_PassesInIsolatedWorkspace' -v minimal -p:UseSharedCompilation=false -m:1` passed: 3/3 tests after Razor 11 attribute-expression fixes and non-null sample text parameters.
-- `dotnet test src\Jazor.EmitTest\Jazor.EmitTest.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed: 110/110 tests after the Razor 11 attribute-expression fixes and non-null sample text-parameter cleanup.
-- Direct `dotnet build samples\RazorVue.TodoList\Todo.Library\Todo.Library.csproj` is not a valid standalone verification in this checkout without a matching local `0.1.20` package feed. It currently fails restore with `NU1102`; the isolated local-package EmitTest flow is the authoritative sample verification.
-- `dotnet test src\Jolt.Test\Jolt.Test.csproj --filter 'FullyQualifiedName~JoltRazorSdkToolsetResolverTests' -v minimal -p:UseSharedCompilation=false -m:1` passed: 2/2 tests.
-- `dotnet test src\Jazor.RazorVue.RazorIr.Test\Jazor.RazorVue.RazorIr.Test.csproj --filter 'FullyQualifiedName~RazorSdkToolsetProbeTests' -v minimal -p:UseSharedCompilation=false -m:1` passed: 2/2 tests.
-- `dotnet test src\Jazor.RazorVue.RazorIr.Test\Jazor.RazorVue.RazorIr.Test.csproj --filter 'FullyQualifiedName~RazorSourceGeneratorLoadTimingTests' -v minimal -p:UseSharedCompilation=false -m:1 -p:JazorIsolatedBaseOutputRoot='D:\repository\own\jazor\Jazor\.dotnet-out\razorir-loadtiming-net11\' -p:JazorIsolatedBaseIntermediateOutputRoot='D:\repository\own\jazor\Jazor\.dotnet-obj\razorir-loadtiming-net11\'` passed: 1/1 test.
-- `dotnet test src\ECMAScript.VueRoute.Test\ECMAScript.VueRoute.Test.csproj --filter 'FullyQualifiedName~VueRoute_JazorPackageProject_IncludesLibraryArtifactsAndBuildTarget' -v minimal -p:UseSharedCompilation=false -m:1` passed: 1/1 test.
-- `dotnet test src\ECMAScript.VueRoute.Test\ECMAScript.VueRoute.Test.csproj --filter 'FullyQualifiedName~VueRoute_ErasedValueUnions_UseNet11UnionContract|FullyQualifiedName~VueRoute_ViewDepthInjectionKey_UsesStronglyTypedNumberOrWritableRefContract|FullyQualifiedName~VueRoute_SafeErasedValueUnions_UseNativeUnionKeyword|FullyQualifiedName~VueRoute_ErasedValueUnionContractProjection_GeneratesNativeValue' -v minimal -p:UseSharedCompilation=false -m:1` passed: 4/4 tests after migrating `RouterViewDepthValue` to the native union contract.
-- `dotnet build src\ECMAScript.VueRoute\ECMAScript.VueRoute.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors after the `RouterViewDepthValue` migration.
-- `dotnet test src\ECMAScript.Pinia.Testing.Test\ECMAScript.Pinia.Testing.Test.csproj --filter 'FullyQualifiedName~PiniaTesting_JazorPackageProject_IncludesLibraryArtifactsAndBuildTarget' -v minimal -p:UseSharedCompilation=false -m:1` passed: 1/1 test.
-- `dotnet test src\ECMAScript.WebIDL.GeneratorTest\ECMAScript.WebIDL.GeneratorTest.csproj --filter 'FullyQualifiedName~RepositoryLayoutTests' -v minimal -p:UseSharedCompilation=false -m:1` passed: 1/1 test.
-- `dotnet test src\Jolt.Test\Jolt.Test.csproj --no-build --filter 'FullyQualifiedName~JoltWorkspaceResolverTests|FullyQualifiedName~JoltSharedLspProcessTests' -v minimal -p:UseSharedCompilation=false -m:1` passed: 20/20 tests.
-- `dotnet test src\Jolt.Test\Jolt.Test.csproj --no-build --filter 'FullyQualifiedName~JoltTests' -v minimal -p:UseSharedCompilation=false -m:1` passed: 43/43 tests.
-- `dotnet test src\Jolt.Test\Jolt.Test.csproj --no-build --filter 'FullyQualifiedName~JoltFrontendLaneTests' -v minimal -p:UseSharedCompilation=false -m:1` passed: 45/45 tests.
-- `dotnet run --file ./scripts/csharp/verify-nuget-package.cs -- -Configuration Debug -OutputDirectory '.verify-out\nuget-preflight-net11'` passed and verified the generated `Jazor.0.1.20-alpha.0.83.nupkg` contains the expected `lib\net11.0` and `tools\net11.0` entries.
-- `dotnet build Jazor.slnx -v minimal -p:UseSharedCompilation=false -m:1 -p:JazorIsolatedBaseOutputRoot='D:\repository\own\jazor\Jazor\.dotnet-out\net11-toolchain-final-v2\' -p:JazorIsolatedBaseIntermediateOutputRoot='D:\repository\own\jazor\Jazor\.dotnet-obj\net11-toolchain-final-v2\'` passed with 0 warnings and 0 errors.
-- `dotnet run --file scripts/csharp/inspect-razor-generator-result.cs` passed and resolved the Razor compiler from the SDK selected by `global.json`.
+- `src/Jazor.RazorVue.Sg.Test`
+- `src/Jazor.CompilerTest`
+- `src/Jazor.EmitTest`
 
-## Original Analyzer Blocker
+## Union 设计约束
 
-With Roslyn aligned to SDK `5.7`, analyzers loaded correctly and exposed real `Wiki` diagnostics for `VueDictionary<TValue>.this[string]` and `VueEventHandlers<TEvent>.this[string]` object initializer usage.
+- 分支之间互不赋值时，优先使用命名的原生 union。
+- 分支存在继承关系、对象边界或 delegate/interface 精确投影要求时，使用带标签的 `[Union]` + `IUnion` 合同。
+- 保留现有强类型赋值、集合构造、投影属性和必要的重载入口。
+- 不以 `object`、开放泛型或无约束 fallback 扩大宿主 API。
+- 仅在运行时语义确实需要时增加编译器特殊 lowering 或运行时保护。
 
-Resolution: these are plain-object host authoring surfaces, not arbitrary CLR indexer usage. `Jazor.Analyzer` now uses the same object-literal host predicate as compiler lowering and keeps ordinary runtime indexer reads/writes guarded.
+## 验证入口
 
-## Current Analyzer Blocker
+```text
+dotnet build Jazor.slnx
+dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
+dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj
+dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
+```
 
-Refreshing the Pinia sample exposed a related analyzer-only gap for object-literal host collection initializers. Roslyn lowers `{ "count", value }` collection initializer elements to `Add(key, value)` invocations, so the analyzer must recognize this initializer syntax even though ordinary runtime `.Add(...)` remains unsupported.
-
-Resolution: `Jazor.Analyzer` now allows only non-static ordinary instance `Add(key, value)` calls with supported object-literal key types, only when the receiver is an object-literal host type, and only when the invocation is the direct element of an object/collection initializer. This keeps the public host API strong and avoids turning `Add` into a general mutable runtime surface; nested `.Add(...)` calls inside initializer value lambdas remain rejected.
-
-## Sample Artifact Guardrails
-
-- Do not hand-edit generated sample manifests, module paths, hashes, or timestamps. Refresh them through each sample's build pipeline.
-- The manifest `Hash`, `MapHash`, and RazorVue `ContentHash` values are generator content hashes, not a stable contract that the checked-in file bytes must equal after repository newline normalization. Guard file presence and path boundaries in layout tests; test hash semantics at the generator/writer layer where the source content string is available.
-- `src/Wiki/wwwroot/jazor` and `src/Wiki/jazor` are ignored local/publish outputs. They may show stale `net10.0` locally after previous publish checks, but they are not checked-in source-of-truth artifacts. Use `scripts/csharp/wiki-build-local.cs`, `scripts/csharp/wiki-verify-smoke.cs -- --publish`, or `scripts/csharp/wiki-verify-browser.cs -- --publish` to regenerate and validate them when working on Wiki release output.
-
-## Historical Next Work
-
-1. Continue migrating remaining generated/manual union wrappers only when each target branch set is proven safe for the official-preview contract.
-2. Keep object/interface/delegate/nullable-boundary union branches on explicit strong factories or overloads unless C# 15 preview semantics make normal assignment/overload binding sound.
-3. Continue monitoring SDK preview changes and keep the code pinned to the SDK-provided `System.Runtime.CompilerServices.UnionAttribute` / `IUnion` contract. Do not add a repository-owned shim unless a future SDK regression removes the official types and that fallback is explicitly approved.
-4. Re-check Roslyn `IOperation` shape after each SDK update; keep the reflection visitor guard green before accepting a new compiler package.
-5. Re-run the full verification lane after the next SDK/Roslyn preview update, including compiler, RazorVue, RazorIr official-tail-hook coverage, WebIDL generator, and Emit local-package sample coverage.
-6. When checked-in generated sample/site manifests are refreshed, regenerate them through the net11 emit/build pipeline rather than hand-editing `RootAssemblyPath`, hashes, or timestamps.
-7. Before finalizing the current migration branch, ensure newly generated sample runtime modules such as `samples/Jazor.MultiProject/Sample.Host/wwwroot/jazor/System/**` are included with their refreshed manifests so clean checkouts do not have manifest entries pointing at missing files.
+本页只记录当前 SDK 与语言合同。具体 lowering 原则以 `src/Jazor.Compiler/ImplementationPrinciples.md` 为准，具体物化行为以 `src/Jazor.Emit/README.md` 与 Emit 测试为准。

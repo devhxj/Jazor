@@ -16,7 +16,7 @@
 
 ## Boundaries
 
-- `ECMAScript.Contract` 不承载 SourceMap、emit 共享模型、Vue/Jolt 协议 DTO、RazorVue 语义实现。
+- `ECMAScript.Contract` 不承载 SourceMap、emit 共享模型、宿主协议 DTO 或 RazorVue 语义实现。
 - 这些共享实现统一放在 `Jazor.Common`。
 - `JazorAttribute` 和 `Op` 当前都是 `internal`，通过 `InternalsVisibleTo` 在仓库内共享，不作为广义公共 API 扩散。
 - `Op.Compile` 仍是编译器拥有语义的保留入口；consumer 侧现在可拿到 symbol / context / origin operation，以完成 import 绑定和 usage-site 诊断，但不应替代正常的 `Alias` / `Inline` / `Import` 建模。

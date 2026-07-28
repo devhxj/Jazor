@@ -9,13 +9,13 @@
 `src/Wiki/` 是已完成的真实文档站 MVP：
 
 - 用 C# + `ECMAScript.Vue3` 的 `H(...)` authoring 构建全部 24 个页面；
-- 通过 `JazorEmit` 在构建时把模块发射到 `wwwroot/jazor`；
+- 通过 `JazorMode=debug` 在构建时把模块发射到 `wwwroot/jazor`；
 - 由静态 `index.html` + import map 在浏览器里启动 Vue runtime；
 - 完整 SPA 路由、导航壳层、全文搜索、响应式布局、暗色/亮色主题。
 
 当前首要目标：
 
-1. 作为 Jazor / RazorVue / Jolt 的产品与工程文档站点；
+1. 作为 Jazor、Razor-to-Vue、Compiler、Emit 与 ASP.NET Core 集成的产品与工程文档站点；
 2. 证明 H-function authoring 可以承载生产级页面结构；
 3. 为后续 productization 和内容扩展提供稳定基线。
 
@@ -27,7 +27,7 @@
 - `AppModule.cs` 负责 Vue bootstrap；
 - `WikiHomeModule.cs` 及 26 个 partial 文件负责站点壳层和 24 个页面内容；
 - `WikiCatalogGuard.cs` 启动校验全部路由目录完整性；
-- `Wiki.csproj` 已开启 `JazorEmit`，输出到 `wwwroot/jazor`；
+- `Wiki.csproj` 已设置 `JazorMode=debug`，输出到 `wwwroot/jazor`；
 - `main.mjs`、`components/wiki-home.mjs` 与 manifest（48 模块）已稳定产出；
 - `wiki-serve.cs` / `wiki-build-local.cs` / `wiki-verify-smoke.cs` / `wiki-verify-browser.cs` 构建与验证闭环；
 - `Wiki:PathBase` / `Wiki__PathBase` 子路径部署支持已打通；
@@ -157,7 +157,7 @@ Phase 1–5 已全部完成。当前不再建议把 `Wiki` 当成“待 producti
 
 目标：
 
-- 持续防止 `Wiki` / `Jolt` / `Jazor.Emit` 三者职责重新混淆。
+- 持续防止 `Wiki`、RazorVue 与 `Jazor.Emit` 的职责重新混淆。
 
 验收标准：
 
@@ -181,7 +181,7 @@ Phase 5 的进入条件已经全部满足并完成收口：
 - 后台内容管理、用户系统、权限、评论、编辑器；
 - 引入 markdown 管线或数据库（除非产品决策明确）；
 - 为 Wiki 反向新增 sample-only compiler 特路；
-- 在 `Wiki` 内实现 HMR、LSP、`.jazor` 开发时宿主或 `Jolt` 级调试职责；
+- 在 `Wiki` 内实现 HMR、LSP 或专门开发时宿主职责；
 - 把 `Jazor.Emit` 演进成开发服务器。
 
 ## 8. 参考

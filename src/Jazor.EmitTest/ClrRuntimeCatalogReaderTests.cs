@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Jazor.Emit;
 
 namespace Jazor.EmitTest;
@@ -67,7 +68,20 @@ public sealed class ClrRuntimeCatalogReaderTests
         Assert.IsFalse(runtimeModule.Content.Contains("from \"System/RuntimeModule.js\"", StringComparison.Ordinal), runtimeModule.Content);
         Assert.IsFalse(runtimeModule.Content.Contains("import {", StringComparison.Ordinal), runtimeModule.Content);
         Assert.IsFalse(runtimeModule.Content.Contains("export const RuntimeModule = {", StringComparison.Ordinal), runtimeModule.Content);
-        StringAssert.Contains(runtimeModule.Content, "this.items = materializeArray(collection, ");
+        var queueStart = runtimeModule.Content.IndexOf("export class JQueue {", StringComparison.Ordinal);
+        var queueEnd = runtimeModule.Content.IndexOf("export class JStack {", queueStart, StringComparison.Ordinal);
+        Assert.IsGreaterThanOrEqualTo(0, queueStart, runtimeModule.Content);
+        Assert.IsGreaterThan(queueStart, queueEnd, runtimeModule.Content);
+
+        var queueClass = runtimeModule.Content.Substring(queueStart, queueEnd - queueStart);
+        var itemsGetter = Regex.Match(
+            queueClass,
+            @"get items\(\)\s*\{\s*return this\.(?<field>#[A-Za-z0-9_$]+);\s*\}",
+            RegexOptions.CultureInvariant);
+        Assert.IsTrue(itemsGetter.Success, queueClass);
+        StringAssert.Contains(
+            queueClass,
+            "this." + itemsGetter.Groups["field"].Value + " = materializeArray(collection, ");
         StringAssert.Contains(runtimeModule.Content, "return new JQueue(\"$ctor_");
 
         var byteModule = modules.Single(module => string.Equals(module.RelativePath, "System/ByteModule.js", StringComparison.OrdinalIgnoreCase));

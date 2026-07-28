@@ -582,6 +582,8 @@ public sealed class FrontendToolchainRunnerTests
               <body>
                 <div id="app"></div>
                 <script type="module">
+                  import * as bundle from "./bundle.js";
+
                   function encodeUtf8Base64(value) {
                     const bytes = new TextEncoder().encode(value);
                     let binary = "";
@@ -599,8 +601,7 @@ public sealed class FrontendToolchainRunnerTests
                   }
 
                   try {
-                    const module = await import("./bundle.js");
-                    const mount = module.mount || (module.default && module.default.mount);
+                    const mount = bundle.mount || (bundle.default && bundle.default.mount);
                     if (typeof mount !== "function") {
                       throw new Error("Netpack bundle did not expose mount.");
                     }
@@ -642,6 +643,8 @@ public sealed class FrontendToolchainRunnerTests
               <body>
                 <div id="app"></div>
                 <script type="module">
+                  import * as bundle from "./bundle.js";
+
                   function encodeUtf8Base64(value) {
                     const bytes = new TextEncoder().encode(value);
                     let binary = "";
@@ -659,8 +662,7 @@ public sealed class FrontendToolchainRunnerTests
                   }
 
                   try {
-                    const module = await import("./bundle.js");
-                    const mount = module.mount || (module.default && module.default.mount);
+                    const mount = bundle.mount || (bundle.default && bundle.default.mount);
                     if (typeof mount !== "function") {
                       throw new Error("Netpack bundle did not expose mount.");
                     }

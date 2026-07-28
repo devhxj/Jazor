@@ -1,37 +1,42 @@
-# 计划
+# 实施计划
 
-WBS、里程碑、阶段拆分，以及各工作流的当前执行进度。
+本目录记录当前工作流的实施计划、里程碑、验收标准和阶段性任务。计划文档用于组织工作，不替代源码、测试或最终设计契约。
 
-## 文件索引
+## 当前主线
 
-| 文件 | 说明 |
-|------|------|
-| `Jazor 架构转型开发计划.md` | 当前唯一 Razor-to-Vue 主线计划：官方 Razor SG generated C# -> Roslyn `IOperation` -> render-context v1 -> Vue render-function/VNode `.mjs` |
-| `razorvue-transition/` | RazorVue 转型计划分片；单文件保持 10KB 以下 |
-| `RazorSgFinalDocument.G0.DecisionRecord.md` | G0 决策与证据记录；确认最终生成文档和 callback compilation 派生链 |
-| `workstream-dashboard.md` | 全局工作流总览（依赖、并行策略、执行门槛） |
-| `jazor-component-runtime-plan-2026-07-06.md` | 历史 Component Runtime 探索，不是当前执行主线 |
+当前 Razor-to-Vue 主线是：
 
-## 当前主线定位
+```text
+官方 Razor Source Generator 最终 Compilation
+    -> Jazor.Vue Hook
+    -> Roslyn Operation 绑定
+    -> Jazor.Compiler 语义降低
+    -> Vue render-function .mjs
+    -> Jazor.Emit 物化或 bundle
+```
 
-当前转型分支的唯一 Razor-to-Vue 主线是：官方 Razor Source Generator 最终生成文档（generated C#） -> Roslyn `IOperation` -> render-context v1 -> Vue render-function/VNode `.mjs`。G0 已通过，Task 0.5 正在清理旧入口并锁定项目图。
+`Jazor.Vue` 的包边界、Hook 行为和 catalog 生成方式属于当前产品契约；`JazorMode` 仅控制物化模式，不控制 Hook 是否启用。
 
-以下旧路径已经退役，不是当前生产路线：
+## 当前计划文档
 
-- 旧 Razor IR/SFC 管线仅保留历史材料，生产输入必须是官方 Razor SG generated C#。
-- Jolt 已在 `3ee18679fbdf43c13e05d7bfac8857ddcebd19f9` 从当前分支退役；维护与比较使用基线 `d68aecbb00b23aa35735c9a269b2e987c7815b05`。
+| 文档 | 用途 |
+| --- | --- |
+| [Jazor 架构转型开发计划](./Jazor%20架构转型开发计划.md) | 主线计划、阶段目标和依赖关系 |
+| [Razor SG Final-Document G0 决策记录](./RazorSgFinalDocument.G0.DecisionRecord.md) | 最终 Compilation 输入边界的决策与证据 |
+| `razorvue-transition/` | Razor-to-Vue 路线、WBS、验收和状态分片 |
+| `compiler/` | 编译器实施清单、转换闭包和源映射计划 |
+| `ecmascript/` | ECMAScript 平台执行级计划 |
+| `ecmascript.vue3/` | Vue 3 绑定与 authoring surface 计划 |
+| `ecmascript.pinia/` | Pinia 绑定收口计划 |
+| `ecmascript.vuetify/` | Vuetify 组件覆盖和收口计划 |
+| [jazor.css/](./jazor.css/Jazor.Css.Phase1.ImplementationPlan.md) | 原生 C# CSS-in-JS 的产品边界、运行时机制与第一阶段实施计划 |
+| `jazor.admin/` | 管理后台壳层实施计划 |
+| `wiki/` | Wiki sample 的阶段计划 |
+| `workstream-dashboard.md` | 工作流依赖和当前执行概览 |
 
-## 按项目结构索引
+## 计划使用规则
 
-| 目录 | 对应源码 | 内容 |
-|------|---------|------|
-| `ecmascript/` | `src/ECMAScript/` | ECMAScript 平台内核相关执行级计划 |
-| `ecmascript.vue3/` | `src/ECMAScript.Vue3/` | ECMAScript.Vue3 外部库 authoring surface 的执行级落地计划 |
-| `ecmascript.vben/` | `src/ECMAScript.Vben/` | 后台壳层核心、首个 UI 适配闭环与后续扩展顺序的执行级计划 |
-| `ecmascript.pinia/` | `src/ECMAScript.Pinia/` | ECMAScript.Pinia 外部库 authoring surface 的执行级收口清单 |
-| `ecmascript.vuetify/` | `src/ECMAScript.Vuetify/` | ECMAScript.Vuetify 作为 Vuetify 代理层与后续 RazorVue authoring 消费面的执行级收口清单与组件覆盖矩阵 |
-| `wiki/` | `src/Wiki/` | `jazor.wiki` sample 的阶段划分、收口计划与产品化分流边界 |
-| `jolt/` | Git 基线 `d68aecbb00b23aa35735c9a269b2e987c7815b05` | 冻结的 Jolt Phase/WBS 历史，不是当前执行计划 |
-| `csx/` | 无当前源码落点 | 历史 TSX-like `.jazor` 前端探索，不是当前路线 |
-| `jolt/razorvue-implementation/` | Jolt/RazorVue 历史交叉材料 | 冻结的模板前端迁移、HMR/桥接探索，不代表当前生产代码所有权 |
-| `compiler/` | `src/Jazor.Compiler/` | 编译管线实施清单、转换路线图、SourceMap 实施清单 |
+- 计划必须明确目标、前置条件、验收标准和对应测试入口。
+- 已完成事项应转入 `03-完成` 的状态或评审文档，并保留可复核证据。
+- 过时计划不得继续作为当前实现依据，应移入 `05-遗弃` 或在原文档中明确标注冻结状态。
+- 任何计划结论都必须与当前源码和测试结果重新核对后才能用于发布说明。

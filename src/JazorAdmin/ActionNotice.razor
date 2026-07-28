@@ -1,0 +1,28 @@
+@inherits AppComponentBase
+
+@if (HasContent)
+{
+    <section class="@RootCssClass"
+             style="@CssStyle"
+             data-notice-kind="@Kind"
+             role="@(IsAssertive ? "alert" : "status")"
+             aria-live="@(IsAssertive ? "assertive" : "polite")">
+        <div class="jazor-admin-action-notice__content">
+            @if (NormalizedTitle is not null)
+            {
+                <strong class="jazor-admin-action-notice__title">@NormalizedTitle</strong>
+            }
+            @if (NormalizedDescription is not null)
+            {
+                <p class="jazor-admin-action-notice__description">@NormalizedDescription</p>
+            }
+        </div>
+        @if (Dismissible)
+        {
+            <button class="jazor-admin-action-notice__dismiss"
+                    type="button"
+                    aria-label="Dismiss notice"
+                    @onclick="OnDismissed">x</button>
+        }
+    </section>
+}

@@ -1,0 +1,18 @@
+@inherits AppComponentBase
+
+<main class="@RootCssClass"
+      style="@CssStyle"
+      data-error-kind="@Kind"
+      role="@(Kind == ErrorKind.InternalServerError ? "alert" : "status")"
+      aria-labelledby="jazor-admin-error-title"
+      aria-describedby="jazor-admin-error-description">
+    <section class="jazor-admin-error__content">
+        <strong class="jazor-admin-error__code">@ErrorCode</strong>
+        <h1 id="jazor-admin-error-title">@Text.Normalize(Title)</h1>
+        <p id="jazor-admin-error-description">@Text.Normalize(Description)</p>
+        <button type="button"
+                class="jazor-admin-error__action"
+                data-error-action="home"
+                @onclick="OnAction">@Text.Normalize(ActionText)</button>
+    </section>
+</main>

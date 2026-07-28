@@ -11,49 +11,42 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE.txt)
 [![NuGet](https://img.shields.io/nuget/v/Jazor.svg)](https://www.nuget.org/packages/Jazor)
 
-> 实验性项目。公共 API、生成产物形态和工具链仍在演进中。当前最稳定的基础是编译器核心、emit 管线和 SG 结果绑定边界。
+> 实验性项目。公共 API、生成产物形态和工具链仍在演进中；编译器核心、`Jazor.Emit` 管线和源生成结果绑定边界相对稳定。
 
-Jazor 是一套用 C# 和 Razor 编写 JavaScript / Vue 应用的 .NET 工具链。
+Jazor 是一套使用 C# 和 Razor 构建 JavaScript 与 Vue 应用的 .NET 工具链。
 
-转型分支当前只有一条活跃的 Razor-to-Vue 方向。原 Jolt 宿主仅保留在 Git 历史中：
+核心包提供编译器、运行时契约、分析器、emit 工具和 MSBuild 集成。Razor-to-Vue 转换通过 `Jazor.Vue` 显式启用：官方 Razor 源生成器的输出会绑定为 Roslyn `IOperation`，并降低为 Vue render-function `.mjs` 产物。
 
-| 线路 | 模式 | 主要项目 | 作用 |
-|------|------|----------|------|
-| **Razor-to-Vue 架构转型** | 活跃 | `Jazor.RazorVue`、`Jazor.Analyzer`、`Jazor.Compiler`、`Jazor.Emit` | 官方 Razor SG 生成 C# -> Roslyn `IOperation` -> Vue render-function `.mjs`。 |
-| **Jolt** | 本分支已退役 | 基线 `d68aecbb00b23aa35735c9a269b2e987c7815b05` | 历史 `.jazor` LSP/DAP/DevServer/build 宿主；不在当前项目图中。 |
+实现由 `Jazor.Compiler`、`Jazor.CLR`、`Jazor.Analyzer`、`Jazor.Emit`、`Jazor.Common` 以及 ECMAScript / Vue 绑定程序集组成。
 
-当前主线复用 `Jazor.Compiler`、`Jazor.CLR`、`Jazor.Analyzer`、`Jazor.Emit`、`Jazor.Common` 和 ECMAScript / Vue 绑定程序集，不继承 Jolt 协议或状态机。
+## 架构
 
-## 当前重点
+- **语义降低**：Roslyn `IOperation` 被转换为 Acornima ESTree，并保持明确的支持边界与确定性输出。
+- **Razor 集成**：`Jazor.Vue` 从 `GeneratorDriver.RunGeneratorsAndUpdateCompilation` 取得最终 `Compilation`，并绑定生成的 `BuildRenderTree` 操作。Razor DR/IR、宿主输出文档和生成 C# 的二次解析不属于生产边界。
+- **产物契约**：Razor 组件生成 Vue render-function `.mjs` 模块；`Jazor.Emit` 负责物化模块、源映射、清单、运行时资产和生产包。
+- **类型化绑定**：Vue 3 核心绑定随 `Jazor` 提供；Pinia、Vue Router、Vuetify 和其他生态绑定以独立包方式引用。
 
-- **编译器核心**：Roslyn `IOperation` 到 Acornima ESTree 的 lowering，强调明确支持边界和确定性发射。
-- **SG 结果输入**：`GeneratorDriver.RunGeneratorsAndUpdateCompilation` 集成在官方 Razor SG 完成后获取最终 Roslyn `Compilation`，并绑定生成 `.razor.g.cs` 文档中的 `BuildRenderTree` 方法。Razor DR/IR、生成文档宿主输出和生成 C# 的二次解析均不属于生产输入边界。
-- **单一产物方向**：Razor 组件目标是 Vue render-function `.mjs`；转型分支不维护 Razor-to-SFC 或 Jolt 兼容路径。
-- **Emit 与物化**：`Jazor.Emit` 写出 `.mjs`、manifest、source map 和 bundle 产物。
-- **Vue 生态绑定**：Vue 3 核心绑定随 `Jazor` 包提供；Pinia、Vue Router、Vuetify 和其他 UI / 库绑定作为显式生态项目维护。
+## 能力
 
-判断当前状态时，优先看 `docs/03-完成/` 下的状态页和当前测试结果，不要依赖 README 中写死的历史测试数量。
+- **语义级 C# 降低**：基于 Roslyn `IOperation`，而非语法字符串替换。
+- **快速失败的宿主边界**：不支持的外部运行时语义会在实际降低使用点明确报错，不会静默生成近似 JavaScript。
+- **白名单约束的 CLR API**：常用 CLR API 由 `Jazor.CLR` 与生成的白名单元数据映射；分析器可提前诊断大量不支持的用法。
+- **ECMAScript 模块输出**：`[ECMAScriptModule]` 类生成具名导出的 `.mjs` 模块，并提供稳定的导入收集、源位置跟踪和源映射载体。
+- **Razor-to-Vue 产物生成**：Razor 组件语义从官方 Razor SG 生成的 C# 出发，经 Roslyn 绑定和编译器持有的 `IOperation` 降低。
+- **类型化 Vue 编写**：`ECMAScript.Vue3` 提供 Vue 3 `defineComponent`、`h`、响应式引用、生命周期、props、slots 和组件契约绑定。
+- **面向宿主的构建支持**：MSBuild 为 ECMAScript 与 RazorVue 产物选择一种输出模式：不输出、`debug` 模块与清单，或通过 Deno / Netpack 工具链生成 `release` 生产包。
 
 ## 最新更新
 
 ### 2026-07-28
 
-- RazorVue 在 generator-driver 完成后的 `Compilation` 边界执行集成，不需要 `EnableRazorHostOutputs`、`RazorCodeDocument`、`RazorCSharpDocument` 或生成 C# 的二次解析。
-- MSBuild 输出由一个显式模式控制：`none`（默认）、`debug`（模块和清单）或 `release`（生产包）。默认输出根目录为 `wwwroot/jazor`。
-- 公开 Vue 绑定包兼容 .NET 11 Preview 6。
+- Razor-to-Vue 生成现在通过 `Jazor.Vue` 显式启用；共享分析器和编译器资产继续由 `Jazor` 统一提供并只加载一次。
+- `Jazor.Admin` 提供不泄漏具体 UI 库的管理后台壳层契约和原生 RazorVue 组件；具体页面、表单和表格仍由应用负责。
+- `Jazor.Css` 提供确定性、框架无关的 CSS-in-JS 编写能力，包括生成的 CSS 属性、嵌套选择器、关键帧、全局规则、DOM 注入、水合和提取。
+- RazorVue 通过 Acornima AST 降低组件语义，并在转发、命名和作用域 slot 中正确保留零个、一个或多个节点，不再进行 JavaScript 文本往返转换。
+- 工具链和公开 Vue 生态包已面向 .NET 11 Preview 6。
 
 完整历史见 [release notes](docs/releases/release-notes.md)。
-
-## 能力概览
-
-- **语义级 C# lowering**：基于 Roslyn `IOperation`，不是语法字符串替换。
-- **fail-fast 宿主边界**：不支持的外部运行时语义会在实际 lowering 使用点显式失败，而不是静默发射近似 JavaScript。
-- **白名单 CLR surface**：常见 CLR API 通过 `Jazor.CLR` 和生成的 whitelist metadata 映射；Analyzer 会提前诊断很多不支持的用法。
-- **ECMAScript 模块输出**：`[ECMAScriptModule]` 类发射为 named-export `.mjs` 模块，并带稳定 import 收集、source-origin 跟踪和 source-map carrier。
-- **RazorVue artifact 生成**：Razor 组件语义从官方 Razor SG 生成 C# 流经 Roslyn 绑定和 compiler-owned `IOperation` lowering。
-- **类型化 Vue authoring**：`ECMAScript.Vue3` 提供 Vue 3 `defineComponent`、`h`、ref/reactivity、生命周期、props、slots 和组件契约绑定。
-- **面向宿主的构建支持**：MSBuild 为 ECMAScript/RazorVue 产物选择一种输出模式：不输出、debug 模块与 manifest，或通过 Deno / Netpack lane 生成 production bundle。
-- **已退役 Jolt 边界**：`.jazor` authoring、Jolt LSP/DAP、DevServer/HMR、调试和构建协议均有意不进入本分支。
 
 ## 安装
 
@@ -61,24 +54,34 @@ Jazor 是一套用 C# 和 Razor 编写 JavaScript / Vue 应用的 .NET 工具链
 dotnet add package Jazor
 ```
 
-`Jazor` 包包含核心运行时契约、`ECMAScript`、`ECMAScript.Vue3`、`ECMAScript.VueContract`、`Jazor.Compiler`、`Jazor.RazorVue`、`Jazor.Analyzer`、ASP.NET Core 集成程序集、emit 工具和 MSBuild props/targets。
+`Jazor` 包包含核心运行时契约、`ECMAScript`、`ECMAScript.Vue3`、`ECMAScript.VueContract`、`Jazor.Compiler`、`Jazor.Analyzer`、ASP.NET Core 集成程序集、emit 工具和 MSBuild props/targets。Razor-to-Vue 生成由独立的 `Jazor.Vue` 包提供。
+
+Razor SDK 项目需显式启用：
+
+```xml
+<ItemGroup>
+  <PackageReference Include="Jazor" Version="0.1.31" />
+  <PackageReference Include="Jazor.Vue" Version="0.1.31" PrivateAssets="all" />
+</ItemGroup>
+```
 
 按需显式添加生态包：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.27" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.27" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.27" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.27" />
+  <PackageReference Include="Jazor" Version="0.1.31" />
+  <PackageReference Include="Jazor.Css" Version="0.1.31" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.31" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.31" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.31" />
 </ItemGroup>
 ```
 
-## Authoring 路线
+## 编写方式
 
-### ECMAScript 模块 authoring
+### ECMAScript 模块
 
-用 `[ECMAScriptModule]` 发射普通 C# 到 JavaScript 模块：
+使用 `[ECMAScriptModule]` 将普通 C# 生成 JavaScript 模块：
 
 ```csharp
 using ECMAScript;
@@ -93,11 +96,11 @@ public static class GreetingModule
 }
 ```
 
-编译器会发射 named-export ECMAScript 模块。其他模块调用 `GreetingModule.Compose(...)` 时，跨模块 import 会自动解析。
+编译器会生成具名导出的 ECMAScript 模块。其他模块调用 `GreetingModule.Compose(...)` 时，跨模块导入会自动解析。
 
-### Vue 3 h() authoring
+### Vue 3 `h()` 组件
 
-直接用 C# 编写 Vue 组件时使用 `ECMAScript.Vue3`：
+直接使用 C# 编写 Vue 组件时，引用 `ECMAScript.Vue3`：
 
 ```csharp
 using ECMAScript;
@@ -126,21 +129,42 @@ public static class CounterModule
 }
 ```
 
-### Razor-to-Vue 架构转型
+### Razor-to-Vue 组件
 
-当前工作流保留 Razor 组件 authoring，并收窄生产边界：
+Razor 组件仅以最终 Roslyn 编译结果作为生产输入：
 
-- 组件库编写 `.razor` / `.razor.cs` 组件；
-- generator-driver 集成接收官方 Razor SG 产生的最终 `Compilation`，并绑定其中生成的 `BuildRenderTree` 操作；
-- `Jazor.Compiler` 降低已绑定的组件语义，`Jazor.Emit` 物化 Vue render-function 产物；
-- 不需要 Razor 宿主输出设置、Razor IR/文档模型或生成 C# 的二次解析；
-- Razor DR/IR、生成 SFC 和 Jolt 协议不作为回退路径。
+- 在声明 `.razor` 或 `.razor.cs` 组件的项目中引用 `Jazor.Vue`。
+- 集成层从完成后的 Razor 源生成器编译结果中绑定生成的 `BuildRenderTree` 操作。
+- `Jazor.Compiler` 降低已绑定的语义，`Jazor.Emit` 物化 Vue render-function 产物。
+- 不需要 `EnableRazorHostOutputs`、Razor 宿主输出设置、Razor IR/文档模型或生成 C# 的二次解析。
 
-当前 gate 和实现顺序见 [架构转型开发计划](docs/02-%E8%AE%A1%E5%88%92/Jazor%20%E6%9E%B6%E6%9E%84%E8%BD%AC%E5%9E%8B%E5%BC%80%E5%8F%91%E8%AE%A1%E5%88%92.md)。
+实现细节见 [Razor-to-Vue 设计](docs/01-%E7%9B%AE%E6%A0%87/razorvue/README.md)。
 
-### 已退役 Jolt 宿主
+### 确定性 CSS-in-JS
 
-Jolt 已在 `3ee18679fbdf43c13e05d7bfac8857ddcebd19f9` 从转型分支移除。维护或比较时使用基线 `d68aecbb00b23aa35735c9a269b2e987c7815b05` 或原分支；不要在此重新引入 `.jazor`、LSP/DAP、DevServer 或协议面。
+应用需要结构化运行时样式时，显式引用 `Jazor.Css`：
+
+```csharp
+using Jazor.Css;
+
+var actionClass = Css.Class(new CssRule
+{
+    Display = "inline-flex",
+    Color = "white",
+    BackgroundColor = "#1769aa",
+    Children =
+    [
+        new(CssChildKind.Selector, "&:hover", new CssRule
+        {
+            BackgroundColor = "#125486"
+        })
+    ]
+});
+```
+
+该包从 Webref 生成标准 CSS 属性，根据规范化内容生成稳定名称，并管理一个支持 CSP nonce 的浏览器样式节点。`Css.Class` 返回普通字符串，可直接用于常规模块和 RazorVue 的 `class` 属性，无需适配层。它复用现有 `JazorMode` 输出合同，不增加 CSS 专用 MSBuild 属性。
+
+详细合同见 [Jazor.Css 包指南](src/Jazor.Css/README.md)与[目标边界](docs/01-%E7%9B%AE%E6%A0%87/jazor.css/README.md)。
 
 ## MSBuild 属性
 
@@ -155,7 +179,7 @@ Jolt 已在 `3ee18679fbdf43c13e05d7bfac8857ddcebd19f9` 从转型分支移除。�
 </PropertyGroup>
 ```
 
-生产发布使用 bundle 时，配置如下：
+生产发布生成 bundle 时，配置如下：
 
 ```xml
 <PropertyGroup>
@@ -165,7 +189,7 @@ Jolt 已在 `3ee18679fbdf43c13e05d7bfac8857ddcebd19f9` 从转型分支移除。�
 </PropertyGroup>
 ```
 
-`debug` 与 `release` 互斥。release 在内部完成中间物化，清空 `JazorDir` 后仅在该目录写出 `bundle.js` 和 `bundle.js.map`。
+`debug` 与 `release` 互斥。`release` 在内部完成中间物化，清空 `JazorDir` 后仅在该目录写出 `bundle.js` 和 `bundle.js.map`。
 
 | 属性 | 默认值 | 说明 |
 |------|--------|------|
@@ -182,13 +206,14 @@ Jazor/
 ├── src/
 │   ├── Jazor.Compiler/              # C# -> JavaScript 编译器核心
 │   ├── Jazor.CLR/                   # CLR runtime 映射和 JavaScript helper
-│   ├── Jazor.Analyzer/              # Analyzer 与 RazorVue source-generator 宿主
-│   ├── Jazor.RazorVue/              # SG 结果绑定与 Vue render artifact framing
-│   ├── Jazor.RazorVue.Generator/    # Generator-driver 集成
+│   ├── Jazor.Analyzer/              # 静态分析诊断
+│   ├── Jazor.RazorVue/              # Generator 集成、SG 结果绑定与 Vue render framing
 │   ├── Jazor.Emit/                  # 物化、manifest、source map 与打包
+│   ├── Jazor.Css/                   # 确定性、框架无关的 CSS-in-JS runtime
 │   ├── Jazor.Common/                # 共享格式化 / source-map 工具和契约
 │   ├── Jazor.AspNetCore*/           # ASP.NET Core runtime 与开发期集成
 │   ├── Jazor/                       # NuGet 包，打包核心 SDK 资产
+│   ├── Jazor.Vue/                   # 显式启用的 Razor-to-Vue NuGet 包
 │   ├── ECMAScript*/                 # ECMAScript AST/contract 与 Vue 生态绑定
 │   └── *Test/                       # MSTest 回归项目
 ├── samples/
@@ -218,6 +243,8 @@ dotnet run --file scripts/csharp/test-dotnet.cs
 
 # 聚焦测试套件
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
+dotnet run --file scripts/csharp/test-dotnet.cs -- --project css
+dotnet run --file scripts/csharp/test-dotnet.cs -- --project css-browser
 dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj
 dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
 
@@ -236,9 +263,9 @@ dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticW
 | 编译器实现原则 | [src/Jazor.Compiler/ImplementationPrinciples.md](src/Jazor.Compiler/ImplementationPrinciples.md) |
 | 编译器状态 | [docs/03-完成/compiler/status.md](docs/03-%E5%AE%8C%E6%88%90/compiler/status.md) |
 | RazorVue 设计 | [docs/01-目标/razorvue/README.md](docs/01-%E7%9B%AE%E6%A0%87/razorvue/README.md) |
+| Jazor.Css 设计与状态 | [docs/01-目标/jazor.css/README.md](docs/01-%E7%9B%AE%E6%A0%87/jazor.css/README.md)、[docs/03-完成/jazor.css/status.md](docs/03-%E5%AE%8C%E6%88%90/jazor.css/status.md) |
 | 架构转型计划 | [docs/02-计划/Jazor 架构转型开发计划.md](docs/02-%E8%AE%A1%E5%88%92/Jazor%20%E6%9E%B6%E6%9E%84%E8%BD%AC%E5%9E%8B%E5%BC%80%E5%8F%91%E8%AE%A1%E5%88%92.md) |
 | G0 决策记录 | [docs/02-计划/RazorSgFinalDocument.G0.DecisionRecord.md](docs/02-%E8%AE%A1%E5%88%92/RazorSgFinalDocument.G0.DecisionRecord.md) |
-| 已退役 Jolt 历史 | [docs/01-目标/jolt/README.md](docs/01-%E7%9B%AE%E6%A0%87/jolt/README.md) |
 | Emit 状态 | [docs/03-完成/emit/status.md](docs/03-%E5%AE%8C%E6%88%90/emit/status.md) |
 
 文档按以下目录组织：

@@ -36,7 +36,7 @@ public record struct SenseArgument
     internal EmissionScopeContext? ScopeContext { get; init; }
 
     // ===== 依赖项收集（原 WalkerArgument 功能，直接内联）=====
-    private readonly Dictionary<string, VariableDeclarator>? _declarators;
+    private readonly Dictionary<VariableDeclaratorKey, VariableDeclarator>? _declarators;
     private readonly Dictionary<string, List<ImportDeclarationSpecifier>>? _specifiers;
     private readonly Dictionary<string, string>? _importBindings;
     private readonly Dictionary<string, string>? _importLocalBindings;
@@ -88,7 +88,7 @@ public record struct SenseArgument
         Expression? patternInput,
         string? catchExceptionVar,
         string? switchExpressionVar,
-        Dictionary<string, VariableDeclarator>? declarators,
+        Dictionary<VariableDeclaratorKey, VariableDeclarator>? declarators,
         Dictionary<string, List<ImportDeclarationSpecifier>>? specifiers,
         Dictionary<string, string>? importBindings,
         Dictionary<string, string>? importLocalBindings,
@@ -219,10 +219,14 @@ public record struct SenseArgument
     public void AddVarDeclarator(VariableDeclarator declarator, int depth)
     {
         if (_declarators is null) return;
-        var name = declarator.Id is Identifier identifier
-            ? identifier.Name
-            : declarator.Id.ToECMAScript();
-        var key = $"{depth}:{name}";
+        if (declarator.Id is not Identifier identifier)
+        {
+            throw new NotSupportedException(
+                "Collected JavaScript variable declarators require an identifier binding, but received '" +
+                declarator.Id.Type + "'.");
+        }
+
+        var key = new VariableDeclaratorKey(depth, identifier.Name);
         if (!_declarators.ContainsKey(key))
             _declarators.Add(key, declarator);
     }
@@ -322,9 +326,7 @@ public record struct SenseArgument
         var result = new List<KeyValuePair<string, NodeList<ImportDeclarationSpecifier>>>(_specifiers.Count);
         foreach (var pair in _specifiers)
         {
-            var specifiers = pair.Value
-                .GroupBy(static specifier => specifier.ToECMAScript(), System.StringComparer.Ordinal)
-                .Select(static group => group.First());
+            var specifiers = ImportDeclarationFactory.NormalizeSpecifiers(pair.Value);
             result.Add(new KeyValuePair<string, NodeList<ImportDeclarationSpecifier>>(pair.Key, NodeList.From(specifiers)));
         }
 
@@ -335,19 +337,13 @@ public record struct SenseArgument
     private static ImportDeclarationSpecifier CreateAliasedImportSpecifier(string importedName, string localName)
     {
         if (string.Equals(importedName, "default", System.StringComparison.Ordinal))
-        {
-            var defaultImportScript = $"import {localName} from \"__jazor_internal__\";";
-            var defaultImportDeclaration = new Parser().ParseModule(defaultImportScript).Body.Single() as ImportDeclaration;
-            return defaultImportDeclaration?.Specifiers.Single()
-                ?? throw new InvalidOperationException($"Jazor 无法生成默认导入别名：{importedName} -> {localName}");
-        }
+            return new ImportDefaultSpecifier(new Identifier(localName));
 
         if (string.Equals(importedName, localName, System.StringComparison.Ordinal))
             return new ImportSpecifier(new Identifier(importedName));
 
-        var importScript = $"import {{ {importedName} as {localName} }} from \"__jazor_internal__\";";
-        var importDeclaration = new Parser().ParseModule(importScript).Body.Single() as ImportDeclaration;
-        return importDeclaration?.Specifiers.Single()
-            ?? throw new InvalidOperationException($"Jazor 无法生成导入别名：{importedName} -> {localName}");
+        return new ImportSpecifier(new Identifier(importedName), new Identifier(localName));
     }
+
+    private readonly record struct VariableDeclaratorKey(int Depth, string Name);
 }

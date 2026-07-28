@@ -2,7 +2,7 @@
 
 Write JavaScript in C#.
 
-Jazor is a C#-to-JavaScript compiler that translates Roslyn `IOperation` semantics into standard ECMAScript AST. The `Jazor` package carries the core runtime, analyzer, source generator, emit tool, MSBuild integration, and the baseline Vue 3 authoring surface.
+Jazor is a C#-to-JavaScript compiler that translates Roslyn `IOperation` semantics into standard ECMAScript AST. The `Jazor` package carries the core runtime, analyzer, source generator, emit tool, MSBuild integration, and the baseline Vue 3 authoring surface. Razor-to-Vue integration is provided separately by `Jazor.Vue`.
 
 ## Features
 
@@ -17,7 +17,7 @@ Jazor is a C#-to-JavaScript compiler that translates Roslyn `IOperation` semanti
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.27" />
+  <PackageReference Include="Jazor" Version="0.1.31" />
 </ItemGroup>
 ```
 
@@ -29,7 +29,7 @@ Every project that declares `[ECMAScriptModule]` must reference `Jazor`:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.27" />
+  <PackageReference Include="Jazor" Version="0.1.31" />
 </ItemGroup>
 ```
 
@@ -41,16 +41,18 @@ Library projects keep the default `JazorMode=none`.
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.27" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.27" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.27" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.27" />
-  <PackageReference Include="ECMAScript.TDesign" Version="0.1.27" />
+  <PackageReference Include="Jazor" Version="0.1.31" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.31" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.31" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.31" />
+  <PackageReference Include="ECMAScript.TDesign" Version="0.1.31" />
+  <PackageReference Include="Jazor.Css" Version="0.1.31" />
 </ItemGroup>
 ```
 
 - `ECMAScript.Vue3` remains part of the default `Jazor` package.
 - `ECMAScript.Pinia.Testing` is a separate opt-in testing package layered on top of `ECMAScript.Pinia`.
+- `Jazor.Css` is a framework-neutral CSS-in-JS package. It depends on the exact same `Jazor` version and reuses this package's compiler and MSBuild integration.
 
 ### Host / executable projects
 
@@ -58,7 +60,7 @@ The final executable or web host project selects one output mode:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.27" />
+  <PackageReference Include="Jazor" Version="0.1.31" />
 </ItemGroup>
 
 <PropertyGroup>
@@ -72,9 +74,9 @@ The final executable or web host project selects one output mode:
 - `JazorMode=debug` scans the host output and referenced assemblies, then writes debug modules and `jazor-manifest.json`.
 - `JazorMode=release` performs its internal materialization in an intermediate directory, then writes only the production bundle and source map through `JazorTool`; `Deno` uses the bundled runtime, and `Netpack` uses the packaged NetPack lane.
 
-### Razor integration status
+### Razor-to-Vue integration
 
-The transformation branch automatically exposes the official Razor Source Generator final-document input boundary for Razor SDK projects:
+Add `Jazor.Vue` to a Razor SDK project to opt into the official Razor Source Generator final-compilation boundary:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk.Web">
@@ -83,12 +85,15 @@ The transformation branch automatically exposes the official Razor Source Genera
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jazor" Version="0.1.27" />
+    <PackageReference Include="Jazor" Version="0.1.31" />
+    <PackageReference Include="Jazor.Vue" Version="0.1.31" PrivateAssets="all" />
   </ItemGroup>
 </Project>
 ```
 
-The package hooks the completed Roslyn generator driver result, then binds final generated C# and `BuildRenderTree` against that final compilation. Razor component modules lower to Vue render-function `.mjs` artifacts through the shared compiler/render-context path.
+`Jazor.Vue` hooks the completed Roslyn generator-driver result, then binds final generated C# and `BuildRenderTree` against that final compilation. Razor component modules lower to Vue render-function `.mjs` artifacts through the shared compiler/render-context path. `Jazor` alone neither installs the hook nor scans Razor components.
+
+The integration directly consumes the final `Compilation`; it does not require `EnableRazorHostOutputs`, `RazorCodeDocument`, `RazorCSharpDocument`, or reparsing generated C#.
 
 ### Current MSBuild emit behavior
 

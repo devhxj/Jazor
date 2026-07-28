@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <JazorMode>debug</JazorMode>
+    <TargetFramework>net11.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RazorLangVersion>11.0</RazorLangVersion>
+    <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="build-local.cs" />
+    <Compile Remove="verify-smoke.cs" />
+    <Compile Remove="InjectSmoke\**" />
+    <Compile Remove="wwwroot\jazor\**" />
+    <Content Remove="InjectSmoke\**" />
+    <EmbeddedResource Remove="InjectSmoke\**" />
+    <None Remove="InjectSmoke\**" />
+    <Content Remove="wwwroot\jazor\**" />
+    <EmbeddedResource Remove="wwwroot\jazor\**" />
+    <None Remove="wwwroot\jazor\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+    <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+    <PackageReference Include="Jazor.Admin" Version="$(JazorPackageVersion)" />
+    <PackageReference Include="ECMAScript.TDesign" Version="$(JazorPackageVersion)" />
+    <PackageReference Include="ECMAScript.VueRoute" Version="$(JazorPackageVersion)" />
+  </ItemGroup>
+</Project>

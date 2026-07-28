@@ -1,0 +1,41 @@
+@inherits AdminComponentBase
+
+@if (Horizontal)
+{
+    <THeadMenu Value="@MenuValue"
+               Expanded="@ExpandedMenuValues"
+               Theme="@TDesignMenuTheme.Light"
+               data-navigation-orientation="horizontal"
+               data-navigation-selected-key="@SelectedKey"
+               OnChange="@OnMenuChanged"
+               OnExpand="@OnMenuExpanded"
+               Logo="@Logo">
+        @if (Items?.AsArray is { Length: > 0 } horizontalItems)
+        {
+            @foreach (var item in horizontalItems)
+            {
+                @RenderItem(item)
+            }
+        }
+    </THeadMenu>
+}
+else
+{
+    <TMenu Collapsed="@Collapsed"
+           Value="@MenuValue"
+           Expanded="@ExpandedMenuValues"
+           Theme="@TDesignMenuTheme.Light"
+           data-navigation-orientation="vertical"
+           data-navigation-selected-key="@SelectedKey"
+           OnChange="@OnMenuChanged"
+           OnExpand="@OnMenuExpanded"
+           Logo="@Logo">
+        @if (Items?.AsArray is { Length: > 0 } verticalItems)
+        {
+            @foreach (var item in verticalItems)
+            {
+                @RenderItem(item)
+            }
+        }
+    </TMenu>
+}

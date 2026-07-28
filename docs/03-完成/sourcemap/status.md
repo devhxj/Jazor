@@ -1,121 +1,52 @@
-# SourceMap 状态（2026-04-06）
+# SourceMap 状态（2026-07-28）
 
 > Status: 当前状态快照
-> Positioning: SourceMap 项目的仓库级状态快照
-> Note: 本快照早于 `Jolt` 的整合；请将 RazorVue 的措辞理解为历史 lane 上下文，而非独立的活跃边界。当前活跃的宿主/运行时措辞应理解为 `Jolt` 加上 Deno
+> Positioning: SourceMap 在 Compiler、catalog 与 Emit 之间的状态与验收边界
 
 ## 总结
 
-SourceMap 当前不能再用一句"deferred"概括了。
+SourceMap 已进入可用基线阶段：编译器为可输出语义节点携带来源信息，`ESGenerator` 将 source-map carrier 写入 module catalog，`Jazor.Emit` 负责 `.mjs.map` 物化及 `sourceMappingURL` 关联。当前工作的重点是稳定性、覆盖范围和 Bundle 场景的验证，不是重新设计输入管线。
 
-更确切而言：
+## 当前职责
 
-- broad SourceMap programme 仍然偏保守
-- 但由 RazorVue 演进出来、并由 Jolt / Deno 承接的 bundle chaining 已进入 narrower active lane
-- repo-level 文档需要同时表达这两层现实，不能二选一
+```text
+SemanticWalker
+    -> SourceOrigin
+    -> ESGenerator module catalog
+    -> Jazor.Emit .mjs.map
+    -> browser debugger
+```
 
-## 当前状态判断
+- `Jazor.Compiler` 负责语义节点与源位置的关联。
+- `Jazor.Common` 提供共享 SourceMap 模型和格式化支持。
+- `Jazor.Emit` 负责模块、source map、manifest 与 Bundle 的写出。
+- RazorVue 只提供 Razor 组件 lowering 所需的源位置承接，不拥有独立的 SourceMap 协议。
 
-### 1. Broad programme remains conservative
+## 已具备能力
 
-当前仍不应该把 SourceMap 描述成"全线开工"。
+- 模块级 `.mjs.map` 输出。
+- 普通表达式、引用、赋值、调用与 `return` 的来源关联。
+- tuple、deconstruct 等已支持语义节点的来源关联。
+- module catalog 到 Emit 文件的稳定传递。
+- source map 文件与 `sourceMappingURL` 的一致性检查。
 
-Broad programme 依然强调：
+## 明确边界
 
-- compiler main path stability first
-- module-level map first
-- broad rollout should not outrun upstream stability
+“全节点”仅指已支持且实际产出 ECMAScript AST 节点的语义操作。明确不支持的操作、由父节点统一处理的 operation，以及当前不产出 decorator 节点的属性路径，不伪造 SourceMap 映射。
 
-这意味着 broad SourceMap programme 当前仍然是：
-- 以规划和设计为主
-- 不急于全面铺开实现
-- 优先保证上游 compiler / emit 的稳定性
+Bundle source-map chaining 属于 Emit 的后续增强项。它必须建立在 module-level map 稳定、输入来源确定且输出路径可复现的基础上，不改变 Compiler 的 lowering 责任。
 
-### 2. Narrower active lane is already real
+## 验证入口
 
-当前已经存在一个 narrower active lane：
-
-- Jolt / Deno emitted module sourcemap
-- writer / manifest evolution
-- bundle chaining continuation
-
-所以更准确的状态是：
-
-- broad programme: conservative
-- narrow lane: active
-
-这个 narrow lane 是因为 RazorVue 的实际需求而启动的，不是为了 SourceMap 本身的全面推广。
-
-### 3. SourceMap is now a coordination lane, not only a future note
-
-SourceMap 当前已经和以下工作流直接耦合：
-
-- compiler artifact / source-origin shape
-- emit writer / manifest / bundler evolution
-- RazorVue host-facing materialisation
-
-这意味着 repo-level 文档必须显式桥接它，而不能只把它留在局部专题入口里。
-
-## 下一步行动
-
-### Narrow active lane（优先级最高）
-
-**目标**：完成 RazorVue 需要的 narrow SourceMap slice
-
-**具体行动**：
-
-1. **完成 RazorVue bundle chaining 实现**
-   - 让 module sourcemap 在 bundle chain 中正确传递
-   - 确保 source-origin 信息不丢失
-   - 参考：[Phase 2: 编译管道统一 + Source Map](../../02-计划/jolt/phase2-sourcemap.md)
-
-2. **让 writer / manifest 演进就位**
-   - 支撑 sourcemap 的写出和持久化
-   - 保持和 emit pipeline 的一致性
-
-**验证标准**：
-- RazorVue 构建产物有正确的 sourcemap
-- Source map chain 能够正确追溯到原始源文件
-- 不影响 broad programme 的保守基调
-
-### 维持 broad programme 和 narrow lane 的边界
-
-**目标**：确保 narrow lane 的活跃不掩盖 broad programme 的保守性质
-
-**具体行动**：
-
-1. **持续更新文档**
-   - 明确区分 narrow active lane 和 broad programme
-   - 避免"narrow lane 活跃 = broad programme 活跃"的误解
-
-2. **保持 scope 控制**
-   - Narrow slice 保持比 broad programme 更窄
-   - 不因为 narrow lane 成功就提前扩大 scope
-
-**参考文档**：
-- [SourceMap.Overview.md](../../01-目标/compiler/sourcemap/SourceMap.Overview.md)
-- [SourceMap.ImplementationChecklist.md](../../02-计划/compiler/SourceMap.ImplementationChecklist.md)
-
-### Broad programme 准备（低优先级）
-
-**目标**：为未来 broad SourceMap rollout 做准备
-
-**具体行动**：
-
-1. **继续完善设计和规划**
-   - 但不急于实现
-   - 保持对上游依赖（compiler / emit）的观察
-
-2. **等待上游稳定**
-   - 在 compiler mainline 和 emit 更稳定之前，不扩大 scope
-
-## 深度文档
-
-- [SourceMap.Overview.md](../../01-目标/compiler/sourcemap/SourceMap.Overview.md)
-- [SourceMap.ImplementationChecklist.md](../../02-计划/compiler/SourceMap.ImplementationChecklist.md)
+- `src/Jazor.CompilerTest/SemanticWalkerSourceOriginTest.cs`
+- `src/Jazor.CompilerTest/SemanticWalkerSourceMapEmissionTest.cs`
+- `src/Jazor.CompilerTest/ESGeneratorSourceMapCatalogTest.cs`
+- `src/Jazor.EmitTest/StaticModuleSourceMapTests.cs`
+- [SourceMap 设计](../../01-目标/compiler/sourcemap/SourceMap.Design.md)
+- [SourceMap 实施清单](../../02-计划/compiler/SourceMap.ImplementationChecklist.md)
 
 ## 当前缺口
 
-- Repo-level SourceMap 状态入口刚建立，还没形成长期稳定阅读习惯
-- Broad programme 和 narrow lane 的边界需要持续维护
-- SourceMap 仍然容易被误写成"全 deferred"或"全 active"
+- 扩大多 fixture 的确定性与性能证据。
+- 继续验证 RazorVue 产物在真实浏览器调试器中的来源追踪。
+- 在不破坏模块级映射的前提下完善 Bundle map chaining。

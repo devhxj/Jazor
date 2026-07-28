@@ -1,5 +1,7 @@
 # Jazor.EmitTest
 
+> Purpose: regression coverage for module materialization, SourceMap output, and production Bundle generation.
+
 `Jazor.EmitTest` covers the file emission and bundle pipeline in `src/Jazor.Emit`.
 
 ## Scope
@@ -9,14 +11,17 @@
 - Cross-module import rewriting inside the temporary bundle workspace.
 - Root-assembly export preservation, so the final bundle re-exports the host module members instead of collapsing to an empty file.
 - Static module, chained bundle, and writer source-map behavior.
-- Retirement guards for the removed RazorVue emit contracts.
+- Contract guards ensuring Emit consumes only the current module catalog and render catalog inputs.
+- Independent referenced-package catalogs, including `Jazor.Css` debug materialization, source maps, manifests, and release bundles.
 
 ## Current regression coverage
 
 - `BundleAsync_SingleRootModule_PreservesExports`
 - `BundleAsync_MultiProjectHostBundle_ReExportsRootAssemblyMembers`
 - `ModuleCollector_Collect_ReadsClrRuntimeModules_FromEcmascriptAssemblyCatalog`
-- `EmitAssembly_DoesNotExposeLegacyRazorVueCatalogOrConsumerContracts`
+- `CatalogReader_TryRead_ReadsJazorCssRuntimeWithSourceMap`
+- `Build_LocalJazorCssPackage_DebugMaterializesAndReleaseBundlesRuntime`
+- catalog 输入边界与当前 manifest contract 的负向验证
 
 These tests exercise `ModuleBundler` directly and validate the bundled JavaScript output, not just the exit code.
 

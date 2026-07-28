@@ -1,6 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Immutable;
 using System.Linq;
@@ -34,6 +35,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 	private const string AmbiguousRuntimeTypeFilterDiagnosticId = "JAZOR002";
 	private const string InvalidSpreadUsageDiagnosticId = "JAZOR003";
 	private const string ConflictingSpreadPropertyNameDiagnosticId = "JAZOR004";
+	private const string VueLibraryComponentAttributeMetadataName = "ECMAScript.VueContract.VueLibraryComponentAttribute";
 	private const string Title = "Jazor";
 	private const string MessageFormat = "[{0}] is not support in ECMAScript";
 	private const string AmbiguousRuntimeTypeFilterMessageFormat = "[{0}] cannot be used for {1} because runtime alias '{2}' is shared with incompatible supported types: {3}";
@@ -187,6 +189,15 @@ public partial class Analyzer : DiagnosticAnalyzer
 
 	private static bool IsWhiteListedMember(ISymbol symbol)
 		=> WhiteListLookup.TryGetValue(WhiteList.Members, symbol, out _, out _);
+
+	private static bool IsRenderTreeBuilderEventModifier(IMethodSymbol method)
+	{
+		var original = (method.ReducedFrom ?? method).OriginalDefinition;
+		return original.ContainingType.ToDisplayString() ==
+				"Microsoft.AspNetCore.Components.Web.WebRenderTreeBuilderExtensions" &&
+			(original.Name == "AddEventPreventDefaultAttribute" ||
+			 original.Name == "AddEventStopPropagationAttribute");
+	}
 
 	private static bool IsWhiteListedProperty(IPropertySymbol property)
 	{
@@ -393,6 +404,9 @@ public partial class Analyzer : DiagnosticAnalyzer
 		if (StructuralRecordSupport.IsStructuralRecordType(typeSymbol))
 			return;
 
+		if (IsVueLibraryComponent(typeSymbol))
+			return;
+
 		if (!InECMAScriptAttribute(typeSymbol.OriginalDefinition))
 			report(Diagnostic.Create(Rule, location, fullName));
 	}
@@ -464,6 +478,9 @@ public partial class Analyzer : DiagnosticAnalyzer
 
 	private static void AnalysisOperationAction(OperationAnalysisContext ctx)
 	{
+		if (ctx.Operation.Syntax.AncestorsAndSelf().Any(static syntax => syntax is AttributeSyntax))
+			return;
+
 		switch (ctx.Operation.Kind)
 		{
 			case OperationKind.FieldInitializer:
@@ -573,7 +590,8 @@ public partial class Analyzer : DiagnosticAnalyzer
 						return;
 					}
 
-					if (IsWhiteListedMember(invocation.TargetMethod))
+					if (IsRenderTreeBuilderEventModifier(invocation.TargetMethod) ||
+						IsWhiteListedMember(invocation.TargetMethod))
 						return;
 
 					if (InECMAScriptAttribute(invocation.TargetMethod.ContainingType))
@@ -808,6 +826,13 @@ public partial class Analyzer : DiagnosticAnalyzer
 				break;
 		}
 	}
+
+	private static bool IsVueLibraryComponent(ITypeSymbol typeSymbol)
+		=> typeSymbol.OriginalDefinition.GetAttributes().Any(static attribute =>
+			string.Equals(
+				attribute.AttributeClass?.ToDisplayString(),
+				VueLibraryComponentAttributeMetadataName,
+				StringComparison.Ordinal));
 
 	private static void AnalysisSymbolEndAction(SymbolAnalysisContext ctx)
 	{

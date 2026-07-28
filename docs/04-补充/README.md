@@ -1,12 +1,17 @@
-# 补充
+# 补充与治理
 
-继往开来：文档治理规则、后续优化方向、非阻塞增强建议。
-
-旧 RazorVue library-mode、Jolt、SFC artifact、Playground 和图稿提示词补充资料已随 G0 后清理从活跃补充目录退役。需要历史对照时使用 Git 基线 `d68aecbb00b23aa35735c9a269b2e987c7815b05` 或当前转型计划中的历史入口。
+本目录记录不会改变核心产品契约的治理规则、文档规范和补充性说明。它不承载当前主线的实施任务，也不替代源码旁的 API 文档。
 
 ## 文件索引
 
-| 文件 | 说明 |
-|------|------|
-| `documentation-governance.md` | 文档放置规则、命名约定、治理流程 |
-| `compiler-audit-remediation-2026-04-28.md` | 历史 compiler audit remediation 记录；其中测试数字和旧项目名只表示当时快照 |
+| 文档 | 用途 |
+| --- | --- |
+| [documentation-governance.md](./documentation-governance.md) | 文档分类、命名、状态标注和维护流程 |
+| `compiler-audit-remediation-2026-04-28.md` | 历史 compiler audit remediation 记录，结论需结合当前源码重新核对 |
+
+## 维护原则
+
+- 面向用户的配置、安装和行为说明应位于根 README 或对应包 README。
+- 模块内部实现原则应位于模块源码旁或 `01-目标` 的专题文档中。
+- 计划、状态和审计报告必须标明时间范围，避免把快照误认为当前契约。
+- 已不再适用的文档应移入 `05-遗弃`，不得继续出现在当前主线入口中。

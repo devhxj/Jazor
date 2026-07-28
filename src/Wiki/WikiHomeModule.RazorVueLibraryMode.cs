@@ -20,17 +20,17 @@ public static partial class WikiHomeModule
                     H("li", "与仓库其余部分共享编译器、分析器、Emit 和源起源基础。")
                 ])
             ]),
-            PageSection("physical-split", "物理拆分",
+            PageSection("internal-layers", "内部职责分层",
             [
-                H("p", "外部 RazorVue 命名保持稳定，但物理源码刻意按关注点拆分。"),
-                CodeBlock("当前物理所有权", """
+                H("p", "RazorVue 使用单一 analyzer 程序集交付，并在项目内部按关注点分层。"),
+                CodeBlock("当前内部所有权", """
 src/Jazor.RazorVue/
+src/Jazor.RazorVue/Generation/
 src/Jazor.RazorVue/RazorSdk/
-src/Jazor.RazorVue.Generator/
 src/ECMAScript.Vuetify/
 src/ECMAScript.Contract/
 """),
-                H("p", "这种拆分保持 RazorVue 核心语义、Razor SDK 桥接、Roslyn 生成器行为和库组件绑定不会漂移到一个项目中。")
+                H("p", "Generation 层负责 analyzer 生命周期和 driver hook，RazorSdk 层负责最终 Compilation 绑定与 lowering；物理合并不会混淆两类职责。")
             ]),
             PageSection("build-time-flow", "构建时流程",
             [

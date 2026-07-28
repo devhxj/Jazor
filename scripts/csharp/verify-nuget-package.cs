@@ -1,5 +1,6 @@
 #!/usr/bin/env dotnet run
 
+using System.Diagnostics;
 using System.IO.Compression;
 using System.Xml.Linq;
 

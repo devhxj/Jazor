@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <PackageId>Jazor.Css</PackageId>
+    <RootNamespace>Jazor.Css</RootNamespace>
+    <Version Condition="'$(Version)' == ''">0.1.0</Version>
+    <Authors>hanxj</Authors>
+    <Description>Deterministic CSS-in-JS runtime for Jazor applications authored in C#.</Description>
+    <PackageProjectUrl>https://github.com/devhxj/Jazor</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/devhxj/Jazor</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <NuspecFile>Jazor.Css.nuspec</NuspecFile>
+    <NoWarn>$(NoWarn);CS0626;CS0824;IDE0130;CA1822;IDE0060;IDE1006</NoWarn>
+    <JazorCssProjectOutputRoot Condition="'$(JazorIsolatedBaseOutputRoot)' == ''">$(MSBuildThisFileDirectory)..\</JazorCssProjectOutputRoot>
+    <JazorCssProjectOutputRoot Condition="'$(JazorIsolatedBaseOutputRoot)' != ''">$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseOutputRoot)'))</JazorCssProjectOutputRoot>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MinVer" Version="7.*" PrivateAssets="All" />
+    <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
+    <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Jazor.Analyzer\Jazor.Analyzer.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Target Name="AddLocalJazorCssAnalyzerDependencies" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Include="$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll" />
+      <Analyzer Include="$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll" />
+      <Analyzer Include="$(JazorCssProjectOutputRoot)ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll" />
+      <Analyzer Include="$(JazorCssProjectOutputRoot)Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll" />
+    </ItemGroup>
+  </Target>
+
+  <Import Project="..\Packaging\JazorFrontendNuspec.targets" />
+</Project>

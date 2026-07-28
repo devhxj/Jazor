@@ -20,25 +20,75 @@ internal static class SourceMapEmitter
         string? sourceRootPath,
         Func<string, string?>? readSourceContent)
     {
-        if (node is null)
-            throw new ArgumentNullException(nameof(node));
-        if (writerOptions is null)
-            throw new ArgumentNullException(nameof(writerOptions));
-        if (astOptions is null)
-            throw new ArgumentNullException(nameof(astOptions));
-        if (string.IsNullOrWhiteSpace(generatedFileName))
-            throw new ArgumentException("Generated file name cannot be null or whitespace.", nameof(generatedFileName));
+        ValidateArtifactArguments(node, writerOptions, astOptions, generatedFileName);
+        var output = WriteJavaScript(
+            node,
+            writerOptions,
+            astOptions,
+            captureSourceOrigins: true,
+            captureNodePositions: false);
+        return BuildArtifact(
+            output.Content,
+            generatedFileName,
+            output.Collector.Captures,
+            includeSourcesContent,
+            sourceRootPath,
+            readSourceContent);
+    }
 
-        var textWriter = new TrackingStringWriter();
-        var collector = new SourceMapCaptureCollector(textWriter);
-        var sourceMapAstOptions = new SourceMapAstToJavaScriptOptions(astOptions, collector);
+    internal static GeneratedJavaScriptLayout EmitWithNodePositions(
+        Node node,
+        JavaScriptTextWriterOptions writerOptions,
+        AstToJavaScriptOptions astOptions,
+        string generatedFileName,
+        bool includeSourcesContent,
+        string? sourceRootPath,
+        Func<string, string?>? readSourceContent)
+    {
+        ValidateArtifactArguments(node, writerOptions, astOptions, generatedFileName);
+        var output = WriteJavaScript(
+            node,
+            writerOptions,
+            astOptions,
+            captureSourceOrigins: true,
+            captureNodePositions: true);
+        return new GeneratedJavaScriptLayout(
+            BuildArtifact(
+                output.Content,
+                generatedFileName,
+                output.Collector.Captures,
+                includeSourcesContent,
+                sourceRootPath,
+                readSourceContent),
+            output.Collector.NodePositions);
+    }
 
-        AstToJavaScript.WriteJavaScript(node, textWriter, writerOptions, sourceMapAstOptions);
-        var content = textWriter.ToString();
+    internal static GeneratedJavaScriptNodeLayout EmitNodeLayout(
+        Node node,
+        JavaScriptTextWriterOptions writerOptions,
+        AstToJavaScriptOptions astOptions)
+    {
+        ValidateWriterArguments(node, writerOptions, astOptions);
+        var output = WriteJavaScript(
+            node,
+            writerOptions,
+            astOptions,
+            captureSourceOrigins: false,
+            captureNodePositions: true);
+        return new GeneratedJavaScriptNodeLayout(output.Content, output.Collector.NodePositions);
+    }
 
+    private static GeneratedJavaScriptArtifact BuildArtifact(
+        string content,
+        string generatedFileName,
+        IReadOnlyList<CapturedSourceSegment> captures,
+        bool includeSourcesContent,
+        string? sourceRootPath,
+        Func<string, string?>? readSourceContent)
+    {
         var sourceMap = BuildSourceMap(
             generatedFileName,
-            collector.Captures,
+            captures,
             includeSourcesContent,
             sourceRootPath,
             readSourceContent);
@@ -49,6 +99,48 @@ internal static class SourceMapEmitter
             SourceMapContent: sourceMapContent,
             JsHash: ComputeSha256Hex(content),
             MapHash: ComputeSha256Hex(sourceMapContent));
+    }
+
+    private static JavaScriptWriteResult WriteJavaScript(
+        Node node,
+        JavaScriptTextWriterOptions writerOptions,
+        AstToJavaScriptOptions astOptions,
+        bool captureSourceOrigins,
+        bool captureNodePositions)
+    {
+        var textWriter = new TrackingStringWriter();
+        var collector = new SourceMapCaptureCollector(
+            textWriter,
+            captureSourceOrigins,
+            captureNodePositions);
+        var captureOptions = new SourceMapAstToJavaScriptOptions(astOptions, collector);
+
+        AstToJavaScript.WriteJavaScript(node, textWriter, writerOptions, captureOptions);
+        return new JavaScriptWriteResult(textWriter.ToString(), collector);
+    }
+
+    private static void ValidateArtifactArguments(
+        Node node,
+        JavaScriptTextWriterOptions writerOptions,
+        AstToJavaScriptOptions astOptions,
+        string generatedFileName)
+    {
+        ValidateWriterArguments(node, writerOptions, astOptions);
+        if (string.IsNullOrWhiteSpace(generatedFileName))
+            throw new ArgumentException("Generated file name cannot be null or whitespace.", nameof(generatedFileName));
+    }
+
+    private static void ValidateWriterArguments(
+        Node node,
+        JavaScriptTextWriterOptions writerOptions,
+        AstToJavaScriptOptions astOptions)
+    {
+        if (node is null)
+            throw new ArgumentNullException(nameof(node));
+        if (writerOptions is null)
+            throw new ArgumentNullException(nameof(writerOptions));
+        if (astOptions is null)
+            throw new ArgumentNullException(nameof(astOptions));
     }
 
     private static GeneratedSourceMap BuildSourceMap(
@@ -322,20 +414,48 @@ internal static class SourceMapEmitter
         int SourceEndColumn,
         int CaptureOrder);
 
+    private sealed record JavaScriptWriteResult(
+        string Content,
+        SourceMapCaptureCollector Collector);
+
     private sealed class SourceMapCaptureCollector
     {
         private readonly TrackingStringWriter _writer;
-        private readonly List<CapturedSourceSegment> _captures = [];
+        private readonly List<CapturedSourceSegment>? _captures;
+        private readonly Dictionary<Node, GeneratedNodePosition>? _nodePositions;
         private SourceOrigin? _currentOrigin;
 
-        public SourceMapCaptureCollector(TrackingStringWriter writer)
-            => _writer = writer ?? throw new ArgumentNullException(nameof(writer));
+        public SourceMapCaptureCollector(
+            TrackingStringWriter writer,
+            bool captureSourceOrigins,
+            bool captureNodePositions)
+        {
+            _writer = writer ?? throw new ArgumentNullException(nameof(writer));
+            if (captureSourceOrigins)
+                _captures = [];
+            if (captureNodePositions)
+                _nodePositions = [];
+        }
 
-        public IReadOnlyList<CapturedSourceSegment> Captures => _captures;
+        public IReadOnlyList<CapturedSourceSegment> Captures
+            => _captures ?? throw new InvalidOperationException("Source-origin capture was not enabled for this writer.");
+
+        public IReadOnlyDictionary<Node, GeneratedNodePosition> NodePositions
+            => _nodePositions ?? throw new InvalidOperationException("Node-position capture was not enabled for this writer.");
 
         public SourceOrigin? Enter(Node? node)
         {
             var previousOrigin = _currentOrigin;
+            if (node is not null &&
+                _nodePositions is not null &&
+                !_nodePositions.ContainsKey(node))
+            {
+                _nodePositions.Add(node, new GeneratedNodePosition(_writer.Line, _writer.Column));
+            }
+
+            if (_captures is null)
+                return previousOrigin;
+
             if (node?.UserData is SourceOrigin nodeOrigin)
             {
                 // Synthetic origins intentionally suppress mapping at this node,
@@ -358,8 +478,13 @@ internal static class SourceMapEmitter
 
         private void CaptureCurrent(SourceOrigin? origin)
         {
-            if (origin is null || origin.IsSynthetic || string.IsNullOrWhiteSpace(origin.SourcePath))
+            if (_captures is null ||
+                origin is null ||
+                origin.IsSynthetic ||
+                string.IsNullOrWhiteSpace(origin.SourcePath))
+            {
                 return;
+            }
 
             _captures.Add(new CapturedSourceSegment(
                 GeneratedLine: _writer.Line,
@@ -463,3 +588,13 @@ internal static class SourceMapEmitter
         }
     }
 }
+
+internal sealed record GeneratedJavaScriptLayout(
+    GeneratedJavaScriptArtifact Artifact,
+    IReadOnlyDictionary<Node, GeneratedNodePosition> NodePositions);
+
+internal sealed record GeneratedJavaScriptNodeLayout(
+    string Content,
+    IReadOnlyDictionary<Node, GeneratedNodePosition> NodePositions);
+
+internal readonly record struct GeneratedNodePosition(int Line, int Column);

@@ -1,5 +1,7 @@
 # ECMAScript.Pinia.Counter
 
+> Purpose: Pinia binding, generated module, Deno Bundle, runtime, and DOM verification sample.
+
 This sample demonstrates the current `ECMAScript.Pinia` consumption path with a Deno-based frontend:
 
 - author a Pinia option store in C#

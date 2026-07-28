@@ -13,38 +13,20 @@
 
 > Experimental. Public APIs, generated artifact shape, and tooling are still evolving. The compiler core, emit pipeline, and SG-result binding boundary are the most stable foundations.
 
-Jazor is a .NET toolchain for authoring JavaScript and Vue applications from C# and Razor.
+Jazor is a .NET toolchain for building JavaScript and Vue applications with C# and Razor.
 
-The transformation branch has one active Razor-to-Vue direction. The former Jolt host remains available only through Git history:
+The core package provides the compiler, runtime contracts, analyzer, emit tool, and MSBuild integration. Razor-to-Vue transformation is an explicit `Jazor.Vue` opt-in: official Razor source-generator output is bound as Roslyn `IOperation` and lowered to Vue render-function `.mjs` artifacts.
 
-| Line | Mode | Main projects | What it does |
-|------|------|---------------|--------------|
-| **Razor-to-Vue transformation** | Active | `Jazor.RazorVue`, `Jazor.Analyzer`, `Jazor.Compiler`, `Jazor.Emit` | Official Razor SG generated C# -> Roslyn `IOperation` -> Vue render-function `.mjs`. |
-| **Jolt** | Retired on this branch | baseline `d68aecbb00b23aa35735c9a269b2e987c7815b05` | Historical `.jazor` LSP/DAP/DevServer/build host; not part of the current project graph. |
+The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyzer`, `Jazor.Emit`, `Jazor.Common`, and the ECMAScript/Vue binding assemblies.
 
-The active line reuses `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyzer`, `Jazor.Emit`, `Jazor.Common`, and the ECMAScript/Vue binding assemblies without carrying forward Jolt protocols or state machines.
+## Architecture
 
-## Current Focus
+- **Semantic lowering**: Roslyn `IOperation` is translated to Acornima ESTree with explicit support boundaries and deterministic output.
+- **Razor integration**: `Jazor.Vue` receives the final `Compilation` from `GeneratorDriver.RunGeneratorsAndUpdateCompilation` and binds generated `BuildRenderTree` operations. Razor DR/IR, host-output documents, and generated-C# reparsing are not part of the production boundary.
+- **Artifact contract**: Razor components produce Vue render-function `.mjs` modules. `Jazor.Emit` materializes modules, source maps, manifests, runtime assets, and production bundles.
+- **Typed bindings**: Vue 3 bindings are included with `Jazor`; Pinia, Vue Router, Vuetify, and other ecosystem bindings are independently referenced packages.
 
-- **Compiler core**: Roslyn `IOperation` to Acornima ESTree lowering, with explicit support boundaries and deterministic emission.
-- **SG-result input**: the `GeneratorDriver.RunGeneratorsAndUpdateCompilation` integration obtains the final Roslyn `Compilation` produced by the official Razor SG and binds the `BuildRenderTree` methods in generated `.razor.g.cs` documents. Razor DR/IR, generated-document host outputs, and reparsing generated C# are outside the production input boundary.
-- **Single artifact direction**: Razor components target Vue render-function `.mjs`; the transformation branch does not maintain Razor-to-SFC or Jolt compatibility paths.
-- **Emit and materialization**: `Jazor.Emit` writes render-function `.mjs` artifacts, source maps, manifests, bundle output, and runtime assets.
-- **Vue ecosystem bindings**: Vue 3 core bindings are part of the `Jazor` package; Pinia, Vue Router, Vuetify, and other UI/library bindings are maintained as explicit ecosystem projects.
-
-For current status, prefer the status pages under `docs/03-完成/` and local test output over hard-coded counts in README files.
-
-## Latest Updates
-
-### 2026-07-28
-
-- RazorVue integrates at the completed generator-driver compilation boundary. It does not require `EnableRazorHostOutputs`, `RazorCodeDocument`, `RazorCSharpDocument`, or reparsing generated C#.
-- MSBuild output is controlled by one explicit mode: `none` (the default), `debug` (modules and manifest), or `release` (a production bundle). The default output root is `wwwroot/jazor`.
-- The public Vue binding packages are compatible with .NET 11 Preview 6.
-
-See [release notes](docs/releases/release-notes.md) for the full history.
-
-## Feature Overview
+## Capabilities
 
 - **Semantic C# lowering**: C# is lowered through Roslyn `IOperation`, not syntax-string rewriting.
 - **Fail-fast host boundary**: unsupported external runtime semantics are rejected at the actual lowering site instead of silently emitting raw JavaScript approximations.
@@ -53,7 +35,18 @@ See [release notes](docs/releases/release-notes.md) for the full history.
 - **RazorVue artifact generation**: Razor component semantics flow from official Razor SG generated C# through Roslyn binding and compiler-owned `IOperation` lowering.
 - **Typed Vue authoring**: `ECMAScript.Vue3` provides typed bindings for Vue 3 `defineComponent`, `h`, refs/reactivity, lifecycle hooks, props, slots, and component contracts.
 - **Host-facing build support**: MSBuild selects one output mode for ECMAScript/RazorVue artifacts: no output, debug modules and manifest, or a production bundle through the Deno or Netpack lane.
-- **Retired Jolt boundary**: `.jazor` authoring, Jolt LSP/DAP, DevServer/HMR, debug, and build protocols are deliberately absent from this branch.
+
+## Latest Updates
+
+### 2026-07-28
+
+- Razor-to-Vue generation is now an explicit `Jazor.Vue` package, while shared analyzers and compiler assets remain owned by `Jazor` and are loaded once.
+- `Jazor.Admin` provides UI-library-neutral admin-shell contracts and native RazorVue shell components; applications retain ownership of concrete pages, forms, and tables.
+- `Jazor.Css` provides deterministic, framework-neutral CSS-in-JS authoring with generated CSS properties, nested selectors, keyframes, global rules, DOM injection, hydration, and extraction.
+- RazorVue lowers component semantics through Acornima AST and preserves zero, one, or many nodes across forwarded, named, and scoped slots without JavaScript text round-trips.
+- The toolchain and public Vue ecosystem packages target .NET 11 Preview 6.
+
+See [release notes](docs/releases/release-notes.md) for the full history.
 
 ## Install
 
@@ -61,16 +54,26 @@ See [release notes](docs/releases/release-notes.md) for the full history.
 dotnet add package Jazor
 ```
 
-The `Jazor` package includes the core runtime contracts, `ECMAScript`, `ECMAScript.Vue3`, `ECMAScript.VueContract`, `Jazor.Compiler`, `Jazor.RazorVue`, `Jazor.Analyzer`, ASP.NET Core integration assemblies, the emit tool, and MSBuild props/targets.
+The `Jazor` package includes the core runtime contracts, `ECMAScript`, `ECMAScript.Vue3`, `ECMAScript.VueContract`, `Jazor.Compiler`, `Jazor.Analyzer`, ASP.NET Core integration assemblies, the emit tool, and MSBuild props/targets. Razor-to-Vue generation is supplied by the separate `Jazor.Vue` package.
+
+Razor SDK projects opt in explicitly:
+
+```xml
+<ItemGroup>
+  <PackageReference Include="Jazor" Version="0.1.31" />
+  <PackageReference Include="Jazor.Vue" Version="0.1.31" PrivateAssets="all" />
+</ItemGroup>
+```
 
 Add ecosystem packages explicitly when needed:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.27" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.27" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.27" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.27" />
+  <PackageReference Include="Jazor" Version="0.1.31" />
+  <PackageReference Include="Jazor.Css" Version="0.1.31" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.31" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.31" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.31" />
 </ItemGroup>
 ```
 
@@ -126,21 +129,42 @@ public static class CounterModule
 }
 ```
 
-### Razor-to-Vue Transformation
+### Razor-to-Vue Components
 
-The active workstream keeps Razor component authoring and narrows the production boundary:
+Razor components use the final Roslyn compilation as their only production input:
 
-- component libraries author `.razor` / `.razor.cs` components;
-- the generator-driver integration receives the final compilation produced by the official Razor SG and binds the generated `BuildRenderTree` operations from that compilation;
-- `Jazor.Compiler` lowers the bound component semantics and `Jazor.Emit` materializes Vue render-function artifacts;
-- no Razor host-output setting, Razor IR/document model, or generated-C# reparse is required;
-- Razor DR/IR, generated SFC output, and Jolt protocols are not fallback paths.
+- Reference `Jazor.Vue` from the project that declares `.razor` or `.razor.cs` components.
+- The integration binds generated `BuildRenderTree` operations from the completed Razor source-generator compilation.
+- `Jazor.Compiler` lowers the bound semantics and `Jazor.Emit` materializes Vue render-function artifacts.
+- No `EnableRazorHostOutputs`, Razor host-output setting, Razor IR/document model, or generated-C# reparse is required.
 
-Follow the [architecture transformation plan](docs/02-%E8%AE%A1%E5%88%92/Jazor%20%E6%9E%B6%E6%9E%84%E8%BD%AC%E5%9E%8B%E5%BC%80%E5%8F%91%E8%AE%A1%E5%88%92.md) for the current gate and implementation sequence.
+See the [Razor-to-Vue design](docs/01-%E7%9B%AE%E6%A0%87/razorvue/README.md) for implementation details.
 
-### Retired Jolt Host
+### Deterministic CSS-in-JS
 
-Jolt was removed from this transformation branch in `3ee18679fbdf43c13e05d7bfac8857ddcebd19f9`. Use baseline `d68aecbb00b23aa35735c9a269b2e987c7815b05` or the original branch for maintenance and comparison; do not reintroduce its `.jazor`, LSP/DAP, DevServer, or protocol surfaces here.
+Reference `Jazor.Css` when an application needs structured runtime styles:
+
+```csharp
+using Jazor.Css;
+
+var actionClass = Css.Class(new CssRule
+{
+    Display = "inline-flex",
+    Color = "white",
+    BackgroundColor = "#1769aa",
+    Children =
+    [
+        new(CssChildKind.Selector, "&:hover", new CssRule
+        {
+            BackgroundColor = "#125486"
+        })
+    ]
+});
+```
+
+The package generates standard CSS properties from Webref, derives stable names from normalized content, and manages one nonce-aware browser stylesheet. `Css.Class` returns a plain string and works in ordinary modules and RazorVue `class` attributes without an adapter. It uses the existing `JazorMode` output contract and does not add CSS-specific MSBuild properties.
+
+See the [Jazor.Css package guide](src/Jazor.Css/README.md) and [design boundary](docs/01-%E7%9B%AE%E6%A0%87/jazor.css/README.md).
 
 ## MSBuild Properties
 
@@ -182,13 +206,14 @@ Jazor/
 ├── src/
 │   ├── Jazor.Compiler/              # C# -> JavaScript compiler core
 │   ├── Jazor.CLR/                   # CLR runtime mappings and JavaScript helpers
-│   ├── Jazor.Analyzer/              # Analyzer and RazorVue source-generator host
-│   ├── Jazor.RazorVue/              # SG-result binding and Vue render artifact framing
-│   ├── Jazor.RazorVue.Generator/    # Generator-driver integration
+│   ├── Jazor.Analyzer/              # Static analyzer diagnostics
+│   ├── Jazor.RazorVue/              # Generator integration, SG binding, and Vue render framing
 │   ├── Jazor.Emit/                  # Materialization, manifests, source maps, and bundling
+│   ├── Jazor.Css/                   # Deterministic, framework-neutral CSS-in-JS runtime
 │   ├── Jazor.Common/                # Shared formatting/source-map utilities and contracts
 │   ├── Jazor.AspNetCore*/           # ASP.NET Core runtime and dev integration
 │   ├── Jazor/                       # NuGet package bundling core SDK assets
+│   ├── Jazor.Vue/                   # Opt-in Razor-to-Vue NuGet package
 │   ├── ECMAScript*/                 # ECMAScript AST/contracts plus Vue ecosystem bindings
 │   └── *Test/                       # MSTest regression projects
 ├── samples/
@@ -218,6 +243,8 @@ dotnet run --file scripts/csharp/test-dotnet.cs
 
 # Focused suites
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
+dotnet run --file scripts/csharp/test-dotnet.cs -- --project css
+dotnet run --file scripts/csharp/test-dotnet.cs -- --project css-browser
 dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj
 dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
 
@@ -236,9 +263,9 @@ Repository automation scripts should be single-file C# entrypoints under `script
 | Compiler implementation principles | [src/Jazor.Compiler/ImplementationPrinciples.md](src/Jazor.Compiler/ImplementationPrinciples.md) |
 | Compiler status | [docs/03-完成/compiler/status.md](docs/03-%E5%AE%8C%E6%88%90/compiler/status.md) |
 | RazorVue design | [docs/01-目标/razorvue/README.md](docs/01-%E7%9B%AE%E6%A0%87/razorvue/README.md) |
+| Jazor.Css design and status | [docs/01-目标/jazor.css/README.md](docs/01-%E7%9B%AE%E6%A0%87/jazor.css/README.md), [docs/03-完成/jazor.css/status.md](docs/03-%E5%AE%8C%E6%88%90/jazor.css/status.md) |
 | Transformation plan | [docs/02-计划/Jazor 架构转型开发计划.md](docs/02-%E8%AE%A1%E5%88%92/Jazor%20%E6%9E%B6%E6%9E%84%E8%BD%AC%E5%9E%8B%E5%BC%80%E5%8F%91%E8%AE%A1%E5%88%92.md) |
 | G0 decision record | [docs/02-计划/RazorSgFinalDocument.G0.DecisionRecord.md](docs/02-%E8%AE%A1%E5%88%92/RazorSgFinalDocument.G0.DecisionRecord.md) |
-| Retired Jolt history | [docs/01-目标/jolt/README.md](docs/01-%E7%9B%AE%E6%A0%87/jolt/README.md) |
 | Emit status | [docs/03-完成/emit/status.md](docs/03-%E5%AE%8C%E6%88%90/emit/status.md) |
 
 Docs are organized as:

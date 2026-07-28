@@ -1070,14 +1070,7 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
     }
 
     private static StringLiteral CreateStringLiteral(string value)
-        => new(value, $"\"{EscapeJavaScriptString(value)}\"");
-
-    private static string EscapeJavaScriptString(string value)
-        => value
-            .Replace("\\", "\\\\")
-            .Replace("\"", "\\\"")
-            .Replace("\r", "\\r")
-            .Replace("\n", "\\n");
+        => JavaScriptAstFactory.CreateStringLiteral(value);
 
     private static Expression BuildRenderFragmentInvoke(
         IInvocationOperation operation,

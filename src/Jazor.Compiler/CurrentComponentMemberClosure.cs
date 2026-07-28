@@ -12,9 +12,10 @@ namespace Jazor.Compiler;
 /// <summary>
 /// Computes the deterministic current-component member closure rooted at
 /// <c>BuildRenderTree</c>, supported lifecycle methods, and captured handlers.
-/// The closure is intentionally limited to members declared directly on the
-/// current component type; external base types such as ComponentBase remain host
-/// seams instead of being copied into the generated artifact.
+/// The closure is intentionally limited to members declared on the current
+/// component or its source-declared base types. External base types such as
+/// ComponentBase remain host seams instead of being copied into the generated
+/// artifact.
 /// </summary>
 public sealed class CurrentComponentMemberClosure
 {
@@ -231,7 +232,9 @@ public sealed class CurrentComponentMemberClosure
         }
 
         private bool IsDeclaredOnCurrentComponent(ISymbol symbol)
-            => IsDeclaredOnCurrentComponentHierarchy(symbol.ContainingType);
+            => symbol.ContainingType is not null &&
+               IsDeclaredOnCurrentComponentHierarchy(symbol.ContainingType) &&
+               symbol.ContainingType.DeclaringSyntaxReferences.Length > 0;
 
         private bool CanInclude(ISymbol symbol)
             => IsDeclaredOnCurrentComponent(symbol) ||

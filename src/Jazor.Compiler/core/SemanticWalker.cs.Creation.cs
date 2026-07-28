@@ -85,7 +85,7 @@ public partial class SemanticWalker
 			ShouldEmitMemberConstructorSelector(operation.Constructor))
 		{
 			var helperName = Util.GetMemberConstructorHelperName(operation.Constructor);
-			arguments.Insert(0, new StringLiteral(helperName, $"\"{helperName}\""));
+			arguments.Insert(0, CreateStringLiteral(helperName));
 		}
 
 		Expression expr = new NewExpression(callee, NodeList.From(arguments));
@@ -939,7 +939,7 @@ public partial class SemanticWalker
 	private static ObjectProperty BuildStringArrayRecordMember(IPropertySymbol targetProperty, IEnumerable<string> values)
 	{
 		var elements = values
-			.Select(static name => (Expression?)new StringLiteral(name, $"\"{EscapeJavaScriptString(name)}\""));
+			.Select(static name => (Expression?)JavaScriptAstFactory.CreateStringLiteral(name));
 
 		return new ObjectProperty(
 			PropertyKind.Init,
@@ -985,28 +985,13 @@ public partial class SemanticWalker
 			yield return types.Pop();
 	}
 
-	private static string EscapeJavaScriptString(string value)
-	{
-		return value
-			.Replace("\\", "\\\\")
-			.Replace("\"", "\\\"")
-			.Replace("\0", "\\0")
-			.Replace("\a", "\\a")
-			.Replace("\b", "\\b")
-			.Replace("\f", "\\f")
-			.Replace("\n", "\\n")
-			.Replace("\r", "\\r")
-			.Replace("\t", "\\t")
-			.Replace("\v", "\\v");
-	}
-
 	private static Expression CreateObjectPropertyKey(string name)
 	{
 		// Object literal keys accept JavaScript IdentifierName, which is wider than
 		// binding identifiers and still allows keywords like "class" without quoting.
 		return IsJavaScriptIdentifierName(name)
 			? new Identifier(name)
-			: new StringLiteral(name, $"\"{EscapeJavaScriptString(name)}\"");
+			: CreateStringLiteral(name);
 	}
 
 	private static bool IsJavaScriptIdentifierName(string? name)

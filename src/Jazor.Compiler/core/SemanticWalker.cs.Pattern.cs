@@ -283,9 +283,15 @@ public partial class SemanticWalker
 	{
 		var value = Translate<Expression>(operation.Value, argument);
 
-		// 默认情况，直接返回
+		// Discard only becomes unconditional when it has no guard.
 		if (operation.Pattern.Kind == OperationKind.DiscardPattern)
-			return new ReturnStatement(value);
+		{
+			if (operation.Guard is null)
+				return new ReturnStatement(value);
+
+			var guard = Translate<Expression>(operation.Guard, argument);
+			return new IfStatement(guard, new ReturnStatement(value), null);
+		}
 
 		else
 		{
@@ -350,6 +356,8 @@ public partial class SemanticWalker
 		// 属性子模式（命名属性，如 { Name: "John" }）
 		if (operation.PropertySubpatterns.Length > 0)
 		{
+			conditions.Add(new NonLogicalBinaryExpression(Operator.Inequality, targetExpr, Null));
+
 			foreach (var propertySubpattern in operation.PropertySubpatterns)
 			{
 				if (propertySubpattern.Member is IMemberReferenceOperation m)
@@ -357,18 +365,16 @@ public partial class SemanticWalker
 					var propertyAccess = BuildPatternMemberAccess(m, targetExpr, patternArgument, out var existencePropertyName);
 					var propertyArg = patternArgument.WithPatternInput(propertyAccess);
 					var right = Translate<Expression>(propertySubpattern.Pattern, propertyArg);
-					var notNull = new NonLogicalBinaryExpression(Operator.Inequality, targetExpr, Null);
-					Expression condition = right;
 					if (!string.IsNullOrEmpty(existencePropertyName))
 					{
 						var exists = new NonLogicalBinaryExpression(
 							Operator.In,
-							new StringLiteral(existencePropertyName!, $"\"{existencePropertyName!}\""),
+							CreateStringLiteral(existencePropertyName!),
 							targetExpr);
-						condition = new LogicalExpression(Operator.LogicalAnd, exists, right);
+						conditions.Add(exists);
 					}
 
-					conditions.Add(new LogicalExpression(Operator.LogicalAnd, notNull, condition));
+					conditions.Add(right);
 				}
 				else
 					conditions.Add(Translate<Expression>(propertySubpattern, patternArgument.WithPatternInput(targetExpr)));
@@ -1394,7 +1400,7 @@ public partial class SemanticWalker
 			result = new LogicalExpression(
 				Operator.LogicalAnd,
 				new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
-				TypeOfExpr(value, new StringLiteral("object", "'object'")));
+				TypeOfExpr(value, CreateStringLiteral("object")));
 
 		else
 		{
@@ -1409,14 +1415,14 @@ public partial class SemanticWalker
 					new LogicalExpression(
 						Operator.LogicalAnd,
 						new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
-						TypeOfExpr(value, new StringLiteral("object", "\"object\""))),
+						TypeOfExpr(value, CreateStringLiteral("object"))),
 					new LogicalExpression(
 						Operator.LogicalAnd,
 						new LogicalExpression(
 							Operator.LogicalAnd,
 							InstanceOfExpr(date, new Identifier("Date")),
-							TypeOfExpr(kind, new StringLiteral("number", "\"number\""))),
-						TypeOfExpr(subMillisecondTicks, new StringLiteral("bigint", "\"bigint\""))));
+							TypeOfExpr(kind, CreateStringLiteral("number"))),
+						TypeOfExpr(subMillisecondTicks, CreateStringLiteral("bigint"))));
 			}
 			else if (displayName == "System.DateOnly")
 			{
@@ -1429,17 +1435,17 @@ public partial class SemanticWalker
 					new LogicalExpression(
 						Operator.LogicalAnd,
 						new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
-						TypeOfExpr(value, new StringLiteral("object", "\"object\""))),
+						TypeOfExpr(value, CreateStringLiteral("object"))),
 					new LogicalExpression(
 						Operator.LogicalAnd,
 						new LogicalExpression(
 							Operator.LogicalAnd,
-							TypeOfExpr(year, new StringLiteral("number", "\"number\"")),
-							TypeOfExpr(month, new StringLiteral("number", "\"number\""))),
+							TypeOfExpr(year, CreateStringLiteral("number")),
+							TypeOfExpr(month, CreateStringLiteral("number"))),
 						new LogicalExpression(
 							Operator.LogicalAnd,
-							TypeOfExpr(day, new StringLiteral("number", "\"number\"")),
-							TypeOfExpr(dayNumber, new StringLiteral("number", "\"number\"")))));
+							TypeOfExpr(day, CreateStringLiteral("number")),
+							TypeOfExpr(dayNumber, CreateStringLiteral("number")))));
 			}
 			else if (displayName == "System.DateTimeOffset")
 			{
@@ -1451,14 +1457,14 @@ public partial class SemanticWalker
 					new LogicalExpression(
 						Operator.LogicalAnd,
 						new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
-						TypeOfExpr(value, new StringLiteral("object", "\"object\""))),
+						TypeOfExpr(value, CreateStringLiteral("object"))),
 					new LogicalExpression(
 						Operator.LogicalAnd,
 						new LogicalExpression(
 							Operator.LogicalAnd,
 							InstanceOfExpr(utcDateTime, new Identifier("Date")),
-							TypeOfExpr(offsetTicks, new StringLiteral("bigint", "\"bigint\""))),
-						TypeOfExpr(utcSubMillisecondTicks, new StringLiteral("bigint", "\"bigint\""))));
+							TypeOfExpr(offsetTicks, CreateStringLiteral("bigint"))),
+						TypeOfExpr(utcSubMillisecondTicks, CreateStringLiteral("bigint"))));
 			}
 			else if (displayName == "System.TimeOnly")
 			{
@@ -1468,8 +1474,8 @@ public partial class SemanticWalker
 					new LogicalExpression(
 						Operator.LogicalAnd,
 						new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
-						TypeOfExpr(value, new StringLiteral("object", "\"object\""))),
-					TypeOfExpr(ticks, new StringLiteral("bigint", "\"bigint\"")));
+						TypeOfExpr(value, CreateStringLiteral("object"))),
+					TypeOfExpr(ticks, CreateStringLiteral("bigint")));
 			}
 			else if (displayName == "System.TimeSpan")
 			{
@@ -1479,8 +1485,8 @@ public partial class SemanticWalker
 					new LogicalExpression(
 						Operator.LogicalAnd,
 						new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
-						TypeOfExpr(value, new StringLiteral("object", "\"object\""))),
-					TypeOfExpr(ticks, new StringLiteral("bigint", "\"bigint\"")));
+						TypeOfExpr(value, CreateStringLiteral("object"))),
+					TypeOfExpr(ticks, CreateStringLiteral("bigint")));
 			}
 			else if (displayName == "System.Collections.Generic.Queue<T>")
 			{
@@ -1492,14 +1498,14 @@ public partial class SemanticWalker
 					new LogicalExpression(
 						Operator.LogicalAnd,
 						new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
-						TypeOfExpr(value, new StringLiteral("object", "\"object\""))),
+						TypeOfExpr(value, CreateStringLiteral("object"))),
 					new LogicalExpression(
 						Operator.LogicalAnd,
-						new NonLogicalBinaryExpression(Operator.StrictEquality, kind, new StringLiteral("queue", "\"queue\"")),
+						new NonLogicalBinaryExpression(Operator.StrictEquality, kind, CreateStringLiteral("queue")),
 						new LogicalExpression(
 							Operator.LogicalAnd,
 							new CallExpression(IsArrayExpr, NodeList.From<Expression>(items), optional: false),
-							TypeOfExpr(head, new StringLiteral("number", "\"number\"")))));
+							TypeOfExpr(head, CreateStringLiteral("number")))));
 			}
 			else if (displayName == "System.Collections.Generic.Stack<T>")
 			{
@@ -1510,10 +1516,10 @@ public partial class SemanticWalker
 					new LogicalExpression(
 						Operator.LogicalAnd,
 						new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
-						TypeOfExpr(value, new StringLiteral("object", "\"object\""))),
+						TypeOfExpr(value, CreateStringLiteral("object"))),
 					new LogicalExpression(
 						Operator.LogicalAnd,
-						new NonLogicalBinaryExpression(Operator.StrictEquality, kind, new StringLiteral("stack", "\"stack\"")),
+						new NonLogicalBinaryExpression(Operator.StrictEquality, kind, CreateStringLiteral("stack")),
 						new CallExpression(IsArrayExpr, NodeList.From<Expression>(items), optional: false)));
 			}
 			else
@@ -1542,14 +1548,14 @@ public partial class SemanticWalker
 				{
 					result = mapper switch
 					{
-						TypeMapper.String => TypeOfExpr(value, new StringLiteral("string", "\"string\"")),
-						TypeMapper.Number => TypeOfExpr(value, new StringLiteral("number", "\"number\"")),
-						TypeMapper.BigInt => TypeOfExpr(value, new StringLiteral("bigint", "\"bigint\"")),
+						TypeMapper.String => TypeOfExpr(value, CreateStringLiteral("string")),
+						TypeMapper.Number => TypeOfExpr(value, CreateStringLiteral("number")),
+						TypeMapper.BigInt => TypeOfExpr(value, CreateStringLiteral("bigint")),
 						TypeMapper.Object => new LogicalExpression(
 							Operator.LogicalAnd,
 							new NonLogicalBinaryExpression(Operator.Inequality, value, Null),
-							TypeOfExpr(value, new StringLiteral("object", "\"object\""))),
-						TypeMapper.Boolean => TypeOfExpr(value, new StringLiteral("boolean", "\"boolean\"")),
+							TypeOfExpr(value, CreateStringLiteral("object"))),
+						TypeMapper.Boolean => TypeOfExpr(value, CreateStringLiteral("boolean")),
 						TypeMapper.Date => InstanceOfExpr(value, new Identifier("Date")),
 						TypeMapper.Map => InstanceOfExpr(value, new Identifier("Map")),
 						TypeMapper.Set => InstanceOfExpr(value, new Identifier("Set")),

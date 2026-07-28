@@ -16,6 +16,39 @@ public sealed class SdkIntegrationTests
     private static readonly SemaphoreSlim SourceReferencedRazorVueBuildGate = new(1, 1);
 
     [TestMethod]
+    public async Task CreateLocalPackage_SeparatesSharedAndRazorVueAnalyzers()
+    {
+        var package = await LocalPackage.Value;
+
+        using var jazorArchive = ZipFile.OpenRead(package.PackagePath);
+        var jazorAnalyzerEntries = jazorArchive.Entries
+            .Select(static entry => entry.FullName.Replace('\\', '/'))
+            .Where(static path => path.StartsWith("analyzers/dotnet/cs/", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        CollectionAssert.Contains(jazorAnalyzerEntries, "analyzers/dotnet/cs/Jazor.Analyzer.dll");
+        Assert.IsFalse(
+            jazorAnalyzerEntries.Any(static path =>
+                path.EndsWith("/Jazor.RazorVue.dll", StringComparison.OrdinalIgnoreCase) ||
+                path.EndsWith("/Jazor.RazorVue.Generator.dll", StringComparison.OrdinalIgnoreCase)),
+            "Jazor must not install the opt-in RazorVue generator assembly.");
+
+        using var vueArchive = ZipFile.OpenRead(package.VuePackagePath);
+        var vueAnalyzerEntries = vueArchive.Entries
+            .Select(static entry => entry.FullName.Replace('\\', '/'))
+            .Where(static path => path.StartsWith("analyzers/dotnet/cs/", StringComparison.OrdinalIgnoreCase))
+            .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                "analyzers/dotnet/cs/Jazor.RazorVue.dll",
+                "analyzers/dotnet/cs/Jazor.RazorVue.pdb"
+            },
+            vueAnalyzerEntries,
+            "Jazor.Vue must install only the merged RazorVue analyzer and rely on Jazor for shared dependencies.");
+    }
+
+    [TestMethod]
     public async Task CreateLocalPackage_IncludesVuetifyAuthoringPackage()
     {
         var package = await LocalPackage.Value;
@@ -86,6 +119,88 @@ public sealed class SdkIntegrationTests
         CollectionAssert.Contains(entryNames, "ECMAScript.TDesign.nuspec");
         StringAssert.Contains(nuspec, "<dependency id=\"Jazor\"");
         StringAssert.Contains(nuspec, "<frameworkReference name=\"Microsoft.AspNetCore.App\" />");
+    }
+
+    [TestMethod]
+    public async Task CreateLocalPackage_IncludesJazorCssAsIndependentOptInPackage()
+    {
+        var package = await LocalPackage.Value;
+
+        using var archive = ZipFile.OpenRead(package.CssPackagePath);
+        var entryNames = archive.Entries
+            .Select(static entry => entry.FullName.Replace('\\', '/'))
+            .ToArray();
+        var nuspec = ReadPackageEntryText(package.CssPackagePath, "Jazor.Css.nuspec");
+
+        CollectionAssert.Contains(entryNames, "lib/net11.0/Jazor.Css.dll");
+        CollectionAssert.Contains(entryNames, "README.md");
+        StringAssert.Contains(nuspec, "<dependency id=\"Jazor\" version=\"[" + package.PackageVersion + "]\" />");
+        Assert.IsFalse(
+            entryNames.Any(static path => path.StartsWith("build", StringComparison.OrdinalIgnoreCase)),
+            "Jazor.Css must rely on Jazor's existing build integration and must not install CSS-specific targets.");
+    }
+
+    [TestMethod]
+    public async Task Build_LocalJazorCssPackage_DebugMaterializesAndReleaseBundlesRuntime()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "JazorCssPackageConsumer");
+        var projectPath = CreateJazorCssPackageConsumerProject(projectRoot);
+        var commonArguments = new[]
+        {
+            "-t:Rebuild",
+            "/m:1",
+            "/p:BuildInParallel=false",
+            $"-p:RestoreSources={package.PackageOutputDirectory}",
+            "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+            $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+            $"-p:JazorPackageVersion={package.PackageVersion}"
+        };
+
+        var debugBuild = await RunDotNetAsync(
+            package.RepoRoot,
+            ["build", projectPath, .. commonArguments, "-p:JazorMode=debug"]);
+        Assert.AreEqual(0, debugBuild.ExitCode, debugBuild.ToString());
+
+        var outputRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        var runtimePath = Path.Combine(outputRoot, "Jazor.Css", "runtime.mjs");
+        var runtimeMapPath = runtimePath + ".map";
+        var appPath = Path.Combine(outputRoot, "app.mjs");
+        var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
+
+        Assert.IsTrue(File.Exists(runtimePath), $"Jazor.Css runtime was not materialized: {runtimePath}");
+        Assert.IsTrue(File.Exists(runtimeMapPath), $"Jazor.Css source map was not materialized: {runtimeMapPath}");
+        Assert.IsTrue(File.Exists(appPath), $"Consumer module was not materialized: {appPath}");
+        Assert.IsTrue(File.Exists(manifestPath), $"Debug manifest was not generated: {manifestPath}");
+        var appModule = await File.ReadAllTextAsync(appPath);
+        StringAssert.Contains(appModule, "from \"Jazor.Css/runtime.mjs\"");
+        StringAssert.Contains(appModule, "\"background-color\": \"#1769aa\"");
+
+        var manifest = LoadManifest(manifestPath);
+        var runtimeEntry = manifest.Modules.Single(static entry => entry.RelativePath == "Jazor.Css/runtime.mjs");
+        Assert.AreEqual("Jazor.Css/runtime.mjs.map", runtimeEntry.SourceMapPath);
+        Assert.HasCount(64, runtimeEntry.Hash);
+        Assert.HasCount(64, runtimeEntry.MapHash!);
+
+        var releaseBuild = await RunDotNetAsync(
+            package.RepoRoot,
+            ["build", projectPath, .. commonArguments, "-p:JazorMode=release"]);
+        Assert.AreEqual(0, releaseBuild.ExitCode, releaseBuild.ToString());
+
+        var bundlePath = Path.Combine(outputRoot, "bundle.js");
+        var bundleMapPath = Path.Combine(outputRoot, "bundle.js.map");
+        Assert.IsTrue(File.Exists(bundlePath), $"Jazor.Css bundle was not generated: {bundlePath}");
+        Assert.IsTrue(File.Exists(bundleMapPath), $"Jazor.Css bundle source map was not generated: {bundleMapPath}");
+        Assert.IsFalse(File.Exists(runtimePath), "Release must not retain the debug runtime module.");
+        Assert.IsFalse(File.Exists(manifestPath), "Release must not retain the debug manifest.");
+
+        var bundle = (await File.ReadAllTextAsync(bundlePath)).ReplaceLineEndings("\n");
+        StringAssert.Contains(bundle, "jazor-css:v1");
+        StringAssert.Contains(bundle, "jz-");
+        StringAssert.Contains(bundle, "sourceMappingURL=bundle.js.map");
+        Assert.IsFalse(bundle.Contains("from \"Jazor.Css/runtime.mjs\"", StringComparison.Ordinal), bundle);
     }
 
     [TestMethod]
@@ -822,7 +937,7 @@ public sealed class SdkIntegrationTests
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgG0Consumer");
-        var projectPath = CreateExternalRazorSgG0ConsumerProject(projectRoot);
+        var projectPath = CreateExternalRazorSgG0ConsumerProject(projectRoot, enableEmit: true);
         var restorePackagesPath = package.RestorePackagesPath;
         var commonArguments = new[]
         {
@@ -845,21 +960,22 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, firstBuild.ExitCode, firstBuild.ToString());
 
         var generatedRoot = Path.Combine(projectRoot, "obj", "Generated");
-        var firstGenerated = ReadRazorSgG0GeneratedSources(generatedRoot);
-        var firstDocumentHash = ReadGeneratedStringConstant(firstGenerated.Evidence, "GeneratedDocumentContentHash");
-        var firstOperationInventory = ReadGeneratedStringConstant(firstGenerated.Evidence, "BuildRenderTreeOperationInventory");
+        var firstCounterSource = ReadCounterRazorSgGeneratedSource(generatedRoot);
+        var counterModulePath = Path.Combine(projectRoot, "wwwroot", "jazor", "components", "counter.mjs");
+        var firstCounterModule = await File.ReadAllTextAsync(counterModulePath);
         Assert.IsFalse(
-            firstGenerated.Evidence.Contains(projectRoot, StringComparison.OrdinalIgnoreCase),
-            "Canonical G0 evidence must not contain the external consumer's absolute path.");
+            firstCounterModule.Contains(projectRoot, StringComparison.OrdinalIgnoreCase),
+            "The generated Vue module must not contain the external consumer's absolute path.");
 
         var incrementalBuild = await RunSourceReferencedRazorVueBuildAsync(
             package.RepoRoot,
             ["build", projectPath, "--no-restore", .. commonArguments]);
         Assert.AreEqual(0, incrementalBuild.ExitCode, incrementalBuild.ToString());
 
-        var incrementalGenerated = ReadRazorSgG0GeneratedSources(generatedRoot);
-        Assert.AreEqual(firstDocumentHash, ReadGeneratedStringConstant(incrementalGenerated.Evidence, "GeneratedDocumentContentHash"));
-        Assert.AreEqual(firstOperationInventory, ReadGeneratedStringConstant(incrementalGenerated.Evidence, "BuildRenderTreeOperationInventory"));
+        var incrementalCounterSource = ReadCounterRazorSgGeneratedSource(generatedRoot);
+        var incrementalCounterModule = await File.ReadAllTextAsync(counterModulePath);
+        Assert.AreEqual(firstCounterSource, incrementalCounterSource);
+        Assert.AreEqual(firstCounterModule, incrementalCounterModule);
 
         await File.WriteAllTextAsync(
             Path.Combine(projectRoot, "Counter.razor"),
@@ -876,9 +992,10 @@ public sealed class SdkIntegrationTests
             ["build", projectPath, "--no-restore", .. commonArguments]);
         Assert.AreEqual(0, changedBuild.ExitCode, changedBuild.ToString());
 
-        var changedGenerated = ReadRazorSgG0GeneratedSources(generatedRoot);
-        Assert.AreNotEqual(firstDocumentHash, ReadGeneratedStringConstant(changedGenerated.Evidence, "GeneratedDocumentContentHash"));
-        Assert.AreNotEqual(firstOperationInventory, ReadGeneratedStringConstant(changedGenerated.Evidence, "BuildRenderTreeOperationInventory"));
+        var changedCounterSource = ReadCounterRazorSgGeneratedSource(generatedRoot);
+        var changedCounterModule = await File.ReadAllTextAsync(counterModulePath);
+        Assert.AreNotEqual(firstCounterSource, changedCounterSource);
+        Assert.AreNotEqual(firstCounterModule, changedCounterModule);
     }
 
     [TestMethod]
@@ -907,14 +1024,7 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
         var generatedRoot = Path.Combine(projectRoot, "obj", "Generated");
-        _ = ReadRazorSgG0GeneratedSources(generatedRoot);
-        var catalogSource = ReadSingleGeneratedSource(generatedRoot, "Jazor.Generated.VueRenderCatalog.g.cs");
-        StringAssert.Contains(catalogSource, "internal const int SchemaVersion = 1;");
-        StringAssert.Contains(catalogSource, "components/counter.mjs");
-        StringAssert.Contains(catalogSource, "components/counter.mjs.map");
-        Assert.IsFalse(
-            catalogSource.Contains(projectRoot, StringComparison.OrdinalIgnoreCase),
-            "VueRenderCatalog must not persist the external consumer's absolute project path.");
+        _ = ReadCounterRazorSgGeneratedSource(generatedRoot);
 
         var outputRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
         var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
@@ -926,8 +1036,8 @@ public sealed class SdkIntegrationTests
         Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
         Assert.IsTrue(File.Exists(componentModulePath), $"RazorVue component module was not generated: {componentModulePath}");
         Assert.IsTrue(File.Exists(componentMapPath), $"RazorVue component source map was not generated: {componentMapPath}");
-        Assert.IsTrue(File.Exists(runtimeModulePath), $"RazorVue runtime module was not generated: {runtimeModulePath}");
-        Assert.IsTrue(File.Exists(runtimeCoreModulePath), $"RazorVue runtime core module was not generated: {runtimeCoreModulePath}");
+        Assert.IsFalse(File.Exists(runtimeModulePath), $"Direct render must not emit an unused runtime bridge: {runtimeModulePath}");
+        Assert.IsFalse(File.Exists(runtimeCoreModulePath), $"Direct render must not emit an unused runtime core bridge: {runtimeCoreModulePath}");
 
         var componentModule = (await File.ReadAllTextAsync(componentModulePath)).ReplaceLineEndings("\n");
         StringAssert.Contains(componentModule, "import { defineComponent, h, reactive } from \"vue\";");
@@ -935,7 +1045,7 @@ public sealed class SdkIntegrationTests
         Assert.IsFalse(componentModule.Contains("onMounted", StringComparison.Ordinal), componentModule);
         Assert.IsFalse(componentModule.Contains("onUpdated", StringComparison.Ordinal), componentModule);
         Assert.IsFalse(componentModule.Contains("onUnmounted", StringComparison.Ordinal), componentModule);
-        StringAssert.Contains(componentModule, "import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";");
+        Assert.IsFalse(componentModule.Contains("createRenderContext", StringComparison.Ordinal), componentModule);
         StringAssert.Contains(componentModule, "export default defineComponent({");
         StringAssert.Contains(componentModule, "sourceMappingURL=counter.mjs.map");
 
@@ -956,8 +1066,8 @@ public sealed class SdkIntegrationTests
             .Where(static path => !string.IsNullOrWhiteSpace(path))
             .ToArray();
         CollectionAssert.Contains(emittedRelativePaths, "components/counter.mjs");
-        CollectionAssert.Contains(emittedRelativePaths, "@jazor/vue-runtime/render-context.mjs");
-        CollectionAssert.Contains(emittedRelativePaths, "@jazor/vue-runtime/render-context-core.mjs");
+        CollectionAssert.DoesNotContain(emittedRelativePaths, "@jazor/vue-runtime/render-context.mjs");
+        CollectionAssert.DoesNotContain(emittedRelativePaths, "@jazor/vue-runtime/render-context-core.mjs");
 
         var counterEntry = manifest.Modules.Single(static moduleEntry => moduleEntry.RelativePath == "components/counter.mjs");
         Assert.AreEqual("components/counter.mjs.map", counterEntry.SourceMapPath);
@@ -1020,7 +1130,7 @@ public sealed class SdkIntegrationTests
 
         var bundle = (await File.ReadAllTextAsync(bundlePath)).ReplaceLineEndings("\n");
         StringAssert.Contains(bundle, "Clicks:");
-        StringAssert.Contains(bundle, "createRenderContext");
+        Assert.IsFalse(bundle.Contains("createRenderContext", StringComparison.Ordinal), bundle);
         StringAssert.Contains(bundle, "sourceMappingURL=bundle.js.map");
         Assert.IsFalse(
             bundle.Contains("deno", StringComparison.OrdinalIgnoreCase),
@@ -1074,10 +1184,10 @@ public sealed class SdkIntegrationTests
         CollectionAssert.Contains(
             firstArtifacts.Select(static artifact => artifact.RelativePath).ToArray(),
             "components/keyed-list-100.mjs.map");
-        CollectionAssert.Contains(
+        CollectionAssert.DoesNotContain(
             firstArtifacts.Select(static artifact => artifact.RelativePath).ToArray(),
             "@jazor/vue-runtime/render-context.mjs");
-        CollectionAssert.Contains(
+        CollectionAssert.DoesNotContain(
             firstArtifacts.Select(static artifact => artifact.RelativePath).ToArray(),
             "@jazor/vue-runtime/render-context-core.mjs");
 
@@ -1206,8 +1316,8 @@ public sealed class SdkIntegrationTests
         var runtimeCoreModulePath = Path.Combine(outputRoot, "@jazor", "vue-runtime", "render-context-core.mjs");
         Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
         Assert.IsTrue(File.Exists(componentModulePath), $"RazorVue component module was not generated: {componentModulePath}");
-        Assert.IsTrue(File.Exists(runtimeModulePath), $"RazorVue runtime module was not generated: {runtimeModulePath}");
-        Assert.IsTrue(File.Exists(runtimeCoreModulePath), $"RazorVue runtime core module was not generated: {runtimeCoreModulePath}");
+        Assert.IsFalse(File.Exists(runtimeModulePath), $"Direct render must not emit an unused runtime bridge: {runtimeModulePath}");
+        Assert.IsFalse(File.Exists(runtimeCoreModulePath), $"Direct render must not emit an unused runtime core bridge: {runtimeCoreModulePath}");
 
         var harnessRoot = Path.Combine(workspace.RootPath, "browser-harness");
         var harnessJazorRoot = Path.Combine(harnessRoot, "jazor");
@@ -1296,6 +1406,22 @@ public sealed class SdkIntegrationTests
 
         await PackProjectAndAssertOutputAsync(
             repoRoot,
+            Path.Combine(repoRoot, "src", "Jazor.Css", "Jazor.Css.csproj"),
+            Path.Combine(packageBuildOutputRoot, "Jazor.Css", "bin", "Debug", "net11.0", "Jazor.Css.dll"),
+            packageBuildOutputRoot,
+            packageBuildIntermediateRoot,
+            packageOutputDirectory,
+            packageVersion);
+        await PackProjectAndAssertOutputAsync(
+            repoRoot,
+            Path.Combine(repoRoot, "src", "Jazor.Vue", "Jazor.Vue.csproj"),
+            Path.Combine(packageBuildOutputRoot, "Jazor.RazorVue", "bin", "Debug", "netstandard2.0", "Jazor.RazorVue.dll"),
+            packageBuildOutputRoot,
+            packageBuildIntermediateRoot,
+            packageOutputDirectory,
+            packageVersion);
+        await PackProjectAndAssertOutputAsync(
+            repoRoot,
             Path.Combine(repoRoot, "src", "ECMAScript.Vuetify", "ECMAScript.Vuetify.csproj"),
             Path.Combine(packageBuildOutputRoot, "ECMAScript.Vuetify", "bin", "Debug", "net11.0", "ECMAScript.Vuetify.dll"),
             packageBuildOutputRoot,
@@ -1341,6 +1467,8 @@ public sealed class SdkIntegrationTests
             packageOutputDirectory,
             restorePackagesPath,
             GetPackagePath(packageOutputDirectory, packageVersion),
+            GetPackagePath(packageOutputDirectory, "Jazor.Css", packageVersion),
+            GetPackagePath(packageOutputDirectory, "Jazor.Vue", packageVersion),
             GetPackagePath(packageOutputDirectory, "ECMAScript.Vuetify", packageVersion),
             GetPackagePath(packageOutputDirectory, "ECMAScript.VueRoute", packageVersion),
             GetPackagePath(packageOutputDirectory, "ECMAScript.Pinia", packageVersion),
@@ -1938,6 +2066,57 @@ public sealed class SdkIntegrationTests
         return projectPath;
     }
 
+    private static string CreateJazorCssPackageConsumerProject(string projectRoot)
+    {
+        Directory.CreateDirectory(projectRoot);
+        var projectPath = Path.Combine(projectRoot, "JazorCssPackageConsumer.csproj");
+
+        WriteFile(
+            projectPath,
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>net11.0</TargetFramework>
+                <LangVersion>preview</LangVersion>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor.Css" Version="$(JazorPackageVersion)" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "Program.cs"),
+            """
+            Console.WriteLine("Jazor.Css package consumer");
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "AppModule.cs"),
+            """
+            using ECMAScript;
+            using Jazor.Css;
+
+            namespace JazorCssPackageConsumer;
+
+            [ECMAScriptModule("app.mjs")]
+            public static class AppModule
+            {
+                public static string ButtonClass() => Css.Class(new CssRule
+                {
+                    Color = "white",
+                    BackgroundColor = "#1769aa"
+                });
+            }
+            """);
+
+        return projectPath;
+    }
+
     private static string CreateDefaultOutputWebHostProject(string projectRoot)
     {
         Directory.CreateDirectory(projectRoot);
@@ -1986,7 +2165,7 @@ public sealed class SdkIntegrationTests
         return projectPath;
     }
 
-    private static (string BootstrapTrace, string TailTrace, string Evidence) ReadRazorSgG0GeneratedSources(string generatedRoot)
+    private static string ReadCounterRazorSgGeneratedSource(string generatedRoot)
     {
         Assert.IsTrue(Directory.Exists(generatedRoot), $"Compiler generated source root was not created: {generatedRoot}");
 
@@ -2001,32 +2180,15 @@ public sealed class SdkIntegrationTests
             "The external G0 consumer must expose exactly the Counter, KeyedList100 and PlainText official Razor generated component documents." + Environment.NewLine +
             string.Join(Environment.NewLine, razorGeneratedSources));
 
-        var bootstrapTrace = ReadSingleGeneratedSource(generatedRoot, "Jazor.RazorVue.RazorSgBootstrapTrace.g.cs");
-        var tailTrace = ReadSingleGeneratedSource(generatedRoot, "Jazor.RazorVue.RazorSgTailTrace.g.cs");
-        var evidence = ReadSingleGeneratedSource(generatedRoot, "Jazor.Generated.RazorSgFinalDocumentEvidence.g.cs");
-
-        StringAssert.Contains(bootstrapTrace, "internal const bool ImplementationSourceOutputHookInstalled = true;");
-        StringAssert.Contains(bootstrapTrace, "internal const bool TailOutputRegisteredForCurrentContext = true;");
-        StringAssert.Contains(tailTrace, "internal const string State = \"bound\";");
-        StringAssert.Contains(tailTrace, "internal const int ReusedGeneratedTreeCount = 0;");
-        StringAssert.Contains(tailTrace, "internal const int GeneratorDocumentCount = 4;");
-        StringAssert.Contains(tailTrace, "internal const int DerivedGeneratedTreeCount = 4;");
-        StringAssert.Contains(tailTrace, "internal const string BindingMode = \"DerivedHookCompilation\";");
-
-        StringAssert.Contains(evidence, "internal const int SchemaVersion = 2;");
-        StringAssert.Contains(evidence, "internal const string InputContract = \"OfficialRazorSgFinalDocument\";");
-        StringAssert.Contains(evidence, "internal const bool ConsumesRazorIntermediateRepresentation = false;");
-        StringAssert.Contains(evidence, "internal const bool RecreatedCompilation = false;");
-        StringAssert.Contains(evidence, "internal const bool NestedRazorSourceGeneratorRun = false;");
-        StringAssert.Contains(evidence, "internal const int GeneratorDocumentCount = 4;");
-        StringAssert.Contains(evidence, "internal const int CurrentGeneratedTreeCount = 4;");
-        StringAssert.Contains(evidence, "internal const int ComponentCount = 3;");
-        StringAssert.Contains(evidence, "internal const string BindingMode = \"DerivedHookCompilation\";");
-
+        var counterPath = razorGeneratedSources.Single(static path =>
+            Path.GetFileName(path).Equals("Counter_razor.g.cs", StringComparison.OrdinalIgnoreCase));
+        AssertNoGeneratedSource(generatedRoot, "Jazor.RazorVue.RazorSgBootstrapTrace.g.cs");
+        AssertNoGeneratedSource(generatedRoot, "Jazor.RazorVue.RazorSgTailTrace.g.cs");
+        AssertNoGeneratedSource(generatedRoot, "Jazor.Generated.RazorSgFinalDocumentEvidence.g.cs");
         AssertNoGeneratedSource(generatedRoot, "Jazor.Generated.RazorVueCatalog.g.cs");
         AssertNoGeneratedSource(generatedRoot, "Jazor.Generated.RazorVue.Artifact_*.g.cs");
 
-        return (bootstrapTrace, tailTrace, evidence);
+        return File.ReadAllText(counterPath);
     }
 
     private static string ReadSingleGeneratedSource(string generatedRoot, string searchPattern)
@@ -2053,16 +2215,6 @@ public sealed class SdkIntegrationTests
             "Generated source '" + searchPattern + "' was not expected: " + generatedPath);
     }
 
-    private static string ReadGeneratedStringConstant(string source, string constantName)
-    {
-        var match = Regex.Match(
-            source,
-            "internal const string " + Regex.Escape(constantName) + " = \\\"(?<value>[^\\\"]*)\\\";",
-            RegexOptions.CultureInvariant);
-        Assert.IsTrue(match.Success, "Generated source did not define string constant '" + constantName + "'." + Environment.NewLine + source);
-        return match.Groups["value"].Value;
-    }
-
     private static string CreateExternalRazorSgG0ConsumerProject(
         string projectRoot,
         bool enableEmit = false)
@@ -2084,16 +2236,15 @@ public sealed class SdkIntegrationTests
                 <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
                 <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
                 <JazorMode>{{(enableEmit ? "debug" : "none")}}</JazorMode>
-                <JazorRazorVueTestHook>true</JazorRazorVueTestHook>
               </PropertyGroup>
 
               <ItemGroup>
                 <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
               </ItemGroup>
 
               <ItemGroup>
                 <FrameworkReference Include="Microsoft.AspNetCore.App" />
-                <CompilerVisibleProperty Include="JazorRazorVueTestHook" />
               </ItemGroup>
             </Project>
             """);
@@ -2261,6 +2412,8 @@ public sealed class SdkIntegrationTests
         string PackageOutputDirectory,
         string RestorePackagesPath,
         string PackagePath,
+        string CssPackagePath,
+        string VuePackagePath,
         string VuetifyPackagePath,
         string VueRoutePackagePath,
         string PiniaPackagePath,

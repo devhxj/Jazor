@@ -1,4 +1,4 @@
-using Jazor.RazorVue.Generator.Generation;
+using Jazor.RazorVue.Generation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 

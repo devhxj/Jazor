@@ -14,6 +14,7 @@ var selectedPackages = PackageCatalog.ResolveSelectedPackages(repoRoot, options.
 Console.WriteLine("Selected packages: " + string.Join(", ", selectedPackages.Select(static package => package.PackageId)));
 
 var isolationArguments = ScriptHelpers.GetIsolationArguments(repoRoot, options.BaseOutputPath, options.BaseIntermediateOutputPath);
+var packageVersionArguments = ScriptHelpers.GetPackageVersionArguments(options.PackageVersion);
 var packedPackageFiles = new List<FileInfo>(selectedPackages.Count);
 
 foreach (var package in selectedPackages)
@@ -38,6 +39,7 @@ foreach (var package in selectedPackages)
             "-p:UseSharedCompilation=false"
         };
         restoreArguments.AddRange(isolationArguments);
+        restoreArguments.AddRange(packageVersionArguments);
         await ScriptHelpers.RunDotNetAsync(restoreArguments, repoRoot, dotnetCliHome);
     }
 
@@ -55,10 +57,12 @@ foreach (var package in selectedPackages)
         "-p:UseSharedCompilation=false"
     };
     packArguments.AddRange(isolationArguments);
+    packArguments.AddRange(packageVersionArguments);
 
     if (options.NoBuild)
     {
         packArguments.Add("--no-build");
+        packArguments.Add("-p:JazorVuePreparePackageArtifacts=false");
 
         if (package.DisableJazorPreparePackageArtifactsOnNoBuild)
         {
@@ -164,7 +168,8 @@ static void AssertNoBuildPackInputsExist(
         }
 
         if (!noneItem.StartsWith("..\\", StringComparison.Ordinal) &&
-            !noneItem.Contains("$(JazorPackageBuildOutputRoot)", StringComparison.Ordinal))
+            !noneItem.Contains("$(JazorPackageBuildOutputRoot)", StringComparison.Ordinal) &&
+            !noneItem.Contains("$(JazorVuePackageBuildOutputRoot)", StringComparison.Ordinal))
         {
             continue;
         }
@@ -312,6 +317,7 @@ static string ResolvePackInputPath(
         .Replace("$(Configuration)", configuration, StringComparison.Ordinal)
         .Replace("$(MSBuildThisFileDirectory)", roots.ProjectDirectory + Path.DirectorySeparatorChar, StringComparison.Ordinal)
         .Replace("$(JazorPackageBuildOutputRoot)", roots.PackageBuildOutputRoot, StringComparison.Ordinal)
+        .Replace("$(JazorVuePackageBuildOutputRoot)", roots.PackageBuildOutputRoot, StringComparison.Ordinal)
         .Replace("$buildOutputDir$", ScriptHelpers.EnsureTrailingSeparator(roots.BuildOutputDirectory), StringComparison.Ordinal)
         .Replace("$projectDir$", roots.ProjectDirectory + Path.DirectorySeparatorChar, StringComparison.Ordinal)
         .Replace("$packageReadmeFile$", packageReadmeFile, StringComparison.Ordinal);
@@ -331,6 +337,7 @@ internal sealed record PublishNuGetOptions(
     string ApiKey,
     string? BaseOutputPath,
     string? BaseIntermediateOutputPath,
+    string? PackageVersion,
     IReadOnlyList<string> Packages,
     bool SkipPush,
     bool NoBuild)
@@ -343,6 +350,7 @@ internal sealed record PublishNuGetOptions(
         var apiKey = string.Empty;
         string? baseOutputPath = null;
         string? baseIntermediateOutputPath = null;
+        string? packageVersion = null;
         var packages = new List<string>();
         var skipPush = false;
         var noBuild = false;
@@ -378,6 +386,10 @@ internal sealed record PublishNuGetOptions(
                 case "-BaseIntermediateOutputPath":
                     baseIntermediateOutputPath = RequireValue(arguments, ref index, argument);
                     break;
+                case "--package-version":
+                case "-PackageVersion":
+                    packageVersion = RequireValue(arguments, ref index, argument);
+                    break;
                 case "--package":
                 case "-Package":
                     packages.Add(RequireValue(arguments, ref index, argument));
@@ -407,6 +419,7 @@ internal sealed record PublishNuGetOptions(
             apiKey,
             baseOutputPath,
             baseIntermediateOutputPath,
+            packageVersion,
             packages,
             skipPush,
             noBuild);
@@ -434,8 +447,9 @@ internal sealed record PublishNuGetOptions(
         Console.WriteLine("  --api-key <value>");
         Console.WriteLine("  --base-output-path <path>");
         Console.WriteLine("  --base-intermediate-output-path <path>");
-        Console.WriteLine("  --package <jazor|pinia|pinia-testing|vueroute|vuetify|tdesign|vben|elementplus|PackageId>");
-        Console.WriteLine("    Default package set: Jazor, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.Vuetify, ECMAScript.TDesign");
+        Console.WriteLine("  --package-version <semver>");
+        Console.WriteLine("  --package <jazor|jazor-vue|jazor-css|admin|pinia|pinia-testing|vueroute|vuetify|tdesign|elementplus|PackageId>");
+        Console.WriteLine("    Default package set: Jazor, Jazor.Vue, Jazor.Css, Jazor.Admin, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.Vuetify, ECMAScript.TDesign");
         Console.WriteLine("  --skip-push");
         Console.WriteLine("  --no-build");
     }
@@ -458,6 +472,9 @@ internal static class PackageCatalog
     private static readonly string[] DefaultPublicPackageIds =
     [
         "Jazor",
+        "Jazor.Vue",
+        "Jazor.Css",
+        "Jazor.Admin",
         "ECMAScript.Pinia",
         "ECMAScript.Pinia.Testing",
         "ECMAScript.VueRoute",
@@ -469,6 +486,12 @@ internal static class PackageCatalog
     {
         ["jazor"] = "Jazor",
         ["Jazor"] = "Jazor",
+        ["jazor-vue"] = "Jazor.Vue",
+        ["jazor.vue"] = "Jazor.Vue",
+        ["Jazor.Vue"] = "Jazor.Vue",
+        ["jazor-css"] = "Jazor.Css",
+        ["jazor.css"] = "Jazor.Css",
+        ["Jazor.Css"] = "Jazor.Css",
         ["pinia"] = "ECMAScript.Pinia",
         ["ECMAScript.Pinia"] = "ECMAScript.Pinia",
         ["pinia-testing"] = "ECMAScript.Pinia.Testing",
@@ -477,8 +500,8 @@ internal static class PackageCatalog
         ["ECMAScript.VueRoute"] = "ECMAScript.VueRoute",
         ["vuetify"] = "ECMAScript.Vuetify",
         ["ECMAScript.Vuetify"] = "ECMAScript.Vuetify",
-        ["vben"] = "ECMAScript.Vben",
-        ["ECMAScript.Vben"] = "ECMAScript.Vben",
+        ["admin"] = "Jazor.Admin",
+        ["Jazor.Admin"] = "Jazor.Admin",
         ["elementplus"] = "ECMAScript.ElementPlus",
         ["ECMAScript.ElementPlus"] = "ECMAScript.ElementPlus",
         ["tdesign"] = "ECMAScript.TDesign",
@@ -523,7 +546,7 @@ internal static class PackageCatalog
 
         throw new InvalidOperationException(
             "Unsupported package selector: " + selector + ". Supported selectors: " +
-            "jazor, pinia, pinia-testing, vueroute, vuetify, vben, elementplus, tdesign.");
+            "jazor, jazor-vue, jazor-css, admin, pinia, pinia-testing, vueroute, vuetify, elementplus, tdesign.");
     }
 
     private static Dictionary<string, PackageDefinition> CreateCatalog(string repoRoot)
@@ -535,6 +558,16 @@ internal static class PackageCatalog
                 Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj"),
                 RequiresJazorEmitPublishOutput: true,
                 DisableJazorPreparePackageArtifactsOnNoBuild: true),
+            ["Jazor.Vue"] = new(
+                "Jazor.Vue",
+                Path.Combine(repoRoot, "src", "Jazor.Vue", "Jazor.Vue.csproj"),
+                RequiresJazorEmitPublishOutput: false,
+                DisableJazorPreparePackageArtifactsOnNoBuild: false),
+            ["Jazor.Css"] = new(
+                "Jazor.Css",
+                Path.Combine(repoRoot, "src", "Jazor.Css", "Jazor.Css.csproj"),
+                RequiresJazorEmitPublishOutput: false,
+                DisableJazorPreparePackageArtifactsOnNoBuild: false),
             ["ECMAScript.Pinia"] = new(
                 "ECMAScript.Pinia",
                 Path.Combine(repoRoot, "src", "ECMAScript.Pinia", "ECMAScript.Pinia.csproj"),
@@ -555,9 +588,9 @@ internal static class PackageCatalog
                 Path.Combine(repoRoot, "src", "ECMAScript.Vuetify", "ECMAScript.Vuetify.csproj"),
                 RequiresJazorEmitPublishOutput: false,
                 DisableJazorPreparePackageArtifactsOnNoBuild: false),
-            ["ECMAScript.Vben"] = new(
-                "ECMAScript.Vben",
-                Path.Combine(repoRoot, "src", "ECMAScript.Vben", "ECMAScript.Vben.csproj"),
+            ["Jazor.Admin"] = new(
+                "Jazor.Admin",
+                Path.Combine(repoRoot, "src", "Jazor.Admin", "Jazor.Admin.csproj"),
                 RequiresJazorEmitPublishOutput: false,
                 DisableJazorPreparePackageArtifactsOnNoBuild: false),
             ["ECMAScript.ElementPlus"] = new(
@@ -628,6 +661,20 @@ internal static class ScriptHelpers
         }
 
         return arguments;
+    }
+
+    public static IReadOnlyList<string> GetPackageVersionArguments(string? packageVersion)
+    {
+        if (string.IsNullOrWhiteSpace(packageVersion))
+        {
+            return [];
+        }
+
+        return
+        [
+            "-p:MinVerVersionOverride=" + packageVersion,
+            "-p:JazorPackageVersion=" + packageVersion
+        ];
     }
 
     public static async Task RunDotNetAsync(

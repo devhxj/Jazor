@@ -35,7 +35,7 @@ Current product boundary:
 ## Project Layout
 
 - `Wiki.csproj`: single web host project for the docs site.
-- `WikiHomeModule.cs`, `WikiHomeModule.RouteContract.cs`, `WikiHomeModule.Elements.cs`, `WikiCatalogGuard.cs`, and the per-page files `WikiHomeModule.Overview.cs`, `WikiHomeModule.Search.cs`, `WikiHomeModule.GettingStarted.cs`, `WikiHomeModule.ProjectLines.cs`, `WikiHomeModule.ContentModel.cs`, `WikiHomeModule.NavigationDiscovery.cs`, `WikiHomeModule.InformationArchitecture.cs`, `WikiHomeModule.TopicIndex.cs`, `WikiHomeModule.Glossary.cs`, `WikiHomeModule.Faq.cs`, `WikiHomeModule.Troubleshooting.cs`, `WikiHomeModule.HFunctionAuthoring.cs`, `WikiHomeModule.CompilerOverview.cs`, `WikiHomeModule.CompilerBoundary.cs`, `WikiHomeModule.RouteCatalogContract.cs`, `WikiHomeModule.HostSemanticSeams.cs`, `WikiHomeModule.ImportEmitContract.cs`, `WikiHomeModule.RuntimeCatalog.cs`, `WikiHomeModule.JoltHost.cs`, `WikiHomeModule.RazorVueLibraryMode.cs`, `WikiHomeModule.VueRouteBindings.cs`, `WikiHomeModule.ContentGovernance.cs`, `WikiHomeModule.Deployment.cs`, `WikiHomeModule.TestingVerification.cs`: the route shell, centralized route contract, startup guard, page bodies, and reusable leaf render helpers for the named-export Vue component.
+- `WikiHomeModule.cs`, `WikiHomeModule.RouteContract.cs`, `WikiHomeModule.Elements.cs`, `WikiCatalogGuard.cs`, and the per-page partial files: the route shell, centralized route contract, startup guard, page bodies, and reusable leaf render helpers for the named-export Vue component.
 - `AppModule.cs`: Jazor C# module source for runtime bootstrap.
 - `Program.cs`: ASP.NET Core host with `/health`, `UseJazorHost()` default web-asset/security setup, development reload, and route fallback.
 - `scripts/csharp/wiki-build-local.cs`: local build entry that verifies emitted Wiki artifacts exist after build.
@@ -102,7 +102,6 @@ Then open:
 - `http://localhost:4173/engineering/host-semantic-seams`
 - `http://localhost:4173/engineering/import-emit-contract`
 - `http://localhost:4173/engineering/runtime-catalog`
-- `http://localhost:4173/engineering/jolt-host` (retired Jolt history and baseline only)
 - `http://localhost:4173/engineering/razorvue-library-mode`
 - `http://localhost:4173/engineering/vueroute-bindings`
 - `http://localhost:4173/operations/content-governance`

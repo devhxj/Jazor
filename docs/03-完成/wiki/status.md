@@ -21,15 +21,15 @@
 
 当前生产边界应明确表述为：
 
-- `Wiki` 是构建在 ASP.NET Core 上的传统 web 宿主，不是 `Jolt`。
+- `Wiki` 是构建在 ASP.NET Core 上的传统 web 宿主。
 - `Wiki` 的浏览器端 Jazor 产物来自编译时 emit，运行时通过 `/jazor/*` 静态资产加载。
 - 开发期编辑 C# 时，主循环依赖 ASP.NET Core / `dotnet watch` 的 hot reload 或进程重启；Jazor 浏览器模块侧通过开发重载服务触发整页刷新。
-- `Wiki` 不承载 `.jazor` authoring、开发服务器 HMR、LSP、DAP/CDP 调试宿主等 `Jolt` 职责。
+- `Wiki` 不承载 Razor Hook、开发服务器 HMR、LSP 或 DAP/CDP 调试宿主等工具链职责。
 
 因此当前不应做出的声明包括：
 
 - 不应宣称 `Wiki` 自身提供 HMR。
-- 不应把 `Wiki` 的开发重载误写成 `Jolt` dev server 能力。
+- 不应把 `Wiki` 的开发重载误写成独立 dev server 能力。
 - 不应把 `Jazor.Emit` 描述成开发服务器或热更新宿主；它仍然只负责 emit/materialisation。
 
 ## 本轮收口内容
@@ -95,7 +95,7 @@ dotnet run --file .\scripts\csharp\wiki-verify-browser.cs -- --build-local --pat
 
 换句话说，`Wiki` 当前可以作为：
 
-- Jazor / RazorVue / Jolt 的真实文档站；
+- Jazor、Razor-to-Vue、Compiler、Emit 与 ASP.NET Core 集成的真实文档站；
 - ASP.NET Core + Jazor emit 传统部署模式的 reference host；
 - 后续 ASP.NET Core 线调试/部署规范的验证样板。
 
@@ -111,7 +111,7 @@ dotnet run --file .\scripts\csharp\wiki-verify-browser.cs -- --build-local --pat
 
 1. 把 `-Publish -PathBase /docs` 的 smoke/browser 验证固定纳入 repo 级自动化入口，而不只停留在本轮人工回归。
 2. 如果后续还有新的 ASP.NET Core 宿主消费者，优先抽复用 `Jazor.AspNetCore` / `Jazor.AspNetCore.Dev`，不要在各站点重复拼接 shell/path-base 逻辑。
-3. 继续把 `Wiki` 作为“传统宿主线”样板维护，而把 `.jazor` authoring、HMR、LSP、调试宿主扩展严格留在 `Jolt` 或未来专门宿主中。
+3. 继续把 `Wiki` 作为传统宿主线样板维护；authoring、HMR、LSP 与调试宿主扩展留在相应的专门工具链中。
 
 ## 相关入口
 

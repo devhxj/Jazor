@@ -275,6 +275,38 @@ public sealed class CurrentComponentSemanticWalkerHostTest
     }
 
     [TestMethod]
+    public void RewriteCurrentComponentMembers_UnwrapsAsyncEventCallbackFactoryCreateHandler()
+    {
+        var fixture = CompileComponent(
+            """
+            public sealed class Counter : ComponentBase
+            {
+                private async System.Threading.Tasks.Task Refresh()
+                {
+                    await System.Threading.Tasks.Task.Delay(1);
+                }
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.OpenElement(0, "button");
+                    builder.AddAttribute(1, "onclick", EventCallback.Factory.Create(this, Refresh));
+                    builder.CloseElement();
+                }
+            }
+            """);
+
+        var walker = new SemanticWalker(true)
+        {
+            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+        };
+        var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script!, "builder.addAttribute(\"onclick\", refresh);", StringComparison.Ordinal);
+        Assert.IsFalse(script!.Contains("EventCallback", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
     public void RewriteCurrentComponentMembers_ForwardsEventCallbackParameterThroughFactoryCreate()
     {
         var fixture = CompileComponent(
@@ -592,6 +624,108 @@ public sealed class CurrentComponentSemanticWalkerHostTest
         StringAssert.Contains(script!, "props.onValue?.(3);", StringComparison.Ordinal);
         Assert.IsFalse(script!.Contains("InvokeAsync", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("this.", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteCurrentComponentMembers_LowersNestedEventCallbackInvokeToOptionalFunctionCall()
+    {
+        var fixture = CompileComponent(
+            """
+            public sealed class Counter : ComponentBase
+            {
+                public sealed class ActionEntry
+                {
+                    public EventCallback Click { get; set; }
+
+                    public EventCallback<int> Select { get; set; }
+                }
+
+                private void Raise(ActionEntry action)
+                {
+                    _ = action.Click.InvokeAsync();
+                    _ = action.Select.InvokeAsync(3);
+                }
+            }
+            """,
+            methodName: "Raise");
+
+        var walker = new SemanticWalker(true)
+        {
+            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+        };
+        var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script!, "action.click?.();", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "action.select?.(3);", StringComparison.Ordinal);
+        Assert.IsFalse(script!.Contains("InvokeAsync", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteCurrentComponentMembers_LowersConditionalEventCallbackMethodGroups()
+    {
+        var fixture = CompileComponent(
+            """
+            public sealed class Counter : ComponentBase
+            {
+                private bool usePrimary;
+
+                private void Primary() { }
+
+                private void Secondary() { }
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.OpenElement(0, "form");
+                    builder.AddAttribute(1, "onsubmit", EventCallback.Factory.Create(this, usePrimary ? Primary : Secondary));
+                    builder.CloseElement();
+                }
+            }
+            """);
+
+        var walker = new SemanticWalker(true)
+        {
+            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+        };
+        var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script!, "builder.addAttribute(\"onsubmit\", state.usePrimary ? primary : secondary);", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("EventCallback", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("this.", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteCurrentComponentMembers_LowersSingleArgumentBindConverterFormatValueToValue()
+    {
+        var fixture = CompileComponent(
+            """
+            public sealed class Counter : ComponentBase
+            {
+                private string text = "";
+                private bool enabled;
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.OpenElement(0, "input");
+                    builder.AddAttribute(1, "value", BindConverter.FormatValue(text));
+                    builder.AddAttribute(2, "checked", BindConverter.FormatValue(enabled));
+                    builder.CloseElement();
+                }
+            }
+            """);
+
+        var walker = new SemanticWalker(true)
+        {
+            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+        };
+        var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script!, "builder.addAttribute(\"value\", state.text);", StringComparison.Ordinal);
+        StringAssert.Contains(script!, "builder.addAttribute(\"checked\", state.enabled);", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("BindConverter", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("FormatValue", StringComparison.Ordinal), script);
     }
 
     [TestMethod]

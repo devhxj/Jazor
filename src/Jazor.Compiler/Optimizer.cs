@@ -40,15 +40,13 @@ public static class Optimizer
         Flatten(leftOptimized, op, operands);
         Flatten(rightOptimized, op, operands);
 
-        // 使用 HashSet 进行去重判断，List 保持顺序
-        // 这样可以明确保证操作数的原始顺序
-        var seen = new HashSet<string>();
+        // 使用 AST 结构比较去重，List 保持首次出现顺序。
+        var seen = new HashSet<Expression>(PureExpressionComparer.Instance);
         var uniques = new List<Expression>();
 
         foreach (var operand in operands)
         {
-            var code = operand.ToKnRECMAScript();
-            if (seen.Add(code)) // Add 返回 true 表示是新元素
+            if (seen.Add(operand))
                 uniques.Add(operand);
         }
 
@@ -90,25 +88,117 @@ public static class Optimizer
                 ThisExpression => false,
                 Super => false,
 
-                // 无副作用 - 函数定义（不执行）
-                FunctionExpression => false,
-                ArrowFunctionExpression => false,
-                ClassExpression => false,
-
                 // 需要递归检查子节点
                 LogicalExpression le => IsEffect(le.Left) || IsEffect(le.Right),
-                NonLogicalBinaryExpression be => IsEffect(be.Left) || IsEffect(be.Right),
-                NonUpdateUnaryExpression ue => IsEffect(ue.Argument),
+                NonLogicalBinaryExpression be => !IsPureBinaryOperator(be) || IsEffect(be.Left) || IsEffect(be.Right),
+                NonUpdateUnaryExpression ue => !IsPureUnaryOperator(ue.Operator) || IsEffect(ue.Argument),
                 ConditionalExpression ce => IsEffect(ce.Test) || IsEffect(ce.Consequent) || IsEffect(ce.Alternate),
-                MemberExpression me => me.Computed || IsEffect(me.Object) || (me.Property is Expression property && IsEffect(property)),
                 SequenceExpression se => se.Expressions.Any(IsEffect),
-                ArrayExpression ae => ae.Elements.Any(el => el is Expression expr && IsEffect(expr)),
-                ObjectExpression oe => oe.Properties.Any(p => p is Property prop && (IsEffect(prop.Key) || (prop.Value is Expression v && IsEffect(v)))),
-                TemplateLiteral tl => tl.Expressions.Any(IsEffect),
 
                 // 其他类型默认有副作用
                 _ => true
             };
         }
+
+        static bool IsPureBinaryOperator(NonLogicalBinaryExpression expression)
+        {
+            if (expression.Operator is Operator.StrictEquality or Operator.StrictInequality)
+                return true;
+
+            if (expression.Operator is not (Operator.Equality or Operator.Inequality))
+                return false;
+
+            return expression.Left is NullLiteral || expression.Right is NullLiteral;
+        }
+
+        static bool IsPureUnaryOperator(Operator op)
+            => op is Operator.LogicalNot or Operator.TypeOf or Operator.Void;
+    }
+
+    private sealed class PureExpressionComparer : IEqualityComparer<Expression>
+    {
+        public static PureExpressionComparer Instance { get; } = new();
+
+        public bool Equals(Expression? left, Expression? right)
+        {
+            if (ReferenceEquals(left, right))
+                return true;
+            if (left is null || right is null || left.GetType() != right.GetType())
+                return false;
+
+            return (left, right) switch
+            {
+                (Identifier x, Identifier y) => string.Equals(x.Name, y.Name, System.StringComparison.Ordinal),
+                (NullLiteral, NullLiteral) => true,
+                (BooleanLiteral x, BooleanLiteral y) => x.Value == y.Value,
+                (NumericLiteral x, NumericLiteral y) => x.Value.Equals(y.Value),
+                (BigIntLiteral x, BigIntLiteral y) => x.Value.Equals(y.Value),
+                (StringLiteral x, StringLiteral y) => string.Equals(x.Value, y.Value, System.StringComparison.Ordinal),
+                (ThisExpression, ThisExpression) => true,
+                (Super, Super) => true,
+                (LogicalExpression x, LogicalExpression y) =>
+                    x.Operator == y.Operator && Equals(x.Left, y.Left) && Equals(x.Right, y.Right),
+                (NonLogicalBinaryExpression x, NonLogicalBinaryExpression y) =>
+                    x.Operator == y.Operator && Equals(x.Left, y.Left) && Equals(x.Right, y.Right),
+                (NonUpdateUnaryExpression x, NonUpdateUnaryExpression y) =>
+                    x.Operator == y.Operator && Equals(x.Argument, y.Argument),
+                (ConditionalExpression x, ConditionalExpression y) =>
+                    Equals(x.Test, y.Test) && Equals(x.Consequent, y.Consequent) && Equals(x.Alternate, y.Alternate),
+                (SequenceExpression x, SequenceExpression y) => SequenceEquals(x.Expressions, y.Expressions),
+                _ => false
+            };
+        }
+
+        public int GetHashCode(Expression expression)
+        {
+            var hash = expression.GetType().GetHashCode();
+            return expression switch
+            {
+                Identifier identifier => Combine(hash, System.StringComparer.Ordinal.GetHashCode(identifier.Name)),
+                NullLiteral => hash,
+                BooleanLiteral literal => Combine(hash, literal.Value.GetHashCode()),
+                NumericLiteral literal => Combine(hash, literal.Value.GetHashCode()),
+                BigIntLiteral literal => Combine(hash, literal.Value.GetHashCode()),
+                StringLiteral literal => Combine(hash, System.StringComparer.Ordinal.GetHashCode(literal.Value)),
+                ThisExpression => hash,
+                Super => hash,
+                LogicalExpression logical => Combine(hash, (int)logical.Operator, GetHashCode(logical.Left), GetHashCode(logical.Right)),
+                NonLogicalBinaryExpression binary => Combine(hash, (int)binary.Operator, GetHashCode(binary.Left), GetHashCode(binary.Right)),
+                NonUpdateUnaryExpression unary => Combine(hash, (int)unary.Operator, GetHashCode(unary.Argument)),
+                ConditionalExpression conditional => Combine(hash, GetHashCode(conditional.Test), GetHashCode(conditional.Consequent), GetHashCode(conditional.Alternate)),
+                SequenceExpression sequence => CombineSequence(hash, sequence.Expressions),
+                _ => hash
+            };
+        }
+
+        private bool SequenceEquals(NodeList<Expression> left, NodeList<Expression> right)
+        {
+            if (left.Count != right.Count)
+                return false;
+
+            for (var index = 0; index < left.Count; index++)
+            {
+                if (!Equals(left[index], right[index]))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private int CombineSequence(int hash, NodeList<Expression> expressions)
+        {
+            foreach (var expression in expressions)
+                hash = Combine(hash, GetHashCode(expression));
+            return hash;
+        }
+
+        private static int Combine(int first, int second)
+            => unchecked((first * 397) ^ second);
+
+        private static int Combine(int first, int second, int third)
+            => Combine(Combine(first, second), third);
+
+        private static int Combine(int first, int second, int third, int fourth)
+            => Combine(Combine(Combine(first, second), third), fourth);
     }
 }

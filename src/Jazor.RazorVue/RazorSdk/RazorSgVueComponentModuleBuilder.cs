@@ -1,7 +1,6 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
 using Acornima;
 using Acornima.Ast;
 using Jazor.Common;
@@ -21,33 +20,6 @@ internal static class RazorSgVueComponentModuleBuilder
     private const string VuePropAttributeMetadataName = "ECMAScript.VueContract.VuePropAttribute";
     private const string VueLibraryEmitAttributeMetadataName = "ECMAScript.VueContract.VueLibraryEmitAttribute";
     private const string VueSlotAttributeMetadataName = "ECMAScript.VueContract.VueSlotAttribute";
-    private static readonly Regex VariableDeclarationPattern = new(
-        @"^\s*(?:export\s+)?(?:let|const|var)\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*(?:=\s*(.*))?;\s*$",
-        RegexOptions.CultureInvariant);
-    private static readonly Regex VariableDeclarationStartPattern = new(
-        @"^\s*(?:export\s+)?(?:let|const|var)\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*(?:=\s*(.*))?\s*$",
-        RegexOptions.CultureInvariant);
-    private static readonly Regex ImportFromPattern = new(
-        @"^(?<prefix>\s*import\s+.+?\s+from\s+)(?<quote>[""'])(?<path>\./[^""']+)(\k<quote>)(?<suffix>\s*;?\s*)$",
-        RegexOptions.CultureInvariant);
-    private static readonly Regex RelativeImportFromPattern = new(
-        @"^\s*import\s+.+?\s+from\s+(?<quote>[""'])(?<path>(?:\./|\.\./)[^""']+)(\k<quote>)\s*;?\s*$",
-        RegexOptions.CultureInvariant);
-    private static readonly Regex BuildRenderTreeFunctionPattern = new(
-        @"^\s*function\s+buildRenderTree\s*\(\s*(?<builder>[A-Za-z_$][A-Za-z0-9_$]*)\s*\)\s*\{\s*$",
-        RegexOptions.CultureInvariant);
-    private static readonly Regex DirectFunctionPattern = new(
-        @"^\s*function\s+(?<name>[A-Za-z_$][A-Za-z0-9_$]*)\s*\(\s*(?<parameter>[A-Za-z_$][A-Za-z0-9_$]*)\s*\)\s*\{\s*$",
-        RegexOptions.CultureInvariant);
-    private static readonly Regex DirectArrowFunctionPattern = new(
-        @"^\s*(?:let|const|var)\s+(?<name>[A-Za-z_$][A-Za-z0-9_$]*)\s*=\s*\(?\s*(?<parameter>[A-Za-z_$][A-Za-z0-9_$]*)\s*\)?\s*=>\s*\{\s*$",
-        RegexOptions.CultureInvariant);
-    private static readonly Regex DirectReturnArrowFunctionPattern = new(
-        @"^\s*return\s+\(?\s*(?<parameter>[A-Za-z_$][A-Za-z0-9_$]*)\s*\)?\s*=>\s*\{\s*$",
-        RegexOptions.CultureInvariant);
-    private static readonly Regex BuilderCallPattern = new(
-        @"^\s*(?<builder>[A-Za-z_$][A-Za-z0-9_$]*)\.(?<method>[A-Za-z_$][A-Za-z0-9_$]*)\((?<arguments>.*)\);\s*$",
-        RegexOptions.CultureInvariant);
     private static readonly SymbolEqualityComparer SymbolComparer = SymbolEqualityComparer.Default;
 
     public static async Task<RazorSgVueComponentModuleArtifact> BuildAsync(
@@ -67,6 +39,8 @@ internal static class RazorSgVueComponentModuleBuilder
 
         cancellationToken.ThrowIfCancellationRequested();
 
+        var injectRegistry = RazorSgVueInjectRegistry.ForCompilation(binding.Compilation);
+
         var syntaxTree = component.BuildRenderTreeMethod.DeclaringSyntaxReferences.Single().SyntaxTree;
         var semanticModel = binding.Compilation.GetSemanticModel(syntaxTree);
         var declaredNames = BuildDirectRenderDeclaredNames(component, closure);
@@ -76,17 +50,23 @@ internal static class RazorSgVueComponentModuleBuilder
             closure.CreateAstConverterOptions(declaredNames: declaredNames));
         var relativePath = GetRelativePath(component.ComponentSymbol);
         var module = await converter.Convert(cancellationToken).ConfigureAwait(false);
-        var compiledArtifact = module is null
+        var compiledLayout = module is null
             ? null
-            : module.ToKnRECMAScriptWithSourceMap(
+            : module.ToKnRECMAScriptWithSourceMapAndNodePositions(
                 generatedFileName: relativePath,
                 includeSourcesContent: false,
                 sourceRootPath: TryGetCompilationSourceRoot(binding.Compilation, component.Document),
                 readSourceContent: null);
-        var compiledScript = compiledArtifact is null
-            ? string.Empty
-            : Util.NormalizeLineEndingsToLf(compiledArtifact.Content).Trim();
-        var moduleBuild = BuildModuleText(binding, component, closure, declaredNames, compiledScript, relativePath);
+        var compiledArtifact = compiledLayout?.Artifact;
+        var moduleBuild = BuildModuleText(
+            binding,
+            component,
+            closure,
+            declaredNames,
+            module,
+            compiledLayout?.NodePositions,
+            relativePath,
+            injectRegistry);
         var moduleText = moduleBuild.ModuleText;
         var sourceMapRelativePath = relativePath + ".map";
         var sourceMapContent = BuildSourceMapContent(
@@ -112,19 +92,20 @@ internal static class RazorSgVueComponentModuleBuilder
         RazorSgBoundComponent component,
         RazorSgComponentMemberClosure closure,
         IReadOnlyDictionary<ISymbol, string>? declaredNames,
-        string compiledScript,
-        string relativePath)
+        Module? compilerModule,
+        IReadOnlyDictionary<Node, GeneratedNodePosition>? compilerNodePositions,
+        string relativePath,
+        RazorSgVueInjectRegistry injectRegistry)
     {
-        var parts = SplitCompiledScript(compiledScript, closure);
+        var parts = BuildCompilerModuleParts(compilerModule, compilerNodePositions, closure);
         var componentSymbol = component.ComponentSymbol;
-        var directRender = TryBuildOperationDirectRender(binding, component, declaredNames, parts.SetupBodyLines, out var operationDirectRender)
+        var directRender = TryBuildOperationDirectRender(binding, component, declaredNames, parts.SetupStatements, injectRegistry, out var operationDirectRender)
             ? operationDirectRender
             : null;
         if (directRender is not null)
-            parts = parts with { SetupBodyLines = directRender.SetupBodyLines };
+            parts = parts with { SetupStatements = directRender.SetupStatements };
 
-        var usesInvokeAsync = parts.SetupBodyLines.Any(static line =>
-            line.Text.Contains("invokeAsync(", StringComparison.Ordinal));
+        var usesInvokeAsync = ReferencesIdentifier(parts.SetupStatements, "invokeAsync");
         var setupFactoryName = "create" + SanitizeJavaScriptIdentifierPart(componentSymbol.Name, "Component") + "SetupScope";
         var returnedMembers = GetReturnedMembers(closure);
         if (directRender is not null)
@@ -143,323 +124,106 @@ internal static class RazorSgVueComponentModuleBuilder
         var hasDisposeAsync = returnedMembers.Contains("disposeAsync", StringComparer.Ordinal);
         var usesSlots = HasSlotParameterBridges(closure);
         var usesFactorySlots = directRender?.UsesSlots == true;
-        var usesFactoryProps = parts.SetupBodyLines.Any(static line =>
-            line.Text.Contains("props.", StringComparison.Ordinal)) ||
+        var usesFactoryProps = usesSlots ||
+            ReferencesIdentifier(parts.SetupStatements, "props") ||
             directRender?.UsesProps == true;
-        var usesWatch = hasOnParametersSet || hasOnParametersSetAsync;
-        var usesSetupProps = usesFactoryProps || usesSlots || usesWatch;
-        var usesMounted = hasOnAfterRender || hasOnAfterRenderAsync;
-        var usesUpdated = hasOnAfterRender || hasOnAfterRenderAsync;
-        var usesUnmounted = hasDispose || hasDisposeAsync;
+        var usesSetupProps = usesFactoryProps || usesSlots || hasOnParametersSet || hasOnParametersSetAsync;
         var usesState = parts.StateSlots.Length > 0;
         var usesStateHasChanged = hasOnInitializedAsync ||
                                   hasOnParametersSetAsync ||
-                                  parts.SetupBodyLines.Any(static line =>
-                                      line.Text.Contains("stateHasChanged(", StringComparison.Ordinal));
-        var usesReactive = usesState || usesStateHasChanged;
-        var builder = new StringBuilder();
+                                  ReferencesIdentifier(parts.SetupStatements, "stateHasChanged");
+        var features = new VueModuleFeatures(
+            hasOnInitialized,
+            hasOnInitializedAsync,
+            hasOnParametersSet,
+            hasOnParametersSetAsync,
+            hasOnAfterRender,
+            hasOnAfterRenderAsync,
+            hasShouldRender,
+            hasDispose,
+            hasDisposeAsync,
+            usesSlots,
+            usesFactorySlots,
+            usesFactoryProps,
+            usesSetupProps,
+            usesState,
+            usesStateHasChanged,
+            usesInvokeAsync);
+        var moduleStatements = new List<Statement>();
         var frontendAssets = ImmutableArray.CreateBuilder<RazorSgFrontendAsset>();
-        var lineMappings = ImmutableArray.CreateBuilder<CompiledLineMapping>();
-        var emittedImports = new HashSet<string>(StringComparer.Ordinal);
+        var emittedImports = new HashSet<ImportDeclaration>(ImportDeclarationComparer.Instance);
         var emittedImportLocals = new HashSet<string>(StringComparer.Ordinal);
-        var line = 0;
 
-        void AppendLine(string value = "")
-        {
-            builder.AppendLine(value);
-            line++;
-        }
-
-        AppendLine(BuildVueImportLine(
-            usesMounted,
-            usesUnmounted,
-            usesUpdated,
-            usesReactive,
-            usesWatch,
+        moduleStatements.Add(BuildVueImportDeclaration(
+            features.UsesMounted,
+            features.UsesUnmounted,
+            features.UsesUpdated,
+            features.UsesReactive,
+            features.UsesWatch,
             directRender?.UsesFragment == true,
             directRender?.UsesStaticVNode == true));
         if (directRender is null)
-            AppendLine("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";");
-
-        foreach (var importLine in parts.ImportLines)
         {
-            if (!string.Equals(importLine.Text, "import { defineComponent, h, onMounted, onUnmounted, onUpdated, reactive, watch } from \"vue\";", StringComparison.Ordinal) &&
-                !string.Equals(importLine.Text, "import { defineComponent, h, onMounted, onUpdated, reactive, watch } from \"vue\";", StringComparison.Ordinal) &&
-                !string.Equals(importLine.Text, "import { defineComponent, h, reactive, watch } from \"vue\";", StringComparison.Ordinal) &&
-                !string.Equals(importLine.Text, "import { defineComponent, h, reactive } from \"vue\";", StringComparison.Ordinal) &&
-                !string.Equals(importLine.Text, "import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal))
-            {
-                var rebasedImportLine = RebaseRootRelativeImportLine(importLine.Text, relativePath);
-                if (HasAnyImportLocalName(rebasedImportLine, emittedImportLocals))
-                    continue;
-                if (!emittedImports.Add(rebasedImportLine))
-                    continue;
+            moduleStatements.Add(CreateNamedImportDeclaration(
+                "@jazor/vue-runtime/render-context.mjs",
+                ["createRenderContext"]));
+        }
 
-                AppendLine(rebasedImportLine);
-                AddImportLocalNames(rebasedImportLine, emittedImportLocals);
-                if (TryCreateVueSfcAsset(rebasedImportLine, relativePath, out var asset))
-                    frontendAssets.Add(asset);
-            }
+        foreach (var importDeclaration in parts.ImportDeclarations)
+        {
+            if (IsVueFramingImport(importDeclaration))
+                continue;
+            if (directRender is not null &&
+                !IsCompilerImportReferenced(importDeclaration, directRender, parts.StateSlots))
+                continue;
+
+            var rebasedImport = RebaseImportDeclaration(importDeclaration, relativePath);
+            if (HasAnyImportLocalName(rebasedImport, emittedImportLocals))
+                continue;
+            if (!emittedImports.Add(rebasedImport))
+                continue;
+
+            moduleStatements.Add(rebasedImport);
+            AddImportLocalNames(rebasedImport, emittedImportLocals);
+            if (TryCreateVueSfcAsset(rebasedImport, relativePath, out var asset))
+                frontendAssets.Add(asset);
         }
 
         if (directRender is not null)
         {
-            foreach (var importLine in directRender.ImportLines)
+            foreach (var importDeclaration in directRender.ImportDeclarations)
             {
-                var rebasedImportLine = RebaseRootRelativeImportLine(importLine, relativePath);
-                if (HasAnyImportLocalName(rebasedImportLine, emittedImportLocals))
+                var rebasedImport = RebaseImportDeclaration(importDeclaration, relativePath);
+                if (HasAnyImportLocalName(rebasedImport, emittedImportLocals))
                     continue;
-                if (!emittedImports.Add(rebasedImportLine))
+                if (!emittedImports.Add(rebasedImport))
                     continue;
 
-                AppendLine(rebasedImportLine);
-                AddImportLocalNames(rebasedImportLine, emittedImportLocals);
+                moduleStatements.Add(rebasedImport);
+                AddImportLocalNames(rebasedImport, emittedImportLocals);
             }
         }
 
-        AppendLine();
-        AppendLine("function " + setupFactoryName + "(" + BuildSetupFactoryParameterList(usesFactoryProps, usesFactorySlots, usesStateHasChanged, usesInvokeAsync) + ") {");
-        if (usesState)
-            AppendStateDeclaration(builder, parts.StateSlots, lineMappings, ref line);
-        if (parts.SetupBodyLines.Length > 0)
-        {
-            AppendLine();
-            AppendIndentedLines(builder, parts.SetupBodyLines, lineMappings, ref line);
-        }
+        moduleStatements.Add(BuildSetupFactoryDeclaration(
+            setupFactoryName,
+            returnedMembers,
+            parts,
+            directRender,
+            features));
+        moduleStatements.Add(BuildVueComponentExport(
+            closure,
+            setupFactoryName,
+            directRender,
+            features));
 
-        if (directRender is not null)
-        {
-            AppendLine();
-            AppendLine("  function " + directRender.MemberName + "() {");
-            foreach (var preludeLine in directRender.PreludeLines)
-                AppendLine("    " + preludeLine);
-            foreach (var mapping in directRender.SourceMappings)
-            {
-                lineMappings.Add(new CompiledLineMapping(
-                    GeneratedLine: line,
-                    GeneratedColumn: "    return ".Length + mapping.RenderColumn,
-                    CompiledLine: mapping.CompiledLine,
-                    CompiledColumn: mapping.CompiledColumn));
-            }
-
-            AppendLine("    return " + directRender.RenderExpression + ";");
-            AppendLine("  }");
-        }
-
-        AppendLine();
-        if (returnedMembers.Length == 0)
-        {
-            AppendLine("  return {};");
-        }
-        else if (returnedMembers.Length == 1)
-        {
-            AppendLine("  return { " + returnedMembers[0] + " };");
-        }
-        else
-        {
-            AppendLine("  return {");
-            for (var index = 0; index < returnedMembers.Length; index++)
-            {
-                var suffix = index + 1 == returnedMembers.Length ? string.Empty : ",";
-                AppendLine("    " + returnedMembers[index] + suffix);
-            }
-
-            AppendLine("  };");
-        }
-
-        AppendLine("}");
-        AppendLine();
-        AppendLine("export default defineComponent({");
-        AppendPropsDeclaration(builder, closure, ref line);
-        AppendEmitsDeclaration(builder, closure, ref line);
-        AppendLine(usesSlots
-            ? "  setup(props, { slots }) {"
-            : usesSetupProps
-                ? "  setup(props) {"
-                : "  setup() {");
-        AppendSlotParameterBridges(builder, closure, ref line);
-        if (usesUnmounted)
-            AppendLine("    let disposed = false;");
-        if (usesStateHasChanged)
-        {
-            AppendLine("    let invalidate = null;");
-            AppendLine("    let pendingInvalidations = 0;");
-            AppendLine("    const stateHasChanged = () => {");
-            if (usesUnmounted)
-            {
-                AppendLine("      if (disposed) {");
-                AppendLine("        throw new Error(\"RazorVue component is disposed; StateHasChanged cannot run after unmount.\");");
-                AppendLine("      }");
-            }
-            AppendLine("      if (invalidate === null) {");
-            AppendLine("        pendingInvalidations++;");
-            AppendLine("        return;");
-            AppendLine("      }");
-            AppendLine("      invalidate.tick++;");
-            AppendLine("    };");
-        }
-
-        if (usesInvokeAsync)
-        {
-            AppendLine("    const invokeAsync = (workItem) => {");
-            if (usesUnmounted)
-            {
-                AppendLine("      if (disposed) {");
-                AppendLine("        return Promise.reject(new Error(\"RazorVue component is disposed; InvokeAsync cannot run after unmount.\"));");
-                AppendLine("      }");
-            }
-            AppendLine("      try {");
-            AppendLine("        return Promise.resolve(workItem());");
-            AppendLine("      } catch (error) {");
-            AppendLine("        return Promise.reject(error);");
-            AppendLine("      }");
-            AppendLine("    };");
-        }
-
-        AppendLine("    const scope = " + setupFactoryName + "(" + BuildSetupFactoryArgumentList(usesFactoryProps, usesFactorySlots, usesStateHasChanged, usesInvokeAsync) + ");");
-        if (usesStateHasChanged)
-            AppendLine("    invalidate = reactive({ tick: pendingInvalidations });");
-        if (hasOnInitialized)
-        {
-            AppendLine("    scope.onInitialized();");
-        }
-
-        if (hasOnInitializedAsync)
-        {
-            AppendLine("    Promise.resolve(scope.onInitializedAsync()).then(");
-            AppendLine("      () => {");
-            AppendLine("        stateHasChanged();");
-            AppendLine("      },");
-            AppendLine("      () => {");
-            AppendLine("        stateHasChanged();");
-            AppendLine("      }");
-            AppendLine("    );");
-        }
-
-        if (hasOnParametersSet)
-        {
-            AppendLine("    scope.onParametersSet();");
-            AppendLine("    watch(");
-            AppendLine("      () => props,");
-            AppendLine("      () => {");
-            AppendLine("        scope.onParametersSet();");
-            AppendLine("      },");
-            AppendLine("      { deep: true }");
-            AppendLine("    );");
-        }
-
-        if (hasOnParametersSetAsync)
-        {
-            AppendLine("    let parametersSetAsyncGen = 0;");
-            AppendLine("    let parametersSetAsyncTail = Promise.resolve();");
-            AppendLine("    const runOnParametersSetAsync = () => {");
-            AppendLine("      const gen = ++parametersSetAsyncGen;");
-            AppendLine("      parametersSetAsyncTail = parametersSetAsyncTail");
-            AppendLine("        .catch(() => {})");
-            AppendLine("        .then(() => {");
-            AppendLine("          if (gen !== parametersSetAsyncGen) {");
-            AppendLine("            return;");
-            AppendLine("          }");
-            AppendLine("          return Promise.resolve(scope.onParametersSetAsync()).then(");
-            AppendLine("            () => {");
-            AppendLine("              if (gen === parametersSetAsyncGen) {");
-            AppendLine("                stateHasChanged();");
-            AppendLine("              }");
-            AppendLine("            },");
-            AppendLine("            () => {");
-            AppendLine("              if (gen === parametersSetAsyncGen) {");
-            AppendLine("                stateHasChanged();");
-            AppendLine("              }");
-            AppendLine("            }");
-            AppendLine("          );");
-            AppendLine("        });");
-            AppendLine("    };");
-            AppendLine("    runOnParametersSetAsync();");
-            AppendLine("    watch(");
-            AppendLine("      () => props,");
-            AppendLine("      () => {");
-            AppendLine("        runOnParametersSetAsync();");
-            AppendLine("      },");
-            AppendLine("      { deep: true }");
-            AppendLine("    );");
-        }
-
-        if (hasOnAfterRender)
-        {
-            AppendLine("    onMounted(() => {");
-            AppendLine("      scope.onAfterRender(true);");
-            AppendLine("    });");
-            AppendLine("    onUpdated(() => {");
-            AppendLine("      scope.onAfterRender(false);");
-            AppendLine("    });");
-        }
-
-        if (hasOnAfterRenderAsync)
-        {
-            AppendLine("    onMounted(() => {");
-            AppendLine("      void Promise.resolve(scope.onAfterRenderAsync(true));");
-            AppendLine("    });");
-            AppendLine("    onUpdated(() => {");
-            AppendLine("      void Promise.resolve(scope.onAfterRenderAsync(false));");
-            AppendLine("    });");
-        }
-
-        if (hasDispose || hasDisposeAsync)
-        {
-            AppendLine("    onUnmounted(() => {");
-            if (hasDispose)
-                AppendLine("      scope.dispose();");
-            if (hasDisposeAsync)
-                AppendLine("      void scope.disposeAsync();");
-            AppendLine("      disposed = true;");
-            AppendLine("    });");
-        }
-
-        if (hasShouldRender)
-        {
-            AppendLine("    let hasRendered = false;");
-            AppendLine("    let cachedVNode = null;");
-        }
-
-        AppendLine();
-        AppendLine("    return () => {");
-        if (usesStateHasChanged)
-            AppendLine("      invalidate.tick;");
-        if (hasShouldRender)
-        {
-            AppendLine("      if (hasRendered && !scope.shouldRender()) {");
-            AppendLine("        return cachedVNode;");
-            AppendLine("      }");
-            AppendLine("      hasRendered = true;");
-        }
-
-        if (directRender is null)
-        {
-            AppendLine("      const builder = createRenderContext(h);");
-            AppendLine("      scope.buildRenderTree(builder);");
-        }
-
-        if (hasShouldRender)
-        {
-            AppendLine(directRender is null
-                ? "      cachedVNode = builder.finish();"
-                : "      cachedVNode = scope." + directRender.MemberName + "();");
-            AppendLine("      return cachedVNode;");
-        }
-        else
-        {
-            AppendLine(directRender is null
-                ? "      return builder.finish();"
-                : "      return scope." + directRender.MemberName + "();");
-        }
-
-        AppendLine("    };");
-        AppendLine("  }");
-        AppendLine("});");
+        var vueModule = new Module(NodeList.From(moduleStatements));
+        var moduleLayout = vueModule.ToKnRECMAScriptWithNodePositions();
+        var moduleText = Util.NormalizeLineEndingsToLf(moduleLayout.Content);
+        var lineMappings = BuildCompiledLineMappings(moduleLayout.NodePositions, parts);
 
         return new ModuleTextBuildResult(
-            Util.NormalizeLineEndingsToLf(builder.ToString()),
-            lineMappings.ToImmutable(),
+            moduleText,
+            lineMappings,
             frontendAssets
                 .GroupBy(static asset => asset.ArtifactPath, StringComparer.OrdinalIgnoreCase)
                 .Select(static group => group.First())
@@ -468,11 +232,751 @@ internal static class RazorSgVueComponentModuleBuilder
                 .ToImmutableArray());
     }
 
+    private static FunctionDeclaration BuildSetupFactoryDeclaration(
+        string setupFactoryName,
+        ImmutableArray<string> returnedMembers,
+        CompilerModuleParts parts,
+        DirectRenderBuildResult? directRender,
+        VueModuleFeatures features)
+    {
+        var statements = new List<Statement>();
+        if (features.UsesState)
+            statements.Add(BuildStateDeclaration(parts.StateSlots));
+
+        statements.AddRange(parts.SetupStatements.Select(static item => item.Statement));
+        if (directRender is not null)
+        {
+            var renderStatements = directRender.PreludeStatements.ToList();
+            renderStatements.Add(new ReturnStatement(directRender.RenderExpression));
+            statements.Add(new FunctionDeclaration(
+                new Identifier(directRender.MemberName),
+                NodeList.Empty<Node>(),
+                CreateFunctionBody(renderStatements),
+                generator: false,
+                async: false));
+        }
+
+        statements.Add(new ReturnStatement(BuildReturnedMembersExpression(returnedMembers)));
+        return new FunctionDeclaration(
+            new Identifier(setupFactoryName),
+            NodeList.From<Node>(BuildSetupFactoryIdentifiers(features)),
+            CreateFunctionBody(statements),
+            generator: false,
+            async: false);
+    }
+
+    private static VariableDeclaration BuildStateDeclaration(ImmutableArray<StateSlot> stateSlots)
+    {
+        var properties = stateSlots.Select(slot => (Node)CreateObjectProperty(
+            slot.RuntimeName,
+            slot.Initializer ?? CurrentComponentStateDefaultInitializer.CreateExpression(slot.Type)));
+        var state = CreateCall(
+            "reactive",
+            new ObjectExpression(NodeList.From(properties)));
+        return CreateVariableDeclaration(VariableDeclarationKind.Const, "state", state);
+    }
+
+    private static ObjectExpression BuildReturnedMembersExpression(ImmutableArray<string> returnedMembers)
+        => new(NodeList.From<Node>(returnedMembers.Select(static name =>
+            (Node)new ObjectProperty(
+                PropertyKind.Init,
+                new Identifier(name),
+                new Identifier(name),
+                computed: false,
+                shorthand: true,
+                method: false))));
+
+    private static ExportDefaultDeclaration BuildVueComponentExport(
+        RazorSgComponentMemberClosure closure,
+        string setupFactoryName,
+        DirectRenderBuildResult? directRender,
+        VueModuleFeatures features)
+    {
+        var componentOptions = new List<Node>();
+        var propNames = GetVuePropNames(closure);
+        if (propNames.Length > 0)
+            componentOptions.Add(CreateObjectProperty("props", CreateStringArray(propNames)));
+
+        var emitNames = GetVueEmitNames(closure);
+        if (emitNames.Length > 0)
+            componentOptions.Add(CreateObjectProperty("emits", CreateStringArray(emitNames)));
+
+        var setupFunction = new FunctionExpression(
+            id: null,
+            parameters: NodeList.From<Node>(BuildVueSetupParameters(features)),
+            body: CreateFunctionBody(BuildVueSetupStatements(closure, setupFactoryName, directRender, features)),
+            generator: false,
+            async: false);
+        componentOptions.Add(new ObjectProperty(
+            PropertyKind.Init,
+            new Identifier("setup"),
+            setupFunction,
+            computed: false,
+            shorthand: false,
+            method: true));
+
+        return new ExportDefaultDeclaration(CreateCall(
+            "defineComponent",
+            new ObjectExpression(NodeList.From(componentOptions))));
+    }
+
+    private static IEnumerable<Identifier> BuildSetupFactoryIdentifiers(VueModuleFeatures features)
+    {
+        if (features.UsesFactoryProps)
+            yield return new Identifier("props");
+        if (features.UsesFactorySlots)
+            yield return new Identifier("slots");
+        if (features.UsesStateHasChanged)
+            yield return new Identifier("stateHasChanged");
+        if (features.UsesInvokeAsync)
+            yield return new Identifier("invokeAsync");
+    }
+
+    private static IEnumerable<Expression> BuildSetupFactoryArguments(VueModuleFeatures features)
+    {
+        if (features.UsesFactoryProps)
+        {
+            yield return new Identifier(features.UsesSlots
+                ? "componentProps"
+                : "props");
+        }
+        if (features.UsesFactorySlots)
+            yield return new Identifier("slots");
+        if (features.UsesStateHasChanged)
+            yield return new Identifier("stateHasChanged");
+        if (features.UsesInvokeAsync)
+            yield return new Identifier("invokeAsync");
+    }
+
+    private static IEnumerable<Node> BuildVueSetupParameters(VueModuleFeatures features)
+    {
+        if (features.UsesSlots)
+        {
+            yield return new Identifier("props");
+            var slots = new Identifier("slots");
+            yield return new ObjectPattern(NodeList.From<Node>(new AssignmentProperty(
+                slots,
+                new Identifier("slots"),
+                computed: false,
+                shorthand: true)));
+            yield break;
+        }
+
+        if (features.UsesSetupProps)
+            yield return new Identifier("props");
+    }
+
+    private static List<Statement> BuildVueSetupStatements(
+        RazorSgComponentMemberClosure closure,
+        string setupFactoryName,
+        DirectRenderBuildResult? directRender,
+        VueModuleFeatures features)
+    {
+        var statements = new List<Statement>();
+        statements.AddRange(BuildSlotParameterBridgeStatements(closure));
+
+        if (features.UsesUnmounted)
+            statements.Add(CreateVariableDeclaration(VariableDeclarationKind.Let, "disposed", BooleanLiteral(false)));
+
+        if (features.UsesStateHasChanged)
+        {
+            statements.Add(CreateVariableDeclaration(VariableDeclarationKind.Let, "invalidate", NullLiteral()));
+            statements.Add(CreateVariableDeclaration(VariableDeclarationKind.Let, "pendingInvalidations", NumericLiteral(0)));
+            statements.Add(BuildStateHasChangedDeclaration(features.UsesUnmounted));
+        }
+
+        if (features.UsesInvokeAsync)
+            statements.Add(BuildInvokeAsyncDeclaration(features.UsesUnmounted));
+
+        statements.Add(CreateVariableDeclaration(
+            VariableDeclarationKind.Const,
+            "scope",
+            CreateCall(
+                setupFactoryName,
+                BuildSetupFactoryArguments(features))));
+
+        if (features.UsesStateHasChanged)
+        {
+            statements.Add(CreateExpressionStatement(new AssignmentExpression(
+                Operator.Assignment,
+                new Identifier("invalidate"),
+                CreateCall(
+                    "reactive",
+                    new ObjectExpression(NodeList.From<Node>(CreateObjectProperty(
+                        "tick",
+                        new Identifier("pendingInvalidations"))))))));
+        }
+
+        if (features.HasOnInitialized)
+            statements.Add(CreateExpressionStatement(CreateScopeCall("onInitialized")));
+
+        if (features.HasOnInitializedAsync)
+        {
+            statements.Add(CreateExpressionStatement(CreateCallMember(
+                CreateCallMember(new Identifier("Promise"), "resolve", CreateScopeCall("onInitializedAsync")),
+                "then",
+                CreateStateHasChangedCallback(),
+                CreateStateHasChangedCallback())));
+        }
+
+        if (features.HasOnParametersSet)
+        {
+            statements.Add(CreateExpressionStatement(CreateScopeCall("onParametersSet")));
+            statements.Add(CreateWatchStatement("onParametersSet"));
+        }
+
+        if (features.HasOnParametersSetAsync)
+            statements.AddRange(BuildOnParametersSetAsyncStatements());
+
+        if (features.HasOnAfterRender)
+        {
+            statements.Add(CreateLifecycleRegistration("onMounted", "onAfterRender", BooleanLiteral(true), discardResult: false));
+            statements.Add(CreateLifecycleRegistration("onUpdated", "onAfterRender", BooleanLiteral(false), discardResult: false));
+        }
+
+        if (features.HasOnAfterRenderAsync)
+        {
+            statements.Add(CreateLifecycleRegistration("onMounted", "onAfterRenderAsync", BooleanLiteral(true), discardResult: true));
+            statements.Add(CreateLifecycleRegistration("onUpdated", "onAfterRenderAsync", BooleanLiteral(false), discardResult: true));
+        }
+
+        if (features.UsesUnmounted)
+            statements.Add(BuildUnmountedRegistration(features.HasDispose, features.HasDisposeAsync));
+
+        if (features.HasShouldRender)
+        {
+            statements.Add(CreateVariableDeclaration(VariableDeclarationKind.Let, "hasRendered", BooleanLiteral(false)));
+            statements.Add(CreateVariableDeclaration(VariableDeclarationKind.Let, "cachedVNode", NullLiteral()));
+        }
+
+        statements.Add(new ReturnStatement(BuildRenderClosure(directRender, features)));
+        return statements;
+    }
+
+    private static VariableDeclaration BuildStateHasChangedDeclaration(bool usesUnmounted)
+    {
+        var body = new List<Statement>();
+        if (usesUnmounted)
+        {
+            body.Add(new IfStatement(
+                new Identifier("disposed"),
+                CreateBlock(new ThrowStatement(new NewExpression(
+                    new Identifier("Error"),
+                    NodeList.From<Expression>(StringLiteral(
+                        "RazorVue component is disposed; StateHasChanged cannot run after unmount."))))),
+                null));
+        }
+
+        body.Add(new IfStatement(
+            new NonLogicalBinaryExpression(
+                Operator.StrictEquality,
+                new Identifier("invalidate"),
+                NullLiteral()),
+            CreateBlock(
+                CreateExpressionStatement(new UpdateExpression(
+                    Operator.Increment,
+                    new Identifier("pendingInvalidations"),
+                    prefix: false)),
+                new ReturnStatement(null)),
+            null));
+        body.Add(CreateExpressionStatement(new UpdateExpression(
+            Operator.Increment,
+            CreateMemberAccess(new Identifier("invalidate"), "tick"),
+            prefix: false)));
+        return CreateVariableDeclaration(
+            VariableDeclarationKind.Const,
+            "stateHasChanged",
+            CreateArrowFunction([], body));
+    }
+
+    private static VariableDeclaration BuildInvokeAsyncDeclaration(bool usesUnmounted)
+    {
+        var body = new List<Statement>();
+        if (usesUnmounted)
+        {
+            body.Add(new IfStatement(
+                new Identifier("disposed"),
+                CreateBlock(new ReturnStatement(CreateCallMember(
+                    new Identifier("Promise"),
+                    "reject",
+                    new NewExpression(
+                        new Identifier("Error"),
+                        NodeList.From<Expression>(StringLiteral(
+                            "RazorVue component is disposed; InvokeAsync cannot run after unmount.")))))),
+                null));
+        }
+
+        var tryBody = CreateBlock(new ReturnStatement(CreateCallMember(
+            new Identifier("Promise"),
+            "resolve",
+            CreateCall("workItem"))));
+        var error = new Identifier("error");
+        var catchClause = new CatchClause(
+            error,
+            CreateBlock(new ReturnStatement(CreateCallMember(
+                new Identifier("Promise"),
+                "reject",
+                new Identifier("error")))));
+        body.Add(new TryStatement(tryBody, catchClause, null));
+        return CreateVariableDeclaration(
+            VariableDeclarationKind.Const,
+            "invokeAsync",
+            CreateArrowFunction(["workItem"], body));
+    }
+
+    private static ArrowFunctionExpression CreateStateHasChangedCallback()
+        => CreateArrowFunction(
+            [],
+            [CreateExpressionStatement(CreateCall("stateHasChanged"))]);
+
+    private static Statement CreateWatchStatement(string scopeMethod)
+        => CreateExpressionStatement(CreateCall(
+            "watch",
+            CreateArrowExpression(new Identifier("props")),
+            CreateArrowFunction(
+                [],
+                [CreateExpressionStatement(CreateScopeCall(scopeMethod))]),
+            BuildDeepWatchOptions()));
+
+    private static IEnumerable<Statement> BuildOnParametersSetAsyncStatements()
+    {
+        yield return CreateVariableDeclaration(
+            VariableDeclarationKind.Let,
+            "parametersSetAsyncGen",
+            NumericLiteral(0));
+        yield return CreateVariableDeclaration(
+            VariableDeclarationKind.Let,
+            "parametersSetAsyncTail",
+            CreateCallMember(new Identifier("Promise"), "resolve"));
+
+        var generation = new Identifier("gen");
+        var runBody = new List<Statement>
+        {
+            CreateVariableDeclaration(
+                VariableDeclarationKind.Const,
+                "gen",
+                new UpdateExpression(
+                    Operator.Increment,
+                    new Identifier("parametersSetAsyncGen"),
+                    prefix: true))
+        };
+        var skipStaleGeneration = new IfStatement(
+            new NonLogicalBinaryExpression(
+                Operator.StrictInequality,
+                new Identifier("gen"),
+                new Identifier("parametersSetAsyncGen")),
+            CreateBlock(new ReturnStatement(null)),
+            null);
+        var invokeCurrentGeneration = new ReturnStatement(CreateCallMember(
+            CreateCallMember(
+                new Identifier("Promise"),
+                "resolve",
+                CreateScopeCall("onParametersSetAsync")),
+            "then",
+            CreateParametersSetCompletionCallback(),
+            CreateParametersSetCompletionCallback()));
+        var thenCallback = CreateArrowFunction(
+            [],
+            [skipStaleGeneration, invokeCurrentGeneration]);
+        var chainedTail = CreateCallMember(
+            CreateCallMember(
+                new Identifier("parametersSetAsyncTail"),
+                "catch",
+                CreateArrowFunction([], [])),
+            "then",
+            thenCallback);
+        runBody.Add(CreateExpressionStatement(new AssignmentExpression(
+            Operator.Assignment,
+            new Identifier("parametersSetAsyncTail"),
+            chainedTail)));
+
+        yield return CreateVariableDeclaration(
+            VariableDeclarationKind.Const,
+            "runOnParametersSetAsync",
+            CreateArrowFunction([], runBody));
+        yield return CreateExpressionStatement(CreateCall("runOnParametersSetAsync"));
+        yield return CreateExpressionStatement(CreateCall(
+            "watch",
+            CreateArrowExpression(new Identifier("props")),
+            CreateArrowFunction(
+                [],
+                [CreateExpressionStatement(CreateCall("runOnParametersSetAsync"))]),
+            BuildDeepWatchOptions()));
+    }
+
+    private static ArrowFunctionExpression CreateParametersSetCompletionCallback()
+        => CreateArrowFunction(
+            [],
+            [new IfStatement(
+                new NonLogicalBinaryExpression(
+                    Operator.StrictEquality,
+                    new Identifier("gen"),
+                    new Identifier("parametersSetAsyncGen")),
+                CreateBlock(CreateExpressionStatement(CreateCall("stateHasChanged"))),
+                null)]);
+
+    private static ObjectExpression BuildDeepWatchOptions()
+        => new(NodeList.From<Node>(CreateObjectProperty("deep", BooleanLiteral(true))));
+
+    private static Statement CreateLifecycleRegistration(
+        string vueLifecycleMethod,
+        string scopeMethod,
+        BooleanLiteral firstRender,
+        bool discardResult)
+    {
+        Expression invocation = CreateScopeCall(scopeMethod, firstRender);
+        if (discardResult)
+        {
+            invocation = new NonUpdateUnaryExpression(
+                Operator.Void,
+                CreateCallMember(new Identifier("Promise"), "resolve", invocation));
+        }
+
+        return CreateExpressionStatement(CreateCall(
+            vueLifecycleMethod,
+            CreateArrowFunction([], [CreateExpressionStatement(invocation)])));
+    }
+
+    private static Statement BuildUnmountedRegistration(bool hasDispose, bool hasDisposeAsync)
+    {
+        var body = new List<Statement>();
+        if (hasDispose)
+            body.Add(CreateExpressionStatement(CreateScopeCall("dispose")));
+        if (hasDisposeAsync)
+        {
+            body.Add(CreateExpressionStatement(new NonUpdateUnaryExpression(
+                Operator.Void,
+                CreateScopeCall("disposeAsync"))));
+        }
+
+        body.Add(CreateExpressionStatement(new AssignmentExpression(
+            Operator.Assignment,
+            new Identifier("disposed"),
+            BooleanLiteral(true))));
+        return CreateExpressionStatement(CreateCall(
+            "onUnmounted",
+            CreateArrowFunction([], body)));
+    }
+
+    private static ArrowFunctionExpression BuildRenderClosure(
+        DirectRenderBuildResult? directRender,
+        VueModuleFeatures features)
+    {
+        var body = new List<Statement>();
+        if (features.UsesSlots)
+            body.Add(CreateExpressionStatement(CreateCall("syncSlotParameters")));
+
+        if (features.UsesStateHasChanged)
+        {
+            body.Add(CreateExpressionStatement(CreateMemberAccess(
+                new Identifier("invalidate"),
+                "tick")));
+        }
+
+        if (features.HasShouldRender)
+        {
+            body.Add(new IfStatement(
+                new LogicalExpression(
+                    Operator.LogicalAnd,
+                    new Identifier("hasRendered"),
+                    new NonUpdateUnaryExpression(
+                        Operator.LogicalNot,
+                        CreateScopeCall("shouldRender"))),
+                CreateBlock(new ReturnStatement(new Identifier("cachedVNode"))),
+                null));
+            body.Add(CreateExpressionStatement(new AssignmentExpression(
+                Operator.Assignment,
+                new Identifier("hasRendered"),
+                BooleanLiteral(true))));
+        }
+
+        Expression renderExpression;
+        if (directRender is null)
+        {
+            body.Add(CreateVariableDeclaration(
+                VariableDeclarationKind.Const,
+                "builder",
+                CreateCall("createRenderContext", new Identifier("h"))));
+            body.Add(CreateExpressionStatement(CreateCallMember(
+                new Identifier("scope"),
+                "buildRenderTree",
+                new Identifier("builder"))));
+            renderExpression = CreateCallMember(new Identifier("builder"), "finish");
+        }
+        else
+        {
+            renderExpression = CreateCallMember(new Identifier("scope"), directRender.MemberName);
+        }
+
+        if (features.HasShouldRender)
+        {
+            body.Add(CreateExpressionStatement(new AssignmentExpression(
+                Operator.Assignment,
+                new Identifier("cachedVNode"),
+                renderExpression)));
+            body.Add(new ReturnStatement(new Identifier("cachedVNode")));
+        }
+        else
+        {
+            body.Add(new ReturnStatement(renderExpression));
+        }
+
+        return CreateArrowFunction([], body);
+    }
+
+    private static IEnumerable<Statement> BuildSlotParameterBridgeStatements(
+        RazorSgComponentMemberClosure closure)
+    {
+        var bridges = GetSlotParameterBridges(closure);
+        if (bridges.Length == 0)
+            yield break;
+
+        yield return CreateVariableDeclaration(
+            VariableDeclarationKind.Const,
+            "componentProps",
+            CreateCallMember(new Identifier("Object"), "create", new Identifier("props")));
+
+        var synchronizationBody = new List<Statement>(bridges.Length);
+        foreach (var item in bridges)
+        {
+            var slotAccess = CreateMemberAccess(new Identifier("slots"), item.VueSlotName);
+            var invocationArguments = item.IsScoped
+                ? new Expression[] { new Identifier("value") }
+                : [];
+            var bridgeBody = new List<Statement>
+            {
+                CreateVariableDeclaration(
+                    VariableDeclarationKind.Const,
+                    "content",
+                    CreateCall(slotAccess, invocationArguments)),
+                CreateExpressionStatement(CreateCallMember(
+                    VueSlotAstFactory.NormalizeContent(new Identifier("content")),
+                    "forEach",
+                    CreateArrowFunction(
+                        ["slotItem"],
+                        [CreateExpressionStatement(CreateCallMember(
+                            new Identifier("builder"),
+                            "addContent",
+                            new Identifier("slotItem")))])))
+            };
+            Expression bridge = CreateArrowFunction(["builder"], bridgeBody);
+            if (item.IsScoped)
+                bridge = CreateArrowExpression(bridge, "value");
+
+            var assignment = new AssignmentExpression(
+                Operator.Assignment,
+                CreateMemberAccess(new Identifier("componentProps"), item.RuntimePropName),
+                new ConditionalExpression(
+                    new NonLogicalBinaryExpression(
+                        Operator.StrictEquality,
+                        new NonUpdateUnaryExpression(Operator.TypeOf, slotAccess),
+                        StringLiteral("function")),
+                    bridge,
+                    NullLiteral()));
+            synchronizationBody.Add(CreateExpressionStatement(assignment));
+        }
+
+        yield return CreateVariableDeclaration(
+            VariableDeclarationKind.Const,
+            "syncSlotParameters",
+            CreateArrowFunction([], synchronizationBody));
+        yield return CreateExpressionStatement(CreateCall("syncSlotParameters"));
+    }
+
+    private static ImmutableArray<SlotParameterBridge> GetSlotParameterBridges(
+        RazorSgComponentMemberClosure closure)
+        => closure.ParameterProperties
+            .Where(static property => IsAnyRenderFragmentType(property.Type))
+            .Select(static property => new SlotParameterBridge(
+                property.Name,
+                Util.GetConfigOrSymbolName(property),
+                GetVueSlotName(property),
+                IsGenericRenderFragmentType(property.Type)))
+            .Where(static item => !string.IsNullOrWhiteSpace(item.RuntimePropName) &&
+                                  !string.IsNullOrWhiteSpace(item.VueSlotName))
+            .Distinct()
+            .OrderBy(static item => item.VueSlotName, StringComparer.Ordinal)
+            .ToImmutableArray();
+
+    private static ImmutableArray<string> GetVuePropNames(RazorSgComponentMemberClosure closure)
+        => GetComponentParameterProperties(closure.ComponentSymbol)
+            .Where(static property => !IsAnyRenderFragmentType(property.Type))
+            .Select(property => GetVueParameterPropName(closure.ComponentSymbol, property))
+            .Where(static name => !string.IsNullOrWhiteSpace(name))
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static name => name, StringComparer.Ordinal)
+            .ToImmutableArray();
+
+    private static ImmutableArray<string> GetVueEmitNames(RazorSgComponentMemberClosure closure)
+        => GetComponentParameterProperties(closure.ComponentSymbol)
+            .Where(static property => IsEventCallbackType(property.Type))
+            .Select(property => GetVueParameterEmitName(closure.ComponentSymbol, property))
+            .Where(static name => !string.IsNullOrWhiteSpace(name))
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static name => name, StringComparer.Ordinal)
+            .ToImmutableArray();
+
+    private static ImmutableArray<CompiledLineMapping> BuildCompiledLineMappings(
+        IReadOnlyDictionary<Node, GeneratedNodePosition> generatedNodePositions,
+        CompilerModuleParts parts)
+    {
+        var mappings = new HashSet<CompiledLineMapping>();
+        foreach (var pair in generatedNodePositions)
+        {
+            if (pair.Key.UserData is SourceOrigin { IsSynthetic: false } origin &&
+                parts.CompilerOriginPositions.TryGetValue(origin, out var compiledPosition))
+            {
+                mappings.Add(new CompiledLineMapping(
+                    pair.Value.Line,
+                    pair.Value.Column,
+                    compiledPosition.Line,
+                    compiledPosition.Column));
+            }
+        }
+
+        foreach (var statement in parts.SetupStatements)
+        {
+            if (generatedNodePositions.TryGetValue(statement.Statement, out var generatedPosition))
+            {
+                mappings.Add(new CompiledLineMapping(
+                    generatedPosition.Line,
+                    generatedPosition.Column,
+                    statement.CompiledLine,
+                    statement.CompiledColumn));
+            }
+        }
+
+        foreach (var slot in parts.StateSlots)
+        {
+            if (slot.Initializer is not null &&
+                slot.InitializerCompiledLine is int compiledLine &&
+                generatedNodePositions.TryGetValue(slot.Initializer, out var generatedPosition))
+            {
+                mappings.Add(new CompiledLineMapping(
+                    generatedPosition.Line,
+                    generatedPosition.Column,
+                    compiledLine,
+                    slot.InitializerCompiledColumn ?? 0));
+            }
+        }
+
+        return mappings
+            .OrderBy(static mapping => mapping.GeneratedLine)
+            .ThenBy(static mapping => mapping.GeneratedColumn)
+            .ThenBy(static mapping => mapping.CompiledLine)
+            .ThenBy(static mapping => mapping.CompiledColumn)
+            .ToImmutableArray();
+    }
+
+    private static FunctionBody CreateFunctionBody(IEnumerable<Statement> statements)
+        => new(NodeList.From(statements), strict: true);
+
+    private static NestedBlockStatement CreateBlock(params Statement[] statements)
+        => new(NodeList.From(statements));
+
+    private static VariableDeclaration CreateVariableDeclaration(
+        VariableDeclarationKind kind,
+        string name,
+        Expression? initializer)
+        => new(
+            kind,
+            NodeList.From(new VariableDeclarator(new Identifier(name), initializer)));
+
+    private static NonSpecialExpressionStatement CreateExpressionStatement(Expression expression)
+        => new(expression);
+
+    private static ArrowFunctionExpression CreateArrowFunction(
+        IEnumerable<string> parameterNames,
+        IEnumerable<Statement> statements)
+        => new(
+            NodeList.From<Node>(parameterNames.Select(static name => (Node)new Identifier(name))),
+            CreateFunctionBody(statements),
+            expression: false,
+            async: false);
+
+    private static ArrowFunctionExpression CreateArrowExpression(
+        Expression expression,
+        params string[] parameterNames)
+        => new(
+            NodeList.From<Node>(parameterNames.Select(static name => (Node)new Identifier(name))),
+            expression,
+            expression: true,
+            async: false);
+
+    private static CallExpression CreateCall(string name, params Expression[] arguments)
+        => CreateCall(new Identifier(name), arguments);
+
+    private static CallExpression CreateCall(
+        string name,
+        IEnumerable<Expression> arguments)
+        => CreateCall(new Identifier(name), arguments);
+
+    private static CallExpression CreateCall(
+        Expression callee,
+        IEnumerable<Expression> arguments)
+        => new(callee, NodeList.From(arguments), optional: false);
+
+    private static CallExpression CreateCallMember(
+        Expression receiver,
+        string memberName,
+        params Expression[] arguments)
+        => CreateCall(CreateMemberAccess(receiver, memberName), arguments);
+
+    private static CallExpression CreateScopeCall(
+        string memberName,
+        params Expression[] arguments)
+        => CreateCallMember(new Identifier("scope"), memberName, arguments);
+
+    private static MemberExpression CreateMemberAccess(Expression receiver, string memberName)
+        => IsJavaScriptIdentifierName(memberName)
+            ? new MemberExpression(
+                receiver,
+                new Identifier(memberName),
+                computed: false,
+                optional: false)
+            : new MemberExpression(
+                receiver,
+                StringLiteral(memberName),
+                computed: true,
+                optional: false);
+
+    private static ObjectProperty CreateObjectProperty(string name, Node value)
+        => new(
+            PropertyKind.Init,
+            IsJavaScriptIdentifierName(name)
+                ? new Identifier(name)
+                : StringLiteral(name),
+            value,
+            computed: false,
+            shorthand: false,
+            method: false);
+
+    private static ArrayExpression CreateStringArray(IEnumerable<string> values)
+        => new(NodeList.From<Expression?>(values.Select(static value => (Expression?)StringLiteral(value))));
+
+    private static NullLiteral NullLiteral()
+        => new("null");
+
+    private static BooleanLiteral BooleanLiteral(bool value)
+        => new(value, value ? "true" : "false");
+
+    private static NumericLiteral NumericLiteral(int value)
+        => new(value, value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+    private static StringLiteral StringLiteral(string value)
+        => JavaScriptAstFactory.CreateStringLiteral(value);
+
+    private static bool IsJavaScriptIdentifierName(string value)
+        => !string.IsNullOrEmpty(value) &&
+           IsJavaScriptIdentifierStart(value[0]) &&
+           value.Skip(1).All(IsJavaScriptIdentifierPart);
+
     private static bool TryBuildOperationDirectRender(
         RazorSgGeneratedCSharpBinding binding,
         RazorSgBoundComponent component,
         IReadOnlyDictionary<ISymbol, string>? declaredNames,
-        ImmutableArray<SetupBodyLine> setupBodyLines,
+        ImmutableArray<CompilerStatement> setupStatements,
+        RazorSgVueInjectRegistry injectRegistry,
         out DirectRenderBuildResult result)
     {
         result = default!;
@@ -482,23 +986,27 @@ internal static class RazorSgVueComponentModuleBuilder
                 component.BuildRenderTreeMethod,
                 component.BuildRenderTreeBody,
                 declaredNames,
+                injectRegistry,
                 out var operationResult,
-                out _))
+                out var failure))
         {
-            return false;
+            throw new InvalidOperationException(
+                "RazorVue direct render lowering failed for '" +
+                component.ComponentSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) +
+                "': " +
+                (string.IsNullOrWhiteSpace(failure) ? "No failure detail was provided." : failure));
         }
 
         result = new DirectRenderBuildResult(
             operationResult.RenderExpression,
             "$renderDirect",
-            operationResult.PreludeLines,
+            operationResult.PreludeStatements,
             operationResult.UsesFragment,
             operationResult.UsesStaticVNode,
             operationResult.UsesProps,
             operationResult.UsesSlots,
-            ImmutableArray<DirectSourceMapping>.Empty,
-            RemoveBuildRenderTreeFunction(setupBodyLines),
-            operationResult.ImportLines);
+            RemoveBuildRenderTreeFunction(setupStatements),
+            operationResult.ImportDeclarations);
         return true;
     }
 
@@ -507,21 +1015,6 @@ internal static class RazorSgVueComponentModuleBuilder
         RazorSgComponentMemberClosure closure)
     {
         var directLocalNames = CollectDirectRenderLocalNames(component.BuildRenderTreeBody);
-        if (directLocalNames.Count == 0)
-            return null;
-
-        var hasCollision = closure.ReachableMethods
-            .Where(method => IsDeclaredOnComponentHierarchy(component.ComponentSymbol, method.ContainingType))
-            .Any(method =>
-                directLocalNames.Contains(GetPreferredModuleDeclaredName(method))) ||
-            closure.ComputedProperties
-            .Where(property => IsDeclaredOnComponentHierarchy(component.ComponentSymbol, property.ContainingType))
-            .Any(property =>
-                property.GetMethod is not null &&
-                directLocalNames.Contains(GetPreferredModuleDeclaredName(property.GetMethod)));
-        if (!hasCollision)
-            return null;
-
         var declaredNames = new Dictionary<ISymbol, string>(SymbolComparer);
         var usedDeclaredNames = new HashSet<string>(StringComparer.Ordinal);
         foreach (var member in closure.OrderedMembers)
@@ -574,21 +1067,42 @@ internal static class RazorSgVueComponentModuleBuilder
 
         public override void VisitVariableDeclarator(IVariableDeclaratorOperation operation)
         {
-            if (!string.IsNullOrWhiteSpace(operation.Symbol.Name))
-                Names.Add(operation.Symbol.Name);
+            Add(operation.Symbol);
 
             base.VisitVariableDeclarator(operation);
         }
 
+        public override void VisitDeclarationPattern(IDeclarationPatternOperation operation)
+        {
+            Add(operation.DeclaredSymbol);
+            base.VisitDeclarationPattern(operation);
+        }
+
+        public override void VisitRecursivePattern(IRecursivePatternOperation operation)
+        {
+            Add(operation.DeclaredSymbol);
+            base.VisitRecursivePattern(operation);
+        }
+
+        public override void VisitListPattern(IListPatternOperation operation)
+        {
+            Add(operation.DeclaredSymbol);
+            base.VisitListPattern(operation);
+        }
+
         public override void VisitForEachLoop(IForEachLoopOperation operation)
         {
-            if (TryGetLoopControlVariable(operation.LoopControlVariable, out var local) &&
-                !string.IsNullOrWhiteSpace(local.Name))
-            {
-                Names.Add(local.Name);
-            }
+            if (TryGetLoopControlVariable(operation.LoopControlVariable, out var local))
+                Add(local);
 
             base.VisitForEachLoop(operation);
+        }
+
+        private void Add(ISymbol? symbol)
+        {
+            var name = symbol?.Name;
+            if (!string.IsNullOrWhiteSpace(name))
+                Names.Add(name!);
         }
     }
 
@@ -712,55 +1226,29 @@ internal static class RazorSgVueComponentModuleBuilder
                    ParameterAttributeMetadataName,
                    StringComparison.Ordinal));
 
-    private static ImmutableArray<SetupBodyLine> RemoveBuildRenderTreeFunction(
-        ImmutableArray<SetupBodyLine> setupBodyLines)
-    {
-        var functionStart = -1;
-        for (var index = 0; index < setupBodyLines.Length; index++)
-        {
-            if (BuildRenderTreeFunctionPattern.Match(setupBodyLines[index].Text).Success)
-            {
-                functionStart = index;
-                break;
-            }
-        }
-
-        if (functionStart < 0)
-            return setupBodyLines;
-
-        var depth = 0;
-        var functionEnd = -1;
-        for (var index = functionStart; index < setupBodyLines.Length; index++)
-        {
-            depth += CountJavaScriptBraceDelta(setupBodyLines[index].Text);
-            if (index > functionStart && depth == 0)
-            {
-                functionEnd = index;
-                break;
-            }
-        }
-
-        if (functionEnd <= functionStart)
-            return setupBodyLines;
-
-        return setupBodyLines
-            .Where((_, index) => index < functionStart || index > functionEnd)
+    private static ImmutableArray<CompilerStatement> RemoveBuildRenderTreeFunction(
+        ImmutableArray<CompilerStatement> setupStatements)
+        => setupStatements
+            .Where(static item =>
+                item.Statement is not FunctionDeclaration { Id.Name: "buildRenderTree" })
             .ToImmutableArray();
-    }
+
+    private static bool IsVueFramingImport(ImportDeclaration declaration)
+        => declaration.Source.Value is "vue" or "@jazor/vue-runtime/render-context.mjs";
 
     private static bool TryCreateVueSfcAsset(
-        string importLine,
+        ImportDeclaration declaration,
         string importerRelativePath,
         out RazorSgFrontendAsset asset)
     {
         asset = default!;
-        var match = RelativeImportFromPattern.Match(importLine);
-        if (!match.Success)
+        var specifier = declaration.Source.Value;
+        if ((!specifier.StartsWith("./", StringComparison.Ordinal) &&
+             !specifier.StartsWith("../", StringComparison.Ordinal)) ||
+            !specifier.EndsWith(".vue.mjs", StringComparison.OrdinalIgnoreCase))
+        {
             return false;
-
-        var specifier = match.Groups["path"].Value;
-        if (!specifier.EndsWith(".vue.mjs", StringComparison.OrdinalIgnoreCase))
-            return false;
+        }
 
         var artifactPath = ResolveImportArtifactPath(specifier.Substring(0, specifier.Length - ".mjs".Length), importerRelativePath);
         asset = new RazorSgFrontendAsset(
@@ -772,12 +1260,9 @@ internal static class RazorSgVueComponentModuleBuilder
     }
 
     private static void AddImportLocalNames(
-        string importLine,
+        ImportDeclaration declaration,
         HashSet<string> localNames)
     {
-        if (!TryParseImportDeclaration(importLine, out var declaration))
-            return;
-
         foreach (var specifier in declaration.Specifiers)
         {
             switch (specifier)
@@ -796,12 +1281,9 @@ internal static class RazorSgVueComponentModuleBuilder
     }
 
     private static bool HasAnyImportLocalName(
-        string importLine,
+        ImportDeclaration declaration,
         HashSet<string> localNames)
     {
-        if (!TryParseImportDeclaration(importLine, out var declaration))
-            return false;
-
         foreach (var specifier in declaration.Specifiers)
         {
             var localName = specifier switch
@@ -818,1201 +1300,44 @@ internal static class RazorSgVueComponentModuleBuilder
         return false;
     }
 
-    private static bool TryGetSingleImportLocalName(
-        string importLine,
-        out string localName)
+    private static bool IsCompilerImportReferenced(
+        ImportDeclaration declaration,
+        DirectRenderBuildResult directRender,
+        ImmutableArray<StateSlot> stateSlots)
     {
-        localName = string.Empty;
-        if (!TryParseImportDeclaration(importLine, out var declaration) ||
-            declaration.Specifiers.Count != 1)
+        if (declaration.Specifiers.Count == 0)
+            return true;
+
+        foreach (var specifier in declaration.Specifiers)
         {
-            return false;
+            var localName = GetImportLocalName(specifier);
+            if (AstReferenceAnalysis.ReferencesIdentifier(directRender.RenderExpression, localName) ||
+                directRender.PreludeStatements.Any(statement => AstReferenceAnalysis.ReferencesIdentifier(statement, localName)) ||
+                ReferencesIdentifier(directRender.SetupStatements, localName) ||
+                stateSlots.Any(slot =>
+                    slot.Initializer is not null &&
+                    AstReferenceAnalysis.ReferencesIdentifier(slot.Initializer, localName)))
+            {
+                return true;
+            }
         }
 
-        localName = declaration.Specifiers[0] switch
+        return false;
+    }
+
+    private static bool ReferencesIdentifier(
+        ImmutableArray<CompilerStatement> statements,
+        string name)
+        => statements.Any(item => AstReferenceAnalysis.ReferencesIdentifier(item.Statement, name));
+
+    private static string GetImportLocalName(ImportDeclarationSpecifier specifier)
+        => specifier switch
         {
             ImportSpecifier named => named.Local.Name,
             ImportDefaultSpecifier defaultSpecifier => defaultSpecifier.Local.Name,
             ImportNamespaceSpecifier namespaceSpecifier => namespaceSpecifier.Local.Name,
             _ => string.Empty
         };
-        return !string.IsNullOrWhiteSpace(localName);
-    }
-
-    private static bool TryParseImportDeclaration(
-        string importLine,
-        out ImportDeclaration declaration)
-    {
-        declaration = null!;
-        try
-        {
-            if (new Parser().ParseModule(importLine).Body.SingleOrDefault() is ImportDeclaration parsed)
-            {
-                declaration = parsed;
-                return true;
-            }
-        }
-        catch (ParseErrorException)
-        {
-        }
-
-        return false;
-    }
-
-    private static bool TryBuildDirectRender(
-        ImmutableArray<SetupBodyLine> setupBodyLines,
-        out DirectRenderBuildResult result)
-    {
-        result = default!;
-
-        var functionStart = -1;
-        var functionEnd = -1;
-        var builderName = string.Empty;
-        for (var index = 0; index < setupBodyLines.Length; index++)
-        {
-            var match = BuildRenderTreeFunctionPattern.Match(setupBodyLines[index].Text);
-            if (!match.Success)
-                continue;
-
-            if (functionStart >= 0)
-                return false;
-
-            functionStart = index;
-            builderName = match.Groups["builder"].Value;
-            break;
-        }
-
-        if (functionStart < 0)
-            return false;
-
-        var depth = 0;
-        for (var index = functionStart; index < setupBodyLines.Length; index++)
-        {
-            depth += CountJavaScriptBraceDelta(setupBodyLines[index].Text);
-            if (index > functionStart && depth == 0)
-            {
-                functionEnd = index;
-                break;
-            }
-        }
-
-        if (functionEnd <= functionStart)
-            return false;
-
-        var bodyLines = setupBodyLines
-            .Skip(functionStart + 1)
-            .Take(functionEnd - functionStart - 1)
-            .ToImmutableArray();
-        var slotFunctions = BuildDirectSlotFunctionMap(setupBodyLines, functionStart, functionEnd);
-        if (!TryBuildDirectRenderExpression(
-                bodyLines,
-                builderName,
-                slotFunctions,
-                out var renderExpression,
-                out var usesFragment,
-                out var usesStaticVNode,
-                out var usedSlotFunctionRanges))
-        {
-            return false;
-        }
-
-        var retainedLines = ImmutableArray.CreateBuilder<SetupBodyLine>();
-        for (var index = 0; index < setupBodyLines.Length; index++)
-        {
-            if ((index >= functionStart && index <= functionEnd) ||
-                usedSlotFunctionRanges.Any(range => index >= range.Start && index <= range.End))
-            {
-                continue;
-            }
-
-            retainedLines.Add(setupBodyLines[index]);
-        }
-
-        result = new DirectRenderBuildResult(
-            renderExpression,
-            "$renderDirect",
-            ImmutableArray<string>.Empty,
-            usesFragment,
-            usesStaticVNode,
-            renderExpression.Contains("props.", StringComparison.Ordinal),
-            UsesSlots: false,
-            CollectDirectSourceMappings(bodyLines, renderExpression),
-            retainedLines.ToImmutable(),
-            ImmutableArray<string>.Empty);
-        return true;
-    }
-
-    private static ImmutableDictionary<string, DirectSlotFunction> BuildDirectSlotFunctionMap(
-        ImmutableArray<SetupBodyLine> setupBodyLines,
-        int buildRenderTreeStart,
-        int buildRenderTreeEnd)
-    {
-        var builder = ImmutableDictionary.CreateBuilder<string, DirectSlotFunction>(StringComparer.Ordinal);
-        for (var index = 0; index < setupBodyLines.Length; index++)
-        {
-            if (index >= buildRenderTreeStart && index <= buildRenderTreeEnd)
-                continue;
-
-            if (!TryMatchDirectSlotFunctionHeader(setupBodyLines[index].Text, out var functionName, out var parameterName) ||
-                string.Equals(functionName, "buildRenderTree", StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            var depth = 0;
-            var end = -1;
-            for (var functionIndex = index; functionIndex < setupBodyLines.Length; functionIndex++)
-            {
-                depth += CountJavaScriptBraceDelta(setupBodyLines[functionIndex].Text);
-                if (functionIndex > index && depth == 0)
-                {
-                    end = functionIndex;
-                    break;
-                }
-            }
-
-            if (end <= index)
-                continue;
-
-            var functionBody = setupBodyLines
-                .Skip(index + 1)
-                .Take(end - index - 1)
-                .ToImmutableArray();
-            if (TryBuildDirectRenderExpression(
-                    functionBody,
-                    parameterName,
-                    ImmutableDictionary<string, DirectSlotFunction>.Empty,
-                    out var renderExpression,
-                    out var usesFragment,
-                    out var usesStaticVNode,
-                    out _))
-            {
-                builder[functionName] = new DirectSlotFunction(
-                    renderExpression,
-                    ScopedParameterName: null,
-                    usesFragment,
-                    usesStaticVNode,
-                    new DirectFunctionRange(index, end));
-                continue;
-            }
-
-            if (TryBuildDirectScopedSlotFunction(
-                    functionBody,
-                    parameterName,
-                    out var scopedRenderExpression,
-                    out var scopedParameterName,
-                    out var scopedUsesFragment,
-                    out var scopedUsesStaticVNode))
-            {
-                builder[functionName] = new DirectSlotFunction(
-                    scopedRenderExpression,
-                    scopedParameterName,
-                    scopedUsesFragment,
-                    scopedUsesStaticVNode,
-                    new DirectFunctionRange(index, end));
-            }
-        }
-
-        return builder.ToImmutable();
-    }
-
-    private static bool TryBuildDirectScopedSlotFunction(
-        ImmutableArray<SetupBodyLine> functionBody,
-        string outerParameterName,
-        out string renderExpression,
-        out string scopedParameterName,
-        out bool usesFragment,
-        out bool usesStaticVNode)
-    {
-        renderExpression = string.Empty;
-        scopedParameterName = string.Empty;
-        usesFragment = false;
-        usesStaticVNode = false;
-        if (functionBody.Length < 2)
-            return false;
-
-        var header = DirectReturnArrowFunctionPattern.Match(functionBody[0].Text);
-        if (!header.Success || !string.Equals(functionBody[functionBody.Length - 1].Text.Trim(), "};", StringComparison.Ordinal))
-            return false;
-
-        var builderName = header.Groups["parameter"].Value;
-        var builderBody = functionBody
-            .Skip(1)
-            .Take(functionBody.Length - 2)
-            .ToImmutableArray();
-        if (!TryBuildDirectRenderExpression(
-                builderBody,
-                builderName,
-                ImmutableDictionary<string, DirectSlotFunction>.Empty,
-                out renderExpression,
-                out usesFragment,
-                out usesStaticVNode,
-                out _))
-        {
-            return false;
-        }
-
-        scopedParameterName = outerParameterName;
-        return true;
-    }
-
-    private static bool TryMatchDirectSlotFunctionHeader(
-        string line,
-        out string functionName,
-        out string parameterName)
-    {
-        var match = DirectFunctionPattern.Match(line);
-        if (!match.Success)
-            match = DirectArrowFunctionPattern.Match(line);
-
-        if (!match.Success)
-        {
-            functionName = string.Empty;
-            parameterName = string.Empty;
-            return false;
-        }
-
-        functionName = match.Groups["name"].Value;
-        parameterName = match.Groups["parameter"].Value;
-        return true;
-    }
-
-    private static ImmutableArray<DirectSourceMapping> CollectDirectSourceMappings(
-        ImmutableArray<SetupBodyLine> bodyLines,
-        string renderExpression)
-    {
-        var mappings = ImmutableArray.CreateBuilder<DirectSourceMapping>();
-        var searchIndex = 0;
-        foreach (var line in bodyLines)
-        {
-            var text = line.Text.Trim();
-            var match = BuilderCallPattern.Match(text);
-            if (!match.Success)
-                continue;
-
-            var method = match.Groups["method"].Value;
-            if (!string.Equals(method, "addContent", StringComparison.Ordinal) &&
-                !string.Equals(method, "addAttribute", StringComparison.Ordinal) &&
-                !string.Equals(method, "addComponentParameter", StringComparison.Ordinal) &&
-                !string.Equals(method, "addMarkupContent", StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            var arguments = SplitJavaScriptArguments(match.Groups["arguments"].Value);
-            var expression = method switch
-            {
-                "addContent" or "addMarkupContent" => arguments.Length == 1 ? arguments[0] : null,
-                "addAttribute" or "addComponentParameter" => arguments.Length == 2 ? arguments[1] : null,
-                _ => null
-            };
-            if (string.IsNullOrWhiteSpace(expression))
-                continue;
-
-            var expressionIndex = renderExpression.IndexOf(expression!, searchIndex, StringComparison.Ordinal);
-            if (expressionIndex < 0)
-                continue;
-
-            searchIndex = expressionIndex + expression!.Length;
-            var compiledColumn = line.CompiledColumn + Math.Max(0, line.Text.IndexOf(expression!, StringComparison.Ordinal));
-            mappings.Add(new DirectSourceMapping(
-                expression!,
-                expressionIndex,
-                line.CompiledLine,
-                compiledColumn));
-        }
-
-        return mappings.ToImmutable();
-    }
-
-    private static bool TryBuildDirectRenderExpression(
-        ImmutableArray<SetupBodyLine> bodyLines,
-        string builderName,
-        ImmutableDictionary<string, DirectSlotFunction> slotFunctions,
-        out string renderExpression,
-        out bool usesFragment,
-        out bool usesStaticVNode,
-        out ImmutableArray<DirectFunctionRange> usedSlotFunctionRanges)
-    {
-        renderExpression = string.Empty;
-        usesFragment = false;
-        usesStaticVNode = false;
-        usedSlotFunctionRanges = ImmutableArray<DirectFunctionRange>.Empty;
-        var usedSlots = ImmutableArray.CreateBuilder<DirectFunctionRange>();
-        var localSlotFunctions = slotFunctions.ToBuilder();
-        bodyLines = CollapseMultilineBuilderCalls(bodyLines, builderName);
-        bodyLines = ExtractInlineDirectSlotFunctions(bodyLines, localSlotFunctions);
-
-        var roots = new List<string>();
-        var stack = new Stack<DirectRenderFrame>();
-        foreach (var line in bodyLines)
-        {
-            var text = line.Text.Trim();
-            if (text.Length == 0)
-                continue;
-            if (string.Equals(text, "return;", StringComparison.Ordinal))
-                continue;
-
-            var match = BuilderCallPattern.Match(text);
-            if (!match.Success ||
-                !string.Equals(match.Groups["builder"].Value, builderName, StringComparison.Ordinal))
-            {
-                return false;
-            }
-
-            var method = match.Groups["method"].Value;
-            var arguments = SplitJavaScriptArguments(match.Groups["arguments"].Value);
-            switch (method)
-            {
-                case "openElement":
-                    if (arguments.Length != 1 || !TryReadJavaScriptStringLiteral(arguments[0], out var tagName))
-                        return false;
-
-                    if (stack.Count > 0)
-                        stack.Peek().ChildrenStarted = true;
-                    stack.Push(new DirectElementFrame(arguments[0], tagName));
-                    break;
-
-                case "openRegion":
-                    if (arguments.Length != 0)
-                        return false;
-
-                    if (stack.Count > 0)
-                        stack.Peek().ChildrenStarted = true;
-                    stack.Push(new DirectRegionFrame());
-                    break;
-
-                case "openComponent":
-                    if (arguments.Length is < 1 or > 2)
-                        return false;
-
-                    var parameterNameMap = ImmutableDictionary<string, string>.Empty;
-                    if (arguments.Length == 2 &&
-                        !TryReadDirectComponentParameterMap(arguments[1], out parameterNameMap))
-                    {
-                        return false;
-                    }
-
-                    if (stack.Count > 0)
-                        stack.Peek().ChildrenStarted = true;
-                    stack.Push(new DirectComponentFrame(
-                        arguments[0],
-                        arguments.Length == 2 ? parameterNameMap : ImmutableDictionary<string, string>.Empty));
-                    break;
-
-                case "closeElement":
-                    if (arguments.Length != 0 || stack.Count == 0 || stack.Peek() is not DirectElementFrame)
-                        return false;
-
-                    AddDirectRenderChild(roots, stack, stack.Pop().ToRenderExpression());
-                    break;
-
-                case "closeRegion":
-                    if (arguments.Length != 0 || stack.Count == 0 || stack.Peek() is not DirectRegionFrame)
-                        return false;
-
-                    var region = stack.Pop();
-                    usesFragment = usesFragment || region.UsesFragment;
-                    AddDirectRenderChild(roots, stack, region.ToRenderExpression());
-                    break;
-
-                case "closeComponent":
-                    if (arguments.Length != 0 || stack.Count == 0 || stack.Peek() is not DirectComponentFrame)
-                        return false;
-
-                    AddDirectRenderChild(roots, stack, stack.Pop().ToRenderExpression());
-                    break;
-
-                case "addAttribute":
-                    if (arguments.Length != 2 || stack.Count == 0 || !IsDirectPropFrame(stack.Peek()))
-                        return false;
-
-                    var frame = stack.Peek();
-                    if (frame.ChildrenStarted || !TryReadJavaScriptStringLiteral(arguments[0], out var attributeName))
-                        return false;
-
-                    frame.AddAttribute(new DirectAttribute(
-                        frame.NormalizeAttributeName(attributeName),
-                        arguments[1]));
-                    break;
-
-                case "addMultipleAttributes":
-                    if (arguments.Length != 1 || stack.Count == 0 || !IsDirectPropFrame(stack.Peek()))
-                        return false;
-
-                    var multipleFrame = stack.Peek();
-                    if (multipleFrame.ChildrenStarted ||
-                        !TryReadDirectMultipleAttributes(arguments[0], multipleFrame, out var multipleAttributes))
-                    {
-                        return false;
-                    }
-
-                    foreach (var attribute in multipleAttributes)
-                        multipleFrame.AddAttribute(attribute);
-                    break;
-
-                case "setKey":
-                    if (arguments.Length != 1 || stack.Count == 0 || !IsDirectPropFrame(stack.Peek()))
-                        return false;
-
-                    var keyFrame = stack.Peek();
-                    if (keyFrame.ChildrenStarted)
-                        return false;
-
-                    keyFrame.AddAttribute(new DirectAttribute("key", arguments[0]));
-                    break;
-
-                case "setAttributeValue":
-                    if (arguments.Length != 1 || stack.Count == 0 || !IsDirectPropFrame(stack.Peek()))
-                        return false;
-
-                    var valueFrame = stack.Peek();
-                    if (valueFrame.ChildrenStarted || !valueFrame.TrySetLastAttributeValue(arguments[0]))
-                        return false;
-
-                    break;
-
-                case "setUpdatesAttributeName":
-                    if (arguments.Length != 1 || stack.Count == 0 || stack.Peek() is not DirectElementFrame updatesFrame)
-                        return false;
-
-                    if (updatesFrame.ChildrenStarted || !TryReadJavaScriptStringLiteral(arguments[0], out var updatesAttributeName))
-                        return false;
-
-                    updatesFrame.SetUpdatesAttributeName(updatesAttributeName);
-                    break;
-
-                case "addEventPreventDefaultAttribute":
-                    if (arguments.Length != 2 || stack.Count == 0 || stack.Peek() is not DirectElementFrame preventFrame)
-                        return false;
-
-                    if (preventFrame.ChildrenStarted || !TryReadJavaScriptStringLiteral(arguments[0], out var preventEventName))
-                        return false;
-
-                    if (!string.Equals(arguments[1], "false", StringComparison.Ordinal))
-                        preventFrame.SetEventModifier(preventEventName, preventDefault: true, stopPropagation: false);
-                    break;
-
-                case "addEventStopPropagationAttribute":
-                    if (arguments.Length != 2 || stack.Count == 0 || stack.Peek() is not DirectElementFrame stopFrame)
-                        return false;
-
-                    if (stopFrame.ChildrenStarted || !TryReadJavaScriptStringLiteral(arguments[0], out var stopEventName))
-                        return false;
-
-                    if (!string.Equals(arguments[1], "false", StringComparison.Ordinal))
-                        stopFrame.SetEventModifier(stopEventName, preventDefault: false, stopPropagation: true);
-                    break;
-
-                case "addNamedEvent":
-                    if (arguments.Length != 2 || stack.Count == 0 || stack.Peek() is not DirectElementFrame namedEventFrame)
-                        return false;
-
-                    if (namedEventFrame.ChildrenStarted ||
-                        !TryReadJavaScriptStringLiteral(arguments[0], out var namedEventType) ||
-                        !TryReadJavaScriptStringLiteral(arguments[1], out var assignedEventName) ||
-                        string.IsNullOrWhiteSpace(namedEventType) ||
-                        string.IsNullOrWhiteSpace(assignedEventName))
-                    {
-                        return false;
-                    }
-
-                    break;
-
-                case "addElementReferenceCapture":
-                    if (arguments.Length != 1 || stack.Count == 0 || stack.Peek() is not DirectElementFrame referenceElementFrame)
-                        return false;
-
-                    if (referenceElementFrame.ChildrenStarted)
-                        return false;
-
-                    referenceElementFrame.AddReferenceCapture(arguments[0]);
-                    break;
-
-                case "addComponentReferenceCapture":
-                    if (arguments.Length != 1 || stack.Count == 0 || stack.Peek() is not DirectComponentFrame referenceComponentFrame)
-                        return false;
-
-                    if (referenceComponentFrame.ChildrenStarted)
-                        return false;
-
-                    referenceComponentFrame.AddReferenceCapture(arguments[0]);
-                    break;
-
-                case "addComponentParameter":
-                    if (arguments.Length != 2 || stack.Count == 0 || stack.Peek() is not DirectComponentFrame componentFrame)
-                        return false;
-
-                    if (componentFrame.ChildrenStarted ||
-                        !TryReadJavaScriptStringLiteral(arguments[0], out var parameterName) ||
-                        string.Equals(parameterName, "ChildContent", StringComparison.Ordinal))
-                    {
-                        return false;
-                    }
-
-                    componentFrame.AddAttribute(new DirectAttribute(
-                        componentFrame.NormalizeAttributeName(parameterName),
-                        arguments[1]));
-                    break;
-
-                case "addComponentSlot":
-                    if (arguments.Length != 2 ||
-                        stack.Count == 0 ||
-                        stack.Peek() is not DirectComponentFrame slotComponentFrame ||
-                        slotComponentFrame.ChildrenStarted ||
-                        slotComponentFrame.Children.Count != 0 ||
-                        !TryReadJavaScriptStringLiteral(arguments[0], out var slotName) ||
-                        !localSlotFunctions.TryGetValue(arguments[1], out var slotFunction))
-                    {
-                        return false;
-                    }
-
-                    if (slotFunction.ScopedParameterName is not null)
-                        return false;
-
-                    slotComponentFrame.Slots.Add(new DirectSlot(
-                        slotComponentFrame.NormalizeSlotName(slotName),
-                        ParameterName: null,
-                        slotFunction.RenderExpression));
-                    usesFragment = usesFragment || slotFunction.UsesFragment;
-                    usesStaticVNode = usesStaticVNode || slotFunction.UsesStaticVNode;
-                    usedSlots.Add(slotFunction.Range);
-                    break;
-
-                case "addComponentScopedSlot":
-                    if (arguments.Length != 2 ||
-                        stack.Count == 0 ||
-                        stack.Peek() is not DirectComponentFrame scopedSlotComponentFrame ||
-                        scopedSlotComponentFrame.ChildrenStarted ||
-                        scopedSlotComponentFrame.Children.Count != 0 ||
-                        !TryReadJavaScriptStringLiteral(arguments[0], out var scopedSlotName) ||
-                        !localSlotFunctions.TryGetValue(arguments[1], out var scopedSlotFunction) ||
-                        scopedSlotFunction.ScopedParameterName is null)
-                    {
-                        return false;
-                    }
-
-                    scopedSlotComponentFrame.Slots.Add(new DirectSlot(
-                        scopedSlotComponentFrame.NormalizeSlotName(scopedSlotName),
-                        scopedSlotFunction.ScopedParameterName,
-                        scopedSlotFunction.RenderExpression));
-                    usesFragment = usesFragment || scopedSlotFunction.UsesFragment;
-                    usesStaticVNode = usesStaticVNode || scopedSlotFunction.UsesStaticVNode;
-                    usedSlots.Add(scopedSlotFunction.Range);
-                    break;
-
-                case "addContent":
-                    if (arguments.Length != 1)
-                        return false;
-
-                    AddDirectRenderChild(roots, stack, arguments[0]);
-                    break;
-
-                case "addMarkupContent":
-                    if (arguments.Length != 1)
-                        return false;
-
-                    usesStaticVNode = true;
-                    AddDirectRenderChild(roots, stack, "createStaticVNode(" + arguments[0] + ", 1)");
-                    break;
-
-                default:
-                    return false;
-            }
-        }
-
-        if (stack.Count != 0)
-            return false;
-
-        usedSlotFunctionRanges = usedSlots.ToImmutable();
-
-        if (roots.Count == 0)
-        {
-            renderExpression = "null";
-            return true;
-        }
-
-        if (roots.Count == 1)
-        {
-            renderExpression = roots[0];
-            return true;
-        }
-
-        usesFragment = true;
-        renderExpression = "h(Fragment, null, [" + string.Join(", ", roots) + "])";
-        return true;
-    }
-
-    private static bool IsDirectPropFrame(DirectRenderFrame frame)
-    {
-        return frame is DirectElementFrame or DirectComponentFrame;
-    }
-
-    private static ImmutableArray<SetupBodyLine> CollapseMultilineBuilderCalls(
-        ImmutableArray<SetupBodyLine> bodyLines,
-        string builderName)
-    {
-        var collapsed = ImmutableArray.CreateBuilder<SetupBodyLine>();
-        for (var index = 0; index < bodyLines.Length; index++)
-        {
-            var line = bodyLines[index];
-            var trimmed = line.Text.TrimStart();
-            if (!trimmed.StartsWith(builderName + ".", StringComparison.Ordinal) ||
-                BuilderCallPattern.Match(line.Text.Trim()).Success)
-            {
-                collapsed.Add(line);
-                continue;
-            }
-
-            var pieces = new List<SetupBodyLine> { line };
-            var text = line.Text.Trim();
-            var matched = BuilderCallPattern.Match(text).Success;
-            for (var next = index + 1; next < bodyLines.Length && !matched; next++)
-            {
-                pieces.Add(bodyLines[next]);
-                text += " " + bodyLines[next].Text.Trim();
-                matched = BuilderCallPattern.Match(text).Success;
-                index = next;
-            }
-
-            if (!matched)
-            {
-                foreach (var piece in pieces)
-                    collapsed.Add(piece);
-                continue;
-            }
-
-            collapsed.Add(new SetupBodyLine(
-                text,
-                line.CompiledLine,
-                line.CompiledColumn));
-        }
-
-        return collapsed.ToImmutable();
-    }
-
-    private static ImmutableArray<SetupBodyLine> ExtractInlineDirectSlotFunctions(
-        ImmutableArray<SetupBodyLine> bodyLines,
-        ImmutableDictionary<string, DirectSlotFunction>.Builder slotFunctions)
-    {
-        var retained = ImmutableArray.CreateBuilder<SetupBodyLine>();
-        for (var index = 0; index < bodyLines.Length; index++)
-        {
-            if (!TryMatchDirectSlotFunctionHeader(bodyLines[index].Text, out var functionName, out var parameterName))
-            {
-                retained.Add(bodyLines[index]);
-                continue;
-            }
-
-            var depth = 0;
-            var end = -1;
-            for (var functionIndex = index; functionIndex < bodyLines.Length; functionIndex++)
-            {
-                depth += CountJavaScriptBraceDelta(bodyLines[functionIndex].Text);
-                if (functionIndex > index && depth == 0)
-                {
-                    end = functionIndex;
-                    break;
-                }
-            }
-
-            if (end <= index)
-            {
-                retained.Add(bodyLines[index]);
-                continue;
-            }
-
-            var functionBody = bodyLines
-                .Skip(index + 1)
-                .Take(end - index - 1)
-                .ToImmutableArray();
-            if (TryBuildDirectRenderExpression(
-                    functionBody,
-                    parameterName,
-                    ImmutableDictionary<string, DirectSlotFunction>.Empty,
-                    out var renderExpression,
-                    out var usesFragment,
-                    out var usesStaticVNode,
-                    out _))
-            {
-                slotFunctions[functionName] = new DirectSlotFunction(
-                    renderExpression,
-                    ScopedParameterName: null,
-                    usesFragment,
-                    usesStaticVNode,
-                    new DirectFunctionRange(-1, -1));
-                index = end;
-                continue;
-            }
-
-            if (TryBuildDirectScopedSlotFunction(
-                    functionBody,
-                    parameterName,
-                    out var scopedRenderExpression,
-                    out var scopedParameterName,
-                    out var scopedUsesFragment,
-                    out var scopedUsesStaticVNode))
-            {
-                slotFunctions[functionName] = new DirectSlotFunction(
-                    scopedRenderExpression,
-                    scopedParameterName,
-                    scopedUsesFragment,
-                    scopedUsesStaticVNode,
-                    new DirectFunctionRange(-1, -1));
-                index = end;
-                continue;
-            }
-
-            for (var retainedIndex = index; retainedIndex <= end; retainedIndex++)
-                retained.Add(bodyLines[retainedIndex]);
-            index = end;
-        }
-
-        return retained.ToImmutable();
-    }
-
-    private static void AddDirectRenderChild(
-        List<string> roots,
-        Stack<DirectRenderFrame> stack,
-        string expression)
-    {
-        if (string.Equals(expression, "null", StringComparison.Ordinal))
-            return;
-
-        if (stack.Count == 0)
-        {
-            roots.Add(expression);
-            return;
-        }
-
-        var frame = stack.Peek();
-        frame.ChildrenStarted = true;
-        frame.Children.Add(expression);
-    }
-
-    private static int CountJavaScriptBraceDelta(string text)
-    {
-        var delta = 0;
-        var inString = false;
-        var quote = '\0';
-        var escaped = false;
-        foreach (var item in text)
-        {
-            if (inString)
-            {
-                if (escaped)
-                {
-                    escaped = false;
-                    continue;
-                }
-
-                if (item == '\\')
-                {
-                    escaped = true;
-                    continue;
-                }
-
-                if (item == quote)
-                    inString = false;
-                continue;
-            }
-
-            if (item == '"' || item == '\'' || item == '`')
-            {
-                inString = true;
-                quote = item;
-                continue;
-            }
-
-            if (item == '{')
-                delta++;
-            else if (item == '}')
-                delta--;
-        }
-
-        return delta;
-    }
-
-    private static ImmutableArray<string> SplitJavaScriptArguments(string argumentsText)
-    {
-        var arguments = ImmutableArray.CreateBuilder<string>();
-        var start = 0;
-        var depth = 0;
-        var inString = false;
-        var quote = '\0';
-        var escaped = false;
-        for (var index = 0; index < argumentsText.Length; index++)
-        {
-            var item = argumentsText[index];
-            if (inString)
-            {
-                if (escaped)
-                {
-                    escaped = false;
-                    continue;
-                }
-
-                if (item == '\\')
-                {
-                    escaped = true;
-                    continue;
-                }
-
-                if (item == quote)
-                    inString = false;
-                continue;
-            }
-
-            if (item == '"' || item == '\'' || item == '`')
-            {
-                inString = true;
-                quote = item;
-                continue;
-            }
-
-            if (item == '(' || item == '[' || item == '{')
-            {
-                depth++;
-                continue;
-            }
-
-            if (item == ')' || item == ']' || item == '}')
-            {
-                depth--;
-                continue;
-            }
-
-            if (item == ',' && depth == 0)
-            {
-                arguments.Add(argumentsText.Substring(start, index - start).Trim());
-                start = index + 1;
-            }
-        }
-
-        var tail = argumentsText.Substring(start).Trim();
-        if (tail.Length > 0)
-            arguments.Add(tail);
-
-        return arguments.ToImmutable();
-    }
-
-    private static bool TryReadJavaScriptStringLiteral(string expression, out string value)
-    {
-        value = string.Empty;
-        expression = expression.Trim();
-        if (expression.Length < 2 || expression[0] != '"' || expression[expression.Length - 1] != '"')
-            return false;
-
-        var builder = new StringBuilder();
-        for (var index = 1; index < expression.Length - 1; index++)
-        {
-            var item = expression[index];
-            if (item != '\\')
-            {
-                builder.Append(item);
-                continue;
-            }
-
-            if (index + 1 >= expression.Length - 1)
-                return false;
-
-            var escaped = expression[++index];
-            builder.Append(escaped switch
-            {
-                '"' => '"',
-                '\\' => '\\',
-                '/' => '/',
-                'b' => '\b',
-                'f' => '\f',
-                'n' => '\n',
-                'r' => '\r',
-                't' => '\t',
-                _ => escaped
-            });
-        }
-
-        value = builder.ToString();
-        return true;
-    }
-
-    private static string NormalizeDirectElementAttributeName(string name)
-    {
-        var normalized = name;
-        if (normalized.StartsWith("@", StringComparison.Ordinal))
-            normalized = normalized.Substring(1);
-
-        return normalized.Length >= 3 &&
-               normalized.StartsWith("on", StringComparison.Ordinal) &&
-               char.IsLower(normalized[2])
-            ? "on" + char.ToUpperInvariant(normalized[2]) + normalized.Substring(3)
-            : normalized;
-    }
-
-    private static bool IsDirectEventAttributeName(string name)
-    {
-        return name.Length > 2 &&
-               name.StartsWith("on", StringComparison.Ordinal) &&
-               char.IsUpper(name[2]);
-    }
-
-    private static string BuildDirectDomBindHandler(string handlerExpression, string attributeName)
-    {
-        var escapedAttributeName = "\"" + EscapeJavaScriptString(attributeName) + "\"";
-        return "(eventOrValue, ...args) => { const value = eventOrValue !== null && eventOrValue !== undefined && typeof eventOrValue === \"object\" && eventOrValue.target !== null && eventOrValue.target !== undefined && " +
-               escapedAttributeName +
-               " in eventOrValue.target ? eventOrValue.target[" +
-               escapedAttributeName +
-               "] : eventOrValue; return (" +
-               handlerExpression +
-               ")(value, ...args); }";
-    }
-
-    private static string BuildDirectEventModifierHandler(string handlerExpression, DirectEventModifier modifier)
-    {
-        var statements = new List<string>();
-        if (modifier.PreventDefault)
-            statements.Add("event?.preventDefault?.();");
-        if (modifier.StopPropagation)
-            statements.Add("event?.stopPropagation?.();");
-        statements.Add("return (" + handlerExpression + ")(event, ...args);");
-        return "(event, ...args) => { " + string.Join(" ", statements) + " }";
-    }
-
-    private static string NormalizeDirectComponentParameterName(string name)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-            return name;
-
-        return char.ToLowerInvariant(name[0]) + name.Substring(1);
-    }
-
-    private static bool TryReadDirectComponentParameterMap(
-        string expression,
-        out ImmutableDictionary<string, string> parameterNameMap)
-    {
-        parameterNameMap = ImmutableDictionary<string, string>.Empty;
-        expression = expression.Trim();
-        if (expression.Length < 2 || expression[0] != '{' || expression[expression.Length - 1] != '}')
-            return false;
-
-        var entries = SplitJavaScriptArguments(expression.Substring(1, expression.Length - 2));
-        var builder = ImmutableDictionary.CreateBuilder<string, string>(StringComparer.Ordinal);
-        foreach (var entry in entries)
-        {
-            var parts = SplitObjectProperty(entry);
-            if (parts.Length != 2 ||
-                !TryReadJavaScriptStringLiteral(parts[0], out var key) ||
-                !TryReadJavaScriptStringLiteral(parts[1], out var value))
-            {
-                return false;
-            }
-
-            builder[key] = value;
-        }
-
-        parameterNameMap = builder.ToImmutable();
-        return true;
-    }
-
-    private static bool TryReadDirectMultipleAttributes(
-        string expression,
-        DirectRenderFrame frame,
-        out ImmutableArray<DirectAttribute> attributes)
-    {
-        attributes = ImmutableArray<DirectAttribute>.Empty;
-        expression = expression.Trim();
-        if (string.Equals(expression, "null", StringComparison.Ordinal) ||
-            string.Equals(expression, "undefined", StringComparison.Ordinal))
-        {
-            return true;
-        }
-
-        var builder = ImmutableArray.CreateBuilder<DirectAttribute>();
-        if (TryReadDirectObjectAttributes(expression, frame, builder) ||
-            TryReadDirectMapAttributes(expression, frame, builder) ||
-            TryReadDirectEntryArrayAttributes(expression, frame, builder))
-        {
-            attributes = builder.ToImmutable();
-            return true;
-        }
-
-        return false;
-    }
-
-    private static bool TryReadDirectObjectAttributes(
-        string expression,
-        DirectRenderFrame frame,
-        ImmutableArray<DirectAttribute>.Builder attributes)
-    {
-        expression = expression.Trim();
-        if (expression.Length < 2 || expression[0] != '{' || expression[expression.Length - 1] != '}')
-            return false;
-
-        var entries = SplitJavaScriptArguments(expression.Substring(1, expression.Length - 2));
-        foreach (var entry in entries)
-        {
-            var parts = SplitObjectProperty(entry);
-            if (parts.Length != 2 || !TryReadDirectAttributeName(parts[0], out var name))
-                return false;
-
-            attributes.Add(new DirectAttribute(frame.NormalizeAttributeName(name), parts[1]));
-        }
-
-        return true;
-    }
-
-    private static bool TryReadDirectMapAttributes(
-        string expression,
-        DirectRenderFrame frame,
-        ImmutableArray<DirectAttribute>.Builder attributes)
-    {
-        const string prefix = "new Map(";
-        expression = expression.Trim();
-        if (!expression.StartsWith(prefix, StringComparison.Ordinal) || expression[expression.Length - 1] != ')')
-            return false;
-
-        var arguments = SplitJavaScriptArguments(expression.Substring(prefix.Length, expression.Length - prefix.Length - 1));
-        if (arguments.Length == 0)
-            return true;
-
-        return arguments.Length == 1 &&
-               TryReadDirectEntryArrayAttributes(arguments[0], frame, attributes);
-    }
-
-    private static bool TryReadDirectEntryArrayAttributes(
-        string expression,
-        DirectRenderFrame frame,
-        ImmutableArray<DirectAttribute>.Builder attributes)
-    {
-        expression = expression.Trim();
-        if (expression.Length < 2 || expression[0] != '[' || expression[expression.Length - 1] != ']')
-            return false;
-
-        var entries = SplitJavaScriptArguments(expression.Substring(1, expression.Length - 2));
-        foreach (var entry in entries)
-        {
-            if (!TryReadDirectAttributeEntry(entry, frame, out var attribute))
-                return false;
-
-            attributes.Add(attribute);
-        }
-
-        return true;
-    }
-
-    private static bool TryReadDirectAttributeEntry(
-        string expression,
-        DirectRenderFrame frame,
-        out DirectAttribute attribute)
-    {
-        attribute = default!;
-        expression = expression.Trim();
-        if (expression.Length < 2 || expression[0] != '[' || expression[expression.Length - 1] != ']')
-            return false;
-
-        var parts = SplitJavaScriptArguments(expression.Substring(1, expression.Length - 2));
-        if (parts.Length != 2 || !TryReadJavaScriptStringLiteral(parts[0], out var name))
-            return false;
-
-        attribute = new DirectAttribute(frame.NormalizeAttributeName(name), parts[1]);
-        return true;
-    }
-
-    private static bool TryReadDirectAttributeName(string expression, out string name)
-    {
-        expression = expression.Trim();
-        if (TryReadJavaScriptStringLiteral(expression, out name))
-            return true;
-
-        if (!IsJavaScriptIdentifier(expression))
-            return false;
-
-        name = expression;
-        return true;
-    }
-
-    private static ImmutableArray<string> SplitObjectProperty(string propertyText)
-    {
-        var depth = 0;
-        var inString = false;
-        var quote = '\0';
-        var escaped = false;
-        for (var index = 0; index < propertyText.Length; index++)
-        {
-            var item = propertyText[index];
-            if (inString)
-            {
-                if (escaped)
-                {
-                    escaped = false;
-                    continue;
-                }
-
-                if (item == '\\')
-                {
-                    escaped = true;
-                    continue;
-                }
-
-                if (item == quote)
-                    inString = false;
-                continue;
-            }
-
-            if (item == '"' || item == '\'' || item == '`')
-            {
-                inString = true;
-                quote = item;
-                continue;
-            }
-
-            if (item == '(' || item == '[' || item == '{')
-            {
-                depth++;
-                continue;
-            }
-
-            if (item == ')' || item == ']' || item == '}')
-            {
-                depth--;
-                continue;
-            }
-
-            if (item == ':' && depth == 0)
-            {
-                return ImmutableArray.Create(
-                    propertyText.Substring(0, index).Trim(),
-                    propertyText.Substring(index + 1).Trim());
-            }
-        }
-
-        return ImmutableArray<string>.Empty;
-    }
-
-    private static string FormatJavaScriptPropertyName(string name)
-    {
-        if (IsJavaScriptIdentifier(name))
-            return name;
-
-        return "\"" + EscapeJavaScriptString(name) + "\"";
-    }
-
-    private static bool IsJavaScriptIdentifier(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-            return false;
-
-        if (!IsJavaScriptIdentifierStart(value[0]))
-            return false;
-
-        for (var index = 1; index < value.Length; index++)
-        {
-            if (!IsJavaScriptIdentifierPart(value[index]))
-                return false;
-        }
-
-        return true;
-    }
 
     private static string ResolveImportArtifactPath(string importSpecifier, string importerRelativePath)
     {
@@ -2045,45 +1370,7 @@ internal static class RazorSgVueComponentModuleBuilder
         return string.Join("/", segments);
     }
 
-    private static void AppendStateDeclaration(
-        StringBuilder builder,
-        ImmutableArray<StateSlot> stateSlots,
-        ImmutableArray<CompiledLineMapping>.Builder lineMappings,
-        ref int line)
-    {
-        if (stateSlots.Length == 0)
-        {
-            builder.AppendLine("  const state = reactive({});");
-            line++;
-            return;
-        }
-
-        builder.AppendLine("  const state = reactive({");
-        line++;
-        for (var index = 0; index < stateSlots.Length; index++)
-        {
-            var slot = stateSlots[index];
-            var suffix = index + 1 == stateSlots.Length ? string.Empty : ",";
-            var initializer = slot.Initializer ?? CurrentComponentStateDefaultInitializer.Format(slot.Type);
-            var lineText = "    " + slot.RuntimeName + ": " + initializer + suffix;
-            if (slot.InitializerCompiledLine is int compiledLine)
-            {
-                lineMappings.Add(new CompiledLineMapping(
-                    GeneratedLine: line,
-                    GeneratedColumn: 4 + slot.RuntimeName.Length + ": ".Length,
-                    CompiledLine: compiledLine,
-                    CompiledColumn: Math.Max(slot.InitializerCompiledColumn ?? 0, 0)));
-            }
-
-            builder.AppendLine(lineText);
-            line++;
-        }
-
-        builder.AppendLine("  });");
-        line++;
-    }
-
-    private static string BuildVueImportLine(
+    private static ImportDeclaration BuildVueImportDeclaration(
         bool usesMounted,
         bool usesUnmounted,
         bool usesUpdated,
@@ -2115,83 +1402,30 @@ internal static class RazorSgVueComponentModuleBuilder
         if (usesWatch)
             imports.Add("watch");
 
-        return "import { " + string.Join(", ", imports) + " } from \"vue\";";
+        return CreateNamedImportDeclaration("vue", imports);
     }
 
-    private static string BuildSetupFactoryParameterList(
-        bool usesProps,
-        bool usesSlots,
-        bool usesStateHasChanged,
-        bool usesInvokeAsync)
-    {
-        var parameters = new List<string>();
-        if (usesProps)
-            parameters.Add("props");
-        if (usesSlots)
-            parameters.Add("slots");
-        if (usesStateHasChanged)
-            parameters.Add("stateHasChanged");
-        if (usesInvokeAsync)
-            parameters.Add("invokeAsync");
+    private static ImportDeclaration CreateNamedImportDeclaration(
+        string modulePath,
+        IEnumerable<string> importedNames)
+        => ImportDeclarationFactory.Create(
+                modulePath,
+                importedNames.Select(static name =>
+                    (ImportDeclarationSpecifier)new ImportSpecifier(new Identifier(name))))
+            .Single();
 
-        return string.Join(", ", parameters);
-    }
-
-    private static string BuildSetupFactoryArgumentList(
-        bool usesProps,
-        bool usesSlots,
-        bool usesStateHasChanged,
-        bool usesInvokeAsync)
-    {
-        var arguments = new List<string>();
-        if (usesProps)
-            arguments.Add("props");
-        if (usesSlots)
-            arguments.Add("slots");
-        if (usesStateHasChanged)
-            arguments.Add("stateHasChanged");
-        if (usesInvokeAsync)
-            arguments.Add("invokeAsync");
-
-        return string.Join(", ", arguments);
-    }
-
-    private static void AppendIndentedLines(
-        StringBuilder builder,
-        ImmutableArray<SetupBodyLine> lines,
-        ImmutableArray<CompiledLineMapping>.Builder lineMappings,
-        ref int line)
-    {
-        foreach (var item in lines)
-        {
-            if (item.Text.Length == 0)
-            {
-                builder.AppendLine();
-                line++;
-            }
-            else
-            {
-                var leadingWhitespace = CountLeadingWhitespace(item.Text);
-                lineMappings.Add(new CompiledLineMapping(
-                    GeneratedLine: line,
-                    GeneratedColumn: 2 + leadingWhitespace,
-                    CompiledLine: item.CompiledLine,
-                    CompiledColumn: Math.Max(item.CompiledColumn, 0)));
-                builder.Append("  ").AppendLine(item.Text);
-                line++;
-            }
-        }
-    }
-
-    private static CompilerScriptParts SplitCompiledScript(
-        string compiledScript,
+    private static CompilerModuleParts BuildCompilerModuleParts(
+        Module? module,
+        IReadOnlyDictionary<Node, GeneratedNodePosition>? nodePositions,
         RazorSgComponentMemberClosure closure)
     {
-        var imports = ImmutableArray.CreateBuilder<CompiledSourceLine>();
-        var setupBodyLines = ImmutableArray.CreateBuilder<SetupBodyLine>();
+        var imports = ImmutableArray.CreateBuilder<ImportDeclaration>();
+        var setupStatements = ImmutableArray.CreateBuilder<CompilerStatement>();
         var stateSlots = BuildStateSlots(closure);
         var stateSlotByDeclarationName = new Dictionary<string, int>(StringComparer.Ordinal);
-        var discardedDeclarationNames = new HashSet<string>(StringComparer.Ordinal);
+        var discardedDeclarationNames = new HashSet<string>(
+            GetDiscardedPropertyBackingFieldNames(closure),
+            StringComparer.Ordinal);
 
         for (var index = 0; index < stateSlots.Count; index++)
         {
@@ -2200,86 +1434,110 @@ internal static class RazorSgVueComponentModuleBuilder
                 stateSlotByDeclarationName[declarationName!] = index;
         }
 
-        foreach (var declarationName in GetDiscardedPropertyBackingFieldNames(closure))
+        if (module is not null)
         {
-            discardedDeclarationNames.Add(declarationName);
+            if (nodePositions is null)
+                throw new InvalidOperationException("Compiler AST node positions are required when a compiler module is present.");
+
+            foreach (var statement in module.Body)
+            {
+                switch (statement)
+                {
+                    case ImportDeclaration importDeclaration:
+                        imports.Add(importDeclaration);
+                        break;
+                    case ExportNamedDeclaration { Declaration: { } declaration }:
+                        AddDeclaration(declaration);
+                        break;
+                    case ExportNamedDeclaration:
+                        break;
+                    case Declaration declaration:
+                        AddDeclaration(declaration);
+                        break;
+                    default:
+                        AddSetupStatement(statement, GetPosition(statement));
+                        break;
+                }
+            }
         }
 
-        var compiledLines = compiledScript.Split('\n');
-        for (var lineIndex = 0; lineIndex < compiledLines.Length; lineIndex++)
+        var compilerOriginPositions = new Dictionary<SourceOrigin, GeneratedNodePosition>();
+        if (nodePositions is not null)
         {
-            var rawLine = compiledLines[lineIndex];
-            var line = rawLine.TrimEnd('\r');
-            var trimmed = line.TrimStart();
-            if (trimmed.Length == 0)
+            foreach (var pair in nodePositions
+                         .Where(static pair => pair.Key.UserData is SourceOrigin { IsSynthetic: false })
+                         .OrderBy(static pair => pair.Value.Line)
+                         .ThenBy(static pair => pair.Value.Column))
             {
-                setupBodyLines.Add(new SetupBodyLine(string.Empty, lineIndex, 0));
-                continue;
+                var origin = (SourceOrigin)pair.Key.UserData!;
+                if (!compilerOriginPositions.ContainsKey(origin))
+                    compilerOriginPositions.Add(origin, pair.Value);
+            }
+        }
+
+        return new CompilerModuleParts(
+            imports.ToImmutable(),
+            setupStatements.ToImmutable(),
+            stateSlots.ToImmutableArray(),
+            compilerOriginPositions);
+
+        void AddDeclaration(Declaration declaration)
+        {
+            var declarationPosition = GetPosition(declaration);
+            if (declaration is not VariableDeclaration variableDeclaration)
+            {
+                AddSetupStatement(declaration, declarationPosition);
+                return;
             }
 
-            if (trimmed.StartsWith("import ", StringComparison.Ordinal))
+            var retainedDeclarators = ImmutableArray.CreateBuilder<VariableDeclarator>();
+            foreach (var declarator in variableDeclaration.Declarations)
             {
-                imports.Add(new CompiledSourceLine(line, lineIndex));
-                continue;
-            }
-
-            if (TryReadVariableDeclaration(line, out var declaredName, out var initializer, out var initializerColumn))
-            {
-                if (stateSlotByDeclarationName.TryGetValue(declaredName, out var stateSlotIndex))
+                if (declarator.Id is not Identifier identifier)
                 {
-                    var stateInitializer = string.IsNullOrWhiteSpace(initializer)
-                        ? stateSlots[stateSlotIndex].Initializer
-                        : initializer!;
-                    stateSlots[stateSlotIndex] = stateSlots[stateSlotIndex] with
-                    {
-                        Initializer = stateInitializer,
-                        InitializerCompiledLine = string.IsNullOrWhiteSpace(stateInitializer) ? null : lineIndex,
-                        InitializerCompiledColumn = string.IsNullOrWhiteSpace(stateInitializer) ? null : initializerColumn
-                    };
+                    retainedDeclarators.Add(declarator);
                     continue;
                 }
 
-                if (discardedDeclarationNames.Contains(declaredName))
-                    continue;
-            }
-            else if (TryReadVariableDeclarationBlock(
-                         compiledLines,
-                         lineIndex,
-                         out declaredName,
-                         out initializer,
-                         out initializerColumn,
-                         out var endLineIndex))
-            {
-                if (stateSlotByDeclarationName.TryGetValue(declaredName, out var stateSlotIndex))
+                if (stateSlotByDeclarationName.TryGetValue(identifier.Name, out var stateSlotIndex))
                 {
+                    var initializer = declarator.Init;
+                    GeneratedNodePosition? initializerPosition = initializer is null
+                        ? null
+                        : GetPosition(initializer);
                     stateSlots[stateSlotIndex] = stateSlots[stateSlotIndex] with
                     {
                         Initializer = initializer,
-                        InitializerCompiledLine = lineIndex,
-                        InitializerCompiledColumn = initializerColumn
+                        InitializerCompiledLine = initializerPosition?.Line,
+                        InitializerCompiledColumn = initializerPosition?.Column
                     };
-                    lineIndex = endLineIndex;
                     continue;
                 }
 
-                if (discardedDeclarationNames.Contains(declaredName))
-                {
-                    lineIndex = endLineIndex;
-                    continue;
-                }
+                if (!discardedDeclarationNames.Contains(identifier.Name))
+                    retainedDeclarators.Add(declarator);
             }
 
-            if (trimmed.StartsWith("export {", StringComparison.Ordinal))
-                continue;
-
-            var stripped = StripExportModifier(line, out var compiledColumn);
-            setupBodyLines.Add(new SetupBodyLine(stripped, lineIndex, compiledColumn));
+            if (retainedDeclarators.Count > 0)
+            {
+                var retainedDeclaration = retainedDeclarators.Count == variableDeclaration.Declarations.Count
+                    ? variableDeclaration
+                    : new VariableDeclaration(variableDeclaration.Kind, NodeList.From(retainedDeclarators));
+                AddSetupStatement(retainedDeclaration, declarationPosition);
+            }
         }
 
-        return new CompilerScriptParts(
-            imports.ToImmutable(),
-            setupBodyLines.ToImmutable(),
-            stateSlots.ToImmutableArray());
+        void AddSetupStatement(Statement statement, GeneratedNodePosition position)
+            => setupStatements.Add(new CompilerStatement(statement, position.Line, position.Column));
+
+        GeneratedNodePosition GetPosition(Node node)
+        {
+            if (nodePositions is not null && nodePositions.TryGetValue(node, out var position))
+                return position;
+
+            throw new InvalidOperationException(
+                "Compiler writer did not report a generated position for AST node '" + node.Type + "'.");
+        }
     }
 
     private static List<StateSlot> BuildStateSlots(RazorSgComponentMemberClosure closure)
@@ -2329,251 +1587,8 @@ internal static class RazorSgVueComponentModuleBuilder
         return null;
     }
 
-    private static bool TryReadVariableDeclaration(
-        string line,
-        out string name,
-        out string? initializer,
-        out int initializerColumn)
-    {
-        var match = VariableDeclarationPattern.Match(line);
-        if (!match.Success)
-        {
-            name = string.Empty;
-            initializer = null;
-            initializerColumn = 0;
-            return false;
-        }
-
-        name = match.Groups[1].Value;
-        initializer = match.Groups[2].Success ? match.Groups[2].Value.Trim() : null;
-        initializerColumn = match.Groups[2].Success ? match.Groups[2].Index : 0;
-        return true;
-    }
-
-    private static bool TryReadVariableDeclarationBlock(
-        string[] lines,
-        int startLineIndex,
-        out string name,
-        out string? initializer,
-        out int initializerColumn,
-        out int endLineIndex)
-    {
-        name = string.Empty;
-        initializer = null;
-        initializerColumn = 0;
-        endLineIndex = startLineIndex;
-        if (startLineIndex < 0 || startLineIndex >= lines.Length)
-            return false;
-
-        var firstLine = lines[startLineIndex].TrimEnd('\r');
-        var match = VariableDeclarationStartPattern.Match(firstLine);
-        if (!match.Success || !match.Groups[2].Success)
-            return false;
-
-        name = match.Groups[1].Value;
-        initializerColumn = match.Groups[2].Index;
-        var builder = new StringBuilder();
-        var firstInitializer = match.Groups[2].Value.TrimEnd();
-        builder.Append(firstInitializer);
-        if (TryFindVariableDeclarationBlockEnd(firstInitializer, out var firstLineEnd))
-        {
-            initializer = firstInitializer.Substring(0, firstLineEnd).Trim();
-            return !string.IsNullOrWhiteSpace(initializer);
-        }
-
-        for (var index = startLineIndex + 1; index < lines.Length; index++)
-        {
-            var line = lines[index].TrimEnd('\r');
-            builder.Append('\n').Append(line);
-            if (!TryFindVariableDeclarationBlockEnd(builder.ToString(), out var end))
-                continue;
-
-            endLineIndex = index;
-            initializer = builder.ToString().Substring(0, end).Trim();
-            return !string.IsNullOrWhiteSpace(initializer);
-        }
-
-        return false;
-    }
-
-    private static bool TryFindVariableDeclarationBlockEnd(string text, out int endIndex)
-    {
-        endIndex = 0;
-        var stack = new Stack<char>();
-        char? quote = null;
-        var escaped = false;
-        for (var index = 0; index < text.Length; index++)
-        {
-            var ch = text[index];
-            if (quote is char currentQuote)
-            {
-                if (escaped)
-                {
-                    escaped = false;
-                    continue;
-                }
-
-                if (ch == '\\')
-                {
-                    escaped = true;
-                    continue;
-                }
-
-                if (ch == currentQuote)
-                    quote = null;
-
-                continue;
-            }
-
-            if (ch == '"' || ch == '\'' || ch == '`')
-            {
-                quote = ch;
-                continue;
-            }
-
-            switch (ch)
-            {
-                case '(':
-                    stack.Push(')');
-                    break;
-                case '[':
-                    stack.Push(']');
-                    break;
-                case '{':
-                    stack.Push('}');
-                    break;
-                case ')' or ']' or '}':
-                    if (stack.Count == 0 || stack.Pop() != ch)
-                        return false;
-                    break;
-                case ';' when stack.Count == 0:
-                    endIndex = index;
-                    return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static string StripExportModifier(string line, out int compiledColumn)
-    {
-        var trimmed = line.TrimStart();
-        if (!trimmed.StartsWith("export ", StringComparison.Ordinal))
-        {
-            compiledColumn = CountLeadingWhitespace(line);
-            return line;
-        }
-
-        var leadingWhitespaceLength = line.Length - trimmed.Length;
-        compiledColumn = leadingWhitespaceLength + "export ".Length;
-        return line.Substring(0, leadingWhitespaceLength) + trimmed.Substring("export ".Length);
-    }
-
-    private static void AppendPropsDeclaration(
-        StringBuilder builder,
-        RazorSgComponentMemberClosure closure,
-        ref int line)
-    {
-        // RenderFragment parameters are slot contracts, not Vue props. Keep them out of props: [...].
-        var propNames = GetComponentParameterProperties(closure.ComponentSymbol)
-            .Where(static property => !IsAnyRenderFragmentType(property.Type))
-            .Select(property => GetVueParameterPropName(closure.ComponentSymbol, property))
-            .Where(static name => !string.IsNullOrWhiteSpace(name))
-            .Distinct(StringComparer.Ordinal)
-            .OrderBy(static name => name, StringComparer.Ordinal)
-            .ToArray();
-        if (propNames.Length == 0)
-            return;
-
-        builder.AppendLine("  props: [");
-        line++;
-        for (var index = 0; index < propNames.Length; index++)
-        {
-            var suffix = index + 1 == propNames.Length ? string.Empty : ",";
-            builder.AppendLine("    \"" + EscapeJavaScriptString(propNames[index]) + "\"" + suffix);
-            line++;
-        }
-
-        builder.AppendLine("  ],");
-        line++;
-    }
-
-    private static void AppendEmitsDeclaration(
-        StringBuilder builder,
-        RazorSgComponentMemberClosure closure,
-        ref int line)
-    {
-        var emitNames = GetComponentParameterProperties(closure.ComponentSymbol)
-            .Where(static property => IsEventCallbackType(property.Type))
-            .Select(property => GetVueParameterEmitName(closure.ComponentSymbol, property))
-            .Where(static name => !string.IsNullOrWhiteSpace(name))
-            .Distinct(StringComparer.Ordinal)
-            .OrderBy(static name => name, StringComparer.Ordinal)
-            .ToArray();
-        if (emitNames.Length == 0)
-            return;
-
-        builder.AppendLine("  emits: [");
-        line++;
-        for (var index = 0; index < emitNames.Length; index++)
-        {
-            var suffix = index + 1 == emitNames.Length ? string.Empty : ",";
-            builder.AppendLine("    \"" + EscapeJavaScriptString(emitNames[index]) + "\"" + suffix);
-            line++;
-        }
-
-        builder.AppendLine("  ],");
-        line++;
-    }
-
-    private static void AppendSlotParameterBridges(
-        StringBuilder builder,
-        RazorSgComponentMemberClosure closure,
-        ref int line)
-    {
-        var slotParameters = closure.ParameterProperties
-            .Where(static property => IsAnyRenderFragmentType(property.Type))
-            .Select(static property => new SlotParameterBridge(
-                property.Name,
-                Util.GetConfigOrSymbolName(property),
-                GetVueSlotName(property),
-                IsGenericRenderFragmentType(property.Type)))
-            .Where(static item => !string.IsNullOrWhiteSpace(item.RuntimePropName) &&
-                                  !string.IsNullOrWhiteSpace(item.VueSlotName))
-            .Distinct()
-            .OrderBy(static item => item.VueSlotName, StringComparer.Ordinal)
-            .ToArray();
-        foreach (var item in slotParameters)
-        {
-            builder.AppendLine("    if (typeof slots." + item.VueSlotName + " === \"function\") {");
-            line++;
-            builder.AppendLine(item.IsScoped
-                ? "      props." + item.RuntimePropName + " = (value) => (builder) => {"
-                : "      props." + item.RuntimePropName + " = (builder) => {");
-            line++;
-            builder.AppendLine(item.IsScoped
-                ? "        const content = slots." + item.VueSlotName + "(value);"
-                : "        const content = slots." + item.VueSlotName + "();");
-            line++;
-            builder.AppendLine("        if (content !== null && content !== undefined) {");
-            line++;
-            builder.AppendLine("          builder.addContent(content);");
-            line++;
-            builder.AppendLine("        }");
-            line++;
-            builder.AppendLine("      };");
-            line++;
-            builder.AppendLine("    }");
-            line++;
-        }
-    }
-
     private static bool HasSlotParameterBridges(RazorSgComponentMemberClosure closure)
-        => closure.ParameterProperties.Any(static property =>
-            IsAnyRenderFragmentType(property.Type) &&
-            !string.IsNullOrWhiteSpace(property.Name) &&
-            !string.IsNullOrWhiteSpace(Util.GetConfigOrSymbolName(property)) &&
-            !string.IsNullOrWhiteSpace(GetVueSlotName(property)));
+        => GetSlotParameterBridges(closure).Length > 0;
 
     private static string GetVueSlotName(IPropertySymbol property)
         => TryGetClassSlotDescriptorName(property, out var descriptorName)
@@ -2765,20 +1780,16 @@ internal static class RazorSgVueComponentModuleBuilder
                     StringComparison.Ordinal));
     }
 
-    private static string RebaseRootRelativeImportLine(string importLine, string importerRelativePath)
+    private static ImportDeclaration RebaseImportDeclaration(
+        ImportDeclaration declaration,
+        string importerRelativePath)
     {
-        var match = ImportFromPattern.Match(importLine);
-        if (!match.Success)
-            return importLine;
+        var modulePath = declaration.Source.Value;
+        if (!modulePath.StartsWith("./", StringComparison.Ordinal))
+            return declaration;
 
-        var rebasedPath = RebaseRootRelativeModuleSpecifier(
-            match.Groups["path"].Value,
-            importerRelativePath);
-        return match.Groups["prefix"].Value +
-               match.Groups["quote"].Value +
-               rebasedPath +
-               match.Groups["quote"].Value +
-               match.Groups["suffix"].Value;
+        var rebasedPath = RebaseRootRelativeModuleSpecifier(modulePath, importerRelativePath);
+        return ImportDeclarationFactory.WithModulePath(declaration, rebasedPath);
     }
 
     private static string RebaseRootRelativeModuleSpecifier(
@@ -2849,11 +1860,6 @@ internal static class RazorSgVueComponentModuleBuilder
             "Microsoft.AspNetCore.Components.RenderFragment<TValue>",
             StringComparison.Ordinal);
     }
-
-    private static string EscapeJavaScriptString(string value)
-        => (value ?? string.Empty)
-            .Replace("\\", "\\\\")
-            .Replace("\"", "\\\"");
 
     private static ImmutableArray<string> GetReturnedMembers(RazorSgComponentMemberClosure closure)
     {
@@ -3411,13 +2417,33 @@ internal static class RazorSgVueComponentModuleBuilder
         return normalized.TrimStart('/');
     }
 
-    private static int CountLeadingWhitespace(string value)
+    private sealed record VueModuleFeatures(
+        bool HasOnInitialized,
+        bool HasOnInitializedAsync,
+        bool HasOnParametersSet,
+        bool HasOnParametersSetAsync,
+        bool HasOnAfterRender,
+        bool HasOnAfterRenderAsync,
+        bool HasShouldRender,
+        bool HasDispose,
+        bool HasDisposeAsync,
+        bool UsesSlots,
+        bool UsesFactorySlots,
+        bool UsesFactoryProps,
+        bool UsesSetupProps,
+        bool UsesState,
+        bool UsesStateHasChanged,
+        bool UsesInvokeAsync)
     {
-        var index = 0;
-        while (index < value.Length && char.IsWhiteSpace(value[index]))
-            index++;
+        public bool UsesWatch => HasOnParametersSet || HasOnParametersSetAsync;
 
-        return index;
+        public bool UsesMounted => HasOnAfterRender || HasOnAfterRenderAsync;
+
+        public bool UsesUpdated => HasOnAfterRender || HasOnAfterRenderAsync;
+
+        public bool UsesUnmounted => HasDispose || HasDisposeAsync;
+
+        public bool UsesReactive => UsesState || UsesStateHasChanged;
     }
 
     private sealed record ModuleTextBuildResult(
@@ -3436,297 +2462,132 @@ internal static class RazorSgVueComponentModuleBuilder
         int CompiledLine,
         int CompiledColumn);
 
-    private sealed record CompiledSourceLine(string Text, int CompiledLine);
+    private sealed record CompilerStatement(
+        Statement Statement,
+        int CompiledLine,
+        int CompiledColumn);
 
-    private sealed record SetupBodyLine(string Text, int CompiledLine, int CompiledColumn);
-
-    private sealed record CompilerScriptParts(
-        ImmutableArray<CompiledSourceLine> ImportLines,
-        ImmutableArray<SetupBodyLine> SetupBodyLines,
-        ImmutableArray<StateSlot> StateSlots);
+    private sealed record CompilerModuleParts(
+        ImmutableArray<ImportDeclaration> ImportDeclarations,
+        ImmutableArray<CompilerStatement> SetupStatements,
+        ImmutableArray<StateSlot> StateSlots,
+        IReadOnlyDictionary<SourceOrigin, GeneratedNodePosition> CompilerOriginPositions);
 
     private sealed record DirectRenderBuildResult(
-        string RenderExpression,
+        Expression RenderExpression,
         string MemberName,
-        ImmutableArray<string> PreludeLines,
+        ImmutableArray<Statement> PreludeStatements,
         bool UsesFragment,
         bool UsesStaticVNode,
         bool UsesProps,
         bool UsesSlots,
-        ImmutableArray<DirectSourceMapping> SourceMappings,
-        ImmutableArray<SetupBodyLine> SetupBodyLines,
-        ImmutableArray<string> ImportLines);
+        ImmutableArray<CompilerStatement> SetupStatements,
+        ImmutableArray<ImportDeclaration> ImportDeclarations);
 
-    private sealed record DirectSourceMapping(
-        string Expression,
-        int RenderColumn,
-        int CompiledLine,
-        int CompiledColumn);
-
-    private abstract class DirectRenderFrame
+    private sealed class ImportDeclarationComparer : IEqualityComparer<ImportDeclaration>
     {
-        public bool ChildrenStarted { get; set; }
+        public static ImportDeclarationComparer Instance { get; } = new();
 
-        public List<DirectAttribute> Attributes { get; } = new();
-
-        public List<string> ReferenceCaptures { get; } = new();
-
-        public List<string> Children { get; } = new();
-
-        public virtual bool UsesFragment => false;
-
-        public abstract string NormalizeAttributeName(string name);
-
-        public abstract string ToRenderExpression();
-
-        private string? LastAttributeName { get; set; }
-
-        public void AddAttribute(DirectAttribute attribute)
+        public bool Equals(ImportDeclaration? left, ImportDeclaration? right)
         {
-            for (var index = Attributes.Count - 1; index >= 0; index--)
+            if (ReferenceEquals(left, right))
+                return true;
+            if (left is null || right is null ||
+                left.Phase != right.Phase ||
+                !string.Equals(left.Source.Value, right.Source.Value, StringComparison.Ordinal) ||
+                left.Specifiers.Count != right.Specifiers.Count ||
+                left.Attributes.Count != right.Attributes.Count)
             {
-                if (string.Equals(Attributes[index].Name, attribute.Name, StringComparison.Ordinal))
-                {
-                    Attributes[index] = attribute;
-                    LastAttributeName = attribute.Name;
-                    return;
-                }
-            }
-
-            Attributes.Add(attribute);
-            LastAttributeName = attribute.Name;
-        }
-
-        public bool TrySetLastAttributeValue(string valueExpression)
-        {
-            if (LastAttributeName is null)
                 return false;
+            }
 
-            for (var index = Attributes.Count - 1; index >= 0; index--)
+            for (var index = 0; index < left.Specifiers.Count; index++)
             {
-                if (string.Equals(Attributes[index].Name, LastAttributeName, StringComparison.Ordinal))
+                if (!SpecifierEquals(left.Specifiers[index], right.Specifiers[index]))
+                    return false;
+            }
+
+            for (var index = 0; index < left.Attributes.Count; index++)
+            {
+                var leftAttribute = left.Attributes[index];
+                var rightAttribute = right.Attributes[index];
+                if (!string.Equals(GetImportName(leftAttribute.Key), GetImportName(rightAttribute.Key), StringComparison.Ordinal) ||
+                    !string.Equals(leftAttribute.Value.Value, rightAttribute.Value.Value, StringComparison.Ordinal))
                 {
-                    Attributes[index] = Attributes[index] with { ValueExpression = valueExpression };
-                    return true;
+                    return false;
                 }
             }
 
-            return false;
+            return true;
         }
 
-        public void AddReferenceCapture(string actionExpression)
+        public int GetHashCode(ImportDeclaration declaration)
         {
-            actionExpression = actionExpression.Trim();
-            if (string.Equals(actionExpression, "null", StringComparison.Ordinal) ||
-                string.Equals(actionExpression, "undefined", StringComparison.Ordinal))
+            unchecked
             {
-                return;
+                var hash = StringComparer.Ordinal.GetHashCode(declaration.Source.Value);
+                hash = (hash * 397) ^ (int)declaration.Phase;
+                foreach (var specifier in declaration.Specifiers)
+                    hash = (hash * 397) ^ GetSpecifierHashCode(specifier);
+                foreach (var attribute in declaration.Attributes)
+                {
+                    hash = (hash * 397) ^ StringComparer.Ordinal.GetHashCode(GetImportName(attribute.Key));
+                    hash = (hash * 397) ^ StringComparer.Ordinal.GetHashCode(attribute.Value.Value);
+                }
+
+                return hash;
             }
-
-            ReferenceCaptures.Add(actionExpression);
         }
 
-        protected string FormatPropsExpression()
-        {
-            if (Attributes.Count == 0 && ReferenceCaptures.Count == 0)
-                return "null";
-
-            var props = Attributes
-                .Select(attribute => FormatJavaScriptPropertyName(attribute.Name) + ": " + FormatAttributeValueExpression(attribute))
-                .ToList();
-            if (ReferenceCaptures.Count > 0)
-                props.Add("ref: " + FormatReferenceCaptureExpression());
-
-            return "{ " + string.Join(", ", props) + " }";
-        }
-
-        private string FormatReferenceCaptureExpression()
-        {
-            return ReferenceCaptures.Count == 1
-                ? ReferenceCaptures[0]
-                : "(value) => { " + string.Join(" ", ReferenceCaptures.Select(static capture => "(" + capture + ")(value);")) + " }";
-        }
-
-        protected virtual string FormatAttributeValueExpression(DirectAttribute attribute)
-        {
-            return attribute.ValueExpression;
-        }
-
-        protected string FormatChildrenArrayExpression()
-        {
-            return Children.Count == 0
-                ? "null"
-                : "[" + string.Join(", ", Children) + "]";
-        }
-    }
-
-    private sealed class DirectElementFrame : DirectRenderFrame
-    {
-        private readonly Dictionary<string, DirectEventModifier> _eventModifiers = new(StringComparer.Ordinal);
-        private string? _updatesAttributeName;
-        private string? _updatesEventName;
-
-        public DirectElementFrame(string tagExpression, string tagName)
-        {
-            TagExpression = tagExpression;
-            TagName = tagName;
-        }
-
-        public string TagExpression { get; }
-
-        public string TagName { get; }
-
-        public override string NormalizeAttributeName(string name)
-        {
-            return NormalizeDirectElementAttributeName(name);
-        }
-
-        public override string ToRenderExpression()
-        {
-            return "h(" + TagExpression + ", " + FormatPropsExpression() + ", " + FormatChildrenArrayExpression() + ")";
-        }
-
-        public void SetUpdatesAttributeName(string name)
-        {
-            _updatesAttributeName = name;
-            var lastEventName = Attributes
-                .LastOrDefault(static attribute => IsDirectEventAttributeName(attribute.Name))
-                ?.Name;
-            _updatesEventName = lastEventName;
-        }
-
-        public void SetEventModifier(string eventName, bool preventDefault, bool stopPropagation)
-        {
-            var runtimeName = NormalizeDirectElementAttributeName(eventName);
-            _eventModifiers.TryGetValue(runtimeName, out var existing);
-            _eventModifiers[runtimeName] = new DirectEventModifier(
-                existing.PreventDefault || preventDefault,
-                existing.StopPropagation || stopPropagation);
-        }
-
-        protected override string FormatAttributeValueExpression(DirectAttribute attribute)
-        {
-            var value = attribute.ValueExpression;
-            if (_updatesAttributeName is not null &&
-                string.Equals(attribute.Name, _updatesEventName, StringComparison.Ordinal))
+        private static bool SpecifierEquals(
+            ImportDeclarationSpecifier left,
+            ImportDeclarationSpecifier right)
+            => (left, right) switch
             {
-                value = BuildDirectDomBindHandler(value, _updatesAttributeName);
-            }
-
-            if (_eventModifiers.TryGetValue(attribute.Name, out var modifier))
-                value = BuildDirectEventModifierHandler(value, modifier);
-
-            return value;
-        }
-    }
-
-    private sealed class DirectComponentFrame : DirectRenderFrame
-    {
-        private readonly ImmutableDictionary<string, string> _parameterNameMap;
-
-        public DirectComponentFrame(string componentExpression, ImmutableDictionary<string, string> parameterNameMap)
-        {
-            ComponentExpression = componentExpression;
-            _parameterNameMap = parameterNameMap;
-        }
-
-        public string ComponentExpression { get; }
-
-        public List<DirectSlot> Slots { get; } = new();
-
-        public override string NormalizeAttributeName(string name)
-        {
-            return _parameterNameMap.TryGetValue(name, out var mapped)
-                ? mapped
-                : NormalizeDirectComponentParameterName(name);
-        }
-
-        public string NormalizeSlotName(string name)
-        {
-            if (_parameterNameMap.TryGetValue(name, out var mapped))
-                return mapped;
-
-            return string.Equals(name, "ChildContent", StringComparison.Ordinal)
-                ? "default"
-                : NormalizeDirectComponentParameterName(name);
-        }
-
-        public override string ToRenderExpression()
-        {
-            var props = FormatPropsExpression();
-            if (Slots.Count > 0)
-            {
-                var slots = "{ " + string.Join(", ", Slots.Select(static slot =>
-                    FormatJavaScriptPropertyName(slot.Name) + ": " + FormatSlotFunctionExpression(slot))) + " }";
-                return "h(" + ComponentExpression + ", " + props + ", " + slots + ")";
-            }
-
-            if (Children.Count == 0)
-                return "h(" + ComponentExpression + ", " + props + ")";
-
-            var children = Children.Count == 1
-                ? Children[0]
-                : "[" + string.Join(", ", Children) + "]";
-            return "h(" + ComponentExpression + ", " + props + ", " + children + ")";
-        }
-
-        private static string FormatSlotFunctionExpression(DirectSlot slot)
-        {
-            return slot.ParameterName is null
-                ? "() => " + slot.RenderExpression
-                : "(" + slot.ParameterName + ") => " + slot.RenderExpression;
-        }
-    }
-
-    private sealed class DirectRegionFrame : DirectRenderFrame
-    {
-        public override bool UsesFragment => Children.Count > 1;
-
-        public override string NormalizeAttributeName(string name)
-        {
-            return name;
-        }
-
-        public override string ToRenderExpression()
-        {
-            return Children.Count switch
-            {
-                0 => "null",
-                1 => Children[0],
-                _ => "h(Fragment, null, [" + string.Join(", ", Children) + "])"
+                (ImportDefaultSpecifier leftDefault, ImportDefaultSpecifier rightDefault) =>
+                    string.Equals(leftDefault.Local.Name, rightDefault.Local.Name, StringComparison.Ordinal),
+                (ImportNamespaceSpecifier leftNamespace, ImportNamespaceSpecifier rightNamespace) =>
+                    string.Equals(leftNamespace.Local.Name, rightNamespace.Local.Name, StringComparison.Ordinal),
+                (ImportSpecifier leftNamed, ImportSpecifier rightNamed) =>
+                    string.Equals(GetImportName(leftNamed.Imported), GetImportName(rightNamed.Imported), StringComparison.Ordinal) &&
+                    string.Equals(leftNamed.Local.Name, rightNamed.Local.Name, StringComparison.Ordinal),
+                _ => false
             };
+
+        private static int GetSpecifierHashCode(ImportDeclarationSpecifier specifier)
+        {
+            unchecked
+            {
+                return specifier switch
+                {
+                    ImportDefaultSpecifier value =>
+                        (1 * 397) ^ StringComparer.Ordinal.GetHashCode(value.Local.Name),
+                    ImportNamespaceSpecifier value =>
+                        (2 * 397) ^ StringComparer.Ordinal.GetHashCode(value.Local.Name),
+                    ImportSpecifier value =>
+                        ((3 * 397) ^ StringComparer.Ordinal.GetHashCode(GetImportName(value.Imported))) * 397 ^
+                        StringComparer.Ordinal.GetHashCode(value.Local.Name),
+                    _ => throw new NotSupportedException(
+                        "Unsupported ECMAScript import specifier: " + specifier.Type)
+                };
+            }
         }
+
+        private static string GetImportName(Expression expression)
+            => expression switch
+            {
+                Identifier identifier => identifier.Name,
+                StringLiteral literal => literal.Value,
+                _ => throw new NotSupportedException(
+                    "Unsupported ECMAScript import name: " + expression.Type)
+            };
     }
-
-    private sealed record DirectAttribute(
-        string Name,
-        string ValueExpression);
-
-    private sealed record DirectSlot(
-        string Name,
-        string? ParameterName,
-        string RenderExpression);
-
-    private readonly record struct DirectEventModifier(
-        bool PreventDefault,
-        bool StopPropagation);
-
-    private sealed record DirectSlotFunction(
-        string RenderExpression,
-        string? ScopedParameterName,
-        bool UsesFragment,
-        bool UsesStaticVNode,
-        DirectFunctionRange Range);
-
-    private readonly record struct DirectFunctionRange(
-        int Start,
-        int End);
 
     private sealed record StateSlot(
         string RuntimeName,
         string? DeclarationName,
         ITypeSymbol Type,
-        string? Initializer,
+        Expression? Initializer,
         int? InitializerCompiledLine = null,
         int? InitializerCompiledColumn = null);
 }

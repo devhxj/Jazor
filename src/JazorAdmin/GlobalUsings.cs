@@ -1,0 +1,10 @@
+global using System.Collections;
+global using System.ComponentModel;
+global using System.Runtime.CompilerServices;
+global using ECMAScript;
+global using ECMAScript.TDesign;
+global using Jazor.Admin;
+global using ECMAScript.VueContract;
+global using Microsoft.AspNetCore.Components;
+global using Microsoft.AspNetCore.Components.Rendering;
+global using static ECMAScript.Vue3;

@@ -98,8 +98,9 @@ using static ECMAScript.Vue3;
   - `Props = ["title"]` / `Emits = ["save"]` / `Inject = ["feature"]` 仍保持 collection-expression authoring 体验；
   - 一旦 public surface 直接对应 Vue 官方 API，就只保留 canonical 名称，不继续维护旧命名兼容层。
 
-## Roadmap (3 Phases)
+## Delivery Boundary
 
-1. Phase 1 (`H` mapping): 建立 `H(...)` / `VueObject` / slot contract 的稳定映射层（当前已完成闭环，后续只在新增场景下按同一 contract 增补守护测试）。
-2. Phase 2 (Razor -> `H`): 把 Razor authoring 映射到上述规范层，收敛 canonical shape 与诊断边界。
-3. Phase 3 (Jolt): 在 Jolt 中承接工程化 authoring/build/debug，但不把 Vue 语义反向硬编码进 compiler。
+1. `ECMAScript.Vue3` 负责 Vue 3 host binding 与 `H(...)` authoring contract。
+2. `Jazor.Vue` 负责显式启用 Razor-to-Vue Hook；RazorVue 负责组件绑定与 render-function lowering。
+3. `Jazor.Emit` 负责 `.mjs`、SourceMap、manifest 与 production Bundle 的物化。
+4. 本项目不负责 Razor 语法解析、Razor SG Hook、SFC 编译、开发服务器或浏览器 Bundle。

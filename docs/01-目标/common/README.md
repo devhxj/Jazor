@@ -62,4 +62,4 @@ Jazor.RazorVue（RazorVue SG-result adapter）
 - 只要类型需要保持 **无外部依赖、低波动、跨程序集共享**，优先放 `ECMAScript.Contract`。
 - 只要类型需要 **JSON + 通用 SourceMap 支撑**，放 `Jazor.Common`。
 - 只要类型属于 **official Razor SG final-document adapter、generated C# binder 或 component selector**，放 `Jazor.RazorVue`。
-- 不再为 RazorVue/Jolt 协议 DTO、旧 manifest/update-plan 模型保留公共共享位置；这些合同已经退役。
+- 不为特定宿主协议 DTO 或已退役的旧 manifest/update-plan 模型保留公共共享位置；公共层只承载当前主线确实需要共享的稳定契约与实现。

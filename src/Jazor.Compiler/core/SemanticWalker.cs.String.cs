@@ -22,7 +22,7 @@ public partial class SemanticWalker
 	{
 		// 插值字符串中的文本部分转换为字符串字面量
 		var text = operation.Text.ConstantValue.Value?.ToString() ?? "";
-		return new StringLiteral(text, $"'{text}'");
+		return CreateStringLiteral(text);
 	}
 
 	/// <summary>
@@ -180,7 +180,7 @@ public partial class SemanticWalker
 		{
 			var cookedValue = quasis[0].Value.Cooked ?? "";
 			// 对于测试兼容性，确保返回带引号的字符串字面量
-			return new StringLiteral(cookedValue, $"'{cookedValue}'");
+			return CreateStringLiteral(cookedValue);
 		}
 
 		// 返回结构完整的 TemplateLiteral

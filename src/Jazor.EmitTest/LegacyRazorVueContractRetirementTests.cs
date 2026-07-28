@@ -77,6 +77,20 @@ public sealed class LegacyRazorVueContractRetirementTests
         Assert.IsFalse(targets.Contains(" bundle --in ", StringComparison.Ordinal), targets);
     }
 
+    [TestMethod]
+    public void SdkTargets_ResolveEmitToolForPackageAndRepositoryBuilds()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var targets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "buildTransitive", "Jazor.targets"));
+
+        StringAssert.Contains(targets, "<Target Name=\"_ResolveJazorEmitTool\">", StringComparison.Ordinal);
+        StringAssert.Contains(targets, "..\\tools\\net11.0\\Jazor.Emit.dll", StringComparison.Ordinal);
+        StringAssert.Contains(targets, "<MSBuild Projects=\"@(_JazorEmitToolProjectReference)\"", StringComparison.Ordinal);
+        StringAssert.Contains(targets, "Targets=\"GetTargetPath\"", StringComparison.Ordinal);
+        StringAssert.Contains(targets, "DependsOnTargets=\"_ResolveJazorEmitTool\"", StringComparison.Ordinal);
+        StringAssert.Contains(targets, "Could not locate Jazor.Emit.", StringComparison.Ordinal);
+    }
+
     private static string FindRepositoryRoot()
     {
         for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
