@@ -1,6 +1,6 @@
 # Jazor.Css 第一阶段实施计划
 
-> 状态：活跃计划
+> 状态：第一阶段已完成；验证证据见 [`docs/03-完成/jazor.css/status.md`](../../03-完成/jazor.css/status.md)
 > 更新：2026-07-28
 > 结论：技术路线可行，建议以独立的 `Jazor.Css` 包实施
 > 范围：原生 C# CSS-in-JS 运行时，参考 Goober 的最小核心，不封装或携带 Goober JavaScript 实现

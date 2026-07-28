@@ -203,4 +203,159 @@ public sealed class JazorCssRuntimeTests
         Assert.IsNotNull(name);
         StringAssert.Contains(text, ":is(." + name + ":hover, ." + name + ":focus),[data-value=\"a,b\"] ." + name + "{color:red;}");
     }
+
+    [TestMethod]
+    public async Task Runtime_NormalizationPreservesObservableOrderAndSeparatesNameDomains()
+    {
+        var result = await JazorCssModuleTestHost.RunDenoAsync(
+            """
+            import { css, keyframes, global, extract } from "./runtime.mjs";
+
+            const additional = [
+              { name: "display", value: "-webkit-box", important: false },
+              { name: "display", value: "flex", important: false }
+            ];
+            const first = css({ color: null, margin: "0", display: "", $additional: additional });
+            const reordered = css({ display: "", margin: "0", color: null, $additional: additional });
+            const reversedFallback = css({ display: "", margin: "0", $additional: [...additional].reverse() });
+            const different = css({ margin: "1px" });
+            const animation = keyframes([{ selector: "from", declarations: { margin: "0" } }]);
+            global("body", { margin: "0" });
+            const beforeDuplicate = extract();
+            global("body", { margin: "0" });
+
+            console.log(JSON.stringify({
+              first,
+              reordered,
+              reversedFallback,
+              different,
+              animation,
+              css: extract(),
+              duplicateStable: beforeDuplicate === extract()
+            }));
+            """);
+
+        Assert.AreEqual(0, result.ExitCode, result.StandardError);
+        using var json = JsonDocument.Parse(result.StandardOutput.Trim());
+        var root = json.RootElement;
+        var first = root.GetProperty("first").GetString();
+        Assert.AreEqual(first, root.GetProperty("reordered").GetString());
+        Assert.AreNotEqual(first, root.GetProperty("reversedFallback").GetString());
+        Assert.AreNotEqual(first, root.GetProperty("different").GetString());
+        StringAssert.StartsWith(first, "jz-");
+        StringAssert.StartsWith(root.GetProperty("animation").GetString(), "jz-k-");
+        Assert.IsTrue(root.GetProperty("duplicateStable").GetBoolean());
+
+        var css = root.GetProperty("css").GetString() ?? string.Empty;
+        StringAssert.Contains(css, "." + first + "{display:;margin:0;display:-webkit-box;display:flex;}");
+        Assert.IsFalse(css.Contains("color:", StringComparison.Ordinal), css);
+    }
+
+    [TestMethod]
+    public async Task Runtime_NestedConditionsPreserveSelectorContextAndSiblingOrder()
+    {
+        var result = await JazorCssModuleTestHost.RunDenoAsync(
+            """
+            import { css, extract } from "./runtime.mjs";
+            const name = css({
+              $children: [
+                { kind: "media", prelude: "(width >= 40rem)", rule: {
+                    $children: [
+                      { kind: "selector", prelude: "&:hover", rule: { color: "red" } },
+                      { kind: "supports", prelude: "(display: grid)", rule: { display: "grid" } }
+                    ]
+                } },
+                { kind: "selector", prelude: "> span", rule: { color: "blue" } }
+              ]
+            });
+            console.log(JSON.stringify({ name, css: extract() }));
+            """);
+
+        Assert.AreEqual(0, result.ExitCode, result.StandardError);
+        using var json = JsonDocument.Parse(result.StandardOutput.Trim());
+        var name = json.RootElement.GetProperty("name").GetString();
+        var css = json.RootElement.GetProperty("css").GetString();
+        Assert.AreEqual(
+            "@media (width >= 40rem){." + name + ":hover{color:red;}@supports (display: grid){." + name + "{display:grid;}}}." + name + " > span{color:blue;}",
+            css);
+    }
+
+    [TestMethod]
+    public async Task Runtime_DomAppearingAfterRegistrationAttachesCacheAndRejectsForeignOwnership()
+    {
+        var result = await JazorCssModuleTestHost.RunDenoAsync(
+            """
+            const memoryModule = await import("./runtime.mjs");
+            const name = memoryModule.css({ color: "red" });
+
+            class Element {
+              constructor(localName, owner) {
+                this.localName = localName;
+                this.owner = owner;
+                this.id = "";
+                this.nonce = "";
+                this.textContent = "";
+                this.children = [];
+              }
+              appendChild(node) {
+                this.children.push(node);
+                if (typeof node.data === "string") this.textContent += node.data;
+                if (node.id) this.owner.byId.set(node.id, node);
+                return node;
+              }
+            }
+            const createDocument = () => {
+              const document = {
+                byId: new Map(),
+                getElementById(id) { return this.byId.get(id) ?? null; },
+                createElement(localName) { return new Element(localName, this); },
+                createTextNode(data) { return { data }; }
+              };
+              document.head = new Element("head", document);
+              return document;
+            };
+
+            globalThis.document = createDocument();
+            const cachedName = memoryModule.css({ color: "red" });
+            const attached = document.getElementById("jazor-css");
+
+            const messages = [];
+            const foreignElementModule = await import("./runtime.mjs?foreign-element");
+            const foreignStyleModule = await import("./runtime.mjs?foreign-style");
+            const nonceMismatchModule = await import("./runtime.mjs?nonce-mismatch");
+            for (const [query, module, existing] of [
+              ["foreign-element", foreignElementModule, { localName: "div", id: "jazor-css" }],
+              ["foreign-style", foreignStyleModule, { localName: "style", id: "jazor-css", nonce: "", textContent: "body{}" }],
+              ["nonce-mismatch", nonceMismatchModule, { localName: "style", id: "jazor-css", nonce: "old", textContent: "/*jazor-css:v1*/" }]
+            ]) {
+              globalThis.document = createDocument();
+              document.byId.set("jazor-css", existing);
+              try {
+                if (query === "nonce-mismatch") module.configure({ nonce: "new" });
+                module.css({ color: "blue" });
+                messages.push("missing-error");
+              } catch (error) {
+                messages.push(error.message);
+              }
+            }
+
+            console.log(JSON.stringify({
+              name,
+              cachedName,
+              attachedText: attached.textContent,
+              messages
+            }));
+            """);
+
+        Assert.AreEqual(0, result.ExitCode, result.StandardError);
+        using var json = JsonDocument.Parse(result.StandardOutput.Trim());
+        var root = json.RootElement;
+        Assert.AreEqual(root.GetProperty("name").GetString(), root.GetProperty("cachedName").GetString());
+        StringAssert.Contains(root.GetProperty("attachedText").GetString() ?? string.Empty, "/*jazor-css:v1*//*jz:v1:");
+        var messages = root.GetProperty("messages").EnumerateArray().Select(static item => item.GetString() ?? string.Empty).ToArray();
+        Assert.HasCount(3, messages);
+        StringAssert.Contains(messages[0], "non-style element");
+        StringAssert.Contains(messages[1], "not owned");
+        StringAssert.Contains(messages[2], "nonce does not match");
+    }
 }

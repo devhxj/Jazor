@@ -13,6 +13,7 @@ namespace Jazor.EmitTest;
 public sealed class SdkIntegrationTests
 {
     private static readonly Lazy<Task<LocalPackageFixture>> LocalPackage = new(CreateLocalPackageAsync);
+    private static readonly Lazy<Task<LocalCssPackageFixture>> LocalCssPackage = new(CreateLocalCssPackageAsync);
     private static readonly SemaphoreSlim SourceReferencedRazorVueBuildGate = new(1, 1);
 
     [TestMethod]
@@ -124,7 +125,7 @@ public sealed class SdkIntegrationTests
     [TestMethod]
     public async Task CreateLocalPackage_IncludesJazorCssAsIndependentOptInPackage()
     {
-        var package = await LocalPackage.Value;
+        var package = await LocalCssPackage.Value;
 
         using var archive = ZipFile.OpenRead(package.CssPackagePath);
         var entryNames = archive.Entries
@@ -143,7 +144,7 @@ public sealed class SdkIntegrationTests
     [TestMethod]
     public async Task Build_LocalJazorCssPackage_DebugMaterializesAndReleaseBundlesRuntime()
     {
-        var package = await LocalPackage.Value;
+        var package = await LocalCssPackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "JazorCssPackageConsumer");
@@ -1366,6 +1367,54 @@ public sealed class SdkIntegrationTests
         Assert.HasCount(0, failures, "Browser console/runtime failures were observed:" + Environment.NewLine + string.Join(Environment.NewLine, failures));
     }
 
+    private static async Task<LocalCssPackageFixture> CreateLocalCssPackageAsync()
+    {
+        var repoRoot = FindRepoRoot();
+        var packageOutputDirectory = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "css-nupkg", Guid.NewGuid().ToString("N"));
+        var restorePackagesPath = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "css-restore-packages", Guid.NewGuid().ToString("N"));
+        var packageBuildOutputRoot = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "css-package-out", Guid.NewGuid().ToString("N"));
+        var packageBuildIntermediateRoot = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "css-package-obj", Guid.NewGuid().ToString("N"));
+
+        Directory.CreateDirectory(packageOutputDirectory);
+        Directory.CreateDirectory(restorePackagesPath);
+
+        await RunDotNetAndAssertAsync(
+            repoRoot,
+            [
+                "pack",
+                Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj"),
+                "-c",
+                "Debug",
+                "-o",
+                packageOutputDirectory,
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                $"-p:NuGetPackageRoot={EnsureTrailingDirectorySeparator(restorePackagesPath)}",
+                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
+                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
+                "/nr:false",
+                "-p:UseSharedCompilation=false"
+            ]);
+        var packageVersion = DiscoverPackageVersion(packageOutputDirectory, "Jazor");
+
+        await PackProjectAndAssertOutputAsync(
+            repoRoot,
+            Path.Combine(repoRoot, "src", "Jazor.Css", "Jazor.Css.csproj"),
+            Path.Combine(packageBuildOutputRoot, "Jazor.Css", "bin", "Debug", "net11.0", "Jazor.Css.dll"),
+            packageBuildOutputRoot,
+            packageBuildIntermediateRoot,
+            packageOutputDirectory,
+            packageVersion);
+
+        return new LocalCssPackageFixture(
+            repoRoot,
+            packageVersion,
+            packageOutputDirectory,
+            restorePackagesPath,
+            GetPackagePath(packageOutputDirectory, "Jazor.Css", packageVersion));
+    }
+
     private static async Task<LocalPackageFixture> CreateLocalPackageAsync()
     {
         var repoRoot = FindRepoRoot();
@@ -1404,14 +1453,6 @@ public sealed class SdkIntegrationTests
         AssertPackageArtifactOutputs(packageBuildOutputRoot, emitPublishDirectory);
         var packageVersion = DiscoverPackageVersion(packageOutputDirectory, "Jazor");
 
-        await PackProjectAndAssertOutputAsync(
-            repoRoot,
-            Path.Combine(repoRoot, "src", "Jazor.Css", "Jazor.Css.csproj"),
-            Path.Combine(packageBuildOutputRoot, "Jazor.Css", "bin", "Debug", "net11.0", "Jazor.Css.dll"),
-            packageBuildOutputRoot,
-            packageBuildIntermediateRoot,
-            packageOutputDirectory,
-            packageVersion);
         await PackProjectAndAssertOutputAsync(
             repoRoot,
             Path.Combine(repoRoot, "src", "Jazor.Vue", "Jazor.Vue.csproj"),
@@ -1467,7 +1508,6 @@ public sealed class SdkIntegrationTests
             packageOutputDirectory,
             restorePackagesPath,
             GetPackagePath(packageOutputDirectory, packageVersion),
-            GetPackagePath(packageOutputDirectory, "Jazor.Css", packageVersion),
             GetPackagePath(packageOutputDirectory, "Jazor.Vue", packageVersion),
             GetPackagePath(packageOutputDirectory, "ECMAScript.Vuetify", packageVersion),
             GetPackagePath(packageOutputDirectory, "ECMAScript.VueRoute", packageVersion),
@@ -2412,7 +2452,6 @@ public sealed class SdkIntegrationTests
         string PackageOutputDirectory,
         string RestorePackagesPath,
         string PackagePath,
-        string CssPackagePath,
         string VuePackagePath,
         string VuetifyPackagePath,
         string VueRoutePackagePath,
@@ -2420,6 +2459,13 @@ public sealed class SdkIntegrationTests
         string PiniaTestingPackagePath,
         string TDesignPackagePath,
         string DenoExePath);
+
+    private sealed record LocalCssPackageFixture(
+        string RepoRoot,
+        string PackageVersion,
+        string PackageOutputDirectory,
+        string RestorePackagesPath,
+        string CssPackagePath);
 
     private sealed class TestWorkspace : IDisposable
     {
