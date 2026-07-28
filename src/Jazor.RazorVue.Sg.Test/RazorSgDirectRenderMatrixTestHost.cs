@@ -90,6 +90,7 @@ internal static class RazorSgDirectRenderMatrixTestHost
             #nullable enable
             using ECMAScript;
             using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Web;
             using Microsoft.AspNetCore.Components.Rendering;
             using static ECMAScript.Vue3;
 
@@ -171,10 +172,11 @@ public enum DirectRenderCaseGroup
 {
     Surface,
     Component,
-    ControlFlow
+    ControlFlow,
+    Extended
 }
 
-internal static class DirectRenderCaseCatalog
+internal static partial class DirectRenderCaseCatalog
 {
     public static IReadOnlyList<DirectRenderCase> SuccessCases { get; } = CreateSuccessCases();
 
@@ -187,6 +189,7 @@ internal static class DirectRenderCaseCatalog
         AddAttributeCases(cases);
         AddComponentCases(cases);
         AddControlFlowCases(cases);
+        AddExtendedCases(cases);
         return cases;
     }
 
