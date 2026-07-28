@@ -144,7 +144,7 @@ public sealed class JazorCssRuntimeTests
     {
         var result = await JazorCssModuleTestHost.RunDenoAsync(
             """
-            import { css, keyframes, configure } from "./runtime.mjs";
+            import { css, keyframes, configure, createContext, atRule } from "./runtime.mjs";
 
             const messages = [];
             const capture = action => {
@@ -159,6 +159,12 @@ public sealed class JazorCssRuntimeTests
             capture(() => css({ $children: [{ kind: "selector", prelude: "@layer x", rule: { color: "red" } }] }));
             capture(() => css({ $children: [{ kind: "selector", prelude: ":is(&:hover", rule: { color: "red" } }] }));
             capture(() => css({ $children: [{ kind: "media", prelude: "screen; @import 'x'", rule: { color: "red" } }] }));
+            capture(() => css({ $children: [{ kind: "container", prelude: null, rule: { color: "red" } }] }));
+            capture(() => css({ $children: [{ kind: "starting-style", prelude: "invalid", rule: { color: "red" } }] }));
+            capture(() => atRule({ name: "@font-face", declarations: { src: "url(font.woff2)" } }));
+            capture(() => atRule({ name: "1invalid", declarations: {} }));
+            capture(() => atRule({ name: "-1invalid", declarations: {} }));
+            capture(() => createContext({ detached: true, target: {} }));
 
             css({ color: "red" });
             capture(() => configure({ nonce: "late" }));
@@ -168,7 +174,7 @@ public sealed class JazorCssRuntimeTests
         Assert.AreEqual(0, result.ExitCode, result.StandardError);
         var messages = JsonSerializer.Deserialize<string[]>(result.StandardOutput.Trim());
         Assert.IsNotNull(messages);
-        Assert.HasCount(8, messages);
+        Assert.HasCount(14, messages);
         Assert.IsFalse(messages.Contains("missing-error", StringComparer.Ordinal));
         StringAssert.Contains(messages[0], "StyleId");
         StringAssert.Contains(messages[1], "at least one frame");
@@ -177,7 +183,13 @@ public sealed class JazorCssRuntimeTests
         StringAssert.Contains(messages[4], "at-rule");
         StringAssert.Contains(messages[5], "unclosed");
         StringAssert.Contains(messages[6], "structural delimiter");
-        StringAssert.Contains(messages[7], "before the first style registration");
+        StringAssert.Contains(messages[7], "cannot be empty");
+        StringAssert.Contains(messages[8], "does not accept a prelude");
+        StringAssert.Contains(messages[9], "must not include '@'");
+        StringAssert.Contains(messages[10], "Invalid at-rule name");
+        StringAssert.Contains(messages[11], "Invalid at-rule name");
+        StringAssert.Contains(messages[12], "detached CSS context");
+        StringAssert.Contains(messages[13], "before the first style registration");
     }
 
     [TestMethod]
@@ -357,5 +369,170 @@ public sealed class JazorCssRuntimeTests
         StringAssert.Contains(messages[0], "non-style element");
         StringAssert.Contains(messages[1], "not owned");
         StringAssert.Contains(messages[2], "nonce does not match");
+    }
+
+    [TestMethod]
+    public async Task Runtime_IsolatedContextsProvideDeterministicNamesSnapshotsAndAtRules()
+    {
+        var result = await JazorCssModuleTestHost.RunDenoAsync(
+            """
+            import {
+              createContext,
+              classIn,
+              keyframesIn,
+              globalIn,
+              atRuleIn,
+              extract,
+              extractFrom,
+              snapshotFrom
+            } from "./runtime.mjs";
+
+            const first = createContext({ detached: true, styleId: "ssr-css", nonce: "nonce-ssr" });
+            const second = createContext({ detached: true });
+            const rule = { color: "red", display: "grid" };
+            const firstName = classIn(first, rule);
+            const secondName = classIn(second, rule);
+            const animation = keyframesIn(first, [
+              { selector: "from", declarations: { opacity: "0" } },
+              { selector: "to", declarations: { opacity: "1" } }
+            ]);
+            globalIn(first, "html, body", { margin: "0" });
+            atRuleIn(first, {
+              name: "PAGE",
+              prelude: ":first",
+              declarations: { margin: "0" },
+              children: [{
+                name: "top-left",
+                declarations: { content: "'Jazor'" }
+              }]
+            });
+
+            const snapshot = snapshotFrom(first);
+            console.log(JSON.stringify({
+              firstName,
+              secondName,
+              animation,
+              firstCss: extractFrom(first),
+              secondCss: extractFrom(second),
+              defaultCss: extract(),
+              snapshot
+            }));
+            """);
+
+        Assert.AreEqual(0, result.ExitCode, result.StandardError);
+        using var json = JsonDocument.Parse(result.StandardOutput.Trim());
+        var root = json.RootElement;
+        Assert.AreEqual(root.GetProperty("firstName").GetString(), root.GetProperty("secondName").GetString());
+        Assert.AreEqual(string.Empty, root.GetProperty("defaultCss").GetString());
+        StringAssert.Contains(root.GetProperty("secondCss").GetString() ?? string.Empty, "{color:red;display:grid;}");
+
+        var firstCss = root.GetProperty("firstCss").GetString() ?? string.Empty;
+        StringAssert.Contains(firstCss, "@keyframes " + root.GetProperty("animation").GetString());
+        StringAssert.Contains(firstCss, "html,body{margin:0;}");
+        StringAssert.Contains(firstCss, "@page :first{margin:0;@top-left{content:'Jazor';}}");
+
+        var snapshot = root.GetProperty("snapshot");
+        Assert.AreEqual("ssr-css", snapshot.GetProperty("styleId").GetString());
+        Assert.AreEqual("nonce-ssr", snapshot.GetProperty("nonce").GetString());
+        Assert.AreEqual(firstCss, snapshot.GetProperty("cssText").GetString());
+        StringAssert.StartsWith(snapshot.GetProperty("hydrationText").GetString(), "/*jazor-css:v1*//*jz:v1:");
+    }
+
+    [TestMethod]
+    public async Task Runtime_ModernGroupingAtRulesPreserveStructuredNestingAndOrder()
+    {
+        var result = await JazorCssModuleTestHost.RunDenoAsync(
+            """
+            import { css, extract } from "./runtime.mjs";
+
+            const name = css({
+              color: "black",
+              $children: [
+                { kind: "layer", prelude: "components", rule: { color: "red" } },
+                { kind: "container", prelude: "card (width > 20rem)", rule: { display: "grid" } },
+                { kind: "scope", prelude: "(.shell) to (.limit)", rule: {
+                    $children: [{ kind: "selector", prelude: "> button", rule: { color: "blue" } }]
+                } },
+                { kind: "starting-style", prelude: null, rule: { opacity: "0" } }
+              ]
+            });
+
+            console.log(JSON.stringify({ name, css: extract() }));
+            """);
+
+        Assert.AreEqual(0, result.ExitCode, result.StandardError);
+        using var json = JsonDocument.Parse(result.StandardOutput.Trim());
+        var name = json.RootElement.GetProperty("name").GetString();
+        Assert.IsNotNull(name);
+        Assert.AreEqual(
+            "." + name + "{color:black;}" +
+            "@layer components{." + name + "{color:red;}}" +
+            "@container card (width > 20rem){." + name + "{display:grid;}}" +
+            "@scope (.shell) to (.limit){." + name + " > button{color:blue;}}" +
+            "@starting-style{." + name + "{opacity:0;}}",
+            json.RootElement.GetProperty("css").GetString());
+    }
+
+    [TestMethod]
+    public async Task Runtime_TargetContextCreatesAndAdoptsOneOwnedStylePerFragment()
+    {
+        var result = await JazorCssModuleTestHost.RunDenoAsync(
+            """
+            import { createContext, classIn, snapshotFrom } from "./runtime.mjs";
+
+            class Element {
+              constructor(localName, ownerDocument) {
+                this.localName = localName;
+                this.ownerDocument = ownerDocument;
+                this.id = "";
+                this.nonce = "";
+                this.textContent = "";
+              }
+              appendChild(node) {
+                if (typeof node.data === "string") this.textContent += node.data;
+                return node;
+              }
+            }
+            const document = {
+              createElement(localName) { return new Element(localName, this); },
+              createTextNode(data) { return { data }; }
+            };
+            const target = {
+              ownerDocument: document,
+              children: [],
+              byId: new Map(),
+              getElementById(id) { return this.byId.get(id) ?? null; },
+              appendChild(node) {
+                this.children.push(node);
+                this.byId.set(node.id, node);
+                return node;
+              }
+            };
+
+            const first = createContext({ target, styleId: "shadow-css", nonce: "shadow-nonce" });
+            const firstName = classIn(first, { color: "red" });
+            const beforeReload = target.children[0].textContent;
+            const second = createContext({ target, styleId: "shadow-css", nonce: "shadow-nonce" });
+            const secondName = classIn(second, { color: "red" });
+            const snapshot = snapshotFrom(second);
+
+            console.log(JSON.stringify({
+              firstName,
+              secondName,
+              styleCount: target.children.length,
+              unchanged: beforeReload === target.children[0].textContent,
+              nonce: target.children[0].nonce,
+              snapshot
+            }));
+            """);
+
+        Assert.AreEqual(0, result.ExitCode, result.StandardError);
+        using var json = JsonDocument.Parse(result.StandardOutput.Trim());
+        var root = json.RootElement;
+        Assert.AreEqual(root.GetProperty("firstName").GetString(), root.GetProperty("secondName").GetString());
+        Assert.AreEqual(1, root.GetProperty("styleCount").GetInt32());
+        Assert.IsTrue(root.GetProperty("unchanged").GetBoolean());
+        Assert.AreEqual("shadow-nonce", root.GetProperty("nonce").GetString());
+        StringAssert.Contains(root.GetProperty("snapshot").GetProperty("cssText").GetString() ?? string.Empty, "{color:red;}");
     }
 }

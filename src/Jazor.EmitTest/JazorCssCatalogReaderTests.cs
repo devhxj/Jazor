@@ -21,6 +21,10 @@ public sealed class JazorCssCatalogReaderTests
         Assert.AreEqual("Jazor.Css.Css", module.TypeName);
         Assert.AreEqual("Jazor.Css/runtime.mjs", module.RelativePath);
         StringAssert.Contains(module.Content, "export function css(");
+        StringAssert.Contains(module.Content, "export function createContext(");
+        StringAssert.Contains(module.Content, "export function classIn(");
+        StringAssert.Contains(module.Content, "export function atRuleIn(");
+        StringAssert.Contains(module.Content, "export function snapshotFrom(");
         Assert.HasCount(64, module.Hash);
         Assert.AreEqual("Jazor.Css/runtime.mjs.map", module.SourceMapRelativePath);
         Assert.HasCount(64, module.MapHash!);

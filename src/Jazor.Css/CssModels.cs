@@ -35,14 +35,26 @@ public enum CssChildKind
     Media,
 
     [Description("@#supports")]
-    Supports
+    Supports,
+
+    [Description("@#container")]
+    Container,
+
+    [Description("@#layer")]
+    Layer,
+
+    [Description("@#scope")]
+    Scope,
+
+    [Description("@#starting-style")]
+    StartingStyle
 }
 
 [ECMAScript]
 [Description("@#")]
 public sealed record CssChild(
     CssChildKind Kind,
-    string Prelude,
+    string? Prelude,
     CssRule Rule);
 
 [ECMAScript]
@@ -53,9 +65,77 @@ public sealed record CssFrame(
 
 [ECMAScript]
 [Description("@#")]
+public sealed record CssAtRule(
+    string Name,
+    CssDeclarations Declarations,
+    string? Prelude = null,
+    CssAtRule[]? Children = null);
+
+[ECMAScript]
+[Description("@#")]
 public sealed record CssOptions
 {
     public string? StyleId { get; init; }
 
     public string? Nonce { get; init; }
+
+    public DocumentFragment? Target { get; init; }
+
+    public bool Detached { get; init; }
+}
+
+[ECMAScript]
+[Description("@#")]
+public sealed record CssSnapshot(
+    string StyleId,
+    string? Nonce,
+    string CssText,
+    string HydrationText);
+
+[ECMAScript]
+[Description("@#")]
+public sealed record CssContext
+{
+    internal CssContext(bool initialized)
+    {
+    }
+
+    [Description("@#$namesByCanonical")]
+    internal Map<string, string> NamesByCanonical { get; init; } = null!;
+
+    [Description("@#$canonicalByName")]
+    internal Map<string, string> CanonicalByName { get; init; } = null!;
+
+    [Description("@#$bodyById")]
+    internal Map<string, string> BodyById { get; init; } = null!;
+
+    [Description("@#$entryIds")]
+    internal Array<string> EntryIds { get; set; } = null!;
+
+    [Description("@#$entryBodies")]
+    internal Array<string> EntryBodies { get; set; } = null!;
+
+    [Description("@#$styleId")]
+    internal string StyleId { get; set; } = null!;
+
+    [Description("@#$nonce")]
+    internal string? Nonce { get; set; }
+
+    [Description("@#$target")]
+    internal DocumentFragment? Target { get; set; }
+
+    [Description("@#$detached")]
+    internal bool Detached { get; set; }
+
+    [Description("@#$hasRegistered")]
+    internal bool HasRegistered { get; set; }
+
+    [Description("@#$domStyle")]
+    internal HTMLStyleElement? DomStyle { get; set; }
+
+    [Description("@#$domDocument")]
+    internal Document? DomDocument { get; set; }
+
+    [Description("@#$domHydrated")]
+    internal bool DomHydrated { get; set; }
 }

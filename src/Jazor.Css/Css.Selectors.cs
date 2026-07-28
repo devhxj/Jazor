@@ -198,15 +198,23 @@ public static partial class Css
         return output.Join("");
     }
 
-    private static void ValidateConditionPrelude(string prelude)
+    private static void ValidateAtRulePrelude(string prelude, string label, bool allowsEmpty)
     {
+        if (prelude.Length == 0)
+        {
+            if (!allowsEmpty)
+                Fail(label + " cannot be empty.");
+
+            return;
+        }
+
         if (prelude.StartsWith("@"))
-            Fail("Conditional prelude cannot start with an at-rule.");
+            Fail(label + " cannot start with an at-rule.");
 
         if (prelude.IndexOf(";") >= 0 || prelude.IndexOf("{") >= 0 || prelude.IndexOf("}") >= 0)
-            Fail("Conditional prelude contains an invalid structural delimiter.");
+            Fail(label + " contains an invalid structural delimiter.");
 
-        SplitSelectorList(prelude, "Conditional prelude");
+        SplitSelectorList(prelude, label);
     }
 
     private static string NormalizeFrameSelector(string selector)

@@ -5,65 +5,87 @@ public static partial class Css
     private const string RootMarker = "/*jazor-css:v1*/";
     private const string EntryMarkerPrefix = "/*jz:v1:";
 
-    private static HTMLStyleElement? DomStyle;
-    private static bool DomHydrated;
-
-    private static void EnsureDomStyle()
+    private static void EnsureDomStyle(CssContext context)
     {
-        if (DomHydrated)
+        if (context.Detached || context.DomHydrated)
             return;
 
-        if (ECMAScript.Global.TypeOf(ECMAScript.Global.Document) == "undefined")
-            return;
-
-        var domDocument = ECMAScript.Global.Document;
-        var existing = domDocument.GetElementById(StyleId);
-        if (existing is null)
+        Document domDocument;
+        Element? existing;
+        Node insertionTarget;
+        if (context.Target is null)
         {
-            if (EntryIds.Length == 0)
+            if (ECMAScript.Global.TypeOf(ECMAScript.Global.Document) == "undefined")
                 return;
 
+            domDocument = ECMAScript.Global.Document;
+            existing = domDocument.GetElementById(context.StyleId);
             var head = domDocument.Head;
             if (head is null)
+            {
+                if (context.EntryIds.Length == 0)
+                    return;
+
                 Fail("Jazor.Css requires document.head to inject styles.");
+            }
+
+            insertionTarget = head!;
+        }
+        else
+        {
+            var ownerDocument = context.Target.OwnerDocument;
+            if (ownerDocument is null)
+                Fail("Jazor.Css target must belong to a document.");
+
+            domDocument = ownerDocument!;
+            existing = context.Target.GetElementById(context.StyleId);
+            insertionTarget = context.Target;
+        }
+
+        if (existing is null)
+        {
+            if (context.EntryIds.Length == 0)
+                return;
 
             var style = (HTMLStyleElement)domDocument.CreateElement("style", new ElementCreationOptions());
-            style.Id = StyleId;
-            if (Nonce is not null)
-                style.Nonce = Nonce;
+            style.Id = context.StyleId;
+            if (context.Nonce is not null)
+                style.Nonce = context.Nonce;
 
             style.TextContent = RootMarker;
-            head!.AppendChild(style);
-            DomStyle = style;
-            DomHydrated = true;
+            insertionTarget.AppendChild(style);
+            context.DomStyle = style;
+            context.DomDocument = domDocument;
+            context.DomHydrated = true;
 
-            for (var index = 0; index < EntryIds.Length; index++)
-                AppendDomEntry(EntryIds[index], EntryBodies[index]);
+            for (var index = 0; index < context.EntryIds.Length; index++)
+                AppendDomEntry(context, context.EntryIds[index], context.EntryBodies[index]);
 
             return;
         }
 
         if (existing.LocalName != "style")
-            Fail("Jazor.Css StyleId '" + StyleId + "' is already used by a non-style element.");
+            Fail("Jazor.Css StyleId '" + context.StyleId + "' is already used by a non-style element.");
 
         var existingStyle = (HTMLStyleElement)existing;
         var text = existingStyle.TextContent ?? "";
         if (!text.StartsWith(RootMarker))
-            Fail("Jazor.Css StyleId '" + StyleId + "' is not owned by Jazor.Css.");
+            Fail("Jazor.Css StyleId '" + context.StyleId + "' is not owned by Jazor.Css.");
 
-        if (Nonce is not null && existingStyle.Nonce != Nonce)
+        if (context.Nonce is not null && existingStyle.Nonce != context.Nonce)
             Fail("Jazor.Css nonce does not match the existing style element.");
 
-        DomStyle = existingStyle;
-        AdoptDomEntries(domDocument, text);
-        DomHydrated = true;
-        HasRegistered = EntryIds.Length > 0;
+        context.DomStyle = existingStyle;
+        context.DomDocument = domDocument;
+        AdoptDomEntries(context, domDocument, text);
+        context.DomHydrated = true;
+        context.HasRegistered = context.EntryIds.Length > 0;
     }
 
-    private static void AdoptDomEntries(Document document, string text)
+    private static void AdoptDomEntries(CssContext context, Document document, string text)
     {
-        var memoryIds = EntryIds;
-        var memoryBodies = EntryBodies;
+        var memoryIds = context.EntryIds;
+        var memoryBodies = context.EntryBodies;
         var adoptedIds = new Array<string>();
         var adoptedBodies = new Array<string>();
         var adoptedBodyById = new Map<string, string>();
@@ -119,14 +141,14 @@ public static partial class Css
             adoptedBodyById.Set(id, body);
             adoptedIds.Push(id);
             adoptedBodies.Push(body);
-            AppendTextNode(document, FormatDomEntry(id, body));
+            AppendTextNode(context, document, FormatDomEntry(id, body));
         }
 
-        EntryIds = adoptedIds;
-        EntryBodies = adoptedBodies;
-        BodyById.Clear();
-        for (var index = 0; index < EntryIds.Length; index++)
-            BodyById.Set(EntryIds[index], EntryBodies[index]);
+        context.EntryIds = adoptedIds;
+        context.EntryBodies = adoptedBodies;
+        context.BodyById.Clear();
+        for (var index = 0; index < context.EntryIds.Length; index++)
+            context.BodyById.Set(context.EntryIds[index], context.EntryBodies[index]);
     }
 
     private static int ParseEntryLength(string value)
@@ -147,22 +169,36 @@ public static partial class Css
         return result;
     }
 
-    private static void AppendDomEntry(string id, string body)
+    private static void AppendDomEntry(CssContext context, string id, string body)
     {
-        if (DomStyle is null)
+        if (context.DomStyle is null)
             return;
 
-        AppendTextNode(ECMAScript.Global.Document, FormatDomEntry(id, body));
+        var document = context.DomDocument;
+        if (document is null)
+            Fail("Jazor.Css style element must belong to a document.");
+
+        AppendTextNode(context, document!, FormatDomEntry(id, body));
     }
 
     private static string FormatDomEntry(string id, string body)
         => EntryMarkerPrefix + id + ":" + StringFn(body.Length) + "*/" + body;
 
-    private static void AppendTextNode(Document document, string text)
+    private static string BuildHydrationText(CssContext context)
     {
-        if (DomStyle is null)
+        var output = new Array<string>();
+        output.Push(RootMarker);
+        for (var index = 0; index < context.EntryIds.Length; index++)
+            output.Push(FormatDomEntry(context.EntryIds[index], context.EntryBodies[index]));
+
+        return output.Join("");
+    }
+
+    private static void AppendTextNode(CssContext context, Document document, string text)
+    {
+        if (context.DomStyle is null)
             return;
 
-        DomStyle.AppendChild(document.CreateTextNode(text));
+        context.DomStyle.AppendChild(document.CreateTextNode(text));
     }
 }

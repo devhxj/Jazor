@@ -38,13 +38,9 @@ The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyz
 
 ## Latest Updates
 
-### 2026-07-28
+### 2026-07-29
 
-- Razor-to-Vue generation is now an explicit `Jazor.Vue` package, while shared analyzers and compiler assets remain owned by `Jazor` and are loaded once.
-- `Jazor.Admin` provides UI-library-neutral admin-shell contracts and native RazorVue shell components; applications retain ownership of concrete pages, forms, and tables.
-- `Jazor.Css` provides deterministic, framework-neutral CSS-in-JS authoring with generated CSS properties, nested selectors, keyframes, global rules, DOM injection, hydration, and extraction.
-- RazorVue lowers component semantics through Acornima AST and preserves zero, one, or many nodes across forwarded, named, and scoped slots without JavaScript text round-trips.
-- The toolchain and public Vue ecosystem packages target .NET 11 Preview 6.
+- `Jazor.Css` provides deterministic, framework-neutral CSS-in-JS authoring with generated properties, modern structured at-rules, isolated registries, Shadow DOM targets, SSR snapshots, and idempotent hydration.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 
@@ -60,8 +56,8 @@ Razor SDK projects opt in explicitly:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.31" />
-  <PackageReference Include="Jazor.Vue" Version="0.1.31" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.1.32" />
+  <PackageReference Include="Jazor.Vue" Version="0.1.32" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -69,11 +65,11 @@ Add ecosystem packages explicitly when needed:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.31" />
-  <PackageReference Include="Jazor.Css" Version="0.1.31" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.31" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.31" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.31" />
+  <PackageReference Include="Jazor" Version="0.1.32" />
+  <PackageReference Include="Jazor.Css" Version="0.1.32" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.32" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.32" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.32" />
 </ItemGroup>
 ```
 
@@ -162,7 +158,7 @@ var actionClass = Css.Class(new CssRule
 });
 ```
 
-The package generates standard CSS properties from Webref, derives stable names from normalized content, and manages one nonce-aware browser stylesheet. `Css.Class` returns a plain string and works in ordinary modules and RazorVue `class` attributes without an adapter. It uses the existing `JazorMode` output contract and does not add CSS-specific MSBuild properties.
+The package generates standard CSS properties from Webref, derives stable names from normalized content, and manages nonce-aware stylesheets for `document` or `ShadowRoot`. Detached `CssContext` instances provide request-local extraction and hydration snapshots. `Css.Class` remains a plain string and works in ordinary modules and RazorVue `class` attributes without an adapter. The package uses the existing `JazorMode` output contract and adds no CSS-specific MSBuild property.
 
 See the [Jazor.Css package guide](src/Jazor.Css/README.md) and [design boundary](docs/01-%E7%9B%AE%E6%A0%87/jazor.css/README.md).
 

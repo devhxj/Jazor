@@ -38,13 +38,9 @@ Jazor 是一套使用 C# 和 Razor 构建 JavaScript 与 Vue 应用的 .NET 工�
 
 ## 最新更新
 
-### 2026-07-28
+### 2026-07-29
 
-- Razor-to-Vue 生成现在通过 `Jazor.Vue` 显式启用；共享分析器和编译器资产继续由 `Jazor` 统一提供并只加载一次。
-- `Jazor.Admin` 提供不泄漏具体 UI 库的管理后台壳层契约和原生 RazorVue 组件；具体页面、表单和表格仍由应用负责。
-- `Jazor.Css` 提供确定性、框架无关的 CSS-in-JS 编写能力，包括生成的 CSS 属性、嵌套选择器、关键帧、全局规则、DOM 注入、水合和提取。
-- RazorVue 通过 Acornima AST 降低组件语义，并在转发、命名和作用域 slot 中正确保留零个、一个或多个节点，不再进行 JavaScript 文本往返转换。
-- 工具链和公开 Vue 生态包已面向 .NET 11 Preview 6。
+- `Jazor.Css` 提供确定性、框架无关的 CSS-in-JS 编写能力，包括生成属性、现代结构化 at-rule、隔离注册表、Shadow DOM 目标、SSR 快照与幂等水合。
 
 完整历史见 [release notes](docs/releases/release-notes.md)。
 
@@ -60,8 +56,8 @@ Razor SDK 项目需显式启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.31" />
-  <PackageReference Include="Jazor.Vue" Version="0.1.31" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.1.32" />
+  <PackageReference Include="Jazor.Vue" Version="0.1.32" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -69,11 +65,11 @@ Razor SDK 项目需显式启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.31" />
-  <PackageReference Include="Jazor.Css" Version="0.1.31" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.31" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.31" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.31" />
+  <PackageReference Include="Jazor" Version="0.1.32" />
+  <PackageReference Include="Jazor.Css" Version="0.1.32" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.32" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.32" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.32" />
 </ItemGroup>
 ```
 
@@ -162,7 +158,7 @@ var actionClass = Css.Class(new CssRule
 });
 ```
 
-该包从 Webref 生成标准 CSS 属性，根据规范化内容生成稳定名称，并管理一个支持 CSP nonce 的浏览器样式节点。`Css.Class` 返回普通字符串，可直接用于常规模块和 RazorVue 的 `class` 属性，无需适配层。它复用现有 `JazorMode` 输出合同，不增加 CSS 专用 MSBuild 属性。
+该包从 Webref 生成标准 CSS 属性，根据规范化内容生成稳定名称，并为 `document` 或 `ShadowRoot` 管理支持 CSP nonce 的样式节点。独立的 detached `CssContext` 提供请求级提取与水合快照。`Css.Class` 仍返回普通字符串，可直接用于常规模块和 RazorVue 的 `class` 属性，无需适配层；构建继续复用 `JazorMode`，不增加 CSS 专用 MSBuild 属性。
 
 详细合同见 [Jazor.Css 包指南](src/Jazor.Css/README.md)与[目标边界](docs/01-%E7%9B%AE%E6%A0%87/jazor.css/README.md)。
 

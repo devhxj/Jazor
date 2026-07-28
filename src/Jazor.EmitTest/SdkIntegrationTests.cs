@@ -178,6 +178,10 @@ public sealed class SdkIntegrationTests
         var appModule = await File.ReadAllTextAsync(appPath);
         StringAssert.Contains(appModule, "from \"Jazor.Css/runtime.mjs\"");
         StringAssert.Contains(appModule, "\"background-color\": \"#1769aa\"");
+        StringAssert.Contains(appModule, "createContext");
+        StringAssert.Contains(appModule, "classIn");
+        StringAssert.Contains(appModule, "atRuleIn");
+        StringAssert.Contains(appModule, "snapshotFrom");
 
         var manifest = LoadManifest(manifestPath);
         var runtimeEntry = manifest.Modules.Single(static entry => entry.RelativePath == "Jazor.Css/runtime.mjs");
@@ -200,6 +204,8 @@ public sealed class SdkIntegrationTests
         var bundle = (await File.ReadAllTextAsync(bundlePath)).ReplaceLineEndings("\n");
         StringAssert.Contains(bundle, "jazor-css:v1");
         StringAssert.Contains(bundle, "jz-");
+        StringAssert.Contains(bundle, "font-face");
+        StringAssert.Contains(bundle, "server-css");
         StringAssert.Contains(bundle, "sourceMappingURL=bundle.js.map");
         Assert.IsFalse(bundle.Contains("from \"Jazor.Css/runtime.mjs\"", StringComparison.Ordinal), bundle);
     }
@@ -2146,11 +2152,36 @@ public sealed class SdkIntegrationTests
             [ECMAScriptModule("app.mjs")]
             public static class AppModule
             {
-                public static string ButtonClass() => Css.Class(new CssRule
+                private static readonly CssContext Context = Css.CreateContext(new CssOptions
+                {
+                    Detached = true,
+                    StyleId = "server-css"
+                });
+
+                public static string ButtonClass() => Css.ClassIn(Context, new CssRule
                 {
                     Color = "white",
-                    BackgroundColor = "#1769aa"
+                    BackgroundColor = "#1769aa",
+                    Children =
+                    [
+                        new(CssChildKind.Container, "toolbar (width > 30rem)", new CssRule
+                        {
+                            Display = "grid"
+                        })
+                    ]
                 });
+
+                public static CssSnapshot Snapshot()
+                {
+                    Css.AtRuleIn(Context, new CssAtRule(
+                        "font-face",
+                        new CssDeclarations
+                        {
+                            FontFamily = "Jazor Sans",
+                            ["src"] = "url(jazor.woff2)"
+                        }));
+                    return Css.SnapshotFrom(Context);
+                }
             }
             """);
 

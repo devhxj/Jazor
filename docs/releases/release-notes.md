@@ -1,5 +1,11 @@
 # Release Notes
 
+## 2026-07-29
+
+- `Jazor.Css` now supports isolated style contexts, request-local extraction, hydration snapshots, and nonce-aware style ownership for both `document` and `ShadowRoot` targets.
+- Structured styling now covers `@container`, `@layer`, `@scope`, `@starting-style`, and declaration-block at-rules such as `@font-face`, `@property`, `@counter-style`, and nested `@page` rules without accepting raw CSS.
+- Existing class names, keyframe names, global rules, DOM framing, RazorVue string consumption, and the standard `JazorMode` debug/release workflow remain compatible.
+
 ## 2026-07-28
 
 - RazorVue now consumes the final Roslyn compilation produced by the Razor Source Generator. It no longer requires Razor host outputs or reparsing generated C#.
