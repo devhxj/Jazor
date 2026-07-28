@@ -60,15 +60,6 @@ on:
 permissions:
   contents: read
 
-# RazorVue test suites run concurrently. Per AGENTS.md parallel-test stability rules,
-# each suite owns its resources. The SDK integration tests inside Jazor.EmitTest
-# (including the browser-smoke E2E) use unique temp workspaces and the
-# DENOHOST_ALLOW_CHECKSUM_BYPASS break-glass knob, which is required because the
-# local deno.metadata.json signature verification fails outside a signed-runtime
-# environment (see docs/04-补充/razorvue-debug-capability-boundary-2026-06-17.md).
-env:
-  DENOHOST_ALLOW_CHECKSUM_BYPASS: 'true'
-
 jobs:
   razorvue-test:
     name: Razor SG final-document boundary
