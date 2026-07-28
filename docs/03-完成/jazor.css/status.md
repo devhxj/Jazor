@@ -75,7 +75,7 @@ dotnet pack src/Jazor.Css/Jazor.Css.csproj -c Release
 - `Jazor.Css.Test` 共 15 项通过；
 - 真实浏览器验证通过 computed style、nonce、单节点所有权、模块重载、Shadow DOM 与 snapshot 水合；
 - RazorVue 聚焦用例 1 项通过；
-- Emit/Catalog/NuGet/debug/release 聚焦用例 6 项通过；
+- Emit/Catalog/NuGet/debug/release 聚焦用例 4 项通过；
 - `Jazor.slnx` 构建为 0 警告、0 错误；
 - Release 包内容与同版本精确依赖通过检查。
 
