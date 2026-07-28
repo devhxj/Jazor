@@ -59,13 +59,28 @@ Razor 组件最终生成 Vue render-function `.mjs` 模块，并由 `Jazor.Emit`
 | 路径 | 职责 |
 | --- | --- |
 | `src/Jazor.Vue/` | opt-in 包工程和 analyzer payload 打包 |
-| `src/Jazor.RazorVue.Generator/` | generator-driver Hook 与 catalog 生成 |
+| `src/Jazor.RazorVue/Generation/` | generator-driver Hook 与 catalog 生成 |
 | `src/Jazor.RazorVue/RazorSdk/` | Razor SG 生成 C# 绑定与组件候选选择 |
 | `src/Jazor.RazorVue/Runtime/` | Vue render-context 运行时资源 |
 | `src/Jazor.Compiler/` | Roslyn `IOperation` 语义降低 |
 | `src/Jazor.Emit/` | 产物物化、manifest、源映射和 bundle |
 
 RazorVue 中的 C# 表达式、成员访问、函数调用、临时变量、导入收集和 RenderTreeBuilder 语义必须通过 `Jazor.Compiler` 的翻译入口完成。RazorVue 仅负责其特有的组件边界和 Vue 产物封装。
+
+## 测试基线
+
+截至 2026-07-28，`Jazor.RazorVue.Sg.Test` 由测试执行器报告 `502/502` 通过。新增语义矩阵包含 406 个独立数据行，并由 inventory 测试锁定数量、ID、组件类型名和 direct-render 输入体唯一性：
+
+| 边界 | 用例数 | 覆盖内容 |
+| --- | ---: | --- |
+| direct render surface | 192 | 文本 48、markup 32、元素 48、attribute 64 |
+| component lowering | 64 | prop 32、event 8、bind 8、slot 16 |
+| control flow | 48 | 条件内容 16、条件 attribute 16、`foreach` 16 |
+| slot AST normalization | 32 | ESTree expression 分类与数组归一化 |
+| component candidate selection | 40 | source path、module、marker、生成/手写方法和嵌套类型真值表 |
+| `VueInject` contract | 30 | 强类型参数兼容、注册缓存和错误边界 |
+
+direct-render 矩阵共享一次 Roslyn `Compilation` 以控制运行时间，但每个数据行都独立执行组件绑定、member closure 和生产 `IOperation -> ESTree` emitter。端到端官方 Razor SG、generator-driver Hook、catalog、render-function 模块、导入、SourceMap 和失败诊断继续由同一项目中的独立集成测试覆盖；矩阵不替代这些端到端边界。
 
 ## 验证入口
 
