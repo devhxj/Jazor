@@ -61,14 +61,14 @@ public readonly struct VuetifyTimePickerModelValue : System.Runtime.CompilerServ
     private readonly string? _string;
     private readonly Date? _date;
 
-    private VuetifyTimePickerModelValue(string value)
+    public VuetifyTimePickerModelValue(string value)
     {
         _kind = 1;
         _string = value;
         _date = default;
     }
 
-    private VuetifyTimePickerModelValue(Date value)
+    public VuetifyTimePickerModelValue(Date value)
     {
         _kind = 2;
         _string = default;
@@ -117,7 +117,7 @@ public readonly struct VuetifyTimePickerAllowedUnits : System.Runtime.CompilerSe
 {
     private readonly Number[]? _values;
 
-    private VuetifyTimePickerAllowedUnits(Number[] values)
+    public VuetifyTimePickerAllowedUnits(Number[] values)
     {
         _values = values;
     }
@@ -165,14 +165,14 @@ public readonly struct VuetifyTimePickerAllowedUnitValue : System.Runtime.Compil
     private readonly VuetifyTimePickerAllowedUnits? _units;
     private readonly VuetifyTimePickerAllowedUnitResolver? _resolver;
 
-    private VuetifyTimePickerAllowedUnitValue(VuetifyTimePickerAllowedUnits units)
+    public VuetifyTimePickerAllowedUnitValue(VuetifyTimePickerAllowedUnits units)
     {
         _kind = 1;
         _units = units;
         _resolver = default;
     }
 
-    private VuetifyTimePickerAllowedUnitValue(VuetifyTimePickerAllowedUnitResolver resolver)
+    public VuetifyTimePickerAllowedUnitValue(VuetifyTimePickerAllowedUnitResolver resolver)
     {
         _kind = 2;
         _units = default;

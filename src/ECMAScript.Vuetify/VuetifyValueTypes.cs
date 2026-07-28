@@ -48,14 +48,14 @@ public readonly struct VuetifyAlertBorderValue : System.Runtime.CompilerServices
     private readonly bool? _bool;
     private readonly VuetifyAlertBorderSide? _side;
 
-    private VuetifyAlertBorderValue(bool value)
+    public VuetifyAlertBorderValue(bool value)
     {
         _kind = 1;
         _bool = value;
         _side = default;
     }
 
-    private VuetifyAlertBorderValue(VuetifyAlertBorderSide value)
+    public VuetifyAlertBorderValue(VuetifyAlertBorderSide value)
     {
         _kind = 2;
         _bool = default;
@@ -96,7 +96,7 @@ public readonly struct VuetifyAlertIconValue : System.Runtime.CompilerServices.I
     private readonly Symbol? _symbol;
     private readonly VueProps? _props;
 
-    private VuetifyAlertIconValue(string value)
+    public VuetifyAlertIconValue(string value)
     {
         _kind = 1;
         _string = value;
@@ -104,7 +104,7 @@ public readonly struct VuetifyAlertIconValue : System.Runtime.CompilerServices.I
         _props = default;
     }
 
-    private VuetifyAlertIconValue(Symbol value)
+    public VuetifyAlertIconValue(Symbol value)
     {
         _kind = 2;
         _string = default;
@@ -112,7 +112,7 @@ public readonly struct VuetifyAlertIconValue : System.Runtime.CompilerServices.I
         _props = default;
     }
 
-    private VuetifyAlertIconValue(VueProps value)
+    public VuetifyAlertIconValue(VueProps value)
     {
         _kind = 3;
         _string = default;
@@ -352,7 +352,7 @@ public readonly struct VuetifyStyleValues : System.Runtime.CompilerServices.IUni
 {
     private readonly VuetifyStyleValue[]? _values;
 
-    private VuetifyStyleValues(VuetifyStyleValue[] values)
+    public VuetifyStyleValues(VuetifyStyleValue[] values)
     {
         _values = values;
     }
@@ -400,7 +400,7 @@ public readonly struct VuetifyStyleValue : System.Runtime.CompilerServices.IUnio
     private readonly VueProps? _props;
     private readonly VuetifyStyleValues? _values;
 
-    private VuetifyStyleValue(string value)
+    public VuetifyStyleValue(string value)
     {
         _kind = 1;
         _string = value;
@@ -408,7 +408,7 @@ public readonly struct VuetifyStyleValue : System.Runtime.CompilerServices.IUnio
         _values = default;
     }
 
-    private VuetifyStyleValue(VueProps value)
+    public VuetifyStyleValue(VueProps value)
     {
         _kind = 2;
         _string = default;
@@ -416,7 +416,7 @@ public readonly struct VuetifyStyleValue : System.Runtime.CompilerServices.IUnio
         _values = default;
     }
 
-    private VuetifyStyleValue(VuetifyStyleValues value)
+    public VuetifyStyleValue(VuetifyStyleValues value)
     {
         _kind = 3;
         _string = default;
@@ -482,7 +482,7 @@ public readonly struct VuetifyAttachTarget : System.Runtime.CompilerServices.IUn
     private readonly string? _selector;
     private readonly Element? _element;
 
-    private VuetifyAttachTarget(bool value)
+    public VuetifyAttachTarget(bool value)
     {
         _kind = 1;
         _bool = value;
@@ -490,7 +490,7 @@ public readonly struct VuetifyAttachTarget : System.Runtime.CompilerServices.IUn
         _element = default;
     }
 
-    private VuetifyAttachTarget(string value)
+    public VuetifyAttachTarget(string value)
     {
         _kind = 2;
         _bool = default;
@@ -498,7 +498,7 @@ public readonly struct VuetifyAttachTarget : System.Runtime.CompilerServices.IUn
         _element = default;
     }
 
-    private VuetifyAttachTarget(Element value)
+    public VuetifyAttachTarget(Element value)
     {
         _kind = 3;
         _bool = default;
@@ -653,14 +653,14 @@ public readonly struct VuetifyListLines : System.Runtime.CompilerServices.IUnion
     private readonly bool? _bool;
     private readonly VuetifyListLineMode? _mode;
 
-    private VuetifyListLines(bool value)
+    public VuetifyListLines(bool value)
     {
         _kind = 1;
         _bool = value;
         _mode = default;
     }
 
-    private VuetifyListLines(VuetifyListLineMode value)
+    public VuetifyListLines(VuetifyListLineMode value)
     {
         _kind = 2;
         _bool = default;
@@ -700,14 +700,14 @@ public readonly struct VuetifyRippleValue : System.Runtime.CompilerServices.IUni
     private readonly bool? _bool;
     private readonly VueProps? _options;
 
-    private VuetifyRippleValue(bool value)
+    public VuetifyRippleValue(bool value)
     {
         _kind = 1;
         _bool = value;
         _options = default;
     }
 
-    private VuetifyRippleValue(VueProps value)
+    public VuetifyRippleValue(VueProps value)
     {
         _kind = 2;
         _bool = default;
@@ -769,14 +769,14 @@ public readonly struct VuetifyScrimValue : System.Runtime.CompilerServices.IUnio
     private readonly bool? _bool;
     private readonly string? _string;
 
-    private VuetifyScrimValue(bool value)
+    public VuetifyScrimValue(bool value)
     {
         _kind = 1;
         _bool = value;
         _string = default;
     }
 
-    private VuetifyScrimValue(string value)
+    public VuetifyScrimValue(string value)
     {
         _kind = 2;
         _bool = default;
@@ -817,7 +817,7 @@ public readonly struct VuetifyTransitionValue : System.Runtime.CompilerServices.
     private readonly string? _string;
     private readonly VueTransitionProps? _props;
 
-    private VuetifyTransitionValue(bool value)
+    public VuetifyTransitionValue(bool value)
     {
         _kind = 1;
         _bool = value;
@@ -825,7 +825,7 @@ public readonly struct VuetifyTransitionValue : System.Runtime.CompilerServices.
         _props = default;
     }
 
-    private VuetifyTransitionValue(string value)
+    public VuetifyTransitionValue(string value)
     {
         _kind = 2;
         _bool = default;
@@ -833,7 +833,7 @@ public readonly struct VuetifyTransitionValue : System.Runtime.CompilerServices.
         _props = default;
     }
 
-    private VuetifyTransitionValue(VueTransitionProps value)
+    public VuetifyTransitionValue(VueTransitionProps value)
     {
         _kind = 3;
         _bool = default;
@@ -890,14 +890,14 @@ public readonly struct VuetifyHideDetailsValue : System.Runtime.CompilerServices
     private readonly bool? _bool;
     private readonly VuetifyHideDetailsMode? _mode;
 
-    private VuetifyHideDetailsValue(bool value)
+    public VuetifyHideDetailsValue(bool value)
     {
         _kind = 1;
         _bool = value;
         _mode = default;
     }
 
-    private VuetifyHideDetailsValue(VuetifyHideDetailsMode value)
+    public VuetifyHideDetailsValue(VuetifyHideDetailsMode value)
     {
         _kind = 2;
         _bool = default;
@@ -937,14 +937,14 @@ public readonly struct VuetifyMessagesValue : System.Runtime.CompilerServices.IU
     private readonly string? _string;
     private readonly string[]? _strings;
 
-    private VuetifyMessagesValue(string value)
+    public VuetifyMessagesValue(string value)
     {
         _kind = 1;
         _string = value;
         _strings = default;
     }
 
-    private VuetifyMessagesValue(string[] value)
+    public VuetifyMessagesValue(string[] value)
     {
         _kind = 2;
         _string = default;
@@ -984,14 +984,14 @@ public readonly struct VuetifyAutoSelectFirstValue : System.Runtime.CompilerServ
     private readonly bool? _bool;
     private readonly VuetifyAutoSelectFirstMode? _mode;
 
-    private VuetifyAutoSelectFirstValue(bool value)
+    public VuetifyAutoSelectFirstValue(bool value)
     {
         _kind = 1;
         _bool = value;
         _mode = default;
     }
 
-    private VuetifyAutoSelectFirstValue(VuetifyAutoSelectFirstMode value)
+    public VuetifyAutoSelectFirstValue(VuetifyAutoSelectFirstMode value)
     {
         _kind = 2;
         _bool = default;
@@ -1031,14 +1031,14 @@ public readonly struct VuetifyFileShowSizeValue : System.Runtime.CompilerService
     private readonly bool? _bool;
     private readonly VuetifyFileSizeBase? _base;
 
-    private VuetifyFileShowSizeValue(bool value)
+    public VuetifyFileShowSizeValue(bool value)
     {
         _kind = 1;
         _bool = value;
         _base = default;
     }
 
-    private VuetifyFileShowSizeValue(VuetifyFileSizeBase value)
+    public VuetifyFileShowSizeValue(VuetifyFileSizeBase value)
     {
         _kind = 2;
         _bool = default;
@@ -1078,14 +1078,14 @@ public readonly struct VuetifyBooleanAlwaysValue : System.Runtime.CompilerServic
     private readonly bool? _bool;
     private readonly VuetifyAlwaysMode? _mode;
 
-    private VuetifyBooleanAlwaysValue(bool value)
+    public VuetifyBooleanAlwaysValue(bool value)
     {
         _kind = 1;
         _bool = value;
         _mode = default;
     }
 
-    private VuetifyBooleanAlwaysValue(VuetifyAlwaysMode value)
+    public VuetifyBooleanAlwaysValue(VuetifyAlwaysMode value)
     {
         _kind = 2;
         _bool = default;
@@ -1125,14 +1125,14 @@ public readonly struct VuetifyBooleanStringValue : System.Runtime.CompilerServic
     private readonly bool? _bool;
     private readonly string? _string;
 
-    private VuetifyBooleanStringValue(bool value)
+    public VuetifyBooleanStringValue(bool value)
     {
         _kind = 1;
         _bool = value;
         _string = default;
     }
 
-    private VuetifyBooleanStringValue(string value)
+    public VuetifyBooleanStringValue(string value)
     {
         _kind = 2;
         _bool = default;
@@ -1173,7 +1173,7 @@ public readonly struct VuetifyCounterValue : System.Runtime.CompilerServices.IUn
     private readonly Number? _number;
     private readonly string? _string;
 
-    private VuetifyCounterValue(bool value)
+    public VuetifyCounterValue(bool value)
     {
         _kind = 1;
         _bool = value;
@@ -1181,7 +1181,7 @@ public readonly struct VuetifyCounterValue : System.Runtime.CompilerServices.IUn
         _string = default;
     }
 
-    private VuetifyCounterValue(Number value)
+    public VuetifyCounterValue(Number value)
     {
         _kind = 2;
         _bool = default;
@@ -1189,7 +1189,7 @@ public readonly struct VuetifyCounterValue : System.Runtime.CompilerServices.IUn
         _string = default;
     }
 
-    private VuetifyCounterValue(string value)
+    public VuetifyCounterValue(string value)
     {
         _kind = 3;
         _bool = default;
@@ -1267,7 +1267,7 @@ public readonly struct VuetifyTextValue : System.Runtime.CompilerServices.IUnion
     private readonly Number? _number;
     private readonly bool? _bool;
 
-    private VuetifyTextValue(string value)
+    public VuetifyTextValue(string value)
     {
         _kind = 1;
         _string = value;
@@ -1275,7 +1275,7 @@ public readonly struct VuetifyTextValue : System.Runtime.CompilerServices.IUnion
         _bool = default;
     }
 
-    private VuetifyTextValue(Number value)
+    public VuetifyTextValue(Number value)
     {
         _kind = 2;
         _string = default;
@@ -1283,7 +1283,7 @@ public readonly struct VuetifyTextValue : System.Runtime.CompilerServices.IUnion
         _bool = default;
     }
 
-    private VuetifyTextValue(bool value)
+    public VuetifyTextValue(bool value)
     {
         _kind = 3;
         _string = default;
@@ -1361,7 +1361,7 @@ public readonly struct VuetifyRoundedValue : System.Runtime.CompilerServices.IUn
     private readonly Number? _number;
     private readonly string? _string;
 
-    private VuetifyRoundedValue(bool value)
+    public VuetifyRoundedValue(bool value)
     {
         _kind = 1;
         _bool = value;
@@ -1369,7 +1369,7 @@ public readonly struct VuetifyRoundedValue : System.Runtime.CompilerServices.IUn
         _string = default;
     }
 
-    private VuetifyRoundedValue(Number value)
+    public VuetifyRoundedValue(Number value)
     {
         _kind = 2;
         _bool = default;
@@ -1377,7 +1377,7 @@ public readonly struct VuetifyRoundedValue : System.Runtime.CompilerServices.IUn
         _string = default;
     }
 
-    private VuetifyRoundedValue(string value)
+    public VuetifyRoundedValue(string value)
     {
         _kind = 3;
         _bool = default;
@@ -1461,14 +1461,14 @@ public readonly struct VuetifyProgressCircularIndeterminateValue : System.Runtim
     private readonly bool? _bool;
     private readonly VuetifyProgressCircularIndeterminateMode? _mode;
 
-    private VuetifyProgressCircularIndeterminateValue(bool value)
+    public VuetifyProgressCircularIndeterminateValue(bool value)
     {
         _kind = 1;
         _bool = value;
         _mode = default;
     }
 
-    private VuetifyProgressCircularIndeterminateValue(VuetifyProgressCircularIndeterminateMode value)
+    public VuetifyProgressCircularIndeterminateValue(VuetifyProgressCircularIndeterminateMode value)
     {
         _kind = 2;
         _bool = default;
@@ -1508,14 +1508,14 @@ public readonly struct VuetifyFileModelValue : System.Runtime.CompilerServices.I
     private readonly File? _file;
     private readonly File[]? _files;
 
-    private VuetifyFileModelValue(File value)
+    public VuetifyFileModelValue(File value)
     {
         _kind = 1;
         _file = value;
         _files = default;
     }
 
-    private VuetifyFileModelValue(File[] value)
+    public VuetifyFileModelValue(File[] value)
     {
         _kind = 2;
         _file = default;
@@ -1553,7 +1553,7 @@ public readonly struct VuetifyRangeSliderModelValue : System.Runtime.CompilerSer
 {
     private readonly Number[]? _values;
 
-    private VuetifyRangeSliderModelValue(Number[] values)
+    public VuetifyRangeSliderModelValue(Number[] values)
     {
         _values = values;
     }
@@ -1666,7 +1666,7 @@ public readonly struct VuetifyNullableBoolean : System.Runtime.CompilerServices.
     private readonly byte _kind;
     private readonly bool? _bool;
 
-    private VuetifyNullableBoolean(bool value)
+    public VuetifyNullableBoolean(bool value)
     {
         _kind = 1;
         _bool = value;
@@ -1699,14 +1699,14 @@ public readonly struct VuetifyIconColorValue : System.Runtime.CompilerServices.I
     private readonly bool? _bool;
     private readonly string? _string;
 
-    private VuetifyIconColorValue(bool value)
+    public VuetifyIconColorValue(bool value)
     {
         _kind = 1;
         _bool = value;
         _string = default;
     }
 
-    private VuetifyIconColorValue(string value)
+    public VuetifyIconColorValue(string value)
     {
         _kind = 2;
         _bool = default;
@@ -1746,14 +1746,14 @@ public readonly struct VuetifyValidationResult : System.Runtime.CompilerServices
     private readonly bool? _bool;
     private readonly string? _string;
 
-    private VuetifyValidationResult(bool value)
+    public VuetifyValidationResult(bool value)
     {
         _kind = 1;
         _bool = value;
         _string = default;
     }
 
-    private VuetifyValidationResult(string value)
+    public VuetifyValidationResult(string value)
     {
         _kind = 2;
         _bool = default;
@@ -1799,7 +1799,7 @@ public readonly struct VuetifyValidationRule : System.Runtime.CompilerServices.I
     private readonly IPromise<VuetifyValidationResult>? _promise;
     private readonly VuetifyAsyncValidationRuleResolver? _asyncResolver;
 
-    private VuetifyValidationRule(VuetifyValidationResult value)
+    public VuetifyValidationRule(VuetifyValidationResult value)
     {
         _kind = 1;
         _result = value;
@@ -1808,7 +1808,7 @@ public readonly struct VuetifyValidationRule : System.Runtime.CompilerServices.I
         _asyncResolver = default;
     }
 
-    private VuetifyValidationRule(VuetifyValidationRuleResolver value)
+    public VuetifyValidationRule(VuetifyValidationRuleResolver value)
     {
         _kind = 2;
         _result = default;
@@ -1817,7 +1817,7 @@ public readonly struct VuetifyValidationRule : System.Runtime.CompilerServices.I
         _asyncResolver = default;
     }
 
-    private VuetifyValidationRule(IPromise<VuetifyValidationResult> value)
+    public VuetifyValidationRule(IPromise<VuetifyValidationResult> value)
     {
         _kind = 3;
         _result = default;
@@ -1826,7 +1826,7 @@ public readonly struct VuetifyValidationRule : System.Runtime.CompilerServices.I
         _asyncResolver = default;
     }
 
-    private VuetifyValidationRule(VuetifyAsyncValidationRuleResolver value)
+    public VuetifyValidationRule(VuetifyAsyncValidationRuleResolver value)
     {
         _kind = 4;
         _result = default;
@@ -1906,7 +1906,7 @@ public readonly struct VuetifyMobileValue : System.Runtime.CompilerServices.IUni
 {
     private readonly bool? _value;
 
-    private VuetifyMobileValue(bool value)
+    public VuetifyMobileValue(bool value)
     {
         _value = value;
     }
@@ -1935,7 +1935,7 @@ public readonly struct VuetifyBorderValue : System.Runtime.CompilerServices.IUni
     private readonly Number? _number;
     private readonly string? _string;
 
-    private VuetifyBorderValue(bool value)
+    public VuetifyBorderValue(bool value)
     {
         _kind = 1;
         _bool = value;
@@ -1943,7 +1943,7 @@ public readonly struct VuetifyBorderValue : System.Runtime.CompilerServices.IUni
         _string = default;
     }
 
-    private VuetifyBorderValue(Number value)
+    public VuetifyBorderValue(Number value)
     {
         _kind = 2;
         _bool = default;
@@ -1951,7 +1951,7 @@ public readonly struct VuetifyBorderValue : System.Runtime.CompilerServices.IUni
         _string = default;
     }
 
-    private VuetifyBorderValue(string value)
+    public VuetifyBorderValue(string value)
     {
         _kind = 3;
         _bool = default;
@@ -2030,7 +2030,7 @@ public readonly struct VuetifyIconValue : System.Runtime.CompilerServices.IUnion
     private readonly Symbol? _symbol;
     private readonly VueProps? _component;
 
-    private VuetifyIconValue(bool value)
+    public VuetifyIconValue(bool value)
     {
         _kind = 1;
         _bool = value;
@@ -2039,7 +2039,7 @@ public readonly struct VuetifyIconValue : System.Runtime.CompilerServices.IUnion
         _component = default;
     }
 
-    private VuetifyIconValue(string value)
+    public VuetifyIconValue(string value)
     {
         _kind = 2;
         _bool = default;
@@ -2048,7 +2048,7 @@ public readonly struct VuetifyIconValue : System.Runtime.CompilerServices.IUnion
         _component = default;
     }
 
-    private VuetifyIconValue(Symbol value)
+    public VuetifyIconValue(Symbol value)
     {
         _kind = 3;
         _bool = default;
@@ -2057,7 +2057,7 @@ public readonly struct VuetifyIconValue : System.Runtime.CompilerServices.IUnion
         _component = default;
     }
 
-    private VuetifyIconValue(VueProps value)
+    public VuetifyIconValue(VueProps value)
     {
         _kind = 4;
         _bool = default;
@@ -2122,14 +2122,14 @@ public readonly struct VuetifyCounterValueSource : System.Runtime.CompilerServic
     private readonly Number? _number;
     private readonly VuetifyCounterValueResolver? _resolver;
 
-    private VuetifyCounterValueSource(Number value)
+    public VuetifyCounterValueSource(Number value)
     {
         _kind = 1;
         _number = value;
         _resolver = default;
     }
 
-    private VuetifyCounterValueSource(VuetifyCounterValueResolver value)
+    public VuetifyCounterValueSource(VuetifyCounterValueResolver value)
     {
         _kind = 2;
         _number = default;

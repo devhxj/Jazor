@@ -15,7 +15,7 @@ public readonly struct VuetifySnackbarQueueMessages : System.Runtime.CompilerSer
 {
     private readonly VuetifySnackbarQueueMessage[]? _items;
 
-    private VuetifySnackbarQueueMessages(VuetifySnackbarQueueMessage[] items)
+    public VuetifySnackbarQueueMessages(VuetifySnackbarQueueMessage[] items)
     {
         _items = items;
     }
@@ -63,14 +63,14 @@ public readonly struct VuetifySnackbarQueueMessage : System.Runtime.CompilerServ
     private readonly string? _text;
     private readonly VuetifySnackbarQueueMessageOptions? _options;
 
-    private VuetifySnackbarQueueMessage(string value)
+    public VuetifySnackbarQueueMessage(string value)
     {
         _kind = 1;
         _text = value;
         _options = default;
     }
 
-    private VuetifySnackbarQueueMessage(VuetifySnackbarQueueMessageOptions value)
+    public VuetifySnackbarQueueMessage(VuetifySnackbarQueueMessageOptions value)
     {
         _kind = 2;
         _text = default;

@@ -15,7 +15,7 @@ public readonly struct VuetifyOverlayOffsetValues : System.Runtime.CompilerServi
 {
     private readonly Number[]? _values;
 
-    private VuetifyOverlayOffsetValues(Number[] values)
+    public VuetifyOverlayOffsetValues(Number[] values)
     {
         _values = values;
     }
@@ -60,7 +60,7 @@ public readonly struct VuetifyOverlayActivatorTarget : System.Runtime.CompilerSe
     private readonly VueComponentPublicInstance? _component;
     private readonly string? _string;
 
-    private VuetifyOverlayActivatorTarget(Element value)
+    public VuetifyOverlayActivatorTarget(Element value)
     {
         _kind = 1;
         _element = value;
@@ -68,7 +68,7 @@ public readonly struct VuetifyOverlayActivatorTarget : System.Runtime.CompilerSe
         _string = default;
     }
 
-    private VuetifyOverlayActivatorTarget(VueComponentPublicInstance value)
+    public VuetifyOverlayActivatorTarget(VueComponentPublicInstance value)
     {
         _kind = 2;
         _element = default;
@@ -76,7 +76,7 @@ public readonly struct VuetifyOverlayActivatorTarget : System.Runtime.CompilerSe
         _string = default;
     }
 
-    private VuetifyOverlayActivatorTarget(string value)
+    public VuetifyOverlayActivatorTarget(string value)
     {
         _kind = 3;
         _element = default;
@@ -130,7 +130,7 @@ public readonly struct VuetifyOverlayOffsetValue : System.Runtime.CompilerServic
     private readonly Number? _number;
     private readonly VuetifyOverlayOffsetValues? _values;
 
-    private VuetifyOverlayOffsetValue(string value)
+    public VuetifyOverlayOffsetValue(string value)
     {
         _kind = 1;
         _string = value;
@@ -138,7 +138,7 @@ public readonly struct VuetifyOverlayOffsetValue : System.Runtime.CompilerServic
         _values = default;
     }
 
-    private VuetifyOverlayOffsetValue(Number value)
+    public VuetifyOverlayOffsetValue(Number value)
     {
         _kind = 2;
         _string = default;
@@ -146,7 +146,7 @@ public readonly struct VuetifyOverlayOffsetValue : System.Runtime.CompilerServic
         _values = default;
     }
 
-    private VuetifyOverlayOffsetValue(VuetifyOverlayOffsetValues value)
+    public VuetifyOverlayOffsetValue(VuetifyOverlayOffsetValues value)
     {
         _kind = 3;
         _string = default;
@@ -234,7 +234,7 @@ public readonly struct VuetifyOriginValue : System.Runtime.CompilerServices.IUni
     private readonly VuetifyOriginMode? _mode;
     private readonly string? _custom;
 
-    private VuetifyOriginValue(VuetifyLocation value)
+    public VuetifyOriginValue(VuetifyLocation value)
     {
         _kind = 1;
         _location = value;
@@ -242,7 +242,7 @@ public readonly struct VuetifyOriginValue : System.Runtime.CompilerServices.IUni
         _custom = default;
     }
 
-    private VuetifyOriginValue(VuetifyOriginMode value)
+    public VuetifyOriginValue(VuetifyOriginMode value)
     {
         _kind = 2;
         _location = default;
@@ -250,7 +250,7 @@ public readonly struct VuetifyOriginValue : System.Runtime.CompilerServices.IUni
         _custom = default;
     }
 
-    private VuetifyOriginValue(string value)
+    public VuetifyOriginValue(string value)
     {
         _kind = 3;
         _location = default;
@@ -298,7 +298,7 @@ public readonly struct VuetifyOverlayCoordinateTarget : System.Runtime.CompilerS
 {
     private readonly Number[]? _values;
 
-    private VuetifyOverlayCoordinateTarget(Number[] values)
+    public VuetifyOverlayCoordinateTarget(Number[] values)
     {
         _values = values;
     }
@@ -334,7 +334,7 @@ public readonly struct VuetifyOverlayTarget : System.Runtime.CompilerServices.IU
     private readonly string? _string;
     private readonly VuetifyOverlayCoordinateTarget? _coordinates;
 
-    private VuetifyOverlayTarget(Element value)
+    public VuetifyOverlayTarget(Element value)
     {
         _kind = 1;
         _element = value;
@@ -343,7 +343,7 @@ public readonly struct VuetifyOverlayTarget : System.Runtime.CompilerServices.IU
         _coordinates = default;
     }
 
-    private VuetifyOverlayTarget(VueComponentPublicInstance value)
+    public VuetifyOverlayTarget(VueComponentPublicInstance value)
     {
         _kind = 2;
         _element = default;
@@ -352,7 +352,7 @@ public readonly struct VuetifyOverlayTarget : System.Runtime.CompilerServices.IU
         _coordinates = default;
     }
 
-    private VuetifyOverlayTarget(string value)
+    public VuetifyOverlayTarget(string value)
     {
         _kind = 3;
         _element = default;
@@ -361,7 +361,7 @@ public readonly struct VuetifyOverlayTarget : System.Runtime.CompilerServices.IU
         _coordinates = default;
     }
 
-    private VuetifyOverlayTarget(VuetifyOverlayCoordinateTarget value)
+    public VuetifyOverlayTarget(VuetifyOverlayCoordinateTarget value)
     {
         _kind = 4;
         _element = default;
@@ -429,7 +429,7 @@ public readonly struct VuetifyDialogTarget : System.Runtime.CompilerServices.IUn
     private readonly string? _string;
     private readonly VuetifyOverlayCoordinateTarget? _coordinates;
 
-    private VuetifyDialogTarget(Element value)
+    public VuetifyDialogTarget(Element value)
     {
         _kind = 1;
         _element = value;
@@ -438,7 +438,7 @@ public readonly struct VuetifyDialogTarget : System.Runtime.CompilerServices.IUn
         _coordinates = default;
     }
 
-    private VuetifyDialogTarget(VueComponentPublicInstance value)
+    public VuetifyDialogTarget(VueComponentPublicInstance value)
     {
         _kind = 2;
         _element = default;
@@ -447,7 +447,7 @@ public readonly struct VuetifyDialogTarget : System.Runtime.CompilerServices.IUn
         _coordinates = default;
     }
 
-    private VuetifyDialogTarget(string value)
+    public VuetifyDialogTarget(string value)
     {
         _kind = 3;
         _element = default;
@@ -456,7 +456,7 @@ public readonly struct VuetifyDialogTarget : System.Runtime.CompilerServices.IUn
         _coordinates = default;
     }
 
-    private VuetifyDialogTarget(VuetifyOverlayCoordinateTarget value)
+    public VuetifyDialogTarget(VuetifyOverlayCoordinateTarget value)
     {
         _kind = 4;
         _element = default;
@@ -523,7 +523,7 @@ public readonly struct VuetifyDialogActivatorTarget : System.Runtime.CompilerSer
     private readonly VueComponentPublicInstance? _component;
     private readonly string? _string;
 
-    private VuetifyDialogActivatorTarget(Element value)
+    public VuetifyDialogActivatorTarget(Element value)
     {
         _kind = 1;
         _element = value;
@@ -531,7 +531,7 @@ public readonly struct VuetifyDialogActivatorTarget : System.Runtime.CompilerSer
         _string = default;
     }
 
-    private VuetifyDialogActivatorTarget(VueComponentPublicInstance value)
+    public VuetifyDialogActivatorTarget(VueComponentPublicInstance value)
     {
         _kind = 2;
         _element = default;
@@ -539,7 +539,7 @@ public readonly struct VuetifyDialogActivatorTarget : System.Runtime.CompilerSer
         _string = default;
     }
 
-    private VuetifyDialogActivatorTarget(string value)
+    public VuetifyDialogActivatorTarget(string value)
     {
         _kind = 3;
         _element = default;

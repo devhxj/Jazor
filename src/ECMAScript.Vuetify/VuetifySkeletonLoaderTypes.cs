@@ -113,14 +113,14 @@ public readonly struct VuetifySkeletonLoaderTypeValue : System.Runtime.CompilerS
     private readonly VuetifySkeletonLoaderType? _type;
     private readonly string? _customType;
 
-    private VuetifySkeletonLoaderTypeValue(VuetifySkeletonLoaderType value)
+    public VuetifySkeletonLoaderTypeValue(VuetifySkeletonLoaderType value)
     {
         _kind = 1;
         _type = value;
         _customType = default;
     }
 
-    private VuetifySkeletonLoaderTypeValue(string value)
+    public VuetifySkeletonLoaderTypeValue(string value)
     {
         _kind = 2;
         _type = default;
@@ -159,7 +159,7 @@ public readonly struct VuetifySkeletonLoaderTypes : System.Runtime.CompilerServi
 {
     private readonly VuetifySkeletonLoaderTypeValue[]? _values;
 
-    private VuetifySkeletonLoaderTypes(VuetifySkeletonLoaderTypeValue[] values)
+    public VuetifySkeletonLoaderTypes(VuetifySkeletonLoaderTypeValue[] values)
     {
         _values = values;
     }
@@ -203,14 +203,14 @@ public readonly struct VuetifySkeletonLoaderTypeSetting : System.Runtime.Compile
     private readonly VuetifySkeletonLoaderTypeValue? _type;
     private readonly VuetifySkeletonLoaderTypes? _types;
 
-    private VuetifySkeletonLoaderTypeSetting(VuetifySkeletonLoaderTypeValue value)
+    public VuetifySkeletonLoaderTypeSetting(VuetifySkeletonLoaderTypeValue value)
     {
         _kind = 1;
         _type = value;
         _types = default;
     }
 
-    private VuetifySkeletonLoaderTypeSetting(VuetifySkeletonLoaderTypes value)
+    public VuetifySkeletonLoaderTypeSetting(VuetifySkeletonLoaderTypes value)
     {
         _kind = 2;
         _type = default;

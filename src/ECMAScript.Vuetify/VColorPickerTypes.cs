@@ -41,7 +41,7 @@ public readonly struct VuetifyColorPickerModes : System.Runtime.CompilerServices
 {
     private readonly VuetifyColorPickerMode[]? _modes;
 
-    private VuetifyColorPickerModes(VuetifyColorPickerMode[] modes)
+    public VuetifyColorPickerModes(VuetifyColorPickerMode[] modes)
     {
         _modes = modes;
     }
@@ -149,7 +149,7 @@ public readonly struct VuetifyColorValue : System.Runtime.CompilerServices.IUnio
     private readonly VuetifyHsvColor? _hsv;
     private readonly VuetifyHslColor? _hsl;
 
-    private VuetifyColorValue(string value)
+    public VuetifyColorValue(string value)
     {
         _kind = 1;
         _string = value;
@@ -159,7 +159,7 @@ public readonly struct VuetifyColorValue : System.Runtime.CompilerServices.IUnio
         _hsl = default;
     }
 
-    private VuetifyColorValue(Number value)
+    public VuetifyColorValue(Number value)
     {
         _kind = 2;
         _string = default;
@@ -169,7 +169,7 @@ public readonly struct VuetifyColorValue : System.Runtime.CompilerServices.IUnio
         _hsl = default;
     }
 
-    private VuetifyColorValue(VuetifyRgbColor value)
+    public VuetifyColorValue(VuetifyRgbColor value)
     {
         _kind = 3;
         _string = default;
@@ -179,7 +179,7 @@ public readonly struct VuetifyColorValue : System.Runtime.CompilerServices.IUnio
         _hsl = default;
     }
 
-    private VuetifyColorValue(VuetifyHsvColor value)
+    public VuetifyColorValue(VuetifyHsvColor value)
     {
         _kind = 4;
         _string = default;
@@ -189,7 +189,7 @@ public readonly struct VuetifyColorValue : System.Runtime.CompilerServices.IUnio
         _hsl = default;
     }
 
-    private VuetifyColorValue(VuetifyHslColor value)
+    public VuetifyColorValue(VuetifyHslColor value)
     {
         _kind = 5;
         _string = default;
@@ -289,7 +289,7 @@ public readonly struct VuetifyColorPickerSwatch : System.Runtime.CompilerService
 {
     private readonly VuetifyColorValue[]? _colors;
 
-    private VuetifyColorPickerSwatch(VuetifyColorValue[] colors)
+    public VuetifyColorPickerSwatch(VuetifyColorValue[] colors)
     {
         _colors = colors;
     }
@@ -351,7 +351,7 @@ public readonly struct VuetifyColorPickerSwatches : System.Runtime.CompilerServi
 {
     private readonly VuetifyColorPickerSwatch[]? _swatches;
 
-    private VuetifyColorPickerSwatches(VuetifyColorPickerSwatch[] swatches)
+    public VuetifyColorPickerSwatches(VuetifyColorPickerSwatch[] swatches)
     {
         _swatches = swatches;
     }

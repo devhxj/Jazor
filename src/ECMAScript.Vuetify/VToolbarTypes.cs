@@ -33,14 +33,14 @@ public readonly struct VuetifyToolbarDensityValue : System.Runtime.CompilerServi
     private readonly VuetifyToolbarDensity? _toolbarDensity;
     private readonly VuetifyDensity? _density;
 
-    private VuetifyToolbarDensityValue(VuetifyToolbarDensity value)
+    public VuetifyToolbarDensityValue(VuetifyToolbarDensity value)
     {
         _kind = 1;
         _toolbarDensity = value;
         _density = default;
     }
 
-    private VuetifyToolbarDensityValue(VuetifyDensity value)
+    public VuetifyToolbarDensityValue(VuetifyDensity value)
     {
         _kind = 2;
         _toolbarDensity = default;

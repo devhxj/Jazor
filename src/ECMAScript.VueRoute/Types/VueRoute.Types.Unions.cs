@@ -640,7 +640,7 @@ public readonly struct RouterErrorValue : IUnion
     /// Initializes from an Error value.
     /// </summary>
     /// <param name="value">错误对象。The error object.</param>
-    private RouterErrorValue(Error value)
+    public RouterErrorValue(Error value)
     {
         _kind = 1;
         _error = value;
@@ -658,7 +658,7 @@ public readonly struct RouterErrorValue : IUnion
     /// Initializes from a string value.
     /// </summary>
     /// <param name="value">错误字符串。The error string.</param>
-    private RouterErrorValue(string value)
+    public RouterErrorValue(string value)
     {
         _kind = 2;
         _error = default;
@@ -676,7 +676,7 @@ public readonly struct RouterErrorValue : IUnion
     /// Initializes from a Number value.
     /// </summary>
     /// <param name="value">错误数值。The error number value.</param>
-    private RouterErrorValue(Number value)
+    public RouterErrorValue(Number value)
     {
         _kind = 3;
         _error = default;
@@ -694,7 +694,7 @@ public readonly struct RouterErrorValue : IUnion
     /// Initializes from a bool value.
     /// </summary>
     /// <param name="value">错误布尔值。The error bool value.</param>
-    private RouterErrorValue(bool value)
+    public RouterErrorValue(bool value)
     {
         _kind = 4;
         _error = default;
@@ -712,7 +712,7 @@ public readonly struct RouterErrorValue : IUnion
     /// Initializes from a BigInt value.
     /// </summary>
     /// <param name="value">错误 BigInt 值。The error BigInt value.</param>
-    private RouterErrorValue(BigInt value)
+    public RouterErrorValue(BigInt value)
     {
         _kind = 5;
         _error = default;
@@ -730,7 +730,7 @@ public readonly struct RouterErrorValue : IUnion
     /// Initializes from a Symbol value.
     /// </summary>
     /// <param name="value">错误 Symbol 值。The error Symbol value.</param>
-    private RouterErrorValue(Symbol value)
+    public RouterErrorValue(Symbol value)
     {
         _kind = 6;
         _error = default;
@@ -748,7 +748,7 @@ public readonly struct RouterErrorValue : IUnion
     /// Initializes from an IObject value.
     /// </summary>
     /// <param name="value">错误对象。The error object.</param>
-    private RouterErrorValue(IObject value)
+    public RouterErrorValue(IObject value)
     {
         _kind = 7;
         _error = default;
@@ -766,7 +766,7 @@ public readonly struct RouterErrorValue : IUnion
     /// Initializes from an array of RouterErrorValue.
     /// </summary>
     /// <param name="value">错误值数组。The array of error values.</param>
-    private RouterErrorValue(Array<RouterErrorValue?> value)
+    public RouterErrorValue(Array<RouterErrorValue?> value)
     {
         _kind = 8;
         _error = default;

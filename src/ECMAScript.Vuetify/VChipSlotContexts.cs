@@ -42,14 +42,14 @@ public readonly struct VChipSelectedClassValue : System.Runtime.CompilerServices
     private readonly bool? _bool;
     private readonly string?[]? _classes;
 
-    private VChipSelectedClassValue(bool value)
+    public VChipSelectedClassValue(bool value)
     {
         _kind = 1;
         _bool = value;
         _classes = default;
     }
 
-    private VChipSelectedClassValue(string?[] value)
+    public VChipSelectedClassValue(string?[] value)
     {
         _kind = 2;
         _bool = default;

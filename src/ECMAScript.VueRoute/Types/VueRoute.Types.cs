@@ -2778,7 +2778,7 @@ public readonly struct RouterScrollResult : IUnion
 	private readonly ScrollPositionElement? _element;
 	private readonly ScrollPositionNormalized? _normalized;
 
-	private RouterScrollResult(bool value)
+	public RouterScrollResult(bool value)
 	{
 		_kind = 1;
 		_bool = value;
@@ -2787,7 +2787,7 @@ public readonly struct RouterScrollResult : IUnion
 		_normalized = default;
 	}
 
-	private RouterScrollResult(ScrollPositionCoordinates value)
+	public RouterScrollResult(ScrollPositionCoordinates value)
 	{
 		_kind = 2;
 		_bool = default;
@@ -2796,7 +2796,7 @@ public readonly struct RouterScrollResult : IUnion
 		_normalized = default;
 	}
 
-	private RouterScrollResult(ScrollPositionElement value)
+	public RouterScrollResult(ScrollPositionElement value)
 	{
 		_kind = 3;
 		_bool = default;
@@ -2805,7 +2805,7 @@ public readonly struct RouterScrollResult : IUnion
 		_normalized = default;
 	}
 
-	private RouterScrollResult(ScrollPositionNormalized value)
+	public RouterScrollResult(ScrollPositionNormalized value)
 	{
 		_kind = 4;
 		_bool = default;
@@ -2897,14 +2897,14 @@ public readonly struct RouterScrollHandler : IUnion
 	private readonly RouterScrollBehavior? _sync;
 	private readonly AsyncRouterScrollBehavior? _async;
 
-	private RouterScrollHandler(RouterScrollBehavior value)
+	public RouterScrollHandler(RouterScrollBehavior value)
 	{
 		_kind = 1;
 		_sync = value;
 		_async = default;
 	}
 
-	private RouterScrollHandler(AsyncRouterScrollBehavior value)
+	public RouterScrollHandler(AsyncRouterScrollBehavior value)
 	{
 		_kind = 2;
 		_sync = default;

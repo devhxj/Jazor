@@ -31,7 +31,7 @@ public readonly struct VuetifyDataIteratorItems : System.Runtime.CompilerService
 {
     private readonly VuetifyDataIteratorItem[]? _items;
 
-    private VuetifyDataIteratorItems(VuetifyDataIteratorItem[] items)
+    public VuetifyDataIteratorItems(VuetifyDataIteratorItem[] items)
     {
         _items = items;
     }
@@ -72,7 +72,7 @@ public readonly struct VuetifyDataIteratorSelectedValues : System.Runtime.Compil
 {
     private readonly VueValue[]? _values;
 
-    private VuetifyDataIteratorSelectedValues(VueValue[] values)
+    public VuetifyDataIteratorSelectedValues(VueValue[] values)
     {
         _values = values;
     }
@@ -186,14 +186,14 @@ public readonly struct VuetifyDataIteratorGroupedItem : System.Runtime.CompilerS
     private readonly VuetifyDataIteratorInternalItem? _item;
     private readonly VuetifyDataIteratorGroup? _group;
 
-    private VuetifyDataIteratorGroupedItem(VuetifyDataIteratorInternalItem value)
+    public VuetifyDataIteratorGroupedItem(VuetifyDataIteratorInternalItem value)
     {
         _kind = 1;
         _item = value;
         _group = default;
     }
 
-    private VuetifyDataIteratorGroupedItem(VuetifyDataIteratorGroup value)
+    public VuetifyDataIteratorGroupedItem(VuetifyDataIteratorGroup value)
     {
         _kind = 2;
         _item = default;

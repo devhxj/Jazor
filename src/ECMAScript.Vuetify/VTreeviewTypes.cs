@@ -78,7 +78,7 @@ public readonly struct VuetifyTreeviewValues : System.Runtime.CompilerServices.I
 {
     private readonly VueValue[]? _values;
 
-    private VuetifyTreeviewValues(VueValue[] values)
+    public VuetifyTreeviewValues(VueValue[] values)
     {
         _values = values;
     }
@@ -140,7 +140,7 @@ public readonly struct VuetifyTreeviewItems : System.Runtime.CompilerServices.IU
 {
     private readonly VuetifyTreeviewItemValue[]? _items;
 
-    private VuetifyTreeviewItems(VuetifyTreeviewItemValue[] items)
+    public VuetifyTreeviewItems(VuetifyTreeviewItemValue[] items)
     {
         _items = items;
     }
@@ -191,7 +191,7 @@ public readonly struct VuetifyTreeviewItemValue : System.Runtime.CompilerService
     private readonly bool? _boolean;
     private readonly VueProps? _object;
 
-    private VuetifyTreeviewItemValue(string value)
+    public VuetifyTreeviewItemValue(string value)
     {
         _kind = 1;
         _string = value;
@@ -201,7 +201,7 @@ public readonly struct VuetifyTreeviewItemValue : System.Runtime.CompilerService
         _object = default;
     }
 
-    private VuetifyTreeviewItemValue(VuetifyTreeviewItem value)
+    public VuetifyTreeviewItemValue(VuetifyTreeviewItem value)
     {
         _kind = 2;
         _string = default;
@@ -211,7 +211,7 @@ public readonly struct VuetifyTreeviewItemValue : System.Runtime.CompilerService
         _object = default;
     }
 
-    private VuetifyTreeviewItemValue(Number value)
+    public VuetifyTreeviewItemValue(Number value)
     {
         _kind = 3;
         _string = default;
@@ -221,7 +221,7 @@ public readonly struct VuetifyTreeviewItemValue : System.Runtime.CompilerService
         _object = default;
     }
 
-    private VuetifyTreeviewItemValue(bool value)
+    public VuetifyTreeviewItemValue(bool value)
     {
         _kind = 4;
         _string = default;
@@ -231,7 +231,7 @@ public readonly struct VuetifyTreeviewItemValue : System.Runtime.CompilerService
         _object = default;
     }
 
-    private VuetifyTreeviewItemValue(VueProps value)
+    public VuetifyTreeviewItemValue(VueProps value)
     {
         _kind = 5;
         _string = default;
@@ -366,7 +366,7 @@ public readonly struct VuetifyTreeviewActiveStrategyValue : System.Runtime.Compi
     private readonly VuetifyTreeviewActiveStrategyDefinition? _definition;
     private readonly VuetifyTreeviewActiveStrategyFactory? _factory;
 
-    private VuetifyTreeviewActiveStrategyValue(VuetifyTreeviewActiveStrategy value)
+    public VuetifyTreeviewActiveStrategyValue(VuetifyTreeviewActiveStrategy value)
     {
         _kind = 1;
         _name = value;
@@ -374,7 +374,7 @@ public readonly struct VuetifyTreeviewActiveStrategyValue : System.Runtime.Compi
         _factory = default;
     }
 
-    private VuetifyTreeviewActiveStrategyValue(VuetifyTreeviewActiveStrategyDefinition value)
+    public VuetifyTreeviewActiveStrategyValue(VuetifyTreeviewActiveStrategyDefinition value)
     {
         _kind = 2;
         _name = default;
@@ -382,7 +382,7 @@ public readonly struct VuetifyTreeviewActiveStrategyValue : System.Runtime.Compi
         _factory = default;
     }
 
-    private VuetifyTreeviewActiveStrategyValue(VuetifyTreeviewActiveStrategyFactory value)
+    public VuetifyTreeviewActiveStrategyValue(VuetifyTreeviewActiveStrategyFactory value)
     {
         _kind = 3;
         _name = default;
@@ -437,7 +437,7 @@ public readonly struct VuetifyTreeviewSelectStrategyValue : System.Runtime.Compi
     private readonly VuetifyTreeviewSelectStrategyDefinition? _definition;
     private readonly VuetifyTreeviewSelectStrategyFactory? _factory;
 
-    private VuetifyTreeviewSelectStrategyValue(VuetifyTreeviewSelectStrategy value)
+    public VuetifyTreeviewSelectStrategyValue(VuetifyTreeviewSelectStrategy value)
     {
         _kind = 1;
         _name = value;
@@ -445,7 +445,7 @@ public readonly struct VuetifyTreeviewSelectStrategyValue : System.Runtime.Compi
         _factory = default;
     }
 
-    private VuetifyTreeviewSelectStrategyValue(VuetifyTreeviewSelectStrategyDefinition value)
+    public VuetifyTreeviewSelectStrategyValue(VuetifyTreeviewSelectStrategyDefinition value)
     {
         _kind = 2;
         _name = default;
@@ -453,7 +453,7 @@ public readonly struct VuetifyTreeviewSelectStrategyValue : System.Runtime.Compi
         _factory = default;
     }
 
-    private VuetifyTreeviewSelectStrategyValue(VuetifyTreeviewSelectStrategyFactory value)
+    public VuetifyTreeviewSelectStrategyValue(VuetifyTreeviewSelectStrategyFactory value)
     {
         _kind = 3;
         _name = default;

@@ -29,7 +29,7 @@ public readonly struct VuetifyConfirmEditActions : System.Runtime.CompilerServic
 {
     private readonly VuetifyConfirmEditAction[]? _actions;
 
-    private VuetifyConfirmEditActions(VuetifyConfirmEditAction[] actions)
+    public VuetifyConfirmEditActions(VuetifyConfirmEditAction[] actions)
     {
         _actions = actions;
     }
@@ -71,14 +71,14 @@ public readonly struct VuetifyConfirmEditDisabled : System.Runtime.CompilerServi
     private readonly bool? _bool;
     private readonly VuetifyConfirmEditActions? _actions;
 
-    private VuetifyConfirmEditDisabled(bool value)
+    public VuetifyConfirmEditDisabled(bool value)
     {
         _kind = 1;
         _bool = value;
         _actions = default;
     }
 
-    private VuetifyConfirmEditDisabled(VuetifyConfirmEditActions value)
+    public VuetifyConfirmEditDisabled(VuetifyConfirmEditActions value)
     {
         _kind = 2;
         _bool = default;

@@ -750,7 +750,7 @@ public static partial class Vue3
 	{
 		private readonly Number[]? _values;
 
-		private VueNumberPair(Number[] values)
+		public VueNumberPair(Number[] values)
 		{
 			ArgumentNullException.ThrowIfNull(values);
 			if (values.Length != 2)
@@ -916,7 +916,7 @@ public static partial class Vue3
 	{
 		private readonly string[]? _values;
 
-		private VueStringPair(string[] values)
+		public VueStringPair(string[] values)
 		{
 			ArgumentNullException.ThrowIfNull(values);
 			if (values.Length != 2)
@@ -1006,7 +1006,7 @@ public static partial class Vue3
 	{
 		private readonly Date[]? _values;
 
-		private VueDatePair(Date[] values)
+		public VueDatePair(Date[] values)
 		{
 			ArgumentNullException.ThrowIfNull(values);
 			if (values.Length != 2)

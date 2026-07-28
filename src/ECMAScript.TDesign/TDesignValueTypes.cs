@@ -466,14 +466,14 @@ public readonly struct TDesignDimensionValue : IUnion
     private readonly Number? _number;
     private readonly string? _string;
 
-    private TDesignDimensionValue(Number value)
+    public TDesignDimensionValue(Number value)
     {
         _kind = 1;
         _number = value;
         _string = default;
     }
 
-    private TDesignDimensionValue(string value)
+    public TDesignDimensionValue(string value)
     {
         _kind = 2;
         _number = default;
@@ -539,7 +539,7 @@ public readonly struct TDesignDimensionValues : IUnion, IEnumerable<TDesignDimen
 {
     private readonly TDesignDimensionValue[]? _values;
 
-    private TDesignDimensionValues(TDesignDimensionValue[] values)
+    public TDesignDimensionValues(TDesignDimensionValue[] values)
     {
         _values = values;
     }
@@ -577,14 +577,14 @@ public readonly struct TDesignMenuWidthValue : IUnion
     private readonly TDesignDimensionValue? _value;
     private readonly TDesignDimensionValues? _values;
 
-    private TDesignMenuWidthValue(TDesignDimensionValue value)
+    public TDesignMenuWidthValue(TDesignDimensionValue value)
     {
         _kind = 1;
         _value = value;
         _values = default;
     }
 
-    private TDesignMenuWidthValue(TDesignDimensionValues value)
+    public TDesignMenuWidthValue(TDesignDimensionValues value)
     {
         _kind = 2;
         _value = default;
@@ -661,7 +661,7 @@ public readonly struct TDesignSpaceSizeValue : IUnion
     private readonly string? _string;
     private readonly TDesignSize? _size;
 
-    private TDesignSpaceSizeValue(Number value)
+    public TDesignSpaceSizeValue(Number value)
     {
         _kind = 1;
         _number = value;
@@ -669,7 +669,7 @@ public readonly struct TDesignSpaceSizeValue : IUnion
         _size = default;
     }
 
-    private TDesignSpaceSizeValue(string value)
+    public TDesignSpaceSizeValue(string value)
     {
         _kind = 2;
         _number = default;
@@ -677,7 +677,7 @@ public readonly struct TDesignSpaceSizeValue : IUnion
         _size = default;
     }
 
-    private TDesignSpaceSizeValue(TDesignSize value)
+    public TDesignSpaceSizeValue(TDesignSize value)
     {
         _kind = 3;
         _number = default;
@@ -753,7 +753,7 @@ public readonly struct TDesignSpaceSizeValues : IUnion, IEnumerable<TDesignSpace
 {
     private readonly TDesignSpaceSizeValue[]? _values;
 
-    private TDesignSpaceSizeValues(TDesignSpaceSizeValue[] values)
+    public TDesignSpaceSizeValues(TDesignSpaceSizeValue[] values)
     {
         _values = values;
     }
@@ -791,14 +791,14 @@ public readonly struct TDesignSpaceSize : IUnion
     private readonly TDesignSpaceSizeValue? _value;
     private readonly TDesignSpaceSizeValues? _values;
 
-    private TDesignSpaceSize(TDesignSpaceSizeValue value)
+    public TDesignSpaceSize(TDesignSpaceSizeValue value)
     {
         _kind = 1;
         _value = value;
         _values = default;
     }
 
-    private TDesignSpaceSize(TDesignSpaceSizeValues value)
+    public TDesignSpaceSize(TDesignSpaceSizeValues value)
     {
         _kind = 2;
         _value = default;
@@ -877,14 +877,14 @@ public readonly struct TDesignMenuValue : IUnion
     private readonly Number? _number;
     private readonly string? _string;
 
-    private TDesignMenuValue(Number value)
+    public TDesignMenuValue(Number value)
     {
         _kind = 1;
         _number = value;
         _string = default;
     }
 
-    private TDesignMenuValue(string value)
+    public TDesignMenuValue(string value)
     {
         _kind = 2;
         _number = default;
@@ -951,14 +951,14 @@ public readonly struct TDesignMenuQueryValue : IUnion
     private readonly string? _string;
     private readonly string[]? _strings;
 
-    private TDesignMenuQueryValue(string value)
+    public TDesignMenuQueryValue(string value)
     {
         _kind = 1;
         _string = value;
         _strings = default;
     }
 
-    private TDesignMenuQueryValue(string[] value)
+    public TDesignMenuQueryValue(string[] value)
     {
         _kind = 2;
         _string = default;
@@ -1024,14 +1024,14 @@ public readonly struct TDesignMenuRouteTarget : IUnion
     private readonly string? _string;
     private readonly TDesignMenuRoute? _route;
 
-    private TDesignMenuRouteTarget(string value)
+    public TDesignMenuRouteTarget(string value)
     {
         _kind = 1;
         _string = value;
         _route = default;
     }
 
-    private TDesignMenuRouteTarget(TDesignMenuRoute value)
+    public TDesignMenuRouteTarget(TDesignMenuRoute value)
     {
         _kind = 2;
         _string = default;

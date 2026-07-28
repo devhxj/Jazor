@@ -48,7 +48,7 @@ public readonly struct VuetifyCalendarDateValue : System.Runtime.CompilerService
     private readonly string? _string;
     private readonly Number? _number;
 
-    private VuetifyCalendarDateValue(Date value)
+    public VuetifyCalendarDateValue(Date value)
     {
         _kind = 1;
         _date = value;
@@ -56,7 +56,7 @@ public readonly struct VuetifyCalendarDateValue : System.Runtime.CompilerService
         _number = default;
     }
 
-    private VuetifyCalendarDateValue(string value)
+    public VuetifyCalendarDateValue(string value)
     {
         _kind = 2;
         _date = default;
@@ -64,7 +64,7 @@ public readonly struct VuetifyCalendarDateValue : System.Runtime.CompilerService
         _number = default;
     }
 
-    private VuetifyCalendarDateValue(Number value)
+    public VuetifyCalendarDateValue(Number value)
     {
         _kind = 3;
         _date = default;
@@ -144,7 +144,7 @@ public readonly struct VuetifyCalendarDateValues : System.Runtime.CompilerServic
 {
     private readonly VuetifyCalendarDateValue[]? _values;
 
-    private VuetifyCalendarDateValues(VuetifyCalendarDateValue[] values)
+    public VuetifyCalendarDateValues(VuetifyCalendarDateValue[] values)
     {
         _values = values;
     }
@@ -207,14 +207,14 @@ public readonly struct VuetifyCalendarAllowedDatesValue : System.Runtime.Compile
     private readonly VuetifyCalendarDateValues? _dates;
     private readonly VuetifyCalendarAllowedDateResolver? _resolver;
 
-    private VuetifyCalendarAllowedDatesValue(VuetifyCalendarDateValues dates)
+    public VuetifyCalendarAllowedDatesValue(VuetifyCalendarDateValues dates)
     {
         _kind = 1;
         _dates = dates;
         _resolver = default;
     }
 
-    private VuetifyCalendarAllowedDatesValue(VuetifyCalendarAllowedDateResolver resolver)
+    public VuetifyCalendarAllowedDatesValue(VuetifyCalendarAllowedDateResolver resolver)
     {
         _kind = 2;
         _dates = default;
@@ -299,7 +299,7 @@ public readonly struct VuetifyCalendarEvents : System.Runtime.CompilerServices.I
 {
     private readonly VuetifyCalendarEventItem[]? _events;
 
-    private VuetifyCalendarEvents(VuetifyCalendarEventItem[] events)
+    public VuetifyCalendarEvents(VuetifyCalendarEventItem[] events)
     {
         _events = events;
     }
@@ -407,14 +407,14 @@ public readonly struct VuetifyCalendarIntervalFormatValue : System.Runtime.Compi
     private readonly string? _format;
     private readonly VuetifyCalendarIntervalFormatter? _formatter;
 
-    private VuetifyCalendarIntervalFormatValue(string value)
+    public VuetifyCalendarIntervalFormatValue(string value)
     {
         _kind = 1;
         _format = value;
         _formatter = default;
     }
 
-    private VuetifyCalendarIntervalFormatValue(VuetifyCalendarIntervalFormatter value)
+    public VuetifyCalendarIntervalFormatValue(VuetifyCalendarIntervalFormatter value)
     {
         _kind = 2;
         _format = default;

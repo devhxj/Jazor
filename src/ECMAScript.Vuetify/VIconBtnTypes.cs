@@ -53,7 +53,7 @@ public readonly struct VIconBtnSizeMap : System.Runtime.CompilerServices.IUnion,
 {
     private readonly VIconBtnSizeEntry[]? _entries;
 
-    private VIconBtnSizeMap(VIconBtnSizeEntry[] entries)
+    public VIconBtnSizeMap(VIconBtnSizeEntry[] entries)
     {
         _entries = entries;
     }
@@ -96,7 +96,7 @@ public readonly struct VIconBtnTextValue : System.Runtime.CompilerServices.IUnio
     private readonly Number? _number;
     private readonly string? _string;
 
-    private VIconBtnTextValue(bool value)
+    public VIconBtnTextValue(bool value)
     {
         _kind = 1;
         _bool = value;
@@ -104,7 +104,7 @@ public readonly struct VIconBtnTextValue : System.Runtime.CompilerServices.IUnio
         _string = default;
     }
 
-    private VIconBtnTextValue(Number value)
+    public VIconBtnTextValue(Number value)
     {
         _kind = 2;
         _bool = default;
@@ -112,7 +112,7 @@ public readonly struct VIconBtnTextValue : System.Runtime.CompilerServices.IUnio
         _string = default;
     }
 
-    private VIconBtnTextValue(string value)
+    public VIconBtnTextValue(string value)
     {
         _kind = 3;
         _bool = default;

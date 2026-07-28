@@ -15,7 +15,7 @@ public readonly struct VuetifyStepperItems : System.Runtime.CompilerServices.IUn
 {
     private readonly VuetifyStepperItemValue[]? _items;
 
-    private VuetifyStepperItems(VuetifyStepperItemValue[] items)
+    public VuetifyStepperItems(VuetifyStepperItemValue[] items)
     {
         _items = items;
     }
@@ -63,14 +63,14 @@ public readonly struct VuetifyStepperItemValue : System.Runtime.CompilerServices
     private readonly string? _string;
     private readonly VuetifyStepperItem? _item;
 
-    private VuetifyStepperItemValue(string value)
+    public VuetifyStepperItemValue(string value)
     {
         _kind = 1;
         _string = value;
         _item = default;
     }
 
-    private VuetifyStepperItemValue(VuetifyStepperItem value)
+    public VuetifyStepperItemValue(VuetifyStepperItem value)
     {
         _kind = 2;
         _string = default;

@@ -15,14 +15,14 @@ public readonly struct VuetifyDisplayBreakpoint : System.Runtime.CompilerService
     private readonly string? _string;
     private readonly Number? _number;
 
-    private VuetifyDisplayBreakpoint(string value)
+    public VuetifyDisplayBreakpoint(string value)
     {
         _kind = 1;
         _string = value;
         _number = default;
     }
 
-    private VuetifyDisplayBreakpoint(Number value)
+    public VuetifyDisplayBreakpoint(Number value)
     {
         _kind = 2;
         _string = default;

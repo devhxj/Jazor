@@ -15,7 +15,7 @@ public readonly struct VuetifySelectItems : System.Runtime.CompilerServices.IUni
 {
     private readonly VuetifySelectItemValue[]? _items;
 
-    private VuetifySelectItems(VuetifySelectItemValue[] items)
+    public VuetifySelectItems(VuetifySelectItemValue[] items)
     {
         _items = items;
     }
@@ -55,7 +55,7 @@ public readonly struct VuetifySelectModelValues : System.Runtime.CompilerService
 {
     private readonly VuetifySelectModelValue[]? _values;
 
-    private VuetifySelectModelValues(VuetifySelectModelValue[] values)
+    public VuetifySelectModelValues(VuetifySelectModelValue[] values)
     {
         _values = values;
     }
@@ -121,7 +121,7 @@ public readonly struct VuetifySelectModelValue : System.Runtime.CompilerServices
     private readonly VueProps? _object;
     private readonly VuetifySelectModelValues? _values;
 
-    private VuetifySelectModelValue(string value)
+    public VuetifySelectModelValue(string value)
     {
         _kind = 1;
         _string = value;
@@ -132,7 +132,7 @@ public readonly struct VuetifySelectModelValue : System.Runtime.CompilerServices
         _values = default;
     }
 
-    private VuetifySelectModelValue(Number value)
+    public VuetifySelectModelValue(Number value)
     {
         _kind = 2;
         _string = default;
@@ -143,7 +143,7 @@ public readonly struct VuetifySelectModelValue : System.Runtime.CompilerServices
         _values = default;
     }
 
-    private VuetifySelectModelValue(bool value)
+    public VuetifySelectModelValue(bool value)
     {
         _kind = 3;
         _string = default;
@@ -154,7 +154,7 @@ public readonly struct VuetifySelectModelValue : System.Runtime.CompilerServices
         _values = default;
     }
 
-    private VuetifySelectModelValue(Symbol value)
+    public VuetifySelectModelValue(Symbol value)
     {
         _kind = 4;
         _string = default;
@@ -165,7 +165,7 @@ public readonly struct VuetifySelectModelValue : System.Runtime.CompilerServices
         _values = default;
     }
 
-    private VuetifySelectModelValue(VueProps value)
+    public VuetifySelectModelValue(VueProps value)
     {
         _kind = 5;
         _string = default;
@@ -176,7 +176,7 @@ public readonly struct VuetifySelectModelValue : System.Runtime.CompilerServices
         _values = default;
     }
 
-    private VuetifySelectModelValue(VuetifySelectModelValues value)
+    public VuetifySelectModelValue(VuetifySelectModelValues value)
     {
         _kind = 6;
         _string = default;
@@ -310,7 +310,7 @@ public readonly struct VuetifySelectItemValue : System.Runtime.CompilerServices.
     private readonly bool? _boolean;
     private readonly VueProps? _object;
 
-    private VuetifySelectItemValue(string value)
+    public VuetifySelectItemValue(string value)
     {
         _kind = 1;
         _string = value;
@@ -320,7 +320,7 @@ public readonly struct VuetifySelectItemValue : System.Runtime.CompilerServices.
         _object = default;
     }
 
-    private VuetifySelectItemValue(VuetifySelectItem value)
+    public VuetifySelectItemValue(VuetifySelectItem value)
     {
         _kind = 2;
         _string = default;
@@ -330,7 +330,7 @@ public readonly struct VuetifySelectItemValue : System.Runtime.CompilerServices.
         _object = default;
     }
 
-    private VuetifySelectItemValue(Number value)
+    public VuetifySelectItemValue(Number value)
     {
         _kind = 3;
         _string = default;
@@ -340,7 +340,7 @@ public readonly struct VuetifySelectItemValue : System.Runtime.CompilerServices.
         _object = default;
     }
 
-    private VuetifySelectItemValue(bool value)
+    public VuetifySelectItemValue(bool value)
     {
         _kind = 4;
         _string = default;
@@ -350,7 +350,7 @@ public readonly struct VuetifySelectItemValue : System.Runtime.CompilerServices.
         _object = default;
     }
 
-    private VuetifySelectItemValue(VueProps value)
+    public VuetifySelectItemValue(VueProps value)
     {
         _kind = 5;
         _string = default;
@@ -472,7 +472,7 @@ public readonly struct VuetifySelectItemKey : System.Runtime.CompilerServices.IU
     private readonly VuetifySelectItemKeySelector? _selector;
     private readonly bool? _boolean;
 
-    private VuetifySelectItemKey(string value)
+    public VuetifySelectItemKey(string value)
     {
         _kind = 1;
         _string = value;
@@ -481,7 +481,7 @@ public readonly struct VuetifySelectItemKey : System.Runtime.CompilerServices.IU
         _boolean = default;
     }
 
-    private VuetifySelectItemKey(string[] value)
+    public VuetifySelectItemKey(string[] value)
     {
         _kind = 2;
         _string = default;
@@ -490,7 +490,7 @@ public readonly struct VuetifySelectItemKey : System.Runtime.CompilerServices.IU
         _boolean = default;
     }
 
-    private VuetifySelectItemKey(VuetifySelectItemKeySelector value)
+    public VuetifySelectItemKey(VuetifySelectItemKeySelector value)
     {
         _kind = 3;
         _string = default;
@@ -499,7 +499,7 @@ public readonly struct VuetifySelectItemKey : System.Runtime.CompilerServices.IU
         _boolean = default;
     }
 
-    private VuetifySelectItemKey(bool value)
+    public VuetifySelectItemKey(bool value)
     {
         _kind = 4;
         _string = default;
@@ -563,7 +563,7 @@ public readonly struct VuetifySelectItemPropsSelector : System.Runtime.CompilerS
     private readonly VuetifySelectItemPropsCallback? _callback;
     private readonly bool? _boolean;
 
-    private VuetifySelectItemPropsSelector(string value)
+    public VuetifySelectItemPropsSelector(string value)
     {
         _kind = 1;
         _string = value;
@@ -572,7 +572,7 @@ public readonly struct VuetifySelectItemPropsSelector : System.Runtime.CompilerS
         _boolean = default;
     }
 
-    private VuetifySelectItemPropsSelector(string[] value)
+    public VuetifySelectItemPropsSelector(string[] value)
     {
         _kind = 2;
         _string = default;
@@ -581,7 +581,7 @@ public readonly struct VuetifySelectItemPropsSelector : System.Runtime.CompilerS
         _boolean = default;
     }
 
-    private VuetifySelectItemPropsSelector(VuetifySelectItemPropsCallback value)
+    public VuetifySelectItemPropsSelector(VuetifySelectItemPropsCallback value)
     {
         _kind = 3;
         _string = default;
@@ -590,7 +590,7 @@ public readonly struct VuetifySelectItemPropsSelector : System.Runtime.CompilerS
         _boolean = default;
     }
 
-    private VuetifySelectItemPropsSelector(bool value)
+    public VuetifySelectItemPropsSelector(bool value)
     {
         _kind = 4;
         _string = default;
@@ -676,14 +676,14 @@ public readonly struct VuetifyFilterKeys : System.Runtime.CompilerServices.IUnio
     private readonly string? _string;
     private readonly string[]? _strings;
 
-    private VuetifyFilterKeys(string value)
+    public VuetifyFilterKeys(string value)
     {
         _kind = 1;
         _string = value;
         _strings = default;
     }
 
-    private VuetifyFilterKeys(string[] value)
+    public VuetifyFilterKeys(string[] value)
     {
         _kind = 2;
         _string = default;
@@ -725,7 +725,7 @@ public readonly struct VuetifyFilterMatch : System.Runtime.CompilerServices.IUni
     private readonly Number[]? _range;
     private readonly Number[][]? _ranges;
 
-    private VuetifyFilterMatch(bool value)
+    public VuetifyFilterMatch(bool value)
     {
         _kind = 1;
         _boolean = value;
@@ -734,7 +734,7 @@ public readonly struct VuetifyFilterMatch : System.Runtime.CompilerServices.IUni
         _ranges = default;
     }
 
-    private VuetifyFilterMatch(Number value)
+    public VuetifyFilterMatch(Number value)
     {
         _kind = 2;
         _boolean = default;
@@ -743,7 +743,7 @@ public readonly struct VuetifyFilterMatch : System.Runtime.CompilerServices.IUni
         _ranges = default;
     }
 
-    private VuetifyFilterMatch(Number[] value)
+    public VuetifyFilterMatch(Number[] value)
     {
         _kind = 3;
         _boolean = default;
@@ -752,7 +752,7 @@ public readonly struct VuetifyFilterMatch : System.Runtime.CompilerServices.IUni
         _ranges = default;
     }
 
-    private VuetifyFilterMatch(Number[][] value)
+    public VuetifyFilterMatch(Number[][] value)
     {
         _kind = 4;
         _boolean = default;
@@ -862,14 +862,14 @@ public readonly struct VuetifySelectItemPropsValue : System.Runtime.CompilerServ
     private readonly VuetifyItemProps? _props;
     private readonly bool? _boolean;
 
-    private VuetifySelectItemPropsValue(VuetifyItemProps value)
+    public VuetifySelectItemPropsValue(VuetifyItemProps value)
     {
         _kind = 1;
         _props = value;
         _boolean = default;
     }
 
-    private VuetifySelectItemPropsValue(bool value)
+    public VuetifySelectItemPropsValue(bool value)
     {
         _kind = 2;
         _props = default;
@@ -920,7 +920,7 @@ public readonly struct VuetifyBreadcrumbItems : System.Runtime.CompilerServices.
 {
     private readonly VuetifyBreadcrumbItemValue[]? _items;
 
-    private VuetifyBreadcrumbItems(VuetifyBreadcrumbItemValue[] items)
+    public VuetifyBreadcrumbItems(VuetifyBreadcrumbItemValue[] items)
     {
         _items = items;
     }
@@ -962,7 +962,7 @@ public readonly struct VuetifyBreadcrumbItemValue : System.Runtime.CompilerServi
     private readonly VuetifyBreadcrumbItem? _item;
     private readonly Number? _number;
 
-    private VuetifyBreadcrumbItemValue(string value)
+    public VuetifyBreadcrumbItemValue(string value)
     {
         _kind = 1;
         _string = value;
@@ -970,7 +970,7 @@ public readonly struct VuetifyBreadcrumbItemValue : System.Runtime.CompilerServi
         _number = default;
     }
 
-    private VuetifyBreadcrumbItemValue(VuetifyBreadcrumbItem value)
+    public VuetifyBreadcrumbItemValue(VuetifyBreadcrumbItem value)
     {
         _kind = 2;
         _string = default;
@@ -978,7 +978,7 @@ public readonly struct VuetifyBreadcrumbItemValue : System.Runtime.CompilerServi
         _number = default;
     }
 
-    private VuetifyBreadcrumbItemValue(Number value)
+    public VuetifyBreadcrumbItemValue(Number value)
     {
         _kind = 3;
         _string = default;
@@ -1077,7 +1077,7 @@ public readonly struct VuetifyDataTableHeaders : System.Runtime.CompilerServices
 {
     private readonly VuetifyDataTableHeader[]? _headers;
 
-    private VuetifyDataTableHeaders(VuetifyDataTableHeader[] headers)
+    public VuetifyDataTableHeaders(VuetifyDataTableHeader[] headers)
     {
         _headers = headers;
     }
@@ -1188,7 +1188,7 @@ public readonly struct VuetifyDataTableItems : System.Runtime.CompilerServices.I
 {
     private readonly VuetifyDataTableItem[]? _items;
 
-    private VuetifyDataTableItems(VuetifyDataTableItem[] items)
+    public VuetifyDataTableItems(VuetifyDataTableItem[] items)
     {
         _items = items;
     }
@@ -1237,7 +1237,7 @@ public readonly struct VuetifyDataTableSelectedValues : System.Runtime.CompilerS
 {
     private readonly VueValue[]? _values;
 
-    private VuetifyDataTableSelectedValues(VueValue[] values)
+    public VuetifyDataTableSelectedValues(VueValue[] values)
     {
         _values = values;
     }
@@ -1286,7 +1286,7 @@ public readonly struct VuetifyDataTableSortItems : System.Runtime.CompilerServic
 {
     private readonly VuetifyDataTableSortItem[]? _items;
 
-    private VuetifyDataTableSortItems(VuetifyDataTableSortItem[] items)
+    public VuetifyDataTableSortItems(VuetifyDataTableSortItem[] items)
     {
         _items = items;
     }
@@ -1354,7 +1354,7 @@ public readonly struct VuetifyDataTableItemsPerPageOptions : System.Runtime.Comp
 {
     private readonly VuetifyDataTableItemsPerPageOption[]? _options;
 
-    private VuetifyDataTableItemsPerPageOptions(VuetifyDataTableItemsPerPageOption[] options)
+    public VuetifyDataTableItemsPerPageOptions(VuetifyDataTableItemsPerPageOption[] options)
     {
         _options = options;
     }
@@ -1398,14 +1398,14 @@ public readonly struct VuetifyDataTableItemsPerPageOption : System.Runtime.Compi
     private readonly Number? _number;
     private readonly VuetifyDataTableItemsPerPageOptionItem? _item;
 
-    private VuetifyDataTableItemsPerPageOption(Number value)
+    public VuetifyDataTableItemsPerPageOption(Number value)
     {
         _kind = 1;
         _number = value;
         _item = default;
     }
 
-    private VuetifyDataTableItemsPerPageOption(VuetifyDataTableItemsPerPageOptionItem value)
+    public VuetifyDataTableItemsPerPageOption(VuetifyDataTableItemsPerPageOptionItem value)
     {
         _kind = 2;
         _number = default;
@@ -1483,14 +1483,14 @@ public readonly struct VuetifyDataTableRowProps : System.Runtime.CompilerService
     private readonly VueProps? _props;
     private readonly VuetifyDataTableRowPropsCallback? _callback;
 
-    private VuetifyDataTableRowProps(VueProps value)
+    public VuetifyDataTableRowProps(VueProps value)
     {
         _kind = 1;
         _props = value;
         _callback = default;
     }
 
-    private VuetifyDataTableRowProps(VuetifyDataTableRowPropsCallback value)
+    public VuetifyDataTableRowProps(VuetifyDataTableRowPropsCallback value)
     {
         _kind = 2;
         _props = default;
@@ -1535,14 +1535,14 @@ public readonly struct VuetifyDataTableCellProps : System.Runtime.CompilerServic
     private readonly VueProps? _props;
     private readonly VuetifyDataTableCellPropsCallback? _callback;
 
-    private VuetifyDataTableCellProps(VueProps value)
+    public VuetifyDataTableCellProps(VueProps value)
     {
         _kind = 1;
         _props = value;
         _callback = default;
     }
 
-    private VuetifyDataTableCellProps(VuetifyDataTableCellPropsCallback value)
+    public VuetifyDataTableCellProps(VuetifyDataTableCellPropsCallback value)
     {
         _kind = 2;
         _props = default;

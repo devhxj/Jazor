@@ -40,6 +40,7 @@ Jazor 是一套用 C# 和 Razor 编写 JavaScript / Vue 应用的 .NET 工具链
 
 - RazorVue 在 generator-driver 完成后的 `Compilation` 边界执行集成，不需要 `EnableRazorHostOutputs`、`RazorCodeDocument`、`RazorCSharpDocument` 或生成 C# 的二次解析。
 - MSBuild 输出由一个显式模式控制：`none`（默认）、`debug`（模块和清单）或 `release`（生产包）。默认输出根目录为 `wwwroot/jazor`。
+- 公开 Vue 绑定包兼容 .NET 11 Preview 6。
 
 完整历史见 [release notes](docs/releases/release-notes.md)。
 

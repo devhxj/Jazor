@@ -23,14 +23,14 @@ public readonly struct VuetifyWindowShowArrowsValue : System.Runtime.CompilerSer
     private readonly bool? _bool;
     private readonly VuetifyWindowShowArrowsMode? _mode;
 
-    private VuetifyWindowShowArrowsValue(bool value)
+    public VuetifyWindowShowArrowsValue(bool value)
     {
         _kind = 1;
         _bool = value;
         _mode = default;
     }
 
-    private VuetifyWindowShowArrowsValue(VuetifyWindowShowArrowsMode value)
+    public VuetifyWindowShowArrowsValue(VuetifyWindowShowArrowsMode value)
     {
         _kind = 2;
         _bool = default;
@@ -149,14 +149,14 @@ public readonly struct VuetifyTouchValue : System.Runtime.CompilerServices.IUnio
     private readonly bool? _bool;
     private readonly VuetifyTouchHandlers? _handlers;
 
-    private VuetifyTouchValue(bool value)
+    public VuetifyTouchValue(bool value)
     {
         _kind = 1;
         _bool = value;
         _handlers = default;
     }
 
-    private VuetifyTouchValue(VuetifyTouchHandlers value)
+    public VuetifyTouchValue(VuetifyTouchHandlers value)
     {
         _kind = 2;
         _bool = default;

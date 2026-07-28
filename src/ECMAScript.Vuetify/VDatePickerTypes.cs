@@ -72,7 +72,7 @@ public readonly struct VuetifyCalendarWeekdays : System.Runtime.CompilerServices
 {
     private readonly VuetifyCalendarWeekday[]? _weekdays;
 
-    private VuetifyCalendarWeekdays(VuetifyCalendarWeekday[] weekdays)
+    public VuetifyCalendarWeekdays(VuetifyCalendarWeekday[] weekdays)
     {
         _weekdays = weekdays;
     }
@@ -116,7 +116,7 @@ public readonly struct VuetifyDatePickerMultipleValue : System.Runtime.CompilerS
     private readonly VuetifyDatePickerMultipleMode? _mode;
     private readonly string? _customMode;
 
-    private VuetifyDatePickerMultipleValue(bool value)
+    public VuetifyDatePickerMultipleValue(bool value)
     {
         _kind = 1;
         _bool = value;
@@ -125,7 +125,7 @@ public readonly struct VuetifyDatePickerMultipleValue : System.Runtime.CompilerS
         _customMode = default;
     }
 
-    private VuetifyDatePickerMultipleValue(Number value)
+    public VuetifyDatePickerMultipleValue(Number value)
     {
         _kind = 2;
         _bool = default;
@@ -134,7 +134,7 @@ public readonly struct VuetifyDatePickerMultipleValue : System.Runtime.CompilerS
         _customMode = default;
     }
 
-    private VuetifyDatePickerMultipleValue(VuetifyDatePickerMultipleMode value)
+    public VuetifyDatePickerMultipleValue(VuetifyDatePickerMultipleMode value)
     {
         _kind = 3;
         _bool = default;
@@ -143,7 +143,7 @@ public readonly struct VuetifyDatePickerMultipleValue : System.Runtime.CompilerS
         _customMode = default;
     }
 
-    private VuetifyDatePickerMultipleValue(string value)
+    public VuetifyDatePickerMultipleValue(string value)
     {
         _kind = 4;
         _bool = default;
@@ -233,7 +233,7 @@ public readonly struct VuetifyDatePickerModelValues : System.Runtime.CompilerSer
 {
     private readonly VueValue[]? _values;
 
-    private VuetifyDatePickerModelValues(VueValue[] values)
+    public VuetifyDatePickerModelValues(VueValue[] values)
     {
         _values = values;
     }
@@ -289,7 +289,7 @@ public readonly struct VuetifyDatePickerModelValue : System.Runtime.CompilerServ
     private readonly Number? _number;
     private readonly VuetifyDatePickerModelValues? _values;
 
-    private VuetifyDatePickerModelValue(Date value)
+    public VuetifyDatePickerModelValue(Date value)
     {
         _kind = 1;
         _date = value;
@@ -298,7 +298,7 @@ public readonly struct VuetifyDatePickerModelValue : System.Runtime.CompilerServ
         _values = default;
     }
 
-    private VuetifyDatePickerModelValue(string value)
+    public VuetifyDatePickerModelValue(string value)
     {
         _kind = 2;
         _date = default;
@@ -307,7 +307,7 @@ public readonly struct VuetifyDatePickerModelValue : System.Runtime.CompilerServ
         _values = default;
     }
 
-    private VuetifyDatePickerModelValue(Number value)
+    public VuetifyDatePickerModelValue(Number value)
     {
         _kind = 3;
         _date = default;
@@ -316,7 +316,7 @@ public readonly struct VuetifyDatePickerModelValue : System.Runtime.CompilerServ
         _values = default;
     }
 
-    private VuetifyDatePickerModelValue(VuetifyDatePickerModelValues value)
+    public VuetifyDatePickerModelValue(VuetifyDatePickerModelValues value)
     {
         _kind = 4;
         _date = default;
@@ -423,7 +423,7 @@ public readonly struct VuetifyDatePickerAllowedDates : System.Runtime.CompilerSe
 {
     private readonly VueValue[]? _values;
 
-    private VuetifyDatePickerAllowedDates(VueValue[] values)
+    public VuetifyDatePickerAllowedDates(VueValue[] values)
     {
         _values = values;
     }
@@ -477,14 +477,14 @@ public readonly struct VuetifyDatePickerAllowedDatesValue : System.Runtime.Compi
     private readonly VuetifyDatePickerAllowedDates? _dates;
     private readonly VuetifyDatePickerAllowedDateResolver? _resolver;
 
-    private VuetifyDatePickerAllowedDatesValue(VuetifyDatePickerAllowedDates dates)
+    public VuetifyDatePickerAllowedDatesValue(VuetifyDatePickerAllowedDates dates)
     {
         _kind = 1;
         _dates = dates;
         _resolver = default;
     }
 
-    private VuetifyDatePickerAllowedDatesValue(VuetifyDatePickerAllowedDateResolver resolver)
+    public VuetifyDatePickerAllowedDatesValue(VuetifyDatePickerAllowedDateResolver resolver)
     {
         _kind = 2;
         _dates = default;
@@ -543,14 +543,14 @@ public readonly struct VuetifyDatePickerActiveValue : System.Runtime.CompilerSer
     private readonly string? _active;
     private readonly string[]? _activeValues;
 
-    private VuetifyDatePickerActiveValue(string value)
+    public VuetifyDatePickerActiveValue(string value)
     {
         _kind = 1;
         _active = value;
         _activeValues = default;
     }
 
-    private VuetifyDatePickerActiveValue(string[] value)
+    public VuetifyDatePickerActiveValue(string[] value)
     {
         _kind = 2;
         _active = default;

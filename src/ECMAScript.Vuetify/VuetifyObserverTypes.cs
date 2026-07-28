@@ -30,14 +30,14 @@ public readonly struct VuetifyIntersectionObserverRoot : System.Runtime.Compiler
     private readonly Element? _element;
     private readonly Document? _document;
 
-    private VuetifyIntersectionObserverRoot(Element value)
+    public VuetifyIntersectionObserverRoot(Element value)
     {
         _kind = 1;
         _element = value;
         _document = default;
     }
 
-    private VuetifyIntersectionObserverRoot(Document value)
+    public VuetifyIntersectionObserverRoot(Document value)
     {
         _kind = 2;
         _element = default;
@@ -78,14 +78,14 @@ public readonly struct VuetifyIntersectionObserverThreshold : System.Runtime.Com
     private readonly Number? _number;
     private readonly Number[]? _numbers;
 
-    private VuetifyIntersectionObserverThreshold(Number value)
+    public VuetifyIntersectionObserverThreshold(Number value)
     {
         _kind = 1;
         _number = value;
         _numbers = default;
     }
 
-    private VuetifyIntersectionObserverThreshold(Number[] value)
+    public VuetifyIntersectionObserverThreshold(Number[] value)
     {
         _kind = 2;
         _number = default;

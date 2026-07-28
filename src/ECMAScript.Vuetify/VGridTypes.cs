@@ -14,7 +14,7 @@ public readonly struct VuetifyGridSpanValue : System.Runtime.CompilerServices.IU
     private readonly Number? _number;
     private readonly string? _string;
 
-    private VuetifyGridSpanValue(bool value)
+    public VuetifyGridSpanValue(bool value)
     {
         _kind = 1;
         _bool = value;
@@ -22,7 +22,7 @@ public readonly struct VuetifyGridSpanValue : System.Runtime.CompilerServices.IU
         _string = default;
     }
 
-    private VuetifyGridSpanValue(Number value)
+    public VuetifyGridSpanValue(Number value)
     {
         _kind = 2;
         _bool = default;
@@ -30,7 +30,7 @@ public readonly struct VuetifyGridSpanValue : System.Runtime.CompilerServices.IU
         _string = default;
     }
 
-    private VuetifyGridSpanValue(string value)
+    public VuetifyGridSpanValue(string value)
     {
         _kind = 3;
         _bool = default;

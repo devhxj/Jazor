@@ -40,6 +40,7 @@ For current status, prefer the status pages under `docs/03-完成/` and local te
 
 - RazorVue integrates at the completed generator-driver compilation boundary. It does not require `EnableRazorHostOutputs`, `RazorCodeDocument`, `RazorCSharpDocument`, or reparsing generated C#.
 - MSBuild output is controlled by one explicit mode: `none` (the default), `debug` (modules and manifest), or `release` (a production bundle). The default output root is `wwwroot/jazor`.
+- The public Vue binding packages are compatible with .NET 11 Preview 6.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 

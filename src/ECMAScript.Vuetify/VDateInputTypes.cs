@@ -15,14 +15,14 @@ public readonly struct VDateInputDisplayFormatValue : System.Runtime.CompilerSer
     private readonly string? _string;
     private readonly VDateInputDisplayFormatCallback? _callback;
 
-    private VDateInputDisplayFormatValue(string value)
+    public VDateInputDisplayFormatValue(string value)
     {
         _kind = 1;
         _string = value;
         _callback = default;
     }
 
-    private VDateInputDisplayFormatValue(VDateInputDisplayFormatCallback value)
+    public VDateInputDisplayFormatValue(VDateInputDisplayFormatCallback value)
     {
         _kind = 2;
         _string = default;

@@ -5,6 +5,7 @@
 - RazorVue now consumes the final Roslyn compilation produced by the Razor Source Generator. It no longer requires Razor host outputs or reparsing generated C#.
 - Jazor output is configured through `JazorMode`: `none` produces no files, `debug` produces modules and a manifest, and `release` produces the production bundle.
 - The default output root is `wwwroot/jazor`; release builds write only `bundle.js` and `bundle.js.map` to that directory.
+- Public Vue binding packages are compatible with .NET 11 Preview 6.
 
 ## 2026-07-27
 

@@ -56,14 +56,14 @@ public readonly struct VuetifyMandatoryValue : System.Runtime.CompilerServices.I
     private readonly bool? _bool;
     private readonly VuetifyMandatoryMode? _mode;
 
-    private VuetifyMandatoryValue(bool value)
+    public VuetifyMandatoryValue(bool value)
     {
         _kind = 1;
         _bool = value;
         _mode = default;
     }
 
-    private VuetifyMandatoryValue(VuetifyMandatoryMode value)
+    public VuetifyMandatoryValue(VuetifyMandatoryMode value)
     {
         _kind = 2;
         _bool = default;
@@ -103,14 +103,14 @@ public readonly struct VuetifyShowArrowsValue : System.Runtime.CompilerServices.
     private readonly bool? _bool;
     private readonly VuetifyShowArrowsMode? _mode;
 
-    private VuetifyShowArrowsValue(bool value)
+    public VuetifyShowArrowsValue(bool value)
     {
         _kind = 1;
         _bool = value;
         _mode = default;
     }
 
-    private VuetifyShowArrowsValue(VuetifyShowArrowsMode value)
+    public VuetifyShowArrowsValue(VuetifyShowArrowsMode value)
     {
         _kind = 2;
         _bool = default;
@@ -149,7 +149,7 @@ public readonly struct VuetifyGroupModelValues : System.Runtime.CompilerServices
 {
     private readonly VuetifyGroupModelValue[]? _values;
 
-    private VuetifyGroupModelValues(VuetifyGroupModelValue[] values)
+    public VuetifyGroupModelValues(VuetifyGroupModelValue[] values)
     {
         _values = values;
     }
@@ -206,7 +206,7 @@ public readonly struct VuetifyGroupModelValue : System.Runtime.CompilerServices.
     private readonly VueProps? _object;
     private readonly VuetifyGroupModelValues? _values;
 
-    private VuetifyGroupModelValue(string value)
+    public VuetifyGroupModelValue(string value)
     {
         _kind = 1;
         _string = value;
@@ -217,7 +217,7 @@ public readonly struct VuetifyGroupModelValue : System.Runtime.CompilerServices.
         _values = default;
     }
 
-    private VuetifyGroupModelValue(Number value)
+    public VuetifyGroupModelValue(Number value)
     {
         _kind = 2;
         _string = default;
@@ -228,7 +228,7 @@ public readonly struct VuetifyGroupModelValue : System.Runtime.CompilerServices.
         _values = default;
     }
 
-    private VuetifyGroupModelValue(bool value)
+    public VuetifyGroupModelValue(bool value)
     {
         _kind = 3;
         _string = default;
@@ -239,7 +239,7 @@ public readonly struct VuetifyGroupModelValue : System.Runtime.CompilerServices.
         _values = default;
     }
 
-    private VuetifyGroupModelValue(Symbol value)
+    public VuetifyGroupModelValue(Symbol value)
     {
         _kind = 4;
         _string = default;
@@ -250,7 +250,7 @@ public readonly struct VuetifyGroupModelValue : System.Runtime.CompilerServices.
         _values = default;
     }
 
-    private VuetifyGroupModelValue(VueProps value)
+    public VuetifyGroupModelValue(VueProps value)
     {
         _kind = 5;
         _string = default;
@@ -261,7 +261,7 @@ public readonly struct VuetifyGroupModelValue : System.Runtime.CompilerServices.
         _values = default;
     }
 
-    private VuetifyGroupModelValue(VuetifyGroupModelValues value)
+    public VuetifyGroupModelValue(VuetifyGroupModelValues value)
     {
         _kind = 6;
         _string = default;

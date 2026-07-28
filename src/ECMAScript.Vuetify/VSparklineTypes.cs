@@ -49,7 +49,7 @@ public readonly struct VuetifySparklineItems : System.Runtime.CompilerServices.I
 {
     private readonly VuetifySparklineItem[]? _items;
 
-    private VuetifySparklineItems(VuetifySparklineItem[] items)
+    public VuetifySparklineItems(VuetifySparklineItem[] items)
     {
         _items = items;
     }
@@ -107,7 +107,7 @@ public readonly struct VuetifySparklineItem : System.Runtime.CompilerServices.IU
     private readonly Number? _number;
     private readonly VuetifySparklineValueItem? _valueItem;
 
-    private VuetifySparklineItem(string value)
+    public VuetifySparklineItem(string value)
     {
         _kind = 1;
         _string = value;
@@ -115,7 +115,7 @@ public readonly struct VuetifySparklineItem : System.Runtime.CompilerServices.IU
         _valueItem = default;
     }
 
-    private VuetifySparklineItem(Number value)
+    public VuetifySparklineItem(Number value)
     {
         _kind = 2;
         _string = default;
@@ -123,7 +123,7 @@ public readonly struct VuetifySparklineItem : System.Runtime.CompilerServices.IU
         _valueItem = default;
     }
 
-    private VuetifySparklineItem(VuetifySparklineValueItem value)
+    public VuetifySparklineItem(VuetifySparklineValueItem value)
     {
         _kind = 3;
         _string = default;
@@ -217,7 +217,7 @@ public readonly struct VuetifySparklineSmoothValue : System.Runtime.CompilerServ
     private readonly Number? _number;
     private readonly string? _string;
 
-    private VuetifySparklineSmoothValue(bool value)
+    public VuetifySparklineSmoothValue(bool value)
     {
         _kind = 1;
         _bool = value;
@@ -225,7 +225,7 @@ public readonly struct VuetifySparklineSmoothValue : System.Runtime.CompilerServ
         _string = default;
     }
 
-    private VuetifySparklineSmoothValue(Number value)
+    public VuetifySparklineSmoothValue(Number value)
     {
         _kind = 2;
         _bool = default;
@@ -233,7 +233,7 @@ public readonly struct VuetifySparklineSmoothValue : System.Runtime.CompilerServ
         _string = default;
     }
 
-    private VuetifySparklineSmoothValue(string value)
+    public VuetifySparklineSmoothValue(string value)
     {
         _kind = 3;
         _bool = default;

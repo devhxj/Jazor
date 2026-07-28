@@ -27,14 +27,14 @@ public readonly struct VuetifyCarouselVerticalDelimiters : System.Runtime.Compil
     private readonly bool? _bool;
     private readonly VuetifyCarouselVerticalDelimiterPosition? _position;
 
-    private VuetifyCarouselVerticalDelimiters(bool value)
+    public VuetifyCarouselVerticalDelimiters(bool value)
     {
         _kind = 1;
         _bool = value;
         _position = default;
     }
 
-    private VuetifyCarouselVerticalDelimiters(VuetifyCarouselVerticalDelimiterPosition value)
+    public VuetifyCarouselVerticalDelimiters(VuetifyCarouselVerticalDelimiterPosition value)
     {
         _kind = 2;
         _bool = default;
