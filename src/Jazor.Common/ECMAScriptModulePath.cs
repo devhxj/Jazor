@@ -14,6 +14,9 @@ public static class ECMAScriptModulePath
         var includeRelativePrefix = trimmed.StartsWith("./", StringComparison.Ordinal) ||
                                     trimmed.StartsWith("../", StringComparison.Ordinal) ||
                                     trimmed.StartsWith("/", StringComparison.Ordinal);
+        if (!includeRelativePrefix)
+            return trimmed;
+
         return NormalizeCore(trimmed, includeRelativePrefix);
     }
 
