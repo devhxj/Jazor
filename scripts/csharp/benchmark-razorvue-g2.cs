@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 var options = BenchmarkArguments.Parse(args);
 var repoRoot = ScriptHelpers.RequireRepoRoot();
@@ -36,13 +37,17 @@ Console.WriteLine("Wrote RazorVue G2 benchmark protocol:");
 Console.WriteLine("  " + Path.GetRelativePath(repoRoot, jsonPath));
 Console.WriteLine("  " + Path.GetRelativePath(repoRoot, markdownPath));
 
+RuntimeBenchmarkReport? runtimeReport = null;
+GeneratedArtifactBenchmarkReport? generatedArtifactReport = null;
+BrowserBenchmarkReport? browserReport = null;
+
 if (options.MeasureRuntime)
 {
-    var report = await RuntimeBenchmarkRunner.RunAsync(repoRoot, options);
+    runtimeReport = await RuntimeBenchmarkRunner.RunAsync(repoRoot, options);
     var runtimeJsonPath = Path.Combine(outputDirectory, "razorvue-g2-runtime-report.json");
     var runtimeMarkdownPath = Path.Combine(outputDirectory, "razorvue-g2-runtime-report.md");
-    File.WriteAllText(runtimeJsonPath, RuntimeBenchmarkReportJson.Write(report));
-    File.WriteAllText(runtimeMarkdownPath, report.ToMarkdown());
+    File.WriteAllText(runtimeJsonPath, RuntimeBenchmarkReportJson.Write(runtimeReport));
+    File.WriteAllText(runtimeMarkdownPath, runtimeReport.ToMarkdown());
 
     Console.WriteLine("Wrote RazorVue G2 runtime benchmark report:");
     Console.WriteLine("  " + Path.GetRelativePath(repoRoot, runtimeJsonPath));
@@ -51,15 +56,50 @@ if (options.MeasureRuntime)
 
 if (options.MeasureGeneratedArtifacts)
 {
-    var report = await GeneratedArtifactBenchmarkRunner.RunAsync(repoRoot, outputDirectory, options);
+    generatedArtifactReport = await GeneratedArtifactBenchmarkRunner.RunAsync(repoRoot, outputDirectory, options);
     var generatedJsonPath = Path.Combine(outputDirectory, "razorvue-g2-generated-artifacts-report.json");
     var generatedMarkdownPath = Path.Combine(outputDirectory, "razorvue-g2-generated-artifacts-report.md");
-    File.WriteAllText(generatedJsonPath, GeneratedArtifactBenchmarkReportJson.Write(report));
-    File.WriteAllText(generatedMarkdownPath, report.ToMarkdown());
+    File.WriteAllText(generatedJsonPath, GeneratedArtifactBenchmarkReportJson.Write(generatedArtifactReport));
+    File.WriteAllText(generatedMarkdownPath, generatedArtifactReport.ToMarkdown());
 
     Console.WriteLine("Wrote RazorVue G2 generated artifact benchmark report:");
     Console.WriteLine("  " + Path.GetRelativePath(repoRoot, generatedJsonPath));
     Console.WriteLine("  " + Path.GetRelativePath(repoRoot, generatedMarkdownPath));
+}
+
+if (options.MeasureBrowser)
+{
+    browserReport = await BrowserBenchmarkRunner.RunAsync(repoRoot, options);
+    var browserJsonPath = Path.Combine(outputDirectory, "razorvue-g2-browser-report.json");
+    var browserMarkdownPath = Path.Combine(outputDirectory, "razorvue-g2-browser-report.md");
+    File.WriteAllText(browserJsonPath, BrowserBenchmarkReportJson.Write(browserReport));
+    File.WriteAllText(browserMarkdownPath, browserReport.ToMarkdown());
+
+    Console.WriteLine("Wrote RazorVue G2 browser benchmark report:");
+    Console.WriteLine("  " + Path.GetRelativePath(repoRoot, browserJsonPath));
+    Console.WriteLine("  " + Path.GetRelativePath(repoRoot, browserMarkdownPath));
+}
+
+if (options.WriteReleaseReport)
+{
+    if (runtimeReport is null || generatedArtifactReport is null || browserReport is null)
+        throw new InvalidOperationException("--write-release-report requires --measure-runtime, --measure-generated-artifacts, and --measure-browser.");
+
+    var releaseReport = ReleasePerformanceReport.Create(
+        repoRoot,
+        options,
+        runtimeReport,
+        generatedArtifactReport,
+        browserReport,
+        OldLineBaselineProbe.Probe(repoRoot, options.RetiredLineRef));
+    var releaseJsonPath = Path.Combine(outputDirectory, "razorvue-g2-release-performance-report.json");
+    var releaseMarkdownPath = Path.Combine(outputDirectory, "razorvue-g2-release-performance-report.md");
+    File.WriteAllText(releaseJsonPath, ReleasePerformanceReportJson.Write(releaseReport));
+    File.WriteAllText(releaseMarkdownPath, releaseReport.ToMarkdown());
+
+    Console.WriteLine("Wrote RazorVue G2 release performance report:");
+    Console.WriteLine("  " + Path.GetRelativePath(repoRoot, releaseJsonPath));
+    Console.WriteLine("  " + Path.GetRelativePath(repoRoot, releaseMarkdownPath));
 }
 
 internal sealed record BenchmarkArguments
@@ -72,7 +112,13 @@ internal sealed record BenchmarkArguments
 
     public bool MeasureGeneratedArtifacts { get; init; }
 
+    public bool MeasureBrowser { get; init; }
+
+    public bool WriteReleaseReport { get; init; }
+
     public string? OutputDirectory { get; init; }
+
+    public string RetiredLineRef { get; init; } = "v0.1.26";
 
     public int Samples { get; init; } = 5;
 
@@ -100,8 +146,17 @@ internal sealed record BenchmarkArguments
                 case "--measure-generated-artifacts":
                     result = result with { MeasureGeneratedArtifacts = true };
                     break;
+                case "--measure-browser":
+                    result = result with { MeasureBrowser = true };
+                    break;
+                case "--write-release-report":
+                    result = result with { WriteReleaseReport = true };
+                    break;
                 case "--out":
                     result = result with { OutputDirectory = GetValue(args, ref index, argument) };
+                    break;
+                case "--retired-line-ref":
+                    result = result with { RetiredLineRef = GetValue(args, ref index, argument) };
                     break;
                 case "--samples":
                     result = result with { Samples = GetPositiveInt(args, ref index, argument) };
@@ -122,10 +177,13 @@ internal sealed record BenchmarkArguments
             }
         }
 
-        if (result.DryRun && (result.WriteProtocol || result.MeasureRuntime || result.MeasureGeneratedArtifacts))
+        if (result.WriteReleaseReport)
+            result = result with { WriteProtocol = true, MeasureRuntime = true, MeasureGeneratedArtifacts = true, MeasureBrowser = true };
+
+        if (result.DryRun && (result.WriteProtocol || result.MeasureRuntime || result.MeasureGeneratedArtifacts || result.MeasureBrowser || result.WriteReleaseReport))
             throw new InvalidOperationException("--dry-run cannot be combined with --write-protocol, --measure-runtime, or --measure-generated-artifacts.");
 
-        if (!result.DryRun && !result.WriteProtocol && !result.MeasureRuntime && !result.MeasureGeneratedArtifacts)
+        if (!result.DryRun && !result.WriteProtocol && !result.MeasureRuntime && !result.MeasureGeneratedArtifacts && !result.MeasureBrowser && !result.WriteReleaseReport)
             result = result with { DryRun = true };
 
         return result;
@@ -157,7 +215,10 @@ internal sealed record BenchmarkArguments
         Console.WriteLine("  --write-protocol                  Write pending JSON/Markdown protocol files.");
         Console.WriteLine("  --measure-runtime                 Write protocol plus runtime-protocol benchmark JSON/Markdown report.");
         Console.WriteLine("  --measure-generated-artifacts     Build an official Razor SG three-fixture consumer and report per-fixture plus full artifact size/hash data.");
+        Console.WriteLine("  --measure-browser                 Run the render-context benchmark inside a headless browser and report JS heap deltas.");
+        Console.WriteLine("  --write-release-report            Run all measurement lanes and write a combined release performance report.");
         Console.WriteLine("  --out <directory>                 Output directory for written protocol/report files.");
+        Console.WriteLine("  --retired-line-ref <git-ref>      Fixed retired-line baseline ref for availability probing. Default: v0.1.26.");
         Console.WriteLine("  --samples <count>                 Repeated samples per metric. Default: 5.");
         Console.WriteLine("  --render-iterations <count>       Render/update loop iterations. Default: 10000.");
         Console.WriteLine("  --mount-iterations <count>        Mount/unmount loop iterations. Default: 100.");
@@ -905,6 +966,685 @@ internal static class RuntimeBenchmarkRunner
     }
 }
 
+internal sealed record BrowserBenchmarkReport(
+    string SchemaVersion,
+    string Status,
+    string BrowserPath,
+    int Samples,
+    int RenderIterations,
+    int MountIterations,
+    IReadOnlyList<BrowserFixtureMeasurement> Fixtures,
+    IReadOnlyList<string> Notes)
+{
+    public string ToMarkdown()
+    {
+        var writer = new StringWriter();
+        writer.WriteLine("# RazorVue G2 Browser Benchmark Report");
+        writer.WriteLine();
+        writer.WriteLine("- Schema: " + SchemaVersion);
+        writer.WriteLine("- Status: " + Status);
+        writer.WriteLine("- Browser: `" + BrowserPath + "`");
+        writer.WriteLine("- Samples: " + Samples);
+        writer.WriteLine("- Render/update iterations per sample: " + RenderIterations);
+        writer.WriteLine("- Mount/unmount cycles: " + MountIterations);
+        writer.WriteLine();
+        writer.WriteLine("## Fixture measurements");
+        writer.WriteLine();
+        writer.WriteLine("| Fixture | Protocol render ops/s | Handwritten render ops/s | Render ratio | Protocol update ops/s | Handwritten update ops/s | Update ratio | Heap available | Heap delta median | Heap delta min | Heap delta max |");
+        writer.WriteLine("|---------|-----------------------|--------------------------|--------------|-----------------------|--------------------------|--------------|----------------|-------------------|----------------|----------------|");
+
+        foreach (var fixture in Fixtures)
+        {
+            writer.WriteLine(
+                "| `" + fixture.Id + "`" +
+                " | " + FormatNumber(fixture.ProtocolRenderOpsPerSecond.Median) +
+                " | " + FormatNumber(fixture.HandwrittenRenderOpsPerSecond.Median) +
+                " | " + FormatRatio(fixture.RenderThroughputRatio) +
+                " | " + FormatNumber(fixture.ProtocolUpdateOpsPerSecond.Median) +
+                " | " + FormatNumber(fixture.HandwrittenUpdateOpsPerSecond.Median) +
+                " | " + FormatRatio(fixture.UpdateThroughputRatio) +
+                " | " + (fixture.HeapMeasurementAvailable ? "yes" : "no") +
+                " | " + fixture.RetainedHeapDeltaBytes.Median.ToString(CultureInfo.InvariantCulture) +
+                " | " + fixture.RetainedHeapDeltaBytes.Min.ToString(CultureInfo.InvariantCulture) +
+                " | " + fixture.RetainedHeapDeltaBytes.Max.ToString(CultureInfo.InvariantCulture) +
+                " |");
+        }
+
+        writer.WriteLine();
+        writer.WriteLine("## Notes");
+        writer.WriteLine();
+        foreach (var note in Notes)
+            writer.WriteLine("- " + note);
+
+        return writer.ToString();
+    }
+
+    private static string FormatNumber(double value)
+        => value.ToString("0.##", CultureInfo.InvariantCulture);
+
+    private static string FormatRatio(double value)
+        => value.ToString("0.000", CultureInfo.InvariantCulture);
+}
+
+internal sealed record BrowserFixtureMeasurement(
+    string Id,
+    RuntimeMetricSummary ProtocolRenderOpsPerSecond,
+    RuntimeMetricSummary HandwrittenRenderOpsPerSecond,
+    double RenderThroughputRatio,
+    RuntimeMetricSummary ProtocolUpdateOpsPerSecond,
+    RuntimeMetricSummary HandwrittenUpdateOpsPerSecond,
+    double UpdateThroughputRatio,
+    bool HeapMeasurementAvailable,
+    RuntimeMetricSummary RetainedHeapDeltaBytes,
+    IReadOnlyList<string> Notes);
+
+internal static class BrowserBenchmarkReportJson
+{
+    public static string Write(BrowserBenchmarkReport report)
+    {
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true }))
+        {
+            writer.WriteStartObject();
+            writer.WriteString("schemaVersion", report.SchemaVersion);
+            writer.WriteString("status", report.Status);
+            writer.WriteString("browserPath", report.BrowserPath);
+            writer.WriteNumber("samples", report.Samples);
+            writer.WriteNumber("renderIterations", report.RenderIterations);
+            writer.WriteNumber("mountIterations", report.MountIterations);
+            writer.WritePropertyName("fixtures");
+            writer.WriteStartArray();
+            foreach (var fixture in report.Fixtures)
+            {
+                writer.WriteStartObject();
+                writer.WriteString("id", fixture.Id);
+                WriteSummary(writer, "protocolRenderOpsPerSecond", fixture.ProtocolRenderOpsPerSecond);
+                WriteSummary(writer, "handwrittenRenderOpsPerSecond", fixture.HandwrittenRenderOpsPerSecond);
+                writer.WriteNumber("renderThroughputRatio", fixture.RenderThroughputRatio);
+                WriteSummary(writer, "protocolUpdateOpsPerSecond", fixture.ProtocolUpdateOpsPerSecond);
+                WriteSummary(writer, "handwrittenUpdateOpsPerSecond", fixture.HandwrittenUpdateOpsPerSecond);
+                writer.WriteNumber("updateThroughputRatio", fixture.UpdateThroughputRatio);
+                writer.WriteBoolean("heapMeasurementAvailable", fixture.HeapMeasurementAvailable);
+                WriteSummary(writer, "retainedHeapDeltaBytes", fixture.RetainedHeapDeltaBytes);
+                WriteStringArray(writer, "notes", fixture.Notes);
+                writer.WriteEndObject();
+            }
+
+            writer.WriteEndArray();
+            WriteStringArray(writer, "notes", report.Notes);
+            writer.WriteEndObject();
+        }
+
+        return Encoding.UTF8.GetString(stream.ToArray());
+    }
+
+    public static BrowserBenchmarkReport Read(string json)
+    {
+        using var document = JsonDocument.Parse(json);
+        var root = document.RootElement;
+        return new BrowserBenchmarkReport(
+            SchemaVersion: root.GetProperty("schemaVersion").GetString() ?? "",
+            Status: root.GetProperty("status").GetString() ?? "",
+            BrowserPath: root.GetProperty("browserPath").GetString() ?? "",
+            Samples: root.GetProperty("samples").GetInt32(),
+            RenderIterations: root.GetProperty("renderIterations").GetInt32(),
+            MountIterations: root.GetProperty("mountIterations").GetInt32(),
+            Fixtures: root.GetProperty("fixtures")
+                .EnumerateArray()
+                .Select(static fixture => new BrowserFixtureMeasurement(
+                    Id: fixture.GetProperty("id").GetString() ?? "",
+                    ProtocolRenderOpsPerSecond: ReadSummary(fixture.GetProperty("protocolRenderOpsPerSecond")),
+                    HandwrittenRenderOpsPerSecond: ReadSummary(fixture.GetProperty("handwrittenRenderOpsPerSecond")),
+                    RenderThroughputRatio: fixture.GetProperty("renderThroughputRatio").GetDouble(),
+                    ProtocolUpdateOpsPerSecond: ReadSummary(fixture.GetProperty("protocolUpdateOpsPerSecond")),
+                    HandwrittenUpdateOpsPerSecond: ReadSummary(fixture.GetProperty("handwrittenUpdateOpsPerSecond")),
+                    UpdateThroughputRatio: fixture.GetProperty("updateThroughputRatio").GetDouble(),
+                    HeapMeasurementAvailable: fixture.GetProperty("heapMeasurementAvailable").GetBoolean(),
+                    RetainedHeapDeltaBytes: ReadSummary(fixture.GetProperty("retainedHeapDeltaBytes")),
+                    Notes: ReadStringArray(fixture.GetProperty("notes"))))
+                .ToArray(),
+            Notes: ReadStringArray(root.GetProperty("notes")));
+    }
+
+    private static RuntimeMetricSummary ReadSummary(JsonElement element)
+        => new(
+            Median: element.GetProperty("median").GetDouble(),
+            Min: element.GetProperty("min").GetDouble(),
+            Max: element.GetProperty("max").GetDouble(),
+            Samples: element.GetProperty("samples").EnumerateArray().Select(static sample => sample.GetDouble()).ToArray());
+
+    private static string[] ReadStringArray(JsonElement element)
+        => element.EnumerateArray().Select(static item => item.GetString() ?? "").ToArray();
+
+    private static void WriteSummary(Utf8JsonWriter writer, string propertyName, RuntimeMetricSummary summary)
+    {
+        writer.WritePropertyName(propertyName);
+        writer.WriteStartObject();
+        writer.WriteNumber("median", summary.Median);
+        writer.WriteNumber("min", summary.Min);
+        writer.WriteNumber("max", summary.Max);
+        writer.WritePropertyName("samples");
+        writer.WriteStartArray();
+        foreach (var sample in summary.Samples)
+            writer.WriteNumberValue(sample);
+
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+
+    private static void WriteStringArray(Utf8JsonWriter writer, string propertyName, IReadOnlyList<string> values)
+    {
+        writer.WritePropertyName(propertyName);
+        writer.WriteStartArray();
+        foreach (var value in values)
+            writer.WriteStringValue(value);
+
+        writer.WriteEndArray();
+    }
+}
+
+internal static class BrowserBenchmarkRunner
+{
+    public static async Task<BrowserBenchmarkReport> RunAsync(string repoRoot, BenchmarkArguments options)
+    {
+        var browserPath = ResolveBrowserExecutable();
+        if (browserPath is null)
+        {
+            return new BrowserBenchmarkReport(
+                SchemaVersion: "razorvue-g2-browser-benchmark-v1",
+                Status: "browser-unavailable",
+                BrowserPath: "",
+                Samples: options.Samples,
+                RenderIterations: options.RenderIterations,
+                MountIterations: options.MountIterations,
+                Fixtures: [],
+                Notes:
+                [
+                    "Headless browser benchmark requires Microsoft Edge, Chrome, or Chromium.",
+                    "Set RAZORVUE_BROWSER_EXE or RAZORVUE_BROWSER_PATH to the browser executable path."
+                ]);
+        }
+
+        var runtimeCorePath = Path.Combine(repoRoot, "src", "Jazor.RazorVue", "Runtime", "render-context-core.mjs");
+        if (!File.Exists(runtimeCorePath))
+            throw new FileNotFoundException("RazorVue render-context runtime core was not found.", runtimeCorePath);
+
+        var harnessRoot = Path.Combine(repoRoot, ".tmp", "razorvue-g2-benchmark", "browser-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(harnessRoot);
+        var indexPath = Path.Combine(harnessRoot, "index.html");
+        await File.WriteAllTextAsync(
+            indexPath,
+            CreateBrowserHarness(new Uri(runtimeCorePath).AbsoluteUri, options),
+            new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+        var browser = await RunBrowserDumpDomAsync(browserPath, indexPath);
+        if (browser.ExitCode != 0)
+            throw new InvalidOperationException("Browser benchmark failed." + Environment.NewLine + browser);
+
+        var json = ReadBrowserPayload(browser.StandardOutput);
+        var report = BrowserBenchmarkReportJson.Read(json);
+        return report with { BrowserPath = browserPath };
+    }
+
+    private static string CreateBrowserHarness(string runtimeCoreUri, BenchmarkArguments options)
+        => $$"""
+            <!doctype html>
+            <html lang="en">
+              <head>
+                <meta charset="utf-8">
+                <title>RazorVue G2 Browser Benchmark</title>
+              </head>
+              <body>
+                <script type="module">
+                  import { createRenderContextCore } from "{{runtimeCoreUri}}";
+
+                  const samples = {{options.Samples.ToString(CultureInfo.InvariantCulture)}};
+                  const renderIterations = {{options.RenderIterations.ToString(CultureInfo.InvariantCulture)}};
+                  const mountIterations = {{options.MountIterations.ToString(CultureInfo.InvariantCulture)}};
+                  const fragment = Symbol.for("Jazor.Fragment");
+
+                  function encodeUtf8Base64(value) {
+                    const bytes = new TextEncoder().encode(value);
+                    let binary = "";
+                    for (const byte of bytes) {
+                      binary += String.fromCharCode(byte);
+                    }
+
+                    return btoa(binary);
+                  }
+
+                  function finish(payload) {
+                    document.documentElement.setAttribute(
+                      "data-jazor-benchmark",
+                      encodeUtf8Base64(JSON.stringify(payload)));
+                  }
+
+                  function h(type, props, children) {
+                    return {
+                      type,
+                      props: props ?? null,
+                      children: Array.isArray(children) ? children : (children === undefined ? [] : [children])
+                    };
+                  }
+
+                  function createStaticVNode(html, rootCount) {
+                    return { type: "static", html: html ?? "", rootCount: rootCount ?? 1 };
+                  }
+
+                  function createContext() {
+                    return createRenderContextCore(h, fragment, createStaticVNode);
+                  }
+
+                  function summarize(values) {
+                    const ordered = [...values].sort((left, right) => left - right);
+                    return {
+                      median: ordered[Math.floor(ordered.length / 2)] ?? 0,
+                      min: ordered[0] ?? 0,
+                      max: ordered[ordered.length - 1] ?? 0,
+                      samples: values
+                    };
+                  }
+
+                  function opsPerSecond(operation, iterations) {
+                    let sink;
+                    const started = performance.now();
+                    for (let index = 0; index < iterations; index++) {
+                      sink = operation(index);
+                    }
+
+                    if (sink === undefined) {
+                      throw new Error("benchmark operation returned undefined");
+                    }
+
+                    const elapsedMs = Math.max(performance.now() - started, 0.000001);
+                    return iterations / (elapsedMs / 1000);
+                  }
+
+                  function sample(operation, iterations) {
+                    operation(0);
+                    const values = [];
+                    for (let index = 0; index < samples; index++) {
+                      values.push(opsPerSecond(operation, iterations));
+                    }
+
+                    return summarize(values);
+                  }
+
+                  function heapUsed() {
+                    if (typeof globalThis.gc === "function") {
+                      globalThis.gc();
+                    }
+
+                    const memory = performance.memory;
+                    return memory && typeof memory.usedJSHeapSize === "number"
+                      ? memory.usedJSHeapSize
+                      : null;
+                  }
+
+                  function retainedHeapDelta(operation) {
+                    const before = heapUsed();
+                    if (before === null) {
+                      return null;
+                    }
+
+                    let sink;
+                    for (let index = 0; index < mountIterations; index++) {
+                      sink = operation(index);
+                    }
+
+                    if (sink === undefined) {
+                      throw new Error("retained measurement returned undefined");
+                    }
+
+                    const after = heapUsed();
+                    return after === null ? null : after - before;
+                  }
+
+                  function sampleRetainedHeapDelta(operation) {
+                    operation(0);
+                    const values = [];
+                    for (let index = 0; index < samples; index++) {
+                      const delta = retainedHeapDelta(operation);
+                      if (delta === null) {
+                        return { available: false, summary: summarize([]) };
+                      }
+
+                      values.push(delta);
+                    }
+
+                    return { available: true, summary: summarize(values) };
+                  }
+
+                  function createItems(seed) {
+                    return Array.from({ length: 100 }, (_, index) => ({
+                      id: index,
+                      title: `Item ${index}`,
+                      active: ((index + seed) % 2) === 0
+                    }));
+                  }
+
+                  let counterState = 0;
+                  const counterHandler = () => {
+                    counterState++;
+                  };
+
+                  function renderProtocolPlainText() {
+                    const builder = createContext();
+                    builder.addContent("Hello RazorVue");
+                    return builder.finish();
+                  }
+
+                  function renderHandwrittenPlainText() {
+                    return "Hello RazorVue";
+                  }
+
+                  function updateProtocolPlainText(index) {
+                    const builder = createContext();
+                    builder.addContent(index % 2 === 0 ? "Hello RazorVue" : "Hello Jazor");
+                    return builder.finish();
+                  }
+
+                  function updateHandwrittenPlainText(index) {
+                    return index % 2 === 0 ? "Hello RazorVue" : "Hello Jazor";
+                  }
+
+                  function renderProtocolCounter() {
+                    const builder = createContext();
+                    builder.openElement("button");
+                    builder.addAttribute("onclick", counterHandler);
+                    builder.addContent("Clicks: ");
+                    builder.addContent(counterState);
+                    builder.closeElement();
+                    return builder.finish();
+                  }
+
+                  function renderHandwrittenCounter() {
+                    return h("button", { onClick: counterHandler }, ["Clicks: ", counterState]);
+                  }
+
+                  function updateProtocolCounter() {
+                    counterState++;
+                    return renderProtocolCounter();
+                  }
+
+                  function updateHandwrittenCounter() {
+                    counterState++;
+                    return renderHandwrittenCounter();
+                  }
+
+                  function renderProtocolKeyedList(index) {
+                    const builder = createContext();
+                    builder.openElement("ul");
+                    for (const item of createItems(index)) {
+                      builder.openElement("li");
+                      builder.addAttribute("key", item.id);
+                      builder.addContent(item.title);
+                      if (item.active) {
+                        builder.addContent(" active");
+                      }
+                      builder.closeElement();
+                    }
+
+                    builder.closeElement();
+                    return builder.finish();
+                  }
+
+                  function renderHandwrittenKeyedList(index) {
+                    return h("ul", null, createItems(index).map(item => h(
+                      "li",
+                      { key: item.id },
+                      item.active ? [item.title, " active"] : [item.title])));
+                  }
+
+                  const fixtures = [
+                    ["plain-text", renderProtocolPlainText, renderHandwrittenPlainText, updateProtocolPlainText, updateHandwrittenPlainText],
+                    ["counter", renderProtocolCounter, renderHandwrittenCounter, updateProtocolCounter, updateHandwrittenCounter],
+                    ["keyed-list-100", renderProtocolKeyedList, renderHandwrittenKeyedList, renderProtocolKeyedList, renderHandwrittenKeyedList]
+                  ];
+
+                  try {
+                    const measurements = fixtures.map(([id, protocolRender, handwrittenRender, protocolUpdate, handwrittenUpdate]) => {
+                      const protocolRenderSummary = sample(protocolRender, renderIterations);
+                      const handwrittenRenderSummary = sample(handwrittenRender, renderIterations);
+                      const protocolUpdateSummary = sample(protocolUpdate, renderIterations);
+                      const handwrittenUpdateSummary = sample(handwrittenUpdate, renderIterations);
+                      const retained = sampleRetainedHeapDelta(protocolUpdate);
+                      return {
+                        id,
+                        protocolRenderOpsPerSecond: protocolRenderSummary,
+                        handwrittenRenderOpsPerSecond: handwrittenRenderSummary,
+                        renderThroughputRatio: protocolRenderSummary.median / handwrittenRenderSummary.median,
+                        protocolUpdateOpsPerSecond: protocolUpdateSummary,
+                        handwrittenUpdateOpsPerSecond: handwrittenUpdateSummary,
+                        updateThroughputRatio: protocolUpdateSummary.median / handwrittenUpdateSummary.median,
+                        heapMeasurementAvailable: retained.available,
+                        retainedHeapDeltaBytes: retained.summary,
+                        notes: [
+                          "This browser measurement runs the active render-context runtime in a real ESM-capable browser.",
+                          "It measures VNode construction protocol cost and browser JS heap deltas, not Vue DOM patch cost."
+                        ]
+                      };
+                    });
+
+                    finish({
+                      schemaVersion: "razorvue-g2-browser-benchmark-v1",
+                      status: "browser-measurement",
+                      browserPath: "",
+                      samples,
+                      renderIterations,
+                      mountIterations,
+                      fixtures: measurements,
+                      notes: [
+                        "Headless browser benchmark uses file:// ESM loading with --allow-file-access-from-files.",
+                        "Heap deltas depend on browser support for performance.memory.usedJSHeapSize and are recorded as unavailable when the browser does not expose it.",
+                        "This lane complements Node protocol numbers and generated artifact measurements; it does not introduce any alternate RazorVue lowering path."
+                      ]
+                    });
+                  } catch (error) {
+                    finish({
+                      schemaVersion: "razorvue-g2-browser-benchmark-v1",
+                      status: "browser-measurement-failed",
+                      browserPath: "",
+                      samples,
+                      renderIterations,
+                      mountIterations,
+                      fixtures: [],
+                      notes: [
+                        error instanceof Error ? (error.stack || error.message) : String(error)
+                      ]
+                    });
+                  }
+                </script>
+              </body>
+            </html>
+            """;
+
+    private static string? ResolveBrowserExecutable()
+    {
+        var explicitPath = Environment.GetEnvironmentVariable("RAZORVUE_BROWSER_EXE")?.Trim();
+        if (string.IsNullOrWhiteSpace(explicitPath))
+            explicitPath = Environment.GetEnvironmentVariable("RAZORVUE_BROWSER_PATH")?.Trim();
+
+        if (!string.IsNullOrWhiteSpace(explicitPath))
+            return File.Exists(explicitPath) ? explicitPath : null;
+
+        var candidates = OperatingSystem.IsWindows()
+            ? new[]
+            {
+                @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+                @"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+                @"C:\Program Files\Google\Chrome\Application\chrome.exe",
+                @"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+                "msedge.exe",
+                "chrome.exe"
+            }
+            : OperatingSystem.IsMacOS()
+                ? new[]
+                {
+                    "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+                    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+                    "microsoft-edge",
+                    "google-chrome",
+                    "chromium"
+                }
+                : new[]
+                {
+                    "microsoft-edge",
+                    "microsoft-edge-stable",
+                    "google-chrome",
+                    "google-chrome-stable",
+                    "chromium",
+                    "chromium-browser"
+                };
+
+        foreach (var candidate in candidates)
+        {
+            var resolved = TryResolveBrowserExecutable(candidate);
+            if (resolved is not null)
+                return resolved;
+        }
+
+        return null;
+    }
+
+    private static string? TryResolveBrowserExecutable(string candidate)
+    {
+        if (candidate.Contains(Path.DirectorySeparatorChar, StringComparison.Ordinal) ||
+            candidate.Contains(Path.AltDirectorySeparatorChar, StringComparison.Ordinal) ||
+            candidate.Contains(':', StringComparison.Ordinal))
+        {
+            return File.Exists(candidate) ? candidate : null;
+        }
+
+        var path = Environment.GetEnvironmentVariable("PATH") ?? "";
+        var extensions = OperatingSystem.IsWindows()
+            ? (Environment.GetEnvironmentVariable("PATHEXT") ?? ".EXE;.CMD;.BAT").Split(';', StringSplitOptions.RemoveEmptyEntries)
+            : [""];
+
+        foreach (var directory in path.Split(Path.PathSeparator))
+        {
+            if (string.IsNullOrWhiteSpace(directory))
+                continue;
+
+            foreach (var extension in extensions)
+            {
+                var fileName = candidate.EndsWith(extension, StringComparison.OrdinalIgnoreCase)
+                    ? candidate
+                    : candidate + extension;
+                var fullPath = Path.Combine(directory, fileName);
+                if (File.Exists(fullPath))
+                    return fullPath;
+            }
+        }
+
+        return null;
+    }
+
+    private static async Task<ProcessResult> RunBrowserDumpDomAsync(string browserPath, string indexPath)
+    {
+        var harnessRoot = Path.GetDirectoryName(indexPath)!;
+        var userDataRoot = Path.Combine(harnessRoot, ".browser-profile-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(userDataRoot);
+
+        try
+        {
+            return await RunProcessAsync(
+                browserPath,
+                harnessRoot,
+                [
+                    "--headless=new",
+                    "--disable-gpu",
+                    "--disable-dev-shm-usage",
+                    "--no-first-run",
+                    "--no-default-browser-check",
+                    "--no-sandbox",
+                    "--allow-file-access-from-files",
+                    "--enable-precise-memory-info",
+                    "--js-flags=--expose-gc",
+                    "--run-all-compositor-stages-before-draw",
+                    "--virtual-time-budget=60000",
+                    "--dump-dom",
+                    $"--user-data-dir={userDataRoot}",
+                    new Uri(Path.GetFullPath(indexPath)).AbsoluteUri
+                ],
+                TimeSpan.FromSeconds(90));
+        }
+        finally
+        {
+            try
+            {
+                if (Directory.Exists(userDataRoot))
+                    Directory.Delete(userDataRoot, recursive: true);
+            }
+            catch
+            {
+            }
+        }
+    }
+
+    private static string ReadBrowserPayload(string standardOutput)
+    {
+        var match = Regex.Match(
+            standardOutput,
+            "data-jazor-benchmark=\"(?<payload>[A-Za-z0-9+/=]+)\"",
+            RegexOptions.CultureInvariant);
+        if (!match.Success)
+            throw new InvalidOperationException("Browser DOM did not contain the RazorVue G2 benchmark result marker.");
+
+        return Encoding.UTF8.GetString(Convert.FromBase64String(match.Groups["payload"].Value));
+    }
+
+    private static async Task<ProcessResult> RunProcessAsync(
+        string fileName,
+        string workingDirectory,
+        IReadOnlyList<string> arguments,
+        TimeSpan timeout)
+    {
+        var startInfo = new ProcessStartInfo(fileName)
+        {
+            WorkingDirectory = workingDirectory,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false
+        };
+
+        foreach (var argument in arguments)
+            startInfo.ArgumentList.Add(argument);
+
+        using var process = new Process { StartInfo = startInfo };
+        process.Start();
+
+        var standardOutput = process.StandardOutput.ReadToEndAsync();
+        var standardError = process.StandardError.ReadToEndAsync();
+
+        var timedOut = false;
+        using var timeoutSource = new CancellationTokenSource(timeout);
+        try
+        {
+            await process.WaitForExitAsync(timeoutSource.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            timedOut = true;
+            try
+            {
+                process.Kill(entireProcessTree: true);
+            }
+            catch
+            {
+            }
+
+            await process.WaitForExitAsync();
+        }
+
+        var output = await standardOutput;
+        var error = await standardError;
+        return timedOut
+            ? new ProcessResult(-1, output, "Process timed out after " + timeout + "." + Environment.NewLine + error)
+            : new ProcessResult(process.ExitCode, output, error);
+    }
+}
+
 internal sealed record GeneratedArtifactBenchmarkReport(
     string SchemaVersion,
     string Status,
@@ -1231,7 +1971,7 @@ internal static class GeneratedArtifactBenchmarkRunner
             Artifacts: artifacts,
             Notes:
             [
-                "This report uses an external Microsoft.NET.Sdk.Razor consumer with UseRazorSourceGenerator=true and JazorRazorVueEnableRazorSgIntegration=true.",
+                "This report uses an external Microsoft.NET.Sdk.Razor consumer with the SDK Razor source generator.",
                 "It records generated artifact size, gzip size, and SHA256 for the active official Razor SG -> IOperation -> Jazor.Compiler -> Vue render-function .mjs path.",
                 "Each fixture includes a same-machine handwritten Vue h() .mjs baseline (shared Vue/runtime dependencies excluded) and generated/handwritten gzip ratio.",
                 "Runtime and CLR module artifacts are reported separately from per-fixture component modules so later G2 threshold comparisons can isolate shared dependencies.",
@@ -1304,11 +2044,7 @@ internal static class GeneratedArtifactBenchmarkRunner
                 <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
                 <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
                 <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
-                <JazorEmit>true</JazorEmit>
-                <JazorBundle>false</JazorBundle>
-                <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
-                <JazorRazorVueEnableRazorSgIntegration>true</JazorRazorVueEnableRazorSgIntegration>
-                <JazorRazorVueTestHook>true</JazorRazorVueTestHook>
+                <JazorMode>debug</JazorMode>
               </PropertyGroup>
 
               <ItemGroup>
@@ -1318,7 +2054,6 @@ internal static class GeneratedArtifactBenchmarkRunner
               <ItemGroup>
                 <FrameworkReference Include="Microsoft.AspNetCore.App" />
                 <CompilerVisibleProperty Include="JazorRazorVueTestHook" />
-                <CompilerVisibleProperty Include="JazorRazorVueEnableRazorSgIntegration" />
               </ItemGroup>
             </Project>
             """);
@@ -1621,6 +2356,305 @@ internal static class GeneratedArtifactBenchmarkRunner
                     "Generated artifact must not persist the external consumer absolute project path: " + relativePath);
             }
         }
+    }
+}
+
+internal sealed record ReleasePerformanceReport(
+    string SchemaVersion,
+    string Status,
+    string Commit,
+    string RetiredLineRef,
+    string RetiredLineCommit,
+    bool RetiredLineHasHomogeneousProtocol,
+    string RetiredLineBaselineStatus,
+    RuntimeBenchmarkReport Runtime,
+    GeneratedArtifactBenchmarkReport GeneratedArtifacts,
+    BrowserBenchmarkReport Browser,
+    IReadOnlyList<ThresholdEvaluation> Thresholds,
+    IReadOnlyList<string> Notes)
+{
+    public static ReleasePerformanceReport Create(
+        string repoRoot,
+        BenchmarkArguments options,
+        RuntimeBenchmarkReport runtime,
+        GeneratedArtifactBenchmarkReport generatedArtifacts,
+        BrowserBenchmarkReport browser,
+        OldLineBaselineProbeResult oldLine)
+    {
+        var thresholds = BuildThresholds(runtime, generatedArtifacts, browser, oldLine);
+        var status = thresholds.Any(static threshold => threshold.Status == "warn")
+            ? "baseline-recorded-with-warnings"
+            : "baseline-recorded";
+
+        return new ReleasePerformanceReport(
+            SchemaVersion: "razorvue-g2-release-performance-v1",
+            Status: status,
+            Commit: ReadGit(repoRoot, ["rev-parse", "HEAD"]).Trim(),
+            RetiredLineRef: oldLine.Ref,
+            RetiredLineCommit: oldLine.Commit,
+            RetiredLineHasHomogeneousProtocol: oldLine.HasHomogeneousProtocol,
+            RetiredLineBaselineStatus: oldLine.Status,
+            Runtime: runtime,
+            GeneratedArtifacts: generatedArtifacts,
+            Browser: browser,
+            Thresholds: thresholds,
+            Notes:
+            [
+                "This report is the first G2 performance baseline for the active RazorVue render-function path.",
+                "Runtime measurements compare render-context protocol calls with same-machine handwritten h() baselines.",
+                "Generated artifact measurements use an external official Razor SG consumer built from the local Jazor package.",
+                "Browser measurements run the render-context protocol in a real browser and record JS heap deltas when performance.memory is available.",
+                "Old-line comparison is recorded as an availability probe. The default v0.1.26 ref predates this G2 protocol, so numeric old-line thresholds remain unavailable until a fixed old-line worktree exposes the same measurement contract."
+            ]);
+    }
+
+    public string ToMarkdown()
+    {
+        var writer = new StringWriter();
+        writer.WriteLine("# RazorVue G2 Release Performance Report");
+        writer.WriteLine();
+        writer.WriteLine("- Schema: " + SchemaVersion);
+        writer.WriteLine("- Status: " + Status);
+        writer.WriteLine("- Commit: `" + Commit + "`");
+        writer.WriteLine("- Retired-line ref: `" + RetiredLineRef + "`");
+        writer.WriteLine("- Retired-line commit: `" + RetiredLineCommit + "`");
+        writer.WriteLine("- Retired-line protocol available: " + (RetiredLineHasHomogeneousProtocol ? "yes" : "no"));
+        writer.WriteLine("- Retired-line baseline status: " + RetiredLineBaselineStatus);
+        writer.WriteLine();
+        writer.WriteLine("## Threshold Summary");
+        writer.WriteLine();
+        writer.WriteLine("| Threshold | Status | Detail |");
+        writer.WriteLine("|-----------|--------|--------|");
+        foreach (var threshold in Thresholds)
+            writer.WriteLine("| `" + threshold.Id + "` | " + threshold.Status + " | " + threshold.Detail + " |");
+
+        writer.WriteLine();
+        writer.WriteLine("## Runtime Protocol");
+        writer.WriteLine();
+        writer.WriteLine("| Fixture | Render ratio | Update ratio | Node heap delta median |");
+        writer.WriteLine("|---------|--------------|--------------|------------------------|");
+        foreach (var fixture in Runtime.Fixtures)
+        {
+            writer.WriteLine(
+                "| `" + fixture.Id + "`" +
+                " | " + fixture.RenderThroughputRatio.ToString("0.000", CultureInfo.InvariantCulture) +
+                " | " + fixture.UpdateThroughputRatio.ToString("0.000", CultureInfo.InvariantCulture) +
+                " | " + fixture.RetainedHeapDeltaBytes.Median.ToString(CultureInfo.InvariantCulture) +
+                " |");
+        }
+
+        writer.WriteLine();
+        writer.WriteLine("## Generated Artifacts");
+        writer.WriteLine();
+        writer.WriteLine("- Package version: `" + GeneratedArtifacts.PackageVersion + "`");
+        writer.WriteLine("- Clean build: " + GeneratedArtifacts.CleanBuildElapsedMilliseconds.ToString(CultureInfo.InvariantCulture) + " ms");
+        writer.WriteLine("- Incremental p95: " + GeneratedArtifacts.IncrementalBuildP95Milliseconds.ToString(CultureInfo.InvariantCulture) + " ms");
+        writer.WriteLine();
+        writer.WriteLine("| Fixture | Component gzip | Handwritten gzip | Gzip ratio |");
+        writer.WriteLine("|---------|----------------|------------------|------------|");
+        foreach (var fixture in GeneratedArtifacts.Fixtures)
+        {
+            writer.WriteLine(
+                "| `" + fixture.Id + "`" +
+                " | " + fixture.ComponentGzipBytes.ToString(CultureInfo.InvariantCulture) +
+                " | " + fixture.HandwrittenGzipBytes.ToString(CultureInfo.InvariantCulture) +
+                " | " + fixture.GzipRatio.ToString("0.000", CultureInfo.InvariantCulture) +
+                " |");
+        }
+
+        writer.WriteLine();
+        writer.WriteLine("## Browser");
+        writer.WriteLine();
+        writer.WriteLine("- Status: " + Browser.Status);
+        writer.WriteLine("- Browser: `" + Browser.BrowserPath + "`");
+        writer.WriteLine();
+        writer.WriteLine("| Fixture | Render ratio | Update ratio | Heap available | Heap delta median |");
+        writer.WriteLine("|---------|--------------|--------------|----------------|-------------------|");
+        foreach (var fixture in Browser.Fixtures)
+        {
+            writer.WriteLine(
+                "| `" + fixture.Id + "`" +
+                " | " + fixture.RenderThroughputRatio.ToString("0.000", CultureInfo.InvariantCulture) +
+                " | " + fixture.UpdateThroughputRatio.ToString("0.000", CultureInfo.InvariantCulture) +
+                " | " + (fixture.HeapMeasurementAvailable ? "yes" : "no") +
+                " | " + fixture.RetainedHeapDeltaBytes.Median.ToString(CultureInfo.InvariantCulture) +
+                " |");
+        }
+
+        writer.WriteLine();
+        writer.WriteLine("## Notes");
+        writer.WriteLine();
+        foreach (var note in Notes)
+            writer.WriteLine("- " + note);
+
+        return writer.ToString();
+    }
+
+    private static ThresholdEvaluation[] BuildThresholds(
+        RuntimeBenchmarkReport runtime,
+        GeneratedArtifactBenchmarkReport generatedArtifacts,
+        BrowserBenchmarkReport browser,
+        OldLineBaselineProbeResult oldLine)
+    {
+        var generatedMaxGzip = generatedArtifacts.Fixtures.Count == 0
+            ? 0
+            : generatedArtifacts.Fixtures.Max(static fixture => fixture.GzipRatio);
+        var runtimeMinRatio = runtime.Fixtures.Count == 0
+            ? 0
+            : runtime.Fixtures.Min(static fixture => Math.Min(fixture.RenderThroughputRatio, fixture.UpdateThroughputRatio));
+        var browserMinRatio = browser.Fixtures.Count == 0
+            ? 0
+            : browser.Fixtures.Min(static fixture => Math.Min(fixture.RenderThroughputRatio, fixture.UpdateThroughputRatio));
+        var browserHeapAvailable = browser.Fixtures.Count > 0 && browser.Fixtures.All(static fixture => fixture.HeapMeasurementAvailable);
+
+        return
+        [
+            new(
+                "generated-gzip",
+                generatedMaxGzip <= 2.0 ? "pass" : "warn",
+                "max generated/handwritten fixture gzip ratio = " + generatedMaxGzip.ToString("0.000", CultureInfo.InvariantCulture) + " (limit 2.000)"),
+            new(
+                "node-throughput",
+                runtimeMinRatio >= 0.70 ? "pass" : "warn",
+                "min Node render/update ratio = " + runtimeMinRatio.ToString("0.000", CultureInfo.InvariantCulture) + " (limit 0.700)"),
+            new(
+                "browser-throughput",
+                browser.Fixtures.Count == 0 ? "unavailable" : "observed",
+                browser.Fixtures.Count == 0
+                    ? "headless browser measurement did not run"
+                    : "min browser render/update ratio = " + browserMinRatio.ToString("0.000", CultureInfo.InvariantCulture) + "; this lane is used for real-browser heap/timer trend evidence, not a hard throughput threshold"),
+            new(
+                "browser-heap",
+                browser.Fixtures.Count == 0 || !browserHeapAvailable ? "unavailable" : "observed",
+                browser.Fixtures.Count == 0
+                    ? "headless browser measurement did not run"
+                    : browserHeapAvailable
+                        ? "all browser fixtures reported JS heap deltas"
+                        : "browser did not expose performance.memory.usedJSHeapSize for every fixture"),
+            new(
+                "incremental-compile-old-line",
+                oldLine.HasHomogeneousProtocol ? "observed" : "unavailable",
+                oldLine.HasHomogeneousProtocol
+                    ? "retired-line ref exposes the G2 protocol; compare incremental p95 externally"
+                    : "retired-line ref does not expose the same G2 measurement protocol"),
+            new(
+                "node-retained-heap",
+                "observed",
+                "Node retained heap delta medians recorded for " + runtime.Fixtures.Count.ToString(CultureInfo.InvariantCulture) + " fixtures")
+        ];
+    }
+
+    private static string ReadGit(string repoRoot, IReadOnlyList<string> arguments)
+    {
+        var result = OldLineBaselineProbe.RunGit(repoRoot, arguments);
+        return result.ExitCode == 0 ? result.StandardOutput : "";
+    }
+}
+
+internal sealed record ThresholdEvaluation(
+    string Id,
+    string Status,
+    string Detail);
+
+internal sealed record OldLineBaselineProbeResult(
+    string Ref,
+    string Commit,
+    bool HasHomogeneousProtocol,
+    string Status,
+    IReadOnlyList<string> Notes);
+
+internal static class OldLineBaselineProbe
+{
+    public static OldLineBaselineProbeResult Probe(string repoRoot, string retiredLineRef)
+    {
+        var commitResult = RunGit(repoRoot, ["rev-parse", retiredLineRef]);
+        if (commitResult.ExitCode != 0)
+        {
+            return new OldLineBaselineProbeResult(
+                retiredLineRef,
+                "",
+                false,
+                "ref-unavailable",
+                [commitResult.StandardError.Trim()]);
+        }
+
+        var benchmarkScriptResult = RunGit(repoRoot, ["cat-file", "-e", retiredLineRef + ":scripts/csharp/benchmark-razorvue-g2.cs"]);
+        var hasProtocol = benchmarkScriptResult.ExitCode == 0;
+        return new OldLineBaselineProbeResult(
+            retiredLineRef,
+            commitResult.StandardOutput.Trim(),
+            hasProtocol,
+            hasProtocol ? "homogeneous-protocol-available" : "homogeneous-protocol-unavailable",
+            hasProtocol
+                ? ["The retired-line ref contains scripts/csharp/benchmark-razorvue-g2.cs and can be sampled separately."]
+                : ["The retired-line ref does not contain the G2 benchmark script, so numeric threshold comparison would not be same-protocol evidence."]);
+    }
+
+    public static ProcessResult RunGit(string repoRoot, IReadOnlyList<string> arguments)
+    {
+        var startInfo = new ProcessStartInfo("git")
+        {
+            WorkingDirectory = repoRoot,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+
+        foreach (var argument in arguments)
+            startInfo.ArgumentList.Add(argument);
+
+        using var process = Process.Start(startInfo)
+            ?? throw new InvalidOperationException("Failed to start git.");
+        var standardOutput = process.StandardOutput.ReadToEnd();
+        var standardError = process.StandardError.ReadToEnd();
+        process.WaitForExit();
+        return new ProcessResult(process.ExitCode, standardOutput, standardError);
+    }
+}
+
+internal static class ReleasePerformanceReportJson
+{
+    public static string Write(ReleasePerformanceReport report)
+    {
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true }))
+        {
+            writer.WriteStartObject();
+            writer.WriteString("schemaVersion", report.SchemaVersion);
+            writer.WriteString("status", report.Status);
+            writer.WriteString("commit", report.Commit);
+            writer.WriteString("retiredLineRef", report.RetiredLineRef);
+            writer.WriteString("retiredLineCommit", report.RetiredLineCommit);
+            writer.WriteBoolean("retiredLineHasHomogeneousProtocol", report.RetiredLineHasHomogeneousProtocol);
+            writer.WriteString("retiredLineBaselineStatus", report.RetiredLineBaselineStatus);
+            writer.WritePropertyName("thresholds");
+            writer.WriteStartArray();
+            foreach (var threshold in report.Thresholds)
+            {
+                writer.WriteStartObject();
+                writer.WriteString("id", threshold.Id);
+                writer.WriteString("status", threshold.Status);
+                writer.WriteString("detail", threshold.Detail);
+                writer.WriteEndObject();
+            }
+
+            writer.WriteEndArray();
+            WriteStringArray(writer, "notes", report.Notes);
+            writer.WriteEndObject();
+        }
+
+        return Encoding.UTF8.GetString(stream.ToArray());
+    }
+
+    private static void WriteStringArray(Utf8JsonWriter writer, string propertyName, IReadOnlyList<string> values)
+    {
+        writer.WritePropertyName(propertyName);
+        writer.WriteStartArray();
+        foreach (var value in values)
+            writer.WriteStringValue(value);
+
+        writer.WriteEndArray();
     }
 }
 

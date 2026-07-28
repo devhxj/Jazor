@@ -33,7 +33,7 @@ Every project that declares `[ECMAScriptModule]` must reference `Jazor`:
 </ItemGroup>
 ```
 
-Keep `JazorEmit` disabled (default) in library projects.
+Library projects keep the default `JazorMode=none`.
 
 ### Optional frontend ecosystem packages
 
@@ -54,7 +54,7 @@ Keep `JazorEmit` disabled (default) in library projects.
 
 ### Host / executable projects
 
-The final executable or web host project enables emit and optionally bundling:
+The final executable or web host project selects one output mode:
 
 ```xml
 <ItemGroup>
@@ -62,27 +62,24 @@ The final executable or web host project enables emit and optionally bundling:
 </ItemGroup>
 
 <PropertyGroup>
-  <JazorEmit>true</JazorEmit>
-  <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\generated\</JazorOutDir>
-  <JazorToolchain>Deno</JazorToolchain>
-  <JazorBundle>false</JazorBundle>
+  <JazorMode>debug</JazorMode>
+  <JazorDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorDir>
+  <JazorTool>Deno</JazorTool> <!-- Used only by JazorMode=release -->
 </PropertyGroup>
 ```
 
-- `JazorEmit` scans the host output and referenced assemblies, emitting all declared modules together.
-- `JazorBundle=true` bundles emitted modules through the selected `JazorToolchain`; `Deno` uses the bundled runtime, and `Netpack` uses the packaged NetPack lane.
+- `JazorMode=none` is the default and writes no artifacts.
+- `JazorMode=debug` scans the host output and referenced assemblies, then writes debug modules and `jazor-manifest.json`.
+- `JazorMode=release` performs its internal materialization in an intermediate directory, then writes only the production bundle and source map through `JazorTool`; `Deno` uses the bundled runtime, and `Netpack` uses the packaged NetPack lane.
 
 ### Razor integration status
 
-The transformation branch currently exposes the official Razor Source Generator final-document input boundary. A Web SDK project can opt into that boundary with the compiler-visible property already shipped by `buildTransitive/Jazor.props`:
+The transformation branch automatically exposes the official Razor Source Generator final-document input boundary for Razor SDK projects:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>net11.0</TargetFramework>
-    <RazorLangVersion>11.0</RazorLangVersion>
-    <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
-    <JazorRazorVueEnableRazorSgIntegration>true</JazorRazorVueEnableRazorSgIntegration>
   </PropertyGroup>
 
   <ItemGroup>
@@ -91,16 +88,13 @@ The transformation branch currently exposes the official Razor Source Generator 
 </Project>
 ```
 
-This opt-in enables the controlled SG tail hook that adapts final generated C# and binds `BuildRenderTree` against the callback compilation. Razor component modules lower to Vue render-function `.mjs` artifacts through the shared compiler/render-context path.
+The package hooks the completed Roslyn generator driver result, then binds final generated C# and `BuildRenderTree` against that final compilation. Razor component modules lower to Vue render-function `.mjs` artifacts through the shared compiler/render-context path.
 
 ### Current MSBuild emit behavior
 
 The existing emit targets continue to handle declared ECMAScript modules independently of the future Razor component lowering:
 
-- `JazorEmit` runs after a successful build when enabled, scans the target and copy-local assemblies, and writes modules plus `jazor-manifest.json`.
-- `JazorOutDir` defaults to `JazorDevOutDir`, which defaults to `$(MSBuildProjectDirectory)\jazor\`.
-- During publish, the default non-materialized path switches to `JazorPublishOutDir`, which defaults to `$(MSBuildProjectDirectory)\wwwroot\jazor\`.
-- `JazorToolchain` defaults to `Deno`; bundle builds pass the explicit manifest, artifact root, source root, and output root to the selected `Deno` or `Netpack` lane.
-- `JazorBundle=true` runs the bundled emit tool after `JazorEmit` and writes production bundle assets under the `JazorBundleOut` output root.
-- `JazorCleanEmit` and `JazorFailOnPathConflict` both default to `true`.
-- `JazorPublishMaterializeEnabled=true` copies `JazorOutDir` into the published `wwwroot/jazor` directory and removes a publish-root shadow `jazor` directory.
+- `JazorMode` defaults to `none`; `debug` and `release` are mutually exclusive build outputs.
+- `JazorDir` defaults to `$(MSBuildProjectDirectory)\wwwroot\jazor\`.
+- `debug` writes modules plus `jazor-manifest.json`; `release` clears `JazorDir`, materializes internally, and writes only production bundle assets.
+- `JazorTool` defaults to `Deno` and is used only by `release`; bundle builds pass the intermediate manifest, artifact root, source root, and output root to the selected `Deno` or `Netpack` lane.

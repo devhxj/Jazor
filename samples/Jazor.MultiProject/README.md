@@ -4,7 +4,7 @@ This sample shows the recommended SDK layout for a multi-project solution:
 
 - `Sample.Contracts`: shared module library.
 - `Sample.Features`: class library that declares `[ECMAScriptModule]` and references `Sample.Contracts`.
-- `Sample.Host`: final host that turns on `JazorEmit` and emits modules from itself and referenced libraries.
+- `Sample.Host`: final host that uses `JazorMode=debug` to emit modules from itself and referenced libraries.
 
 ## Build with a published package
 
@@ -42,7 +42,7 @@ Generated output includes modules from all referenced projects that declare `[EC
 
 ## Bundle with DenoHost
 
-`JazorBundle` now uses `DenoHost`, so the sample does not depend on a globally installed `deno`.
+`JazorMode=release` uses `DenoHost`, so the sample does not depend on a globally installed `deno`.
 
 Use the same script with `-Bundle`:
 
@@ -53,7 +53,7 @@ dotnet run --file .\samples\Jazor.MultiProject\build-local.cs -- --bundle
 This writes:
 
 ```text
-.\Sample.Host\wwwroot\bundle\bundle.js
+.\Sample.Host\wwwroot\jazor\bundle.js
 ```
 
 The bundled file re-exports the host module members, so in this sample the final bundle exports `boot`.

@@ -135,6 +135,51 @@ public sealed class ESGeneratorSourceMapCatalogTest
         StringAssert.Contains(moduleCatalog, "modules/math.mjs");
     }
 
+    [TestMethod]
+    public void RunGenerator_InternalStaticModule_EmitsCatalogModule()
+    {
+        var compilation = CreateCompilation(
+            "InternalModule.Generated",
+            """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Modules
+            {
+                [ECMAScript.ECMAScriptModule("modules/text-helper")]
+                internal static class TextHelper
+                {
+                    public static string Normalize(string value)
+                    {
+                        return value.Trim();
+                    }
+                }
+            }
+            """,
+            "Demo/TextHelper.cs");
+
+        var (_, runResult) = RunGeneratorWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static item => item.ToString())));
+
+        var moduleCatalog = GetGeneratedSource(runResult, "Jazor.Generated.ModuleCatalog.g.cs");
+        StringAssert.Contains(moduleCatalog, "modules/text-helper.mjs");
+        StringAssert.Contains(moduleCatalog, "function normalize(value)");
+    }
+
     private static Compilation CreateCompilation(string assemblyName, string source, string sourcePath)
         => CSharpCompilation.Create(
             assemblyName: assemblyName,

@@ -1,5 +1,4 @@
-using System.Collections.Immutable;
-using Jazor.Analyzer.RazorVue.Generation;
+using Jazor.RazorVue.Generator.Generation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -9,178 +8,88 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSourceGeneratorTailOutputTests
 {
     [TestMethod]
-    public void Emit_WhenEnabledAndInputIsUnreadableWithoutRazorVueCandidate_DoesNotReportTailFailureDiagnostic()
-    {
-        var diagnostics = RunTailOutputGenerator(static (context, compilation) =>
-        {
-            RazorSourceGeneratorTailOutput.Emit(
-                context,
-                compilation,
-                source: new object(),
-                new RazorSourceGeneratorTailOutputOptions(Enabled: true, TestHookEnabled: false));
-        });
-
-        AssertNoTailFailureDiagnostic(diagnostics);
-    }
-
-    [TestMethod]
-    public void Emit_WhenEnabledAndGeneratorDocumentsAreEmptyWithoutRazorVueCandidate_DoesNotReportTailFailureDiagnostic()
-    {
-        var diagnostics = RunTailOutputGenerator(static (context, compilation) =>
-        {
-            RazorSourceGeneratorTailOutput.Emit<object>(
-                context,
-                compilation,
-                ImmutableArray<object>.Empty,
-                new RazorSourceGeneratorTailOutputOptions(Enabled: true, TestHookEnabled: false));
-        });
-
-        AssertNoTailFailureDiagnostic(diagnostics);
-    }
-
-    [TestMethod]
-    public void Emit_WhenEnabledAndInputIsUnreadableWithRazorVueCandidate_ReportsTailFailureDiagnostic()
-    {
-        var diagnostics = RunTailOutputGenerator(
-            static (context, compilation) =>
-            {
-                RazorSourceGeneratorTailOutput.Emit(
-                    context,
-                    compilation,
-                    source: new object(),
-                    new RazorSourceGeneratorTailOutputOptions(Enabled: true, TestHookEnabled: false));
-            },
-            includeRazorVueCandidate: true);
-
-        AssertTailFailureDiagnostic(
-            diagnostics,
-            "could not read the Razor SG tail output input");
-    }
-
-    [TestMethod]
-    public void Emit_WhenEnabledAndGeneratorDocumentsAreEmptyWithRazorVueCandidate_ReportsTailFailureDiagnostic()
-    {
-        var diagnostics = RunTailOutputGenerator(
-            static (context, compilation) =>
-            {
-                RazorSourceGeneratorTailOutput.Emit<object>(
-                    context,
-                    compilation,
-                    ImmutableArray<object>.Empty,
-                    new RazorSourceGeneratorTailOutputOptions(Enabled: true, TestHookEnabled: false));
-            },
-            includeRazorVueCandidate: true);
-
-        AssertTailFailureDiagnostic(
-            diagnostics,
-            "did not receive any Razor source generator documents");
-    }
-
-    [TestMethod]
-    public void Emit_WhenEnabledWithHandwrittenBuildRenderTree_DoesNotRequireTailOutput()
-    {
-        var diagnostics = RunTailOutputGenerator(
-            static (context, compilation) =>
-            {
-                RazorSourceGeneratorTailOutput.Emit(
-                    context,
-                    compilation,
-                    source: new object(),
-                    new RazorSourceGeneratorTailOutputOptions(Enabled: true, TestHookEnabled: false));
-            },
-            includeRazorVueCandidate: true,
-            includeHandwrittenBuildRenderTree: true);
-
-        AssertNoTailFailureDiagnostic(diagnostics);
-    }
-
-    private static ImmutableArray<Diagnostic> RunTailOutputGenerator(
-        Action<SourceProductionContext, Compilation> emit,
-        bool includeRazorVueCandidate = false,
-        bool includeHandwrittenBuildRenderTree = false)
+    public void TryBuildFinalCompilationCatalog_MixedRazorAndHandwrittenComponents_EmitsBothModules()
     {
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
         var compilation = CSharpCompilation.Create(
-            "RazorVue.RazorSourceGeneratorTailOutput.Tests",
-            syntaxTrees:
+            "RazorVue.FinalCompilation.Mixed",
             [
                 CSharpSyntaxTree.ParseText(
-                    includeHandwrittenBuildRenderTree ? RazorVueCandidateWithHandwrittenBuildRenderTreeSource :
-                    includeRazorVueCandidate ? RazorVueCandidateSource : EmptySource,
-                    options: parseOptions,
-                    path: includeRazorVueCandidate ? "EntryPoint.razor.cs" : "EntryPoint.cs")
+                    """
+                    global using ECMAScript;
+                    global using Microsoft.AspNetCore.Components;
+                    global using Microsoft.AspNetCore.Components.Rendering;
+                    global using static ECMAScript.Vue3;
+                    """,
+                    parseOptions,
+                    "GlobalUsings.g.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    namespace Demo.Pages;
+
+                    [ECMAScriptModule("./components/razor-counter")]
+                    public sealed class RazorCounter : ComponentBase, IVueComponent
+                    {
+                        protected override void BuildRenderTree(RenderTreeBuilder builder)
+                        {
+                            builder.AddContent(0, "razor");
+                        }
+                    }
+                    """,
+                    parseOptions,
+                    "RazorCounter.razor.g.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    namespace Demo.Components;
+
+                    [ECMAScriptModule("./components/handwritten-status")]
+                    public sealed class HandwrittenStatus : ComponentBase, IVueComponent
+                    {
+                        protected override void BuildRenderTree(RenderTreeBuilder builder)
+                        {
+                            builder.AddContent(0, "handwritten");
+                        }
+                    }
+                    """,
+                    parseOptions,
+                    "HandwrittenStatus.razor.cs")
             ],
-            references: RazorSgTestHost.CreateMetadataReferences(),
-            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var errors = RazorSgTestHost.GetCompilationErrors(compilation);
+        Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors));
 
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(
-            generators: [new TailOutputTestGenerator(emit).AsSourceGenerator()],
-            parseOptions: parseOptions);
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out _, out var diagnostics);
-        return diagnostics;
+        var result = RazorSourceGeneratorTailOutput.TryBuildFinalCompilationCatalog(
+            compilation,
+            CancellationToken.None,
+            out var catalogSource,
+            out var failure);
+
+        Assert.IsTrue(result, failure);
+        Assert.IsNotNull(catalogSource);
+        StringAssert.Contains(catalogSource, "components/razor-counter.mjs");
+        StringAssert.Contains(catalogSource, "components/handwritten-status.mjs");
+        StringAssert.Contains(catalogSource, "function $renderDirect()");
+        Assert.IsFalse(catalogSource.Contains("createRenderContext", StringComparison.Ordinal));
+        Assert.IsFalse(catalogSource.Contains(".vue", StringComparison.OrdinalIgnoreCase));
     }
 
-    private static void AssertNoTailFailureDiagnostic(ImmutableArray<Diagnostic> diagnostics)
+    [TestMethod]
+    public void TryBuildFinalCompilationCatalog_WithoutRazorVueComponent_DoesNotCreateCatalog()
     {
-        Assert.IsFalse(
-            diagnostics.Any(static item => item.Id == "JAZORVGA020"),
-            "Did not expect JAZORVGA020. Actual diagnostics: " + string.Join(Environment.NewLine, diagnostics.Select(static item => item.ToString())));
-    }
+        var compilation = CSharpCompilation.Create(
+            "RazorVue.FinalCompilation.Empty",
+            [CSharpSyntaxTree.ParseText("internal static class EntryPoint { }")],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-    private static void AssertTailFailureDiagnostic(
-        ImmutableArray<Diagnostic> diagnostics,
-        string expectedMessage)
-    {
-        var diagnostic = diagnostics.SingleOrDefault(static item => item.Id == "JAZORVGA020");
-        Assert.IsNotNull(
-            diagnostic,
-            "Expected JAZORVGA020. Actual diagnostics: " + string.Join(Environment.NewLine, diagnostics.Select(static item => item.ToString())));
-        StringAssert.Contains(diagnostic!.GetMessage(), expectedMessage);
-    }
+        var result = RazorSourceGeneratorTailOutput.TryBuildFinalCompilationCatalog(
+            compilation,
+            CancellationToken.None,
+            out var catalogSource,
+            out var failure);
 
-    private const string EmptySource = """
-        internal static class EntryPoint
-        {
-        }
-        """;
-
-    private const string RazorVueCandidateSource = """
-        using ECMAScript;
-        using static ECMAScript.Vue3;
-        using Microsoft.AspNetCore.Components;
-
-        [ECMAScriptModule("./components/counter")]
-        public partial class Counter : ComponentBase, IVueComponent
-        {
-        }
-        """;
-
-    private const string RazorVueCandidateWithHandwrittenBuildRenderTreeSource = """
-        using ECMAScript;
-        using static ECMAScript.Vue3;
-        using Microsoft.AspNetCore.Components;
-        using Microsoft.AspNetCore.Components.Rendering;
-
-        [ECMAScriptModule("./components/counter")]
-        public partial class Counter : ComponentBase, IVueComponent
-        {
-            protected override void BuildRenderTree(RenderTreeBuilder builder)
-            {
-                builder.AddContent(0, "handwritten");
-            }
-        }
-        """;
-
-    [Generator]
-    private sealed class TailOutputTestGenerator(
-        Action<SourceProductionContext, Compilation> emit) : IIncrementalGenerator
-    {
-        public void Initialize(IncrementalGeneratorInitializationContext context)
-        {
-            var compilationProvider = context.CompilationProvider;
-            context.RegisterSourceOutput(
-                compilationProvider,
-                (sourceProductionContext, compilation) => emit(sourceProductionContext, compilation));
-        }
+        Assert.IsTrue(result, failure);
+        Assert.IsNull(catalogSource);
     }
 }

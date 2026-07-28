@@ -20,6 +20,7 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
     private const string RenderTreeBuilderExtensionsMetadataName = "Microsoft.AspNetCore.Components.Web.WebRenderTreeBuilderExtensions";
     private const string RenderContextModulePath = "@jazor/vue-runtime/render-context.mjs";
     private const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
+    private const string VueLibraryComponentAttributeMetadataName = "ECMAScript.VueContract.VueLibraryComponentAttribute";
     private const string VuePropAttributeMetadataName = "ECMAScript.VueContract.VuePropAttribute";
     private const string VueLibraryEmitAttributeMetadataName = "ECMAScript.VueContract.VueLibraryEmitAttribute";
     private const string VueSlotAttributeMetadataName = "ECMAScript.VueContract.VueSlotAttribute";
@@ -275,10 +276,10 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
             "OpenRegion" => IsSequenceOnlyMethod(method),
             "CloseRegion" => method.Parameters.Length == 0,
             "OpenComponent" => (IsGenericOpenComponentMethod(method) &&
-                                TryResolveComponentModulePath(operation.TargetMethod, out _, out _)) ||
+                                TryResolveComponentImport(operation.TargetMethod, out _, out _)) ||
                                (IsOpenComponentTypeMethod(method) &&
                                 TryResolveComponentTypeArgument(operation, out var componentType) &&
-                                TryResolveComponentModulePath(componentType, out _)),
+                                TryResolveComponentImport(componentType, out _)),
             "CloseComponent" => method.Parameters.Length == 0,
             "AddContent" => IsSupportedAddContentMethod(method) ||
                             IsRenderFragmentAddContentMethod(method) ||
@@ -631,10 +632,12 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
         Expression instance,
         IReadOnlyList<Expression> translatedArguments)
     {
-        if (!TryResolveComponentModulePath(operation.TargetMethod, out var modulePath, out var componentType))
+        if (!TryResolveComponentImport(operation.TargetMethod, out var componentImportDescriptor, out var componentType))
             throw CreateUnsupportedException(operation);
 
-        var componentImport = argument.BindImportSpecifier(modulePath, "default");
+        var componentImport = argument.BindImportSpecifier(
+            componentImportDescriptor.ImportSpecifier,
+            componentImportDescriptor.ExportName);
         var parameterNameMap = BuildComponentParameterNameMapExpression(componentType);
         return parameterNameMap is null
             ? BuildRenderContextCall(
@@ -659,12 +662,14 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
         IReadOnlyList<Expression> translatedArguments)
     {
         if (!TryResolveComponentTypeArgument(operation, out var componentType) ||
-            !TryResolveComponentModulePath(componentType, out var modulePath))
+            !TryResolveComponentImport(componentType, out var componentImportDescriptor))
         {
             throw CreateUnsupportedException(operation);
         }
 
-        var componentImport = argument.BindImportSpecifier(modulePath, "default");
+        var componentImport = argument.BindImportSpecifier(
+            componentImportDescriptor.ImportSpecifier,
+            componentImportDescriptor.ExportName);
         var parameterNameMap = BuildComponentParameterNameMapExpression(componentType);
         var renderContextArguments = parameterNameMap is null
             ? new[] { ContextCallArgument.FromExpression(componentImport) }
@@ -852,12 +857,12 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
                SymbolEqualityComparer.Default.Equals(reference.Local, local);
     }
 
-    private static bool TryResolveComponentModulePath(
+    private static bool TryResolveComponentImport(
         IMethodSymbol openComponentMethod,
-        out string modulePath,
+        out ComponentImportDescriptor componentImport,
         out INamedTypeSymbol componentType)
     {
-        modulePath = string.Empty;
+        componentImport = default;
         componentType = null!;
         if (openComponentMethod.TypeArguments.Length != 1 ||
             openComponentMethod.TypeArguments[0] is not INamedTypeSymbol resolvedComponentType)
@@ -866,25 +871,24 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
         }
 
         componentType = resolvedComponentType;
-        var exportPath = GetECMAScriptModuleExportPath(componentType);
-        if (string.IsNullOrWhiteSpace(exportPath))
-            return false;
-
-        modulePath = NormalizeModuleImportPath(exportPath!);
-        return true;
+        return TryResolveComponentImport(componentType, out componentImport);
     }
 
-    private static bool TryResolveComponentModulePath(
+    private static bool TryResolveComponentImport(
         INamedTypeSymbol componentType,
-        out string modulePath)
+        out ComponentImportDescriptor componentImport)
     {
-        modulePath = string.Empty;
+        componentImport = default;
         var exportPath = GetECMAScriptModuleExportPath(componentType);
-        if (string.IsNullOrWhiteSpace(exportPath))
-            return false;
+        if (!string.IsNullOrWhiteSpace(exportPath))
+        {
+            componentImport = new ComponentImportDescriptor(
+                NormalizeModuleImportPath(exportPath!),
+                "default");
+            return true;
+        }
 
-        modulePath = NormalizeModuleImportPath(exportPath!);
-        return true;
+        return TryGetVueLibraryComponentImport(componentType, out componentImport);
     }
 
     private static string? GetECMAScriptModuleExportPath(INamedTypeSymbol componentType)
@@ -910,32 +914,41 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
         return null;
     }
 
-    private static string NormalizeModuleImportPath(string path)
+    private static bool TryGetVueLibraryComponentImport(
+        INamedTypeSymbol componentType,
+        out ComponentImportDescriptor componentImport)
     {
-        var normalized = path.Replace('\\', '/').Trim();
-        while (normalized.StartsWith("./", StringComparison.Ordinal))
-            normalized = normalized.Substring(2);
-
-        normalized = normalized.TrimStart('/');
-        var segments = normalized
-            .Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
-            .Where(static segment => segment != ".")
-            .ToArray();
-        if (segments.Length == 0)
-            throw new InvalidOperationException("ECMAScriptModule import path cannot be empty.");
-        if (segments.Any(static segment => segment == ".."))
-            throw new InvalidOperationException("ECMAScriptModule import path cannot escape the output directory.");
-
-        normalized = string.Join("/", segments);
-        if (!normalized.EndsWith(".js", StringComparison.OrdinalIgnoreCase) &&
-            !normalized.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase))
+        componentImport = default;
+        foreach (var attribute in componentType.GetAttributes())
         {
-            normalized += ".mjs";
+            if (!string.Equals(
+                    attribute.AttributeClass?.ToDisplayString(),
+                    VueLibraryComponentAttributeMetadataName,
+                    StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (attribute.ConstructorArguments.Length != 2 ||
+                attribute.ConstructorArguments[0].Value is not string importSpecifier ||
+                attribute.ConstructorArguments[1].Value is not string exportName ||
+                string.IsNullOrWhiteSpace(importSpecifier) ||
+                string.IsNullOrWhiteSpace(exportName))
+            {
+                return false;
+            }
+
+            componentImport = new ComponentImportDescriptor(
+                importSpecifier.Trim(),
+                exportName.Trim());
+            return true;
         }
 
-        // Component modules are emitted relative to the jazor output root; keep a stable relative import form.
-        return "./" + normalized;
+        return false;
     }
+
+    private static string NormalizeModuleImportPath(string path)
+        => ECMAScriptModulePath.NormalizeRootRelativeImportSpecifier(path);
 
     private static ObjectExpression? BuildComponentParameterNameMapExpression(INamedTypeSymbol componentType)
     {
@@ -1076,7 +1089,7 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
         if (CanUseDirectRenderContextCall(operation, [ContextCallArgument.FromSource(1)]))
         {
             var fragment = ContextCallArgument.FromSource(1).Resolve(translatedArguments);
-            return new CallExpression(fragment, NodeList.From(new Expression[] { receiver }), optional: false);
+            return new CallExpression(fragment, NodeList.From(new Expression[] { receiver }), optional: true);
         }
 
         var receiverParameter = new Identifier("__rtb");
@@ -1100,7 +1113,7 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
         var fragmentParameter = argumentParameters[1];
         var arrow = new ArrowFunctionExpression(
             NodeList.From(parameterNodes),
-            new CallExpression(fragmentParameter, NodeList.From(new Expression[] { receiverParameter }), optional: false),
+            new CallExpression(fragmentParameter, NodeList.From(new Expression[] { receiverParameter }), optional: true),
             expression: true,
             async: false);
         return new CallExpression(arrow, NodeList.From(invocationArguments), optional: false);
@@ -1122,11 +1135,11 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
             var directFragmentFactoryCall = new CallExpression(
                 fragment,
                 NodeList.From(new[] { value }),
-                optional: false);
+                optional: true);
             return new CallExpression(
                 directFragmentFactoryCall,
                 NodeList.From(new Expression[] { receiver }),
-                optional: false);
+                optional: true);
         }
 
         var receiverParameter = new Identifier("__rtb");
@@ -1152,10 +1165,10 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
         var fragmentFactoryCall = new CallExpression(
             fragmentParameter,
             NodeList.From(new Expression[] { valueParameter }),
-            optional: false);
+            optional: true);
         var arrow = new ArrowFunctionExpression(
             NodeList.From(parameterNodes),
-            new CallExpression(fragmentFactoryCall, NodeList.From(new Expression[] { receiverParameter }), optional: false),
+            new CallExpression(fragmentFactoryCall, NodeList.From(new Expression[] { receiverParameter }), optional: true),
             expression: true,
             async: false);
         return new CallExpression(arrow, NodeList.From(invocationArguments), optional: false);
@@ -1338,7 +1351,7 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
             detail =
                 " Component type '" +
                 componentType +
-                "' must declare [ECMAScriptModule(\"./path\")] with a non-empty export path for default-import child component lowering.";
+                "' must declare [ECMAScriptModule(\"./path\")] for local RazorVue module lowering or [VueLibraryComponent(\"package\", \"Export\")] for Vue library component lowering.";
         }
 
         return new OperationTransformationException(
@@ -1377,4 +1390,8 @@ public sealed class RenderTreeBuilderSemanticWalkerHost : SemanticWalkerHost
                 ? argumentParameters[SourceIndex]
                 : _expression ?? throw new InvalidOperationException("Render-context synthetic argument was missing.");
     }
+
+    private readonly record struct ComponentImportDescriptor(
+        string ImportSpecifier,
+        string ExportName);
 }

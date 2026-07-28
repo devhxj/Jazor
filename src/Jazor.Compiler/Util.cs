@@ -5,6 +5,7 @@ using Acornima;
 using Acornima.Ast;
 using Jazor.Common;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Jazor.Compiler;
 
@@ -412,7 +413,20 @@ public static class Util
         if (symbol is null)
             return false;
 
-        return symbol.GetAttributes().Any(attr => IsSystemUnionMarkerAttribute(attr.AttributeClass));
+        return symbol.GetAttributes().Any(attr => IsSystemUnionMarkerAttribute(attr.AttributeClass)) ||
+            IsNativeUnionSyntaxType(symbol);
+    }
+
+    private static bool IsNativeUnionSyntaxType(INamedTypeSymbol symbol)
+    {
+        foreach (var reference in symbol.DeclaringSyntaxReferences)
+        {
+            var kind = reference.GetSyntax().Kind().ToString();
+            if (string.Equals(kind, "UnionDeclaration", StringComparison.Ordinal))
+                return true;
+        }
+
+        return false;
     }
 
     public static bool IsHostErasedUnionType(INamedTypeSymbol? symbol)
@@ -438,7 +452,7 @@ public static class Util
     /// 通过同一标记机制参与运行时映射。
     /// </summary>
     public static bool IsECMAScriptRuntimeType(ITypeSymbol? symbol)
-        => IsRuntimeMarkerType(symbol);
+        => HasECMAScriptSupportMarker(symbol);
 
     /// <summary>
     /// 判断一个符号是否属于 ECMAScript 运行时映射域。

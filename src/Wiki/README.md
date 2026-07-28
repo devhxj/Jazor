@@ -6,8 +6,8 @@ It currently uses:
 
 - Vue 3 `h()` authoring in C# through `ECMAScript.Vue3`
 - Jazor static module authoring in C# (`ECMAScriptModule`) for app bootstrap and page shell
-- compile-time emit into project-local `jazor/` through `JazorEmit`
-- explicit `/jazor` static mounting in development, with publish-time materialization into `wwwroot/jazor`
+- compile-time debug output into `wwwroot/jazor/` through `JazorMode=debug`
+- standard web-root static serving for `/jazor`
 - ASP.NET Core static hosting with route fallback for real docs URLs
 
 Current product boundary:
@@ -42,8 +42,7 @@ Current product boundary:
 - `scripts/csharp/wiki-serve.cs`: preview entry that can run either the local development host or a production-shape published host, and refuses to run when the required artifacts are missing.
 - `scripts/csharp/wiki-verify-smoke.cs`: focused smoke verification for build output, `/health`, route-specific HTML metadata, robots/sitemap discovery docs, response headers, all registered docs routes, and unknown-route fallback.
 - `scripts/csharp/wiki-verify-browser.cs` + `verify-browser.mjs`: real browser verification for runtime mount, SPA routing, search/not-found recovery, persisted shell state, copy affordances, hash routing, and mobile drawers.
-- `jazor/`: local emitted Jazor browser artifacts used for development and smoke verification.
-- `wwwroot/`: static assets (`site.css`, `favicon.svg`) plus the publish-time destination for `/jazor` assets.
+- `wwwroot/`: static assets (`site.css`, `favicon.svg`) and emitted Jazor browser artifacts under `jazor/`.
 - `host/`: private HTML shell template consumed by the Wiki host at request time.
 
 ## Build from This Repository
@@ -56,9 +55,9 @@ dotnet build .\src\Wiki\Wiki.csproj
 
 Generated artifacts:
 
-- `.\src\Wiki\jazor\jazor-manifest.json`
-- `.\src\Wiki\jazor\components\wiki-home.mjs`
-- `.\src\Wiki\jazor\main.mjs`
+- `.\src\Wiki\wwwroot\jazor\jazor-manifest.json`
+- `.\src\Wiki\wwwroot\jazor\components\wiki-home.mjs`
+- `.\src\Wiki\wwwroot\jazor\main.mjs`
 
 ## Local Build Script
 
@@ -157,7 +156,7 @@ dotnet run --file .\scripts\csharp\test-dotnet.cs -- --project wiki-publish
 The smoke check verifies:
 
 - `dotnet build` succeeds when `-Build` is used
-- `jazor/main.mjs`, `components/wiki-home.mjs`, and `jazor-manifest.json` exist
+- `wwwroot/jazor/main.mjs`, `components/wiki-home.mjs`, and `jazor-manifest.json` exist
 - `/health` returns HTTP 200 with `ok`
 - every registered docs route returns HTTP 200 and still contains `#app` plus `/jazor/main.mjs`
 - every registered docs route still carries the CLR runtime import-map prefix `"System/": "/jazor/System/"`
@@ -201,7 +200,7 @@ dotnet run --file .\scripts\csharp\test-dotnet.cs -- --project wiki-browser
 dotnet run --file .\scripts\csharp\test-dotnet.cs -- --project wiki-browser-publish
 ```
 
-`wiki-verify-browser.cs` starts the Wiki host, launches headless Microsoft Edge with CDP enabled, and runs the project-owned `verify-browser.mjs` assertions through Node.js. The local path exercises `src/Wiki/jazor`, while `--publish` exercises published assets from `wwwroot/jazor`.
+`wiki-verify-browser.cs` starts the Wiki host, launches headless Microsoft Edge with CDP enabled, and runs the project-owned `verify-browser.mjs` assertions through Node.js. Both local and `--publish` paths exercise assets from `wwwroot/jazor`.
 
 The browser check verifies:
 
@@ -246,9 +245,9 @@ dotnet run --file .\scripts\csharp\wiki-verify-browser.cs -- --build --path-base
 
 The host reads `Wiki__PathBase` / `Wiki:PathBase` and applies `UsePathBase(...)` before static hosting, HTML shell fallback, and discovery documents.
 
-In development, `UseJazorHost()` serves `/jazor/*` from the project-local `src/Wiki/jazor/` emit directory when `jazor-manifest.json` is present. During publish, the same artifacts are copied into `wwwroot/jazor/` so production still uses standard web-root static hosting.
+In development and publish, `/jazor/*` is served from `wwwroot/jazor/` through standard web-root static hosting.
 
-When the generated shell uses CLR-backed helper members such as `string.Contains(..., StringComparison.OrdinalIgnoreCase)`, `Jazor.CLR` support modules are emitted locally under `src/Wiki/jazor/System/...`, published into `wwwroot/jazor/System/...`, and resolved in the browser through the import-map prefix `"System/": "/jazor/System/"`.
+When the generated shell uses CLR-backed helper members such as `string.Contains(..., StringComparison.OrdinalIgnoreCase)`, `Jazor.CLR` support modules are emitted under `src/Wiki/wwwroot/jazor/System/...` and resolved in the browser through the import-map prefix `"System/": "/jazor/System/"`.
 
 ## Deployment Contract
 

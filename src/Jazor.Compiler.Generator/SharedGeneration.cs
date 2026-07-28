@@ -149,6 +149,8 @@ internal static class SharedGeneration
         {
             BaseMethodDeclarationSyntax method => semanticModel.GetDeclaredSymbol(method),
             BasePropertyDeclarationSyntax property => semanticModel.GetDeclaredSymbol(property),
+            FieldDeclarationSyntax field when field.Declaration.Variables.Count == 1
+                => semanticModel.GetDeclaredSymbol(field.Declaration.Variables[0]),
             DelegateDeclarationSyntax @delegate => semanticModel.GetDeclaredSymbol(@delegate),
             TypeDeclarationSyntax type => semanticModel.GetDeclaredSymbol(type),
             EnumDeclarationSyntax @enum => semanticModel.GetDeclaredSymbol(@enum),

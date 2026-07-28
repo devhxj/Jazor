@@ -25,9 +25,9 @@ public sealed class CurrentComponentMemberClosure
     {
         _componentType = componentType;
         _includedSymbols = includedSymbols;
-        Members = componentType
-            .GetMembers()
-            .Where(symbol => ShouldInclude(symbol) && IsUserDeclaredInventoryMember(symbol))
+        Members = includedSymbols
+            .Where(IsUserDeclaredInventoryMember)
+            .OrderBy(GetStableMemberKey, StringComparer.Ordinal)
             .ToImmutableArray();
     }
 
@@ -120,6 +120,30 @@ public sealed class CurrentComponentMemberClosure
             _ => true
         };
 
+    private static string GetStableMemberKey(ISymbol symbol)
+    {
+        foreach (var location in symbol.Locations)
+        {
+            if (!location.IsInSource)
+                continue;
+
+            var span = location.GetLineSpan();
+            var path = (span.Path ?? string.Empty).Replace('\\', '/');
+            var start = span.StartLinePosition;
+            return path +
+                   "|" +
+                   start.Line.ToString("D10", System.Globalization.CultureInfo.InvariantCulture) +
+                   "|" +
+                   start.Character.ToString("D10", System.Globalization.CultureInfo.InvariantCulture) +
+                   "|" +
+                   symbol.Kind +
+                   "|" +
+                   symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        }
+
+        return "~|" + symbol.Kind + "|" + symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+    }
+
     private sealed class Builder
     {
         private readonly INamedTypeSymbol _componentType;
@@ -146,8 +170,15 @@ public sealed class CurrentComponentMemberClosure
                 return;
 
             var canonical = Canonicalize(symbol);
-            if (!IsDeclaredOnCurrentComponent(canonical))
+            if (!CanInclude(canonical))
                 return;
+
+            if (canonical is not INamedTypeSymbol &&
+                IsNestedRuntimeClassMember(canonical) &&
+                canonical.ContainingType is not null)
+            {
+                AddMember(canonical.ContainingType);
+            }
 
             if (!IncludedSymbols.Add(canonical))
                 return;
@@ -191,15 +222,57 @@ public sealed class CurrentComponentMemberClosure
                         break;
                     case IPropertySymbol property:
                         Visit(GetPropertyInitializerOperation(property));
+                        Visit(GetPropertyGetterOperation(property));
+                        break;
+                    case INamedTypeSymbol:
                         break;
                 }
             }
         }
 
         private bool IsDeclaredOnCurrentComponent(ISymbol symbol)
-            => SymbolEqualityComparer.Default.Equals(
-                symbol.ContainingType?.OriginalDefinition,
-                _componentType.OriginalDefinition);
+            => IsDeclaredOnCurrentComponentHierarchy(symbol.ContainingType);
+
+        private bool CanInclude(ISymbol symbol)
+            => IsDeclaredOnCurrentComponent(symbol) ||
+               symbol is INamedTypeSymbol type && IsRuntimeClassNestedInCurrentComponent(type) ||
+               IsNestedRuntimeClassMember(symbol);
+
+        private bool IsRuntimeClassNestedInCurrentComponent(ITypeSymbol? type)
+        {
+            if (type is not INamedTypeSymbol namedType ||
+                namedType.TypeKind != TypeKind.Class ||
+                namedType.IsRecord ||
+                namedType.IsStatic ||
+                namedType.ContainingType is null)
+            {
+                return false;
+            }
+
+            return IsDeclaredOnCurrentComponentHierarchy(namedType.ContainingType);
+        }
+
+        private bool IsNestedRuntimeClassMember(ISymbol symbol)
+            => symbol.ContainingType is not null &&
+               IsRuntimeClassNestedInCurrentComponent(symbol.ContainingType);
+
+        private bool IsDeclaredOnCurrentComponentHierarchy(INamedTypeSymbol? containingType)
+        {
+            if (containingType is null)
+                return false;
+
+            for (var current = _componentType; current is not null; current = current.BaseType)
+            {
+                if (SymbolEqualityComparer.Default.Equals(
+                        containingType.OriginalDefinition,
+                        current.OriginalDefinition))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         private IOperation? GetMethodOperation(IMethodSymbol method)
         {
@@ -210,6 +283,10 @@ public sealed class CurrentComponentMemberClosure
                 var model = GetSemanticModel(syntax.SyntaxTree);
                 switch (syntax)
                 {
+                    case ConstructorDeclarationSyntax constructorDeclaration when constructorDeclaration.Body is not null:
+                        return model.GetOperation(constructorDeclaration.Body, _cancellationToken);
+                    case ConstructorDeclarationSyntax constructorDeclaration when constructorDeclaration.ExpressionBody is not null:
+                        return model.GetOperation(constructorDeclaration.ExpressionBody.Expression, _cancellationToken);
                     case MethodDeclarationSyntax methodDeclaration when methodDeclaration.Body is not null:
                         return model.GetOperation(methodDeclaration.Body, _cancellationToken);
                     case MethodDeclarationSyntax methodDeclaration when methodDeclaration.ExpressionBody is not null:
@@ -262,6 +339,32 @@ public sealed class CurrentComponentMemberClosure
             return null;
         }
 
+        private IOperation? GetPropertyGetterOperation(IPropertySymbol property)
+        {
+            if (property.GetMethod is null)
+                return null;
+
+            foreach (var reference in property.DeclaringSyntaxReferences)
+            {
+                _cancellationToken.ThrowIfCancellationRequested();
+                if (reference.GetSyntax(_cancellationToken) is not PropertyDeclarationSyntax propertyDeclaration)
+                    continue;
+
+                var model = GetSemanticModel(propertyDeclaration.SyntaxTree);
+                if (propertyDeclaration.ExpressionBody is not null)
+                    return model.GetOperation(propertyDeclaration.ExpressionBody.Expression, _cancellationToken);
+
+                var getter = propertyDeclaration.AccessorList?.Accessors.FirstOrDefault(static accessor =>
+                    accessor.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.GetAccessorDeclaration));
+                if (getter?.Body is not null)
+                    return model.GetOperation(getter.Body, _cancellationToken);
+                if (getter?.ExpressionBody is not null)
+                    return model.GetOperation(getter.ExpressionBody.Expression, _cancellationToken);
+            }
+
+            return GetMethodOperation(property.GetMethod);
+        }
+
         private SemanticModel GetSemanticModel(SyntaxTree syntaxTree)
             => _compilation.GetSemanticModel(syntaxTree);
 
@@ -273,13 +376,21 @@ public sealed class CurrentComponentMemberClosure
             if (symbol.IsStatic)
                 return instance is null;
 
-            return instance is null ||
-                   instance is IInstanceReferenceOperation
-                   {
-                       ReferenceKind: InstanceReferenceKind.ContainingTypeInstance or
-                           InstanceReferenceKind.ImplicitReceiver
-                   };
+            return IsCurrentComponentReceiver(instance);
         }
+
+        private static bool IsCurrentComponentReceiver(IOperation? operation)
+            => operation switch
+            {
+                null => true,
+                IConversionOperation conversion => IsCurrentComponentReceiver(conversion.Operand),
+                IInstanceReferenceOperation
+                {
+                    ReferenceKind: InstanceReferenceKind.ContainingTypeInstance or
+                        InstanceReferenceKind.ImplicitReceiver
+                } => true,
+                _ => false
+            };
 
         private sealed class CurrentComponentOperationWalker : OperationWalker
         {
@@ -294,6 +405,8 @@ public sealed class CurrentComponentMemberClosure
             {
                 if (_builder.IsCurrentComponentMemberReference(operation.Field, operation.Instance))
                     _builder.AddMember(operation.Field);
+                else if (_builder.IsNestedRuntimeClassMember(operation.Field))
+                    _builder.AddMember(operation.Field);
 
                 base.VisitFieldReference(operation);
             }
@@ -301,6 +414,8 @@ public sealed class CurrentComponentMemberClosure
             public override void VisitPropertyReference(IPropertyReferenceOperation operation)
             {
                 if (_builder.IsCurrentComponentMemberReference(operation.Property, operation.Instance))
+                    _builder.AddMember(operation.Property);
+                else if (_builder.IsNestedRuntimeClassMember(operation.Property))
                     _builder.AddMember(operation.Property);
 
                 base.VisitPropertyReference(operation);
@@ -310,13 +425,29 @@ public sealed class CurrentComponentMemberClosure
             {
                 if (_builder.IsCurrentComponentMemberReference(operation.TargetMethod, operation.Instance))
                     _builder.AddMember(operation.TargetMethod);
+                else if (_builder.IsNestedRuntimeClassMember(operation.TargetMethod))
+                    _builder.AddMember(operation.TargetMethod);
 
                 base.VisitInvocation(operation);
+            }
+
+            public override void VisitObjectCreation(IObjectCreationOperation operation)
+            {
+                if (_builder.IsRuntimeClassNestedInCurrentComponent(operation.Type))
+                {
+                    _builder.AddMember(operation.Type);
+                    if (operation.Constructor is not null)
+                        _builder.AddMember(operation.Constructor);
+                }
+
+                base.VisitObjectCreation(operation);
             }
 
             public override void VisitMethodReference(IMethodReferenceOperation operation)
             {
                 if (_builder.IsCurrentComponentMemberReference(operation.Method, operation.Instance))
+                    _builder.AddMember(operation.Method);
+                else if (_builder.IsNestedRuntimeClassMember(operation.Method))
                     _builder.AddMember(operation.Method);
 
                 base.VisitMethodReference(operation);

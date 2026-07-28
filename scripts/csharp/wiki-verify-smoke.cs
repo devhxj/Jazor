@@ -20,7 +20,7 @@ var configuration = options.Publish && !options.ConfigurationWasExplicit ? "Rele
 
 string hostRoot = sampleRoot;
 string webRoot = Path.Combine(sampleRoot, "wwwroot");
-string jazorRoot = Path.Combine(sampleRoot, "jazor");
+string jazorRoot = Path.Combine(sampleRoot, "wwwroot", "jazor");
 string mainModulePath = Path.Combine(jazorRoot, "main.mjs");
 string componentModulePath = Path.Combine(jazorRoot, "components", "wiki-home.mjs");
 string manifestPath = Path.Combine(jazorRoot, "jazor-manifest.json");

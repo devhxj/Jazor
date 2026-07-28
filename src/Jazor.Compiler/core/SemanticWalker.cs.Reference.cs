@@ -126,7 +126,7 @@ public partial class SemanticWalker
 				continue;
 			}
 
-			return importPath;
+			return ECMAScriptModulePath.NormalizeImportSpecifier(importPath);
 		}
 
 		return null;
@@ -2403,12 +2403,15 @@ private bool TryExpandEcmascriptParamsArgument(
 		// public 静态类带[ECMAScriptModule]是模块类
 		if (operation.Field.IsStatic && operation.Field.ContainingType is not null)
 		{
-			if (TryBuildImportedModuleMember(operation.Field.ContainingType, fieldName!, argument, out var importedMember) &&
-				importedMember is not null)
-				return WithOriginIfMissing(importedMember, operation);
+			if (TryBuildStringEnumLiteral(operation.Field, out var stringEnumLiteral))
+				return WithOriginIfMissing(stringEnumLiteral, operation);
 
 			if (operation.Field.IsConst)
 				return WithOriginIfMissing(GetFieldName(operation, operation.Field), operation);
+
+			if (TryBuildImportedModuleMember(operation.Field.ContainingType, fieldName!, argument, out var importedMember) &&
+				importedMember is not null)
+				return WithOriginIfMissing(importedMember, operation);
 
 			var runtimeHost = TryBuildRuntimeHostExpression(operation.Field.ContainingType, argument);
 			if (runtimeHost is not null)

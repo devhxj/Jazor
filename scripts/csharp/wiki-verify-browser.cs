@@ -36,7 +36,7 @@ var effectiveConfiguration = options.Publish && !options.ConfigurationWasExplici
     : options.Configuration;
 
 string hostRoot = sampleRoot;
-string jazorRoot = Path.Combine(sampleRoot, "jazor");
+string jazorRoot = Path.Combine(sampleRoot, "wwwroot", "jazor");
 string? publishShadowJazorRoot = null;
 Trace("Starting wiki browser verification.");
 

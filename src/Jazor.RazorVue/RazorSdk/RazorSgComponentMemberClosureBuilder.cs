@@ -211,7 +211,13 @@ internal sealed record RazorSgComponentMemberClosure(
     public ImmutableArray<IPropertySymbol> StateProperties
         => OrderedMembers
             .OfType<IPropertySymbol>()
-            .Where(static property => !IsParameterProperty(property))
+            .Where(static property => !IsParameterProperty(property) && IsAutoProperty(property))
+            .ToImmutableArray();
+
+    public ImmutableArray<IPropertySymbol> ComputedProperties
+        => OrderedMembers
+            .OfType<IPropertySymbol>()
+            .Where(static property => !IsParameterProperty(property) && !IsAutoProperty(property))
             .ToImmutableArray();
 
     public ImmutableArray<IMethodSymbol> ReachableMethods
@@ -228,15 +234,18 @@ internal sealed record RazorSgComponentMemberClosure(
 
     public AstConverterOptions CreateAstConverterOptions(
         string stateIdentifier = "state",
-        string propsIdentifier = "props")
+        string propsIdentifier = "props",
+        IReadOnlyDictionary<ISymbol, string>? declaredNames = null)
         => new(
             AstConverterProfile.RazorVueRuntime,
             MemberFilter: CompilerClosure.ShouldInclude,
+            DeclaredNames: declaredNames,
             Host: new CurrentComponentSemanticWalkerHost(
                 ComponentSymbol,
                 stateIdentifier,
                 propsIdentifier,
-                BuildParameterRuntimeNameMap(ComponentSymbol)));
+                BuildParameterRuntimeNameMap(ComponentSymbol),
+                declaredNames));
 
     private static bool IsParameterProperty(IPropertySymbol property)
         => property.GetAttributes().Any(static attribute =>
@@ -244,6 +253,31 @@ internal sealed record RazorSgComponentMemberClosure(
                 attribute.AttributeClass?.ToDisplayString(),
                 ParameterAttributeMetadataName,
                 StringComparison.Ordinal));
+
+    private static bool IsAutoProperty(IPropertySymbol property)
+    {
+        foreach (var reference in property.DeclaringSyntaxReferences)
+        {
+            if (reference.GetSyntax() is not Microsoft.CodeAnalysis.CSharp.Syntax.PropertyDeclarationSyntax declaration)
+                continue;
+
+            if (declaration.ExpressionBody is not null ||
+                declaration.AccessorList is null)
+            {
+                return false;
+            }
+
+            foreach (var accessor in declaration.AccessorList.Accessors)
+            {
+                if (accessor.Body is not null || accessor.ExpressionBody is not null)
+                    return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
 
     private static IReadOnlyDictionary<string, string> BuildParameterRuntimeNameMap(INamedTypeSymbol componentSymbol)
     {

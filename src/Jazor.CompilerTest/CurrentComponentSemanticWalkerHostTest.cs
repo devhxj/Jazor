@@ -69,6 +69,41 @@ public sealed class CurrentComponentSemanticWalkerHostTest
     }
 
     [TestMethod]
+    public void CollectReachableMembers_IncludesInheritedCurrentComponentHelper()
+    {
+        var fixture = CompileComponent(
+            """
+            public abstract class CounterBase : ComponentBase
+            {
+                protected string FormatTitle(string value) => "Count: " + value;
+            }
+
+            public sealed class Counter : CounterBase
+            {
+                private string title = "1";
+
+                private string DisplayTitle => FormatTitle(title);
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.AddContent(0, DisplayTitle);
+                }
+            }
+            """);
+
+        var closure = CurrentComponentMemberClosure.Build(
+            fixture.Component,
+            fixture.SemanticModel,
+            new[] { fixture.BuildRenderTreeMethod });
+
+        var members = closure.Members.Select(static member => member.Name).ToArray();
+        CollectionAssert.Contains(members, "BuildRenderTree");
+        CollectionAssert.Contains(members, "DisplayTitle");
+        CollectionAssert.Contains(members, "FormatTitle");
+        CollectionAssert.Contains(members, "title");
+    }
+
+    [TestMethod]
     public void RewriteCurrentComponentMembers_UsesStatePropsAndStableMethodReferenceInRenderTree()
     {
         var fixture = CompileComponent(
@@ -111,6 +146,39 @@ public sealed class CurrentComponentSemanticWalkerHostTest
         Assert.IsFalse(script.Contains("this.increment", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("this.count", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("this.title", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteCurrentComponentMembers_LowersInheritedCurrentComponentHelper()
+    {
+        var fixture = CompileComponent(
+            """
+            public abstract class CounterBase : ComponentBase
+            {
+                protected string FormatTitle(string value) => "Count: " + value;
+            }
+
+            public sealed class Counter : CounterBase
+            {
+                private string title = "1";
+
+                private string DisplayTitle => FormatTitle(title);
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.AddContent(0, DisplayTitle);
+                }
+            }
+            """);
+
+        var walker = new SemanticWalker(true)
+        {
+            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+        };
+        var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script!, "builder.addContent(displayTitle());", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -207,6 +275,96 @@ public sealed class CurrentComponentSemanticWalkerHostTest
     }
 
     [TestMethod]
+    public void RewriteCurrentComponentMembers_ForwardsEventCallbackParameterThroughFactoryCreate()
+    {
+        var fixture = CompileComponent(
+            """
+            public sealed class Counter : ComponentBase
+            {
+                [Parameter]
+                public EventCallback<string> Changed { get; set; }
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.AddAttribute(0, "changed", EventCallback.Factory.Create<string>(this, Changed));
+                }
+            }
+            """);
+
+        var walker = new SemanticWalker(true)
+        {
+            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+        };
+        var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script!, "builder.addAttribute(\"changed\", props.changed);", StringComparison.Ordinal);
+        Assert.IsFalse(script!.Contains("EventCallback", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteCurrentComponentMembers_LowersEventCallbackFactoryCreateCurrentMethodLambda()
+    {
+        var fixture = CompileComponent(
+            """
+            public sealed class Counter : ComponentBase
+            {
+                private string selected = "";
+
+                private void Select(string item)
+                {
+                    selected = item;
+                }
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    var item = "home";
+                    builder.AddAttribute(0, "onclick", EventCallback.Factory.Create(this, () => Select(item)));
+                }
+            }
+            """);
+
+        var walker = new SemanticWalker(true)
+        {
+            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+        };
+        var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script!, "builder.addAttribute(\"onclick\", () => {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "select(item);", StringComparison.Ordinal);
+        Assert.IsFalse(script!.Contains("EventCallback", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteCurrentComponentMembers_UnwrapsEventCallbackFactoryCreateLambdaHandler()
+    {
+        var fixture = CompileComponent(
+            """
+            public sealed class Counter : ComponentBase
+            {
+                private bool collapsed;
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.AddComponentParameter(1, "CollapsedChanged", EventCallback.Factory.Create<bool>(this, value => collapsed = value));
+                }
+            }
+            """);
+
+        var walker = new SemanticWalker(true)
+        {
+            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+        };
+        var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script!, "builder.addComponentParameter(\"CollapsedChanged\", value => state.collapsed = value);", StringComparison.Ordinal);
+        Assert.IsFalse(script!.Contains("EventCallback", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("this.", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
     public void RewriteCurrentComponentMembers_RejectsParameterWrites()
     {
         var fixture = CompileComponent(
@@ -236,7 +394,7 @@ public sealed class CurrentComponentSemanticWalkerHostTest
     }
 
     [TestMethod]
-    public void RewriteCurrentComponentMembers_RejectsComputedPropertyUntilStateContractExists()
+    public void RewriteCurrentComponentMembers_LowersComputedPropertyGetter()
     {
         var fixture = CompileComponent(
             """
@@ -258,10 +416,38 @@ public sealed class CurrentComponentSemanticWalkerHostTest
             Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
         };
 
-        var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(fixture.BuildRenderTreeBody, new()));
-        StringAssert.Contains(exception.Message, "Current-component property", StringComparison.Ordinal);
-        StringAssert.Contains(exception.Message, "Counter.Count", StringComparison.Ordinal);
-        StringAssert.Contains(exception.Message, "computed/accessor", StringComparison.Ordinal);
+        var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script!, "builder.addContent(count());", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void RewriteCurrentComponentMembers_ErasesRazorRuntimeHelpersTypeCheck()
+    {
+        var fixture = CompileComponent(
+            """
+            public sealed class Counter : ComponentBase
+            {
+                [Parameter]
+                public string Title { get; set; } = "";
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.AddContent(0, Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<string>(Title));
+                }
+            }
+            """);
+
+        var walker = new SemanticWalker(true)
+        {
+            Host = new CurrentComponentSemanticWalkerHost(fixture.Component)
+        };
+        var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script!, "builder.addContent(props.title);", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("TypeCheck", StringComparison.Ordinal), script);
     }
 
     [TestMethod]

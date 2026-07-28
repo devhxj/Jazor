@@ -1813,6 +1813,123 @@ $@"export class NestedClass {{
     }
 
     [TestMethod]
+    public async Task Convert_InternalModuleNestedGetterOnlyPropertyConstructorAssignment_WritesBackingField()
+    {
+        var code = """
+            using ECMAScript;
+
+            [ECMAScriptModule("components/helper")]
+            internal static class Helper
+            {
+                public sealed class Item
+                {
+                    public Item(string value)
+                    {
+                        Value = value;
+                    }
+
+                    public string Value { get; }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "Helper",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
+        var nestedClass = classSymbol.GetTypeMembers("Item").Single();
+        var backingFieldName = PropertyBackingFieldName(nestedClass, "Value");
+        var converter = new AstConverter(classSymbol, semanticModel, new AstConverterOptions(AstConverterProfile.ClrRuntime));
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+$@"export class Item {{
+  constructor(value) {{
+    this.#{backingFieldName} = value;
+  }}
+  #{backingFieldName};
+  get value() {{
+    return this.#{backingFieldName};
+  }}
+}}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_RazorVueRuntimeComputedPropertyGetter_UsesPropertyRuntimeName()
+    {
+        var code = """
+            public static class Counter
+            {
+                private static bool IsReady => true;
+
+                public static void Build()
+                {
+                    var ready = IsReady;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(
+            classSymbol,
+            semanticModel,
+            new AstConverterOptions(AstConverterProfile.RazorVueRuntime));
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script!, "function isReady()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "let ready = isReady();", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("function get_IsReady()", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public async Task Convert_RazorVueRuntimeBaseHelper_IncludesReachableBaseMethod()
+    {
+        var code = """
+            public abstract class ComponentBase
+            {
+                protected string BuildCssClass(string value)
+                {
+                    return value;
+                }
+            }
+
+            public sealed class Counter : ComponentBase
+            {
+                public void Build()
+                {
+                    var cssClass = BuildCssClass("ready");
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code, "Counter");
+        var baseMethod = classSymbol.BaseType!.GetMembers("BuildCssClass").OfType<IMethodSymbol>().Single();
+        var buildMethod = classSymbol.GetMembers("Build").OfType<IMethodSymbol>().Single();
+        var converter = new AstConverter(
+            classSymbol,
+            semanticModel,
+            new AstConverterOptions(
+                AstConverterProfile.RazorVueRuntime,
+                MemberFilter: symbol =>
+                    SymbolEqualityComparer.Default.Equals(symbol.OriginalDefinition, baseMethod.OriginalDefinition) ||
+                    SymbolEqualityComparer.Default.Equals(symbol.OriginalDefinition, buildMethod.OriginalDefinition),
+                Host: new CurrentComponentSemanticWalkerHost(classSymbol)));
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script!, "function buildCssClass(value)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "let cssClass = buildCssClass(\"ready\");", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public async Task Convert_ClassWithNestedStaticAutoPropertyInitializer_GeneratesStaticHashedBackingField()
     {
         var code = """
@@ -4193,6 +4310,32 @@ export function logValue() {
   return _fb5a811e7a32a324(_155212572c9a3297(""44""));
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithArgumentNullExceptionThrowIfNull_ImportsNullGuard()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static void Check(object? value)
+                {
+                    ArgumentNullException.ThrowIfNull(value, nameof(value));
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "import { _c80ae10aa1d0d795 } from \"System/ExceptionModule.js\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, "_c80ae10aa1d0d795(value, \"value\");", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -6972,6 +7115,55 @@ export function readFile(value) {
 }
 export function readValue(value) {
   return value;
+}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingSourceNativeUnionProjection_GeneratesNativeValue()
+    {
+        var code = """
+            using System;
+            using System.Runtime.CompilerServices;
+            using ECMAScript;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("app/native-union-projection.mjs")]
+                public static class SourceNativeUnionProjectionModule
+                {
+                    public static string[]? ReadArray(NativeValues? values)
+                        => values?.AsArray;
+                }
+
+                [ECMAScript]
+                public readonly union NativeValues(string[]) : IUnion
+                {
+                    public string[]? AsArray => Value as string[];
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "SourceNativeUnionProjectionModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "SourceNativeUnionProjectionModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export function readArray(values) {
+  return values;
 }
 ", script);
     }

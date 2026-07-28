@@ -35,31 +35,31 @@ public partial class VbenDashboardApp : ComponentBase, IVueComponent
         {
             Key = "overview",
             Title = "Overview",
-            Target = "/overview"
+            Href = "/overview"
         },
         new()
         {
             Key = "release.pipeline",
             Title = "Pipelines",
-            Target = "/release/pipelines"
+            Href = "/release/pipelines"
         },
         new()
         {
             Key = "release.approvals",
             Title = "Approvals",
-            Target = "/release/approvals"
+            Href = "/release/approvals"
         },
         new()
         {
             Key = "runtime.host",
             Title = "Host requirements",
-            Target = "/runtime/host"
+            Href = "/runtime/host"
         },
         new()
         {
             Key = "runtime.consumer",
             Title = "Consumer bridge",
-            Target = "/runtime/consumer"
+            Href = "/runtime/consumer"
         }
     };
 

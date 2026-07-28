@@ -1,76 +1,46 @@
 <Project>
-  <PropertyGroup>
-    <JazorEmitToolTargetFramework Condition="'$(JazorEmitToolTargetFramework)' == ''">net11.0</JazorEmitToolTargetFramework>
-  </PropertyGroup>
-
-  <!-- Emit must run after a successful Build so analyzer/source-generator output and TargetPath are both finalized. -->
-  <Target Name="JazorEmit"
+  <Target Name="JazorDebug"
           AfterTargets="Build"
-          Condition="'$(DesignTimeBuild)' != 'true' and '$(JazorEmit)' == 'true' and Exists('$(TargetPath)')">
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(JazorMode)' == 'debug' and Exists('$(TargetPath)')">
     <PropertyGroup>
-      <_JazorDefaultDevOutDir>$([System.IO.Path]::GetFullPath('$(JazorDevOutDir)'))</_JazorDefaultDevOutDir>
-      <_JazorResolvedRequestedOutDir>$([System.IO.Path]::GetFullPath('$(JazorOutDir)'))</_JazorResolvedRequestedOutDir>
-      <_JazorSelectedOutDir Condition="'$(_IsPublishing)' == 'true' and '$(_JazorResolvedRequestedOutDir)' == '$(_JazorDefaultDevOutDir)' and '$(JazorPublishMaterializeEnabled)' != 'true'">$(JazorPublishOutDir)</_JazorSelectedOutDir>
-      <_JazorSelectedOutDir Condition="'$(_JazorSelectedOutDir)' == ''">$(JazorOutDir)</_JazorSelectedOutDir>
-      <_JazorEmitOutDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(_JazorSelectedOutDir)')), '[\\/]+$', ''))</_JazorEmitOutDir>
-      <JazorEmitToolPath Condition="'$(JazorEmitToolPath)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\tools\$(JazorEmitToolTargetFramework)\Jazor.Emit.dll'))</JazorEmitToolPath>
-      <JazorManifestPath Condition="'$(JazorManifestPath)' == ''">$(_JazorEmitOutDir)\jazor-manifest.json</JazorManifestPath>
-      <_JazorEmitManifestPath>$([System.IO.Path]::GetFullPath('$(JazorManifestPath)'))</_JazorEmitManifestPath>
+      <_JazorDebugOutputDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorDir)')), '[\\/]+$', ''))</_JazorDebugOutputDir>
+      <_JazorDebugManifestPath>$(_JazorDebugOutputDir)\jazor-manifest.json</_JazorDebugManifestPath>
+      <_JazorToolPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\tools\net11.0\Jazor.Emit.dll'))</_JazorToolPath>
     </PropertyGroup>
 
     <ItemGroup>
-      <JazorEmitAssembly Include="$(TargetPath)" />
-      <JazorEmitAssembly Include="@(ReferenceCopyLocalPaths)"
+      <JazorDebugAssembly Include="$(TargetPath)" />
+      <JazorDebugAssembly Include="@(ReferenceCopyLocalPaths)"
                          Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.dll'" />
     </ItemGroup>
 
-    <MakeDir Directories="$(_JazorEmitOutDir)" />
+    <MakeDir Directories="$(_JazorDebugOutputDir)" />
 
-    <Exec Command="dotnet &quot;$(JazorEmitToolPath)&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorEmitOutDir)&quot; --write-manifest &quot;$(_JazorEmitManifestPath)&quot; --clean &quot;$(JazorCleanEmit)&quot; --fail-on-path-conflict &quot;$(JazorFailOnPathConflict)&quot; @(JazorEmitAssembly->'--assembly &quot;%(Identity)&quot;', ' ')" />
+    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorDebugOutputDir)&quot; --write-manifest &quot;$(_JazorDebugManifestPath)&quot; --clean true --fail-on-path-conflict true @(JazorDebugAssembly->'--assembly &quot;%(Identity)&quot;', ' ')" />
   </Target>
 
-  <Target Name="JazorBundle"
-          DependsOnTargets="JazorEmit"
-          AfterTargets="JazorEmit"
-          Condition="'$(DesignTimeBuild)' != 'true' and '$(JazorBundle)' == 'true' and '$(JazorEmit)' == 'true'">
+  <Target Name="JazorRelease"
+          AfterTargets="Build"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(JazorMode)' == 'release' and Exists('$(TargetPath)')">
     <PropertyGroup>
-      <_JazorDefaultDevOutDir>$([System.IO.Path]::GetFullPath('$(JazorDevOutDir)'))</_JazorDefaultDevOutDir>
-      <_JazorResolvedRequestedOutDir>$([System.IO.Path]::GetFullPath('$(JazorOutDir)'))</_JazorResolvedRequestedOutDir>
-      <_JazorSelectedOutDir Condition="'$(_IsPublishing)' == 'true' and '$(_JazorResolvedRequestedOutDir)' == '$(_JazorDefaultDevOutDir)' and '$(JazorPublishMaterializeEnabled)' != 'true'">$(JazorPublishOutDir)</_JazorSelectedOutDir>
-      <_JazorSelectedOutDir Condition="'$(_JazorSelectedOutDir)' == ''">$(JazorOutDir)</_JazorSelectedOutDir>
-      <JazorManifestPath Condition="'$(JazorManifestPath)' == ''">$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(_JazorSelectedOutDir)')), '[\\/]+$', ''))\jazor-manifest.json</JazorManifestPath>
-      <_JazorBundleOutRoot>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorBundleOut)')), '[\\/]+$', ''))</_JazorBundleOutRoot>
-      <_JazorEmitOutDirForBundle>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(_JazorSelectedOutDir)')), '[\\/]+$', ''))</_JazorEmitOutDirForBundle>
-      <_JazorManifestPathForBundle>$([System.IO.Path]::GetFullPath('$(JazorManifestPath)'))</_JazorManifestPathForBundle>
-      <_JazorToolchainSourceRoot>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)'))</_JazorToolchainSourceRoot>
-      <JazorEmitToolPath Condition="'$(JazorEmitToolPath)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\tools\$(JazorEmitToolTargetFramework)\Jazor.Emit.dll'))</JazorEmitToolPath>
-    </PropertyGroup>
-
-    <Exec Command="dotnet &quot;$(JazorEmitToolPath)&quot; toolchain build --toolchain &quot;$(JazorToolchain)&quot; --manifest &quot;$(_JazorManifestPathForBundle)&quot; --artifacts &quot;$(_JazorEmitOutDirForBundle)&quot; --source-root &quot;$(_JazorToolchainSourceRoot)&quot; --out-root &quot;$(_JazorBundleOutRoot)&quot;" />
-  </Target>
-
-  <Target Name="JazorPublishMaterialize"
-          AfterTargets="Publish"
-          Condition="'$(JazorEmit)' == 'true'
-            and '$(JazorPublishMaterializeEnabled)' == 'true'
-            and Exists('$(JazorOutDir)')">
-    <PropertyGroup>
-      <_JazorMaterializedSourceRoot>$([System.IO.Path]::GetFullPath('$(JazorOutDir)'))</_JazorMaterializedSourceRoot>
-      <_JazorMaterializedTargetRoot Condition="'$(JazorPublishMaterializedRoot)' == ''">$([System.IO.Path]::Combine('$(PublishDir)', 'wwwroot', 'jazor'))</_JazorMaterializedTargetRoot>
-      <_JazorMaterializedTargetRoot Condition="'$(JazorPublishMaterializedRoot)' != ''">$([System.IO.Path]::GetFullPath('$(JazorPublishMaterializedRoot)'))</_JazorMaterializedTargetRoot>
-      <_JazorPublishedShadowRoot>$([System.IO.Path]::Combine('$(PublishDir)', 'jazor'))</_JazorPublishedShadowRoot>
+      <_JazorReleaseArtifactDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)jazor-release')), '[\\/]+$', ''))</_JazorReleaseArtifactDir>
+      <_JazorReleaseManifestPath>$(_JazorReleaseArtifactDir)\jazor-manifest.json</_JazorReleaseManifestPath>
+      <_JazorReleaseOutputDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorDir)')), '[\\/]+$', ''))</_JazorReleaseOutputDir>
+      <_JazorToolSourceRoot>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)'))</_JazorToolSourceRoot>
+      <_JazorToolPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\tools\net11.0\Jazor.Emit.dll'))</_JazorToolPath>
     </PropertyGroup>
 
     <ItemGroup>
-      <_JazorMaterializedArtifact Include="$(_JazorMaterializedSourceRoot)\**\*" />
+      <JazorReleaseAssembly Include="$(TargetPath)" />
+      <JazorReleaseAssembly Include="@(ReferenceCopyLocalPaths)"
+                           Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.dll'" />
     </ItemGroup>
 
-    <RemoveDir Directories="$(_JazorMaterializedTargetRoot)" />
-    <MakeDir Directories="$(_JazorMaterializedTargetRoot)" />
-    <Copy SourceFiles="@(_JazorMaterializedArtifact)"
-          DestinationFiles="@(_JazorMaterializedArtifact->'$(_JazorMaterializedTargetRoot)\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <RemoveDir Directories="$(_JazorPublishedShadowRoot)"
-               Condition="Exists('$(_JazorPublishedShadowRoot)')" />
+    <RemoveDir Directories="$(_JazorReleaseOutputDir)" Condition="Exists('$(_JazorReleaseOutputDir)')" />
+    <MakeDir Directories="$(_JazorReleaseArtifactDir);$(_JazorReleaseOutputDir)" />
+
+    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorReleaseArtifactDir)&quot; --write-manifest &quot;$(_JazorReleaseManifestPath)&quot; --clean true --fail-on-path-conflict true @(JazorReleaseAssembly->'--assembly &quot;%(Identity)&quot;', ' ')" />
+    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; toolchain build --toolchain &quot;$(JazorTool)&quot; --manifest &quot;$(_JazorReleaseManifestPath)&quot; --artifacts &quot;$(_JazorReleaseArtifactDir)&quot; --source-root &quot;$(_JazorToolSourceRoot)&quot; --out-root &quot;$(_JazorReleaseOutputDir)&quot;" />
   </Target>
 
 </Project>

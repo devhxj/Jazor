@@ -62,6 +62,8 @@
   <ItemGroup>
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Analyzer.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Analyzer.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.RazorVue.Generator\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.Generator.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.RazorVue.Generator\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.Generator.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)ECMAScript\bin\$(Configuration)\net11.0\ECMAScript.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)ECMAScript\bin\$(Configuration)\net11.0\ECMAScript.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Compiler\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
@@ -89,6 +91,7 @@
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.Compiler\Jazor.Compiler.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.RazorVue\Jazor.RazorVue.csproj" />
+    <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.RazorVue.Generator\Jazor.RazorVue.Generator.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.Analyzer\Jazor.Analyzer.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.AspNetCore\Jazor.AspNetCore.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.AspNetCore.Dev\Jazor.AspNetCore.Dev.csproj" />

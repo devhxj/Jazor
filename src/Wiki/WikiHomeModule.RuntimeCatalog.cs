@@ -16,7 +16,7 @@ public static partial class WikiHomeModule
                 H("ul",
                 [
                     H("li", "浏览器入口点可以只导入它们实际使用的运行时辅助函数。"),
-                    H("li", "生成的 `System/*` 模块在本地发射目录 `src/Wiki/jazor/System/` 下保持可检查。"),
+                    H("li", "生成的 `System/*` 模块在本地发射目录 `src/Wiki/wwwroot/jazor/System/` 下保持可检查。"),
                     H("li", "文档站点通过真实的浏览器提供资源证明这条路径，而非仅通过编译器单元测试。")
                 ])
             ]),
@@ -29,7 +29,7 @@ src/Jazor.Compiler.Generator/ClrRuntimeCatalogEmitter.cs
 src/Jazor.Compiler.Generator/ClrRuntimeSelection.cs
 src/Jazor.Compiler/WhiteList.cs.Generate.cs
 src/ECMAScript/Catalog.g.cs
-src/Wiki/jazor/System/
+src/Wiki/wwwroot/jazor/System/
 """),
                 H("p", "单次运行刷新很重要。新的 CLR 映射应该在同一次生成器调用中对运行时目录发射可见，而非仅在第二次通过之后。")
             ]),

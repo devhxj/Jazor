@@ -599,6 +599,9 @@ public partial class Analyzer : DiagnosticAnalyzer
 			case OperationKind.FieldReference:
 				{
 					var operation = (IFieldReferenceOperation)ctx.Operation;
+					if (IsInsideNameOf(operation))
+						return;
+
 					if (!Util.IsECMAScriptRecordProxyMember(
 							operation.Field,
 							operation.Instance?.Type ?? operation.Field.ContainingType) &&
@@ -628,6 +631,9 @@ public partial class Analyzer : DiagnosticAnalyzer
 			case OperationKind.PropertyReference:
 				{
 					var operation = (IPropertyReferenceOperation)ctx.Operation;
+					if (IsInsideNameOf(operation))
+						return;
+
 					var hostType = operation.Instance?.Type ?? operation.Property.ContainingType;
 					if (IsSupportedObjectLiteralIndexerReference(operation, hostType) ||
 						Util.IsECMAScriptRecordProxyMember(operation.Property, hostType))
@@ -660,6 +666,9 @@ public partial class Analyzer : DiagnosticAnalyzer
 			case OperationKind.MethodReference:
 				{
 					var operation = (IMethodReferenceOperation)ctx.Operation;
+					if (IsInsideNameOf(operation))
+						return;
+
 					var key = operation.Method.OriginalDefinition.ToDisplayString(Format.NameFormat);
 					if (!Util.IsECMAScriptRecordProxyMember(
 							operation.Method,
@@ -922,6 +931,17 @@ public partial class Analyzer : DiagnosticAnalyzer
 
 			if (current is IObjectCreationOperation or IAnonymousObjectCreationOperation)
 				return false;
+		}
+
+		return false;
+	}
+
+	private static bool IsInsideNameOf(IOperation operation)
+	{
+		for (var current = operation.Parent; current is not null; current = current.Parent)
+		{
+			if (current is INameOfOperation)
+				return true;
 		}
 
 		return false;

@@ -9,8 +9,8 @@ internal static class RazorSgComponentCandidateSelector
 {
     private static readonly SymbolEqualityComparer Comparer = SymbolEqualityComparer.Default;
     private const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
-    private const string ComponentBaseMetadataName = "Microsoft.AspNetCore.Components.ComponentBase";
     private const string VueComponentMarkerMetadataName = "ECMAScript.Vue3+IVueComponent";
+    private const string RenderTreeBuilderMetadataName = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";
 
     public static ImmutableArray<INamedTypeSymbol> DiscoverCurrentComponents(Compilation compilation)
     {
@@ -18,15 +18,14 @@ internal static class RazorSgComponentCandidateSelector
             throw new ArgumentNullException(nameof(compilation));
 
         var moduleAttribute = compilation.GetTypeByMetadataName(ECMAScriptModuleAttributeMetadataName);
-        var componentBase = compilation.GetTypeByMetadataName(ComponentBaseMetadataName);
         var vueComponentMarker = compilation.GetTypeByMetadataName(VueComponentMarkerMetadataName);
-        if (moduleAttribute is null || componentBase is null || vueComponentMarker is null)
+        if (moduleAttribute is null || vueComponentMarker is null)
             return ImmutableArray<INamedTypeSymbol>.Empty;
 
         var components = ImmutableArray.CreateBuilder<INamedTypeSymbol>();
         foreach (var symbol in EnumerateNamedTypes(compilation.GlobalNamespace))
         {
-            if (!IsRazorVueComponent(symbol, moduleAttribute, componentBase, vueComponentMarker) ||
+            if (!IsRazorVueComponent(symbol, moduleAttribute, vueComponentMarker) ||
                 !Comparer.Equals(symbol.ContainingAssembly, compilation.Assembly) ||
                 !HasCurrentCompilationSource(symbol))
             {
@@ -43,6 +42,31 @@ internal static class RazorSgComponentCandidateSelector
         => DiscoverCurrentComponents(compilation)
             .Where(static component => IsLikelyRazorAuthored(component) && !HasHandwrittenBuildRenderTree(component))
             .ToImmutableArray();
+
+    public static ImmutableArray<INamedTypeSymbol> DiscoverHandwrittenComponents(Compilation compilation)
+        => DiscoverCurrentComponents(compilation)
+            .Where(static component => HasHandwrittenBuildRenderTree(component))
+            .ToImmutableArray();
+
+    public static IMethodSymbol? FindHandwrittenBuildRenderTreeMethod(INamedTypeSymbol component)
+    {
+        var buildRenderTree = FindBuildRenderTreeMethod(component);
+        if (buildRenderTree is null)
+            return null;
+
+        foreach (var syntaxReference in buildRenderTree.DeclaringSyntaxReferences)
+        {
+            if (syntaxReference.GetSyntax() is not MethodDeclarationSyntax methodSyntax)
+                continue;
+
+            if (HasMappedRazorPath(methodSyntax) || IsGeneratedSourcePath(methodSyntax.SyntaxTree.FilePath))
+                continue;
+
+            return buildRenderTree;
+        }
+
+        return null;
+    }
 
     public static bool TrySelect(
         RazorSgGeneratedCSharpBinding binding,
@@ -120,33 +144,14 @@ internal static class RazorSgComponentCandidateSelector
     }
 
     private static bool HasHandwrittenBuildRenderTree(INamedTypeSymbol component)
-    {
-        var buildRenderTree = FindBuildRenderTreeMethod(component);
-        if (buildRenderTree is null)
-            return false;
-
-        foreach (var syntaxReference in buildRenderTree.DeclaringSyntaxReferences)
-        {
-            if (syntaxReference.GetSyntax() is not MethodDeclarationSyntax methodSyntax)
-                continue;
-
-            if (HasMappedRazorPath(methodSyntax) || IsGeneratedSourcePath(methodSyntax.SyntaxTree.FilePath))
-                continue;
-
-            return true;
-        }
-
-        return false;
-    }
+        => FindHandwrittenBuildRenderTreeMethod(component) is not null;
 
     private static bool IsRazorVueComponent(
         INamedTypeSymbol symbol,
         INamedTypeSymbol moduleAttribute,
-        INamedTypeSymbol componentBase,
         INamedTypeSymbol vueComponentMarker)
         => !symbol.IsStatic &&
            HasECMAScriptModuleAttribute(symbol, moduleAttribute) &&
-           DerivesFrom(symbol, componentBase) &&
            Implements(symbol, vueComponentMarker);
 
     private static bool HasECMAScriptModuleAttribute(INamedTypeSymbol symbol, INamedTypeSymbol moduleAttribute)
@@ -157,21 +162,10 @@ internal static class RazorSgComponentCandidateSelector
                 ECMAScriptModuleAttributeMetadataName,
                 StringComparison.Ordinal));
 
-    private static bool DerivesFrom(INamedTypeSymbol symbol, INamedTypeSymbol componentBase)
-    {
-        for (var current = symbol; current is not null; current = current.BaseType)
-        {
-            if (Comparer.Equals(current.OriginalDefinition, componentBase))
-                return true;
-        }
+    private static bool Implements(INamedTypeSymbol symbol, INamedTypeSymbol interfaceSymbol)
+        => symbol.AllInterfaces.Any(candidate => Comparer.Equals(candidate.OriginalDefinition, interfaceSymbol));
 
-        return false;
-    }
-
-    private static bool Implements(INamedTypeSymbol symbol, INamedTypeSymbol vueComponentMarker)
-        => symbol.AllInterfaces.Any(candidate => Comparer.Equals(candidate.OriginalDefinition, vueComponentMarker));
-
-    private static IMethodSymbol? FindBuildRenderTreeMethod(INamedTypeSymbol symbol)
+    internal static IMethodSymbol? FindBuildRenderTreeMethod(INamedTypeSymbol symbol)
     {
         for (var current = symbol; current is not null; current = current.BaseType)
         {
@@ -181,6 +175,10 @@ internal static class RazorSgComponentCandidateSelector
                     !candidate.IsStatic &&
                     candidate.MethodKind == MethodKind.Ordinary &&
                     candidate.Parameters.Length == 1 &&
+                    string.Equals(
+                        candidate.Parameters[0].Type.ToDisplayString(),
+                        RenderTreeBuilderMetadataName,
+                        StringComparison.Ordinal) &&
                     (candidate.Locations.Any(static location => location.IsInSource) ||
                      candidate.DeclaringSyntaxReferences.Length > 0));
             if (method is not null)

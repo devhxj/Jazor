@@ -2,9 +2,13 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using Acornima;
+using Acornima.Ast;
+using Jazor.Common;
 using Jazor.Common.SourceMaps;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Jazor.RazorVue.RazorSdk;
 
@@ -20,11 +24,29 @@ internal static class RazorSgVueComponentModuleBuilder
     private static readonly Regex VariableDeclarationPattern = new(
         @"^\s*(?:export\s+)?(?:let|const|var)\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*(?:=\s*(.*))?;\s*$",
         RegexOptions.CultureInvariant);
+    private static readonly Regex VariableDeclarationStartPattern = new(
+        @"^\s*(?:export\s+)?(?:let|const|var)\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*(?:=\s*(.*))?\s*$",
+        RegexOptions.CultureInvariant);
     private static readonly Regex ImportFromPattern = new(
         @"^(?<prefix>\s*import\s+.+?\s+from\s+)(?<quote>[""'])(?<path>\./[^""']+)(\k<quote>)(?<suffix>\s*;?\s*)$",
         RegexOptions.CultureInvariant);
     private static readonly Regex RelativeImportFromPattern = new(
         @"^\s*import\s+.+?\s+from\s+(?<quote>[""'])(?<path>(?:\./|\.\./)[^""']+)(\k<quote>)\s*;?\s*$",
+        RegexOptions.CultureInvariant);
+    private static readonly Regex BuildRenderTreeFunctionPattern = new(
+        @"^\s*function\s+buildRenderTree\s*\(\s*(?<builder>[A-Za-z_$][A-Za-z0-9_$]*)\s*\)\s*\{\s*$",
+        RegexOptions.CultureInvariant);
+    private static readonly Regex DirectFunctionPattern = new(
+        @"^\s*function\s+(?<name>[A-Za-z_$][A-Za-z0-9_$]*)\s*\(\s*(?<parameter>[A-Za-z_$][A-Za-z0-9_$]*)\s*\)\s*\{\s*$",
+        RegexOptions.CultureInvariant);
+    private static readonly Regex DirectArrowFunctionPattern = new(
+        @"^\s*(?:let|const|var)\s+(?<name>[A-Za-z_$][A-Za-z0-9_$]*)\s*=\s*\(?\s*(?<parameter>[A-Za-z_$][A-Za-z0-9_$]*)\s*\)?\s*=>\s*\{\s*$",
+        RegexOptions.CultureInvariant);
+    private static readonly Regex DirectReturnArrowFunctionPattern = new(
+        @"^\s*return\s+\(?\s*(?<parameter>[A-Za-z_$][A-Za-z0-9_$]*)\s*\)?\s*=>\s*\{\s*$",
+        RegexOptions.CultureInvariant);
+    private static readonly Regex BuilderCallPattern = new(
+        @"^\s*(?<builder>[A-Za-z_$][A-Za-z0-9_$]*)\.(?<method>[A-Za-z_$][A-Za-z0-9_$]*)\((?<arguments>.*)\);\s*$",
         RegexOptions.CultureInvariant);
     private static readonly SymbolEqualityComparer SymbolComparer = SymbolEqualityComparer.Default;
 
@@ -47,10 +69,11 @@ internal static class RazorSgVueComponentModuleBuilder
 
         var syntaxTree = component.BuildRenderTreeMethod.DeclaringSyntaxReferences.Single().SyntaxTree;
         var semanticModel = binding.Compilation.GetSemanticModel(syntaxTree);
+        var declaredNames = BuildDirectRenderDeclaredNames(component, closure);
         var converter = new AstConverter(
             component.ComponentSymbol,
             semanticModel,
-            closure.CreateAstConverterOptions());
+            closure.CreateAstConverterOptions(declaredNames: declaredNames));
         var relativePath = GetRelativePath(component.ComponentSymbol);
         var module = await converter.Convert(cancellationToken).ConfigureAwait(false);
         var compiledArtifact = module is null
@@ -63,7 +86,7 @@ internal static class RazorSgVueComponentModuleBuilder
         var compiledScript = compiledArtifact is null
             ? string.Empty
             : Util.NormalizeLineEndingsToLf(compiledArtifact.Content).Trim();
-        var moduleBuild = BuildModuleText(component.ComponentSymbol, closure, compiledScript, relativePath);
+        var moduleBuild = BuildModuleText(binding, component, closure, declaredNames, compiledScript, relativePath);
         var moduleText = moduleBuild.ModuleText;
         var sourceMapRelativePath = relativePath + ".map";
         var sourceMapContent = BuildSourceMapContent(
@@ -85,16 +108,30 @@ internal static class RazorSgVueComponentModuleBuilder
     }
 
     private static ModuleTextBuildResult BuildModuleText(
-        INamedTypeSymbol componentSymbol,
+        RazorSgGeneratedCSharpBinding binding,
+        RazorSgBoundComponent component,
         RazorSgComponentMemberClosure closure,
+        IReadOnlyDictionary<ISymbol, string>? declaredNames,
         string compiledScript,
         string relativePath)
     {
         var parts = SplitCompiledScript(compiledScript, closure);
+        var componentSymbol = component.ComponentSymbol;
+        var directRender = TryBuildOperationDirectRender(binding, component, declaredNames, parts.SetupBodyLines, out var operationDirectRender)
+            ? operationDirectRender
+            : null;
+        if (directRender is not null)
+            parts = parts with { SetupBodyLines = directRender.SetupBodyLines };
+
         var usesInvokeAsync = parts.SetupBodyLines.Any(static line =>
             line.Text.Contains("invokeAsync(", StringComparison.Ordinal));
         var setupFactoryName = "create" + SanitizeJavaScriptIdentifierPart(componentSymbol.Name, "Component") + "SetupScope";
         var returnedMembers = GetReturnedMembers(closure);
+        if (directRender is not null)
+            returnedMembers = returnedMembers
+                .RemoveAll(static member => string.Equals(member, "buildRenderTree", StringComparison.Ordinal))
+                .Add(directRender.MemberName);
+
         var hasOnInitialized = returnedMembers.Contains("onInitialized", StringComparer.Ordinal);
         var hasOnInitializedAsync = returnedMembers.Contains("onInitializedAsync", StringComparer.Ordinal);
         var hasOnParametersSet = returnedMembers.Contains("onParametersSet", StringComparer.Ordinal);
@@ -105,8 +142,10 @@ internal static class RazorSgVueComponentModuleBuilder
         var hasDispose = returnedMembers.Contains("dispose", StringComparer.Ordinal);
         var hasDisposeAsync = returnedMembers.Contains("disposeAsync", StringComparer.Ordinal);
         var usesSlots = HasSlotParameterBridges(closure);
+        var usesFactorySlots = directRender?.UsesSlots == true;
         var usesFactoryProps = parts.SetupBodyLines.Any(static line =>
-            line.Text.Contains("props.", StringComparison.Ordinal));
+            line.Text.Contains("props.", StringComparison.Ordinal)) ||
+            directRender?.UsesProps == true;
         var usesWatch = hasOnParametersSet || hasOnParametersSetAsync;
         var usesSetupProps = usesFactoryProps || usesSlots || usesWatch;
         var usesMounted = hasOnAfterRender || hasOnAfterRenderAsync;
@@ -121,6 +160,8 @@ internal static class RazorSgVueComponentModuleBuilder
         var builder = new StringBuilder();
         var frontendAssets = ImmutableArray.CreateBuilder<RazorSgFrontendAsset>();
         var lineMappings = ImmutableArray.CreateBuilder<CompiledLineMapping>();
+        var emittedImports = new HashSet<string>(StringComparer.Ordinal);
+        var emittedImportLocals = new HashSet<string>(StringComparer.Ordinal);
         var line = 0;
 
         void AppendLine(string value = "")
@@ -129,8 +170,17 @@ internal static class RazorSgVueComponentModuleBuilder
             line++;
         }
 
-        AppendLine(BuildVueImportLine(usesMounted, usesUnmounted, usesUpdated, usesReactive, usesWatch));
-        AppendLine("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";");
+        AppendLine(BuildVueImportLine(
+            usesMounted,
+            usesUnmounted,
+            usesUpdated,
+            usesReactive,
+            usesWatch,
+            directRender?.UsesFragment == true,
+            directRender?.UsesStaticVNode == true));
+        if (directRender is null)
+            AppendLine("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";");
+
         foreach (var importLine in parts.ImportLines)
         {
             if (!string.Equals(importLine.Text, "import { defineComponent, h, onMounted, onUnmounted, onUpdated, reactive, watch } from \"vue\";", StringComparison.Ordinal) &&
@@ -140,14 +190,35 @@ internal static class RazorSgVueComponentModuleBuilder
                 !string.Equals(importLine.Text, "import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal))
             {
                 var rebasedImportLine = RebaseRootRelativeImportLine(importLine.Text, relativePath);
+                if (HasAnyImportLocalName(rebasedImportLine, emittedImportLocals))
+                    continue;
+                if (!emittedImports.Add(rebasedImportLine))
+                    continue;
+
                 AppendLine(rebasedImportLine);
+                AddImportLocalNames(rebasedImportLine, emittedImportLocals);
                 if (TryCreateVueSfcAsset(rebasedImportLine, relativePath, out var asset))
                     frontendAssets.Add(asset);
             }
         }
 
+        if (directRender is not null)
+        {
+            foreach (var importLine in directRender.ImportLines)
+            {
+                var rebasedImportLine = RebaseRootRelativeImportLine(importLine, relativePath);
+                if (HasAnyImportLocalName(rebasedImportLine, emittedImportLocals))
+                    continue;
+                if (!emittedImports.Add(rebasedImportLine))
+                    continue;
+
+                AppendLine(rebasedImportLine);
+                AddImportLocalNames(rebasedImportLine, emittedImportLocals);
+            }
+        }
+
         AppendLine();
-        AppendLine("function " + setupFactoryName + "(" + BuildSetupFactoryParameterList(usesFactoryProps, usesStateHasChanged, usesInvokeAsync) + ") {");
+        AppendLine("function " + setupFactoryName + "(" + BuildSetupFactoryParameterList(usesFactoryProps, usesFactorySlots, usesStateHasChanged, usesInvokeAsync) + ") {");
         if (usesState)
             AppendStateDeclaration(builder, parts.StateSlots, lineMappings, ref line);
         if (parts.SetupBodyLines.Length > 0)
@@ -156,8 +227,31 @@ internal static class RazorSgVueComponentModuleBuilder
             AppendIndentedLines(builder, parts.SetupBodyLines, lineMappings, ref line);
         }
 
+        if (directRender is not null)
+        {
+            AppendLine();
+            AppendLine("  function " + directRender.MemberName + "() {");
+            foreach (var preludeLine in directRender.PreludeLines)
+                AppendLine("    " + preludeLine);
+            foreach (var mapping in directRender.SourceMappings)
+            {
+                lineMappings.Add(new CompiledLineMapping(
+                    GeneratedLine: line,
+                    GeneratedColumn: "    return ".Length + mapping.RenderColumn,
+                    CompiledLine: mapping.CompiledLine,
+                    CompiledColumn: mapping.CompiledColumn));
+            }
+
+            AppendLine("    return " + directRender.RenderExpression + ";");
+            AppendLine("  }");
+        }
+
         AppendLine();
-        if (returnedMembers.Length == 1)
+        if (returnedMembers.Length == 0)
+        {
+            AppendLine("  return {};");
+        }
+        else if (returnedMembers.Length == 1)
         {
             AppendLine("  return { " + returnedMembers[0] + " };");
         }
@@ -222,7 +316,7 @@ internal static class RazorSgVueComponentModuleBuilder
             AppendLine("    };");
         }
 
-        AppendLine("    const scope = " + setupFactoryName + "(" + BuildSetupFactoryArgumentList(usesFactoryProps, usesStateHasChanged, usesInvokeAsync) + ");");
+        AppendLine("    const scope = " + setupFactoryName + "(" + BuildSetupFactoryArgumentList(usesFactoryProps, usesFactorySlots, usesStateHasChanged, usesInvokeAsync) + ");");
         if (usesStateHasChanged)
             AppendLine("    invalidate = reactive({ tick: pendingInvalidations });");
         if (hasOnInitialized)
@@ -339,16 +433,24 @@ internal static class RazorSgVueComponentModuleBuilder
             AppendLine("      hasRendered = true;");
         }
 
-        AppendLine("      const builder = createRenderContext(h);");
-        AppendLine("      scope.buildRenderTree(builder);");
+        if (directRender is null)
+        {
+            AppendLine("      const builder = createRenderContext(h);");
+            AppendLine("      scope.buildRenderTree(builder);");
+        }
+
         if (hasShouldRender)
         {
-            AppendLine("      cachedVNode = builder.finish();");
+            AppendLine(directRender is null
+                ? "      cachedVNode = builder.finish();"
+                : "      cachedVNode = scope." + directRender.MemberName + "();");
             AppendLine("      return cachedVNode;");
         }
         else
         {
-            AppendLine("      return builder.finish();");
+            AppendLine(directRender is null
+                ? "      return builder.finish();"
+                : "      return scope." + directRender.MemberName + "();");
         }
 
         AppendLine("    };");
@@ -364,6 +466,286 @@ internal static class RazorSgVueComponentModuleBuilder
                 .OrderBy(static asset => asset.ArtifactPath, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(static asset => asset.SourcePath, StringComparer.Ordinal)
                 .ToImmutableArray());
+    }
+
+    private static bool TryBuildOperationDirectRender(
+        RazorSgGeneratedCSharpBinding binding,
+        RazorSgBoundComponent component,
+        IReadOnlyDictionary<ISymbol, string>? declaredNames,
+        ImmutableArray<SetupBodyLine> setupBodyLines,
+        out DirectRenderBuildResult result)
+    {
+        result = default!;
+        if (!RazorSgDirectRenderOperationEmitter.TryEmit(
+                binding.Compilation,
+                component.ComponentSymbol,
+                component.BuildRenderTreeMethod,
+                component.BuildRenderTreeBody,
+                declaredNames,
+                out var operationResult,
+                out _))
+        {
+            return false;
+        }
+
+        result = new DirectRenderBuildResult(
+            operationResult.RenderExpression,
+            "$renderDirect",
+            operationResult.PreludeLines,
+            operationResult.UsesFragment,
+            operationResult.UsesStaticVNode,
+            operationResult.UsesProps,
+            operationResult.UsesSlots,
+            ImmutableArray<DirectSourceMapping>.Empty,
+            RemoveBuildRenderTreeFunction(setupBodyLines),
+            operationResult.ImportLines);
+        return true;
+    }
+
+    private static IReadOnlyDictionary<ISymbol, string>? BuildDirectRenderDeclaredNames(
+        RazorSgBoundComponent component,
+        RazorSgComponentMemberClosure closure)
+    {
+        var directLocalNames = CollectDirectRenderLocalNames(component.BuildRenderTreeBody);
+        if (directLocalNames.Count == 0)
+            return null;
+
+        var hasCollision = closure.ReachableMethods
+            .Where(method => IsDeclaredOnComponentHierarchy(component.ComponentSymbol, method.ContainingType))
+            .Any(method =>
+                directLocalNames.Contains(GetPreferredModuleDeclaredName(method))) ||
+            closure.ComputedProperties
+            .Where(property => IsDeclaredOnComponentHierarchy(component.ComponentSymbol, property.ContainingType))
+            .Any(property =>
+                property.GetMethod is not null &&
+                directLocalNames.Contains(GetPreferredModuleDeclaredName(property.GetMethod)));
+        if (!hasCollision)
+            return null;
+
+        var declaredNames = new Dictionary<ISymbol, string>(SymbolComparer);
+        var usedDeclaredNames = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var member in closure.OrderedMembers)
+        {
+            if (member is not INamedTypeSymbol &&
+                !IsDeclaredOnComponentHierarchy(component.ComponentSymbol, member.ContainingType))
+            {
+                continue;
+            }
+
+            switch (member)
+            {
+                case IFieldSymbol field:
+                    declaredNames[field.OriginalDefinition] = ChooseModuleDeclaredName(field, usedDeclaredNames, directLocalNames);
+                    break;
+                case IMethodSymbol method when ShouldReserveModuleMethodName(method) &&
+                                               !IsParameterProperty(method.AssociatedSymbol as IPropertySymbol):
+                    declaredNames[method.OriginalDefinition] = ChooseModuleDeclaredName(method, usedDeclaredNames, directLocalNames);
+                    break;
+                case IPropertySymbol property when !IsParameterProperty(property):
+                    if (property.GetMethod is not null && ShouldReserveModuleMethodName(property.GetMethod))
+                    {
+                        var getterName = ChooseModuleDeclaredName(property.GetMethod, usedDeclaredNames, directLocalNames);
+                        declaredNames[property.GetMethod.OriginalDefinition] = getterName;
+                        declaredNames[property.OriginalDefinition] = getterName;
+                    }
+
+                    if (property.SetMethod is not null && ShouldReserveModuleMethodName(property.SetMethod))
+                        declaredNames[property.SetMethod.OriginalDefinition] = ChooseModuleDeclaredName(property.SetMethod, usedDeclaredNames, directLocalNames);
+                    break;
+                case INamedTypeSymbol type when IsRuntimeMemberClass(type):
+                    declaredNames[type.OriginalDefinition] = ChooseModuleDeclaredName(type, usedDeclaredNames, directLocalNames);
+                    break;
+            }
+        }
+
+        return declaredNames;
+    }
+
+    private static HashSet<string> CollectDirectRenderLocalNames(IBlockOperation buildRenderTreeBody)
+    {
+        var collector = new DirectRenderLocalNameCollector();
+        collector.Visit(buildRenderTreeBody);
+        return collector.Names;
+    }
+
+    private sealed class DirectRenderLocalNameCollector : OperationWalker
+    {
+        public HashSet<string> Names { get; } = new(StringComparer.Ordinal);
+
+        public override void VisitVariableDeclarator(IVariableDeclaratorOperation operation)
+        {
+            if (!string.IsNullOrWhiteSpace(operation.Symbol.Name))
+                Names.Add(operation.Symbol.Name);
+
+            base.VisitVariableDeclarator(operation);
+        }
+
+        public override void VisitForEachLoop(IForEachLoopOperation operation)
+        {
+            if (TryGetLoopControlVariable(operation.LoopControlVariable, out var local) &&
+                !string.IsNullOrWhiteSpace(local.Name))
+            {
+                Names.Add(local.Name);
+            }
+
+            base.VisitForEachLoop(operation);
+        }
+    }
+
+    private static bool TryGetLoopControlVariable(IOperation operation, out ILocalSymbol local)
+    {
+        while (operation is IConversionOperation conversion)
+            operation = conversion.Operand;
+
+        switch (operation)
+        {
+            case ILocalReferenceOperation localReference:
+                local = localReference.Local;
+                return true;
+            case IVariableDeclaratorOperation declarator:
+                local = declarator.Symbol;
+                return true;
+            default:
+                local = null!;
+                return false;
+        }
+    }
+
+    private static string ChooseModuleDeclaredName(
+        ISymbol symbol,
+        HashSet<string> usedDeclaredNames,
+        HashSet<string> localNames)
+    {
+        var preferredName = GetPreferredModuleDeclaredName(symbol);
+        if (!localNames.Contains(preferredName) && usedDeclaredNames.Add(preferredName))
+            return preferredName;
+
+        var sourceName = GetSourceDeclaredNameCandidate(symbol);
+        if (!string.IsNullOrEmpty(sourceName) &&
+            !localNames.Contains(sourceName!) &&
+            usedDeclaredNames.Add(sourceName!))
+        {
+            return sourceName!;
+        }
+
+        var displayString = symbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
+        var alias = "m$" + Format.HashName(displayString).TrimStart('_');
+        var suffix = 0;
+        while (localNames.Contains(alias) || !usedDeclaredNames.Add(alias))
+        {
+            suffix++;
+            alias = "m$" + Format.HashName(displayString).TrimStart('_') + "$" + suffix.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        return alias;
+    }
+
+    private static string GetPreferredModuleDeclaredName(ISymbol symbol)
+        => symbol switch
+        {
+            IFieldSymbol field => GetPreferredModuleFieldDeclaredName(field),
+            IMethodSymbol
+            {
+                MethodKind: MethodKind.PropertyGet,
+                AssociatedSymbol: IPropertySymbol property
+            } => Util.GetConfigOrSymbolName(property),
+            IMethodSymbol method => Util.GetConfigOrSymbolName(method),
+            INamedTypeSymbol type => Util.GetConfigOrSymbolName(type),
+            _ => Util.GetConfigOrSymbolName(symbol)
+        };
+
+    private static string? GetSourceDeclaredNameCandidate(ISymbol symbol)
+        => symbol switch
+        {
+            IFieldSymbol field when field.AssociatedSymbol is IPropertySymbol property && !field.IsImplicitlyDeclared => property.Name,
+            IFieldSymbol field when field.IsImplicitlyDeclared => null,
+            IFieldSymbol field => field.Name,
+            IMethodSymbol method when method.AssociatedSymbol is IPropertySymbol property => property.Name,
+            IMethodSymbol method => method.Name,
+            INamedTypeSymbol type => type.Name,
+            _ => symbol.Name
+        };
+
+    private static string GetPreferredModuleFieldDeclaredName(IFieldSymbol symbol)
+    {
+        if (symbol.AssociatedSymbol is IPropertySymbol && symbol.IsImplicitlyDeclared)
+            return Format.HashName(symbol.AssociatedSymbol!.OriginalDefinition.ToDisplayString(Format.NameFormat));
+
+        return Util.GetConfigOrSymbolName(symbol);
+    }
+
+    private static bool ShouldReserveModuleMethodName(IMethodSymbol method)
+    {
+        if (method.MethodKind == MethodKind.SharedConstructor && method.IsImplicitlyDeclared)
+            return false;
+
+        if (method.IsInitOnly)
+            return false;
+
+        return method.MethodKind is MethodKind.Ordinary or MethodKind.PropertyGet or MethodKind.PropertySet or MethodKind.SharedConstructor;
+    }
+
+    private static bool IsRuntimeMemberClass(INamedTypeSymbol type)
+        => type.TypeKind == TypeKind.Class && !type.IsRecord;
+
+    private static bool IsDeclaredOnComponentHierarchy(
+        INamedTypeSymbol componentType,
+        INamedTypeSymbol? containingType)
+    {
+        if (containingType is null)
+            return false;
+
+        for (var current = componentType; current is not null; current = current.BaseType)
+        {
+            if (SymbolComparer.Equals(containingType.OriginalDefinition, current.OriginalDefinition))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsParameterProperty(IPropertySymbol? property)
+        => property is not null &&
+           property.GetAttributes().Any(static attribute =>
+               string.Equals(
+                   attribute.AttributeClass?.ToDisplayString(),
+                   ParameterAttributeMetadataName,
+                   StringComparison.Ordinal));
+
+    private static ImmutableArray<SetupBodyLine> RemoveBuildRenderTreeFunction(
+        ImmutableArray<SetupBodyLine> setupBodyLines)
+    {
+        var functionStart = -1;
+        for (var index = 0; index < setupBodyLines.Length; index++)
+        {
+            if (BuildRenderTreeFunctionPattern.Match(setupBodyLines[index].Text).Success)
+            {
+                functionStart = index;
+                break;
+            }
+        }
+
+        if (functionStart < 0)
+            return setupBodyLines;
+
+        var depth = 0;
+        var functionEnd = -1;
+        for (var index = functionStart; index < setupBodyLines.Length; index++)
+        {
+            depth += CountJavaScriptBraceDelta(setupBodyLines[index].Text);
+            if (index > functionStart && depth == 0)
+            {
+                functionEnd = index;
+                break;
+            }
+        }
+
+        if (functionEnd <= functionStart)
+            return setupBodyLines;
+
+        return setupBodyLines
+            .Where((_, index) => index < functionStart || index > functionEnd)
+            .ToImmutableArray();
     }
 
     private static bool TryCreateVueSfcAsset(
@@ -386,6 +768,1249 @@ internal static class RazorSgVueComponentModuleBuilder
             ArtifactPath: artifactPath,
             Kind: "vue-sfc",
             ContentHash: string.Empty);
+        return true;
+    }
+
+    private static void AddImportLocalNames(
+        string importLine,
+        HashSet<string> localNames)
+    {
+        if (!TryParseImportDeclaration(importLine, out var declaration))
+            return;
+
+        foreach (var specifier in declaration.Specifiers)
+        {
+            switch (specifier)
+            {
+                case ImportSpecifier named:
+                    localNames.Add(named.Local.Name);
+                    break;
+                case ImportDefaultSpecifier defaultSpecifier:
+                    localNames.Add(defaultSpecifier.Local.Name);
+                    break;
+                case ImportNamespaceSpecifier namespaceSpecifier:
+                    localNames.Add(namespaceSpecifier.Local.Name);
+                    break;
+            }
+        }
+    }
+
+    private static bool HasAnyImportLocalName(
+        string importLine,
+        HashSet<string> localNames)
+    {
+        if (!TryParseImportDeclaration(importLine, out var declaration))
+            return false;
+
+        foreach (var specifier in declaration.Specifiers)
+        {
+            var localName = specifier switch
+            {
+                ImportSpecifier named => named.Local.Name,
+                ImportDefaultSpecifier defaultSpecifier => defaultSpecifier.Local.Name,
+                ImportNamespaceSpecifier namespaceSpecifier => namespaceSpecifier.Local.Name,
+                _ => string.Empty
+            };
+            if (!string.IsNullOrWhiteSpace(localName) && localNames.Contains(localName))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryGetSingleImportLocalName(
+        string importLine,
+        out string localName)
+    {
+        localName = string.Empty;
+        if (!TryParseImportDeclaration(importLine, out var declaration) ||
+            declaration.Specifiers.Count != 1)
+        {
+            return false;
+        }
+
+        localName = declaration.Specifiers[0] switch
+        {
+            ImportSpecifier named => named.Local.Name,
+            ImportDefaultSpecifier defaultSpecifier => defaultSpecifier.Local.Name,
+            ImportNamespaceSpecifier namespaceSpecifier => namespaceSpecifier.Local.Name,
+            _ => string.Empty
+        };
+        return !string.IsNullOrWhiteSpace(localName);
+    }
+
+    private static bool TryParseImportDeclaration(
+        string importLine,
+        out ImportDeclaration declaration)
+    {
+        declaration = null!;
+        try
+        {
+            if (new Parser().ParseModule(importLine).Body.SingleOrDefault() is ImportDeclaration parsed)
+            {
+                declaration = parsed;
+                return true;
+            }
+        }
+        catch (ParseErrorException)
+        {
+        }
+
+        return false;
+    }
+
+    private static bool TryBuildDirectRender(
+        ImmutableArray<SetupBodyLine> setupBodyLines,
+        out DirectRenderBuildResult result)
+    {
+        result = default!;
+
+        var functionStart = -1;
+        var functionEnd = -1;
+        var builderName = string.Empty;
+        for (var index = 0; index < setupBodyLines.Length; index++)
+        {
+            var match = BuildRenderTreeFunctionPattern.Match(setupBodyLines[index].Text);
+            if (!match.Success)
+                continue;
+
+            if (functionStart >= 0)
+                return false;
+
+            functionStart = index;
+            builderName = match.Groups["builder"].Value;
+            break;
+        }
+
+        if (functionStart < 0)
+            return false;
+
+        var depth = 0;
+        for (var index = functionStart; index < setupBodyLines.Length; index++)
+        {
+            depth += CountJavaScriptBraceDelta(setupBodyLines[index].Text);
+            if (index > functionStart && depth == 0)
+            {
+                functionEnd = index;
+                break;
+            }
+        }
+
+        if (functionEnd <= functionStart)
+            return false;
+
+        var bodyLines = setupBodyLines
+            .Skip(functionStart + 1)
+            .Take(functionEnd - functionStart - 1)
+            .ToImmutableArray();
+        var slotFunctions = BuildDirectSlotFunctionMap(setupBodyLines, functionStart, functionEnd);
+        if (!TryBuildDirectRenderExpression(
+                bodyLines,
+                builderName,
+                slotFunctions,
+                out var renderExpression,
+                out var usesFragment,
+                out var usesStaticVNode,
+                out var usedSlotFunctionRanges))
+        {
+            return false;
+        }
+
+        var retainedLines = ImmutableArray.CreateBuilder<SetupBodyLine>();
+        for (var index = 0; index < setupBodyLines.Length; index++)
+        {
+            if ((index >= functionStart && index <= functionEnd) ||
+                usedSlotFunctionRanges.Any(range => index >= range.Start && index <= range.End))
+            {
+                continue;
+            }
+
+            retainedLines.Add(setupBodyLines[index]);
+        }
+
+        result = new DirectRenderBuildResult(
+            renderExpression,
+            "$renderDirect",
+            ImmutableArray<string>.Empty,
+            usesFragment,
+            usesStaticVNode,
+            renderExpression.Contains("props.", StringComparison.Ordinal),
+            UsesSlots: false,
+            CollectDirectSourceMappings(bodyLines, renderExpression),
+            retainedLines.ToImmutable(),
+            ImmutableArray<string>.Empty);
+        return true;
+    }
+
+    private static ImmutableDictionary<string, DirectSlotFunction> BuildDirectSlotFunctionMap(
+        ImmutableArray<SetupBodyLine> setupBodyLines,
+        int buildRenderTreeStart,
+        int buildRenderTreeEnd)
+    {
+        var builder = ImmutableDictionary.CreateBuilder<string, DirectSlotFunction>(StringComparer.Ordinal);
+        for (var index = 0; index < setupBodyLines.Length; index++)
+        {
+            if (index >= buildRenderTreeStart && index <= buildRenderTreeEnd)
+                continue;
+
+            if (!TryMatchDirectSlotFunctionHeader(setupBodyLines[index].Text, out var functionName, out var parameterName) ||
+                string.Equals(functionName, "buildRenderTree", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var depth = 0;
+            var end = -1;
+            for (var functionIndex = index; functionIndex < setupBodyLines.Length; functionIndex++)
+            {
+                depth += CountJavaScriptBraceDelta(setupBodyLines[functionIndex].Text);
+                if (functionIndex > index && depth == 0)
+                {
+                    end = functionIndex;
+                    break;
+                }
+            }
+
+            if (end <= index)
+                continue;
+
+            var functionBody = setupBodyLines
+                .Skip(index + 1)
+                .Take(end - index - 1)
+                .ToImmutableArray();
+            if (TryBuildDirectRenderExpression(
+                    functionBody,
+                    parameterName,
+                    ImmutableDictionary<string, DirectSlotFunction>.Empty,
+                    out var renderExpression,
+                    out var usesFragment,
+                    out var usesStaticVNode,
+                    out _))
+            {
+                builder[functionName] = new DirectSlotFunction(
+                    renderExpression,
+                    ScopedParameterName: null,
+                    usesFragment,
+                    usesStaticVNode,
+                    new DirectFunctionRange(index, end));
+                continue;
+            }
+
+            if (TryBuildDirectScopedSlotFunction(
+                    functionBody,
+                    parameterName,
+                    out var scopedRenderExpression,
+                    out var scopedParameterName,
+                    out var scopedUsesFragment,
+                    out var scopedUsesStaticVNode))
+            {
+                builder[functionName] = new DirectSlotFunction(
+                    scopedRenderExpression,
+                    scopedParameterName,
+                    scopedUsesFragment,
+                    scopedUsesStaticVNode,
+                    new DirectFunctionRange(index, end));
+            }
+        }
+
+        return builder.ToImmutable();
+    }
+
+    private static bool TryBuildDirectScopedSlotFunction(
+        ImmutableArray<SetupBodyLine> functionBody,
+        string outerParameterName,
+        out string renderExpression,
+        out string scopedParameterName,
+        out bool usesFragment,
+        out bool usesStaticVNode)
+    {
+        renderExpression = string.Empty;
+        scopedParameterName = string.Empty;
+        usesFragment = false;
+        usesStaticVNode = false;
+        if (functionBody.Length < 2)
+            return false;
+
+        var header = DirectReturnArrowFunctionPattern.Match(functionBody[0].Text);
+        if (!header.Success || !string.Equals(functionBody[functionBody.Length - 1].Text.Trim(), "};", StringComparison.Ordinal))
+            return false;
+
+        var builderName = header.Groups["parameter"].Value;
+        var builderBody = functionBody
+            .Skip(1)
+            .Take(functionBody.Length - 2)
+            .ToImmutableArray();
+        if (!TryBuildDirectRenderExpression(
+                builderBody,
+                builderName,
+                ImmutableDictionary<string, DirectSlotFunction>.Empty,
+                out renderExpression,
+                out usesFragment,
+                out usesStaticVNode,
+                out _))
+        {
+            return false;
+        }
+
+        scopedParameterName = outerParameterName;
+        return true;
+    }
+
+    private static bool TryMatchDirectSlotFunctionHeader(
+        string line,
+        out string functionName,
+        out string parameterName)
+    {
+        var match = DirectFunctionPattern.Match(line);
+        if (!match.Success)
+            match = DirectArrowFunctionPattern.Match(line);
+
+        if (!match.Success)
+        {
+            functionName = string.Empty;
+            parameterName = string.Empty;
+            return false;
+        }
+
+        functionName = match.Groups["name"].Value;
+        parameterName = match.Groups["parameter"].Value;
+        return true;
+    }
+
+    private static ImmutableArray<DirectSourceMapping> CollectDirectSourceMappings(
+        ImmutableArray<SetupBodyLine> bodyLines,
+        string renderExpression)
+    {
+        var mappings = ImmutableArray.CreateBuilder<DirectSourceMapping>();
+        var searchIndex = 0;
+        foreach (var line in bodyLines)
+        {
+            var text = line.Text.Trim();
+            var match = BuilderCallPattern.Match(text);
+            if (!match.Success)
+                continue;
+
+            var method = match.Groups["method"].Value;
+            if (!string.Equals(method, "addContent", StringComparison.Ordinal) &&
+                !string.Equals(method, "addAttribute", StringComparison.Ordinal) &&
+                !string.Equals(method, "addComponentParameter", StringComparison.Ordinal) &&
+                !string.Equals(method, "addMarkupContent", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var arguments = SplitJavaScriptArguments(match.Groups["arguments"].Value);
+            var expression = method switch
+            {
+                "addContent" or "addMarkupContent" => arguments.Length == 1 ? arguments[0] : null,
+                "addAttribute" or "addComponentParameter" => arguments.Length == 2 ? arguments[1] : null,
+                _ => null
+            };
+            if (string.IsNullOrWhiteSpace(expression))
+                continue;
+
+            var expressionIndex = renderExpression.IndexOf(expression!, searchIndex, StringComparison.Ordinal);
+            if (expressionIndex < 0)
+                continue;
+
+            searchIndex = expressionIndex + expression!.Length;
+            var compiledColumn = line.CompiledColumn + Math.Max(0, line.Text.IndexOf(expression!, StringComparison.Ordinal));
+            mappings.Add(new DirectSourceMapping(
+                expression!,
+                expressionIndex,
+                line.CompiledLine,
+                compiledColumn));
+        }
+
+        return mappings.ToImmutable();
+    }
+
+    private static bool TryBuildDirectRenderExpression(
+        ImmutableArray<SetupBodyLine> bodyLines,
+        string builderName,
+        ImmutableDictionary<string, DirectSlotFunction> slotFunctions,
+        out string renderExpression,
+        out bool usesFragment,
+        out bool usesStaticVNode,
+        out ImmutableArray<DirectFunctionRange> usedSlotFunctionRanges)
+    {
+        renderExpression = string.Empty;
+        usesFragment = false;
+        usesStaticVNode = false;
+        usedSlotFunctionRanges = ImmutableArray<DirectFunctionRange>.Empty;
+        var usedSlots = ImmutableArray.CreateBuilder<DirectFunctionRange>();
+        var localSlotFunctions = slotFunctions.ToBuilder();
+        bodyLines = CollapseMultilineBuilderCalls(bodyLines, builderName);
+        bodyLines = ExtractInlineDirectSlotFunctions(bodyLines, localSlotFunctions);
+
+        var roots = new List<string>();
+        var stack = new Stack<DirectRenderFrame>();
+        foreach (var line in bodyLines)
+        {
+            var text = line.Text.Trim();
+            if (text.Length == 0)
+                continue;
+            if (string.Equals(text, "return;", StringComparison.Ordinal))
+                continue;
+
+            var match = BuilderCallPattern.Match(text);
+            if (!match.Success ||
+                !string.Equals(match.Groups["builder"].Value, builderName, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            var method = match.Groups["method"].Value;
+            var arguments = SplitJavaScriptArguments(match.Groups["arguments"].Value);
+            switch (method)
+            {
+                case "openElement":
+                    if (arguments.Length != 1 || !TryReadJavaScriptStringLiteral(arguments[0], out var tagName))
+                        return false;
+
+                    if (stack.Count > 0)
+                        stack.Peek().ChildrenStarted = true;
+                    stack.Push(new DirectElementFrame(arguments[0], tagName));
+                    break;
+
+                case "openRegion":
+                    if (arguments.Length != 0)
+                        return false;
+
+                    if (stack.Count > 0)
+                        stack.Peek().ChildrenStarted = true;
+                    stack.Push(new DirectRegionFrame());
+                    break;
+
+                case "openComponent":
+                    if (arguments.Length is < 1 or > 2)
+                        return false;
+
+                    var parameterNameMap = ImmutableDictionary<string, string>.Empty;
+                    if (arguments.Length == 2 &&
+                        !TryReadDirectComponentParameterMap(arguments[1], out parameterNameMap))
+                    {
+                        return false;
+                    }
+
+                    if (stack.Count > 0)
+                        stack.Peek().ChildrenStarted = true;
+                    stack.Push(new DirectComponentFrame(
+                        arguments[0],
+                        arguments.Length == 2 ? parameterNameMap : ImmutableDictionary<string, string>.Empty));
+                    break;
+
+                case "closeElement":
+                    if (arguments.Length != 0 || stack.Count == 0 || stack.Peek() is not DirectElementFrame)
+                        return false;
+
+                    AddDirectRenderChild(roots, stack, stack.Pop().ToRenderExpression());
+                    break;
+
+                case "closeRegion":
+                    if (arguments.Length != 0 || stack.Count == 0 || stack.Peek() is not DirectRegionFrame)
+                        return false;
+
+                    var region = stack.Pop();
+                    usesFragment = usesFragment || region.UsesFragment;
+                    AddDirectRenderChild(roots, stack, region.ToRenderExpression());
+                    break;
+
+                case "closeComponent":
+                    if (arguments.Length != 0 || stack.Count == 0 || stack.Peek() is not DirectComponentFrame)
+                        return false;
+
+                    AddDirectRenderChild(roots, stack, stack.Pop().ToRenderExpression());
+                    break;
+
+                case "addAttribute":
+                    if (arguments.Length != 2 || stack.Count == 0 || !IsDirectPropFrame(stack.Peek()))
+                        return false;
+
+                    var frame = stack.Peek();
+                    if (frame.ChildrenStarted || !TryReadJavaScriptStringLiteral(arguments[0], out var attributeName))
+                        return false;
+
+                    frame.AddAttribute(new DirectAttribute(
+                        frame.NormalizeAttributeName(attributeName),
+                        arguments[1]));
+                    break;
+
+                case "addMultipleAttributes":
+                    if (arguments.Length != 1 || stack.Count == 0 || !IsDirectPropFrame(stack.Peek()))
+                        return false;
+
+                    var multipleFrame = stack.Peek();
+                    if (multipleFrame.ChildrenStarted ||
+                        !TryReadDirectMultipleAttributes(arguments[0], multipleFrame, out var multipleAttributes))
+                    {
+                        return false;
+                    }
+
+                    foreach (var attribute in multipleAttributes)
+                        multipleFrame.AddAttribute(attribute);
+                    break;
+
+                case "setKey":
+                    if (arguments.Length != 1 || stack.Count == 0 || !IsDirectPropFrame(stack.Peek()))
+                        return false;
+
+                    var keyFrame = stack.Peek();
+                    if (keyFrame.ChildrenStarted)
+                        return false;
+
+                    keyFrame.AddAttribute(new DirectAttribute("key", arguments[0]));
+                    break;
+
+                case "setAttributeValue":
+                    if (arguments.Length != 1 || stack.Count == 0 || !IsDirectPropFrame(stack.Peek()))
+                        return false;
+
+                    var valueFrame = stack.Peek();
+                    if (valueFrame.ChildrenStarted || !valueFrame.TrySetLastAttributeValue(arguments[0]))
+                        return false;
+
+                    break;
+
+                case "setUpdatesAttributeName":
+                    if (arguments.Length != 1 || stack.Count == 0 || stack.Peek() is not DirectElementFrame updatesFrame)
+                        return false;
+
+                    if (updatesFrame.ChildrenStarted || !TryReadJavaScriptStringLiteral(arguments[0], out var updatesAttributeName))
+                        return false;
+
+                    updatesFrame.SetUpdatesAttributeName(updatesAttributeName);
+                    break;
+
+                case "addEventPreventDefaultAttribute":
+                    if (arguments.Length != 2 || stack.Count == 0 || stack.Peek() is not DirectElementFrame preventFrame)
+                        return false;
+
+                    if (preventFrame.ChildrenStarted || !TryReadJavaScriptStringLiteral(arguments[0], out var preventEventName))
+                        return false;
+
+                    if (!string.Equals(arguments[1], "false", StringComparison.Ordinal))
+                        preventFrame.SetEventModifier(preventEventName, preventDefault: true, stopPropagation: false);
+                    break;
+
+                case "addEventStopPropagationAttribute":
+                    if (arguments.Length != 2 || stack.Count == 0 || stack.Peek() is not DirectElementFrame stopFrame)
+                        return false;
+
+                    if (stopFrame.ChildrenStarted || !TryReadJavaScriptStringLiteral(arguments[0], out var stopEventName))
+                        return false;
+
+                    if (!string.Equals(arguments[1], "false", StringComparison.Ordinal))
+                        stopFrame.SetEventModifier(stopEventName, preventDefault: false, stopPropagation: true);
+                    break;
+
+                case "addNamedEvent":
+                    if (arguments.Length != 2 || stack.Count == 0 || stack.Peek() is not DirectElementFrame namedEventFrame)
+                        return false;
+
+                    if (namedEventFrame.ChildrenStarted ||
+                        !TryReadJavaScriptStringLiteral(arguments[0], out var namedEventType) ||
+                        !TryReadJavaScriptStringLiteral(arguments[1], out var assignedEventName) ||
+                        string.IsNullOrWhiteSpace(namedEventType) ||
+                        string.IsNullOrWhiteSpace(assignedEventName))
+                    {
+                        return false;
+                    }
+
+                    break;
+
+                case "addElementReferenceCapture":
+                    if (arguments.Length != 1 || stack.Count == 0 || stack.Peek() is not DirectElementFrame referenceElementFrame)
+                        return false;
+
+                    if (referenceElementFrame.ChildrenStarted)
+                        return false;
+
+                    referenceElementFrame.AddReferenceCapture(arguments[0]);
+                    break;
+
+                case "addComponentReferenceCapture":
+                    if (arguments.Length != 1 || stack.Count == 0 || stack.Peek() is not DirectComponentFrame referenceComponentFrame)
+                        return false;
+
+                    if (referenceComponentFrame.ChildrenStarted)
+                        return false;
+
+                    referenceComponentFrame.AddReferenceCapture(arguments[0]);
+                    break;
+
+                case "addComponentParameter":
+                    if (arguments.Length != 2 || stack.Count == 0 || stack.Peek() is not DirectComponentFrame componentFrame)
+                        return false;
+
+                    if (componentFrame.ChildrenStarted ||
+                        !TryReadJavaScriptStringLiteral(arguments[0], out var parameterName) ||
+                        string.Equals(parameterName, "ChildContent", StringComparison.Ordinal))
+                    {
+                        return false;
+                    }
+
+                    componentFrame.AddAttribute(new DirectAttribute(
+                        componentFrame.NormalizeAttributeName(parameterName),
+                        arguments[1]));
+                    break;
+
+                case "addComponentSlot":
+                    if (arguments.Length != 2 ||
+                        stack.Count == 0 ||
+                        stack.Peek() is not DirectComponentFrame slotComponentFrame ||
+                        slotComponentFrame.ChildrenStarted ||
+                        slotComponentFrame.Children.Count != 0 ||
+                        !TryReadJavaScriptStringLiteral(arguments[0], out var slotName) ||
+                        !localSlotFunctions.TryGetValue(arguments[1], out var slotFunction))
+                    {
+                        return false;
+                    }
+
+                    if (slotFunction.ScopedParameterName is not null)
+                        return false;
+
+                    slotComponentFrame.Slots.Add(new DirectSlot(
+                        slotComponentFrame.NormalizeSlotName(slotName),
+                        ParameterName: null,
+                        slotFunction.RenderExpression));
+                    usesFragment = usesFragment || slotFunction.UsesFragment;
+                    usesStaticVNode = usesStaticVNode || slotFunction.UsesStaticVNode;
+                    usedSlots.Add(slotFunction.Range);
+                    break;
+
+                case "addComponentScopedSlot":
+                    if (arguments.Length != 2 ||
+                        stack.Count == 0 ||
+                        stack.Peek() is not DirectComponentFrame scopedSlotComponentFrame ||
+                        scopedSlotComponentFrame.ChildrenStarted ||
+                        scopedSlotComponentFrame.Children.Count != 0 ||
+                        !TryReadJavaScriptStringLiteral(arguments[0], out var scopedSlotName) ||
+                        !localSlotFunctions.TryGetValue(arguments[1], out var scopedSlotFunction) ||
+                        scopedSlotFunction.ScopedParameterName is null)
+                    {
+                        return false;
+                    }
+
+                    scopedSlotComponentFrame.Slots.Add(new DirectSlot(
+                        scopedSlotComponentFrame.NormalizeSlotName(scopedSlotName),
+                        scopedSlotFunction.ScopedParameterName,
+                        scopedSlotFunction.RenderExpression));
+                    usesFragment = usesFragment || scopedSlotFunction.UsesFragment;
+                    usesStaticVNode = usesStaticVNode || scopedSlotFunction.UsesStaticVNode;
+                    usedSlots.Add(scopedSlotFunction.Range);
+                    break;
+
+                case "addContent":
+                    if (arguments.Length != 1)
+                        return false;
+
+                    AddDirectRenderChild(roots, stack, arguments[0]);
+                    break;
+
+                case "addMarkupContent":
+                    if (arguments.Length != 1)
+                        return false;
+
+                    usesStaticVNode = true;
+                    AddDirectRenderChild(roots, stack, "createStaticVNode(" + arguments[0] + ", 1)");
+                    break;
+
+                default:
+                    return false;
+            }
+        }
+
+        if (stack.Count != 0)
+            return false;
+
+        usedSlotFunctionRanges = usedSlots.ToImmutable();
+
+        if (roots.Count == 0)
+        {
+            renderExpression = "null";
+            return true;
+        }
+
+        if (roots.Count == 1)
+        {
+            renderExpression = roots[0];
+            return true;
+        }
+
+        usesFragment = true;
+        renderExpression = "h(Fragment, null, [" + string.Join(", ", roots) + "])";
+        return true;
+    }
+
+    private static bool IsDirectPropFrame(DirectRenderFrame frame)
+    {
+        return frame is DirectElementFrame or DirectComponentFrame;
+    }
+
+    private static ImmutableArray<SetupBodyLine> CollapseMultilineBuilderCalls(
+        ImmutableArray<SetupBodyLine> bodyLines,
+        string builderName)
+    {
+        var collapsed = ImmutableArray.CreateBuilder<SetupBodyLine>();
+        for (var index = 0; index < bodyLines.Length; index++)
+        {
+            var line = bodyLines[index];
+            var trimmed = line.Text.TrimStart();
+            if (!trimmed.StartsWith(builderName + ".", StringComparison.Ordinal) ||
+                BuilderCallPattern.Match(line.Text.Trim()).Success)
+            {
+                collapsed.Add(line);
+                continue;
+            }
+
+            var pieces = new List<SetupBodyLine> { line };
+            var text = line.Text.Trim();
+            var matched = BuilderCallPattern.Match(text).Success;
+            for (var next = index + 1; next < bodyLines.Length && !matched; next++)
+            {
+                pieces.Add(bodyLines[next]);
+                text += " " + bodyLines[next].Text.Trim();
+                matched = BuilderCallPattern.Match(text).Success;
+                index = next;
+            }
+
+            if (!matched)
+            {
+                foreach (var piece in pieces)
+                    collapsed.Add(piece);
+                continue;
+            }
+
+            collapsed.Add(new SetupBodyLine(
+                text,
+                line.CompiledLine,
+                line.CompiledColumn));
+        }
+
+        return collapsed.ToImmutable();
+    }
+
+    private static ImmutableArray<SetupBodyLine> ExtractInlineDirectSlotFunctions(
+        ImmutableArray<SetupBodyLine> bodyLines,
+        ImmutableDictionary<string, DirectSlotFunction>.Builder slotFunctions)
+    {
+        var retained = ImmutableArray.CreateBuilder<SetupBodyLine>();
+        for (var index = 0; index < bodyLines.Length; index++)
+        {
+            if (!TryMatchDirectSlotFunctionHeader(bodyLines[index].Text, out var functionName, out var parameterName))
+            {
+                retained.Add(bodyLines[index]);
+                continue;
+            }
+
+            var depth = 0;
+            var end = -1;
+            for (var functionIndex = index; functionIndex < bodyLines.Length; functionIndex++)
+            {
+                depth += CountJavaScriptBraceDelta(bodyLines[functionIndex].Text);
+                if (functionIndex > index && depth == 0)
+                {
+                    end = functionIndex;
+                    break;
+                }
+            }
+
+            if (end <= index)
+            {
+                retained.Add(bodyLines[index]);
+                continue;
+            }
+
+            var functionBody = bodyLines
+                .Skip(index + 1)
+                .Take(end - index - 1)
+                .ToImmutableArray();
+            if (TryBuildDirectRenderExpression(
+                    functionBody,
+                    parameterName,
+                    ImmutableDictionary<string, DirectSlotFunction>.Empty,
+                    out var renderExpression,
+                    out var usesFragment,
+                    out var usesStaticVNode,
+                    out _))
+            {
+                slotFunctions[functionName] = new DirectSlotFunction(
+                    renderExpression,
+                    ScopedParameterName: null,
+                    usesFragment,
+                    usesStaticVNode,
+                    new DirectFunctionRange(-1, -1));
+                index = end;
+                continue;
+            }
+
+            if (TryBuildDirectScopedSlotFunction(
+                    functionBody,
+                    parameterName,
+                    out var scopedRenderExpression,
+                    out var scopedParameterName,
+                    out var scopedUsesFragment,
+                    out var scopedUsesStaticVNode))
+            {
+                slotFunctions[functionName] = new DirectSlotFunction(
+                    scopedRenderExpression,
+                    scopedParameterName,
+                    scopedUsesFragment,
+                    scopedUsesStaticVNode,
+                    new DirectFunctionRange(-1, -1));
+                index = end;
+                continue;
+            }
+
+            for (var retainedIndex = index; retainedIndex <= end; retainedIndex++)
+                retained.Add(bodyLines[retainedIndex]);
+            index = end;
+        }
+
+        return retained.ToImmutable();
+    }
+
+    private static void AddDirectRenderChild(
+        List<string> roots,
+        Stack<DirectRenderFrame> stack,
+        string expression)
+    {
+        if (string.Equals(expression, "null", StringComparison.Ordinal))
+            return;
+
+        if (stack.Count == 0)
+        {
+            roots.Add(expression);
+            return;
+        }
+
+        var frame = stack.Peek();
+        frame.ChildrenStarted = true;
+        frame.Children.Add(expression);
+    }
+
+    private static int CountJavaScriptBraceDelta(string text)
+    {
+        var delta = 0;
+        var inString = false;
+        var quote = '\0';
+        var escaped = false;
+        foreach (var item in text)
+        {
+            if (inString)
+            {
+                if (escaped)
+                {
+                    escaped = false;
+                    continue;
+                }
+
+                if (item == '\\')
+                {
+                    escaped = true;
+                    continue;
+                }
+
+                if (item == quote)
+                    inString = false;
+                continue;
+            }
+
+            if (item == '"' || item == '\'' || item == '`')
+            {
+                inString = true;
+                quote = item;
+                continue;
+            }
+
+            if (item == '{')
+                delta++;
+            else if (item == '}')
+                delta--;
+        }
+
+        return delta;
+    }
+
+    private static ImmutableArray<string> SplitJavaScriptArguments(string argumentsText)
+    {
+        var arguments = ImmutableArray.CreateBuilder<string>();
+        var start = 0;
+        var depth = 0;
+        var inString = false;
+        var quote = '\0';
+        var escaped = false;
+        for (var index = 0; index < argumentsText.Length; index++)
+        {
+            var item = argumentsText[index];
+            if (inString)
+            {
+                if (escaped)
+                {
+                    escaped = false;
+                    continue;
+                }
+
+                if (item == '\\')
+                {
+                    escaped = true;
+                    continue;
+                }
+
+                if (item == quote)
+                    inString = false;
+                continue;
+            }
+
+            if (item == '"' || item == '\'' || item == '`')
+            {
+                inString = true;
+                quote = item;
+                continue;
+            }
+
+            if (item == '(' || item == '[' || item == '{')
+            {
+                depth++;
+                continue;
+            }
+
+            if (item == ')' || item == ']' || item == '}')
+            {
+                depth--;
+                continue;
+            }
+
+            if (item == ',' && depth == 0)
+            {
+                arguments.Add(argumentsText.Substring(start, index - start).Trim());
+                start = index + 1;
+            }
+        }
+
+        var tail = argumentsText.Substring(start).Trim();
+        if (tail.Length > 0)
+            arguments.Add(tail);
+
+        return arguments.ToImmutable();
+    }
+
+    private static bool TryReadJavaScriptStringLiteral(string expression, out string value)
+    {
+        value = string.Empty;
+        expression = expression.Trim();
+        if (expression.Length < 2 || expression[0] != '"' || expression[expression.Length - 1] != '"')
+            return false;
+
+        var builder = new StringBuilder();
+        for (var index = 1; index < expression.Length - 1; index++)
+        {
+            var item = expression[index];
+            if (item != '\\')
+            {
+                builder.Append(item);
+                continue;
+            }
+
+            if (index + 1 >= expression.Length - 1)
+                return false;
+
+            var escaped = expression[++index];
+            builder.Append(escaped switch
+            {
+                '"' => '"',
+                '\\' => '\\',
+                '/' => '/',
+                'b' => '\b',
+                'f' => '\f',
+                'n' => '\n',
+                'r' => '\r',
+                't' => '\t',
+                _ => escaped
+            });
+        }
+
+        value = builder.ToString();
+        return true;
+    }
+
+    private static string NormalizeDirectElementAttributeName(string name)
+    {
+        var normalized = name;
+        if (normalized.StartsWith("@", StringComparison.Ordinal))
+            normalized = normalized.Substring(1);
+
+        return normalized.Length >= 3 &&
+               normalized.StartsWith("on", StringComparison.Ordinal) &&
+               char.IsLower(normalized[2])
+            ? "on" + char.ToUpperInvariant(normalized[2]) + normalized.Substring(3)
+            : normalized;
+    }
+
+    private static bool IsDirectEventAttributeName(string name)
+    {
+        return name.Length > 2 &&
+               name.StartsWith("on", StringComparison.Ordinal) &&
+               char.IsUpper(name[2]);
+    }
+
+    private static string BuildDirectDomBindHandler(string handlerExpression, string attributeName)
+    {
+        var escapedAttributeName = "\"" + EscapeJavaScriptString(attributeName) + "\"";
+        return "(eventOrValue, ...args) => { const value = eventOrValue !== null && eventOrValue !== undefined && typeof eventOrValue === \"object\" && eventOrValue.target !== null && eventOrValue.target !== undefined && " +
+               escapedAttributeName +
+               " in eventOrValue.target ? eventOrValue.target[" +
+               escapedAttributeName +
+               "] : eventOrValue; return (" +
+               handlerExpression +
+               ")(value, ...args); }";
+    }
+
+    private static string BuildDirectEventModifierHandler(string handlerExpression, DirectEventModifier modifier)
+    {
+        var statements = new List<string>();
+        if (modifier.PreventDefault)
+            statements.Add("event?.preventDefault?.();");
+        if (modifier.StopPropagation)
+            statements.Add("event?.stopPropagation?.();");
+        statements.Add("return (" + handlerExpression + ")(event, ...args);");
+        return "(event, ...args) => { " + string.Join(" ", statements) + " }";
+    }
+
+    private static string NormalizeDirectComponentParameterName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return name;
+
+        return char.ToLowerInvariant(name[0]) + name.Substring(1);
+    }
+
+    private static bool TryReadDirectComponentParameterMap(
+        string expression,
+        out ImmutableDictionary<string, string> parameterNameMap)
+    {
+        parameterNameMap = ImmutableDictionary<string, string>.Empty;
+        expression = expression.Trim();
+        if (expression.Length < 2 || expression[0] != '{' || expression[expression.Length - 1] != '}')
+            return false;
+
+        var entries = SplitJavaScriptArguments(expression.Substring(1, expression.Length - 2));
+        var builder = ImmutableDictionary.CreateBuilder<string, string>(StringComparer.Ordinal);
+        foreach (var entry in entries)
+        {
+            var parts = SplitObjectProperty(entry);
+            if (parts.Length != 2 ||
+                !TryReadJavaScriptStringLiteral(parts[0], out var key) ||
+                !TryReadJavaScriptStringLiteral(parts[1], out var value))
+            {
+                return false;
+            }
+
+            builder[key] = value;
+        }
+
+        parameterNameMap = builder.ToImmutable();
+        return true;
+    }
+
+    private static bool TryReadDirectMultipleAttributes(
+        string expression,
+        DirectRenderFrame frame,
+        out ImmutableArray<DirectAttribute> attributes)
+    {
+        attributes = ImmutableArray<DirectAttribute>.Empty;
+        expression = expression.Trim();
+        if (string.Equals(expression, "null", StringComparison.Ordinal) ||
+            string.Equals(expression, "undefined", StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        var builder = ImmutableArray.CreateBuilder<DirectAttribute>();
+        if (TryReadDirectObjectAttributes(expression, frame, builder) ||
+            TryReadDirectMapAttributes(expression, frame, builder) ||
+            TryReadDirectEntryArrayAttributes(expression, frame, builder))
+        {
+            attributes = builder.ToImmutable();
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryReadDirectObjectAttributes(
+        string expression,
+        DirectRenderFrame frame,
+        ImmutableArray<DirectAttribute>.Builder attributes)
+    {
+        expression = expression.Trim();
+        if (expression.Length < 2 || expression[0] != '{' || expression[expression.Length - 1] != '}')
+            return false;
+
+        var entries = SplitJavaScriptArguments(expression.Substring(1, expression.Length - 2));
+        foreach (var entry in entries)
+        {
+            var parts = SplitObjectProperty(entry);
+            if (parts.Length != 2 || !TryReadDirectAttributeName(parts[0], out var name))
+                return false;
+
+            attributes.Add(new DirectAttribute(frame.NormalizeAttributeName(name), parts[1]));
+        }
+
+        return true;
+    }
+
+    private static bool TryReadDirectMapAttributes(
+        string expression,
+        DirectRenderFrame frame,
+        ImmutableArray<DirectAttribute>.Builder attributes)
+    {
+        const string prefix = "new Map(";
+        expression = expression.Trim();
+        if (!expression.StartsWith(prefix, StringComparison.Ordinal) || expression[expression.Length - 1] != ')')
+            return false;
+
+        var arguments = SplitJavaScriptArguments(expression.Substring(prefix.Length, expression.Length - prefix.Length - 1));
+        if (arguments.Length == 0)
+            return true;
+
+        return arguments.Length == 1 &&
+               TryReadDirectEntryArrayAttributes(arguments[0], frame, attributes);
+    }
+
+    private static bool TryReadDirectEntryArrayAttributes(
+        string expression,
+        DirectRenderFrame frame,
+        ImmutableArray<DirectAttribute>.Builder attributes)
+    {
+        expression = expression.Trim();
+        if (expression.Length < 2 || expression[0] != '[' || expression[expression.Length - 1] != ']')
+            return false;
+
+        var entries = SplitJavaScriptArguments(expression.Substring(1, expression.Length - 2));
+        foreach (var entry in entries)
+        {
+            if (!TryReadDirectAttributeEntry(entry, frame, out var attribute))
+                return false;
+
+            attributes.Add(attribute);
+        }
+
+        return true;
+    }
+
+    private static bool TryReadDirectAttributeEntry(
+        string expression,
+        DirectRenderFrame frame,
+        out DirectAttribute attribute)
+    {
+        attribute = default!;
+        expression = expression.Trim();
+        if (expression.Length < 2 || expression[0] != '[' || expression[expression.Length - 1] != ']')
+            return false;
+
+        var parts = SplitJavaScriptArguments(expression.Substring(1, expression.Length - 2));
+        if (parts.Length != 2 || !TryReadJavaScriptStringLiteral(parts[0], out var name))
+            return false;
+
+        attribute = new DirectAttribute(frame.NormalizeAttributeName(name), parts[1]);
+        return true;
+    }
+
+    private static bool TryReadDirectAttributeName(string expression, out string name)
+    {
+        expression = expression.Trim();
+        if (TryReadJavaScriptStringLiteral(expression, out name))
+            return true;
+
+        if (!IsJavaScriptIdentifier(expression))
+            return false;
+
+        name = expression;
+        return true;
+    }
+
+    private static ImmutableArray<string> SplitObjectProperty(string propertyText)
+    {
+        var depth = 0;
+        var inString = false;
+        var quote = '\0';
+        var escaped = false;
+        for (var index = 0; index < propertyText.Length; index++)
+        {
+            var item = propertyText[index];
+            if (inString)
+            {
+                if (escaped)
+                {
+                    escaped = false;
+                    continue;
+                }
+
+                if (item == '\\')
+                {
+                    escaped = true;
+                    continue;
+                }
+
+                if (item == quote)
+                    inString = false;
+                continue;
+            }
+
+            if (item == '"' || item == '\'' || item == '`')
+            {
+                inString = true;
+                quote = item;
+                continue;
+            }
+
+            if (item == '(' || item == '[' || item == '{')
+            {
+                depth++;
+                continue;
+            }
+
+            if (item == ')' || item == ']' || item == '}')
+            {
+                depth--;
+                continue;
+            }
+
+            if (item == ':' && depth == 0)
+            {
+                return ImmutableArray.Create(
+                    propertyText.Substring(0, index).Trim(),
+                    propertyText.Substring(index + 1).Trim());
+            }
+        }
+
+        return ImmutableArray<string>.Empty;
+    }
+
+    private static string FormatJavaScriptPropertyName(string name)
+    {
+        if (IsJavaScriptIdentifier(name))
+            return name;
+
+        return "\"" + EscapeJavaScriptString(name) + "\"";
+    }
+
+    private static bool IsJavaScriptIdentifier(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        if (!IsJavaScriptIdentifierStart(value[0]))
+            return false;
+
+        for (var index = 1; index < value.Length; index++)
+        {
+            if (!IsJavaScriptIdentifierPart(value[index]))
+                return false;
+        }
+
         return true;
     }
 
@@ -463,13 +2088,20 @@ internal static class RazorSgVueComponentModuleBuilder
         bool usesUnmounted,
         bool usesUpdated,
         bool usesReactive,
-        bool usesWatch)
+        bool usesWatch,
+        bool usesFragment,
+        bool usesStaticVNode)
     {
         var imports = new List<string>
         {
             "defineComponent",
             "h"
         };
+
+        if (usesFragment)
+            imports.Add("Fragment");
+        if (usesStaticVNode)
+            imports.Add("createStaticVNode");
 
         if (usesMounted)
             imports.Add("onMounted");
@@ -488,12 +2120,15 @@ internal static class RazorSgVueComponentModuleBuilder
 
     private static string BuildSetupFactoryParameterList(
         bool usesProps,
+        bool usesSlots,
         bool usesStateHasChanged,
         bool usesInvokeAsync)
     {
         var parameters = new List<string>();
         if (usesProps)
             parameters.Add("props");
+        if (usesSlots)
+            parameters.Add("slots");
         if (usesStateHasChanged)
             parameters.Add("stateHasChanged");
         if (usesInvokeAsync)
@@ -504,12 +2139,15 @@ internal static class RazorSgVueComponentModuleBuilder
 
     private static string BuildSetupFactoryArgumentList(
         bool usesProps,
+        bool usesSlots,
         bool usesStateHasChanged,
         bool usesInvokeAsync)
     {
         var arguments = new List<string>();
         if (usesProps)
             arguments.Add("props");
+        if (usesSlots)
+            arguments.Add("slots");
         if (usesStateHasChanged)
             arguments.Add("stateHasChanged");
         if (usesInvokeAsync)
@@ -604,6 +2242,32 @@ internal static class RazorSgVueComponentModuleBuilder
                 if (discardedDeclarationNames.Contains(declaredName))
                     continue;
             }
+            else if (TryReadVariableDeclarationBlock(
+                         compiledLines,
+                         lineIndex,
+                         out declaredName,
+                         out initializer,
+                         out initializerColumn,
+                         out var endLineIndex))
+            {
+                if (stateSlotByDeclarationName.TryGetValue(declaredName, out var stateSlotIndex))
+                {
+                    stateSlots[stateSlotIndex] = stateSlots[stateSlotIndex] with
+                    {
+                        Initializer = initializer,
+                        InitializerCompiledLine = lineIndex,
+                        InitializerCompiledColumn = initializerColumn
+                    };
+                    lineIndex = endLineIndex;
+                    continue;
+                }
+
+                if (discardedDeclarationNames.Contains(declaredName))
+                {
+                    lineIndex = endLineIndex;
+                    continue;
+                }
+            }
 
             if (trimmed.StartsWith("export {", StringComparison.Ordinal))
                 continue;
@@ -684,6 +2348,111 @@ internal static class RazorSgVueComponentModuleBuilder
         initializer = match.Groups[2].Success ? match.Groups[2].Value.Trim() : null;
         initializerColumn = match.Groups[2].Success ? match.Groups[2].Index : 0;
         return true;
+    }
+
+    private static bool TryReadVariableDeclarationBlock(
+        string[] lines,
+        int startLineIndex,
+        out string name,
+        out string? initializer,
+        out int initializerColumn,
+        out int endLineIndex)
+    {
+        name = string.Empty;
+        initializer = null;
+        initializerColumn = 0;
+        endLineIndex = startLineIndex;
+        if (startLineIndex < 0 || startLineIndex >= lines.Length)
+            return false;
+
+        var firstLine = lines[startLineIndex].TrimEnd('\r');
+        var match = VariableDeclarationStartPattern.Match(firstLine);
+        if (!match.Success || !match.Groups[2].Success)
+            return false;
+
+        name = match.Groups[1].Value;
+        initializerColumn = match.Groups[2].Index;
+        var builder = new StringBuilder();
+        var firstInitializer = match.Groups[2].Value.TrimEnd();
+        builder.Append(firstInitializer);
+        if (TryFindVariableDeclarationBlockEnd(firstInitializer, out var firstLineEnd))
+        {
+            initializer = firstInitializer.Substring(0, firstLineEnd).Trim();
+            return !string.IsNullOrWhiteSpace(initializer);
+        }
+
+        for (var index = startLineIndex + 1; index < lines.Length; index++)
+        {
+            var line = lines[index].TrimEnd('\r');
+            builder.Append('\n').Append(line);
+            if (!TryFindVariableDeclarationBlockEnd(builder.ToString(), out var end))
+                continue;
+
+            endLineIndex = index;
+            initializer = builder.ToString().Substring(0, end).Trim();
+            return !string.IsNullOrWhiteSpace(initializer);
+        }
+
+        return false;
+    }
+
+    private static bool TryFindVariableDeclarationBlockEnd(string text, out int endIndex)
+    {
+        endIndex = 0;
+        var stack = new Stack<char>();
+        char? quote = null;
+        var escaped = false;
+        for (var index = 0; index < text.Length; index++)
+        {
+            var ch = text[index];
+            if (quote is char currentQuote)
+            {
+                if (escaped)
+                {
+                    escaped = false;
+                    continue;
+                }
+
+                if (ch == '\\')
+                {
+                    escaped = true;
+                    continue;
+                }
+
+                if (ch == currentQuote)
+                    quote = null;
+
+                continue;
+            }
+
+            if (ch == '"' || ch == '\'' || ch == '`')
+            {
+                quote = ch;
+                continue;
+            }
+
+            switch (ch)
+            {
+                case '(':
+                    stack.Push(')');
+                    break;
+                case '[':
+                    stack.Push(']');
+                    break;
+                case '{':
+                    stack.Push('}');
+                    break;
+                case ')' or ']' or '}':
+                    if (stack.Count == 0 || stack.Pop() != ch)
+                        return false;
+                    break;
+                case ';' when stack.Count == 0:
+                    endIndex = index;
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     private static string StripExportModifier(string line, out int compiledColumn)
@@ -860,14 +2629,22 @@ internal static class RazorSgVueComponentModuleBuilder
     }
 
     private static IEnumerable<IPropertySymbol> GetComponentParameterProperties(INamedTypeSymbol componentSymbol)
-        => componentSymbol
-            .GetMembers()
-            .OfType<IPropertySymbol>()
-            .Where(static property => property.GetAttributes().Any(static attribute =>
-                string.Equals(
-                    attribute.AttributeClass?.ToDisplayString(),
-                    ParameterAttributeMetadataName,
-                    StringComparison.Ordinal)));
+    {
+        for (INamedTypeSymbol? current = componentSymbol; current is not null; current = current.BaseType)
+        {
+            foreach (var property in current
+                .GetMembers()
+                .OfType<IPropertySymbol>()
+                .Where(static property => property.GetAttributes().Any(static attribute =>
+                    string.Equals(
+                        attribute.AttributeClass?.ToDisplayString(),
+                        ParameterAttributeMetadataName,
+                        StringComparison.Ordinal))))
+            {
+                yield return property;
+            }
+        }
+    }
 
     private static string GetVueParameterPropName(INamedTypeSymbol componentSymbol, IPropertySymbol property)
         => TryGetClassDescriptorName(
@@ -1129,27 +2906,7 @@ internal static class RazorSgVueComponentModuleBuilder
     }
 
     private static string NormalizeRelativePath(string path)
-    {
-        var normalized = path.Replace('\\', '/').TrimStart('/');
-        var segments = normalized
-            .Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
-            .Where(static segment => segment != ".")
-            .ToArray();
-        if (segments.Length == 0)
-            throw new InvalidOperationException("ECMAScriptModule import path cannot be empty.");
-
-        if (segments.Any(static segment => segment == ".."))
-            throw new InvalidOperationException("ECMAScriptModule import path cannot escape the output directory.");
-
-        normalized = string.Join("/", segments);
-        if (!normalized.EndsWith(".js", StringComparison.OrdinalIgnoreCase) &&
-            !normalized.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase))
-        {
-            normalized += ".mjs";
-        }
-
-        return normalized;
-    }
+        => ECMAScriptModulePath.NormalizeRelativePath(path);
 
     private static string SanitizeJavaScriptIdentifierPart(string value, string fallback)
     {
@@ -1687,6 +3444,283 @@ internal static class RazorSgVueComponentModuleBuilder
         ImmutableArray<CompiledSourceLine> ImportLines,
         ImmutableArray<SetupBodyLine> SetupBodyLines,
         ImmutableArray<StateSlot> StateSlots);
+
+    private sealed record DirectRenderBuildResult(
+        string RenderExpression,
+        string MemberName,
+        ImmutableArray<string> PreludeLines,
+        bool UsesFragment,
+        bool UsesStaticVNode,
+        bool UsesProps,
+        bool UsesSlots,
+        ImmutableArray<DirectSourceMapping> SourceMappings,
+        ImmutableArray<SetupBodyLine> SetupBodyLines,
+        ImmutableArray<string> ImportLines);
+
+    private sealed record DirectSourceMapping(
+        string Expression,
+        int RenderColumn,
+        int CompiledLine,
+        int CompiledColumn);
+
+    private abstract class DirectRenderFrame
+    {
+        public bool ChildrenStarted { get; set; }
+
+        public List<DirectAttribute> Attributes { get; } = new();
+
+        public List<string> ReferenceCaptures { get; } = new();
+
+        public List<string> Children { get; } = new();
+
+        public virtual bool UsesFragment => false;
+
+        public abstract string NormalizeAttributeName(string name);
+
+        public abstract string ToRenderExpression();
+
+        private string? LastAttributeName { get; set; }
+
+        public void AddAttribute(DirectAttribute attribute)
+        {
+            for (var index = Attributes.Count - 1; index >= 0; index--)
+            {
+                if (string.Equals(Attributes[index].Name, attribute.Name, StringComparison.Ordinal))
+                {
+                    Attributes[index] = attribute;
+                    LastAttributeName = attribute.Name;
+                    return;
+                }
+            }
+
+            Attributes.Add(attribute);
+            LastAttributeName = attribute.Name;
+        }
+
+        public bool TrySetLastAttributeValue(string valueExpression)
+        {
+            if (LastAttributeName is null)
+                return false;
+
+            for (var index = Attributes.Count - 1; index >= 0; index--)
+            {
+                if (string.Equals(Attributes[index].Name, LastAttributeName, StringComparison.Ordinal))
+                {
+                    Attributes[index] = Attributes[index] with { ValueExpression = valueExpression };
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public void AddReferenceCapture(string actionExpression)
+        {
+            actionExpression = actionExpression.Trim();
+            if (string.Equals(actionExpression, "null", StringComparison.Ordinal) ||
+                string.Equals(actionExpression, "undefined", StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            ReferenceCaptures.Add(actionExpression);
+        }
+
+        protected string FormatPropsExpression()
+        {
+            if (Attributes.Count == 0 && ReferenceCaptures.Count == 0)
+                return "null";
+
+            var props = Attributes
+                .Select(attribute => FormatJavaScriptPropertyName(attribute.Name) + ": " + FormatAttributeValueExpression(attribute))
+                .ToList();
+            if (ReferenceCaptures.Count > 0)
+                props.Add("ref: " + FormatReferenceCaptureExpression());
+
+            return "{ " + string.Join(", ", props) + " }";
+        }
+
+        private string FormatReferenceCaptureExpression()
+        {
+            return ReferenceCaptures.Count == 1
+                ? ReferenceCaptures[0]
+                : "(value) => { " + string.Join(" ", ReferenceCaptures.Select(static capture => "(" + capture + ")(value);")) + " }";
+        }
+
+        protected virtual string FormatAttributeValueExpression(DirectAttribute attribute)
+        {
+            return attribute.ValueExpression;
+        }
+
+        protected string FormatChildrenArrayExpression()
+        {
+            return Children.Count == 0
+                ? "null"
+                : "[" + string.Join(", ", Children) + "]";
+        }
+    }
+
+    private sealed class DirectElementFrame : DirectRenderFrame
+    {
+        private readonly Dictionary<string, DirectEventModifier> _eventModifiers = new(StringComparer.Ordinal);
+        private string? _updatesAttributeName;
+        private string? _updatesEventName;
+
+        public DirectElementFrame(string tagExpression, string tagName)
+        {
+            TagExpression = tagExpression;
+            TagName = tagName;
+        }
+
+        public string TagExpression { get; }
+
+        public string TagName { get; }
+
+        public override string NormalizeAttributeName(string name)
+        {
+            return NormalizeDirectElementAttributeName(name);
+        }
+
+        public override string ToRenderExpression()
+        {
+            return "h(" + TagExpression + ", " + FormatPropsExpression() + ", " + FormatChildrenArrayExpression() + ")";
+        }
+
+        public void SetUpdatesAttributeName(string name)
+        {
+            _updatesAttributeName = name;
+            var lastEventName = Attributes
+                .LastOrDefault(static attribute => IsDirectEventAttributeName(attribute.Name))
+                ?.Name;
+            _updatesEventName = lastEventName;
+        }
+
+        public void SetEventModifier(string eventName, bool preventDefault, bool stopPropagation)
+        {
+            var runtimeName = NormalizeDirectElementAttributeName(eventName);
+            _eventModifiers.TryGetValue(runtimeName, out var existing);
+            _eventModifiers[runtimeName] = new DirectEventModifier(
+                existing.PreventDefault || preventDefault,
+                existing.StopPropagation || stopPropagation);
+        }
+
+        protected override string FormatAttributeValueExpression(DirectAttribute attribute)
+        {
+            var value = attribute.ValueExpression;
+            if (_updatesAttributeName is not null &&
+                string.Equals(attribute.Name, _updatesEventName, StringComparison.Ordinal))
+            {
+                value = BuildDirectDomBindHandler(value, _updatesAttributeName);
+            }
+
+            if (_eventModifiers.TryGetValue(attribute.Name, out var modifier))
+                value = BuildDirectEventModifierHandler(value, modifier);
+
+            return value;
+        }
+    }
+
+    private sealed class DirectComponentFrame : DirectRenderFrame
+    {
+        private readonly ImmutableDictionary<string, string> _parameterNameMap;
+
+        public DirectComponentFrame(string componentExpression, ImmutableDictionary<string, string> parameterNameMap)
+        {
+            ComponentExpression = componentExpression;
+            _parameterNameMap = parameterNameMap;
+        }
+
+        public string ComponentExpression { get; }
+
+        public List<DirectSlot> Slots { get; } = new();
+
+        public override string NormalizeAttributeName(string name)
+        {
+            return _parameterNameMap.TryGetValue(name, out var mapped)
+                ? mapped
+                : NormalizeDirectComponentParameterName(name);
+        }
+
+        public string NormalizeSlotName(string name)
+        {
+            if (_parameterNameMap.TryGetValue(name, out var mapped))
+                return mapped;
+
+            return string.Equals(name, "ChildContent", StringComparison.Ordinal)
+                ? "default"
+                : NormalizeDirectComponentParameterName(name);
+        }
+
+        public override string ToRenderExpression()
+        {
+            var props = FormatPropsExpression();
+            if (Slots.Count > 0)
+            {
+                var slots = "{ " + string.Join(", ", Slots.Select(static slot =>
+                    FormatJavaScriptPropertyName(slot.Name) + ": " + FormatSlotFunctionExpression(slot))) + " }";
+                return "h(" + ComponentExpression + ", " + props + ", " + slots + ")";
+            }
+
+            if (Children.Count == 0)
+                return "h(" + ComponentExpression + ", " + props + ")";
+
+            var children = Children.Count == 1
+                ? Children[0]
+                : "[" + string.Join(", ", Children) + "]";
+            return "h(" + ComponentExpression + ", " + props + ", " + children + ")";
+        }
+
+        private static string FormatSlotFunctionExpression(DirectSlot slot)
+        {
+            return slot.ParameterName is null
+                ? "() => " + slot.RenderExpression
+                : "(" + slot.ParameterName + ") => " + slot.RenderExpression;
+        }
+    }
+
+    private sealed class DirectRegionFrame : DirectRenderFrame
+    {
+        public override bool UsesFragment => Children.Count > 1;
+
+        public override string NormalizeAttributeName(string name)
+        {
+            return name;
+        }
+
+        public override string ToRenderExpression()
+        {
+            return Children.Count switch
+            {
+                0 => "null",
+                1 => Children[0],
+                _ => "h(Fragment, null, [" + string.Join(", ", Children) + "])"
+            };
+        }
+    }
+
+    private sealed record DirectAttribute(
+        string Name,
+        string ValueExpression);
+
+    private sealed record DirectSlot(
+        string Name,
+        string? ParameterName,
+        string RenderExpression);
+
+    private readonly record struct DirectEventModifier(
+        bool PreventDefault,
+        bool StopPropagation);
+
+    private sealed record DirectSlotFunction(
+        string RenderExpression,
+        string? ScopedParameterName,
+        bool UsesFragment,
+        bool UsesStaticVNode,
+        DirectFunctionRange Range);
+
+    private readonly record struct DirectFunctionRange(
+        int Start,
+        int End);
 
     private sealed record StateSlot(
         string RuntimeName,

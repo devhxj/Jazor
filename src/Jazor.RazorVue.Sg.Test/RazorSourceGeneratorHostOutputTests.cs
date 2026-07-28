@@ -1,4 +1,3 @@
-using System.Collections;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -9,10 +8,10 @@ using System.Text;
 namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
-public sealed class RazorSourceGeneratorHostOutputTests
+public sealed class RazorSourceGeneratorFinalCompilationTests
 {
     [TestMethod]
-    public void RazorSourceGenerator_SingleRun_ProducesGeneratedSourceAndHostOutput()
+    public void RazorSourceGenerator_SingleRun_ProducesGeneratedSourceWithoutHostOutputs()
     {
         const string projectDirectory = @"D:\repo\Demo";
         const string documentPath = @"D:\repo\Demo\Pages\Counter.razor";
@@ -24,7 +23,7 @@ public sealed class RazorSourceGeneratorHostOutputTests
 
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
         var compilation = CSharpCompilation.Create(
-            assemblyName: "RazorVue.Sg.SdkSourceGenerator.HostOutput",
+            assemblyName: "RazorVue.Sg.SdkSourceGenerator.FinalCompilation",
             syntaxTrees:
             [
                 CSharpSyntaxTree.ParseText(
@@ -47,8 +46,7 @@ public sealed class RazorSourceGeneratorHostOutputTests
                 ["build_property.RootNamespace"] = "Demo",
                 ["build_property.SupportLocalizedComponentNames"] = "true",
                 ["build_property.GenerateRazorMetadataSourceChecksumAttributes"] = "false",
-                ["build_property.MSBuildProjectDirectory"] = projectDirectory,
-                ["build_property.EnableRazorHostOutputs"] = "true"
+                ["build_property.MSBuildProjectDirectory"] = projectDirectory
             },
             new Dictionary<string, IReadOnlyDictionary<string, string>>(StringComparer.OrdinalIgnoreCase)
             {
@@ -69,7 +67,6 @@ public sealed class RazorSourceGeneratorHostOutputTests
         var runResult = driver.GetRunResult();
         var generatorResult = runResult.Results.Single();
         var generatedSources = generatorResult.GeneratedSources;
-        var hostOutputs = ReadHostOutputs(generatorResult);
         var compilationErrors = outputCompilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
             .ToArray();
@@ -80,42 +77,7 @@ public sealed class RazorSourceGeneratorHostOutputTests
         Assert.IsTrue(
             generatedSources.Any(static source => source.SourceText.ToString().Contains("BuildRenderTree", StringComparison.Ordinal)),
             "The SDK Razor source generator did not emit the expected component render method.");
-        Assert.IsTrue(
-            hostOutputs.Any(static entry => string.Equals(entry.ValueTypeName, "Microsoft.NET.Sdk.Razor.SourceGenerators.RazorGeneratorResult", StringComparison.Ordinal)),
-            "The SDK Razor source generator did not publish RazorGeneratorResult into HostOutputs.");
     }
-
-    private static IReadOnlyList<HostOutputEntry> ReadHostOutputs(object generatorResult)
-    {
-        var property = generatorResult.GetType().GetProperty("HostOutputs");
-        Assert.IsNotNull(property, "GeneratorRunResult.HostOutputs was not available.");
-
-        var value = property.GetValue(generatorResult);
-        Assert.IsNotNull(value, "GeneratorRunResult.HostOutputs returned null.");
-
-        if (value is not IEnumerable entries)
-        {
-            Assert.Fail("GeneratorRunResult.HostOutputs did not implement IEnumerable.");
-            return Array.Empty<HostOutputEntry>();
-        }
-
-        var results = new List<HostOutputEntry>();
-        foreach (var entry in entries)
-        {
-            Assert.IsNotNull(entry, "HostOutputs contained a null entry.");
-
-            var entryType = entry.GetType();
-            var key = entryType.GetProperty("Key")?.GetValue(entry) as string;
-            var outputValue = entryType.GetProperty("Value")?.GetValue(entry);
-            results.Add(new HostOutputEntry(
-                key ?? string.Empty,
-                outputValue?.GetType().FullName ?? "<null>"));
-        }
-
-        return results;
-    }
-
-    private sealed record HostOutputEntry(string Key, string ValueTypeName);
 
     private sealed class InMemoryAdditionalText(string path, string text) : AdditionalText
     {

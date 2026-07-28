@@ -89,7 +89,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
-    public async Task Build_LocalJazorPackage_MultiProjectSample_EmitsModulesAndBundle()
+    public async Task Build_LocalJazorPackage_MultiProjectSample_ReleaseWritesOnlyBundle()
     {
         var package = await LocalPackage.Value;
 
@@ -111,65 +111,22 @@ public sealed class SdkIntegrationTests
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
                 $"-p:RestorePackagesPath={restorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}",
-                "-p:JazorBundle=true"
+                "-p:JazorMode=release"
             ]);
 
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
         var hostRoot = Path.Combine(workspace.SampleRoot, "Sample.Host");
-        var manifestPath = Path.Combine(hostRoot, "wwwroot", "jazor", "jazor-manifest.json");
-        var bundlePath = Path.Combine(hostRoot, "wwwroot", "bundle", "bundle.js");
-        var sharedModulePath = Path.Combine(hostRoot, "wwwroot", "jazor", "shared", "greetings.mjs");
-        var featureModulePath = Path.Combine(hostRoot, "wwwroot", "jazor", "features", "greeter.mjs");
-        var hostModulePath = Path.Combine(hostRoot, "wwwroot", "jazor", "host", "app.mjs");
+        var debugManifestPath = Path.Combine(hostRoot, "wwwroot", "jazor", "jazor-manifest.json");
+        var bundlePath = Path.Combine(hostRoot, "wwwroot", "jazor", "bundle.js");
 
-        Assert.IsTrue(
-            File.Exists(manifestPath),
-            """
-            Manifest was not generated.
-            Expected:
-            """ + manifestPath + """
-
-            Build:
-            """ + build + """
-
-            Files under host root:
-            """ + string.Join(
-                Environment.NewLine,
-                Directory.Exists(hostRoot)
-                    ? Directory.EnumerateFiles(hostRoot, "*", SearchOption.AllDirectories)
-                        .Select(path => Path.GetRelativePath(hostRoot, path))
-                    : []) + Environment.NewLine);
         Assert.IsTrue(File.Exists(bundlePath), $"Bundle was not generated: {bundlePath}");
-        Assert.IsTrue(File.Exists(sharedModulePath), $"Shared module was not generated: {sharedModulePath}");
-        Assert.IsTrue(File.Exists(featureModulePath), $"Feature module was not generated: {featureModulePath}");
-        Assert.IsTrue(File.Exists(hostModulePath), $"Host module was not generated: {hostModulePath}");
+        Assert.IsFalse(
+            File.Exists(debugManifestPath),
+            $"Bundle must not materialize debug artifacts: {debugManifestPath}");
 
-        var emittedManifest = LoadManifest(manifestPath);
-        var modulePaths = emittedManifest.Modules
-            .Select(static module => module.RelativePath)
-            .ToArray();
-
-        CollectionAssert.IsSubsetOf(
-            new[]
-            {
-                "shared/greetings.mjs",
-                "features/greeter.mjs",
-                "host/app.mjs"
-            },
-            modulePaths);
-
-        var sharedModule = await File.ReadAllTextAsync(sharedModulePath);
-        var featureModule = await File.ReadAllTextAsync(featureModulePath);
-        var hostModule = await File.ReadAllTextAsync(hostModulePath);
         var bundle = await File.ReadAllTextAsync(bundlePath);
 
-        StringAssert.Contains(sharedModule, "export function prefix()");
-        StringAssert.Contains(sharedModule, "export function compose(name)");
-        StringAssert.Contains(featureModule, "import { compose } from \"shared/greetings.mjs\";");
-        StringAssert.Contains(featureModule, "export function greet(name)");
-        StringAssert.Contains(hostModule, "import { greet } from \"features/greeter.mjs\";");
-        StringAssert.Contains(hostModule, "export function boot()");
         StringAssert.Contains(bundle, "function prefix()");
         StringAssert.Contains(bundle, "function greet(name)");
         StringAssert.Contains(bundle, "function boot()");
@@ -310,7 +267,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
-    public async Task Build_LocalJazorPackage_StaticHost_UsesProjectRootJazorByDefault()
+    public async Task Build_LocalJazorPackage_StaticHost_UsesWwwrootJazorByDefault()
     {
         var package = await LocalPackage.Value;
 
@@ -335,14 +292,14 @@ public sealed class SdkIntegrationTests
 
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
-        var devJazorRoot = Path.Combine(projectRoot, "jazor");
-        var publishJazorRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
-        Assert.IsTrue(File.Exists(Path.Combine(devJazorRoot, "jazor-manifest.json")));
-        Assert.IsTrue(File.Exists(Path.Combine(devJazorRoot, "host", "app.mjs")));
-        Assert.IsTrue(File.Exists(Path.Combine(devJazorRoot, "host", "app.mjs.map")));
-        var devModule = await File.ReadAllTextAsync(Path.Combine(devJazorRoot, "host", "app.mjs"));
-        StringAssert.Contains(devModule, "sourceMappingURL=app.mjs.map");
-        Assert.IsFalse(Directory.Exists(publishJazorRoot), $"Build should not materialize publish assets under '{publishJazorRoot}'.");
+        var projectRootJazor = Path.Combine(projectRoot, "jazor");
+        var wwwrootJazor = Path.Combine(projectRoot, "wwwroot", "jazor");
+        Assert.IsTrue(File.Exists(Path.Combine(wwwrootJazor, "jazor-manifest.json")));
+        Assert.IsTrue(File.Exists(Path.Combine(wwwrootJazor, "host", "app.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(wwwrootJazor, "host", "app.mjs.map")));
+        var module = await File.ReadAllTextAsync(Path.Combine(wwwrootJazor, "host", "app.mjs"));
+        StringAssert.Contains(module, "sourceMappingURL=app.mjs.map");
+        Assert.IsFalse(Directory.Exists(projectRootJazor), $"Build must not materialize assets under '{projectRootJazor}'.");
     }
 
     [TestMethod]
@@ -447,9 +404,7 @@ public sealed class SdkIntegrationTests
                 <TargetFramework>net11.0</TargetFramework>
                 <ImplicitUsings>enable</ImplicitUsings>
                 <Nullable>enable</Nullable>
-                <JazorEmit>true</JazorEmit>
-                <JazorBundle>false</JazorBundle>
-                <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
+                <JazorMode>debug</JazorMode>
               </PropertyGroup>
 
               <ItemGroup>
@@ -566,9 +521,7 @@ public sealed class SdkIntegrationTests
                 <TargetFramework>net11.0</TargetFramework>
                 <ImplicitUsings>enable</ImplicitUsings>
                 <Nullable>enable</Nullable>
-                <JazorEmit>true</JazorEmit>
-                <JazorBundle>false</JazorBundle>
-                <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
+                <JazorMode>debug</JazorMode>
               </PropertyGroup>
 
               <ItemGroup>
@@ -723,10 +676,7 @@ public sealed class SdkIntegrationTests
                 <TargetFramework>net11.0</TargetFramework>
                 <ImplicitUsings>enable</ImplicitUsings>
                 <Nullable>enable</Nullable>
-                <JazorEmit>true</JazorEmit>
-                <JazorBundle>true</JazorBundle>
-                <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
-                <JazorBundleOut>$(MSBuildProjectDirectory)\wwwroot\bundle\</JazorBundleOut>
+                <JazorMode>release</JazorMode>
               </PropertyGroup>
 
               <ItemGroup>
@@ -832,36 +782,19 @@ public sealed class SdkIntegrationTests
 
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
-        var outputRoot = Path.Combine(projectRoot, "wwwroot");
-        var moduleRoot = Path.Combine(outputRoot, "jazor");
+        var moduleRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
         var manifestPath = Path.Combine(moduleRoot, "jazor-manifest.json");
         var modulePath = Path.Combine(moduleRoot, "host", "app.mjs");
-        var bundlePath = Path.Combine(outputRoot, "bundle", "bundle.js");
-        var bundleSourceMapPath = Path.Combine(outputRoot, "bundle", "bundle.js.map");
+        var bundlePath = Path.Combine(moduleRoot, "bundle.js");
+        var bundleSourceMapPath = Path.Combine(moduleRoot, "bundle.js.map");
 
-        Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
-        Assert.IsTrue(File.Exists(modulePath), $"Module was not generated: {modulePath}");
+        Assert.IsFalse(File.Exists(manifestPath), $"Release must not materialize a manifest: {manifestPath}");
+        Assert.IsFalse(File.Exists(modulePath), $"Release must not materialize modules: {modulePath}");
         Assert.IsTrue(File.Exists(bundlePath), $"Bundle was not generated: {bundlePath}");
         Assert.IsTrue(File.Exists(bundleSourceMapPath), $"Bundle source map was not generated: {bundleSourceMapPath}");
 
-        var module = (await File.ReadAllTextAsync(modulePath)).ReplaceLineEndings("\n");
         var bundle = (await File.ReadAllTextAsync(bundlePath)).ReplaceLineEndings("\n");
         var bundleSourceMap = (await File.ReadAllTextAsync(bundleSourceMapPath)).ReplaceLineEndings("\n");
-
-        Assert.AreEqual(
-            "import { computed, inject, provide, shallowRef, toRef, triggerRef } from \"npm:vue@3\";",
-            GetImportLine(module, "npm:vue@3"));
-        var vueRouterImport = GetImportLine(module, "npm:vue-router@4");
-        StringAssert.Contains(vueRouterImport, "createRouter");
-        StringAssert.Contains(vueRouterImport, "createWebHistory");
-        StringAssert.Contains(vueRouterImport, "loadRouteLocation");
-        StringAssert.Contains(vueRouterImport, "matchedRouteKey");
-        StringAssert.Contains(vueRouterImport, "routeLocationKey");
-        StringAssert.Contains(vueRouterImport, "routerKey");
-        StringAssert.Contains(vueRouterImport, "routerViewLocationKey");
-        StringAssert.Contains(vueRouterImport, "useLink");
-        StringAssert.Contains(vueRouterImport, "useRoute");
-        StringAssert.Contains(vueRouterImport, "viewDepthKey");
 
         StringAssert.Contains(bundle, "/bundle-base");
         StringAssert.Contains(bundle, "/bundle-home");
@@ -880,13 +813,6 @@ public sealed class SdkIntegrationTests
             bundleSourceMap.Contains("host/app.mjs", StringComparison.Ordinal)
             || bundleSourceMap.Contains("AppModule.cs", StringComparison.Ordinal),
             "Bundle source map should preserve authored module provenance.");
-
-        var emittedRelativePaths = LoadManifest(manifestPath).Modules
-            .Select(static moduleEntry => moduleEntry.RelativePath)
-            .Where(static path => !string.IsNullOrWhiteSpace(path))
-            .ToArray();
-
-        CollectionAssert.Contains(emittedRelativePaths, "host/app.mjs");
     }
 
     [TestMethod]
@@ -1074,9 +1000,9 @@ public sealed class SdkIntegrationTests
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
                 $"-p:RestorePackagesPath={restorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}",
-                "-p:JazorBundle=true",
-                "-p:JazorToolchain=Netpack",
-                $"-p:JazorBundleOut={bundleRoot}"
+                "-p:JazorMode=release",
+                "-p:JazorTool=Netpack",
+                $"-p:JazorDir={bundleRoot}"
             ]);
 
         Assert.AreEqual(0, build.ExitCode, build.ToString());
@@ -1087,8 +1013,8 @@ public sealed class SdkIntegrationTests
         var bundlePath = Path.Combine(bundleRoot, "bundle.js");
         var bundleMapPath = Path.Combine(bundleRoot, "bundle.js.map");
 
-        Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
-        Assert.IsTrue(File.Exists(counterModulePath), $"RazorVue component module was not generated: {counterModulePath}");
+        Assert.IsFalse(File.Exists(manifestPath), $"Release must not materialize a manifest: {manifestPath}");
+        Assert.IsFalse(File.Exists(counterModulePath), $"Release must not materialize modules: {counterModulePath}");
         Assert.IsTrue(File.Exists(bundlePath), $"Netpack bundle was not generated by package consumer: {bundlePath}");
         Assert.IsTrue(File.Exists(bundleMapPath), $"Netpack bundle source map was not generated: {bundleMapPath}");
 
@@ -1976,7 +1902,7 @@ public sealed class SdkIntegrationTests
                 <TargetFramework>net11.0</TargetFramework>
                 <ImplicitUsings>enable</ImplicitUsings>
                 <Nullable>enable</Nullable>
-                <JazorEmit>true</JazorEmit>
+                <JazorMode>debug</JazorMode>
               </PropertyGroup>
 
               <ItemGroup>
@@ -2025,7 +1951,7 @@ public sealed class SdkIntegrationTests
                 <TargetFramework>net11.0</TargetFramework>
                 <ImplicitUsings>enable</ImplicitUsings>
                 <Nullable>enable</Nullable>
-                <JazorEmit>true</JazorEmit>
+                <JazorMode>debug</JazorMode>
               </PropertyGroup>
 
               <ItemGroup>
@@ -2157,10 +2083,7 @@ public sealed class SdkIntegrationTests
                 <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
                 <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
                 <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
-                <JazorEmit>{{enableEmit.ToString().ToLowerInvariant()}}</JazorEmit>
-                <JazorBundle>false</JazorBundle>
-                <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
-                <JazorRazorVueEnableRazorSgIntegration>true</JazorRazorVueEnableRazorSgIntegration>
+                <JazorMode>{{(enableEmit ? "debug" : "none")}}</JazorMode>
                 <JazorRazorVueTestHook>true</JazorRazorVueTestHook>
               </PropertyGroup>
 
@@ -2171,7 +2094,6 @@ public sealed class SdkIntegrationTests
               <ItemGroup>
                 <FrameworkReference Include="Microsoft.AspNetCore.App" />
                 <CompilerVisibleProperty Include="JazorRazorVueTestHook" />
-                <CompilerVisibleProperty Include="JazorRazorVueEnableRazorSgIntegration" />
               </ItemGroup>
             </Project>
             """);

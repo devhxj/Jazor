@@ -28,7 +28,6 @@
 
 - `JAZOR001`: 不支持的类型/成员进入 ECMAScript 编译域。
 - `JAZOR002`: 共享 runtime alias 造成的类型过滤歧义。
-- `JAZORVGA020`: Razor SG tail hook 无法提供官方 final-document 输入时的 fail-fast 诊断。
 
 ## Build and Test
 

@@ -18,9 +18,9 @@ var dotnetCliHome = Path.Combine(repoRoot, ".dotnet");
 ScriptHelpers.SetCommonEnvironment(dotnetCliHome);
 ScriptHelpers.CleanDirectoryWithinRepo(packageOutput, repoRoot);
 
-if (!string.IsNullOrWhiteSpace(options.JazorOutDir))
+if (!string.IsNullOrWhiteSpace(options.JazorDir))
 {
-    ScriptHelpers.CleanDirectoryWithinRepo(ScriptHelpers.ResolvePath(repoRoot, options.JazorOutDir), repoRoot);
+    ScriptHelpers.CleanDirectoryWithinRepo(ScriptHelpers.ResolvePath(repoRoot, options.JazorDir), repoRoot);
 }
 
 var isolationArguments = ScriptHelpers.GetIsolationArguments(options, repoRoot);
@@ -65,9 +65,9 @@ var buildArguments = new List<string>
 };
 buildArguments.AddRange(isolationArguments);
 
-if (!string.IsNullOrWhiteSpace(options.JazorOutDir))
+if (!string.IsNullOrWhiteSpace(options.JazorDir))
 {
-    buildArguments.Add("-p:JazorOutDir=" + ScriptHelpers.ResolvePath(repoRoot, options.JazorOutDir));
+    buildArguments.Add("-p:JazorDir=" + ScriptHelpers.ResolvePath(repoRoot, options.JazorDir));
 }
 
 await ScriptHelpers.RunDotNetAsync(buildArguments, repoRoot, dotnetCliHome);
@@ -76,14 +76,14 @@ internal sealed record SampleBuildOptions(
     string Configuration,
     string? BaseOutputPath,
     string? BaseIntermediateOutputPath,
-    string? JazorOutDir)
+    string? JazorDir)
 {
     public static SampleBuildOptions Parse(IReadOnlyList<string> arguments)
     {
         var configuration = "Debug";
         string? baseOutputPath = null;
         string? baseIntermediateOutputPath = null;
-        string? jazorOutDir = null;
+        string? jazorDir = null;
 
         for (var index = 0; index < arguments.Count; index++)
         {
@@ -103,9 +103,9 @@ internal sealed record SampleBuildOptions(
                 case "-BaseIntermediateOutputPath":
                     baseIntermediateOutputPath = RequireValue(arguments, ref index, argument);
                     break;
-                case "--jazor-out-dir":
-                case "-JazorOutDir":
-                    jazorOutDir = RequireValue(arguments, ref index, argument);
+                case "--jazor-dir":
+                case "-JazorDir":
+                    jazorDir = RequireValue(arguments, ref index, argument);
                     break;
                 case "--help":
                 case "-h":
@@ -117,7 +117,7 @@ internal sealed record SampleBuildOptions(
             }
         }
 
-        return new SampleBuildOptions(configuration, baseOutputPath, baseIntermediateOutputPath, jazorOutDir);
+        return new SampleBuildOptions(configuration, baseOutputPath, baseIntermediateOutputPath, jazorDir);
     }
 
     static string RequireValue(IReadOnlyList<string> arguments, ref int index, string option)
@@ -139,7 +139,7 @@ internal sealed record SampleBuildOptions(
         Console.WriteLine("  --configuration <Debug|Release>");
         Console.WriteLine("  --base-output-path <path>");
         Console.WriteLine("  --base-intermediate-output-path <path>");
-        Console.WriteLine("  --jazor-out-dir <path>");
+        Console.WriteLine("  --jazor-dir <path>");
     }
 }
 

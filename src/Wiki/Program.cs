@@ -12,7 +12,6 @@ var builder = JazorWebApplication.CreateBuilder(args);
 builder.Services.AddJazorDevelopmentReload(options =>
 {
     options.WatchRootPaths.Clear();
-    options.WatchRootPaths.Add("jazor");
     options.WatchRootPaths.Add("wwwroot");
 });
 

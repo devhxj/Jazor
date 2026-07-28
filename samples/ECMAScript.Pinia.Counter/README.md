@@ -114,6 +114,6 @@ The consumer also includes a small JS-side HMR bridge module so `acceptHMRUpdate
 
 ## Notes
 
-- The host emits raw modules instead of relying on `JazorBundle`. This keeps the sample aligned with the current `ECMAScript.Pinia` contract where Pinia itself stays a normal external library import.
+- The host uses `JazorMode=debug` rather than `JazorMode=release`. This keeps the sample aligned with the current `ECMAScript.Pinia` contract where Pinia itself stays a normal external library import.
 - The testing root module is emitted as a normal generated artifact so consumers can inspect `@pinia/testing` lowering without mixing testing-only APIs back into `ECMAScript.Pinia` main package code.
 - `pinia-consumer` intentionally stays small and explicit so the module-resolution boundary is visible: Vue comes from npm, Pinia comes from npm, `@pinia/testing` comes from npm, and the generated C# modules are imported from the host output.

@@ -25,8 +25,8 @@ public static partial class WikiHomeModule
                 H("p", "如果浏览器提供的 `System/*` 辅助函数加载失败，问题通常出在 Emit 输出或 import-map 连接，而非页面正文。"),
                 CodeBlock("检查以下路径", """
 src/Wiki/host/index.template.html
-src/Wiki/jazor/main.mjs
-src/Wiki/jazor/System/
+src/Wiki/wwwroot/jazor/main.mjs
+src/Wiki/wwwroot/jazor/System/
 src/Jazor.Compiler.Generator/Program.cs
 src/ECMAScript/Catalog.g.cs
 """),

@@ -14,9 +14,9 @@ public static partial class WikiHomeModule
             [
                 H("p", "Wiki 现在先将静态 ESM 模块发射到项目本地 `jazor/` 目录，然后在发布时将相同输出物化到 `wwwroot/jazor` 用于生产托管。"),
                 CodeBlock("关键制品", """
-src/Wiki/jazor/main.mjs
-src/Wiki/jazor/components/wiki-home.mjs
-src/Wiki/jazor/jazor-manifest.json
+src/Wiki/wwwroot/jazor/main.mjs
+src/Wiki/wwwroot/jazor/components/wiki-home.mjs
+src/Wiki/wwwroot/jazor/jazor-manifest.json
 """)
             ]),
             PageSection("route-fallback", "路由回退",

@@ -25,6 +25,7 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
     private const string EventCallbackMetadataName = "Microsoft.AspNetCore.Components.EventCallback";
     private const string EventCallbackOfTMetadataName = "Microsoft.AspNetCore.Components.EventCallback`1";
     private const string ComponentBaseMetadataName = "Microsoft.AspNetCore.Components.ComponentBase";
+    private const string RazorRuntimeHelpersMetadataName = "Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers";
     private const string StateHasChangedRuntimeName = "stateHasChanged";
     private const string InvokeAsyncRuntimeName = "invokeAsync";
     private readonly INamedTypeSymbol _componentType;
@@ -32,12 +33,14 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
     private readonly string _stateIdentifier;
     private readonly string _propsIdentifier;
     private readonly IReadOnlyDictionary<string, string>? _parameterRuntimeNames;
+    private readonly IReadOnlyDictionary<ISymbol, string>? _memberRuntimeNames;
 
     public CurrentComponentSemanticWalkerHost(
         INamedTypeSymbol componentType,
         string stateIdentifier = "state",
         string propsIdentifier = "props",
-        IReadOnlyDictionary<string, string>? parameterRuntimeNames = null)
+        IReadOnlyDictionary<string, string>? parameterRuntimeNames = null,
+        IReadOnlyDictionary<ISymbol, string>? memberRuntimeNames = null)
     {
         _componentType = componentType ?? throw new ArgumentNullException(nameof(componentType));
         if (string.IsNullOrWhiteSpace(stateIdentifier))
@@ -48,6 +51,7 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         _stateIdentifier = stateIdentifier;
         _propsIdentifier = propsIdentifier;
         _parameterRuntimeNames = parameterRuntimeNames;
+        _memberRuntimeNames = memberRuntimeNames;
     }
 
     public override Expression? RewriteInvocationPreorder(IInvocationOperation operation, SenseArgument argument)
@@ -56,7 +60,7 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
             return RewriteEventCallbackFactoryCreateBinder(operation);
 
         if (IsEventCallbackFactoryCreate(operation.TargetMethod))
-            return RewriteEventCallbackFactoryCreate(operation);
+            return RewriteEventCallbackFactoryCreate(operation, argument);
 
         if (IsStateHasChangedInvocation(operation.TargetMethod, operation.Instance))
             return RewriteStateHasChanged(operation);
@@ -106,12 +110,18 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         if (IsComponentBaseInvokeAsyncInvocation(operation.TargetMethod, operation.Instance))
             return RewriteInvokeAsync(operation, arguments);
 
+        if (IsRazorRuntimeHelpersTypeCheck(operation.TargetMethod))
+            return RewriteRazorRuntimeHelpersTypeCheck(operation, arguments);
+
         // VisitInvocation calls this before RejectUnsupportedRuntimeFallback.
         if (IsEventCallbackInvoke(operation.TargetMethod) &&
             TryGetCurrentComponentEventCallbackParameter(operation.Instance) is IPropertySymbol eventCallbackParameter)
         {
             return RewriteEventCallbackInvoke(eventCallbackParameter, arguments);
         }
+
+        if (TryRewriteCurrentComponentPropertyAccessorInvocation(operation, arguments, out var propertyAccessorExpression))
+            return propertyAccessorExpression;
 
         if (!IsCurrentComponentMethod(operation.TargetMethod, operation.Instance))
             return null;
@@ -166,12 +176,10 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
             ? BuildPropsAccess(operation.Property)
             : IsAutoProperty(operation.Property)
                 ? BuildStateAccess(operation.Property)
-                : throw new OperationTransformationException(
-                    operation,
-                    "Current-component property '" +
-                    operation.Property.OriginalDefinition.ToDisplayString(Format.NameFormat) +
-                    "' uses computed/accessor semantics that are not supported by RazorVue current-component rewrite v1. " +
-                    "Use a field, an auto property, or an explicit method until computed property lowering is defined.");
+                : new CallExpression(
+                    new Identifier(GetMemberName(operation.Property)),
+                    NodeList.Empty<Expression>(),
+                    optional: false);
     }
 
     public override Expression? RewriteSimpleAssignmentPreorder(ISimpleAssignmentOperation operation, SenseArgument argument)
@@ -190,7 +198,45 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         return null;
     }
 
-    private Expression RewriteEventCallbackFactoryCreate(IInvocationOperation operation)
+    private bool TryRewriteCurrentComponentPropertyAccessorInvocation(
+        IInvocationOperation operation,
+        IReadOnlyList<Expression> arguments,
+        out Expression expression)
+    {
+        expression = null!;
+
+        if (operation.TargetMethod.AssociatedSymbol is not IPropertySymbol property ||
+            !IsCurrentComponentProperty(property, operation.Instance))
+        {
+            return false;
+        }
+
+        if (operation.TargetMethod.MethodKind == MethodKind.PropertyGet && arguments.Count == 0)
+        {
+            expression = IsParameterProperty(property)
+                ? BuildPropsAccess(property)
+                : IsAutoProperty(property)
+                    ? BuildStateAccess(property)
+                    : new CallExpression(
+                        new Identifier(GetMemberName(property)),
+                        NodeList.Empty<Expression>(),
+                        optional: false);
+            return true;
+        }
+
+        if (operation.TargetMethod.MethodKind == MethodKind.PropertySet)
+        {
+            throw new OperationTransformationException(
+                operation,
+                "Current-component property setter invocation '" +
+                property.OriginalDefinition.ToDisplayString(Format.NameFormat) +
+                "' is not supported by RazorVue current-component rewrite v1; use assignment syntax so lowering can preserve the target surface.");
+        }
+
+        return false;
+    }
+
+    private Expression RewriteEventCallbackFactoryCreate(IInvocationOperation operation, SenseArgument argument)
     {
         if (operation.Arguments.Length < 2)
             throw CreateUnsupportedEventCallbackFactoryException(operation);
@@ -198,7 +244,7 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         if (!IsCurrentComponentEventCallbackReceiver(operation.Arguments[0].Value))
             throw CreateUnsupportedEventCallbackFactoryException(operation);
 
-        return RewriteEventCallbackHandler(operation.Arguments[1].Value)
+        return RewriteEventCallbackHandler(operation.Arguments[1].Value, argument)
             ?? throw CreateUnsupportedEventCallbackFactoryException(operation);
     }
 
@@ -346,15 +392,35 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
             _ => null
         };
 
-    private Expression? RewriteEventCallbackHandler(IOperation operation)
+    private Expression? RewriteEventCallbackHandler(IOperation operation, SenseArgument argument)
         => operation switch
         {
-            IConversionOperation conversion => RewriteEventCallbackHandler(conversion.Operand),
-            IDelegateCreationOperation delegateCreation => RewriteEventCallbackHandler(delegateCreation.Target),
+            IConversionOperation conversion => RewriteEventCallbackHandler(conversion.Operand, argument),
+            IDelegateCreationOperation delegateCreation => RewriteEventCallbackHandler(delegateCreation.Target, argument),
+            IAnonymousFunctionOperation anonymousFunction
+                => RewriteBinderHandler(anonymousFunction) ??
+                   RewriteEventCallbackLambdaHandler(anonymousFunction, argument),
             IMethodReferenceOperation methodReference when IsCurrentComponentMethod(methodReference.Method, methodReference.Instance)
                 => new Identifier(GetMemberName(methodReference.Method)),
+            IPropertyReferenceOperation propertyReference when
+                IsCurrentComponentProperty(propertyReference.Property, propertyReference.Instance) &&
+                IsParameterProperty(propertyReference.Property) &&
+                IsEventCallbackType(propertyReference.Property.Type)
+                    => BuildPropsAccess(propertyReference.Property),
             _ => null
         };
+
+    private Expression? RewriteEventCallbackLambdaHandler(
+        IAnonymousFunctionOperation anonymousFunction,
+        SenseArgument argument)
+    {
+        var walker = new SemanticWalker(true)
+        {
+            Host = this
+        };
+
+        return walker.Visit(anonymousFunction, argument) as Expression;
+    }
 
     private static bool IsEventCallbackFactoryCreate(IMethodSymbol method)
         => string.Equals(method.Name, "Create", StringComparison.Ordinal) &&
@@ -385,7 +451,7 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
     private static OperationTransformationException CreateUnsupportedEventCallbackFactoryException(IInvocationOperation operation)
         => new(
             operation,
-            "EventCallbackFactory.Create is supported by RazorVue current-component rewrite v1 only for current-component receivers and current-component method-group handlers.");
+            "EventCallbackFactory.Create is supported by RazorVue current-component rewrite v1 only for current-component receivers and current-component method-group or simple state-assignment lambda handlers.");
 
     private static OperationTransformationException CreateUnsupportedEventCallbackFactoryCreateBinderException(IInvocationOperation operation)
     {
@@ -553,11 +619,34 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
             optional: false);
     }
 
+    private static Expression RewriteRazorRuntimeHelpersTypeCheck(
+        IInvocationOperation operation,
+        IReadOnlyList<Expression> arguments)
+    {
+        if (arguments.Count != 1)
+        {
+            throw new OperationTransformationException(
+                operation,
+                "RuntimeHelpers.TypeCheck is supported by RazorVue current-component rewrite only for the single-value Razor SG helper shape.");
+        }
+
+        return arguments[0];
+    }
+
     private bool IsUnsupportedIndirectCurrentComponentDispatch(IMethodSymbol method, IOperation? instance)
         => !IsStateHasChangedInvocation(method, instance) &&
            !IsComponentBaseInvokeAsyncInvocation(method, instance) &&
+           !IsRazorRuntimeHelpersTypeCheck(method) &&
            !IsCurrentComponentMethod(method, instance) &&
            IsCurrentComponentReceiver(instance);
+
+    private static bool IsRazorRuntimeHelpersTypeCheck(IMethodSymbol method)
+        => method.IsStatic &&
+           string.Equals(method.Name, "TypeCheck", StringComparison.Ordinal) &&
+           string.Equals(
+               method.ContainingType?.OriginalDefinition.ToDisplayString(Format.NameFormat),
+               RazorRuntimeHelpersMetadataName,
+               StringComparison.Ordinal);
 
     private static bool IsCurrentComponentReceiver(IOperation? operation)
         => operation switch
@@ -602,21 +691,32 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
            IsCurrentComponentInstance(property.IsStatic, instance);
 
     private bool IsDeclaredOnCurrentComponent(ISymbol symbol)
-        => SymbolEqualityComparer.Default.Equals(
-            symbol.ContainingType?.OriginalDefinition,
-            _componentType.OriginalDefinition);
+        => IsDeclaredOnCurrentComponentHierarchy(symbol.ContainingType);
+
+    private bool IsDeclaredOnCurrentComponentHierarchy(INamedTypeSymbol? containingType)
+    {
+        if (containingType is null)
+            return false;
+
+        for (var current = _componentType; current is not null; current = current.BaseType)
+        {
+            if (SymbolEqualityComparer.Default.Equals(
+                    containingType.OriginalDefinition,
+                    current.OriginalDefinition))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     private static bool IsCurrentComponentInstance(bool isStatic, IOperation? instance)
     {
         if (isStatic)
             return instance is null;
 
-        return instance is null ||
-               instance is IInstanceReferenceOperation
-               {
-                   ReferenceKind: InstanceReferenceKind.ContainingTypeInstance or
-                       InstanceReferenceKind.ImplicitReceiver
-               };
+        return instance is null || IsCurrentComponentReceiver(instance);
     }
 
     private static bool IsParameterProperty(IPropertySymbol property)
@@ -671,15 +771,19 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
                 optional: false);
     }
 
-    private static Expression BuildRuntimeAccess(string runtimeObjectName, ISymbol symbol)
+    private Expression BuildRuntimeAccess(string runtimeObjectName, ISymbol symbol)
         => new MemberExpression(
             new Identifier(runtimeObjectName),
             new Identifier(GetMemberName(symbol)),
             computed: false,
             optional: false);
 
-    private static string GetMemberName(ISymbol symbol)
-        => Util.GetConfigOrSymbolName(symbol);
+    private string GetMemberName(ISymbol symbol)
+        => _memberRuntimeNames is not null &&
+           _memberRuntimeNames.TryGetValue(symbol.OriginalDefinition, out var runtimeName) &&
+           !string.IsNullOrWhiteSpace(runtimeName)
+            ? runtimeName
+            : Util.GetConfigOrSymbolName(symbol);
 
     private string GetParameterRuntimeName(ISymbol symbol)
         => _parameterRuntimeNames is not null &&

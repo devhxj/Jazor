@@ -143,6 +143,17 @@ public static class ExceptionModule
 	/// </summary>
 	[Jazor(Op.Inline, "System.ArgumentNullException.ArgumentNullException(string)", "new TypeError(__arg1)")]
 	public extern static TypeError _d6f57ff44fd24ef5(string? paramName);
+
+	/// <summary>
+	/// C#: ArgumentNullException.ThrowIfNull(argument, paramName)
+	/// JS: throw TypeError when the argument is null.
+	/// </summary>
+	[Jazor(Op.Import, "static System.ArgumentNullException.ThrowIfNull(object, string)")]
+	public static void _c80ae10aa1d0d795(object? argument, string? paramName)
+	{
+		if (argument == null)
+			throw new TypeError(paramName ?? "Value cannot be null.");
+	}
 }
 
 /// <summary>

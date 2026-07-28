@@ -2,9 +2,8 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
-using Microsoft.CodeAnalysis;
 
-namespace Jazor.Analyzer.RazorVue.Generation;
+namespace Jazor.RazorVue.Generator.Generation;
 
 internal sealed class RazorSourceGeneratorInitializeNativeHook : IDisposable
 {
@@ -157,14 +156,15 @@ internal sealed class RazorSourceGeneratorInitializeNativeHook : IDisposable
         }
     }
 
-    public void InvokeOriginal(
-        object instance,
-        IncrementalGeneratorInitializationContext context)
+    public object? InvokeOriginal(object? instance, object?[] arguments)
     {
+        if (arguments is null)
+            throw new ArgumentNullException(nameof(arguments));
+
         lock (_sync)
         {
             if (_invokingOriginal)
-                throw new InvalidOperationException("RazorSourceGenerator.Initialize hook attempted to recursively invoke the original Initialize method.");
+                throw new InvalidOperationException("RazorVue native hook attempted to recursively invoke its original method.");
 
             _invokingOriginal = true;
             try
@@ -172,7 +172,8 @@ internal sealed class RazorSourceGeneratorInitializeNativeHook : IDisposable
                 Unapply();
                 try
                 {
-                    _target.Invoke(instance, [context]);
+                    var result = _target.Invoke(instance, arguments);
+                    return result;
                 }
                 catch (TargetInvocationException ex) when (ex.InnerException is not null)
                 {
@@ -188,6 +189,8 @@ internal sealed class RazorSourceGeneratorInitializeNativeHook : IDisposable
                 _invokingOriginal = false;
             }
         }
+
+        throw new InvalidOperationException("The original method invocation completed without returning a result.");
     }
 
     public void Dispose()

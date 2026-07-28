@@ -60,7 +60,7 @@ dotnet run --file ./scripts/csharp/wiki-verify-browser.cs -- --build-local
                 H("p", "对于 `jazor.wiki`，发布就绪是操作性的。面向浏览器的外壳必须按照声明精确地构建、挂载、路由和提供预期资源。"),
                 H("ul",
                 [
-                    H("li", "构建输出必须包含 `src/Wiki/jazor/main.mjs`、`components/wiki-home.mjs` 和 `jazor-manifest.json`。"),
+                    H("li", "构建输出必须包含 `src/Wiki/wwwroot/jazor/main.mjs`、`components/wiki-home.mjs` 和 `jazor-manifest.json`。"),
                     H("li", "已注册文档路由必须返回 HTTP 200 并携带外壳、`#app`、`/jazor/main.mjs` 和 `System/` import-map 前缀。"),
                     H("li", "浏览器资源如 `/jazor/System/StringModule.js`、`/site.css` 和 `/favicon.svg` 必须成功解析。"),
                     H("li", "每个路由的首次 HTML 响应在 SPA 水合之前必须已携带预期的标题、描述、robots 指令、规范 URL、社交元数据和基线安全头。"),

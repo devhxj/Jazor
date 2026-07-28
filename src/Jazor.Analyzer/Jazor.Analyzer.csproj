@@ -27,7 +27,6 @@
     <ProjectReference Include="..\Jazor.Common\Jazor.Common.csproj" />
     <ProjectReference Include="..\ECMAScript.Contract\ECMAScript.Contract.csproj" />
     <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" />
-    <ProjectReference Include="..\Jazor.RazorVue\Jazor.RazorVue.csproj" />
   </ItemGroup>
 
   <ItemGroup>

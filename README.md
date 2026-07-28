@@ -27,7 +27,7 @@ The active line reuses `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyzer`, `Jazor.E
 ## Current Focus
 
 - **Compiler core**: Roslyn `IOperation` to Acornima ESTree lowering, with explicit support boundaries and deterministic emission.
-- **SG-result input**: the controlled Razor SG tail consumes official generated C# documents and reuses the callback compilation derivation chain; Razor DR/IR is not a production input.
+- **SG-result input**: the `GeneratorDriver.RunGeneratorsAndUpdateCompilation` integration obtains the final Roslyn `Compilation` produced by the official Razor SG and binds the `BuildRenderTree` methods in generated `.razor.g.cs` documents. Razor DR/IR, generated-document host outputs, and reparsing generated C# are outside the production input boundary.
 - **Single artifact direction**: Razor components target Vue render-function `.mjs`; the transformation branch does not maintain Razor-to-SFC or Jolt compatibility paths.
 - **Emit and materialization**: `Jazor.Emit` writes render-function `.mjs` artifacts, source maps, manifests, bundle output, and runtime assets.
 - **Vue ecosystem bindings**: Vue 3 core bindings are part of the `Jazor` package; Pinia, Vue Router, Vuetify, and other UI/library bindings are maintained as explicit ecosystem projects.
@@ -36,10 +36,10 @@ For current status, prefer the status pages under `docs/03-完成/` and local te
 
 ## Latest Updates
 
-### 2026-07-27
+### 2026-07-28
 
-- RazorVue render-context now covers the core generated component semantics for render surface, props, events, slots, bind, lifecycle, references, metadata, and browser DOM behavior.
-- Production bundling now supports explicit Deno and Netpack lanes over the same manifest contract, including import-backed `.vue` SFC assets and package consumer builds.
+- RazorVue integrates at the completed generator-driver compilation boundary. It does not require `EnableRazorHostOutputs`, `RazorCodeDocument`, `RazorCSharpDocument`, or reparsing generated C#.
+- MSBuild output is controlled by one explicit mode: `none` (the default), `debug` (modules and manifest), or `release` (a production bundle). The default output root is `wwwroot/jazor`.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 
@@ -51,7 +51,7 @@ See [release notes](docs/releases/release-notes.md) for the full history.
 - **ECMAScript module output**: `[ECMAScriptModule]` classes emit named-export `.mjs` modules with stable import collection, source-origin tracking, and source-map carriers.
 - **RazorVue artifact generation**: Razor component semantics flow from official Razor SG generated C# through Roslyn binding and compiler-owned `IOperation` lowering.
 - **Typed Vue authoring**: `ECMAScript.Vue3` provides typed bindings for Vue 3 `defineComponent`, `h`, refs/reactivity, lifecycle hooks, props, slots, and component contracts.
-- **Host-facing build support**: MSBuild targets emit and materialize ECMAScript/RazorVue modules, publish assets, and bundle production output through explicit Deno or Netpack toolchain lanes.
+- **Host-facing build support**: MSBuild selects one output mode for ECMAScript/RazorVue artifacts: no output, debug modules and manifest, or a production bundle through the Deno or Netpack lane.
 - **Retired Jolt boundary**: `.jazor` authoring, Jolt LSP/DAP, DevServer/HMR, debug, and build protocols are deliberately absent from this branch.
 
 ## Install
@@ -130,8 +130,9 @@ public static class CounterModule
 The active workstream keeps Razor component authoring and narrows the production boundary:
 
 - component libraries author `.razor` / `.razor.cs` components;
-- the controlled tail hook consumes official Razor SG generated C# and callback compilation context;
-- `Jazor.Compiler` lowers bound component semantics and `Jazor.Emit` materializes versioned render-function artifacts;
+- the generator-driver integration receives the final compilation produced by the official Razor SG and binds the generated `BuildRenderTree` operations from that compilation;
+- `Jazor.Compiler` lowers the bound component semantics and `Jazor.Emit` materializes Vue render-function artifacts;
+- no Razor host-output setting, Razor IR/document model, or generated-C# reparse is required;
 - Razor DR/IR, generated SFC output, and Jolt protocols are not fallback paths.
 
 Follow the [architecture transformation plan](docs/02-%E8%AE%A1%E5%88%92/Jazor%20%E6%9E%B6%E6%9E%84%E8%BD%AC%E5%9E%8B%E5%BC%80%E5%8F%91%E8%AE%A1%E5%88%92.md) for the current gate and implementation sequence.
@@ -142,20 +143,34 @@ Jolt was removed from this transformation branch in `3ee18679fbdf43c13e05d7bfac8
 
 ## MSBuild Properties
 
+No output configuration is required for class libraries because `JazorMode` defaults to `none`.
+
+For development builds, configure debug artifacts as follows:
+
+```xml
+<PropertyGroup>
+  <JazorMode>debug</JazorMode>
+  <JazorDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorDir>
+</PropertyGroup>
+```
+
+For production delivery, configure a release bundle as follows:
+
+```xml
+<PropertyGroup>
+  <JazorMode>release</JazorMode>
+  <JazorDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorDir>
+  <JazorTool>Deno</JazorTool>
+</PropertyGroup>
+```
+
+`debug` and `release` are mutually exclusive. A release build performs intermediate materialization internally, clears `JazorDir`, and writes only `bundle.js` and `bundle.js.map` to that directory.
+
 | Property | Default | Description |
 |----------|---------|-------------|
-| `JazorCompile` | `true` | Enables compilation of `[ECMAScriptModule]` types. |
-| `JazorEmit` | `true` for executable hosts, `false` for libraries | Emits generated modules/artifacts after build. |
-| `JazorRazorVueEnableRazorSgIntegration` | `false` | Enables Razor Source Generator integration for RazorVue paths that opt in. |
-| `JazorDevOutDir` | `$(MSBuildProjectDirectory)\jazor\` | Default development output root for compiler-owned artifacts. |
-| `JazorPublishOutDir` | `$(MSBuildProjectDirectory)\wwwroot\jazor\` | Default publish-time browser asset root when publish materialization is not enabled. |
-| `JazorOutDir` | `$(JazorDevOutDir)` | Selected output directory for compiler-owned artifacts. |
-| `JazorBundle` | `false` | Bundles emitted modules through the selected `JazorToolchain`. |
-| `JazorToolchain` | `Deno` | Selects the explicit production toolchain lane, currently `Deno` or `Netpack`. |
-| `JazorBundleOut` | `$(OutDir)jazor\` | Output root for bundled production assets; the JavaScript bundle is written as `bundle.js` under this root. |
-| `JazorCleanEmit` | `true` | Removes stale emitted files from the output directory. |
-| `JazorFailOnPathConflict` | `true` | Fails the build when two modules claim the same output path. |
-| `JazorPublishMaterializeEnabled` | `false` | Materializes compiler-owned RazorVue output into publish assets. |
+| `JazorMode` | `none` | `none` writes nothing; `debug` writes modules and a manifest; `release` writes a production bundle. |
+| `JazorDir` | `$(MSBuildProjectDirectory)\wwwroot\jazor\` | Output root for debug modules or the release bundle. |
+| `JazorTool` | `Deno` | Selects the release tool lane, currently `Deno` or `Netpack`. |
 
 See [src/Jazor/README.md](src/Jazor/README.md) and [src/Jazor.Emit/README.md](src/Jazor.Emit/README.md) for package and emit details.
 
@@ -168,6 +183,7 @@ Jazor/
 │   ├── Jazor.CLR/                   # CLR runtime mappings and JavaScript helpers
 │   ├── Jazor.Analyzer/              # Analyzer and RazorVue source-generator host
 │   ├── Jazor.RazorVue/              # SG-result binding and Vue render artifact framing
+│   ├── Jazor.RazorVue.Generator/    # Generator-driver integration
 │   ├── Jazor.Emit/                  # Materialization, manifests, source maps, and bundling
 │   ├── Jazor.Common/                # Shared formatting/source-map utilities and contracts
 │   ├── Jazor.AspNetCore*/           # ASP.NET Core runtime and dev integration

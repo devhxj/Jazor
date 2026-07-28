@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <AssemblyName>Jazor.RazorVue.Generator</AssemblyName>
+    <RootNamespace>Jazor.RazorVue.Generator</RootNamespace>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\ECMAScript.Contract\GlobalUsings.cs" Link="Shared\GlobalUsings.cs" />
+    <Compile Include="..\ECMAScript.Contract\IsExternalInit.cs" Link="Shared\IsExternalInit.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(CodeAnalysisVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="$(CodeAnalysisVersion)">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Jazor.RazorVue\Jazor.RazorVue.csproj" />
+  </ItemGroup>
+
+</Project>

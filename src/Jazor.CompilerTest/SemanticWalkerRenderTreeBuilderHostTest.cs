@@ -629,9 +629,35 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
             """);
 
         StringAssert.Contains(script, "builder.openElement(\"div\");", StringComparison.Ordinal);
-        StringAssert.Contains(script, "fragment(builder);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "fragment?.(builder);", StringComparison.Ordinal);
         StringAssert.Contains(script, "builder.closeElement();", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("AddContent(3, fragment)", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteInvocation_NullableRenderFragmentPropertyAddContent_EmitsNullNoOp()
+    {
+        var script = CompileWithRenderTreeBuilderHost(
+            """
+            [ECMAScript]
+            class HeaderState
+            {
+                public RenderFragment? Extra { get; set; }
+            }
+
+            class TestClass
+            {
+                void TestMethod(RenderTreeBuilder builder, HeaderState header)
+                {
+                    builder.OpenElement(0, "div");
+                    builder.AddContent(1, header.Extra);
+                    builder.CloseElement();
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "header.extra?.(builder);", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("header.extra(builder)", StringComparison.Ordinal), script);
     }
 
     [TestMethod]
@@ -657,7 +683,7 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
             """);
 
         StringAssert.Contains(script, "builder.openElement(\"div\");", StringComparison.Ordinal);
-        StringAssert.Contains(script, "template(value)(builder);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "template?.(value)?.(builder);", StringComparison.Ordinal);
         StringAssert.Contains(script, "builder.closeElement();", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("AddContent(3, template, value)", StringComparison.Ordinal), script);
     }
@@ -686,7 +712,7 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
 
         StringAssert.Contains(
             script,
-            "((__rtb, __arg0, __arg1, __arg2) => __arg1(__arg2)(__rtb))(builder, this.nextSequence(), template, this.nextValue());",
+            "((__rtb, __arg0, __arg1, __arg2) => __arg1?.(__arg2)?.(__rtb))(builder, this.nextSequence(), template, this.nextValue());",
             StringComparison.Ordinal);
     }
 
@@ -719,6 +745,59 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
         Assert.IsFalse(script.Contains("OpenComponent", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("AddComponentParameter", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("CloseComponent", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteInvocation_OpenComponentWithVueLibraryComponent_LowersToNamedImportAndProtocol()
+    {
+        var script = CompileWithRenderTreeBuilderHost(
+            """
+            [ECMAScript.VueContract.VueLibraryComponent("tdesign-vue-next", "Layout")]
+            class TLayout : ComponentBase
+            {
+            }
+
+            class TestClass
+            {
+                void TestMethod(RenderTreeBuilder builder)
+                {
+                    builder.OpenComponent<TLayout>(0);
+                    builder.CloseComponent();
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "import ", StringComparison.Ordinal);
+        StringAssert.Contains(script, "from \"tdesign-vue-next\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, "Layout", StringComparison.Ordinal);
+        StringAssert.Contains(script, "builder.openComponent(", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("OpenComponent", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteInvocation_OpenComponentTypeOfWithVueLibraryComponent_LowersToNamedImportAndProtocol()
+    {
+        var script = CompileWithRenderTreeBuilderHost(
+            """
+            [ECMAScript.VueContract.VueLibraryComponent("tdesign-vue-next", "Header")]
+            class THeader : ComponentBase
+            {
+            }
+
+            class TestClass
+            {
+                void TestMethod(RenderTreeBuilder builder)
+                {
+                    builder.OpenComponent(0, typeof(THeader));
+                    builder.CloseComponent();
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "from \"tdesign-vue-next\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, "Header", StringComparison.Ordinal);
+        StringAssert.Contains(script, "builder.openComponent(", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("OpenComponent", StringComparison.Ordinal), script);
     }
 
     [TestMethod]

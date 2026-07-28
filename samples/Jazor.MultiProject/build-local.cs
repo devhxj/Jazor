@@ -45,7 +45,7 @@ var buildArguments = new List<string>
 
 if (options.Bundle)
 {
-    buildArguments.Add("-p:JazorBundle=true");
+    buildArguments.Add("-p:JazorMode=release");
 }
 
 await ScriptHelpers.RunDotNetAsync(buildArguments, repoRoot, dotnetCliHome);

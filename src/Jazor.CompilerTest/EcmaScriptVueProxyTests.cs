@@ -3254,6 +3254,55 @@ public sealed class EcmaScriptVueProxyTests
             .Select(static property => property.Name);
 
     [TestMethod]
+    public void Vuetify_TaggedUnions_ExposePublicCreationMembers()
+        => AssertTaggedUnionsExposePublicCreationMembers(
+            typeof(Vuetify).Assembly,
+            typeof(Vuetify).Namespace!);
+
+    [TestMethod]
+    public void TDesign_TaggedUnions_ExposePublicCreationMembers()
+        => AssertTaggedUnionsExposePublicCreationMembers(
+            typeof(TDesignComponents).Assembly,
+            typeof(TDesignComponents).Namespace!);
+
+    private static void AssertTaggedUnionsExposePublicCreationMembers(
+        Assembly assembly,
+        string contractNamespace)
+    {
+        var unionTypes = assembly
+            .GetTypes()
+            .Where(type =>
+                type.Namespace == contractNamespace
+                && type.IsValueType
+                && !type.IsEnum
+                && type.GetCustomAttribute<System.Runtime.CompilerServices.UnionAttribute>() is not null
+                && typeof(System.Runtime.CompilerServices.IUnion).IsAssignableFrom(type))
+            .ToArray();
+
+        Assert.IsTrue(unionTypes.Length > 0, $"Expected tagged union contracts in {contractNamespace}.");
+
+        foreach (var unionType in unionTypes)
+        {
+            var publicCreationMembers = unionType
+                .GetConstructors(BindingFlags.Public | BindingFlags.Instance)
+                .Where(static constructor => constructor.GetParameters().Length > 0)
+                .ToArray();
+            Assert.IsTrue(
+                publicCreationMembers.Length > 0,
+                $"{unionType.FullName} must expose a public union creation member for C# Preview 6.");
+
+            var privateBranchConstructors = unionType
+                .GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance)
+                .Where(static constructor => constructor.GetParameters().Length > 0)
+                .ToArray();
+            Assert.AreEqual(
+                0,
+                privateBranchConstructors.Length,
+                $"{unionType.FullName} has non-public union branch constructors.");
+        }
+    }
+
+    [TestMethod]
     public void Vuetify_ValueAndUnionTypes_ExposeStronglyTypedContracts()
     {
         Assert.IsNotNull(typeof(VuetifyHideDetailsValue).GetCustomAttribute<ECMAScriptAttribute>());

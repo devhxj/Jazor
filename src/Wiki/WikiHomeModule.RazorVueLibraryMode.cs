@@ -26,11 +26,11 @@ public static partial class WikiHomeModule
                 CodeBlock("当前物理所有权", """
 src/Jazor.RazorVue/
 src/Jazor.RazorVue/RazorSdk/
-src/Jazor.Analyzer/RazorVue/
+src/Jazor.RazorVue.Generator/
 src/ECMAScript.Vuetify/
 src/ECMAScript.Contract/
 """),
-                H("p", "这种拆分保持 RazorVue 核心语义、Razor SDK 桥接、Roslyn 宿主行为和库组件绑定不会漂移到一个项目中。")
+                H("p", "这种拆分保持 RazorVue 核心语义、Razor SDK 桥接、Roslyn 生成器行为和库组件绑定不会漂移到一个项目中。")
             ]),
             PageSection("build-time-flow", "构建时流程",
             [

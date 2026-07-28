@@ -8,6 +8,7 @@
     <Project Path="src/ECMAScript.WebIDL.Generator/ECMAScript.WebIDL.Generator.csproj" />
     <Project Path="src/Jazor.CLR.Generator/Jazor.CLR.Generator.csproj" />
     <Project Path="src/Jazor.Compiler.Generator/Jazor.Compiler.Generator.csproj" />
+    <Project Path="src/Jazor.RazorVue.Generator/Jazor.RazorVue.Generator.csproj" />
   </Folder>
   <Folder Name="/test/">
     <Project Path="src/ECMAScript.Pinia.Test/ECMAScript.Pinia.Test.csproj" />

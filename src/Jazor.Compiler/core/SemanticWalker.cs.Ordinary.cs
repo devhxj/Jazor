@@ -1057,6 +1057,12 @@ public partial class SemanticWalker
 		// 不会因为 IOperation 树里缺少显式 conversion 而漏掉 tuple remap。
 		var value = TranslateTupleForTarget(operation.Value, operation.Target.Type, argument);
 
+		if (operation.Target is IPropertyReferenceOperation autoPropertyReference &&
+			TryBuildCurrentModuleAutoPropertyBackingFieldAssignment(autoPropertyReference, value, out var backingFieldAssignment))
+		{
+			return WithOriginIfMissing(backingFieldAssignment, operation);
+		}
+
 		if (operation.Target is IPropertyReferenceOperation propertyReference &&
 			propertyReference.Property.SetMethod is not null)
 		{
@@ -2105,6 +2111,50 @@ public partial class SemanticWalker
 		}
 
 		return property;
+	}
+
+	private bool TryBuildCurrentModuleAutoPropertyBackingFieldAssignment(
+		IPropertyReferenceOperation propertyReference,
+		Expression value,
+		out Expression assignment)
+	{
+		assignment = null!;
+
+		if (propertyReference.Property.IsStatic ||
+			propertyReference.Property.IsIndexer ||
+			propertyReference.Property.Parameters.Length > 0)
+			return false;
+
+		if (propertyReference.Property.SetMethod is { IsInitOnly: false })
+			return false;
+
+		if (!TryGetCurrentModuleDeclaredName(propertyReference.Property.ContainingType, out _))
+			return false;
+
+		var backingField = propertyReference.Property.ContainingType
+			.GetMembers($"<{propertyReference.Property.Name}>k__BackingField")
+			.OfType<IFieldSymbol>()
+			.FirstOrDefault(field =>
+				field.IsImplicitlyDeclared &&
+				SymbolEqualityComparer.Default.Equals(field.AssociatedSymbol?.OriginalDefinition, propertyReference.Property.OriginalDefinition));
+
+		if (backingField is null)
+			return false;
+
+		if (propertyReference.Instance is not IInstanceReferenceOperation instanceReference ||
+			instanceReference.ReferenceKind != InstanceReferenceKind.ContainingTypeInstance)
+			return false;
+
+		var backingFieldName = Format.HashName(propertyReference.Property.OriginalDefinition.ToDisplayString(Format.NameFormat));
+		assignment = new AssignmentExpression(
+			Operator.Assignment,
+			new MemberExpression(
+				new ThisExpression(),
+				new PrivateIdentifier(backingFieldName),
+				computed: false,
+				optional: false),
+			value);
+		return true;
 	}
 
 	/// <summary>

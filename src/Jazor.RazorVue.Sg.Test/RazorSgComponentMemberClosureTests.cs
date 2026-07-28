@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
@@ -114,6 +114,65 @@ public sealed class RazorSgComponentMemberClosureTests
         Assert.IsInstanceOfType(first.CompilerClosure, typeof(CurrentComponentMemberClosure));
         Assert.IsTrue(first.CreateMemberFilter()(first.BuildRenderTreeMethod));
         Assert.IsFalse(first.CreateMemberFilter()(fixture.Component.ComponentSymbol.BaseType!.GetMembers("StateHasChanged").Single()));
+    }
+
+    [TestMethod]
+    public async Task Build_CurrentComponentClosure_IncludesConstructedNestedRuntimeClass()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/counter")]
+                public partial class Counter : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        var state = BuildState();
+                        builder.OpenElement(0, "p");
+                        builder.AddContent(1, state.Text);
+                        builder.CloseElement();
+                    }
+
+                    private HeaderState BuildState()
+                    {
+                        return new HeaderState("ready");
+                    }
+
+                    private sealed class HeaderState
+                    {
+                        public HeaderState(string text)
+                        {
+                            Text = text;
+                        }
+
+                        public string Text { get; }
+                    }
+                }
+            }
+            """);
+        var closure = BuildClosure(fixture);
+
+        Assert.IsTrue(
+            closure.OrderedMembers
+                .OfType<INamedTypeSymbol>()
+                .Any(static type => type.Name == "HeaderState"),
+            "The current-component closure should include constructed nested runtime classes.");
+
+        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            fixture.Component,
+            closure);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+
+        StringAssert.Contains(script, "class HeaderState", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return new HeaderState(\"ready\");", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("from \"./components/counter", StringComparison.Ordinal), script);
     }
 
     [TestMethod]
@@ -302,6 +361,11 @@ public sealed class RazorSgComponentMemberClosureTests
             fixture.Binding,
             fixture.Component,
             closure);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+
+        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -387,6 +451,222 @@ public sealed class RazorSgComponentMemberClosureTests
     }
 
     [TestMethod]
+    public async Task BuildVueComponentModule_RuntimeDirectLowersRegionAndMarkup()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/region-markup")]
+                public partial class RegionMarkup : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenRegion(0);
+                        builder.AddContent(1, "region");
+                        builder.AddMarkupContent(2, "<strong>raw</strong>");
+                        builder.CloseRegion();
+                        builder.AddContent(3, "tail");
+                    }
+                }
+            }
+            """);
+        var closure = BuildClosure(fixture);
+        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            fixture.Component,
+            closure);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+
+        StringAssert.Contains(script, "import { defineComponent, h, Fragment, createStaticVNode } from \"vue\";", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "h(Fragment, null, [h(Fragment, null, [\"region\", createStaticVNode(\"<strong>raw</strong>\", 1)]), \"tail\"])", StringComparison.Ordinal);
+
+        var tempRoot = Path.Combine(
+            Path.GetTempPath(),
+            "Jazor.RazorVue.Sg.Test",
+            Guid.NewGuid().ToString("N"));
+        try
+        {
+            WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
+            WriteFile(
+                Path.Combine(tempRoot, "package.json"),
+                """{"type":"module"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "package.json"),
+                """{"type":"module","exports":"./index.mjs"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "index.mjs"),
+                """
+                export const Fragment = Symbol("Fragment");
+                export function createStaticVNode(html, count) {
+                    return { kind: "static", html, count };
+                }
+                export function defineComponent(options) {
+                    return options;
+                }
+                export function h(name, props, children) {
+                    return { name, props, children };
+                }
+                """);
+            var testFile = Path.Combine(tempRoot, "module-region-markup-runtime.test.mjs");
+            WriteFile(
+                testFile,
+                """
+                import assert from "node:assert/strict";
+                import test from "node:test";
+
+                import component from "./components/region-markup.mjs";
+
+                test("region and markup lower directly to Fragment and static VNode", () => {
+                    const render = component.setup({}, { slots: {} });
+                    const vnode = render();
+
+                    assert.equal(typeof vnode.name, "symbol");
+                    assert.equal(typeof vnode.children[0].name, "symbol");
+                    assert.deepEqual(vnode.children[0].children, [
+                        "region",
+                        { kind: "static", html: "<strong>raw</strong>", count: 1 }
+                    ]);
+                    assert.equal(vnode.children[1], "tail");
+                });
+                """);
+
+            await RunNodeTestAsync(testFile, tempRoot);
+        }
+        finally
+        {
+            DeleteDirectoryWithRetry(tempRoot);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildVueComponentModule_RuntimeDirectLowersStructuredChildrenAndMultipleAttributes()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using System.Collections.Generic;
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/structured")]
+                public partial class StructuredChildren : ComponentBase, IVueComponent
+                {
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+                    private bool Show => true;
+
+                    private string[] Items => ["one", "two"];
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddAttribute(1, "class", "structured");
+                        builder.AddMultipleAttributes(2, AdditionalAttributes);
+                        if (Show)
+                        {
+                            foreach (var item in Items)
+                            {
+                                builder.OpenElement(3, "span");
+                                builder.AddContent(4, item);
+                                builder.CloseElement();
+                            }
+                        }
+                        else
+                        {
+                            builder.AddContent(5, "empty");
+                        }
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+        var closure = BuildClosure(fixture);
+        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            fixture.Component,
+            closure);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+
+        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "mergeProps(", StringComparison.Ordinal);
+        StringAssert.Contains(script, "Array.from(", StringComparison.Ordinal);
+
+        var tempRoot = Path.Combine(
+            Path.GetTempPath(),
+            "Jazor.RazorVue.Sg.Test",
+            Guid.NewGuid().ToString("N"));
+        try
+        {
+            WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
+            WriteFile(
+                Path.Combine(tempRoot, "package.json"),
+                """{"type":"module"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "package.json"),
+                """{"type":"module","exports":"./index.mjs"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "index.mjs"),
+                """
+                export const Fragment = Symbol("Fragment");
+                export function defineComponent(options) {
+                    return options;
+                }
+                export function mergeProps(...values) {
+                    return Object.assign({}, ...values.filter(Boolean));
+                }
+                export function h(name, props, children) {
+                    return { name, props, children };
+                }
+                export function reactive(value) {
+                    return value;
+                }
+                """);
+            var testFile = Path.Combine(tempRoot, "module-structured-runtime.test.mjs");
+            WriteFile(
+                testFile,
+                """
+                import assert from "node:assert/strict";
+                import test from "node:test";
+
+                import component from "./components/structured.mjs";
+
+                test("structured children lower directly to VNodes", () => {
+                    const render = component.setup({ additionalAttributes: { id: "root" } }, { slots: {} });
+                    const vnode = render();
+
+                    assert.equal(vnode.name, "section");
+                    assert.equal(vnode.props.class, "structured");
+                    assert.equal(vnode.props.id, "root");
+                    assert.equal(vnode.children[0][0].name, "span");
+                    assert.deepEqual(vnode.children[0].map((child) => child.children[0]), ["one", "two"]);
+                });
+                """);
+
+            await RunNodeTestAsync(testFile, tempRoot);
+        }
+        finally
+        {
+            DeleteDirectoryWithRetry(tempRoot);
+        }
+    }
+
+    [TestMethod]
     public async Task BuildVueComponentModule_RuntimeLowersTypeOpenComponentToImportedChild()
     {
         var fixture = CreateManualGeneratedFixture(
@@ -431,6 +711,12 @@ public sealed class RazorSgComponentMemberClosureTests
         StringAssert.Contains(script, "from \"./child.mjs\";", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("childType", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("typeof", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "return h(\"section\", null, [h(", StringComparison.Ordinal);
+        StringAssert.Contains(script, "{ title: \"direct\" }", StringComparison.Ordinal);
+        StringAssert.Contains(script, "{ title: \"alias\" }", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -503,6 +789,675 @@ public sealed class RazorSgComponentMemberClosureTests
                     assert.deepEqual(vnode.children[0].props, { title: "direct" });
                     assert.equal(vnode.children[1].name.name, "Child");
                     assert.deepEqual(vnode.children[1].props, { title: "alias" });
+                });
+                """);
+
+            await RunNodeTestAsync(testFile, tempRoot);
+        }
+        finally
+        {
+            DeleteDirectoryWithRetry(tempRoot);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildVueComponentModule_RuntimeDirectLowersInlineRenderFragmentParameterAsSlot()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/child")]
+                public partial class Child : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment? ChildContent { get; set; }
+                }
+
+                [ECMAScriptModule("./components/parent")]
+                public partial class Counter : ComponentBase, IVueComponent
+                {
+                    private string title = "direct";
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<Child>(0);
+                        builder.AddComponentParameter(1, "ChildContent", (RenderFragment)(child =>
+                        {
+                            child.OpenElement(0, "span");
+                            AddText(child, title);
+                            child.CloseElement();
+                        }));
+                        builder.CloseComponent();
+                    }
+
+                    private static void AddText(RenderTreeBuilder builder, string text)
+                    {
+                        builder.AddContent(0, text);
+                    }
+                }
+            }
+            """);
+        var closure = BuildClosure(fixture);
+        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            fixture.Component,
+            closure);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+
+        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "default: () => h(\"span\", null, [state.title])", StringComparison.Ordinal);
+
+        var tempRoot = Path.Combine(
+            Path.GetTempPath(),
+            "Jazor.RazorVue.Sg.Test",
+            Guid.NewGuid().ToString("N"));
+        try
+        {
+            WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
+            WriteFile(Path.Combine(tempRoot, "components", "child.mjs"), "export default { name: \"Child\" };\n");
+            WriteFile(
+                Path.Combine(tempRoot, "package.json"),
+                """{"type":"module"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "package.json"),
+                """{"type":"module","exports":"./index.mjs"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "index.mjs"),
+                """
+                export const Fragment = Symbol("Fragment");
+                export function defineComponent(options) {
+                    return options;
+                }
+                export function reactive(value) {
+                    return value;
+                }
+                export function h(name, props, children) {
+                    return { name, props, children };
+                }
+                """);
+            var testFile = Path.Combine(tempRoot, "module-inline-slot-runtime.test.mjs");
+            WriteFile(
+                testFile,
+                """
+                import assert from "node:assert/strict";
+                import test from "node:test";
+                import { h } from "vue";
+
+                import component from "./components/parent.mjs";
+
+                test("inline RenderFragment parameter lowers to a Vue slot function", () => {
+                    const render = component.setup({}, { slots: {} });
+                    const child = render();
+                    const slot = child.children.default();
+
+                    assert.equal(child.name.name, "Child");
+                    assert.equal(slot.name, "span");
+                    assert.deepEqual(slot.children, ["direct"]);
+                });
+                """);
+
+            await RunNodeTestAsync(testFile, tempRoot);
+        }
+        finally
+        {
+            DeleteDirectoryWithRetry(tempRoot);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildVueComponentModule_RuntimeDirectForwardsConditionalRenderFragmentSlot()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/child")]
+                public partial class Child : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment? Logo { get; set; }
+                }
+
+                [ECMAScriptModule("./components/parent")]
+                public partial class Counter : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment? Logo { get; set; }
+
+                    private bool SuppressLogo => false;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        var logo = Logo;
+                        var forwardedLogo = SuppressLogo ? null : logo;
+
+                        builder.OpenComponent<Child>(0);
+                        builder.AddComponentParameter(1, "Logo", forwardedLogo);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+        var closure = BuildClosure(fixture);
+        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            fixture.Component,
+            closure);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+
+        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "function createCounterSetupScope(props, slots)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "logo: () => suppressLogo() ? null : (typeof slots.logo === \"function\" ? slots.logo() : null)", StringComparison.Ordinal);
+
+        var tempRoot = Path.Combine(
+            Path.GetTempPath(),
+            "Jazor.RazorVue.Sg.Test",
+            Guid.NewGuid().ToString("N"));
+        try
+        {
+            WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
+            WriteFile(Path.Combine(tempRoot, "components", "child.mjs"), "export default { name: \"Child\" };\n");
+            WriteFile(
+                Path.Combine(tempRoot, "package.json"),
+                """{"type":"module"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "package.json"),
+                """{"type":"module","exports":"./index.mjs"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "index.mjs"),
+                """
+                export const Fragment = Symbol("Fragment");
+                export function defineComponent(options) {
+                    return options;
+                }
+                export function reactive(value) {
+                    return value;
+                }
+                export function h(name, props, children) {
+                    return { name, props, children };
+                }
+                """);
+            var testFile = Path.Combine(tempRoot, "module-conditional-slot-forward-runtime.test.mjs");
+            WriteFile(
+                testFile,
+                """
+                import assert from "node:assert/strict";
+                import test from "node:test";
+                import { h } from "vue";
+
+                import component from "./components/parent.mjs";
+
+                test("conditional RenderFragment local forwards to a Vue slot function", () => {
+                    const render = component.setup({}, { slots: { logo: () => h("span", null, ["brand"]) } });
+                    const child = render();
+                    const logo = child.children.logo();
+
+                    assert.equal(child.name.name, "Child");
+                    assert.equal(logo.name, "span");
+                    assert.deepEqual(logo.children, ["brand"]);
+                });
+                """);
+
+            await RunNodeTestAsync(testFile, tempRoot);
+        }
+        finally
+        {
+            DeleteDirectoryWithRetry(tempRoot);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildVueComponentModule_RuntimeDirectLowersRenderFragmentHelperResult()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/helper-fragment")]
+                public partial class Counter : ComponentBase, IVueComponent
+                {
+                    private string?[] Items => ["one", null, "two"];
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "ul");
+                        foreach (var item in Items)
+                        {
+                            builder.AddContent(1, RenderItem(item));
+                        }
+                        builder.CloseElement();
+                    }
+
+                    private RenderFragment RenderItem(string? item) => child =>
+                    {
+                        if (item is null)
+                        {
+                            return;
+                        }
+
+                        child.OpenElement(0, "li");
+                        child.AddContent(1, item);
+                        child.CloseElement();
+                    };
+                }
+            }
+            """);
+        var closure = BuildClosure(fixture);
+        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            fixture.Component,
+            closure);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+
+        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "Array.from(items() ?? [], item => !(item == null) ? h(\"li\", null, [item]) : null)", StringComparison.Ordinal);
+
+        var tempRoot = Path.Combine(
+            Path.GetTempPath(),
+            "Jazor.RazorVue.Sg.Test",
+            Guid.NewGuid().ToString("N"));
+        try
+        {
+            WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
+            WriteFile(
+                Path.Combine(tempRoot, "package.json"),
+                """{"type":"module"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "package.json"),
+                """{"type":"module","exports":"./index.mjs"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "index.mjs"),
+                """
+                export function defineComponent(options) {
+                    return options;
+                }
+                export function h(name, props, children) {
+                    return { name, props, children };
+                }
+                export function reactive(value) {
+                    return value;
+                }
+                """);
+            var testFile = Path.Combine(tempRoot, "module-helper-fragment-runtime.test.mjs");
+            WriteFile(
+                testFile,
+                """
+                import assert from "node:assert/strict";
+                import test from "node:test";
+
+                import component from "./components/helper-fragment.mjs";
+
+                test("RenderFragment helper result lowers directly inside foreach", () => {
+                    const render = component.setup({}, { slots: {} });
+                    const vnode = render();
+
+                    assert.equal(vnode.name, "ul");
+                    assert.deepEqual(vnode.children[0].filter(Boolean).map((child) => child.children[0]), ["one", "two"]);
+                });
+                """);
+
+            await RunNodeTestAsync(testFile, tempRoot);
+        }
+        finally
+        {
+            DeleteDirectoryWithRetry(tempRoot);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildVueComponentModule_RuntimeDirectLowersObjectCarriedRenderFragmentProperty()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/object-carried-fragment")]
+                public partial class Counter : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment? Extra { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        var state = BuildState();
+                        if (state.HasExtra)
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, state.Extra);
+                            builder.CloseElement();
+                        }
+                    }
+
+                    private State BuildState()
+                    {
+                        var extra = Extra;
+                        return new(extra, extra is not null);
+                    }
+
+                    private sealed class State
+                    {
+                        public State(RenderFragment? extra, bool hasExtra)
+                        {
+                            Extra = extra;
+                            HasExtra = hasExtra;
+                        }
+
+                        public RenderFragment? Extra { get; }
+
+                        public bool HasExtra { get; }
+                    }
+                }
+            }
+            """);
+        var closure = BuildClosure(fixture);
+        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            fixture.Component,
+            closure);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+
+        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "slots.extra", StringComparison.Ordinal);
+
+        var tempRoot = Path.Combine(
+            Path.GetTempPath(),
+            "Jazor.RazorVue.Sg.Test",
+            Guid.NewGuid().ToString("N"));
+        try
+        {
+            WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
+            WriteFile(
+                Path.Combine(tempRoot, "package.json"),
+                """{"type":"module"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "package.json"),
+                """{"type":"module","exports":"./index.mjs"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "index.mjs"),
+                """
+                export function defineComponent(options) {
+                    return options;
+                }
+                export function h(name, props, children) {
+                    return { name, props, children };
+                }
+                export function reactive(value) {
+                    return value;
+                }
+                """);
+            var testFile = Path.Combine(tempRoot, "module-object-carried-fragment-runtime.test.mjs");
+            WriteFile(
+                testFile,
+                """
+                import assert from "node:assert/strict";
+                import test from "node:test";
+
+                import component from "./components/object-carried-fragment.mjs";
+
+                test("object-carried RenderFragment property lowers to the original Vue slot", () => {
+                    const render = component.setup({}, {
+                        slots: {
+                            extra: () => ({ name: "strong", props: null, children: ["tools"] })
+                        }
+                    });
+                    const vnode = render();
+
+                    assert.equal(vnode.name, "section");
+                    assert.equal(vnode.children[0].name, "strong");
+                    assert.deepEqual(vnode.children[0].children, ["tools"]);
+                });
+                """);
+
+            await RunNodeTestAsync(testFile, tempRoot);
+        }
+        finally
+        {
+            DeleteDirectoryWithRetry(tempRoot);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildVueComponentModule_RuntimeDirectScopesSiblingRenderFragmentHelperLocals()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/sibling-helper-locals")]
+                public partial class Counter : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "div");
+                        builder.AddContent(1, RenderFirst(true));
+                        builder.AddContent(2, RenderSecond(true));
+                        builder.CloseElement();
+                    }
+
+                    private RenderFragment RenderFirst(bool enabled) => child =>
+                    {
+                        var label = "first";
+                        var flag = enabled;
+                        if (flag)
+                        {
+                            child.OpenElement(0, "span");
+                            child.AddContent(1, label);
+                            child.CloseElement();
+                        }
+                    };
+
+                    private RenderFragment RenderSecond(bool enabled) => child =>
+                    {
+                        var label = "second";
+                        var flag = enabled;
+                        if (flag)
+                        {
+                            child.OpenElement(0, "strong");
+                            child.AddContent(1, label);
+                            child.CloseElement();
+                        }
+                    };
+                }
+            }
+            """);
+        var closure = BuildClosure(fixture);
+        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            fixture.Component,
+            closure);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+
+        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
+
+        var tempRoot = Path.Combine(
+            Path.GetTempPath(),
+            "Jazor.RazorVue.Sg.Test",
+            Guid.NewGuid().ToString("N"));
+        try
+        {
+            WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
+            WriteFile(
+                Path.Combine(tempRoot, "package.json"),
+                """{"type":"module"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "package.json"),
+                """{"type":"module","exports":"./index.mjs"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "index.mjs"),
+                """
+                export function defineComponent(options) {
+                    return options;
+                }
+                export function h(name, props, children) {
+                    return { name, props, children };
+                }
+                """);
+            var testFile = Path.Combine(tempRoot, "module-sibling-helper-locals-runtime.test.mjs");
+            WriteFile(
+                testFile,
+                """
+                import assert from "node:assert/strict";
+                import test from "node:test";
+
+                import component from "./components/sibling-helper-locals.mjs";
+
+                test("sibling RenderFragment helper local names stay scoped", () => {
+                    const render = component.setup({}, { slots: {} });
+                    const vnode = render();
+
+                    assert.equal(vnode.name, "div");
+                    assert.equal(vnode.children[0].name, "span");
+                    assert.deepEqual(vnode.children[0].children, ["first"]);
+                    assert.equal(vnode.children[1].name, "strong");
+                    assert.deepEqual(vnode.children[1].children, ["second"]);
+                });
+                """);
+
+            await RunNodeTestAsync(testFile, tempRoot);
+        }
+        finally
+        {
+            DeleteDirectoryWithRetry(tempRoot);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildVueComponentModule_RuntimeDirectGuardsSiblingsAfterOutputReturnBranch()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/output-return-branches")]
+                public partial class Counter : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "div");
+                        builder.AddContent(1, RenderItem(true, true));
+                        builder.AddContent(2, RenderItem(false, true));
+                        builder.AddContent(3, RenderItem(false, false));
+                        builder.CloseElement();
+                    }
+
+                    private RenderFragment RenderItem(bool route, bool href) => child =>
+                    {
+                        if (route)
+                        {
+                            child.OpenElement(0, "router-link");
+                            child.AddContent(1, "route");
+                            child.CloseElement();
+                            return;
+                        }
+
+                        if (href)
+                        {
+                            child.OpenElement(10, "a");
+                            child.AddContent(11, "href");
+                            child.CloseElement();
+                            return;
+                        }
+
+                        child.OpenElement(20, "span");
+                        child.AddContent(21, "plain");
+                        child.CloseElement();
+                    };
+                }
+            }
+            """);
+        var closure = BuildClosure(fixture);
+        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            fixture.Component,
+            closure);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+
+        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
+
+        var tempRoot = Path.Combine(
+            Path.GetTempPath(),
+            "Jazor.RazorVue.Sg.Test",
+            Guid.NewGuid().ToString("N"));
+        try
+        {
+            WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
+            WriteFile(
+                Path.Combine(tempRoot, "package.json"),
+                """{"type":"module"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "package.json"),
+                """{"type":"module","exports":"./index.mjs"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "index.mjs"),
+                """
+                export const Fragment = Symbol("Fragment");
+                export function defineComponent(options) {
+                    return options;
+                }
+                export function h(name, props, children) {
+                    return { name, props, children };
+                }
+                """);
+            var testFile = Path.Combine(tempRoot, "module-output-return-branches-runtime.test.mjs");
+            WriteFile(
+                testFile,
+                """
+                import assert from "node:assert/strict";
+                import test from "node:test";
+
+                import component from "./components/output-return-branches.mjs";
+
+                test("output branches ending in return guard later sibling output", () => {
+                    const render = component.setup({}, { slots: {} });
+                    const vnode = render();
+                    const rendered = vnode.children.map((child) => child.children.filter(Boolean)[0]);
+
+                    assert.equal(vnode.name, "div");
+                    assert.deepEqual(rendered.map((child) => child.name), ["router-link", "a", "span"]);
+                    assert.deepEqual(rendered.map((child) => child.children[0]), ["route", "href", "plain"]);
                 });
                 """);
 
@@ -771,6 +1726,468 @@ public sealed class RazorSgComponentMemberClosureTests
         {
             if (Directory.Exists(tempRoot))
                 Directory.Delete(tempRoot, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildVueComponentModule_RuntimeDirectAvoidsLocalAndComponentMemberNameCollisions()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/local-member-name-collision")]
+                public partial class Counter : ComponentBase, IVueComponent
+                {
+                    private string[] Columns { get; } = ["name"];
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "div");
+                        foreach (var column in Columns)
+                        {
+                            var columnIsSorted = ColumnIsSorted(column);
+                            builder.OpenElement(1, "span");
+                            builder.AddContent(2, columnIsSorted ? "sorted" : "plain");
+                            builder.CloseElement();
+                        }
+                        builder.CloseElement();
+                    }
+
+                    private bool ColumnIsSorted(string column)
+                        => column == "name";
+                }
+            }
+            """);
+        var closure = BuildClosure(fixture);
+        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            fixture.Component,
+            closure);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+
+        Assert.IsFalse(script.Contains("const columnIsSorted = columnIsSorted(", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "function ColumnIsSorted(column)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "const columnIsSorted = ColumnIsSorted(column);", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
+
+        var tempRoot = Path.Combine(
+            Path.GetTempPath(),
+            "Jazor.RazorVue.Sg.Test",
+            Guid.NewGuid().ToString("N"));
+        try
+        {
+            WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
+            WriteFile(
+                Path.Combine(tempRoot, "package.json"),
+                """{"type":"module"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "package.json"),
+                """{"type":"module","exports":"./index.mjs"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "index.mjs"),
+                """
+                export function defineComponent(options) {
+                    return options;
+                }
+                export function h(name, props, children) {
+                    return { name, props, children };
+                }
+                export function reactive(value) {
+                    return value;
+                }
+                """);
+            var testFile = Path.Combine(tempRoot, "module-local-member-name-collision-runtime.test.mjs");
+            WriteFile(
+                testFile,
+                """
+                import assert from "node:assert/strict";
+                import test from "node:test";
+
+                import component from "./components/local-member-name-collision.mjs";
+
+                test("direct render local names do not shadow current component helpers", () => {
+                    const render = component.setup({}, { slots: {} });
+                    const vnode = render();
+
+                    assert.equal(vnode.name, "div");
+                    assert.equal(vnode.children[0][0].name, "span");
+                    assert.deepEqual(vnode.children[0][0].children, ["sorted"]);
+                });
+                """);
+
+            await RunNodeTestAsync(testFile, tempRoot);
+        }
+        finally
+        {
+            DeleteDirectoryWithRetry(tempRoot);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildVueComponentModule_RuntimeDirectFoldsConstFieldConditions()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/const-field-condition")]
+                public partial class ConstFieldCondition : ComponentBase, IVueComponent
+                {
+                    private const string ReleasesKey = "operations.releases";
+                    private string selectedKey = ReleasesKey;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (selectedKey == ReleasesKey)
+                        {
+                            builder.OpenElement(0, "strong");
+                            builder.AddContent(1, "release page");
+                            builder.CloseElement();
+                            return;
+                        }
+
+                        builder.OpenElement(2, "span");
+                        builder.AddContent(3, "dashboard");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+        var closure = BuildClosure(fixture);
+        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            fixture.Component,
+            closure);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+
+        Assert.IsFalse(script.Contains("from \"./const-field-condition.mjs\"", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "state.selectedKey === \"operations.releases\"", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("state.selectedKey === releasesKey", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
+
+        var tempRoot = Path.Combine(
+            Path.GetTempPath(),
+            "Jazor.RazorVue.Sg.Test",
+            Guid.NewGuid().ToString("N"));
+        try
+        {
+            WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
+            WriteFile(
+                Path.Combine(tempRoot, "package.json"),
+                """{"type":"module"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "package.json"),
+                """{"type":"module","exports":"./index.mjs"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "index.mjs"),
+                """
+                export function defineComponent(options) {
+                    return options;
+                }
+                export function h(name, props, children) {
+                    return { name, props, children };
+                }
+                export function reactive(value) {
+                    return value;
+                }
+                """);
+            var vueStubPath = Path.Combine(tempRoot, "node_modules", "vue", "index.mjs");
+            var vueStub = System.IO.File.ReadAllText(vueStubPath);
+            if (!vueStub.Contains("export const Fragment", StringComparison.Ordinal))
+            {
+                WriteFile(
+                    vueStubPath,
+                    "export const Fragment = Symbol(\"Fragment\");" + Environment.NewLine + vueStub);
+            }
+
+            var testFile = Path.Combine(tempRoot, "module-const-field-condition-runtime.test.mjs");
+            WriteFile(
+                testFile,
+                """
+                import assert from "node:assert/strict";
+                import test from "node:test";
+
+                import component from "./components/const-field-condition.mjs";
+
+                test("direct render folds current component const field conditions", () => {
+                    const render = component.setup({}, { slots: {} });
+                    const vnode = render();
+
+                    assert.equal(typeof vnode.name, "symbol");
+                    assert.equal(vnode.children[0].name, "strong");
+                    assert.deepEqual(vnode.children[0].children, ["release page"]);
+                });
+                """);
+
+            await RunNodeTestAsync(testFile, tempRoot);
+        }
+        finally
+        {
+            DeleteDirectoryWithRetry(tempRoot);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildVueComponentModule_RuntimeDirectLowersBulkAttributes()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/child")]
+                public sealed class Child : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string Title { get; set; } = "";
+
+                    [Parameter]
+                    public int Count { get; set; }
+                }
+
+                [ECMAScriptModule("./components/direct-bulk")]
+                public partial class DirectBulk : ComponentBase, IVueComponent
+                {
+                    private string submitted = "idle";
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "form");
+                        builder.AddMultipleAttributes(1, new Dictionary<string, object>
+                        {
+                            ["class"] = "checkout",
+                            ["onsubmit"] = (Action)Submit
+                        });
+                        builder.AddContent(2, submitted);
+                        builder.CloseElement();
+
+                        builder.OpenComponent(3, typeof(Child));
+                        builder.AddMultipleAttributes(4, new Dictionary<string, object>
+                        {
+                            ["Title"] = "bulk",
+                            ["Count"] = 2
+                        });
+                        builder.SetAttributeValue(5, 3);
+                        builder.CloseComponent();
+                    }
+
+                    private void Submit()
+                    {
+                        submitted = "submitted";
+                    }
+                }
+            }
+            """);
+        var closure = BuildClosure(fixture);
+        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            fixture.Component,
+            closure);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+
+        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains(".addMultipleAttributes(", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "h(Fragment, null, [h(\"form\", { class: \"checkout\", onSubmit: submit }, [state.submitted])", StringComparison.Ordinal);
+        StringAssert.Contains(script, "{ title: \"bulk\", count: 3 })", StringComparison.Ordinal);
+
+        var tempRoot = Path.Combine(
+            Path.GetTempPath(),
+            "Jazor.RazorVue.Sg.Test",
+            Guid.NewGuid().ToString("N"));
+        try
+        {
+            WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
+            WriteFile(Path.Combine(tempRoot, "components", "child.mjs"), "export default { name: \"Child\" };\n");
+            WriteFile(
+                Path.Combine(tempRoot, "package.json"),
+                """{"type":"module"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "package.json"),
+                """{"type":"module","exports":"./index.mjs"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "index.mjs"),
+                """
+                export const Fragment = Symbol("Fragment");
+                export function defineComponent(options) {
+                    return options;
+                }
+                export function reactive(value) {
+                    return value;
+                }
+                export function h(name, props, children) {
+                    return { name, props, children };
+                }
+                """);
+            var testFile = Path.Combine(tempRoot, "module-direct-bulk-runtime.test.mjs");
+            WriteFile(
+                testFile,
+                """
+                import assert from "node:assert/strict";
+                import test from "node:test";
+
+                import component from "./components/direct-bulk.mjs";
+
+                test("bulk attributes lower directly", () => {
+                    const render = component.setup({}, { slots: {} });
+                    const first = render();
+                    const form = first.children[0];
+                    const child = first.children[1];
+
+                    assert.equal(typeof first.name, "symbol");
+                    assert.equal(form.name, "form");
+                    assert.equal(form.props.class, "checkout");
+                    assert.equal(typeof form.props.onSubmit, "function");
+                    assert.equal(form.children[0], "idle");
+                    assert.deepEqual(child.props, { title: "bulk", count: 3 });
+
+                    form.props.onSubmit();
+                    assert.equal(render().children[0].children[0], "submitted");
+                });
+                """);
+
+            await RunNodeTestAsync(testFile, tempRoot);
+        }
+        finally
+        {
+            DeleteDirectoryWithRetry(tempRoot);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildVueComponentModule_RuntimeDirectLowersElementMetadataAndBind()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using Microsoft.AspNetCore.Components.Web;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/direct-bind")]
+                public partial class DirectBind : ComponentBase, IVueComponent
+                {
+                    private string text = "initial";
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "input");
+                        builder.AddAttribute(1, "class", "before");
+                        builder.SetAttributeValue(2, "after");
+                        builder.SetKey("input-key");
+                        builder.AddAttribute(3, "value", text);
+                        builder.AddAttribute(4, "onchange", EventCallback.Factory.CreateBinder<string>(this, __value => text = __value, text));
+                        builder.SetUpdatesAttributeName("value");
+                        builder.AddNamedEvent("onchange", "changed");
+                        builder.AddEventPreventDefaultAttribute(5, "onchange", true);
+                        builder.AddEventStopPropagationAttribute(6, "onchange", true);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+        var closure = BuildClosure(fixture);
+        var artifact = await RazorSgVueComponentModuleBuilder.BuildAsync(
+            fixture.Binding,
+            fixture.Component,
+            closure);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+
+        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains(".addNamedEvent(", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "key: \"input-key\"", StringComparison.Ordinal);
+        StringAssert.Contains(script, "class: \"after\"", StringComparison.Ordinal);
+        StringAssert.Contains(script, "onChange: (event, ...args) => { event?.preventDefault?.(); event?.stopPropagation?.(); return ((eventOrValue, ...args) =>", StringComparison.Ordinal);
+
+        var tempRoot = Path.Combine(
+            Path.GetTempPath(),
+            "Jazor.RazorVue.Sg.Test",
+            Guid.NewGuid().ToString("N"));
+        try
+        {
+            WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
+            WriteFile(
+                Path.Combine(tempRoot, "package.json"),
+                """{"type":"module"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "package.json"),
+                """{"type":"module","exports":"./index.mjs"}""");
+            WriteFile(
+                Path.Combine(tempRoot, "node_modules", "vue", "index.mjs"),
+                """
+                export function defineComponent(options) {
+                    return options;
+                }
+                export function reactive(value) {
+                    return value;
+                }
+                export function h(name, props, children) {
+                    return { name, props, children };
+                }
+                """);
+            var testFile = Path.Combine(tempRoot, "module-direct-bind-runtime.test.mjs");
+            WriteFile(
+                testFile,
+                """
+                import assert from "node:assert/strict";
+                import test from "node:test";
+
+                import component from "./components/direct-bind.mjs";
+
+                test("element metadata and DOM bind lower directly", () => {
+                    const render = component.setup({}, { slots: {} });
+                    const first = render();
+
+                    assert.equal(first.name, "input");
+                    assert.equal(first.props.class, "after");
+                    assert.equal(first.props.key, "input-key");
+                    assert.equal(first.props.value, "initial");
+                    assert.equal(typeof first.props.onChange, "function");
+
+                    let prevented = false;
+                    let stopped = false;
+                    first.props.onChange({
+                        target: { value: "updated" },
+                        preventDefault: () => prevented = true,
+                        stopPropagation: () => stopped = true
+                    });
+
+                    assert.equal(prevented, true);
+                    assert.equal(stopped, true);
+                    assert.equal(render().props.value, "updated");
+                });
+                """);
+
+            await RunNodeTestAsync(testFile, tempRoot);
+        }
+        finally
+        {
+            DeleteDirectoryWithRetry(tempRoot);
         }
     }
 
@@ -1375,15 +2792,17 @@ public sealed class RazorSgComponentMemberClosureTests
         StringAssert.Contains(artifact.SourceMapContent, "\"file\": \"components/counter.mjs\"", StringComparison.Ordinal);
         StringAssert.Contains(artifact.SourceMapContent, "\"sources\": [", StringComparison.Ordinal);
         StringAssert.Contains(script, "import { defineComponent, h, reactive } from \"vue\";", StringComparison.Ordinal);
-        StringAssert.Contains(script, "import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "function createCounterSetupScope(props) {", StringComparison.Ordinal);
         StringAssert.Contains(script, "const state = reactive({", StringComparison.Ordinal);
         StringAssert.Contains(script, "count: seed()", StringComparison.Ordinal);
-        StringAssert.Contains(script, "function buildRenderTree(builder)", StringComparison.Ordinal);
-        StringAssert.Contains(script, "builder.addAttribute(\"onclick\", increment);", StringComparison.Ordinal);
-        StringAssert.Contains(script, "builder.addContent(props.title);", StringComparison.Ordinal);
-        StringAssert.Contains(script, "builder.addContent(state.count);", StringComparison.Ordinal);
-        StringAssert.Contains(script, "return { buildRenderTree };", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("function buildRenderTree(builder)", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("builder.addAttribute(\"onclick\", increment);", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("builder.addContent(props.title);", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("builder.addContent(state.count);", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return h(\"button\", { onClick: increment }, [props.title, state.count]);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return { $renderDirect };", StringComparison.Ordinal);
         StringAssert.Contains(script, "props: [", StringComparison.Ordinal);
         StringAssert.Contains(script, "\"title\"", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("let invalidate = null;", StringComparison.Ordinal), script);
@@ -1398,9 +2817,10 @@ public sealed class RazorSgComponentMemberClosureTests
         Assert.IsFalse(script.Contains("const invokeAsync = ", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("invalidate = reactive({ tick: pendingInvalidations });", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("invalidate.tick;", StringComparison.Ordinal), script);
-        StringAssert.Contains(script, "const builder = createRenderContext(h);", StringComparison.Ordinal);
-        StringAssert.Contains(script, "scope.buildRenderTree(builder);", StringComparison.Ordinal);
-        StringAssert.Contains(script, "return builder.finish();", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("const builder = createRenderContext(h);", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("return builder.finish();", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "return scope.$renderDirect();", StringComparison.Ordinal);
         StringAssert.Contains(script, "export default defineComponent({", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("watch(", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("onMounted(", StringComparison.Ordinal), script);
@@ -1654,6 +3074,11 @@ public sealed class RazorSgComponentMemberClosureTests
             fixture.Binding,
             fixture.Component,
             closure);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+
+        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -1821,7 +3246,10 @@ public sealed class RazorSgComponentMemberClosureTests
         StringAssert.Contains(script, "return cachedVNode;", StringComparison.Ordinal);
         StringAssert.Contains(script, "function shouldRender()", StringComparison.Ordinal);
         StringAssert.Contains(script, "return state.count % 2 === 0;", StringComparison.Ordinal);
-        StringAssert.Contains(script, "cachedVNode = builder.finish();", StringComparison.Ordinal);
+        StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return h(\"div\", null, [state.count]);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "cachedVNode = scope.$renderDirect();", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("cachedVNode = builder.finish();", StringComparison.Ordinal), script);
     }
 
     [TestMethod]
@@ -2000,6 +3428,14 @@ public sealed class RazorSgComponentMemberClosureTests
             fixture.Binding,
             fixture.Component,
             closure);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+
+        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains(".addElementReferenceCapture(", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains(".addComponentReferenceCapture(", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "ref: value =>", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -2988,8 +4424,10 @@ public sealed class RazorSgComponentMemberClosureTests
             parentFixture.Component,
             parentClosure);
         var parentScript = parentArtifact.ModuleText.ReplaceLineEndings("\n");
-        StringAssert.Contains(parentScript, "builder.addComponentSlot(\"Header\", header);", StringComparison.Ordinal);
+        Assert.IsFalse(parentScript.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), parentScript);
+        Assert.IsFalse(parentScript.Contains("builder.addComponentSlot(\"Header\", header);", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("builder.addComponentParameter(\"Header\"", StringComparison.Ordinal), parentScript);
+        StringAssert.Contains(parentScript, "{ header: () => h(\"h1\", null, [\"Named header\"]) }", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -3159,8 +4597,10 @@ public sealed class RazorSgComponentMemberClosureTests
             parentFixture.Component,
             parentClosure);
         var parentScript = parentArtifact.ModuleText.ReplaceLineEndings("\n");
-        StringAssert.Contains(parentScript, "builder.addComponentScopedSlot(\"Header\", header);", StringComparison.Ordinal);
+        Assert.IsFalse(parentScript.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), parentScript);
+        Assert.IsFalse(parentScript.Contains("builder.addComponentScopedSlot(\"Header\", header);", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("builder.addComponentParameter(\"Header\"", StringComparison.Ordinal), parentScript);
+        StringAssert.Contains(parentScript, "{ header: (value) => h(\"h1\", null, [value]) }", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -3323,9 +4763,10 @@ public sealed class RazorSgComponentMemberClosureTests
             parentClosure);
         var parentScript = parentArtifact.ModuleText.ReplaceLineEndings("\n");
 
-        StringAssert.Contains(parentScript, "\"Header\": \"title\"", StringComparison.Ordinal);
-        StringAssert.Contains(parentScript, "builder.addComponentSlot(\"Header\", title);", StringComparison.Ordinal);
+        Assert.IsFalse(parentScript.Contains("\"Header\": \"title\"", StringComparison.Ordinal), parentScript);
+        Assert.IsFalse(parentScript.Contains("builder.addComponentSlot(\"Header\", title);", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("builder.addComponentParameter(\"Header\"", StringComparison.Ordinal), parentScript);
+        StringAssert.Contains(parentScript, "{ title: () => h(\"h1\", null, [\"Descriptor title\"]) }", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -3394,8 +4835,9 @@ public sealed class RazorSgComponentMemberClosureTests
             parentClosure);
         var parentScript = parentArtifact.ModuleText.ReplaceLineEndings("\n");
 
-        StringAssert.Contains(parentScript, "\"TitleContent\": \"title\"", StringComparison.Ordinal);
-        StringAssert.Contains(parentScript, "builder.addComponentScopedSlot(\"TitleContent\", title);", StringComparison.Ordinal);
+        Assert.IsFalse(parentScript.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), parentScript);
+        Assert.IsFalse(parentScript.Contains("builder.addComponentScopedSlot(\"TitleContent\", title);", StringComparison.Ordinal), parentScript);
+        StringAssert.Contains(parentScript, "{ title: (value) => h(\"h1\", null, [value]) }", StringComparison.Ordinal);
         Assert.IsFalse(parentScript.Contains("slots.titleContent", StringComparison.Ordinal), parentScript);
     }
 
@@ -3745,6 +5187,11 @@ public sealed class RazorSgComponentMemberClosureTests
             artifact.ModuleText.ReplaceLineEndings("\n"),
             "from \"./child.mjs\";",
             StringComparison.Ordinal);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "{ title: props.title, onValueChanged: handleValueChanged }", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -4017,8 +5464,10 @@ public sealed class RazorSgComponentMemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        StringAssert.Contains(script, "builder.addComponentParameter(\"Value\", state.text);", StringComparison.Ordinal);
-        StringAssert.Contains(script, "builder.addComponentParameter(\"ValueChanged\", __value => state.text = __value);", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("builder.addComponentParameter(\"Value\", state.text);", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("builder.addComponentParameter(\"ValueChanged\", __value => state.text = __value);", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "{ value: state.text, valueChanged: __value => state.text = __value }", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("modelValue", StringComparison.Ordinal), script);
 
         var tempRoot = Path.Combine(
@@ -4181,9 +5630,9 @@ public sealed class RazorSgComponentMemberClosureTests
             parentClosure);
         var parentScript = parentArtifact.ModuleText.ReplaceLineEndings("\n");
 
-        StringAssert.Contains(parentScript, "builder.openComponent(", StringComparison.Ordinal);
-        StringAssert.Contains(parentScript, "\"Value\": \"modelValue\"", StringComparison.Ordinal);
-        StringAssert.Contains(parentScript, "\"ValueChanged\": \"onUpdate:modelValue\"", StringComparison.Ordinal);
+        Assert.IsFalse(parentScript.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), parentScript);
+        Assert.IsFalse(parentScript.Contains("builder.openComponent(", StringComparison.Ordinal), parentScript);
+        StringAssert.Contains(parentScript, "{ modelValue: state.text, \"onUpdate:modelValue\": __value => state.text = __value }", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -4379,11 +5828,10 @@ public sealed class RazorSgComponentMemberClosureTests
             parentClosure);
         var parentScript = parentArtifact.ModuleText.ReplaceLineEndings("\n");
 
-        StringAssert.Contains(parentScript, "\"Value\": \"modelValue\"", StringComparison.Ordinal);
-        StringAssert.Contains(parentScript, "\"ValueChanged\": \"onUpdate:modelValue\"", StringComparison.Ordinal);
-        StringAssert.Contains(parentScript, "\"OnAction\": \"onAction\"", StringComparison.Ordinal);
-        StringAssert.Contains(parentScript, "\"TitleContent\": \"title\"", StringComparison.Ordinal);
-        StringAssert.Contains(parentScript, "builder.addComponentScopedSlot(\"TitleContent\", title);", StringComparison.Ordinal);
+        Assert.IsFalse(parentScript.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), parentScript);
+        Assert.IsFalse(parentScript.Contains("builder.addComponentScopedSlot(\"TitleContent\", title);", StringComparison.Ordinal), parentScript);
+        StringAssert.Contains(parentScript, "{ modelValue: state.text, \"onUpdate:modelValue\": __value => state.text = __value, onAction: handleAction }", StringComparison.Ordinal);
+        StringAssert.Contains(parentScript, "{ title: (value) => h(\"h1\", null, [\"slot:\", value]) }", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -4901,12 +6349,15 @@ public sealed class RazorSgComponentMemberClosureTests
 
     private static void AssertHasField(RazorSgComponentMemberClosure closure, string name)
         => Assert.IsTrue(
-            closure.StateFields.Any(field => field.Name == name),
+            closure.StateFields.Any(field => Util.GetConfigOrSymbolName(field) == name),
             $"Expected field '{name}' in closure: {Describe(closure)}");
 
     private static void AssertHasProperty(RazorSgComponentMemberClosure closure, string name)
         => Assert.IsTrue(
-            closure.StateProperties.Concat(closure.ParameterProperties).Any(property => property.Name == name),
+            closure.StateProperties
+                .Concat(closure.ParameterProperties)
+                .Concat(closure.ComputedProperties)
+                .Any(property => Util.GetConfigOrSymbolName(property) == name),
             $"Expected property '{name}' in closure: {Describe(closure)}");
 
     private static void AssertHasMethod(RazorSgComponentMemberClosure closure, string name)
@@ -4984,15 +6435,9 @@ public sealed class RazorSgComponentMemberClosureTests
         var compilation = baseCompilation.AddSyntaxTrees(generatedTree);
         AssertNoCompilationErrors(compilation);
 
-        var adapted = RazorSgFinalDocumentAdapter.TryCreateBatch(
+        var bound = RazorSgGeneratedCSharpBinder.TryBindFinalCompilation(
             compilation,
-            ImmutableArray.Create(new RazorSgTailDocumentInput(hintName, codeDocument, csharpDocument)),
-            out var batch,
-            out var adaptationFailure);
-        Assert.IsTrue(adapted, adaptationFailure);
-
-        var bound = RazorSgGeneratedCSharpBinder.TryBind(
-            batch!,
+            RazorSgComponentCandidateSelector.DiscoverTailRequiredComponents(compilation),
             out var binding,
             out var bindingFailure);
         Assert.IsTrue(bound, bindingFailure);

@@ -46,7 +46,10 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private readonly Dictionary<string, List<ImportDeclarationSpecifier>> _imports = [];
     private readonly Dictionary<string, string> _importBindings = [];
     private readonly Dictionary<string, string> _importLocalBindings = [];
-    private readonly ModuleNamePlan _moduleNamePlan = BuildModuleNamePlan(classSymbol, options?.MemberFilter);
+    private readonly ModuleNamePlan _moduleNamePlan = BuildModuleNamePlan(
+        classSymbol,
+        options?.MemberFilter,
+        options?.Profile ?? AstConverterProfile.Standard);
     private readonly IReadOnlyDictionary<ISymbol, string>? _declaredNameOverrides = options?.DeclaredNames;
     private readonly SemanticWalkerHost? _semanticWalkerHost = options?.Host;
 
@@ -94,7 +97,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
         var members = new List<Statement>();
         var emittedMemberClasses = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
-        foreach (var member in _classSymbol.GetMembers())
+        foreach (var member in EnumerateModuleMembersForConversion())
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -1600,11 +1603,35 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         Dictionary<ISymbol, string> DeclaredNames,
         HashSet<string> ReservedImportNames);
 
-    private static ModuleNamePlan BuildModuleNamePlan(INamedTypeSymbol classSymbol, Func<ISymbol, bool>? includeMember)
+    private IEnumerable<ISymbol> EnumerateModuleMembersForConversion()
+        => EnumerateModuleMembers(_classSymbol, _options.Profile);
+
+    private static IEnumerable<ISymbol> EnumerateModuleMembers(
+        INamedTypeSymbol classSymbol,
+        AstConverterProfile profile)
     {
-        var localNames = BuildModuleLocalNames(classSymbol);
-        var declaredNames = BuildModuleDeclaredNames(classSymbol, localNames, includeMember);
-        var reservedImportNames = BuildReservedImportNames(classSymbol, declaredNames, localNames, includeMember);
+        if (profile != AstConverterProfile.RazorVueRuntime)
+            return classSymbol.GetMembers();
+
+        var types = new Stack<INamedTypeSymbol>();
+        for (var current = classSymbol; current is { SpecialType: not SpecialType.System_Object }; current = current.BaseType)
+            types.Push(current);
+
+        var members = new List<ISymbol>();
+        while (types.Count > 0)
+            members.AddRange(types.Pop().GetMembers());
+
+        return members;
+    }
+
+    private static ModuleNamePlan BuildModuleNamePlan(
+        INamedTypeSymbol classSymbol,
+        Func<ISymbol, bool>? includeMember,
+        AstConverterProfile profile)
+    {
+        var localNames = BuildModuleLocalNames(classSymbol, profile);
+        var declaredNames = BuildModuleDeclaredNames(classSymbol, localNames, includeMember, profile);
+        var reservedImportNames = BuildReservedImportNames(classSymbol, declaredNames, localNames, includeMember, profile);
         return new ModuleNamePlan(localNames, declaredNames, reservedImportNames);
     }
 
@@ -1655,10 +1682,11 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         }
     }
 
-    private static HashSet<string> BuildModuleLocalNames(INamedTypeSymbol classSymbol)
+    private static HashSet<string> BuildModuleLocalNames(INamedTypeSymbol classSymbol, AstConverterProfile profile)
     {
         var names = new HashSet<string>(System.StringComparer.Ordinal);
-        foreach (var syntaxRef in classSymbol.DeclaringSyntaxReferences)
+        foreach (var type in EnumerateModuleTypes(classSymbol, profile))
+        foreach (var syntaxRef in type.DeclaringSyntaxReferences)
         {
             if (syntaxRef.GetSyntax() is not ClassDeclarationSyntax classSyntax)
                 continue;
@@ -1671,15 +1699,34 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         return names;
     }
 
+    private static IEnumerable<INamedTypeSymbol> EnumerateModuleTypes(
+        INamedTypeSymbol classSymbol,
+        AstConverterProfile profile)
+    {
+        if (profile != AstConverterProfile.RazorVueRuntime)
+        {
+            yield return classSymbol;
+            yield break;
+        }
+
+        var types = new Stack<INamedTypeSymbol>();
+        for (var current = classSymbol; current is { SpecialType: not SpecialType.System_Object }; current = current.BaseType)
+            types.Push(current);
+
+        while (types.Count > 0)
+            yield return types.Pop();
+    }
+
     private static Dictionary<ISymbol, string> BuildModuleDeclaredNames(
         INamedTypeSymbol classSymbol,
         HashSet<string> localNames,
-        Func<ISymbol, bool>? includeMember)
+        Func<ISymbol, bool>? includeMember,
+        AstConverterProfile profile)
     {
         var declaredNames = new Dictionary<ISymbol, string>(SymbolEqualityComparer.Default);
         var usedDeclaredNames = new HashSet<string>(System.StringComparer.Ordinal);
 
-        foreach (var member in classSymbol.GetMembers())
+        foreach (var member in EnumerateModuleMembers(classSymbol, profile))
         {
             if (includeMember is not null && !includeMember(member))
                 continue;
@@ -1687,13 +1734,13 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             switch (member)
             {
                 case IFieldSymbol field:
-                    declaredNames[field.OriginalDefinition] = ChooseModuleDeclaredName(field, usedDeclaredNames, localNames);
+                    declaredNames[field.OriginalDefinition] = ChooseModuleDeclaredName(field, usedDeclaredNames, localNames, profile);
                     break;
                 case IMethodSymbol method when ShouldReserveModuleMethodName(method):
-                    declaredNames[method.OriginalDefinition] = ChooseModuleDeclaredName(method, usedDeclaredNames, localNames);
+                    declaredNames[method.OriginalDefinition] = ChooseModuleDeclaredName(method, usedDeclaredNames, localNames, profile);
                     break;
                 case INamedTypeSymbol type when IsRuntimeMemberClass(type):
-                    declaredNames[type.OriginalDefinition] = ChooseModuleDeclaredName(type, usedDeclaredNames, localNames);
+                    declaredNames[type.OriginalDefinition] = ChooseModuleDeclaredName(type, usedDeclaredNames, localNames, profile);
                     break;
             }
         }
@@ -1704,9 +1751,10 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private static string ChooseModuleDeclaredName(
         ISymbol symbol,
         HashSet<string> usedDeclaredNames,
-        HashSet<string> localNames)
+        HashSet<string> localNames,
+        AstConverterProfile profile)
     {
-        var preferredName = GetPreferredModuleDeclaredName(symbol);
+        var preferredName = GetPreferredModuleDeclaredName(symbol, profile);
         if (!localNames.Contains(preferredName) && usedDeclaredNames.Add(preferredName))
             return preferredName;
 
@@ -1731,9 +1779,17 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     }
 
     private static string GetPreferredModuleDeclaredName(ISymbol symbol)
+        => GetPreferredModuleDeclaredName(symbol, AstConverterProfile.Standard);
+
+    private static string GetPreferredModuleDeclaredName(ISymbol symbol, AstConverterProfile profile)
         => symbol switch
         {
             IFieldSymbol field => GetPreferredModuleFieldDeclaredName(field),
+            IMethodSymbol
+            {
+                MethodKind: MethodKind.PropertyGet,
+                AssociatedSymbol: IPropertySymbol property
+            } when profile == AstConverterProfile.RazorVueRuntime => Util.GetConfigOrSymbolName(property),
             IMethodSymbol method => Util.GetConfigOrSymbolName(method),
             INamedTypeSymbol type => Util.GetConfigOrSymbolName(type),
             _ => Util.GetConfigOrSymbolName(symbol)
@@ -1761,11 +1817,12 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         INamedTypeSymbol classSymbol,
         IReadOnlyDictionary<ISymbol, string> declaredNames,
         HashSet<string> localNames,
-        Func<ISymbol, bool>? includeMember)
+        Func<ISymbol, bool>? includeMember,
+        AstConverterProfile profile)
     {
         var names = new HashSet<string>(System.StringComparer.Ordinal);
 
-        foreach (var member in classSymbol.GetMembers())
+        foreach (var member in EnumerateModuleMembers(classSymbol, profile))
         {
             if (includeMember is not null && !includeMember(member))
                 continue;

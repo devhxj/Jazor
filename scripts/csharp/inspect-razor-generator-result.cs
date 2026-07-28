@@ -1,9 +1,8 @@
 #!/usr/bin/env dotnet run
-#:package Microsoft.CodeAnalysis.CSharp@5.7.0-1.26207.106
+#:package Microsoft.CodeAnalysis.CSharp@5.10.0-1.26329.5
 #:package Basic.Reference.Assemblies.Net110@1.8.7
 #:property EnableTrimAnalyzer=false
 
-using System.Collections;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
@@ -47,8 +46,7 @@ var optionsProvider = new TestAnalyzerConfigOptionsProvider(
         ["build_property.RootNamespace"] = "Demo",
         ["build_property.SupportLocalizedComponentNames"] = "true",
         ["build_property.GenerateRazorMetadataSourceChecksumAttributes"] = "false",
-        ["build_property.MSBuildProjectDirectory"] = projectDirectory,
-        ["build_property.EnableRazorHostOutputs"] = "true"
+        ["build_property.MSBuildProjectDirectory"] = projectDirectory
     },
     new Dictionary<string, IReadOnlyDictionary<string, string>>(StringComparer.OrdinalIgnoreCase)
     {
@@ -63,36 +61,13 @@ GeneratorDriver driver = CSharpGeneratorDriver.Create(
     additionalTexts: [additionalText],
     parseOptions: parseOptions,
     optionsProvider: optionsProvider);
-driver = driver.RunGenerators(compilation);
+driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var finalCompilation, out var diagnostics);
 
 var result = driver.GetRunResult().Results.Single();
-var hostOutputs = result.GetType().GetProperty("HostOutputs")!.GetValue(result)!;
-foreach (var entry in (IEnumerable)hostOutputs)
-{
-    var key = entry.GetType().GetProperty("Key")?.GetValue(entry);
-    var value = entry.GetType().GetProperty("Value")?.GetValue(entry);
-    Console.WriteLine("HostOutput: " + key + " -> " + value?.GetType().FullName);
-    if (value is null)
-        continue;
-
-    Console.WriteLine("Properties:");
-    foreach (var property in value.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
-        Console.WriteLine("  " + property.PropertyType.FullName + " " + property.Name);
-
-    Console.WriteLine("Methods:");
-    foreach (var method in value.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly).OrderBy(static item => item.Name, StringComparer.Ordinal))
-        Console.WriteLine("  " + method);
-
-    var codeDocument = value.GetType().GetMethod("GetCodeDocument", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, [typeof(string)], null)?.Invoke(value, [documentPath]);
-    Console.WriteLine("CodeDocument: " + codeDocument?.GetType().FullName);
-    if (codeDocument is null)
-        continue;
-
-    foreach (var method in codeDocument.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(static item => item.Name.Contains("CSharp", StringComparison.Ordinal)))
-        Console.WriteLine("  CodeDocument method " + method);
-    foreach (var property in codeDocument.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(static item => item.Name.Contains("CSharp", StringComparison.Ordinal)))
-        Console.WriteLine("  CodeDocument property " + property.PropertyType.FullName + " " + property.Name);
-}
+Console.WriteLine("Generated sources: " + result.GeneratedSources.Length);
+Console.WriteLine("Final compilation trees: " + finalCompilation.SyntaxTrees.Count());
+Console.WriteLine("Razor generated trees: " + finalCompilation.SyntaxTrees.Count(static tree => tree.FilePath.EndsWith("_razor.g.cs", StringComparison.Ordinal)));
+Console.WriteLine("Diagnostics: " + diagnostics.Length);
 
 internal sealed class InMemoryAdditionalText(string path, string text) : AdditionalText
 {
@@ -140,21 +115,41 @@ internal static class RazorCompilerPathResolver
 
         foreach (var root in EnumerateDotNetRoots())
         {
-            var candidate = Path.Combine(
-                root,
-                "sdk",
-                sdkVersion,
-                "Sdks",
-                "Microsoft.NET.Sdk.Razor",
-                "source-generators",
-                "Microsoft.CodeAnalysis.Razor.Compiler.dll");
-            if (File.Exists(candidate))
+            foreach (var candidateVersion in EnumerateSdkVersions(root, sdkVersion))
             {
-                return candidate;
+                var candidate = Path.Combine(
+                    root,
+                    "sdk",
+                    candidateVersion,
+                    "Sdks",
+                    "Microsoft.NET.Sdk.Razor",
+                    "source-generators",
+                    "Microsoft.CodeAnalysis.Razor.Compiler.dll");
+                if (File.Exists(candidate))
+                {
+                    return candidate;
+                }
             }
         }
 
         throw new FileNotFoundException("Microsoft.CodeAnalysis.Razor.Compiler.dll was not found for SDK " + sdkVersion + ".");
+    }
+
+    private static IEnumerable<string> EnumerateSdkVersions(string root, string requestedVersion)
+    {
+        yield return requestedVersion;
+
+        var sdkRoot = Path.Combine(root, "sdk");
+        if (!Directory.Exists(sdkRoot))
+            yield break;
+
+        foreach (var directory in Directory.EnumerateDirectories(sdkRoot, "11.0.100-preview.*")
+                     .OrderByDescending(static path => path, StringComparer.Ordinal))
+        {
+            var version = Path.GetFileName(directory);
+            if (!string.Equals(version, requestedVersion, StringComparison.Ordinal))
+                yield return version;
+        }
     }
 
     private static IEnumerable<string> EnumerateDotNetRoots()

@@ -53,7 +53,7 @@ if (!options.FrontendOnly || options.BuildLocal)
         $"-p:RestorePackagesPath={restorePackagesPath}",
         "-p:RestoreForce=true",
         $"-p:JazorPackageVersion={resolvedPackageInfo.Value.Version}",
-        $"-p:JazorOutDir={generatedOutputRoot}"
+        $"-p:JazorDir={generatedOutputRoot}"
     };
     buildArguments.AddRange(isolationArguments.BuildArguments);
     buildArguments.AddRange(new[]

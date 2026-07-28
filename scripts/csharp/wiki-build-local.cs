@@ -7,9 +7,11 @@ var options = ScriptArguments.Parse(args);
 var repoRoot = WikiScriptHelpers.RequireRepoRoot();
 var sampleRoot = Path.Combine(repoRoot, "src", "Wiki");
 var hostProject = Path.Combine(sampleRoot, "Wiki.csproj");
-var jazorRoot = Path.Combine(sampleRoot, "jazor");
+var jazorRoot = Path.Combine(sampleRoot, "wwwroot", "jazor");
 var mainModulePath = Path.Combine(jazorRoot, "main.mjs");
 var componentModulePath = Path.Combine(jazorRoot, "components", "wiki-home.mjs");
+var bundlePath = Path.Combine(jazorRoot, "bundle.js");
+var bundleMapPath = Path.Combine(jazorRoot, "bundle.js.map");
 var dotnetCliHome = Path.Combine(repoRoot, ".dotnet");
 
 var arguments = new List<string>
@@ -26,7 +28,7 @@ var arguments = new List<string>
 
 if (options.Bundle)
 {
-    arguments.Add("-p:JazorBundle=true");
+    arguments.Add("-p:JazorMode=release");
 }
 
 if (!string.IsNullOrWhiteSpace(options.BaseOutputPath))
@@ -44,8 +46,16 @@ await WikiScriptHelpers.RunDotNetAsync(
     workdir: repoRoot,
     dotnetCliHome: dotnetCliHome);
 
-WikiScriptHelpers.EnsureFileExists(mainModulePath, "emitted main module");
-WikiScriptHelpers.EnsureFileExists(componentModulePath, "emitted wiki component module");
+if (options.Bundle)
+{
+    WikiScriptHelpers.EnsureFileExists(bundlePath, "production bundle");
+    WikiScriptHelpers.EnsureFileExists(bundleMapPath, "production bundle source map");
+}
+else
+{
+    WikiScriptHelpers.EnsureFileExists(mainModulePath, "emitted main module");
+    WikiScriptHelpers.EnsureFileExists(componentModulePath, "emitted wiki component module");
+}
 
 internal sealed record ScriptArguments
 {
