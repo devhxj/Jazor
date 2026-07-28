@@ -14,6 +14,14 @@ internal static partial class DirectRenderCaseCatalog
         AddGenericRenderFragmentCases(cases);
         AddConditionalElementAttributeCases(cases);
         AddConditionalComponentParameterCases(cases);
+        AddNestedControlFlowCases(cases);
+        AddAttributeCollectionCases(cases);
+        AddEventMetadataCases(cases);
+        AddComponentSlotCompositionCases(cases);
+        AddComponentExpressionCases(cases);
+        AddMixedStaticDynamicCases(cases);
+        AddReturnGuardCases(cases);
+        AddBuilderMutationCases(cases);
     }
 
     private static void AddRegionCompositionCases(List<DirectRenderCase> cases)
@@ -556,7 +564,8 @@ internal static partial class DirectRenderCaseCatalog
                     group: DirectRenderCaseGroup.Advanced,
                     members: members,
                     usesProps: true,
-                    importCount: 1);
+                    importCount: 1,
+                    tertiaryExpectedFragment: marker);
             }
         }
     }
@@ -580,7 +589,7 @@ internal static partial class DirectRenderCaseCatalog
                         additional = "heading";
                         break;
                     case 1:
-                        conditional = "if (Visible) { builder.AddComponentParameter(1, \"Count\", " + hostIndex.ToString(CultureInfo.InvariantCulture) + "); }";
+                        conditional = "if (Visible) { builder.AddComponentParameter(1, \"Count\", " + hostIndex.ToString(CultureInfo.InvariantCulture) + "); builder.AddComponentParameter(2, \"Title\", " + CSharpStringLiteral(marker) + "); }";
                         additional = "count";
                         break;
                     case 2:
@@ -620,7 +629,8 @@ internal static partial class DirectRenderCaseCatalog
                     group: DirectRenderCaseGroup.Advanced,
                     members: "[Parameter] public bool Visible { get; set; }",
                     usesProps: true,
-                    importCount: 2);
+                    importCount: 2,
+                    tertiaryExpectedFragment: marker);
             }
         }
     }

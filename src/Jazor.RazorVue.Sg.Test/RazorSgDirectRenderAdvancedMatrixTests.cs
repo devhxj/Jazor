@@ -21,6 +21,8 @@ public sealed class RazorSgDirectRenderAdvancedMatrixTests
         StringAssert.Contains(emitted, testCase.ExpectedFragment, StringComparison.Ordinal);
         if (testCase.AdditionalExpectedFragment is not null)
             StringAssert.Contains(emitted, testCase.AdditionalExpectedFragment, StringComparison.Ordinal);
+        if (testCase.TertiaryExpectedFragment is not null)
+            StringAssert.Contains(emitted, testCase.TertiaryExpectedFragment, StringComparison.Ordinal);
         if (testCase.UnexpectedFragment is not null)
             Assert.IsFalse(emitted.Contains(testCase.UnexpectedFragment, StringComparison.Ordinal), emitted);
         Assert.AreEqual(testCase.UsesFragment, observation.UsesFragment);

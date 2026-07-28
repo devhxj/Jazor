@@ -167,6 +167,7 @@ public sealed record DirectRenderCase(
     bool UsesProps,
     bool UsesSlots,
     int ImportCount,
+    string? TertiaryExpectedFragment,
     string? UnexpectedFragment);
 
 public enum DirectRenderCaseGroup
@@ -605,6 +606,7 @@ internal static partial class DirectRenderCaseCatalog
         bool usesProps = false,
         bool usesSlots = false,
         int importCount = 0,
+        string? tertiaryExpectedFragment = null,
         string? unexpectedFragment = null)
     {
         var typeName = "DirectRender" + cases.Count.ToString("D3", System.Globalization.CultureInfo.InvariantCulture);
@@ -621,6 +623,7 @@ internal static partial class DirectRenderCaseCatalog
             usesProps,
             usesSlots,
             importCount,
+            tertiaryExpectedFragment,
             unexpectedFragment));
     }
 
