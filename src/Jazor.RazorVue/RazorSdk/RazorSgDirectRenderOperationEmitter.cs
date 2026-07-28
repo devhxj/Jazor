@@ -2881,7 +2881,9 @@ internal static class RazorSgDirectRenderOperationEmitter
                 return;
             }
 
-            Stack.Peek().Children.Add(expression);
+            var frame = Stack.Peek();
+            frame.ChildrenStarted = true;
+            frame.Children.Add(expression);
         }
 
         public void AddChildSequence(Expression expression)
@@ -2895,7 +2897,9 @@ internal static class RazorSgDirectRenderOperationEmitter
                 return;
             }
 
-            Stack.Peek().Children.Add(new SpreadElement(
+            var frame = Stack.Peek();
+            frame.ChildrenStarted = true;
+            frame.Children.Add(new SpreadElement(
                 VueSlotAstFactory.NormalizeContent(expression)));
         }
 
