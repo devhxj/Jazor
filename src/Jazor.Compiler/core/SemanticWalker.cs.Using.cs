@@ -362,7 +362,17 @@ public partial class SemanticWalker
 			return disposeMethod;
 
 		if (TryResolveUsingDisposeInterfaceImplementation(resourceType, interfaceDisplayName, methodName, out disposeMethod))
+		{
+			if (disposeMethod.MethodKind == MethodKind.ExplicitInterfaceImplementation)
+			{
+				return HandleTransformationFailure<IMethodSymbol>(
+					originOperation,
+					$"Using resource type '{resourceType.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' " +
+					$"resolves {methodName}() to an explicit interface implementation, which does not have a supported JavaScript runtime slot.");
+			}
+
 			return disposeMethod;
+		}
 
 		if (requireInterfaceFallback &&
 			TryResolveUsingDisposeMethodByInterface(resourceType, interfaceDisplayName, methodName, out disposeMethod))
