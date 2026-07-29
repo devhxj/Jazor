@@ -820,7 +820,7 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
     private Expression BuildPropsAccess(ISymbol symbol)
     {
         var runtimeName = GetParameterRuntimeName(symbol);
-        return IsJavaScriptIdentifierName(runtimeName)
+        return JavaScriptAstFactory.IsJavaScriptIdentifierName(runtimeName)
             ? new MemberExpression(
                 new Identifier(_propsIdentifier),
                 new Identifier(runtimeName),
@@ -853,23 +853,5 @@ public sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
            !string.IsNullOrWhiteSpace(runtimeName)
             ? runtimeName
             : GetMemberName(symbol);
-
-    private static bool IsJavaScriptIdentifierName(string value)
-    {
-        if (string.IsNullOrEmpty(value) ||
-            !(char.IsLetter(value[0]) || value[0] == '_' || value[0] == '$'))
-        {
-            return false;
-        }
-
-        for (var index = 1; index < value.Length; index++)
-        {
-            var ch = value[index];
-            if (!(char.IsLetterOrDigit(ch) || ch == '_' || ch == '$'))
-                return false;
-        }
-
-        return true;
-    }
 
 }

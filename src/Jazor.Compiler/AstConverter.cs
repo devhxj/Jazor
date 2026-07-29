@@ -530,7 +530,11 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private static ExportNamedDeclaration CreateNamedExport(string localName, string exportName)
         => new ExportNamedDeclaration(
             null!,
-            NodeList.From([new ExportSpecifier(new Identifier(localName), new Identifier(exportName))]),
+            NodeList.From([
+                new ExportSpecifier(
+                    new Identifier(localName),
+                    JavaScriptAstFactory.CreateModuleExportName(exportName))
+            ]),
             null,
             NodeList.From<ImportAttribute>([]));
 
@@ -1706,11 +1710,15 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         AstConverterProfile profile)
     {
         var preferredName = GetPreferredModuleDeclaredName(symbol, profile);
-        if (!localNames.Contains(preferredName) && usedDeclaredNames.Add(preferredName))
+        if (JavaScriptAstFactory.IsJavaScriptBindingIdentifier(preferredName) &&
+            !localNames.Contains(preferredName) &&
+            usedDeclaredNames.Add(preferredName))
+        {
             return preferredName;
+        }
 
         var sourceName = GetSourceDeclaredNameCandidate(symbol);
-        if (!string.IsNullOrEmpty(sourceName) &&
+        if (JavaScriptAstFactory.IsJavaScriptBindingIdentifier(sourceName) &&
             !localNames.Contains(sourceName!) &&
             usedDeclaredNames.Add(sourceName!))
         {

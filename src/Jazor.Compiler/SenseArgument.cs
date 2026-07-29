@@ -287,7 +287,8 @@ public record struct SenseArgument
         if (_specifiers is null || _importBindings is null)
             return new Identifier(importedName);
 
-        if (!UseImportAliases)
+        var requiresAlias = !JavaScriptAstFactory.IsJavaScriptBindingIdentifier(importedName);
+        if (!UseImportAliases && !requiresAlias)
         {
             MergeImportSpecifier(modulePath!, new ImportSpecifier(new Identifier(importedName)));
             return new Identifier(importedName);
@@ -296,10 +297,6 @@ public record struct SenseArgument
         var key = $"{modulePath}\0{importedName}";
         if (_importBindings.TryGetValue(key, out var localName))
             return new Identifier(localName);
-
-        // `default` 作为 import binding 名称在 JS 里不合法，必须走别名导入：
-        // import { default as localName } from "...";
-        var requiresAlias = string.Equals(importedName, "default", System.StringComparison.Ordinal);
 
         var preferRawImportName =
             !requiresAlias &&
@@ -364,10 +361,9 @@ public record struct SenseArgument
         if (string.Equals(importedName, "default", System.StringComparison.Ordinal))
             return new ImportDefaultSpecifier(new Identifier(localName));
 
-        if (string.Equals(importedName, localName, System.StringComparison.Ordinal))
-            return new ImportSpecifier(new Identifier(importedName));
-
-        return new ImportSpecifier(new Identifier(importedName), new Identifier(localName));
+        return new ImportSpecifier(
+            JavaScriptAstFactory.CreateModuleExportName(importedName),
+            new Identifier(localName));
     }
 
     private readonly record struct VariableDeclaratorKey(int Depth, string Name);
