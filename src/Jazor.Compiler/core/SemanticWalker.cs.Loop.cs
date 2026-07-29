@@ -1,5 +1,7 @@
 ﻿using Acornima.Ast;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,12 +23,187 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitForEachLoop(IForEachLoopOperation operation, SenseArgument argument)
 	{
-		// 获取循环变量 - 使用 LoopControlVariable 直接访问
-		var left = CreateForEachLoopBinding(Translate<Node>(operation.LoopControlVariable, argument));
+		var left = CreateForEachLoopBinding(operation, argument);
 		var right = Translate<Expression>(operation.Collection, argument);
 		var body = Translate<Statement>(operation.Body, argument);
 
 		return new ForOfStatement(left, right, body, @await: operation.IsAsynchronous);
+	}
+
+	private Node CreateForEachLoopBinding(IForEachLoopOperation operation, SenseArgument argument)
+	{
+		var targetTuple = GetForEachTargetTuple(operation.LoopControlVariable);
+		if (targetTuple is null)
+			return CreateForEachLoopBinding(Translate<Node>(operation.LoopControlVariable, argument));
+
+		var elementType = GetForEachElementType(operation);
+		if (elementType is INamedTypeSymbol namedElementType &&
+			CanLowerForEachDeconstructionSource(namedElementType))
+		{
+			var pattern = BuildForEachDeconstructionPattern(targetTuple, namedElementType, argument);
+			return CreateForEachLoopBinding(pattern);
+		}
+
+		var elementDisplayName = elementType?.ToDisplayString(Jazor.Common.Format.NameFormat) ?? "<unknown>";
+		return HandleTransformationFailure<Node>(
+			operation,
+			$"For-each deconstruction source type '{elementDisplayName}' does not have a compiler-known structural runtime shape. " +
+			"Use an ordinary loop variable and deconstruct it inside the loop body.");
+	}
+
+	private static ITupleOperation? GetForEachTargetTuple(IOperation loopControlVariable)
+		=> loopControlVariable switch
+		{
+			IDeclarationExpressionOperation { Expression: ITupleOperation tuple } => tuple,
+			ITupleOperation tuple => tuple,
+			_ => null
+		};
+
+	private static ITypeSymbol? GetForEachElementType(IForEachLoopOperation operation)
+	{
+		if (operation.SemanticModel is null ||
+			operation.Syntax is not CommonForEachStatementSyntax syntax)
+		{
+			return null;
+		}
+
+		return operation.SemanticModel.GetForEachStatementInfo(syntax).ElementType;
+	}
+
+	private Node BuildForEachDeconstructionPattern(
+		ITupleOperation targetTuple,
+		INamedTypeSymbol sourceType,
+		SenseArgument argument)
+		=> IsKeyValuePairType(sourceType)
+			? BuildForEachKeyValuePairPattern(targetTuple, sourceType, argument)
+			: BuildForEachObjectPattern(targetTuple, sourceType, argument);
+
+	private ObjectPattern BuildForEachObjectPattern(
+		ITupleOperation targetTuple,
+		INamedTypeSymbol sourceType,
+		SenseArgument argument)
+	{
+		var properties = new List<Node>();
+		for (var index = 0; index < targetTuple.Elements.Length; index++)
+		{
+			var targetElement = targetTuple.Elements[index];
+			if (targetElement is IDiscardOperation)
+				continue;
+
+			if (!TryGetForEachSourceSlot(sourceType, index, out var propertyName, out var propertyType))
+			{
+				return HandleTransformationFailure<ObjectPattern>(
+					targetTuple,
+					$"For-each deconstruction source type '{sourceType.ToDisplayString(Jazor.Common.Format.NameFormat)}' " +
+					$"does not expose structural slot {index}.");
+			}
+
+			var value = BuildForEachDeconstructionValue(
+				targetElement,
+				propertyType,
+				sourceType,
+				index,
+				argument);
+
+			properties.Add(new AssignmentProperty(
+				key: CreateObjectPropertyKey(propertyName),
+				value: value,
+				computed: false,
+				shorthand: false));
+		}
+
+		return WithOrigin(new ObjectPattern(NodeList.From(properties)), targetTuple);
+	}
+
+	private ArrayPattern BuildForEachKeyValuePairPattern(
+		ITupleOperation targetTuple,
+		INamedTypeSymbol sourceType,
+		SenseArgument argument)
+	{
+		if (targetTuple.Elements.Length != sourceType.TypeArguments.Length)
+		{
+			return HandleTransformationFailure<ArrayPattern>(
+				targetTuple,
+				$"For-each KeyValuePair deconstruction requires {sourceType.TypeArguments.Length} target slots, " +
+				$"but found {targetTuple.Elements.Length}.");
+		}
+
+		var elements = new List<Node?>();
+		for (var index = 0; index < targetTuple.Elements.Length; index++)
+		{
+			var targetElement = targetTuple.Elements[index];
+			if (targetElement is IDiscardOperation)
+			{
+				elements.Add(null);
+				continue;
+			}
+
+			elements.Add(BuildForEachDeconstructionValue(
+				targetElement,
+				sourceType.TypeArguments[index],
+				sourceType,
+				index,
+				argument));
+		}
+
+		return WithOrigin(new ArrayPattern(NodeList.From(elements)), targetTuple);
+	}
+
+	private Node BuildForEachDeconstructionValue(
+		IOperation targetElement,
+		ITypeSymbol sourceSlotType,
+		INamedTypeSymbol sourceType,
+		int index,
+		SenseArgument argument)
+	{
+		var nestedTarget = GetForEachTargetTuple(targetElement);
+		if (nestedTarget is null)
+			return Translate<Expression>(targetElement, argument);
+
+		if (sourceSlotType is INamedTypeSymbol nestedSourceType &&
+			CanLowerForEachDeconstructionSource(nestedSourceType))
+		{
+			return BuildForEachDeconstructionPattern(nestedTarget, nestedSourceType, argument);
+		}
+
+		return HandleTransformationFailure<Node>(
+			targetElement,
+			$"Nested for-each deconstruction slot {index} on source type " +
+			$"'{sourceType.ToDisplayString(Jazor.Common.Format.NameFormat)}' does not have a structural runtime shape.");
+	}
+
+	private bool CanLowerForEachDeconstructionSource(INamedTypeSymbol sourceType)
+		=> sourceType.IsTupleType ||
+		   IsKeyValuePairType(sourceType) ||
+		   ShouldLowerStructurally(sourceType);
+
+	private static bool IsKeyValuePairType(INamedTypeSymbol sourceType)
+		=> sourceType.OriginalDefinition.MetadataName == "KeyValuePair`2" &&
+		   sourceType.OriginalDefinition.ContainingNamespace.ToDisplayString() == "System.Collections.Generic";
+
+	private bool TryGetForEachSourceSlot(
+		INamedTypeSymbol sourceType,
+		int index,
+		out string propertyName,
+		out ITypeSymbol propertyType)
+	{
+		if (sourceType.IsTupleType && index < sourceType.TupleElements.Length)
+		{
+			var field = sourceType.TupleElements[index];
+			propertyName = GetTupleRuntimeFieldName(field);
+			propertyType = field.Type;
+			return true;
+		}
+
+		if (ShouldLowerStructurally(sourceType) &&
+			TryGetStructuralRuntimeProperty(sourceType, index, out propertyName, out propertyType))
+		{
+			return true;
+		}
+
+		propertyName = null!;
+		propertyType = null!;
+		return false;
 	}
 
 	private static Node CreateForEachLoopBinding(Node loopControl)

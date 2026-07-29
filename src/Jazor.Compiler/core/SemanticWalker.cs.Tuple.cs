@@ -36,8 +36,16 @@ public partial class SemanticWalker
 		=> IsStructuralType(namedType);
 
 	private bool TryGetStructuralRuntimePropertyName(INamedTypeSymbol structuralType, int index, out string propertyName)
+		=> TryGetStructuralRuntimeProperty(structuralType, index, out propertyName, out _);
+
+	private bool TryGetStructuralRuntimeProperty(
+		INamedTypeSymbol structuralType,
+		int index,
+		out string propertyName,
+		out ITypeSymbol propertyType)
 	{
 		propertyName = null!;
+		propertyType = null!;
 
 		if (StructuralRecordSupport.IsStructuralRecordType(structuralType))
 		{
@@ -56,6 +64,7 @@ public partial class SemanticWalker
 			propertyName = property is null
 				? parameter.Name
 				: Util.GetConfigOrSymbolName(property);
+			propertyType = property?.Type ?? parameter.Type;
 			return true;
 		}
 
@@ -65,7 +74,17 @@ public partial class SemanticWalker
 			return false;
 		}
 
-		propertyName = Util.GetConfigOrSymbolName(members[index]);
+		var member = members[index];
+		propertyName = Util.GetConfigOrSymbolName(member);
+		propertyType = member switch
+		{
+			IPropertySymbol property => property.Type,
+			IFieldSymbol field => field.Type,
+			_ => null!
+		};
+		if (propertyType is null)
+			return false;
+
 		return true;
 	}
 
