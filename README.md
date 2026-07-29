@@ -45,6 +45,7 @@ The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyz
 - Compiler output now preserves nullable underlying defaults and keeps generated temporary names stable across repository relocations and Git worktrees.
 - BigInt-mapped increment and decrement operations now preserve BigInt operands for locals and mapped indexers, including `Int128` and `UInt128` values.
 - Generated CLR modules now include `System.Guid`, preserve UTF-16 character conversion semantics, and emit valid nested conditional-access initializers.
+- Unsupported custom interpolated-string handlers now fail consistently with source-located compiler diagnostics across creation, addition, and append operations.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 

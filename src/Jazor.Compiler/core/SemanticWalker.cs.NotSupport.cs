@@ -359,6 +359,16 @@ public partial class SemanticWalker
 		=> HandleTransformationFailure<Node>(operation, "Interpolated string handler creation operations are not supported in JavaScript conversion.");
 
 	/// <summary>
+	/// 处理多个插值字符串转换到自定义 handler 时产生的拼接操作。
+	/// 该 operation 是 handler conversion 协议的一部分，不能按普通字符串拼接处理。
+	/// </summary>
+	/// <param name="operation">当前访问的 operation</param>
+	/// <param name="argument">当前转换上下文</param>
+	/// <returns>不返回；始终报告不支持</returns>
+	public override Node? VisitInterpolatedStringAddition(IInterpolatedStringAdditionOperation operation, SenseArgument argument)
+		=> HandleTransformationFailure<Node>(operation, "Interpolated string addition operations are not supported in JavaScript conversion because they belong to custom interpolated string handler conversions.");
+
+	/// <summary>
 	/// 处理插值字符串追加操作
 	/// C# 示例：
 	/// 在插值字符串处理器中追加内容的操作

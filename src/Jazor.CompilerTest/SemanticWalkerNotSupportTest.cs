@@ -485,7 +485,7 @@ public sealed class SemanticWalkerNotSupportTest
     public void UnsupportedHandlerCatalog_HasUniqueIdsMethodsAndOperationTypes()
     {
         var handlers = LoadNotSupportHandlers();
-        Assert.HasCount(31, handlers);
+        Assert.HasCount(32, handlers);
         Assert.HasCount(handlers.Count, handlers.Select(static item => item.Id).Distinct(StringComparer.Ordinal));
         Assert.HasCount(handlers.Count, handlers.Select(static item => item.MethodName).Distinct(StringComparer.Ordinal));
         Assert.HasCount(handlers.Count, handlers.Select(static item => item.OperationType).Distinct());
