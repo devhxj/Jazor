@@ -61,7 +61,6 @@
 - `UniqueNameAllocatorTests.cs`
 - `WhiteListLookupCompatibilityTests.cs`
 - `OptimizerTest.cs`
-- `OutputGenTest.cs`
 
 关注点：
 
@@ -83,7 +82,6 @@
 
 ## 辅助文件
 
-- `TestHelper.cs`：Roslyn 编译、`IOperation` 抽取与常用断言入口
 - `SourceMapTestHelpers.cs`：SourceMap 断言与读取辅助
 - `MSTestSettings.cs`：测试设置
 - `coverlet.runsettings`：覆盖率配置
