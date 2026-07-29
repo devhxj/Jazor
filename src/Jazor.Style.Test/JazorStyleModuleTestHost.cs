@@ -10,7 +10,7 @@ internal static class JazorStyleModuleTestHost
 {
     public static ModuleRecord GetRuntimeModule()
     {
-        var assembly = typeof(Css).Assembly;
+        var assembly = typeof(css).Assembly;
         var catalogType = assembly.GetType("Jazor.Generated.ModuleCatalog", throwOnError: false, ignoreCase: false)
             ?? throw new InvalidOperationException("Jazor.Style module catalog was not generated.");
         var getModules = catalogType.GetMethod("GetModules", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)

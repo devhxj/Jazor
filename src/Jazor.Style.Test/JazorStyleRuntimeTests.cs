@@ -10,8 +10,8 @@ public sealed class JazorStyleRuntimeTests
     {
         var result = await JazorStyleModuleTestHost.RunDenoAsync(
             """
-            import { css } from "./runtime.mjs";
-            console.log(css({ color: "red" }));
+            import { style } from "./runtime.mjs";
+            console.log(style({ color: "red" }));
             """);
 
         Assert.AreEqual(0, result.ExitCode, result.StandardError);
@@ -23,7 +23,7 @@ public sealed class JazorStyleRuntimeTests
     {
         var result = await JazorStyleModuleTestHost.RunDenoAsync(
             """
-            import { css as cssClass, keyframes, global as cssGlobal, extract } from "./runtime.mjs";
+            import { style, keyframes, global as cssGlobal, extract } from "./runtime.mjs";
 
             const rule = {
               display: "block",
@@ -41,8 +41,8 @@ public sealed class JazorStyleRuntimeTests
               ]
             };
 
-            const first = cssClass(rule);
-            const second = cssClass({ color: "red", display: "block", $additional: rule.$additional, $children: rule.$children });
+            const first = style(rule);
+            const second = style({ color: "red", display: "block", $additional: rule.$additional, $children: rule.$children });
             const animation = keyframes([
               { selector: "from", declarations: { opacity: "0" } },
               { selector: "50%, to", declarations: { opacity: "1" } }
@@ -107,13 +107,13 @@ public sealed class JazorStyleRuntimeTests
 
             const firstModule = await import("./runtime.mjs");
             firstModule.configure({ nonce: "nonce-1" });
-            const firstName = firstModule.css({ color: "red", content: "'汉字'" });
+            const firstName = firstModule.style({ color: "red", content: "'汉字'" });
             const style = documentHost.getElementById("jazor-css");
             const beforeReload = style.textContent;
 
             const secondModule = await import("./runtime.mjs?reload=1");
             secondModule.configure({ nonce: "nonce-1" });
-            const secondName = secondModule.css({ content: "'汉字'", color: "red" });
+            const secondName = secondModule.style({ content: "'汉字'", color: "red" });
 
             console.log(JSON.stringify({
               firstName,
@@ -144,7 +144,7 @@ public sealed class JazorStyleRuntimeTests
     {
         var result = await JazorStyleModuleTestHost.RunDenoAsync(
             """
-            import { css, keyframes, configure, createContext, atRule } from "./runtime.mjs";
+            import { style, keyframes, configure, context, atRule } from "./runtime.mjs";
 
             const messages = [];
             const capture = action => {
@@ -155,18 +155,18 @@ public sealed class JazorStyleRuntimeTests
             capture(() => configure({ styleId: "  " }));
             capture(() => keyframes([]));
             capture(() => keyframes([{ selector: "101%", declarations: { opacity: "1" } }]));
-            capture(() => css({ $additional: [{ name: "bad:name", value: "x", important: false }] }));
-            capture(() => css({ $children: [{ kind: "selector", prelude: "@layer x", rule: { color: "red" } }] }));
-            capture(() => css({ $children: [{ kind: "selector", prelude: ":is(&:hover", rule: { color: "red" } }] }));
-            capture(() => css({ $children: [{ kind: "media", prelude: "screen; @import 'x'", rule: { color: "red" } }] }));
-            capture(() => css({ $children: [{ kind: "container", prelude: null, rule: { color: "red" } }] }));
-            capture(() => css({ $children: [{ kind: "starting-style", prelude: "invalid", rule: { color: "red" } }] }));
+            capture(() => style({ $additional: [{ name: "bad:name", value: "x", important: false }] }));
+            capture(() => style({ $children: [{ kind: "selector", prelude: "@layer x", rule: { color: "red" } }] }));
+            capture(() => style({ $children: [{ kind: "selector", prelude: ":is(&:hover", rule: { color: "red" } }] }));
+            capture(() => style({ $children: [{ kind: "media", prelude: "screen; @import 'x'", rule: { color: "red" } }] }));
+            capture(() => style({ $children: [{ kind: "container", prelude: null, rule: { color: "red" } }] }));
+            capture(() => style({ $children: [{ kind: "starting-style", prelude: "invalid", rule: { color: "red" } }] }));
             capture(() => atRule({ name: "@font-face", declarations: { src: "url(font.woff2)" } }));
             capture(() => atRule({ name: "1invalid", declarations: {} }));
             capture(() => atRule({ name: "-1invalid", declarations: {} }));
-            capture(() => createContext({ detached: true, target: {} }));
+            capture(() => context({ detached: true, target: {} }));
 
-            css({ color: "red" });
+            style({ color: "red" });
             capture(() => configure({ nonce: "late" }));
             console.log(JSON.stringify(messages));
             """);
@@ -197,8 +197,8 @@ public sealed class JazorStyleRuntimeTests
     {
         var result = await JazorStyleModuleTestHost.RunDenoAsync(
             """
-            import { css, extract } from "./runtime.mjs";
-            const name = css({
+            import { style, extract } from "./runtime.mjs";
+            const name = style({
               $children: [{
                 kind: "selector",
                 prelude: ":is(&:hover, &:focus), [data-value=\"a,b\"] &",
@@ -221,16 +221,16 @@ public sealed class JazorStyleRuntimeTests
     {
         var result = await JazorStyleModuleTestHost.RunDenoAsync(
             """
-            import { css, keyframes, global, extract } from "./runtime.mjs";
+            import { style, keyframes, global, extract } from "./runtime.mjs";
 
             const additional = [
               { name: "display", value: "-webkit-box", important: false },
               { name: "display", value: "flex", important: false }
             ];
-            const first = css({ color: null, margin: "0", display: "", $additional: additional });
-            const reordered = css({ display: "", margin: "0", color: null, $additional: additional });
-            const reversedFallback = css({ display: "", margin: "0", $additional: [...additional].reverse() });
-            const different = css({ margin: "1px" });
+            const first = style({ color: null, margin: "0", display: "", $additional: additional });
+            const reordered = style({ display: "", margin: "0", color: null, $additional: additional });
+            const reversedFallback = style({ display: "", margin: "0", $additional: [...additional].reverse() });
+            const different = style({ margin: "1px" });
             const animation = keyframes([{ selector: "from", declarations: { margin: "0" } }]);
             global("body", { margin: "0" });
             const beforeDuplicate = extract();
@@ -268,8 +268,8 @@ public sealed class JazorStyleRuntimeTests
     {
         var result = await JazorStyleModuleTestHost.RunDenoAsync(
             """
-            import { css, extract } from "./runtime.mjs";
-            const name = css({
+            import { style, extract } from "./runtime.mjs";
+            const name = style({
               $children: [
                 { kind: "media", prelude: "(width >= 40rem)", rule: {
                     $children: [
@@ -298,7 +298,7 @@ public sealed class JazorStyleRuntimeTests
         var result = await JazorStyleModuleTestHost.RunDenoAsync(
             """
             const memoryModule = await import("./runtime.mjs");
-            const name = memoryModule.css({ color: "red" });
+            const name = memoryModule.style({ color: "red" });
 
             class Element {
               constructor(localName, owner) {
@@ -328,7 +328,7 @@ public sealed class JazorStyleRuntimeTests
             };
 
             globalThis.document = createDocument();
-            const cachedName = memoryModule.css({ color: "red" });
+            const cachedName = memoryModule.style({ color: "red" });
             const attached = document.getElementById("jazor-css");
 
             const messages = [];
@@ -344,7 +344,7 @@ public sealed class JazorStyleRuntimeTests
               document.byId.set("jazor-css", existing);
               try {
                 if (query === "nonce-mismatch") module.configure({ nonce: "new" });
-                module.css({ color: "blue" });
+                module.style({ color: "blue" });
                 messages.push("missing-error");
               } catch (error) {
                 messages.push(error.message);
@@ -377,8 +377,8 @@ public sealed class JazorStyleRuntimeTests
         var result = await JazorStyleModuleTestHost.RunDenoAsync(
             """
             import {
-              createContext,
-              classIn,
+              context,
+              styleIn,
               keyframesIn,
               globalIn,
               atRuleIn,
@@ -387,11 +387,11 @@ public sealed class JazorStyleRuntimeTests
               snapshotFrom
             } from "./runtime.mjs";
 
-            const first = createContext({ detached: true, styleId: "ssr-css", nonce: "nonce-ssr" });
-            const second = createContext({ detached: true });
+            const first = context({ detached: true, styleId: "ssr-css", nonce: "nonce-ssr" });
+            const second = context({ detached: true });
             const rule = { color: "red", display: "grid" };
-            const firstName = classIn(first, rule);
-            const secondName = classIn(second, rule);
+            const firstName = styleIn(first, rule);
+            const secondName = styleIn(second, rule);
             const animation = keyframesIn(first, [
               { selector: "from", declarations: { opacity: "0" } },
               { selector: "to", declarations: { opacity: "1" } }
@@ -443,9 +443,9 @@ public sealed class JazorStyleRuntimeTests
     {
         var result = await JazorStyleModuleTestHost.RunDenoAsync(
             """
-            import { css, extract } from "./runtime.mjs";
+            import { style, extract } from "./runtime.mjs";
 
-            const name = css({
+            const name = style({
               color: "black",
               $children: [
                 { kind: "layer", prelude: "components", rule: { color: "red" } },
@@ -478,7 +478,7 @@ public sealed class JazorStyleRuntimeTests
     {
         var result = await JazorStyleModuleTestHost.RunDenoAsync(
             """
-            import { createContext, classIn, snapshotFrom } from "./runtime.mjs";
+            import { context, styleIn, snapshotFrom } from "./runtime.mjs";
 
             class Element {
               constructor(localName, ownerDocument) {
@@ -509,11 +509,11 @@ public sealed class JazorStyleRuntimeTests
               }
             };
 
-            const first = createContext({ target, styleId: "shadow-css", nonce: "shadow-nonce" });
-            const firstName = classIn(first, { color: "red" });
+            const first = context({ target, styleId: "shadow-css", nonce: "shadow-nonce" });
+            const firstName = styleIn(first, { color: "red" });
             const beforeReload = target.children[0].textContent;
-            const second = createContext({ target, styleId: "shadow-css", nonce: "shadow-nonce" });
-            const secondName = classIn(second, { color: "red" });
+            const second = context({ target, styleId: "shadow-css", nonce: "shadow-nonce" });
+            const secondName = styleIn(second, { color: "red" });
             const snapshot = snapshotFrom(second);
 
             console.log(JSON.stringify({

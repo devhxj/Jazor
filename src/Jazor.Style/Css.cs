@@ -1,7 +1,7 @@
 namespace Jazor.Style;
 
 [ECMAScriptModule("Jazor.Style/runtime.mjs")]
-public static partial class Css
+public static partial class css
 {
     private const string VersionPrefix = "jazor-css:v1\0";
     private const string RootSelectorToken = ".__jazor_css_root__";
@@ -9,13 +9,13 @@ public static partial class Css
     private const string AdditionalKey = "$additional";
     private const string ChildrenKey = "$children";
 
-    private static readonly CssContext DefaultContext = CreateContextCore(new CssOptions());
+    private static readonly CssContext DefaultContext = createContextCore(new CssOptions());
 
-    [Description("@#css")]
-    public static string Class(CssRule rule)
-        => ClassIn(DefaultContext, rule);
+    public static string style(CssRule rule)
+        => style(DefaultContext, rule);
 
-    public static string ClassIn(CssContext context, CssRule rule)
+    [ECMAScriptName("styleIn")]
+    public static string style(CssContext context, CssRule rule)
     {
         var canonicalBody = SerializeRule(rule, RootSelectorToken);
         var canonical = VersionPrefix + "class\0" + canonicalBody;
@@ -31,10 +31,11 @@ public static partial class Css
         return name;
     }
 
-    public static string Keyframes(params CssFrame[] frames)
-        => KeyframesIn(DefaultContext, frames);
+    public static string keyframes(params CssFrame[] frames)
+        => keyframes(DefaultContext, frames);
 
-    public static string KeyframesIn(CssContext context, CssFrame[] frames)
+    [ECMAScriptName("keyframesIn")]
+    public static string keyframes(CssContext context, CssFrame[] frames)
     {
         if (frames.Length == 0)
             Fail("Keyframes requires at least one frame.");
@@ -52,10 +53,11 @@ public static partial class Css
         return name;
     }
 
-    public static void Global(string selector, CssRule rule)
-        => GlobalIn(DefaultContext, selector, rule);
+    public static void global(string selector, CssRule rule)
+        => global(DefaultContext, selector, rule);
 
-    public static void GlobalIn(CssContext context, string selector, CssRule rule)
+    [ECMAScriptName("globalIn")]
+    public static void global(CssContext context, string selector, CssRule rule)
     {
         var normalizedSelector = NormalizeSelectorList(selector, "Global selector");
         if (normalizedSelector.StartsWith("@"))
@@ -67,10 +69,11 @@ public static partial class Css
         Register(context, canonical, id, body);
     }
 
-    public static void AtRule(CssAtRule rule)
-        => AtRuleIn(DefaultContext, rule);
+    public static void atRule(CssAtRule rule)
+        => atRule(DefaultContext, rule);
 
-    public static void AtRuleIn(CssContext context, CssAtRule rule)
+    [ECMAScriptName("atRuleIn")]
+    public static void atRule(CssContext context, CssAtRule rule)
     {
         var body = SerializeAtRule(rule);
         var canonical = VersionPrefix + "at-rule\0" + body;
@@ -78,19 +81,21 @@ public static partial class Css
         Register(context, canonical, id, body);
     }
 
-    public static string Extract()
-        => ExtractFrom(DefaultContext);
+    public static string extract()
+        => extract(DefaultContext);
 
-    public static string ExtractFrom(CssContext context)
+    [ECMAScriptName("extractFrom")]
+    public static string extract(CssContext context)
     {
         EnsureDomStyle(context);
         return context.EntryBodies.Join("");
     }
 
-    public static CssSnapshot Snapshot()
-        => SnapshotFrom(DefaultContext);
+    public static CssSnapshot snapshot()
+        => snapshot(DefaultContext);
 
-    public static CssSnapshot SnapshotFrom(CssContext context)
+    [ECMAScriptName("snapshotFrom")]
+    public static CssSnapshot snapshot(CssContext context)
     {
         EnsureDomStyle(context);
         return new CssSnapshot(
@@ -100,10 +105,10 @@ public static partial class Css
             BuildHydrationText(context));
     }
 
-    public static CssContext CreateContext(CssOptions? options = null)
-        => CreateContextCore(options ?? new CssOptions());
+    public static CssContext context(CssOptions? options = null)
+        => createContextCore(options ?? new CssOptions());
 
-    private static CssContext CreateContextCore(CssOptions options)
+    private static CssContext createContextCore(CssOptions options)
     {
         var styleId = NormalizeStyleId(options.StyleId);
         if (options.Detached && options.Target is not null)
@@ -123,7 +128,7 @@ public static partial class Css
         };
     }
 
-    public static void Configure(CssOptions options)
+    public static void configure(CssOptions options)
     {
         if (DefaultContext.HasRegistered || DefaultContext.DomHydrated)
             Fail("Configure must be called before the first style registration.");

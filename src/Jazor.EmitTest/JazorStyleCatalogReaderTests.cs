@@ -11,18 +11,18 @@ public sealed class JazorStyleCatalogReaderTests
     [TestMethod]
     public void CatalogReader_TryRead_ReadsJazorStyleRuntimeWithSourceMap()
     {
-        var assembly = typeof(global::Jazor.Style.Css).Assembly;
+        var assembly = typeof(global::Jazor.Style.css).Assembly;
 
         var modules = CatalogReader.TryRead(assembly);
 
         Assert.IsNotNull(modules);
         var module = modules.Single();
         Assert.AreEqual("Jazor.Style", module.AssemblyName);
-        Assert.AreEqual("Jazor.Style.Css", module.TypeName);
+        Assert.AreEqual("Jazor.Style.css", module.TypeName);
         Assert.AreEqual("Jazor.Style/runtime.mjs", module.RelativePath);
-        StringAssert.Contains(module.Content, "export function css(");
-        StringAssert.Contains(module.Content, "export function createContext(");
-        StringAssert.Contains(module.Content, "export function classIn(");
+        StringAssert.Contains(module.Content, " as style };");
+        StringAssert.Contains(module.Content, " as context };");
+        StringAssert.Contains(module.Content, "export function styleIn(");
         StringAssert.Contains(module.Content, "export function atRuleIn(");
         StringAssert.Contains(module.Content, "export function snapshotFrom(");
         Assert.HasCount(64, module.Hash);
@@ -39,7 +39,7 @@ public sealed class JazorStyleCatalogReaderTests
     [TestMethod]
     public void ModuleCollector_Collect_ReadsJazorStyleRuntimeFromReferencedAssembly()
     {
-        var assemblyPath = typeof(global::Jazor.Style.Css).Assembly.Location;
+        var assemblyPath = typeof(global::Jazor.Style.css).Assembly.Location;
         var loadContext = new EmitLoadContext(assemblyPath);
         var collector = new ModuleCollector(loadContext);
         collector.AddAssembly(assemblyPath);

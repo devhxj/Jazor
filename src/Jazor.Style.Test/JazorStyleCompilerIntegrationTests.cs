@@ -22,7 +22,7 @@ public sealed class JazorStyleCompilerIntegrationTests
             [ECMAScriptModule("styles/button.mjs")]
             public static class ButtonStyles
             {
-                public static readonly string Button = Css.Class(new CssRule
+                public static readonly string Button = css.style(new CssRule
                 {
                     Display = "inline-flex",
                     Color = "red",
@@ -48,7 +48,7 @@ public sealed class JazorStyleCompilerIntegrationTests
             Net110.References.All.Concat(
             [
                 MetadataReference.CreateFromFile(typeof(ECMAScriptModuleAttribute).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(Css).Assembly.Location)
+                MetadataReference.CreateFromFile(typeof(css).Assembly.Location)
             ]),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = compilation.GetDiagnostics().Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).ToArray();
@@ -63,7 +63,7 @@ public sealed class JazorStyleCompilerIntegrationTests
         var script = module?.ToKnRECMAScript() ?? string.Empty;
 
         StringAssert.Contains(script, "from \"Jazor.Style/runtime.mjs\"");
-        StringAssert.Contains(script, "css(");
+        StringAssert.Contains(script, "style(");
         StringAssert.Contains(script, "display: \"inline-flex\"");
         StringAssert.Contains(script, "\"background-color\": \"#1769aa\"");
         StringAssert.Contains(script, "\"--button-gap\"");
@@ -82,13 +82,13 @@ public sealed class JazorStyleCompilerIntegrationTests
             [ECMAScriptModule("styles/server.mjs")]
             public static class ServerStyles
             {
-                private static readonly CssContext Context = Css.CreateContext(new CssOptions
+                private static readonly CssContext Context = css.context(new CssOptions
                 {
                     Detached = true,
                     StyleId = "server-css"
                 });
 
-                public static readonly string Card = Css.ClassIn(Context, new CssRule
+                public static readonly string Card = css.style(Context, new CssRule
                 {
                     ContainerType = "inline-size",
                     Children =
@@ -102,14 +102,14 @@ public sealed class JazorStyleCompilerIntegrationTests
 
                 public static CssSnapshot BuildSnapshot()
                 {
-                    Css.AtRuleIn(Context, new CssAtRule(
+                    css.atRule(Context, new CssAtRule(
                         "font-face",
                         new CssDeclarations
                         {
                             FontFamily = "Jazor Sans",
                             ["src"] = "url(jazor.woff2)"
                         }));
-                    return Css.SnapshotFrom(Context);
+                    return css.snapshot(Context);
                 }
             }
             """;
@@ -123,7 +123,7 @@ public sealed class JazorStyleCompilerIntegrationTests
             Net110.References.All.Concat(
             [
                 MetadataReference.CreateFromFile(typeof(ECMAScriptModuleAttribute).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(Css).Assembly.Location)
+                MetadataReference.CreateFromFile(typeof(css).Assembly.Location)
             ]),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = compilation.GetDiagnostics().Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).ToArray();
@@ -137,8 +137,8 @@ public sealed class JazorStyleCompilerIntegrationTests
         var module = await new AstConverter(symbol, semanticModel).Convert();
         var script = module?.ToKnRECMAScript() ?? string.Empty;
 
-        StringAssert.Contains(script, "createContext");
-        StringAssert.Contains(script, "classIn");
+        StringAssert.Contains(script, "context");
+        StringAssert.Contains(script, "styleIn");
         StringAssert.Contains(script, "atRuleIn");
         StringAssert.Contains(script, "snapshotFrom");
         StringAssert.Contains(script, "detached: true");

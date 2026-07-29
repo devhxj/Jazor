@@ -2904,7 +2904,7 @@ public sealed class RazorSgComponentMemberClosureTests
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
-                        var className = Css.Class(new CssRule
+                        var className = css.style(new CssRule
                         {
                             Display = "inline-flex",
                             Color = "white",
@@ -2927,7 +2927,7 @@ public sealed class RazorSgComponentMemberClosureTests
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
         StringAssert.Contains(script, "from \"Jazor.Style/runtime.mjs\";", StringComparison.Ordinal);
-        StringAssert.Contains(script, "const className = css({", StringComparison.Ordinal);
+        StringAssert.Contains(script, "const className = style({", StringComparison.Ordinal);
         StringAssert.Contains(script, "display: \"inline-flex\"", StringComparison.Ordinal);
         StringAssert.Contains(script, "color: \"white\"", StringComparison.Ordinal);
         StringAssert.Contains(script, "\"background-color\": \"#1769aa\"", StringComparison.Ordinal);

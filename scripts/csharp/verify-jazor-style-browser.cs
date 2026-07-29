@@ -21,7 +21,7 @@ Directory.CreateDirectory(root);
 
 try
 {
-    var assembly = typeof(global::Jazor.Style.Css).Assembly;
+    var assembly = typeof(global::Jazor.Style.css).Assembly;
     var runtime = ReadSingleCatalogItem(assembly, "Jazor.Generated.ModuleCatalog");
     var runtimePath = Path.Combine(root, ReadProperty(runtime, "RelativePath").Replace('/', Path.DirectorySeparatorChar));
     Directory.CreateDirectory(Path.GetDirectoryName(runtimePath)!);
@@ -276,7 +276,7 @@ static string GetBrowserHarness() => """
               content: "'\u6c49\u5b57'"
             };
             const target = document.getElementById("target");
-            const firstName = firstModule.css(rule);
+            const firstName = firstModule.style(rule);
             target.className = firstName;
             const style = document.getElementById("jazor-css");
             const beforeReload = style.textContent;
@@ -285,7 +285,7 @@ static string GetBrowserHarness() => """
             const display = firstComputed.display;
 
             secondModule.configure({ nonce: "jazor-css-nonce" });
-            const secondName = secondModule.css({
+            const secondName = secondModule.style({
               color: "white",
               content: "'\u6c49\u5b57'",
               "background-color": "rgb(23, 105, 170)",

@@ -8,11 +8,11 @@ public sealed class JazorStyleCatalogTests
     {
         var module = JazorStyleModuleTestHost.GetRuntimeModule();
         Assert.AreEqual("Jazor.Style/runtime.mjs", module.RelativePath);
-        Assert.AreEqual("Jazor.Style.Css", module.TypeName);
+        Assert.AreEqual("Jazor.Style.css", module.TypeName);
 
         var content = module.Content;
         StringAssert.Contains(content, "export");
-        StringAssert.Contains(content, "export function css(");
+        StringAssert.Contains(content, " as style };");
         StringAssert.Contains(content, "export function keyframes(");
         StringAssert.Contains(content, "export function global(");
         StringAssert.Contains(content, "export function extract(");

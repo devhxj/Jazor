@@ -1,6 +1,6 @@
 namespace Jazor.Style;
 
-public static partial class Css
+public static partial class css
 {
     private static string CombineSelectors(string parentSelector, string childSelector)
     {

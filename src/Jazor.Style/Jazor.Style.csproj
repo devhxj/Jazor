@@ -16,7 +16,7 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <NuspecFile>Jazor.Style.nuspec</NuspecFile>
-    <NoWarn>$(NoWarn);CS0626;CS0824;IDE0130;CA1822;IDE0060;IDE1006</NoWarn>
+    <NoWarn>$(NoWarn);CS0626;CS0824;CS8981;IDE0130;CA1416;CA1822;IDE0060;IDE1006</NoWarn>
     <JazorStyleProjectOutputRoot Condition="'$(JazorIsolatedBaseOutputRoot)' == ''">$(MSBuildThisFileDirectory)..\</JazorStyleProjectOutputRoot>
     <JazorStyleProjectOutputRoot Condition="'$(JazorIsolatedBaseOutputRoot)' != ''">$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseOutputRoot)'))</JazorStyleProjectOutputRoot>
   </PropertyGroup>

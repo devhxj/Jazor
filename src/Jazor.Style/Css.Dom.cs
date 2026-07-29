@@ -1,6 +1,6 @@
 namespace Jazor.Style;
 
-public static partial class Css
+public static partial class css
 {
     private const string RootMarker = "/*jazor-css:v1*/";
     private const string EntryMarkerPrefix = "/*jz:v1:";

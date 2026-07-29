@@ -2152,13 +2152,13 @@ public sealed class SdkIntegrationTests
             [ECMAScriptModule("app.mjs")]
             public static class AppModule
             {
-                private static readonly CssContext Context = Css.CreateContext(new CssOptions
+                private static readonly CssContext Context = css.context(new CssOptions
                 {
                     Detached = true,
                     StyleId = "server-css"
                 });
 
-                public static string ButtonClass() => Css.ClassIn(Context, new CssRule
+                public static string ButtonClass() => css.style(Context, new CssRule
                 {
                     Color = "white",
                     BackgroundColor = "#1769aa",
@@ -2173,14 +2173,14 @@ public sealed class SdkIntegrationTests
 
                 public static CssSnapshot Snapshot()
                 {
-                    Css.AtRuleIn(Context, new CssAtRule(
+                    css.atRule(Context, new CssAtRule(
                         "font-face",
                         new CssDeclarations
                         {
                             FontFamily = "Jazor Sans",
                             ["src"] = "url(jazor.woff2)"
                         }));
-                    return Css.SnapshotFrom(Context);
+                    return css.snapshot(Context);
                 }
             }
             """);
