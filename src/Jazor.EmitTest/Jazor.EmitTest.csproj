@@ -23,7 +23,7 @@
     <ProjectReference Include="..\Jazor.AspNetCore\Jazor.AspNetCore.csproj" />
     <ProjectReference Include="..\Jazor.AspNetCore.Dev\Jazor.AspNetCore.Dev.csproj" />
     <ProjectReference Include="..\Jazor.Common\Jazor.Common.csproj" />
-    <ProjectReference Include="..\Jazor.Css\Jazor.Css.csproj" />
+    <ProjectReference Include="..\Jazor.Style\Jazor.Style.csproj" />
     <ProjectReference Include="..\ECMAScript.Contract\ECMAScript.Contract.csproj" />
     <ProjectReference Include="..\ECMAScript.Vuetify\ECMAScript.Vuetify.csproj" />
     <ProjectReference Include="..\Jazor.Emit\Jazor.Emit.csproj" />

@@ -40,7 +40,7 @@ The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyz
 
 ### 2026-07-29
 
-- `Jazor.Css` provides deterministic, framework-neutral CSS-in-JS authoring with generated properties, modern structured at-rules, isolated registries, Shadow DOM targets, SSR snapshots, and idempotent hydration.
+- `Jazor.Style` provides deterministic, framework-neutral CSS-in-JS authoring with generated properties, modern structured at-rules, isolated registries, Shadow DOM targets, SSR snapshots, and idempotent hydration.
 - RazorVue direct rendering preserves dynamic event-modifier conditions and supports helper-composed output with root-level local declarations.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
@@ -67,7 +67,7 @@ Add ecosystem packages explicitly when needed:
 ```xml
 <ItemGroup>
   <PackageReference Include="Jazor" Version="0.1.32" />
-  <PackageReference Include="Jazor.Css" Version="0.1.32" />
+  <PackageReference Include="Jazor.Style" Version="0.1.32" />
   <PackageReference Include="ECMAScript.Pinia" Version="0.1.32" />
   <PackageReference Include="ECMAScript.VueRoute" Version="0.1.32" />
   <PackageReference Include="ECMAScript.Vuetify" Version="0.1.32" />
@@ -139,10 +139,10 @@ See the [Razor-to-Vue design](docs/01-%E7%9B%AE%E6%A0%87/razorvue/README.md) for
 
 ### Deterministic CSS-in-JS
 
-Reference `Jazor.Css` when an application needs structured runtime styles:
+Reference `Jazor.Style` when an application needs structured runtime styles:
 
 ```csharp
-using Jazor.Css;
+using Jazor.Style;
 
 var actionClass = Css.Class(new CssRule
 {
@@ -161,7 +161,7 @@ var actionClass = Css.Class(new CssRule
 
 The package generates standard CSS properties from Webref, derives stable names from normalized content, and manages nonce-aware stylesheets for `document` or `ShadowRoot`. Detached `CssContext` instances provide request-local extraction and hydration snapshots. `Css.Class` remains a plain string and works in ordinary modules and RazorVue `class` attributes without an adapter. The package uses the existing `JazorMode` output contract and adds no CSS-specific MSBuild property.
 
-See the [Jazor.Css package guide](src/Jazor.Css/README.md) and [design boundary](docs/01-%E7%9B%AE%E6%A0%87/jazor.css/README.md).
+See the [Jazor.Style package guide](src/Jazor.Style/README.md) and [design boundary](docs/01-%E7%9B%AE%E6%A0%87/jazor.style/README.md).
 
 ## MSBuild Properties
 
@@ -206,7 +206,7 @@ Jazor/
 │   ├── Jazor.Analyzer/              # Static analyzer diagnostics
 │   ├── Jazor.RazorVue/              # Generator integration, SG binding, and Vue render framing
 │   ├── Jazor.Emit/                  # Materialization, manifests, source maps, and bundling
-│   ├── Jazor.Css/                   # Deterministic, framework-neutral CSS-in-JS runtime
+│   ├── Jazor.Style/                   # Deterministic, framework-neutral CSS-in-JS runtime
 │   ├── Jazor.Common/                # Shared formatting/source-map utilities and contracts
 │   ├── Jazor.AspNetCore*/           # ASP.NET Core runtime and dev integration
 │   ├── Jazor/                       # NuGet package bundling core SDK assets
@@ -260,7 +260,7 @@ Repository automation scripts should be single-file C# entrypoints under `script
 | Compiler implementation principles | [src/Jazor.Compiler/ImplementationPrinciples.md](src/Jazor.Compiler/ImplementationPrinciples.md) |
 | Compiler status | [docs/03-完成/compiler/status.md](docs/03-%E5%AE%8C%E6%88%90/compiler/status.md) |
 | RazorVue design | [docs/01-目标/razorvue/README.md](docs/01-%E7%9B%AE%E6%A0%87/razorvue/README.md) |
-| Jazor.Css design and status | [docs/01-目标/jazor.css/README.md](docs/01-%E7%9B%AE%E6%A0%87/jazor.css/README.md), [docs/03-完成/jazor.css/status.md](docs/03-%E5%AE%8C%E6%88%90/jazor.css/status.md) |
+| Jazor.Style design and status | [docs/01-目标/jazor.style/README.md](docs/01-%E7%9B%AE%E6%A0%87/jazor.style/README.md), [docs/03-完成/jazor.style/status.md](docs/03-%E5%AE%8C%E6%88%90/jazor.style/status.md) |
 | Transformation plan | [docs/02-计划/Jazor 架构转型开发计划.md](docs/02-%E8%AE%A1%E5%88%92/Jazor%20%E6%9E%B6%E6%9E%84%E8%BD%AC%E5%9E%8B%E5%BC%80%E5%8F%91%E8%AE%A1%E5%88%92.md) |
 | G0 decision record | [docs/02-计划/RazorSgFinalDocument.G0.DecisionRecord.md](docs/02-%E8%AE%A1%E5%88%92/RazorSgFinalDocument.G0.DecisionRecord.md) |
 | Emit status | [docs/03-完成/emit/status.md](docs/03-%E5%AE%8C%E6%88%90/emit/status.md) |

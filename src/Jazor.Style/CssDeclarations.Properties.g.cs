@@ -2,7 +2,7 @@
 // Source: webidl.inventory.json schema 1, @webref/css@6.12.7
 #nullable enable
 
-namespace Jazor.Css;
+namespace Jazor.Style;
 
 public partial record CssDeclarations
 {

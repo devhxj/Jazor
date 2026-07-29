@@ -1,11 +1,11 @@
-# Jazor.Css 完成状态
+# Jazor.Style 完成状态
 
 > 记录日期：2026-07-29
 > 范围：公共 API、运行时、现代规则、隔离上下文、DOM 目标、服务端渲染快照、构建集成与 NuGet 发布边界
 
 ## 结论
 
-`Jazor.Css` 的完整运行时合同已经实现。该模块继续作为独立的显式引用包，复用 Jazor 的常规编译、物化与打包链路；本次扩展未增加 CSS 专用 Hook、编译器分支、RazorVue 降低逻辑或 MSBuild 配置。
+`Jazor.Style` 的完整运行时合同已经实现。该模块继续作为独立的显式引用包，复用 Jazor 的常规编译、物化与打包链路；本次扩展未增加 CSS 专用 Hook、编译器分支、RazorVue 降低逻辑或 MSBuild 配置。
 
 既有 `jazor-css:v1` 名称与 DOM 条目帧保持稳定。原有类规则、关键帧、全局规则、提取和默认 DOM 注入均保持兼容；新增能力以独立上下文和结构化模型扩展，不改变既有调用语义。
 
@@ -13,19 +13,19 @@
 
 | 领域 | 当前合同 | 验证证据 |
 | --- | --- | --- |
-| 独立包 | `Jazor.Css` 精确依赖同版本 `Jazor`，不安装 CSS 专用 targets | Release pack 与本地 NuGet 消费 |
+| 独立包 | `Jazor.Style` 精确依赖同版本 `Jazor`，不安装 CSS 专用 targets | Release pack 与本地 NuGet 消费 |
 | 属性目录 | 从 Webref inventory 确定性生成 705 个标准属性 | 生成脚本 `--check` 与反射测试 |
 | 基础规则 | class、keyframes、global、fallback、`!important`、自定义属性 | Deno 运行时回归 |
 | 选择器 | `&`、后代组合、列表笛卡尔积、引号、转义、函数与属性选择器 | selector 扫描回归 |
 | 分组规则 | `@media`、`@supports`、`@container`、`@layer`、`@scope`、`@starting-style` | 递归与顺序回归 |
 | 声明型规则 | `@font-face`、`@property`、`@counter-style`、`@page` 及递归声明 block | `CssAtRule` Deno 与编译器回归 |
-| 确定性 | 属性排序、顺序敏感内容、领域隔离、固定哈希向量、碰撞检查 | `Jazor.Css.Test` |
+| 确定性 | 属性排序、顺序敏感内容、领域隔离、固定哈希向量、碰撞检查 | `Jazor.Style.Test` |
 | 独立上下文 | 相同内容同名、注册表隔离、显式 context API | detached context 回归 |
 | DOM 目标 | `document.head` 与 `DocumentFragment`/`ShadowRoot` 单 style 所有权 | DOM 模拟与真实浏览器验证 |
 | CSP 与接管 | nonce、所有权头、UTF-16 长度帧、模块重载接管 | Deno 与浏览器验证 |
 | 提取与水合 | 纯 CSS、StyleId、nonce、可接管 hydration 文本 | snapshot 及无重复水合验证 |
 | 编译器 | 新 API 继续使用常规 import 与结构化 record 降低 | 编译器集成测试 |
-| RazorVue | `Css.Class` 返回值继续作为普通字符串进入 `class` prop | RazorVue `JazorCss` 回归 |
+| RazorVue | `Css.Class` 返回值继续作为普通字符串进入 `class` prop | RazorVue `JazorStyle` 回归 |
 | Emit | runtime catalog、source map、debug 物化 | `Jazor.EmitTest` |
 | Bundle | release 包含实际使用入口，无未解析 runtime import | 本地 NuGet release 构建 |
 
@@ -60,19 +60,19 @@ Css.SnapshotFrom
 ## 可复验命令
 
 ```powershell
-dotnet run --file scripts/csharp/generate-jazor-css-properties.cs -- --check
+dotnet run --file scripts/csharp/generate-jazor-style-properties.cs -- --check
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project css
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project css-browser
-dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --filter JazorCss
-dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter JazorCss
+dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --filter JazorStyle
+dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter JazorStyle
 dotnet build Jazor.slnx -v minimal /m:1 /p:BuildInParallel=false
-dotnet pack src/Jazor.Css/Jazor.Css.csproj -c Release
+dotnet pack src/Jazor.Style/Jazor.Style.csproj -c Release
 ```
 
 截至本状态页更新时：
 
 - 属性生成门禁通过，目录包含 705 个属性；
-- `Jazor.Css.Test` 共 15 项通过；
+- `Jazor.Style.Test` 共 15 项通过；
 - 真实浏览器验证通过 computed style、nonce、单节点所有权、模块重载、Shadow DOM 与 snapshot 水合；
 - RazorVue 聚焦用例 1 项通过；
 - Emit/Catalog/NuGet/debug/release 聚焦用例 4 项通过；

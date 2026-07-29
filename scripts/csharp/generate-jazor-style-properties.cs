@@ -5,7 +5,7 @@ using System.Text.Json;
 
 var repoRoot = FindRepositoryRoot();
 var inventoryPath = Path.Combine(repoRoot, "src", "ECMAScript", "webidl", "webidl.inventory.json");
-var outputPath = Path.Combine(repoRoot, "src", "Jazor.Css", "CssDeclarations.Properties.g.cs");
+var outputPath = Path.Combine(repoRoot, "src", "Jazor.Style", "CssDeclarations.Properties.g.cs");
 var checkOnly = args.Any(static argument => string.Equals(argument, "--check", StringComparison.Ordinal));
 
 using var document = JsonDocument.Parse(File.ReadAllText(inventoryPath));
@@ -94,19 +94,19 @@ if (checkOnly)
 {
     if (!File.Exists(outputPath) || !string.Equals(File.ReadAllText(outputPath), output, StringComparison.Ordinal))
     {
-        Console.Error.WriteLine("Jazor.Css generated properties are out of date. Run:");
-        Console.Error.WriteLine("  dotnet run --file scripts/csharp/generate-jazor-css-properties.cs");
+        Console.Error.WriteLine("Jazor.Style generated properties are out of date. Run:");
+        Console.Error.WriteLine("  dotnet run --file scripts/csharp/generate-jazor-style-properties.cs");
         Environment.ExitCode = 1;
         return;
     }
 
-    Console.WriteLine($"Jazor.Css properties are current: {propertiesByCssName.Count} properties ({webrefCssVersion}).");
+    Console.WriteLine($"Jazor.Style properties are current: {propertiesByCssName.Count} properties ({webrefCssVersion}).");
     return;
 }
 
 Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
 File.WriteAllText(outputPath, output, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-Console.WriteLine($"Generated {propertiesByCssName.Count} Jazor.Css properties from {webrefCssVersion}.");
+Console.WriteLine($"Generated {propertiesByCssName.Count} Jazor.Style properties from {webrefCssVersion}.");
 
 static bool HasStringValue(JsonElement element, string propertyName, string expected)
     => element.TryGetProperty(propertyName, out var property) &&
@@ -169,7 +169,7 @@ static string BuildOutput(int schemaVersion, string webrefCssVersion, IEnumerabl
         .Append(", ").Append(webrefCssVersion).AppendLine();
     builder.AppendLine("#nullable enable");
     builder.AppendLine();
-    builder.AppendLine("namespace Jazor.Css;");
+    builder.AppendLine("namespace Jazor.Style;");
     builder.AppendLine();
     builder.AppendLine("public partial record CssDeclarations");
     builder.AppendLine("{");

@@ -1,6 +1,6 @@
-namespace Jazor.Css;
+namespace Jazor.Style;
 
-[ECMAScriptModule("Jazor.Css/runtime.mjs")]
+[ECMAScriptModule("Jazor.Style/runtime.mjs")]
 public static partial class Css
 {
     private const string VersionPrefix = "jazor-css:v1\0";
@@ -155,14 +155,14 @@ public static partial class Css
         }
 
         if (context.CanonicalByName.Has(id) && context.CanonicalByName.Get(id) != canonical)
-            Fail("A Jazor.Css hash collision was detected for '" + id + "'.");
+            Fail("A Jazor.Style hash collision was detected for '" + id + "'.");
 
         EnsureDomStyle(context);
 
         if (context.BodyById.Has(id))
         {
             if (context.BodyById.Get(id) != body)
-                Fail("A Jazor.Css hash collision was detected for '" + id + "'.");
+                Fail("A Jazor.Style hash collision was detected for '" + id + "'.");
         }
         else
         {

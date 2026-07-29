@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Jazor.Css\Jazor.Css.csproj" />
+    <ProjectReference Include="..\Jazor.Style\Jazor.Style.csproj" />
     <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" />
   </ItemGroup>
 

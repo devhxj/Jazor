@@ -123,7 +123,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
-    public async Task CreateLocalPackage_IncludesJazorCssAsIndependentOptInPackage()
+    public async Task CreateLocalPackage_IncludesJazorStyleAsIndependentOptInPackage()
     {
         var package = await LocalCssPackage.Value;
 
@@ -131,24 +131,24 @@ public sealed class SdkIntegrationTests
         var entryNames = archive.Entries
             .Select(static entry => entry.FullName.Replace('\\', '/'))
             .ToArray();
-        var nuspec = ReadPackageEntryText(package.CssPackagePath, "Jazor.Css.nuspec");
+        var nuspec = ReadPackageEntryText(package.CssPackagePath, "Jazor.Style.nuspec");
 
-        CollectionAssert.Contains(entryNames, "lib/net11.0/Jazor.Css.dll");
+        CollectionAssert.Contains(entryNames, "lib/net11.0/Jazor.Style.dll");
         CollectionAssert.Contains(entryNames, "README.md");
         StringAssert.Contains(nuspec, "<dependency id=\"Jazor\" version=\"[" + package.PackageVersion + "]\" />");
         Assert.IsFalse(
             entryNames.Any(static path => path.StartsWith("build", StringComparison.OrdinalIgnoreCase)),
-            "Jazor.Css must rely on Jazor's existing build integration and must not install CSS-specific targets.");
+            "Jazor.Style must rely on Jazor's existing build integration and must not install CSS-specific targets.");
     }
 
     [TestMethod]
-    public async Task Build_LocalJazorCssPackage_DebugMaterializesAndReleaseBundlesRuntime()
+    public async Task Build_LocalJazorStylePackage_DebugMaterializesAndReleaseBundlesRuntime()
     {
         var package = await LocalCssPackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
-        var projectRoot = Path.Combine(workspace.RootPath, "JazorCssPackageConsumer");
-        var projectPath = CreateJazorCssPackageConsumerProject(projectRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "JazorStylePackageConsumer");
+        var projectPath = CreateJazorStylePackageConsumerProject(projectRoot);
         var commonArguments = new[]
         {
             "-t:Rebuild",
@@ -166,17 +166,17 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, debugBuild.ExitCode, debugBuild.ToString());
 
         var outputRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
-        var runtimePath = Path.Combine(outputRoot, "Jazor.Css", "runtime.mjs");
+        var runtimePath = Path.Combine(outputRoot, "Jazor.Style", "runtime.mjs");
         var runtimeMapPath = runtimePath + ".map";
         var appPath = Path.Combine(outputRoot, "app.mjs");
         var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
 
-        Assert.IsTrue(File.Exists(runtimePath), $"Jazor.Css runtime was not materialized: {runtimePath}");
-        Assert.IsTrue(File.Exists(runtimeMapPath), $"Jazor.Css source map was not materialized: {runtimeMapPath}");
+        Assert.IsTrue(File.Exists(runtimePath), $"Jazor.Style runtime was not materialized: {runtimePath}");
+        Assert.IsTrue(File.Exists(runtimeMapPath), $"Jazor.Style source map was not materialized: {runtimeMapPath}");
         Assert.IsTrue(File.Exists(appPath), $"Consumer module was not materialized: {appPath}");
         Assert.IsTrue(File.Exists(manifestPath), $"Debug manifest was not generated: {manifestPath}");
         var appModule = await File.ReadAllTextAsync(appPath);
-        StringAssert.Contains(appModule, "from \"Jazor.Css/runtime.mjs\"");
+        StringAssert.Contains(appModule, "from \"Jazor.Style/runtime.mjs\"");
         StringAssert.Contains(appModule, "\"background-color\": \"#1769aa\"");
         StringAssert.Contains(appModule, "createContext");
         StringAssert.Contains(appModule, "classIn");
@@ -184,8 +184,8 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(appModule, "snapshotFrom");
 
         var manifest = LoadManifest(manifestPath);
-        var runtimeEntry = manifest.Modules.Single(static entry => entry.RelativePath == "Jazor.Css/runtime.mjs");
-        Assert.AreEqual("Jazor.Css/runtime.mjs.map", runtimeEntry.SourceMapPath);
+        var runtimeEntry = manifest.Modules.Single(static entry => entry.RelativePath == "Jazor.Style/runtime.mjs");
+        Assert.AreEqual("Jazor.Style/runtime.mjs.map", runtimeEntry.SourceMapPath);
         Assert.HasCount(64, runtimeEntry.Hash);
         Assert.HasCount(64, runtimeEntry.MapHash!);
 
@@ -196,8 +196,8 @@ public sealed class SdkIntegrationTests
 
         var bundlePath = Path.Combine(outputRoot, "bundle.js");
         var bundleMapPath = Path.Combine(outputRoot, "bundle.js.map");
-        Assert.IsTrue(File.Exists(bundlePath), $"Jazor.Css bundle was not generated: {bundlePath}");
-        Assert.IsTrue(File.Exists(bundleMapPath), $"Jazor.Css bundle source map was not generated: {bundleMapPath}");
+        Assert.IsTrue(File.Exists(bundlePath), $"Jazor.Style bundle was not generated: {bundlePath}");
+        Assert.IsTrue(File.Exists(bundleMapPath), $"Jazor.Style bundle source map was not generated: {bundleMapPath}");
         Assert.IsFalse(File.Exists(runtimePath), "Release must not retain the debug runtime module.");
         Assert.IsFalse(File.Exists(manifestPath), "Release must not retain the debug manifest.");
 
@@ -207,7 +207,7 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(bundle, "font-face");
         StringAssert.Contains(bundle, "server-css");
         StringAssert.Contains(bundle, "sourceMappingURL=bundle.js.map");
-        Assert.IsFalse(bundle.Contains("from \"Jazor.Css/runtime.mjs\"", StringComparison.Ordinal), bundle);
+        Assert.IsFalse(bundle.Contains("from \"Jazor.Style/runtime.mjs\"", StringComparison.Ordinal), bundle);
     }
 
     [TestMethod]
@@ -1406,8 +1406,8 @@ public sealed class SdkIntegrationTests
 
         await PackProjectAndAssertOutputAsync(
             repoRoot,
-            Path.Combine(repoRoot, "src", "Jazor.Css", "Jazor.Css.csproj"),
-            Path.Combine(packageBuildOutputRoot, "Jazor.Css", "bin", "Debug", "net11.0", "Jazor.Css.dll"),
+            Path.Combine(repoRoot, "src", "Jazor.Style", "Jazor.Style.csproj"),
+            Path.Combine(packageBuildOutputRoot, "Jazor.Style", "bin", "Debug", "net11.0", "Jazor.Style.dll"),
             packageBuildOutputRoot,
             packageBuildIntermediateRoot,
             packageOutputDirectory,
@@ -1418,7 +1418,7 @@ public sealed class SdkIntegrationTests
             packageVersion,
             packageOutputDirectory,
             restorePackagesPath,
-            GetPackagePath(packageOutputDirectory, "Jazor.Css", packageVersion));
+            GetPackagePath(packageOutputDirectory, "Jazor.Style", packageVersion));
     }
 
     private static async Task<LocalPackageFixture> CreateLocalPackageAsync()
@@ -2112,10 +2112,10 @@ public sealed class SdkIntegrationTests
         return projectPath;
     }
 
-    private static string CreateJazorCssPackageConsumerProject(string projectRoot)
+    private static string CreateJazorStylePackageConsumerProject(string projectRoot)
     {
         Directory.CreateDirectory(projectRoot);
-        var projectPath = Path.Combine(projectRoot, "JazorCssPackageConsumer.csproj");
+        var projectPath = Path.Combine(projectRoot, "JazorStylePackageConsumer.csproj");
 
         WriteFile(
             projectPath,
@@ -2130,7 +2130,7 @@ public sealed class SdkIntegrationTests
               </PropertyGroup>
 
               <ItemGroup>
-                <PackageReference Include="Jazor.Css" Version="$(JazorPackageVersion)" />
+                <PackageReference Include="Jazor.Style" Version="$(JazorPackageVersion)" />
               </ItemGroup>
             </Project>
             """);
@@ -2138,16 +2138,16 @@ public sealed class SdkIntegrationTests
         WriteFile(
             Path.Combine(projectRoot, "Program.cs"),
             """
-            Console.WriteLine("Jazor.Css package consumer");
+            Console.WriteLine("Jazor.Style package consumer");
             """);
 
         WriteFile(
             Path.Combine(projectRoot, "AppModule.cs"),
             """
             using ECMAScript;
-            using Jazor.Css;
+            using Jazor.Style;
 
-            namespace JazorCssPackageConsumer;
+            namespace JazorStylePackageConsumer;
 
             [ECMAScriptModule("app.mjs")]
             public static class AppModule

@@ -1,4 +1,4 @@
-namespace Jazor.Css;
+namespace Jazor.Style;
 
 public static partial class Css
 {
@@ -26,7 +26,7 @@ public static partial class Css
                 if (context.EntryIds.Length == 0)
                     return;
 
-                Fail("Jazor.Css requires document.head to inject styles.");
+                Fail("Jazor.Style requires document.head to inject styles.");
             }
 
             insertionTarget = head!;
@@ -35,7 +35,7 @@ public static partial class Css
         {
             var ownerDocument = context.Target.OwnerDocument;
             if (ownerDocument is null)
-                Fail("Jazor.Css target must belong to a document.");
+                Fail("Jazor.Style target must belong to a document.");
 
             domDocument = ownerDocument!;
             existing = context.Target.GetElementById(context.StyleId);
@@ -65,15 +65,15 @@ public static partial class Css
         }
 
         if (existing.LocalName != "style")
-            Fail("Jazor.Css StyleId '" + context.StyleId + "' is already used by a non-style element.");
+            Fail("Jazor.Style StyleId '" + context.StyleId + "' is already used by a non-style element.");
 
         var existingStyle = (HTMLStyleElement)existing;
         var text = existingStyle.TextContent ?? "";
         if (!text.StartsWith(RootMarker))
-            Fail("Jazor.Css StyleId '" + context.StyleId + "' is not owned by Jazor.Css.");
+            Fail("Jazor.Style StyleId '" + context.StyleId + "' is not owned by Jazor.Style.");
 
         if (context.Nonce is not null && existingStyle.Nonce != context.Nonce)
-            Fail("Jazor.Css nonce does not match the existing style element.");
+            Fail("Jazor.Style nonce does not match the existing style element.");
 
         context.DomStyle = existingStyle;
         context.DomDocument = domDocument;
@@ -94,13 +94,13 @@ public static partial class Css
         while (offset < text.Length)
         {
             if (!text.Substring(offset).StartsWith(EntryMarkerPrefix))
-                Fail("Jazor.Css style element contains a malformed entry marker.");
+                Fail("Jazor.Style style element contains a malformed entry marker.");
 
             var idStart = offset + EntryMarkerPrefix.Length;
             var idEnd = text.IndexOf(":", idStart);
             var headerEnd = idEnd < 0 ? -1 : text.IndexOf("*/", idEnd + 1);
             if (idEnd <= idStart || headerEnd < 0)
-                Fail("Jazor.Css style element contains a malformed entry header.");
+                Fail("Jazor.Style style element contains a malformed entry header.");
 
             var id = text.Substring(idStart, idEnd - idStart);
             var lengthText = text.Substring(idEnd + 1, headerEnd - idEnd - 1);
@@ -108,13 +108,13 @@ public static partial class Css
             var bodyStart = headerEnd + 2;
             var bodyEnd = bodyStart + bodyLength;
             if (bodyEnd > text.Length)
-                Fail("Jazor.Css style entry extends beyond the style text.");
+                Fail("Jazor.Style style entry extends beyond the style text.");
 
             var body = text.Substring(bodyStart, bodyLength);
             if (adoptedBodyById.Has(id))
             {
                 if (adoptedBodyById.Get(id) != body)
-                    Fail("Jazor.Css style element contains one ID with different CSS bodies.");
+                    Fail("Jazor.Style style element contains one ID with different CSS bodies.");
             }
             else
             {
@@ -133,7 +133,7 @@ public static partial class Css
             if (adoptedBodyById.Has(id))
             {
                 if (adoptedBodyById.Get(id) != body)
-                    Fail("A Jazor.Css hash collision was detected for '" + id + "'.");
+                    Fail("A Jazor.Style hash collision was detected for '" + id + "'.");
 
                 continue;
             }
@@ -154,14 +154,14 @@ public static partial class Css
     private static int ParseEntryLength(string value)
     {
         if (value.Length == 0)
-            Fail("Jazor.Css style entry length is empty.");
+            Fail("Jazor.Style style entry length is empty.");
 
         var result = 0;
         for (var index = 0; index < value.Length; index++)
         {
             var codeUnit = (int)value.CharCodeAt(index);
             if (codeUnit < 48 || codeUnit > 57)
-                Fail("Jazor.Css style entry length is invalid.");
+                Fail("Jazor.Style style entry length is invalid.");
 
             result = result * 10 + codeUnit - 48;
         }
@@ -176,7 +176,7 @@ public static partial class Css
 
         var document = context.DomDocument;
         if (document is null)
-            Fail("Jazor.Css style element must belong to a document.");
+            Fail("Jazor.Style style element must belong to a document.");
 
         AppendTextNode(context, document!, FormatDomEntry(id, body));
     }

@@ -1,6 +1,6 @@
-# Jazor.Css 目标与边界
+# Jazor.Style 目标与边界
 
-`Jazor.Css` 为 Jazor 应用提供结构化、确定且框架无关的 CSS-in-JS 能力。作者使用普通 C# API 描述样式，运行时以标准 ECMAScript 模块完成规范化、命名、注册、DOM 注入与提取；编译器、RazorVue 和 Emit 不承担 CSS 专用语义。
+`Jazor.Style` 为 Jazor 应用提供结构化、确定且框架无关的 CSS-in-JS 能力。作者使用普通 C# API 描述样式，运行时以标准 ECMAScript 模块完成规范化、命名、注册、DOM 注入与提取；编译器、RazorVue 和 Emit 不承担 CSS 专用语义。
 
 ## 产品定位
 
@@ -16,16 +16,16 @@
 ```text
 结构化 C# CssRule / CssAtRule
     -> Jazor.Compiler 常规 IOperation 降低
-    -> Jazor.Css/runtime.mjs
+    -> Jazor.Style/runtime.mjs
     -> CssContext 注册表
     -> document / ShadowRoot / detached 快照
 ```
 
 ## 包边界
 
-- `Jazor.Css` 是独立的显式 opt-in NuGet 包，并精确依赖同版本 `Jazor`。
-- `Jazor` 不反向依赖 `Jazor.Css`；仅引用核心包不会获得 CSS API 或 runtime catalog。
-- `Jazor.Css` 不依赖 Vue、RazorVue、ASP.NET Core 或组件库。
+- `Jazor.Style` 是独立的显式 opt-in NuGet 包，并精确依赖同版本 `Jazor`。
+- `Jazor` 不反向依赖 `Jazor.Style`；仅引用核心包不会获得 CSS API 或 runtime catalog。
+- `Jazor.Style` 不依赖 Vue、RazorVue、ASP.NET Core 或组件库。
 - 引用包不会主动注入样式；只有执行注册 API 才会产生规则。
 - 包不安装 Razor Hook，不扫描组件，也不提供 CSS 专用 MSBuild props/targets。
 
@@ -85,7 +85,7 @@ API 不接受 `object`、动态字典或原始 CSS block。结构化输入是 C#
 
 ## 输出合同
 
-`Jazor.Css` 完全复用 `JazorMode`：
+`Jazor.Style` 完全复用 `JazorMode`：
 
 | 模式 | 行为 |
 | --- | --- |
@@ -103,8 +103,8 @@ release 不生成独立 `.css`，也不执行构建期提取、PostCSS、autopre
 - 不增加 compiler intrinsic、analyzer 特例或 RazorVue lowering 分支；
 - 不动态注册 `@charset`、`@import`、`@namespace` 等 statement at-rule；
 - 不提供自动规则回收、引用计数或 LRU；
-- 不新增 `JazorCss*` 构建配置。
+- 不新增 `JazorStyle*` 构建配置。
 
 这些项目属于明确的职责边界，不是隐藏配置或待补 fallback。
 
-实施和验收见[完整实现计划](../../02-计划/jazor.css/Jazor.Css.Complete.ImplementationPlan.md)，当前证据见[完成状态](../../03-完成/jazor.css/status.md)。
+实施和验收见[完整实现计划](../../02-计划/jazor.style/Jazor.Style.Complete.ImplementationPlan.md)，当前证据见[完成状态](../../03-完成/jazor.style/status.md)。

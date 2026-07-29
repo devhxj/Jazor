@@ -1,20 +1,20 @@
-# Jazor.Css 完整实现计划
+# Jazor.Style 完整实现计划
 
 > 状态：已完成
 > 更新：2026-07-29
-> 基线：`Jazor.Css` 第一阶段运行时与 `v0.1.31` 包
+> 基线：`Jazor.Style` 第一阶段运行时与 `v0.1.31` 包
 > 目标：在不引入 CSS 专用编译分支的前提下，完成可用于组件样式、Shadow DOM 与隔离渲染的正式产品合同
 
 ## 1. 实施结论
 
-`Jazor.Css` 继续采用结构化 C# 模型与普通 ECMAScript 模块。完整实现不是复制浏览器 CSS 解析器，也不是把 Goober API 翻译成 C#；它要补齐运行时 CSS-in-JS 在实际应用中不可缺少的作用域、现代规则和 hydration 能力，同时保持第一阶段 API 与输出格式稳定。
+`Jazor.Style` 继续采用结构化 C# 模型与普通 ECMAScript 模块。完整实现不是复制浏览器 CSS 解析器，也不是把 Goober API 翻译成 C#；它要补齐运行时 CSS-in-JS 在实际应用中不可缺少的作用域、现代规则和 hydration 能力，同时保持第一阶段 API 与输出格式稳定。
 
 正式链路为：
 
 ```text
 CssRule / CssAtRule
     -> Jazor.Compiler 常规 IOperation 降低
-    -> Jazor.Css/runtime.mjs
+    -> Jazor.Style/runtime.mjs
     -> CssContext registry
     -> document / ShadowRoot / detached snapshot
     -> debug module 或 release Bundle
@@ -24,7 +24,7 @@ CssRule / CssAtRule
 
 以下边界在完整实现中保持不变：
 
-1. `Jazor.Css` 仍是独立、显式引用的 NuGet 包，并精确依赖同版本 `Jazor`。
+1. `Jazor.Style` 仍是独立、显式引用的 NuGet 包，并精确依赖同版本 `Jazor`。
 2. 不增加 CSS 专用 Hook、analyzer 例外、compiler intrinsic、RazorVue lowering 或 MSBuild 属性。
 3. 标准属性继续从 Webref inventory 确定性生成；CSS 值继续使用开放的 `string?` 合同。
 4. `Css.Class` 继续返回普通 `string`，现有类规则、关键帧、全局规则与提取 API 保持兼容。
@@ -124,7 +124,7 @@ public sealed record CssAtRule(
 
 ## 6. 稳定非目标
 
-以下项目不属于 `Jazor.Css` 完整运行时合同：
+以下项目不属于 `Jazor.Style` 完整运行时合同：
 
 - `styled(Component)`、Vue wrapper 或组件库适配层；
 - 原始 CSS block、标签模板或 CSS 文本解析器；
@@ -133,7 +133,7 @@ public sealed record CssAtRule(
 - statement at-rule 的动态注册；
 - 自动引用计数、规则回收或 LRU；
 - CSS 专用 source map；
-- 新增 `JazorCss*` 配置项。
+- 新增 `JazorStyle*` 配置项。
 
 这些边界用于保持模块职责清晰，不视为隐藏的未完成实现。
 

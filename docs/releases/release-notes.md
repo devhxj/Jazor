@@ -2,7 +2,8 @@
 
 ## 2026-07-29
 
-- `Jazor.Css` now supports isolated style contexts, request-local extraction, hydration snapshots, and nonce-aware style ownership for both `document` and `ShadowRoot` targets.
+- The independent CSS-in-JS package is now named `Jazor.Style`, with its runtime catalog published at `Jazor.Style/runtime.mjs`; the underlying `jazor-css:v1` naming and hydration protocol remains stable.
+- `Jazor.Style` supports isolated style contexts, request-local extraction, hydration snapshots, and nonce-aware style ownership for both `document` and `ShadowRoot` targets.
 - Structured styling now covers `@container`, `@layer`, `@scope`, `@starting-style`, and declaration-block at-rules such as `@font-face`, `@property`, `@counter-style`, and nested `@page` rules without accepting raw CSS.
 - Existing class names, keyframe names, global rules, DOM framing, RazorVue string consumption, and the standard `JazorMode` debug/release workflow remain compatible.
 - Dynamic Razor event modifiers now preserve their boolean conditions, including repeated `preventDefault` and `stopPropagation` modifiers, instead of being treated as unconditionally enabled.
@@ -16,7 +17,7 @@
 - Public Vue binding packages are compatible with .NET 11 Preview 6.
 - Razor-to-Vue generation is now supplied by the explicit `Jazor.Vue` package, while `Jazor` owns the shared analyzer and compiler dependencies so generators are loaded once.
 - `Jazor.Admin` provides UI-library-neutral admin-shell contracts and native RazorVue shell components for layout, navigation, breadcrumbs, page actions, controlled collapse, routing targets, and application-wide display state. Forms, tables, authentication fields, and concrete pages remain application-owned.
-- `Jazor.Css` adds an independent opt-in, framework-neutral CSS-in-JS runtime with 705 generated Webref properties, deterministic class and keyframe names, nested selectors, media/supports rules, global styles, nonce-aware DOM injection, HMR-safe adoption, and non-destructive extraction. It uses the existing `JazorMode` debug/release pipeline and introduces no CSS-specific build properties.
+- `Jazor.Style` adds an independent opt-in, framework-neutral CSS-in-JS runtime with 705 generated Webref properties, deterministic class and keyframe names, nested selectors, media/supports rules, global styles, nonce-aware DOM injection, HMR-safe adoption, and non-destructive extraction. It uses the existing `JazorMode` debug/release pipeline and introduces no style-specific build properties.
 - RazorVue component lowering now keeps compiler semantics on the Acornima AST path. Import rebasing, string literals, and slot sequence normalization no longer serialize and reparse JavaScript text, and forwarded, named, scoped, typed, and conditional slots preserve zero, one, or many child nodes.
 - RazorVue component events support both synchronous delegates and asynchronous `Func<Task>` / `Func<TValue, Task>` handlers.
 - Switch expressions now preserve guarded discard-arm semantics: `_ when condition` falls through to later arms when its guard is false.

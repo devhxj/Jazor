@@ -5,17 +5,17 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Jazor.Css.Tests;
+namespace Jazor.Style.Tests;
 
 [TestClass]
-public sealed class JazorCssCompilerIntegrationTests
+public sealed class JazorStyleCompilerIntegrationTests
 {
     [TestMethod]
-    public async Task Convert_CSharpStyleModule_ImportsJazorCssRuntimeWithoutCompilerSpecialCase()
+    public async Task Convert_CSharpStyleModule_ImportsJazorStyleRuntimeWithoutCompilerSpecialCase()
     {
         const string source = """
             using ECMAScript;
-            using Jazor.Css;
+            using Jazor.Style;
 
             namespace Demo;
 
@@ -43,7 +43,7 @@ public sealed class JazorCssCompilerIntegrationTests
             CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview),
             path: "/src/ButtonStyles.cs");
         var compilation = CSharpCompilation.Create(
-            "JazorCssConsumer",
+            "JazorStyleConsumer",
             [syntaxTree],
             Net110.References.All.Concat(
             [
@@ -62,7 +62,7 @@ public sealed class JazorCssCompilerIntegrationTests
         var module = await new AstConverter(symbol, semanticModel).Convert();
         var script = module?.ToKnRECMAScript() ?? string.Empty;
 
-        StringAssert.Contains(script, "from \"Jazor.Css/runtime.mjs\"");
+        StringAssert.Contains(script, "from \"Jazor.Style/runtime.mjs\"");
         StringAssert.Contains(script, "css(");
         StringAssert.Contains(script, "display: \"inline-flex\"");
         StringAssert.Contains(script, "\"background-color\": \"#1769aa\"");
@@ -75,7 +75,7 @@ public sealed class JazorCssCompilerIntegrationTests
     {
         const string source = """
             using ECMAScript;
-            using Jazor.Css;
+            using Jazor.Style;
 
             namespace Demo;
 
@@ -118,7 +118,7 @@ public sealed class JazorCssCompilerIntegrationTests
             CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview),
             path: "/src/ServerStyles.cs");
         var compilation = CSharpCompilation.Create(
-            "JazorCssContextConsumer",
+            "JazorStyleContextConsumer",
             [syntaxTree],
             Net110.References.All.Concat(
             [

@@ -18,7 +18,7 @@
     <ProjectReference Include="..\ECMAScript.VueContract\ECMAScript.VueContract.csproj" />
     <ProjectReference Include="..\ECMAScript.VueRoute\ECMAScript.VueRoute.csproj" />
     <ProjectReference Include="..\Jazor.Analyzer\Jazor.Analyzer.csproj" />
-    <ProjectReference Include="..\Jazor.Css\Jazor.Css.csproj" />
+    <ProjectReference Include="..\Jazor.Style\Jazor.Style.csproj" />
     <ProjectReference Include="..\Jazor.RazorVue\Jazor.RazorVue.csproj" />
   </ItemGroup>
   <ItemGroup>

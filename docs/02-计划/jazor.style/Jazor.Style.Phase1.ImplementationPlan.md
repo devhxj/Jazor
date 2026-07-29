@@ -1,13 +1,13 @@
-# Jazor.Css 第一阶段实施计划
+# Jazor.Style 第一阶段实施计划
 
-> 状态：第一阶段已完成；验证证据见 [`docs/03-完成/jazor.css/status.md`](../../03-完成/jazor.css/status.md)
+> 状态：第一阶段已完成；验证证据见 [`docs/03-完成/jazor.style/status.md`](../../03-完成/jazor.style/status.md)
 > 更新：2026-07-28
-> 结论：技术路线可行，建议以独立的 `Jazor.Css` 包实施
+> 结论：技术路线可行，建议以独立的 `Jazor.Style` 包实施
 > 范围：原生 C# CSS-in-JS 运行时，参考 Goober 的最小核心，不封装或携带 Goober JavaScript 实现
 
 ## 1. 执行摘要
 
-`Jazor.Css` 的第一阶段目标是：
+`Jazor.Style` 的第一阶段目标是：
 
 **让 Jazor 用户以结构化 C# 定义样式，在运行时生成确定的类名和 CSS，并完成去重、注入与提取。**
 
@@ -16,7 +16,7 @@
 ```text
 C# CssRule / CssDeclarations
     -> Jazor.Compiler 普通 C# 语义降低
-    -> Jazor.Css/runtime.mjs
+    -> Jazor.Style/runtime.mjs
     -> 规范化序列化
     -> 稳定内容哈希
     -> 类名 / keyframes 名称
@@ -26,11 +26,11 @@ C# CssRule / CssDeclarations
 
 第一阶段实施应遵守五项核心决策：
 
-1. `Jazor.Css` 是独立、显式引用的 NuGet 包，`Jazor` 不反向依赖它。
+1. `Jazor.Style` 是独立、显式引用的 NuGet 包，`Jazor` 不反向依赖它。
 2. 实现为普通 `[ECMAScriptModule]` C# 代码，不向 `Jazor.Compiler` 或 RazorVue 增加 CSS 专用降低。
 3. 标准 CSS 属性从现有 WebIDL/Webref 清单生成；运行时只遍历实际初始化的字段，不携带属性元数据表。
 4. 首版使用运行时 `<style>` 注入；生产 `Bundle` 内包含运行时样式逻辑，不生成独立 `.css` 文件。
-5. 返回值是普通 `string`，Vue 可直接通过 `VueClassValue` 消费；`Jazor.Css` 不依赖 Vue。
+5. 返回值是普通 `string`，Vue 可直接通过 `VueClassValue` 消费；`Jazor.Style` 不依赖 Vue。
 
 ## 2. 评估基线
 
@@ -43,7 +43,7 @@ C# CssRule / CssDeclarations
 | 动态自有键读取 | `ECMAScript.Object.Keys`、`Reflect.Get` 和 ECMAScript record proxy 索引器均有现有降低 | 序列化器可只遍历实际存在的声明 |
 | DOM 注入 | `Global.Document`、`CreateElement`、`AppendChild`、`TextContent`、`SetAttribute` 已有宿主绑定 | 不需要新的 DOM 封装或手写 JavaScript 桥接 |
 | 静态 ECMAScript 模块 | `ESGenerator` 已将静态 `[ECMAScriptModule]` 类生成 `.mjs` 和 catalog | CSS 核心可作为独立运行时模块输出 |
-| Vue `class` 绑定 | `VueClassValue` 已接受 `string` | 不需要 `Jazor.Css.Vue` 适配层 |
+| Vue `class` 绑定 | `VueClassValue` 已接受 `string` | 不需要 `Jazor.Style.Vue` 适配层 |
 
 2026-07-28 已在 `.NET 11 Preview 6` 工具链上执行以下聚焦验证：
 
@@ -70,43 +70,43 @@ dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "Name=Visi
 
 | 项目 | 职责 |
 | --- | --- |
-| `Jazor.Css` | CSS 模型、规范化序列化、确定性哈希、缓存、样式表注入与提取 |
+| `Jazor.Style` | CSS 模型、规范化序列化、确定性哈希、缓存、样式表注入与提取 |
 | `ECMAScript` | `Object`、`Map`、`Set`、DOM 和 CSSOM 宿主绑定 |
 | `Jazor.Compiler` | 按现有规则编译普通 C# 语义 |
-| `Jazor.Emit` | 物化 `Jazor.Css/runtime.mjs` 并纳入生产 `Bundle` |
+| `Jazor.Emit` | 物化 `Jazor.Style/runtime.mjs` 并纳入生产 `Bundle` |
 | `ECMAScript.Vue3` | 在需要时将返回的字符串作为 `VueClassValue` 消费 |
 
 依赖方向必须保持为：
 
 ```text
-Jazor.Css -> ECMAScript
-Jazor.Css NuGet -> Jazor NuGet
+Jazor.Style -> ECMAScript
+Jazor.Style NuGet -> Jazor NuGet
 
-ECMAScript.Vue3 -- optional consumer --> Jazor.Css string result
+ECMAScript.Vue3 -- optional consumer --> Jazor.Style string result
 ```
 
-`Jazor.Css` 不引用 `ECMAScript.Vue3`、`Jazor.RazorVue`、`Jazor.AspNetCore` 或任何第三方组件库。
+`Jazor.Style` 不引用 `ECMAScript.Vue3`、`Jazor.RazorVue`、`Jazor.AspNetCore` 或任何第三方组件库。
 
 仓库内项目引用与发布依赖应分开表达：
 
 | 场景 | 引用 |
 | --- | --- |
 | 源码构建 | 引用 `ECMAScript.csproj`；将 `Jazor.Compiler` 和 `Jazor.Analyzer` 作为私有 analyzer/source-generator 工具引用 |
-| NuGet 消费 | `Jazor.Css` 仅声明对同版本 `Jazor` 包的依赖，不向消费者暴露仓库内工程引用 |
+| NuGet 消费 | `Jazor.Style` 仅声明对同版本 `Jazor` 包的依赖，不向消费者暴露仓库内工程引用 |
 
 ### 3.2 启用方式
 
-- 仅引用 `Jazor` 时，不包含 `Jazor.Css` 公共 API。
-- 显式引用 `Jazor.Css` 后，才可使用 `Css.Class` 等 API。
+- 仅引用 `Jazor` 时，不包含 `Jazor.Style` 公共 API。
+- 显式引用 `Jazor.Style` 后，才可使用 `Css.Class` 等 API。
 - 引用包本身不会注入样式；只有执行 `Css.Class`、`Css.Global` 或 `Css.Keyframes` 才会注册 CSS。
-- `Jazor.Css` 不安装额外 Hook，也不启动 Razor 扫描；消费者仅获得已编译的公共类型和模块 catalog。
-- 不新增任何 `JazorCss*` MSBuild 属性。输出仍只由现有 `JazorMode`、`JazorDir` 和 `JazorTool` 控制。
+- `Jazor.Style` 不安装额外 Hook，也不启动 Razor 扫描；消费者仅获得已编译的公共类型和模块 catalog。
+- 不新增任何 `JazorStyle*` MSBuild 属性。输出仍只由现有 `JazorMode`、`JazorDir` 和 `JazorTool` 控制。
 
 ## 4. Goober 机制的取舍
 
-[Goober](https://github.com/cristianbote/goober) 的核心价值不在 `styled(...)` 封装，而在一组很小且边界清楚的机制：输入编译、递归规则序列化、内容哈希、单样式表更新和提取。`Jazor.Css` 只借鉴这些机制，不复制 JavaScript API 形状。
+[Goober](https://github.com/cristianbote/goober) 的核心价值不在 `styled(...)` 封装，而在一组很小且边界清楚的机制：输入编译、递归规则序列化、内容哈希、单样式表更新和提取。`Jazor.Style` 只借鉴这些机制，不复制 JavaScript API 形状。
 
-| 能力 | Goober 常见形态 | `Jazor.Css` 决策 | 理由 |
+| 能力 | Goober 常见形态 | `Jazor.Style` 决策 | 理由 |
 | --- | --- | --- | --- |
 | 声明输入 | 对象、数组、函数和标签模板 | 结构化 record | 保留 C# 属性名检查和 Razor/编译器可见合同 |
 | CSS 文本解析 | `astish` 和正则解析 | 首版不接收原始样式块 | 避免在 C# 运行时再造一个不完整 CSS 解析器 |
@@ -116,7 +116,7 @@ ECMAScript.Vue3 -- optional consumer --> Jazor.Css string result
 | 样式目标 | 默认 `<style>`，可替换 target | 首版仅使用文档 `<head>` 中的单 `<style>` | 避免在首版引入 Shadow DOM/多样式表生命周期 |
 | CSP | 隐式全局 nonce | `CssOptions.Nonce` | 配置来源明确，不依赖未声明全局变量 |
 | 前缀 | 可注入 prefixer | 不自动加前缀 | 不让回调改变规范化哈希；必要前缀由开发者显式声明 |
-| `styled(Component)` | 框架适配 API | 不纳入首版 | `Jazor.Css` 应保持框架无关 |
+| `styled(Component)` | 框架适配 API | 不纳入首版 | `Jazor.Style` 应保持框架无关 |
 | 提取 | 返回当前样式文本 | 提供非破坏性 `Css.Extract()` | 用于无 DOM 执行、测试和诊断，不暗示完整 SSR 协议 |
 
 本方案要求独立实现序列化、哈希与注入逻辑，不引入 Goober 运行时依赖。如实施中实际改编了第三方源码，必须同步核对许可证并更新仓库 `NOTICE.txt`；仅借鉴机制时不复制原实现。
@@ -128,9 +128,9 @@ ECMAScript.Vue3 -- optional consumer --> Jazor.Css string result
 首版公共命令表面固定为：
 
 ```csharp
-namespace Jazor.Css;
+namespace Jazor.Style;
 
-[ECMAScriptModule("Jazor.Css/runtime.mjs")]
+[ECMAScriptModule("Jazor.Style/runtime.mjs")]
 public static class Css
 {
     public static string Class(CssRule rule);
@@ -244,7 +244,7 @@ public sealed record CssOptions
 ### 5.4 作者端示例
 
 ```csharp
-using Jazor.Css;
+using Jazor.Style;
 
 [ECMAScriptModule("components/button-styles.mjs")]
 public static class ButtonStyles
@@ -298,13 +298,13 @@ Vue/Razor 组件直接消费 `ButtonStyles.Button` 字符串，不需要专用�
 新增单文件 C# 生成脚本：
 
 ```text
-scripts/csharp/generate-jazor-css-properties.cs
+scripts/csharp/generate-jazor-style-properties.cs
 ```
 
 生成并检入：
 
 ```text
-src/Jazor.Css/CssDeclarations.Properties.g.cs
+src/Jazor.Style/CssDeclarations.Properties.g.cs
 ```
 
 每个属性的形状为：
@@ -462,7 +462,7 @@ CSS value 是样式源片段，不应直接接收未经业务约束的用户输�
 
 ### 8.1 `debug`
 
-`JazorMode=debug` 时，`Jazor.Emit` 物化 `Jazor.Css/runtime.mjs`、source map 和 manifest 条目。CSS 仍在运行时注入，不额外生成 `.css` 调试文件。
+`JazorMode=debug` 时，`Jazor.Emit` 物化 `Jazor.Style/runtime.mjs`、source map 和 manifest 条目。CSS 仍在运行时注入，不额外生成 `.css` 调试文件。
 
 ### 8.2 `release`
 
@@ -490,7 +490,7 @@ CSS value 是样式源片段，不应直接接收未经业务约束的用户输�
 | G0.2 | 验证 `Object.keys + sort + indexer/Reflect` | 生成 JavaScript 断言 | 只读取实际设置属性，不输出属性元数据表 |
 | G0.3 | 验证无 DOM 环境判定 | Deno 执行探针 | 不引用 `document` 时不抛出 `ReferenceError`，仍可返回类名与 CSS |
 | G0.4 | 验证 DOM 样式注入 | 浏览器探针 | `<style>` 创建、nonce、文本写入和复用正确 |
-| G0.5 | 验证引用程序集 catalog | debug/release 探针 | `Jazor.Css/runtime.mjs` 能从独立引用程序集进入物化与 Bundle |
+| G0.5 | 验证引用程序集 catalog | debug/release 探针 | `Jazor.Style/runtime.mjs` 能从独立引用程序集进入物化与 Bundle |
 
 G0 退出条件：
 
@@ -498,24 +498,24 @@ G0 退出条件：
 - 不存在手写 JavaScript 运行时文件；
 - Deno 与浏览器两个环境均完成最小执行闭环。
 
-如 G0 发现通用 ECMAScript 宿主成员缺失，应补齐对应平台绑定和通用测试；不得为 `Jazor.Css` 新增按类型名匹配的降低特例。
+如 G0 发现通用 ECMAScript 宿主成员缺失，应补齐对应平台绑定和通用测试；不得为 `Jazor.Style` 新增按类型名匹配的降低特例。
 
 ### Phase A：项目、包与公共合同
 
 | ID | 任务 | 产物 | 验收 |
 | --- | --- | --- | --- |
-| A1 | 新建 `src/Jazor.Css/` | csproj、nuspec、README | `net11.0`/preview 构建成功，包仅依赖 `Jazor` |
+| A1 | 新建 `src/Jazor.Style/` | csproj、nuspec、README | `net11.0`/preview 构建成功，包仅依赖 `Jazor` |
 | A2 | 定义公共模型 | `CssDeclarations`、`CssRule`、`CssChild`、`CssFrame`、`CssOptions` | C# 使用方式符合本文契约 |
-| A3 | 定义运行时入口 | `Css` 静态模块 | catalog 中路径稳定为 `Jazor.Css/runtime.mjs` |
+| A3 | 定义运行时入口 | `Css` 静态模块 | catalog 中路径稳定为 `Jazor.Style/runtime.mjs` |
 | A4 | 纳入解决方案和发布清单 | `Jazor.slnx`、C# 发布脚本、NuGet workflow | 不新增 PowerShell 自动化，包可独立 pack |
 
 ### Phase B：属性生成
 
 | ID | 任务 | 产物 | 验收 |
 | --- | --- | --- | --- |
-| B1 | 实现单文件 C# 生成器 | `generate-jazor-css-properties.cs` | 仅读取结构化 inventory，输出确定 |
+| B1 | 实现单文件 C# 生成器 | `generate-jazor-style-properties.cs` | 仅读取结构化 inventory，输出确定 |
 | B2 | 生成公共属性 | `CssDeclarations.Properties.g.cs` | 运行时 CSS 名、C# 名和去重结果正确 |
-| B3 | 建立生成回归 | `Jazor.Css.Test` 或聚焦生成器测试 | 代表性标准属性、逻辑属性、`float` 和厂商前缀均覆盖 |
+| B3 | 建立生成回归 | `Jazor.Style.Test` 或聚焦生成器测试 | 代表性标准属性、逻辑属性、`float` 和厂商前缀均覆盖 |
 | B4 | 增加重生成一致性门禁 | 校验命令 | 脚本重跑后 `git diff` 为空 |
 
 ### Phase C：规范化、哈希与规则生成
@@ -543,7 +543,7 @@ G0 退出条件：
 
 | ID | 任务 | 产物 | 验收 |
 | --- | --- | --- | --- |
-| E1 | 普通 ECMAScript 模块集成 | 非 Vue 测试资产 | 引用 `Jazor.Css` 即可编译并物化模块 |
+| E1 | 普通 ECMAScript 模块集成 | 非 Vue 测试资产 | 引用 `Jazor.Style` 即可编译并物化模块 |
 | E2 | RazorVue 消费集成 | 最小 Razor 组件回归 | 返回字符串直接进入 Vue `class`，无适配代码 |
 | E3 | debug/release 集成 | `Jazor.EmitTest` 或包内 smoke | debug 可检查模块，release Bundle 无未解析 import |
 | E4 | 浏览器验证 | 单文件 C# 驱动的 browser smoke | 样式实际生效，重复加载不产生重复条目 |
@@ -554,12 +554,12 @@ G0 退出条件：
 
 | 层级 | 必须覆盖的场景 | 建议归属 |
 | --- | --- | --- |
-| 生成器 | 清单解析、去重、PascalCase、`float`、厂商前缀、冲突失败、重生成稳定 | `Jazor.Css.Test` 或 `ECMAScript.WebIDL.GeneratorTest` |
+| 生成器 | 清单解析、去重、PascalCase、`float`、厂商前缀、冲突失败、重生成稳定 | `Jazor.Style.Test` 或 `ECMAScript.WebIDL.GeneratorTest` |
 | 编译器形状 | 继承 record、带连字符键、字面量索引器、`params` frame、跨模块 import | `Jazor.CompilerTest` |
-| 规范化 | 属性书写顺序无关、null 省略、空值保留、`Important`、重复 fallback | `Jazor.Css.Test` JavaScript 执行回归 |
-| selector | `&:hover`、`> child`、多 selector、`:is(a,b)`、`[data-x="a,b"]`、转义、未闭合输入 | `Jazor.Css.Test` |
-| 条件规则 | selector -> media、media -> selector、supports -> media、兄弟顺序 | `Jazor.Css.Test` |
-| 名称 | `v1` 固定向量、同内容同名、异内容异名、跨进程稳定、class/keyframes/global 领域隔离 | `Jazor.Css.Test` |
+| 规范化 | 属性书写顺序无关、null 省略、空值保留、`Important`、重复 fallback | `Jazor.Style.Test` JavaScript 执行回归 |
+| selector | `&:hover`、`> child`、多 selector、`:is(a,b)`、`[data-x="a,b"]`、转义、未闭合输入 | `Jazor.Style.Test` |
+| 条件规则 | selector -> media、media -> selector、supports -> media、兄弟顺序 | `Jazor.Style.Test` |
+| 名称 | `v1` 固定向量、同内容同名、异内容异名、跨进程稳定、class/keyframes/global 领域隔离 | `Jazor.Style.Test` |
 | 无 DOM | 生成类名、去重、全局规则、keyframes、重复 `Extract` | Deno 回归 |
 | DOM | `<style>` 创建与复用、所有权冲突、nonce、长度定界条目、条目顺序、HMR 重载、实际 computed style | 浏览器 smoke |
 | Vue | Razor 参数/表达式生成的字符串类名进入 render function | `Jazor.RazorVue.Sg.Test` |
@@ -569,12 +569,12 @@ G0 退出条件：
 实施完成时至少执行：
 
 ```powershell
-dotnet test src/Jazor.Css.Test/Jazor.Css.Test.csproj
-dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "JazorCss"
-dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --filter "JazorCss"
-dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "JazorCss"
+dotnet test src/Jazor.Style.Test/Jazor.Style.Test.csproj
+dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "JazorStyle"
+dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --filter "JazorStyle"
+dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "JazorStyle"
 dotnet build Jazor.slnx
-dotnet pack src/Jazor.Css/Jazor.Css.csproj
+dotnet pack src/Jazor.Style/Jazor.Style.csproj
 ```
 
 浏览器验证必须由 `scripts/csharp/` 下的单文件 C# 入口驱动，不新增 `.ps1` 包装脚本。
@@ -615,7 +615,7 @@ dotnet pack src/Jazor.Css/Jazor.Css.csproj
 
 第一阶段只有在以下条件全部满足时才视为完成：
 
-1. `Jazor.Css` 可作为独立 NuGet 包构建、pack 和本地消费。
+1. `Jazor.Style` 可作为独立 NuGet 包构建、pack 和本地消费。
 2. 标准 CSS 属性可从现有 WebIDL inventory 确定性生成，重生成不产生差异。
 3. `Css.Class`、`Css.Keyframes`、`Css.Global`、`Css.Extract` 和 `Css.Configure` 按本文合同完成。
 4. 命名对属性初始化顺序不敏感，对 `Children` / `Additional` 的可观察顺序敏感，并能检出哈希碰撞。

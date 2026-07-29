@@ -4,19 +4,19 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Jazor.Css.Tests;
+namespace Jazor.Style.Tests;
 
-internal static class JazorCssModuleTestHost
+internal static class JazorStyleModuleTestHost
 {
     public static ModuleRecord GetRuntimeModule()
     {
         var assembly = typeof(Css).Assembly;
         var catalogType = assembly.GetType("Jazor.Generated.ModuleCatalog", throwOnError: false, ignoreCase: false)
-            ?? throw new InvalidOperationException("Jazor.Css module catalog was not generated.");
+            ?? throw new InvalidOperationException("Jazor.Style module catalog was not generated.");
         var getModules = catalogType.GetMethod("GetModules", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException("Jazor.Css module catalog has no GetModules method.");
+            ?? throw new InvalidOperationException("Jazor.Style module catalog has no GetModules method.");
         var modules = ((IEnumerable?)getModules.Invoke(null, null))?.Cast<object>().ToArray()
-            ?? throw new InvalidOperationException("Jazor.Css module catalog returned null.");
+            ?? throw new InvalidOperationException("Jazor.Style module catalog returned null.");
         var module = modules.Single();
 
         return new ModuleRecord(

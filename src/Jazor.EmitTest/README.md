@@ -12,15 +12,15 @@
 - Root-assembly export preservation, so the final bundle re-exports the host module members instead of collapsing to an empty file.
 - Static module, chained bundle, and writer source-map behavior.
 - Contract guards ensuring Emit consumes only the current module catalog and render catalog inputs.
-- Independent referenced-package catalogs, including `Jazor.Css` debug materialization, source maps, manifests, and release bundles.
+- Independent referenced-package catalogs, including `Jazor.Style` debug materialization, source maps, manifests, and release bundles.
 
 ## Current regression coverage
 
 - `BundleAsync_SingleRootModule_PreservesExports`
 - `BundleAsync_MultiProjectHostBundle_ReExportsRootAssemblyMembers`
 - `ModuleCollector_Collect_ReadsClrRuntimeModules_FromEcmascriptAssemblyCatalog`
-- `CatalogReader_TryRead_ReadsJazorCssRuntimeWithSourceMap`
-- `Build_LocalJazorCssPackage_DebugMaterializesAndReleaseBundlesRuntime`
+- `CatalogReader_TryRead_ReadsJazorStyleRuntimeWithSourceMap`
+- `Build_LocalJazorStylePackage_DebugMaterializesAndReleaseBundlesRuntime`
 - catalog 输入边界与当前 manifest contract 的负向验证
 
 These tests exercise `ModuleBundler` directly and validate the bundled JavaScript output, not just the exit code.

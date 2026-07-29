@@ -46,13 +46,13 @@ Library projects keep the default `JazorMode=none`.
   <PackageReference Include="ECMAScript.Pinia" Version="0.1.31" />
   <PackageReference Include="ECMAScript.Vuetify" Version="0.1.31" />
   <PackageReference Include="ECMAScript.TDesign" Version="0.1.31" />
-  <PackageReference Include="Jazor.Css" Version="0.1.31" />
+  <PackageReference Include="Jazor.Style" Version="0.1.31" />
 </ItemGroup>
 ```
 
 - `ECMAScript.Vue3` remains part of the default `Jazor` package.
 - `ECMAScript.Pinia.Testing` is a separate opt-in testing package layered on top of `ECMAScript.Pinia`.
-- `Jazor.Css` is a framework-neutral CSS-in-JS package. It depends on the exact same `Jazor` version and reuses this package's compiler and MSBuild integration.
+- `Jazor.Style` is a framework-neutral CSS-in-JS package. It depends on the exact same `Jazor` version and reuses this package's compiler and MSBuild integration.
 
 ### Host / executable projects
 

@@ -80,7 +80,7 @@ jobs:
             --output-directory 'artifacts/packages' `
             --package jazor `
             --package jazor-vue `
-            --package jazor-css `
+            --package jazor-style `
             --package admin `
             --package pinia `
             --package pinia-testing `

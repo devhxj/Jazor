@@ -2887,12 +2887,12 @@ public sealed class RazorSgComponentMemberClosureTests
     }
 
     [TestMethod]
-    public async Task JazorCss_BuildVueComponentModule_UsesGeneratedClassAsOrdinaryStringProp()
+    public async Task JazorStyle_BuildVueComponentModule_UsesGeneratedClassAsOrdinaryStringProp()
     {
         var fixture = CreateManualGeneratedFixture(
             """
             using ECMAScript;
-            using Jazor.Css;
+            using Jazor.Style;
             using static ECMAScript.Vue3;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -2926,14 +2926,14 @@ public sealed class RazorSgComponentMemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        StringAssert.Contains(script, "from \"Jazor.Css/runtime.mjs\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, "from \"Jazor.Style/runtime.mjs\";", StringComparison.Ordinal);
         StringAssert.Contains(script, "const className = css({", StringComparison.Ordinal);
         StringAssert.Contains(script, "display: \"inline-flex\"", StringComparison.Ordinal);
         StringAssert.Contains(script, "color: \"white\"", StringComparison.Ordinal);
         StringAssert.Contains(script, "\"background-color\": \"#1769aa\"", StringComparison.Ordinal);
         StringAssert.Contains(script, "class: className", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("VueClassValue", StringComparison.Ordinal), script);
-        Assert.IsFalse(script.Contains("JazorCss", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("JazorStyle", StringComparison.Ordinal), script);
     }
 
     [TestMethod]

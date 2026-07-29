@@ -1,14 +1,14 @@
-# Jazor.Css
+# Jazor.Style
 
 Deterministic, framework-neutral CSS-in-JS for Jazor applications.
 
-`Jazor.Css` turns structured C# declarations into the standard `Jazor.Css/runtime.mjs` module. It provides generated CSS properties, stable content-based names, ordered nesting, structured at-rules, isolated registries, browser and Shadow DOM targets, SSR snapshots, CSP nonce handling, and idempotent hydration. `Css.Class` returns an ordinary `string`, so ECMAScript modules, Vue bindings, and RazorVue components use it without an adapter.
+`Jazor.Style` turns structured C# declarations into the standard `Jazor.Style/runtime.mjs` module. It provides generated CSS properties, stable content-based names, ordered nesting, structured at-rules, isolated registries, browser and Shadow DOM targets, SSR snapshots, CSP nonce handling, and idempotent hydration. `Css.Class` returns an ordinary `string`, so ECMAScript modules, Vue bindings, and RazorVue components use it without an adapter.
 
 ## Install
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor.Css" Version="0.1.32" />
+  <PackageReference Include="Jazor.Style" Version="0.1.32" />
 </ItemGroup>
 ```
 
@@ -17,7 +17,7 @@ The package depends on the exact same version of `Jazor`. It installs no Razor H
 ## Class Rules
 
 ```csharp
-using Jazor.Css;
+using Jazor.Style;
 
 var buttonClass = Css.Class(new CssRule
 {
@@ -182,13 +182,13 @@ Context-aware operations are explicit:
 
 ## Build Output
 
-`Jazor.Css` uses the standard Jazor output contract:
+`Jazor.Style` uses the standard Jazor output contract:
 
 - `JazorMode=none` writes no frontend artifacts.
-- `JazorMode=debug` materializes `Jazor.Css/runtime.mjs`, its source map, and a manifest entry.
+- `JazorMode=debug` materializes `Jazor.Style/runtime.mjs`, its source map, and a manifest entry.
 - `JazorMode=release` includes the runtime and its consumers in `bundle.js`.
 
-No `Jazor.Css`-specific build property exists. Release remains runtime CSS-in-JS; it does not emit a separate `.css` file or invoke PostCSS, autoprefixer, or CSS Modules.
+No `Jazor.Style`-specific build property exists. Release remains runtime CSS-in-JS; it does not emit a separate `.css` file or invoke PostCSS, autoprefixer, or CSS Modules.
 
 ## Stable Boundaries
 
@@ -197,16 +197,16 @@ No `Jazor.Css`-specific build property exists. Release remains runtime CSS-in-JS
 - It does not parse raw CSS blocks or tagged templates.
 - It does not add compiler intrinsics, analyzer exceptions, or RazorVue lowering branches.
 - It does not reclaim rules automatically. Use inline styles or custom properties for high-cardinality continuous values.
-- Declaration values remain authored CSS source; Jazor.Css validates structure required for deterministic serialization, not the complete CSS value grammar.
+- Declaration values remain authored CSS source; Jazor.Style validates structure required for deterministic serialization, not the complete CSS value grammar.
 
 ## Verification
 
 ```powershell
-dotnet run --file scripts/csharp/generate-jazor-css-properties.cs -- --check
+dotnet run --file scripts/csharp/generate-jazor-style-properties.cs -- --check
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project css
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project css-browser
-dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter JazorCss
-dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --filter JazorCss
+dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter JazorStyle
+dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --filter JazorStyle
 ```
 
 The browser verification executes the generated runtime and checks computed styles, CSP nonce propagation, one-style ownership, Unicode framing, HMR adoption, Shadow DOM targeting, and detached-snapshot hydration.

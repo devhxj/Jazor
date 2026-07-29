@@ -448,8 +448,8 @@ internal sealed record PublishNuGetOptions(
         Console.WriteLine("  --base-output-path <path>");
         Console.WriteLine("  --base-intermediate-output-path <path>");
         Console.WriteLine("  --package-version <semver>");
-        Console.WriteLine("  --package <jazor|jazor-vue|jazor-css|admin|pinia|pinia-testing|vueroute|vuetify|tdesign|elementplus|PackageId>");
-        Console.WriteLine("    Default package set: Jazor, Jazor.Vue, Jazor.Css, Jazor.Admin, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.Vuetify, ECMAScript.TDesign");
+        Console.WriteLine("  --package <jazor|jazor-vue|jazor-style|admin|pinia|pinia-testing|vueroute|vuetify|tdesign|elementplus|PackageId>");
+        Console.WriteLine("    Default package set: Jazor, Jazor.Vue, Jazor.Style, Jazor.Admin, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.Vuetify, ECMAScript.TDesign");
         Console.WriteLine("  --skip-push");
         Console.WriteLine("  --no-build");
     }
@@ -473,7 +473,7 @@ internal static class PackageCatalog
     [
         "Jazor",
         "Jazor.Vue",
-        "Jazor.Css",
+        "Jazor.Style",
         "Jazor.Admin",
         "ECMAScript.Pinia",
         "ECMAScript.Pinia.Testing",
@@ -489,9 +489,9 @@ internal static class PackageCatalog
         ["jazor-vue"] = "Jazor.Vue",
         ["jazor.vue"] = "Jazor.Vue",
         ["Jazor.Vue"] = "Jazor.Vue",
-        ["jazor-css"] = "Jazor.Css",
-        ["jazor.css"] = "Jazor.Css",
-        ["Jazor.Css"] = "Jazor.Css",
+        ["jazor-style"] = "Jazor.Style",
+        ["jazor.style"] = "Jazor.Style",
+        ["Jazor.Style"] = "Jazor.Style",
         ["pinia"] = "ECMAScript.Pinia",
         ["ECMAScript.Pinia"] = "ECMAScript.Pinia",
         ["pinia-testing"] = "ECMAScript.Pinia.Testing",
@@ -546,7 +546,7 @@ internal static class PackageCatalog
 
         throw new InvalidOperationException(
             "Unsupported package selector: " + selector + ". Supported selectors: " +
-            "jazor, jazor-vue, jazor-css, admin, pinia, pinia-testing, vueroute, vuetify, elementplus, tdesign.");
+            "jazor, jazor-vue, jazor-style, admin, pinia, pinia-testing, vueroute, vuetify, elementplus, tdesign.");
     }
 
     private static Dictionary<string, PackageDefinition> CreateCatalog(string repoRoot)
@@ -563,9 +563,9 @@ internal static class PackageCatalog
                 Path.Combine(repoRoot, "src", "Jazor.Vue", "Jazor.Vue.csproj"),
                 RequiresJazorEmitPublishOutput: false,
                 DisableJazorPreparePackageArtifactsOnNoBuild: false),
-            ["Jazor.Css"] = new(
-                "Jazor.Css",
-                Path.Combine(repoRoot, "src", "Jazor.Css", "Jazor.Css.csproj"),
+            ["Jazor.Style"] = new(
+                "Jazor.Style",
+                Path.Combine(repoRoot, "src", "Jazor.Style", "Jazor.Style.csproj"),
                 RequiresJazorEmitPublishOutput: false,
                 DisableJazorPreparePackageArtifactsOnNoBuild: false),
             ["ECMAScript.Pinia"] = new(

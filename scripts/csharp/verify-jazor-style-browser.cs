@@ -1,5 +1,5 @@
 #!/usr/bin/env dotnet run
-#:project ../../src/Jazor.Css/Jazor.Css.csproj
+#:project ../../src/Jazor.Style/Jazor.Style.csproj
 #:property NoWarn=IL2026;IL2075
 
 using System.Collections;
@@ -12,7 +12,7 @@ using System.Text.RegularExpressions;
 var repoRoot = RequireRepoRoot();
 var browserPath = ResolveBrowserExecutable()
     ?? throw new FileNotFoundException(
-        "Microsoft Edge, Google Chrome, or Chromium is required for the Jazor.Css browser smoke.");
+        "Microsoft Edge, Google Chrome, or Chromium is required for the Jazor.Style browser smoke.");
 var root = Path.Combine(repoRoot, ".tmp", "jazor-css-browser-" + Environment.ProcessId);
 var profileRoot = Path.Combine(root, "browser-profile");
 
@@ -21,7 +21,7 @@ Directory.CreateDirectory(root);
 
 try
 {
-    var assembly = typeof(global::Jazor.Css.Css).Assembly;
+    var assembly = typeof(global::Jazor.Style.Css).Assembly;
     var runtime = ReadSingleCatalogItem(assembly, "Jazor.Generated.ModuleCatalog");
     var runtimePath = Path.Combine(root, ReadProperty(runtime, "RelativePath").Replace('/', Path.DirectorySeparatorChar));
     Directory.CreateDirectory(Path.GetDirectoryName(runtimePath)!);
@@ -86,14 +86,14 @@ try
     if (!match.Success)
     {
         throw new InvalidOperationException(
-            "Browser DOM did not contain the Jazor.Css smoke marker." + Environment.NewLine + output + Environment.NewLine + error);
+            "Browser DOM did not contain the Jazor.Style smoke marker." + Environment.NewLine + output + Environment.NewLine + error);
     }
 
     var json = Encoding.UTF8.GetString(Convert.FromBase64String(match.Groups["payload"].Value));
     using var result = JsonDocument.Parse(json);
     var payload = result.RootElement;
     if (!payload.GetProperty("ok").GetBoolean())
-        throw new InvalidOperationException("Jazor.Css browser smoke failed: " + payload.GetRawText());
+        throw new InvalidOperationException("Jazor.Style browser smoke failed: " + payload.GetRawText());
 
     RequireEqual(payload, "firstName", payload.GetProperty("secondName").GetString());
     RequireEqual(payload, "backgroundColor", "rgb(23, 105, 170)");
@@ -109,7 +109,7 @@ try
     RequireTrue(payload, "hydrationAdopted");
     RequireIntEqual(payload, "hydrationStyleCount", 1);
 
-    Console.WriteLine("Jazor.Css browser verification passed.");
+    Console.WriteLine("Jazor.Style browser verification passed.");
     Console.WriteLine(payload.GetRawText());
 }
 finally
@@ -252,13 +252,13 @@ static string GetBrowserHarness() => """
     <html lang="en">
       <head>
         <meta charset="utf-8">
-        <title>Jazor.Css browser smoke</title>
+        <title>Jazor.Style browser smoke</title>
       </head>
       <body>
         <button id="target">Styled</button>
         <script type="module">
-          import * as firstModule from "./Jazor.Css/runtime.mjs";
-          import * as secondModule from "./Jazor.Css/runtime.mjs?hmr=1";
+          import * as firstModule from "./Jazor.Style/runtime.mjs";
+          import * as secondModule from "./Jazor.Style/runtime.mjs?hmr=1";
 
           function finish(value) {
             const bytes = new TextEncoder().encode(JSON.stringify(value));

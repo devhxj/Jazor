@@ -40,7 +40,7 @@ Jazor 是一套使用 C# 和 Razor 构建 JavaScript 与 Vue 应用的 .NET 工�
 
 ### 2026-07-29
 
-- `Jazor.Css` 提供确定性、框架无关的 CSS-in-JS 编写能力，包括生成属性、现代结构化 at-rule、隔离注册表、Shadow DOM 目标、SSR 快照与幂等水合。
+- `Jazor.Style` 提供确定性、框架无关的 CSS-in-JS 编写能力，包括生成属性、现代结构化 at-rule、隔离注册表、Shadow DOM 目标、SSR 快照与幂等水合。
 - RazorVue 直接渲染现会保留动态事件 modifier 条件，并支持包含根级局部声明的 helper 组合输出。
 
 完整历史见 [release notes](docs/releases/release-notes.md)。
@@ -67,7 +67,7 @@ Razor SDK 项目需显式启用：
 ```xml
 <ItemGroup>
   <PackageReference Include="Jazor" Version="0.1.32" />
-  <PackageReference Include="Jazor.Css" Version="0.1.32" />
+  <PackageReference Include="Jazor.Style" Version="0.1.32" />
   <PackageReference Include="ECMAScript.Pinia" Version="0.1.32" />
   <PackageReference Include="ECMAScript.VueRoute" Version="0.1.32" />
   <PackageReference Include="ECMAScript.Vuetify" Version="0.1.32" />
@@ -139,10 +139,10 @@ Razor 组件仅以最终 Roslyn 编译结果作为生产输入：
 
 ### 确定性 CSS-in-JS
 
-应用需要结构化运行时样式时，显式引用 `Jazor.Css`：
+应用需要结构化运行时样式时，显式引用 `Jazor.Style`：
 
 ```csharp
-using Jazor.Css;
+using Jazor.Style;
 
 var actionClass = Css.Class(new CssRule
 {
@@ -161,7 +161,7 @@ var actionClass = Css.Class(new CssRule
 
 该包从 Webref 生成标准 CSS 属性，根据规范化内容生成稳定名称，并为 `document` 或 `ShadowRoot` 管理支持 CSP nonce 的样式节点。独立的 detached `CssContext` 提供请求级提取与水合快照。`Css.Class` 仍返回普通字符串，可直接用于常规模块和 RazorVue 的 `class` 属性，无需适配层；构建继续复用 `JazorMode`，不增加 CSS 专用 MSBuild 属性。
 
-详细合同见 [Jazor.Css 包指南](src/Jazor.Css/README.md)与[目标边界](docs/01-%E7%9B%AE%E6%A0%87/jazor.css/README.md)。
+详细合同见 [Jazor.Style 包指南](src/Jazor.Style/README.md)与[目标边界](docs/01-%E7%9B%AE%E6%A0%87/jazor.style/README.md)。
 
 ## MSBuild 属性
 
@@ -206,7 +206,7 @@ Jazor/
 │   ├── Jazor.Analyzer/              # 静态分析诊断
 │   ├── Jazor.RazorVue/              # Generator 集成、SG 结果绑定与 Vue render framing
 │   ├── Jazor.Emit/                  # 物化、manifest、source map 与打包
-│   ├── Jazor.Css/                   # 确定性、框架无关的 CSS-in-JS runtime
+│   ├── Jazor.Style/                   # 确定性、框架无关的 CSS-in-JS runtime
 │   ├── Jazor.Common/                # 共享格式化 / source-map 工具和契约
 │   ├── Jazor.AspNetCore*/           # ASP.NET Core runtime 与开发期集成
 │   ├── Jazor/                       # NuGet 包，打包核心 SDK 资产
@@ -260,7 +260,7 @@ dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticW
 | 编译器实现原则 | [src/Jazor.Compiler/ImplementationPrinciples.md](src/Jazor.Compiler/ImplementationPrinciples.md) |
 | 编译器状态 | [docs/03-完成/compiler/status.md](docs/03-%E5%AE%8C%E6%88%90/compiler/status.md) |
 | RazorVue 设计 | [docs/01-目标/razorvue/README.md](docs/01-%E7%9B%AE%E6%A0%87/razorvue/README.md) |
-| Jazor.Css 设计与状态 | [docs/01-目标/jazor.css/README.md](docs/01-%E7%9B%AE%E6%A0%87/jazor.css/README.md)、[docs/03-完成/jazor.css/status.md](docs/03-%E5%AE%8C%E6%88%90/jazor.css/status.md) |
+| Jazor.Style 设计与状态 | [docs/01-目标/jazor.style/README.md](docs/01-%E7%9B%AE%E6%A0%87/jazor.style/README.md)、[docs/03-完成/jazor.style/status.md](docs/03-%E5%AE%8C%E6%88%90/jazor.style/status.md) |
 | 架构转型计划 | [docs/02-计划/Jazor 架构转型开发计划.md](docs/02-%E8%AE%A1%E5%88%92/Jazor%20%E6%9E%B6%E6%9E%84%E8%BD%AC%E5%9E%8B%E5%BC%80%E5%8F%91%E8%AE%A1%E5%88%92.md) |
 | G0 决策记录 | [docs/02-计划/RazorSgFinalDocument.G0.DecisionRecord.md](docs/02-%E8%AE%A1%E5%88%92/RazorSgFinalDocument.G0.DecisionRecord.md) |
 | Emit 状态 | [docs/03-完成/emit/status.md](docs/03-%E5%AE%8C%E6%88%90/emit/status.md) |

@@ -1,4 +1,4 @@
-namespace Jazor.Css;
+namespace Jazor.Style;
 
 [ECMAScript]
 [Description("@#")]

@@ -1,14 +1,14 @@
-namespace Jazor.Css.Tests;
+namespace Jazor.Style.Tests;
 
 [TestClass]
-public sealed class JazorCssCatalogTests
+public sealed class JazorStyleCatalogTests
 {
     [TestMethod]
     public void Build_RuntimeModule_EmitsAssemblyCatalog()
     {
-        var module = JazorCssModuleTestHost.GetRuntimeModule();
-        Assert.AreEqual("Jazor.Css/runtime.mjs", module.RelativePath);
-        Assert.AreEqual("Jazor.Css.Css", module.TypeName);
+        var module = JazorStyleModuleTestHost.GetRuntimeModule();
+        Assert.AreEqual("Jazor.Style/runtime.mjs", module.RelativePath);
+        Assert.AreEqual("Jazor.Style.Css", module.TypeName);
 
         var content = module.Content;
         StringAssert.Contains(content, "export");
