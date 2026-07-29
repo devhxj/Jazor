@@ -15,13 +15,6 @@ public sealed class UniqueNameAllocatorTests
 {
     private static readonly Regex GeneratedNameRegex = new(@"__[a-z0-9]+\$[0-9a-f]+", RegexOptions.Compiled);
 
-    private static readonly Assembly CompilerAssembly = typeof(SemanticWalker).Assembly;
-    private static readonly Type UniqueNameSessionType = CompilerAssembly.GetType("Jazor.Compiler.UniqueNameSession", throwOnError: true)!;
-    private static readonly Type EmissionScopeContextType = CompilerAssembly.GetType("Jazor.Compiler.EmissionScopeContext", throwOnError: true)!;
-    private static readonly Type ScopeSiteType = CompilerAssembly.GetType("Jazor.Compiler.ScopeSite", throwOnError: true)!;
-    private static readonly Type LoweringSiteType = CompilerAssembly.GetType("Jazor.Compiler.LoweringSite", throwOnError: true)!;
-    private static readonly Type LoweringNameOwnerType = CompilerAssembly.GetType("Jazor.Compiler.LoweringNameOwner", throwOnError: true)!;
-
     private static IBlockOperation GetBlockOperation(string code, string? filePath = null)
     {
         const string usings = """
@@ -75,70 +68,24 @@ public sealed class UniqueNameAllocatorTests
             }
             """);
 
-        var rootSite = InvokeStaticFactory(ScopeSiteType, "RootFragment");
-        var loweringSite = InvokeStaticFactory(LoweringSiteType, "CreationTemp");
-        var session = Activator.CreateInstance(
-            UniqueNameSessionType,
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-            binder: null,
-            args: [block, rootSite],
-            culture: null) ?? throw new InvalidOperationException("无法创建 UniqueNameSession。");
-        var rootScope = UniqueNameSessionType
-            .GetProperty("RootScope", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!
-            .GetValue(session)
-            ?? throw new InvalidOperationException("无法读取 RootScope。");
-        var scopeKey = EmissionScopeContextType
-            .GetProperty("ScopeKey", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!
-            .GetValue(rootScope) as string
-            ?? throw new InvalidOperationException("无法读取 ScopeKey。");
-        var getOperationIdentity = UniqueNameSessionType.GetMethod(
-            "GetOperationIdentity",
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-            binder: null,
-            types: [typeof(IOperation)],
-            modifiers: null)
-            ?? throw new InvalidOperationException("无法调用 GetOperationIdentity。");
-        var ownerIdentity = getOperationIdentity.Invoke(session, [block]) as string
-            ?? throw new InvalidOperationException("无法获取 operation identity。");
-        var owner = Activator.CreateInstance(
-            LoweringNameOwnerType,
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-            binder: null,
-            args: [ownerIdentity, ownerIdentity],
-            culture: null) ?? throw new InvalidOperationException("无法创建 LoweringNameOwner。");
-        var reservedNames = EmissionScopeContextType
+        var loweringSite = LoweringSite.CreationTemp();
+        var session = new UniqueNameSession(block, ScopeSite.RootFragment());
+        var rootScope = session.RootScope;
+        var ownerIdentity = session.GetOperationIdentity(block);
+        var owner = new LoweringNameOwner(ownerIdentity, ownerIdentity);
+        var reservedNames = typeof(EmissionScopeContext)
             .GetField("_localReservedNames", BindingFlags.Instance | BindingFlags.NonPublic)!
-            .GetValue(rootScope)
+            .GetValue(rootScope) as HashSet<string>
             ?? throw new InvalidOperationException("无法读取保留名集合。");
-        var addReservedName = reservedNames.GetType().GetMethod("Add", [typeof(string)])
-            ?? throw new InvalidOperationException("无法向保留名集合添加名称。");
-        var createName = UniqueNameSessionType.GetMethod(
-            "CreateName",
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-            binder: null,
-            types: [LoweringSiteType, typeof(string), LoweringNameOwnerType, typeof(string)],
-            modifiers: null)
-            ?? throw new InvalidOperationException("无法调用 CreateName。");
 
         for (var index = 0; index < 80; index++)
         {
             var salt = index == 0 ? "p" : "f" + index.ToString(CultureInfo.InvariantCulture);
-            var candidate = createName.Invoke(session, [loweringSite, scopeKey, owner, salt]) as string
-                ?? throw new InvalidOperationException("无法生成预留名称。");
-            addReservedName.Invoke(reservedNames, [candidate]);
+            reservedNames.Add(session.CreateName(loweringSite, rootScope.ScopeKey, owner, salt));
         }
 
-        var expected = createName.Invoke(session, [loweringSite, scopeKey, owner, "f80"]) as string
-            ?? throw new InvalidOperationException("无法生成期望名称。");
-        var allocate = EmissionScopeContextType.GetMethod(
-            "Allocate",
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-            binder: null,
-            types: [LoweringNameOwnerType, LoweringSiteType],
-            modifiers: null)
-            ?? throw new InvalidOperationException("无法调用 Allocate。");
-        var actual = allocate.Invoke(rootScope, [owner, loweringSite]) as string
-            ?? throw new InvalidOperationException("无法分配稳定名称。");
+        var expected = session.CreateName(loweringSite, rootScope.ScopeKey, owner, "f80");
+        var actual = rootScope.Allocate(owner, loweringSite);
 
         Assert.AreEqual(expected, actual);
     }
@@ -156,61 +103,18 @@ public sealed class UniqueNameAllocatorTests
             }
             """);
 
-        var rootSite = InvokeStaticFactory(ScopeSiteType, "RootFragment");
-        var loweringSite = InvokeStaticFactory(LoweringSiteType, "ReferenceTemp");
-        var session = Activator.CreateInstance(
-            UniqueNameSessionType,
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-            binder: null,
-            args: [block, rootSite],
-            culture: null) ?? throw new InvalidOperationException("无法创建 UniqueNameSession。");
-        var rootScope = UniqueNameSessionType
-            .GetProperty("RootScope", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!
-            .GetValue(session)
-            ?? throw new InvalidOperationException("无法读取 RootScope。");
-        var scopeKey = EmissionScopeContextType
-            .GetProperty("ScopeKey", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!
-            .GetValue(rootScope) as string
-            ?? throw new InvalidOperationException("无法读取 ScopeKey。");
-        var owner1 = Activator.CreateInstance(
-            LoweringNameOwnerType,
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-            binder: null,
-            args: ["shared-owner", "id-1"],
-            culture: null) ?? throw new InvalidOperationException("无法创建 LoweringNameOwner(id-1)。");
-        var owner2 = Activator.CreateInstance(
-            LoweringNameOwnerType,
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-            binder: null,
-            args: ["shared-owner", "id-2"],
-            culture: null) ?? throw new InvalidOperationException("无法创建 LoweringNameOwner(id-2)。");
+        var loweringSite = LoweringSite.ReferenceTemp();
+        var session = new UniqueNameSession(block, ScopeSite.RootFragment());
+        var rootScope = session.RootScope;
+        var owner1 = new LoweringNameOwner("shared-owner", "id-1");
+        var owner2 = new LoweringNameOwner("shared-owner", "id-2");
 
-        var allocate = EmissionScopeContextType.GetMethod(
-            "Allocate",
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-            binder: null,
-            types: [LoweringNameOwnerType, LoweringSiteType],
-            modifiers: null)
-            ?? throw new InvalidOperationException("无法调用 Allocate(LoweringNameOwner, LoweringSite)。");
-        var createName = UniqueNameSessionType.GetMethod(
-            "CreateName",
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-            binder: null,
-            types: [LoweringSiteType, typeof(string), LoweringNameOwnerType, typeof(string)],
-            modifiers: null)
-            ?? throw new InvalidOperationException("无法调用 CreateName(LoweringSite, string, LoweringNameOwner, string)。");
+        var first = rootScope.Allocate(owner1, loweringSite);
+        var firstAgain = rootScope.Allocate(owner1, loweringSite);
+        var second = rootScope.Allocate(owner2, loweringSite);
 
-        var first = allocate.Invoke(rootScope, [owner1, loweringSite]) as string
-            ?? throw new InvalidOperationException("无法为 owner1 分配名称。");
-        var firstAgain = allocate.Invoke(rootScope, [owner1, loweringSite]) as string
-            ?? throw new InvalidOperationException("无法为 owner1 重新分配名称。");
-        var second = allocate.Invoke(rootScope, [owner2, loweringSite]) as string
-            ?? throw new InvalidOperationException("无法为 owner2 分配名称。");
-
-        var expectedPrimary = createName.Invoke(session, [loweringSite, scopeKey, owner1, "p"]) as string
-            ?? throw new InvalidOperationException("无法生成 owner1 主名称。");
-        var expectedFallback = createName.Invoke(session, [loweringSite, scopeKey, owner2, "f1"]) as string
-            ?? throw new InvalidOperationException("无法生成 owner2 回退名称。");
+        var expectedPrimary = session.CreateName(loweringSite, rootScope.ScopeKey, owner1, "p");
+        var expectedFallback = session.CreateName(loweringSite, rootScope.ScopeKey, owner2, "f1");
 
         Assert.AreEqual(expectedPrimary, first);
         Assert.AreEqual(first, firstAgain);
@@ -231,56 +135,19 @@ public sealed class UniqueNameAllocatorTests
             }
             """);
 
-        var rootSite = InvokeStaticFactory(ScopeSiteType, "RootFragment");
         var legacyCollisionLeft = "16.8.20.31.15";
         var legacyCollisionRight = "29.29.7.10.25.9.3";
-        var loweringSiteLeft = InvokeStaticFactory(LoweringSiteType, "TupleFieldCache", legacyCollisionLeft);
-        var loweringSiteRight = InvokeStaticFactory(LoweringSiteType, "TupleFieldCache", legacyCollisionRight);
-        var session = Activator.CreateInstance(
-            UniqueNameSessionType,
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-            binder: null,
-            args: [block, rootSite],
-            culture: null) ?? throw new InvalidOperationException("无法创建 UniqueNameSession。");
-        var rootScope = UniqueNameSessionType
-            .GetProperty("RootScope", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!
-            .GetValue(session)
-            ?? throw new InvalidOperationException("无法读取 RootScope。");
-        var scopeKey = EmissionScopeContextType
-            .GetProperty("ScopeKey", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!
-            .GetValue(rootScope) as string
-            ?? throw new InvalidOperationException("无法读取 ScopeKey。");
-        var owner = Activator.CreateInstance(
-            LoweringNameOwnerType,
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-            binder: null,
-            args: ["shared-slot-owner", "slot-owner"],
-            culture: null) ?? throw new InvalidOperationException("无法创建 LoweringNameOwner(slot-owner)。");
+        var loweringSiteLeft = LoweringSite.TupleFieldCache(legacyCollisionLeft);
+        var loweringSiteRight = LoweringSite.TupleFieldCache(legacyCollisionRight);
+        var session = new UniqueNameSession(block, ScopeSite.RootFragment());
+        var rootScope = session.RootScope;
+        var owner = new LoweringNameOwner("shared-slot-owner", "slot-owner");
 
-        var allocate = EmissionScopeContextType.GetMethod(
-            "Allocate",
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-            binder: null,
-            types: [LoweringNameOwnerType, LoweringSiteType],
-            modifiers: null)
-            ?? throw new InvalidOperationException("无法调用 Allocate(LoweringNameOwner, LoweringSite)。");
-        var createName = UniqueNameSessionType.GetMethod(
-            "CreateName",
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-            binder: null,
-            types: [LoweringSiteType, typeof(string), LoweringNameOwnerType, typeof(string)],
-            modifiers: null)
-            ?? throw new InvalidOperationException("无法调用 CreateName(LoweringSite, string, LoweringNameOwner, string)。");
+        var left = rootScope.Allocate(owner, loweringSiteLeft);
+        var right = rootScope.Allocate(owner, loweringSiteRight);
 
-        var left = allocate.Invoke(rootScope, [owner, loweringSiteLeft]) as string
-            ?? throw new InvalidOperationException("无法为左侧 slot path 分配名称。");
-        var right = allocate.Invoke(rootScope, [owner, loweringSiteRight]) as string
-            ?? throw new InvalidOperationException("无法为右侧 slot path 分配名称。");
-
-        var expectedLeft = createName.Invoke(session, [loweringSiteLeft, scopeKey, owner, "p"]) as string
-            ?? throw new InvalidOperationException("无法生成左侧 slot path 名称。");
-        var expectedRight = createName.Invoke(session, [loweringSiteRight, scopeKey, owner, "p"]) as string
-            ?? throw new InvalidOperationException("无法生成右侧 slot path 名称。");
+        var expectedLeft = session.CreateName(loweringSiteLeft, rootScope.ScopeKey, owner, "p");
+        var expectedRight = session.CreateName(loweringSiteRight, rootScope.ScopeKey, owner, "p");
 
         Assert.AreEqual(expectedLeft, left);
         Assert.AreEqual(expectedRight, right);
@@ -882,19 +749,6 @@ public sealed class UniqueNameAllocatorTests
         var insertedScript = walker.Visit(insertedBlock, new())?.ToKnRECMAScript();
 
         Assert.AreEqual(ExtractSingleGeneratedName(baseScript), ExtractSingleGeneratedName(insertedScript));
-    }
-
-    private static object InvokeStaticFactory(Type type, string methodName, params object[] args)
-    {
-        var parameterTypes = args.Select(static arg => arg.GetType()).ToArray();
-        var method = type.GetMethod(
-            methodName,
-            BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static,
-            binder: null,
-            types: parameterTypes,
-            modifiers: null);
-        return method?.Invoke(null, args)
-            ?? throw new InvalidOperationException($"无法调用 {type.FullName}.{methodName}。");
     }
 
     private static string[] ExtractGeneratedNames(string? script)
