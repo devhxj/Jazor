@@ -5,6 +5,8 @@
 - `Jazor.Css` now supports isolated style contexts, request-local extraction, hydration snapshots, and nonce-aware style ownership for both `document` and `ShadowRoot` targets.
 - Structured styling now covers `@container`, `@layer`, `@scope`, `@starting-style`, and declaration-block at-rules such as `@font-face`, `@property`, `@counter-style`, and nested `@page` rules without accepting raw CSS.
 - Existing class names, keyframe names, global rules, DOM framing, RazorVue string consumption, and the standard `JazorMode` debug/release workflow remain compatible.
+- Dynamic Razor event modifiers now preserve their boolean conditions, including repeated `preventDefault` and `stopPropagation` modifiers, instead of being treated as unconditionally enabled.
+- RenderTreeBuilder helpers can compose output after root-level local declarations while declarations inside an open element or component frame remain explicitly rejected.
 
 ## 2026-07-28
 

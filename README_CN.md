@@ -41,6 +41,7 @@ Jazor 是一套使用 C# 和 Razor 构建 JavaScript 与 Vue 应用的 .NET 工�
 ### 2026-07-29
 
 - `Jazor.Css` 提供确定性、框架无关的 CSS-in-JS 编写能力，包括生成属性、现代结构化 at-rule、隔离注册表、Shadow DOM 目标、SSR 快照与幂等水合。
+- RazorVue 直接渲染现会保留动态事件 modifier 条件，并支持包含根级局部声明的 helper 组合输出。
 
 完整历史见 [release notes](docs/releases/release-notes.md)。
 

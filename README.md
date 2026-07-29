@@ -41,6 +41,7 @@ The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyz
 ### 2026-07-29
 
 - `Jazor.Css` provides deterministic, framework-neutral CSS-in-JS authoring with generated properties, modern structured at-rules, isolated registries, Shadow DOM targets, SSR snapshots, and idempotent hydration.
+- RazorVue direct rendering preserves dynamic event-modifier conditions and supports helper-composed output with root-level local declarations.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 
