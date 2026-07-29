@@ -10,7 +10,7 @@ namespace Jazor.Compiler;
 
 internal sealed class UniqueNameSession
 {
-    private const string Version = "jz2";
+    private const string Version = "jz3";
 
     private readonly OperationIdentityIndex _operationIndex;
 
@@ -78,15 +78,15 @@ internal sealed class UniqueNameSession
 
     private static string CreateOwnerKey(IOperation root)
     {
-        var documentKey = CreateDocumentKey(root);
         var symbol = root.SemanticModel?.GetEnclosingSymbol(root.Syntax.SpanStart);
         if (symbol is not null)
-            return documentKey + "|" + symbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
+            return "symbol|" + symbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
 
         var builder = new StringBuilder();
-        builder.Append(documentKey).Append('|');
+        builder.Append("syntax|").Append(CreateDocumentKey(root)).Append('|');
         builder.Append(root.Kind).Append('|');
         builder.Append(root.Type?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<null>");
+        builder.Append('|').Append(HashHex(root.Syntax.ToFullString(), 24));
         return builder.ToString();
     }
 
@@ -95,7 +95,7 @@ internal sealed class UniqueNameSession
         var filePath = NormalizePath(root.Syntax.SyntaxTree.FilePath);
         return string.IsNullOrEmpty(filePath)
             ? "<memory>"
-            : filePath;
+            : Path.GetFileName(filePath);
     }
 
     private static string NormalizePath(string? path)

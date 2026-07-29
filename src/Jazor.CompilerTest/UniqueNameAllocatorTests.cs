@@ -22,7 +22,7 @@ public sealed class UniqueNameAllocatorTests
     private static readonly Type LoweringSiteType = CompilerAssembly.GetType("Jazor.Compiler.LoweringSite", throwOnError: true)!;
     private static readonly Type LoweringNameOwnerType = CompilerAssembly.GetType("Jazor.Compiler.LoweringNameOwner", throwOnError: true)!;
 
-    private static IBlockOperation GetBlockOperation(string code)
+    private static IBlockOperation GetBlockOperation(string code, string? filePath = null)
     {
         const string usings = """
             global using System;
@@ -38,7 +38,7 @@ public sealed class UniqueNameAllocatorTests
             syntaxTrees:
             [
                 CSharpSyntaxTree.ParseText(usings),
-                CSharpSyntaxTree.ParseText(code)
+                CSharpSyntaxTree.ParseText(code, path: filePath ?? string.Empty)
             ],
             references: TestMetadataReferences.Net11
                 .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location)),
@@ -325,6 +325,33 @@ public sealed class UniqueNameAllocatorTests
 
         StringAssert.Contains(firstScript, "const v$0 = value;");
         StringAssert.Contains(secondScript, "const v$0 = other;");
+    }
+
+    [TestMethod]
+    public void Visit_SameSemanticRootAcrossCheckoutPaths_PreservesGeneratedNames()
+    {
+        const string code = """
+            class TestClass
+            {
+                class Box
+                {
+                    public int Value { get; set; }
+                }
+
+                void TestMethod()
+                {
+                    var box = new Box { Value = 42 };
+                }
+            }
+            """;
+        var first = GetBlockOperation(code, @"C:\checkout-a\src\Feature\Handler.cs");
+        var second = GetBlockOperation(code, @"D:\checkout-b\src\Feature\Handler.cs");
+
+        var walker = new SemanticWalker();
+        var firstScript = walker.Visit(first, new())?.ToKnRECMAScript();
+        var secondScript = walker.Visit(second, new())?.ToKnRECMAScript();
+
+        Assert.AreEqual(ExtractSingleGeneratedName(firstScript), ExtractSingleGeneratedName(secondScript));
     }
 
     [TestMethod]
