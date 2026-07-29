@@ -18,35 +18,42 @@ public static class ImportDeclarationFactory
             throw new ArgumentNullException(nameof(specifiers));
 
         var uniqueSpecifiers = NormalizeSpecifiers(specifiers);
-        var defaultSpecifier = uniqueSpecifiers
+        var defaultSpecifiers = uniqueSpecifiers
             .OfType<ImportDefaultSpecifier>()
             .OrderBy(static specifier => specifier.Local.Name, StringComparer.Ordinal)
-            .FirstOrDefault();
-        var namespaceSpecifier = uniqueSpecifiers
+            .ToArray();
+        var namespaceSpecifiers = uniqueSpecifiers
             .OfType<ImportNamespaceSpecifier>()
             .OrderBy(static specifier => specifier.Local.Name, StringComparer.Ordinal)
-            .FirstOrDefault();
+            .ToArray();
         var namedSpecifiers = uniqueSpecifiers
             .OfType<ImportSpecifier>()
             .Cast<ImportDeclarationSpecifier>()
             .ToArray();
 
-        var declarations = ImmutableArray.CreateBuilder<ImportDeclaration>(2);
-        if (namespaceSpecifier is not null)
+        var declarations = ImmutableArray.CreateBuilder<ImportDeclaration>();
+        var defaultIndex = 0;
+        foreach (var namespaceSpecifier in namespaceSpecifiers)
         {
-            var namespaceSpecifiers = defaultSpecifier is null
+            var declarationSpecifiers = defaultIndex >= defaultSpecifiers.Length
                 ? NodeList.From<ImportDeclarationSpecifier>(namespaceSpecifier)
-                : NodeList.From<ImportDeclarationSpecifier>(defaultSpecifier, namespaceSpecifier);
-            declarations.Add(CreateDeclaration(modulePath, namespaceSpecifiers));
-            defaultSpecifier = null;
+                : NodeList.From<ImportDeclarationSpecifier>(defaultSpecifiers[defaultIndex++], namespaceSpecifier);
+            declarations.Add(CreateDeclaration(modulePath, declarationSpecifiers));
         }
 
         var remainingSpecifiers = new List<ImportDeclarationSpecifier>(namedSpecifiers.Length + 1);
-        if (defaultSpecifier is not null)
-            remainingSpecifiers.Add(defaultSpecifier);
+        if (defaultIndex < defaultSpecifiers.Length)
+            remainingSpecifiers.Add(defaultSpecifiers[defaultIndex++]);
         remainingSpecifiers.AddRange(namedSpecifiers);
         if (remainingSpecifiers.Count > 0)
             declarations.Add(CreateDeclaration(modulePath, NodeList.From(remainingSpecifiers)));
+
+        while (defaultIndex < defaultSpecifiers.Length)
+        {
+            declarations.Add(CreateDeclaration(
+                modulePath,
+                NodeList.From<ImportDeclarationSpecifier>(defaultSpecifiers[defaultIndex++])));
+        }
 
         return declarations.ToImmutable();
     }
