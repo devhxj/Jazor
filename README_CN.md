@@ -40,7 +40,7 @@ Jazor 是一套使用 C# 和 Razor 构建 JavaScript 与 Vue 应用的 .NET 工�
 
 ### 2026-07-29
 
-- `Jazor.Style` 提供确定性、框架无关的 CSS-in-JS 编写能力，包括生成属性、现代结构化 at-rule、隔离注册表、Shadow DOM 目标、SSR 快照与幂等水合。
+- `Jazor.Style` 现提供统一的小写 `css` 门面、基于原生 union 的 CSS 值域、类型化单位与组合函数，以及显式 `raw(...)` 逃生口；debug 产物使用单一入口 `jazorStyle.mjs`。
 - RazorVue 直接渲染现会保留动态事件 modifier 条件，并支持包含根级局部声明的 helper 组合输出。
 
 完整历史见 [release notes](docs/releases/release-notes.md)。
@@ -57,8 +57,8 @@ Razor SDK 项目需显式启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.32" />
-  <PackageReference Include="Jazor.Vue" Version="0.1.32" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.1.33" />
+  <PackageReference Include="Jazor.Vue" Version="0.1.33" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -66,11 +66,11 @@ Razor SDK 项目需显式启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.32" />
-  <PackageReference Include="Jazor.Style" Version="0.1.32" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.32" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.32" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.32" />
+  <PackageReference Include="Jazor" Version="0.1.33" />
+  <PackageReference Include="Jazor.Style" Version="0.1.33" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.33" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.33" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.33" />
 </ItemGroup>
 ```
 
@@ -143,23 +143,26 @@ Razor 组件仅以最终 Roslyn 编译结果作为生产输入：
 
 ```csharp
 using Jazor.Style;
+using static Jazor.Style.css;
 
-var actionClass = Css.Class(new CssRule
+var actionClass = style(new CssRule
 {
-    Display = "inline-flex",
-    Color = "white",
-    BackgroundColor = "#1769aa",
+    Display = inlineFlex,
+    Gap = rem(0.5),
+    Width = percent(100) - rem(2),
+    Color = varOr("--action-color", color("white")),
+    BackgroundColor = hex("1769aa"),
     Children =
     [
         new(CssChildKind.Selector, "&:hover", new CssRule
         {
-            BackgroundColor = "#125486"
+            BackgroundColor = hex("125486")
         })
     ]
 });
 ```
 
-该包从 Webref 生成标准 CSS 属性，根据规范化内容生成稳定名称，并为 `document` 或 `ShadowRoot` 管理支持 CSP nonce 的样式节点。独立的 detached `CssContext` 提供请求级提取与水合快照。`Css.Class` 仍返回普通字符串，可直接用于常规模块和 RazorVue 的 `class` 属性，无需适配层；构建继续复用 `JazorMode`，不增加 CSS 专用 MSBuild 属性。
+该包依据锁定的 Webref 语法快照生成 705 个标准属性。C# 原生 union 区分长度、百分比、颜色、时间、display 等值域；`raw(...)` 显式承载未来或尚未建模的语法。稳定内容命名、支持 nonce 的 `document` / `ShadowRoot` 所有权、detached 提取与水合共享同一运行时合同。`style(...)` 返回普通字符串，可直接用于常规模块和 RazorVue `class` 属性；构建不增加 CSS 专用 MSBuild 属性，debug 模式在 `JazorDir` 下物化 `jazorStyle.mjs`。
 
 详细合同见 [Jazor.Style 包指南](src/Jazor.Style/README.md)与[目标边界](docs/01-%E7%9B%AE%E6%A0%87/jazor.style/README.md)。
 
@@ -206,7 +209,7 @@ Jazor/
 │   ├── Jazor.Analyzer/              # 静态分析诊断
 │   ├── Jazor.RazorVue/              # Generator 集成、SG 结果绑定与 Vue render framing
 │   ├── Jazor.Emit/                  # 物化、manifest、source map 与打包
-│   ├── Jazor.Style/                   # 确定性、框架无关的 CSS-in-JS runtime
+│   ├── Jazor.Style/                 # 强类型、确定的 CSS-in-JS runtime
 │   ├── Jazor.Common/                # 共享格式化 / source-map 工具和契约
 │   ├── Jazor.AspNetCore*/           # ASP.NET Core runtime 与开发期集成
 │   ├── Jazor/                       # NuGet 包，打包核心 SDK 资产

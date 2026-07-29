@@ -2,10 +2,11 @@
 
 ## 2026-07-29
 
-- The independent CSS-in-JS package is now named `Jazor.Style`, with its runtime catalog published at `Jazor.Style/runtime.mjs`; the underlying `jazor-css:v1` naming and hydration protocol remains stable.
-- `Jazor.Style` supports isolated style contexts, request-local extraction, hydration snapshots, and nonce-aware style ownership for both `document` and `ShadowRoot` targets.
-- Structured styling now covers `@container`, `@layer`, `@scope`, `@starting-style`, and declaration-block at-rules such as `@font-face`, `@property`, `@counter-style`, and nested `@page` rules without accepting raw CSS.
-- Existing class names, keyframe names, global rules, DOM framing, RazorVue string consumption, and the standard `JazorMode` debug/release workflow remain compatible.
+- `Jazor.Style` now exposes one lowercase `css` facade. Consumers can use qualified calls such as `css.style(...)` and `css.px(...)`, or opt into direct `style(...)` and `px(...)` calls with a static using.
+- The 705 generated CSS properties now use native C# union domains and nominal values for lengths, percentages, colors, times, display values, tracks, transforms, and related syntax. Cross-domain and implicit string assignments fail at compile time, while `raw(...)` remains the explicit path for future or unmodeled CSS.
+- Typed units, variables, colors, grid functions, transforms, keywords, and `calc(...)` operators compose as ordinary C# expressions. Mixed length-percentage arithmetic remains distinct from pure lengths.
+- Debug materialization now publishes the single root entry `jazorStyle.mjs` and its source map. The stable `jazor-css:v1` naming, class/keyframe hashes, DOM framing, isolated contexts, Shadow DOM ownership, snapshots, hydration, and release Bundle behavior remain unchanged.
+- `Jazor.Style` remains an independent opt-in package and adds no Style-specific build configuration; it uses only `JazorMode`, `JazorDir`, and `JazorTool`.
 - Dynamic Razor event modifiers now preserve their boolean conditions, including repeated `preventDefault` and `stopPropagation` modifiers, instead of being treated as unconditionally enabled.
 - RenderTreeBuilder helpers can compose output after root-level local declarations while declarations inside an open element or component frame remain explicitly rejected.
 

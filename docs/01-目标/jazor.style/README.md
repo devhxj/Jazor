@@ -1,110 +1,123 @@
 # Jazor.Style 目标与边界
 
-`Jazor.Style` 为 Jazor 应用提供结构化、确定且框架无关的 CSS-in-JS 能力。作者使用普通 C# API 描述样式，运行时以标准 ECMAScript 模块完成规范化、命名、注册、DOM 注入与提取；编译器、RazorVue 和 Emit 不承担 CSS 专用语义。
+`Jazor.Style` 为 Jazor 应用提供强类型、确定且与 UI 框架无关的 CSS-in-JS 能力。开发者使用 C# 类型系统描述属性和值；生成后的标准 ECMAScript 模块负责规则规范化、稳定命名、注册、DOM 注入、提取与水合。
 
-## 产品定位
+## 产品目标
 
-该模块解决四个相互关联的问题：
+该模块围绕四项长期目标设计：
 
-1. C# 作者需要带成员提示的标准 CSS 属性，同时保留自定义属性、回退声明、at-rule 描述符和未来 CSS 值的开放性；
-2. 相同样式内容需要在调用点、独立注册表和模块重载之间获得稳定名称，并避免重复注入；
-3. 组件样式需要结构化表达选择器、条件规则、容器、层、作用域、起始样式和声明型 at-rule；
-4. 浏览器、Shadow DOM 与隔离渲染需要共享同一份所有权、提取和水合合同。
+1. **可靠编写**：以 Webref 语法数据生成属性目录，以 C# 原生 union 和名义值区分长度、百分比、颜色、时间、角度、轨道等值域，在编译期阻止明显的跨域赋值。
+2. **开放演进**：通过 `raw(...)` 显式承载尚未建模的标准、实验性或自定义语法，不以封闭枚举阻碍 CSS 演进，也不将所有属性退化为任意字符串。
+3. **确定输出**：相同规则在不同调用点、上下文和模块重载后得到相同名称；顺序敏感内容严格保留作者顺序，碰撞明确失败。
+4. **统一运行**：浏览器、Shadow DOM、服务端提取和水合共享同一注册与所有权协议，不建立 CSS 专用编译或构建支线。
 
 正式链路如下：
 
 ```text
-结构化 C# CssRule / CssAtRule
+CssRule / CssAtRule / typed CSS values
     -> Jazor.Compiler 常规 IOperation 降低
-    -> Jazor.Style/runtime.mjs
+    -> jazorStyle.mjs
     -> CssContext 注册表
-    -> document / ShadowRoot / detached 快照
+    -> document / ShadowRoot / detached snapshot
+    -> debug 模块或 release Bundle
 ```
 
 ## 包边界
 
-- `Jazor.Style` 是独立的显式 opt-in NuGet 包，并精确依赖同版本 `Jazor`。
-- `Jazor` 不反向依赖 `Jazor.Style`；仅引用核心包不会获得 CSS API 或 runtime catalog。
-- `Jazor.Style` 不依赖 Vue、RazorVue、ASP.NET Core 或组件库。
-- 引用包不会主动注入样式；只有执行注册 API 才会产生规则。
-- 包不安装 Razor Hook，不扫描组件，也不提供 CSS 专用 MSBuild props/targets。
+- `Jazor.Style` 是独立、显式引用的 NuGet 包，并精确依赖同版本 `Jazor`。
+- `Jazor` 不反向依赖 `Jazor.Style`；仅引用核心包不会获得 Style API 或模块目录项。
+- 包不依赖 Vue、RazorVue、ASP.NET Core 或任何组件库。
+- 引用包只使 API 与模块目录可用；只有执行注册方法才会创建规则或修改 DOM。
+- 包不安装 Razor Hook，不扫描组件，不提供 CSS 专用 props、targets 或用户配置项。
 
-## 公共合同
+## 公共模型
 
-### 默认上下文
+### 门面
 
-| API | 合同 |
-| --- | --- |
-| `Css.Class(CssRule)` | 返回稳定类名，并在首次出现时注册 CSS |
-| `Css.Keyframes(params CssFrame[])` | 返回稳定动画名并注册关键帧 |
-| `Css.Global(string, CssRule)` | 注册全局 selector 规则 |
-| `Css.AtRule(CssAtRule)` | 注册结构化声明块 at-rule |
-| `Css.Extract()` | 按注册顺序返回纯 CSS，不清空注册表 |
-| `Css.Snapshot()` | 返回纯 CSS 与可接管水合文本 |
-| `Css.Configure(CssOptions)` | 在首次注册前配置默认 DOM 目标、StyleId 与 nonce |
+唯一公共门面为小写静态类 `css`。所有方法和预定义值采用 lower camel case，可按需静态导入：
 
-### 显式上下文
+```csharp
+using Jazor.Style;
+using static Jazor.Style.css;
 
-`Css.CreateContext` 创建独立注册表。对应操作使用 `ClassIn`、`KeyframesIn`、`GlobalIn`、`AtRuleIn`、`ExtractFrom` 和 `SnapshotFrom`，使样式归属在调用点明确。
+var className = style(new CssRule
+{
+    Display = inlineFlex,
+    Gap = rem(0.5),
+    Width = percent(100) - rem(2)
+});
+```
 
-相同内容在不同上下文中获得相同名称，但内存条目互不共享。指向同一 DOM 目标和 StyleId 的上下文可通过所有权帧接管同一样式节点，这是显式 DOM 持久化，而不是静态状态泄漏。
+`css.style(...)` 与静态导入后的 `style(...)` 完全等价。包不注入全局静态 using，是否省略 `css.` 由消费项目决定。
 
-## 样式模型
+### 类型化值域
 
-标准属性从 Webref inventory 确定性生成，值类型保持为 `string?`，以容纳 `var(...)`、`calc(...)`、自定义函数和持续演进的 CSS 语法。
+标准属性由锁定的 `@webref/css@6.12.7` 语法快照与 WebIDL inventory 共同生成。生成器将属性映射到具体值域；复杂语法使用开放的 `CssValue` union，而非 `string?`。
 
-- `Additional` 表达重复声明、回退链与 `!important`，保留作者顺序。
-- `Children` 表达选择器、`@media`、`@supports`、`@container`、`@layer`、`@scope` 和 `@starting-style` 的有序嵌套。
-- `CssAtRule` 表达 `@font-face`、`@property`、`@counter-style`、`@page` 和递归页边距规则等声明块。
-- 字符串索引器用于自定义属性、尚未进入清单的属性和不属于 `CSSStyleDeclaration` 的 descriptor。
+主要构件包括：
 
-API 不接受 `object`、动态字典或原始 CSS block。结构化输入是 C# 作者体验、确定性和错误传播的共同边界。
+- 名义值：`CssLength`、`CssPercentage`、`CssLengthPercentage`、`CssAngle`、`CssTime`、`CssColor`、`CssTransform`、`CssTrack` 等；
+- 属性值域：`CssLengthPercentageValue`、`CssColorValue`、`CssTimeValue`、`CssDisplayValue`、`CssTrackValue` 等原生 union；
+- 预定义关键字：`auto`、`none`、`normal`、`flex`、`grid`、`inlineFlex`、`relative`、`transparent` 等；
+- 工厂函数：单位、颜色、变量、网格、变换、字符串、URL 和数学组合；
+- 逃生口：`raw(string)` 显式接纳未来语法或尚未覆盖的复合值。
 
-## 确定性与所有权
+混合长度百分比运算返回独立的 `CssLengthPercentage`。因此 `Width = percent(100) - rem(2)` 合法，而纯长度属性不会错误接受该值。
 
-- 命名属性按最终 CSS 名做 ordinal 排序，C# 初始化顺序不影响名称。
+### 规则模型
+
+- `CssDeclarations` 承载命名属性、动态属性和有序补充声明。
+- `CssRule` 在声明基础上增加有序子规则。
+- `CssFrame` 表达关键帧。
+- `CssAtRule` 表达声明块 at-rule 及递归子规则。
+- `CssContext` 隔离名称索引、正文、顺序、DOM 目标与水合状态。
+- `CssSnapshot` 同时提供纯 CSS 与可接管的水合文本。
+
+`style(...)` 与 `keyframes(...)` 返回普通 `string`，可直接进入 ECMAScript 模块、Vue props 或 RazorVue `class` 属性，无需适配层。
+
+## 确定性合同
+
+- 命名属性按最终 CSS 名进行 ordinal 排序，C# 初始化顺序不影响名称。
 - `Additional`、`Children`、关键帧和嵌套 at-rule 的顺序属于级联语义，必须进入规范内容与哈希。
-- 类、关键帧、全局规则和 at-rule 使用独立名称领域。
-- 名称使用版本化双 32 位状态哈希，并维护内容到名称、名称到内容的双向索引；冲突明确失败。
-- 浏览器端每个“上下文/目标/StyleId”组合只管理一个带所有权头的 `<style>`，条目使用 UTF-16 长度定界帧。
-- 模块重载或水合后，新上下文从 DOM 恢复条目；相同 ID 与正文不重复注入，不同正文不得复用 ID。
+- 类、关键帧、全局规则与 at-rule 使用独立名称领域。
+- `jazor-css:v1`、`jz-*`、`jz-k-*` 与默认 StyleId `jazor-css` 是稳定协议值。
+- 内容到名称、名称到内容采用双向索引；哈希碰撞或 DOM 所有权冲突明确失败。
+- DOM 条目以 UTF-16 长度帧记录，避免 Unicode 内容使重载或水合边界漂移。
 
-## DOM、隔离与 Hydration
+## 上下文与水合
 
-默认上下文使用 `document.head`。`CssOptions.Target` 接受 `DocumentFragment`，主要用于 `ShadowRoot`；不同目标可使用相同 StyleId 而互不干扰。
+默认上下文面向 `document.head`。`configure(...)` 只能在首次默认注册前设置 StyleId、CSP nonce 或目标。
 
-`Detached=true` 创建无 DOM 上下文，并与 `Target` 互斥。每个请求或渲染任务可使用独立 detached 上下文，避免默认注册表跨请求共享。
+`context(...)` 创建独立注册表：
 
-`CssSnapshot` 提供：
+- `Target=shadowRoot` 将所有权限定在指定 `DocumentFragment`；
+- `Detached=true` 禁止 DOM 访问，适用于请求级提取；
+- 两者互斥，避免同一上下文同时声明 DOM 所有权与无 DOM 隔离。
 
-- `CssText`：无内部标记的纯 CSS；
-- `HydrationText`：带所有权头和长度帧的样式文本；
-- `StyleId` 与 `Nonce`：浏览器接管所需的节点元数据。
+默认与显式上下文共用同一方法名，通过重载区分：`style`、`keyframes`、`global`、`atRule`、`extract` 与 `snapshot`。相同内容在不同上下文中得到相同名称，但内存条目互不共享。
 
-浏览器使用相同 StyleId 与 nonce 创建上下文后，应无重写地接管快照对应的样式节点。
+`CssSnapshot.CssText` 是纯 CSS；`HydrationText` 包含所有权头与条目帧。浏览器使用相同目标、StyleId 和 nonce 创建上下文后，可原样接管已有样式节点，不重复写入规则。
 
 ## 输出合同
 
-`Jazor.Style` 完全复用 `JazorMode`：
+`Jazor.Style` 复用且仅复用三项标准 Jazor 配置：
 
-| 模式 | 行为 |
-| --- | --- |
-| `none` | 不物化前端产物 |
-| `debug` | 输出 runtime `.mjs`、source map 与 manifest 条目 |
-| `release` | 将 runtime 与调用模块纳入生产 Bundle |
+| 配置 | 默认值 | Style 行为 |
+| --- | --- | --- |
+| `JazorMode` | `none` | `none` 不输出；`debug` 物化模块；`release` 生成 Bundle |
+| `JazorDir` | `$(MSBuildProjectDirectory)\wwwroot\jazor\` | debug 与 release 的统一输出根目录 |
+| `JazorTool` | `Deno` | 仅在 `release` 下选择 Deno 或 Netpack |
 
-release 不生成独立 `.css`，也不执行构建期提取、PostCSS、autoprefixer 或 CSS Modules 转换。
+debug 入口固定为 `jazorStyle.mjs`；release 将该运行时与消费模块纳入 `bundle.js`。模块不生成独立 `.css`，也不执行 PostCSS、autoprefixer 或 CSS Modules 转换。
 
-## 稳定非目标
+## 明确非目标
 
-- 不封装或携带 Goober JavaScript；
+- 不封装或携带 Goober 等 JavaScript CSS-in-JS 库；
 - 不提供 `styled(Component)`、Vue wrapper 或组件库适配层；
 - 不解析原始 CSS block、标签模板或任意 CSS 文本；
-- 不增加 compiler intrinsic、analyzer 特例或 RazorVue lowering 分支；
+- 不增加 Style 专用 compiler intrinsic、analyzer 例外或 RazorVue lowering；
 - 不动态注册 `@charset`、`@import`、`@namespace` 等 statement at-rule；
 - 不提供自动规则回收、引用计数或 LRU；
-- 不新增 `JazorStyle*` 构建配置。
+- 不增加 `JazorStyle*` 构建配置。
 
-这些项目属于明确的职责边界，不是隐藏配置或待补 fallback。
-
-实施和验收见[完整实现计划](../../02-计划/jazor.style/Jazor.Style.Complete.ImplementationPlan.md)，当前证据见[完成状态](../../03-完成/jazor.style/status.md)。
+实施步骤见[实现计划](../../02-计划/jazor.style/Jazor.Style.Complete.ImplementationPlan.md)，验收结果见[完成状态](../../03-完成/jazor.style/status.md)。

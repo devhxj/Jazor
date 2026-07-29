@@ -40,7 +40,7 @@ The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyz
 
 ### 2026-07-29
 
-- `Jazor.Style` provides deterministic, framework-neutral CSS-in-JS authoring with generated properties, modern structured at-rules, isolated registries, Shadow DOM targets, SSR snapshots, and idempotent hydration.
+- `Jazor.Style` now provides a lowercase `css` facade, native-union CSS value domains, typed units and composition helpers, and an explicit `raw(...)` escape hatch; debug output uses the single `jazorStyle.mjs` entry.
 - RazorVue direct rendering preserves dynamic event-modifier conditions and supports helper-composed output with root-level local declarations.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
@@ -57,8 +57,8 @@ Razor SDK projects opt in explicitly:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.32" />
-  <PackageReference Include="Jazor.Vue" Version="0.1.32" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.1.33" />
+  <PackageReference Include="Jazor.Vue" Version="0.1.33" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -66,11 +66,11 @@ Add ecosystem packages explicitly when needed:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.32" />
-  <PackageReference Include="Jazor.Style" Version="0.1.32" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.32" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.32" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.32" />
+  <PackageReference Include="Jazor" Version="0.1.33" />
+  <PackageReference Include="Jazor.Style" Version="0.1.33" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.33" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.33" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.33" />
 </ItemGroup>
 ```
 
@@ -143,23 +143,26 @@ Reference `Jazor.Style` when an application needs structured runtime styles:
 
 ```csharp
 using Jazor.Style;
+using static Jazor.Style.css;
 
-var actionClass = Css.Class(new CssRule
+var actionClass = style(new CssRule
 {
-    Display = "inline-flex",
-    Color = "white",
-    BackgroundColor = "#1769aa",
+    Display = inlineFlex,
+    Gap = rem(0.5),
+    Width = percent(100) - rem(2),
+    Color = varOr("--action-color", color("white")),
+    BackgroundColor = hex("1769aa"),
     Children =
     [
         new(CssChildKind.Selector, "&:hover", new CssRule
         {
-            BackgroundColor = "#125486"
+            BackgroundColor = hex("125486")
         })
     ]
 });
 ```
 
-The package generates standard CSS properties from Webref, derives stable names from normalized content, and manages nonce-aware stylesheets for `document` or `ShadowRoot`. Detached `CssContext` instances provide request-local extraction and hydration snapshots. `Css.Class` remains a plain string and works in ordinary modules and RazorVue `class` attributes without an adapter. The package uses the existing `JazorMode` output contract and adds no CSS-specific MSBuild property.
+The package generates 705 standard properties from a locked Webref grammar snapshot. Native C# unions distinguish lengths, percentages, colors, times, display values, and other domains; `raw(...)` explicitly admits future or unmodeled syntax. Stable content names, nonce-aware `document`/`ShadowRoot` ownership, detached extraction, and hydration share one runtime contract. `style(...)` returns a plain string for ordinary modules and RazorVue `class` attributes. The package adds no CSS-specific MSBuild property; debug materialization writes `jazorStyle.mjs` under `JazorDir`.
 
 See the [Jazor.Style package guide](src/Jazor.Style/README.md) and [design boundary](docs/01-%E7%9B%AE%E6%A0%87/jazor.style/README.md).
 
@@ -206,7 +209,7 @@ Jazor/
 │   ├── Jazor.Analyzer/              # Static analyzer diagnostics
 │   ├── Jazor.RazorVue/              # Generator integration, SG binding, and Vue render framing
 │   ├── Jazor.Emit/                  # Materialization, manifests, source maps, and bundling
-│   ├── Jazor.Style/                   # Deterministic, framework-neutral CSS-in-JS runtime
+│   ├── Jazor.Style/                 # Strongly typed, deterministic CSS-in-JS runtime
 │   ├── Jazor.Common/                # Shared formatting/source-map utilities and contracts
 │   ├── Jazor.AspNetCore*/           # ASP.NET Core runtime and dev integration
 │   ├── Jazor/                       # NuGet package bundling core SDK assets

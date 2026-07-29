@@ -1,151 +1,134 @@
-# Jazor.Style 完整实现计划
+# Jazor.Style 实现计划
 
-> 状态：已完成
+> 状态：已实施，等待发布验收
+>
 > 更新：2026-07-29
-> 基线：`Jazor.Style` 第一阶段运行时与 `v0.1.31` 包
-> 目标：在不引入 CSS 专用编译分支的前提下，完成可用于组件样式、Shadow DOM 与隔离渲染的正式产品合同
+>
+> 目标：完成独立、强类型、确定且可跨浏览器与服务端环境运行的 C# CSS-in-JS 包
 
-## 1. 实施结论
+## 1. 交付范围
 
-`Jazor.Style` 继续采用结构化 C# 模型与普通 ECMAScript 模块。完整实现不是复制浏览器 CSS 解析器，也不是把 Goober API 翻译成 C#；它要补齐运行时 CSS-in-JS 在实际应用中不可缺少的作用域、现代规则和 hydration 能力，同时保持第一阶段 API 与输出格式稳定。
+`Jazor.Style` 采用结构化 C# 模型与普通 ECMAScript 模块，不复制浏览器 CSS 解析器，也不建立编译器特例。交付范围由五个层次组成：
+
+1. 小写静态门面 `css`，同时支持限定调用与显式静态导入；
+2. 基于 Webref 语法数据、C# 原生 union 和名义值的强类型 CSS 值系统；
+3. 类规则、关键帧、全局规则、现代嵌套规则与声明块 at-rule；
+4. 默认、Shadow DOM 与 detached 上下文，以及提取和幂等水合；
+5. 标准 Jazor catalog、source map、debug 物化、release Bundle 与独立 NuGet 消费。
 
 正式链路为：
 
 ```text
-CssRule / CssAtRule
-    -> Jazor.Compiler 常规 IOperation 降低
-    -> Jazor.Style/runtime.mjs
+typed values + CssRule / CssAtRule
+    -> Roslyn IOperation
+    -> Jazor.Compiler 通用 lowering
+    -> jazorStyle.mjs
     -> CssContext registry
-    -> document / ShadowRoot / detached snapshot
-    -> debug module 或 release Bundle
+    -> DOM / ShadowRoot / CssSnapshot
 ```
 
 ## 2. 不变量
 
-以下边界在完整实现中保持不变：
+以下合同在实现与发布中不得改变：
 
-1. `Jazor.Style` 仍是独立、显式引用的 NuGet 包，并精确依赖同版本 `Jazor`。
-2. 不增加 CSS 专用 Hook、analyzer 例外、compiler intrinsic、RazorVue lowering 或 MSBuild 属性。
-3. 标准属性继续从 Webref inventory 确定性生成；CSS 值继续使用开放的 `string?` 合同。
-4. `Css.Class` 继续返回普通 `string`，现有类规则、关键帧、全局规则与提取 API 保持兼容。
-5. `jazor-css:v1` 哈希与 DOM 条目帧继续作为持久合同；本次扩展不得改变既有规则名称。
-6. release 输出继续是包含运行时逻辑的 Bundle，不新增独立 CSS 构建管线。
+- `Jazor.Style` 是独立 opt-in 包，并精确依赖同版本 `Jazor`；
+- 不增加 CSS 专用 Hook、RazorVue 分支、analyzer 例外或 MSBuild 属性；
+- `style(...)` 与 `keyframes(...)` 返回普通 `string`；
+- `jazor-css:v1`、类名、关键帧名、默认 StyleId 与 DOM 条目帧保持稳定；
+- release 产物是包含运行时逻辑的 Bundle，不新增静态 CSS 构建管线；
+- 未建模语法通过显式 `raw(...)` 进入，不以隐式字符串放宽全部属性。
 
-## 3. 完整能力
+## 3. 工作分解
 
-### 3.1 现代嵌套规则
+### A. 公共 API
 
-`CssChildKind` 在 `Selector`、`Media`、`Supports` 之外增加：
-
-| Kind | 合同 |
-| --- | --- |
-| `Container` | 输出 `@container <prelude>`，prelude 必填 |
-| `Layer` | 输出命名或匿名 `@layer` block |
-| `Scope` | 输出带或不带范围的 `@scope` block |
-| `StartingStyle` | 输出无 prelude 的 `@starting-style` block |
-
-所有分组规则递归保留当前 selector 和 `Children` 顺序。`StartingStyle` 不接受 prelude；其他规则按各自合同检查空值和结构分隔符。
-
-### 3.2 声明型 at-rule
-
-新增 `CssAtRule` 与 `Css.AtRule`：
-
-```csharp
-public sealed record CssAtRule(
-    string Name,
-    CssDeclarations Declarations,
-    string? Prelude = null,
-    CssAtRule[]? Children = null);
-```
-
-该模型表达 `@font-face`、`@property`、`@counter-style`、`@page` 和 page-margin 等声明 block。at-rule 名按 ASCII 不区分大小写语义规范化为小写，prelude 保留作者内容并检查会破坏 block 的结构分隔符。
-
-`@charset`、`@import`、`@namespace` 等 statement at-rule 不进入运行时 API。它们要求样式表头部顺序、外部资源获取或文档级解析状态，不适合增量 registry。
-
-### 3.3 独立上下文
-
-新增由 `Css.CreateContext` 创建的 `CssContext`。上下文持有独立的：
-
-- canonical/name 双向索引；
-- ID/body 碰撞索引；
-- 注册顺序与 CSS 正文；
-- StyleId、nonce、DOM 目标和接管状态。
-
-默认 API 继续使用模块默认上下文。显式上下文使用 `ClassIn`、`KeyframesIn`、`GlobalIn`、`AtRuleIn`、`ExtractFrom` 与 `SnapshotFrom`，使 registry 归属在调用点可见，且避免 ECMAScript 模块导出重载冲突。
-
-相同规则在不同上下文中必须生成相同名称，但不得共享内存条目。指向同一 DOM 目标与 StyleId 的上下文通过所有权帧接管同一 style 节点，这是显式的持久化共享，而不是静态 cache 泄漏。
-
-### 3.4 DOM 目标
-
-`CssOptions.Target` 接受 `DocumentFragment`，主要用于 `ShadowRoot`。目标为空时使用 `document.head`；目标非空时在该 fragment 内按 StyleId 查找、创建和接管 style。
-
-上下文必须保存实际 owner document，后续追加文本不得重新依赖可能已经变化的全局 `document`。不同 ShadowRoot 可使用相同 StyleId 而互不冲突。
-
-### 3.5 隔离提取与 hydration
-
-`CssOptions.Detached=true` 禁止 DOM 访问，并与 `Target` 互斥。每个请求或渲染任务可创建独立 detached context，避免共享默认 registry。
-
-`CssSnapshot` 同时提供：
-
-| 字段 | 用途 |
-| --- | --- |
-| `StyleId` | hydration style 的 DOM ID |
-| `Nonce` | CSP nonce |
-| `CssText` | 无内部标记的纯 CSS |
-| `HydrationText` | 带所有权头和长度帧的可接管 style 文本 |
-
-浏览器 context 使用相同 StyleId 与 nonce 时，必须从 `HydrationText` 恢复条目索引；相同内容不得重写、重复追加或改变注册顺序。
-
-## 4. 工作分解
-
-| 阶段 | 工作 | 验收 |
+| 工作 | 交付物 | 验收 |
 | --- | --- | --- |
-| A | 扩展公共模型与稳定导出 | 旧 API 无签名变化；新模型从独立包可见 |
-| B | 将静态 registry 收敛为默认 `CssContext` | 既有固定哈希向量和 CSS 文本保持不变 |
-| C | 实现现代 group at-rule 与声明型 at-rule | Deno 覆盖递归、顺序、空 prelude 与非法输入 |
-| D | 实现 detached、ShadowRoot 和 snapshot | 隔离 registry、目标接管、hydration 均通过真实执行 |
-| E | 穿透 compiler、RazorVue、Emit、Bundle、NuGet | 不新增专用分支；debug/release 真实消费成功 |
-| F | 更新包 README、目标、状态与发布说明 | 公共合同、边界、命令和证据一致 |
+| 建立唯一门面 | `Jazor.Style.css` | 所有公共方法和值 lower camel case |
+| 支持静态导入 | `using static Jazor.Style.css` | `px(...)`、`style(...)` 可直接调用 |
+| 统一上下文重载 | 默认与显式上下文使用同名方法 | ECMAScript 导出通过稳定名称消除重载冲突 |
+| 保持模型命名 | `CssRule`、`CssContext`、`CssOptions` 等 | 类型采用标准 PascalCase |
 
-## 5. 测试矩阵
+### B. 强类型值系统
 
-| 层级 | 必须覆盖的场景 |
+| 工作 | 交付物 | 验收 |
+| --- | --- | --- |
+| 锁定规范数据 | `CssProperties.Webref.json` | 来源为 `@webref/css@6.12.7`，确定排序 |
+| 生成属性值域 | 705 个 `CssDeclarations` 属性 | `--check` 可复现，属性不再使用 `string?` |
+| 建立名义值 | 长度、百分比、混合值、角度、时间、颜色等 | token 无公共构造函数 |
+| 建立 union | 属性专用 `Css*Value` 原生 union | 分支互不继承，运行时按值擦除 |
+| 提供便利 API | 单位、变量、颜色、网格、变换和数学组合 | 工厂输出合法、稳定的 CSS 文本 |
+| 保留演进能力 | `raw(...)` | 新语法显式可用，普通字符串赋值失败 |
+| 保持运算域准确 | `CssLengthPercentage` | 混合运算不进入纯长度属性 |
+
+### C. 规则与确定性
+
+| 工作 | 交付物 | 验收 |
+| --- | --- | --- |
+| 基础规则 | style、keyframes、global、extract | 固定哈希向量与正文稳定 |
+| 有序声明 | `Additional` 与 `!important` | 保留 fallback 和级联顺序 |
+| 现代嵌套 | selector、media、supports、container、layer、scope、starting-style | 递归与 sibling 顺序稳定 |
+| 声明块规则 | `CssAtRule` | 支持 font-face、property、counter-style、page 等 |
+| 选择器组合 | 引号、转义、括号、属性选择器感知 | selector list 笛卡尔积正确 |
+| 冲突处理 | 双向名称与正文索引 | 哈希或所有权冲突明确失败 |
+
+### D. 上下文、DOM 与水合
+
+| 工作 | 交付物 | 验收 |
+| --- | --- | --- |
+| 默认上下文 | document.head 注入与 configure | 首次注册后禁止重配 |
+| Shadow DOM | `CssOptions.Target` | 每个 target/StyleId 只管理一个 style 节点 |
+| 隔离渲染 | `Detached=true` | 无 DOM 访问，注册表请求级隔离 |
+| 快照 | `CssSnapshot` | 同时输出纯 CSS 与可接管文本 |
+| HMR 与水合 | 所有权头、UTF-16 长度帧 | 重载和 hydration 不重写、不重复 |
+| CSP | nonce 写入与接管校验 | DOM 模拟和真实浏览器行为一致 |
+
+### E. 编译、物化与发布
+
+| 工作 | 交付物 | 验收 |
+| --- | --- | --- |
+| 通用内联运算 | `[ECMAScriptInline]` 支持用户运算符 | `calc(...)` 无 Style 专用分支 |
+| 模块目录 | `jazorStyle.mjs` 与 source map catalog | 路径、hash、map file 一致 |
+| RazorVue | 普通模块导入与 string 类名 | class prop 无适配层 |
+| debug | 根目录物化模块与 manifest | `jazorStyle.mjs` 可直接导入 |
+| release | Deno/Netpack Bundle | 无未解析 Style runtime import |
+| NuGet | 独立包与精确 Jazor 依赖 | 外部临时项目可 debug/release 构建 |
+
+## 4. 测试矩阵
+
+| 层级 | 必须覆盖的行为 |
 | --- | --- |
-| 公共模型 | 新类型可从打包程序集编译消费；内部 context 状态不进入作者 API |
-| 规范化 | 既有哈希固定向量不变；at-rule 名统一小写；顺序语义稳定 |
-| Deno | context 隔离、现代嵌套、递归 at-rule、snapshot、错误传播 |
-| DOM 模拟 | 自定义 target 创建与接管、nonce、所有权冲突、owner document 稳定 |
-| 真实浏览器 | ShadowRoot computed style、单 style、HMR 接管、SSR hydration |
-| 编译器 | 所有新 API 只产生普通 module import 与结构化 record，不增加 special case |
-| RazorVue | 类名继续作为普通字符串进入 `class` prop |
-| Emit | runtime catalog 与 source map 包含新导出，debug 物化完整 |
-| Bundle | release 无未解析 import，新入口经 tree-shaking 后按实际使用保留 |
-| NuGet | 独立包可编译 context、at-rule 与 snapshot 消费代码 |
+| C# 编译 | 合法值域、跨域拒绝、字符串拒绝、`raw(...)` 接纳、静态导入 |
+| 生成器 | 规范版本、705 属性、输出确定性、代表性类型映射 |
+| Compiler | source-defined `[ECMAScriptInline]` 运算符、稳定 import、无专用分支 |
+| Deno | 工厂值、组合值、规则正文、hash、错误传播、context、snapshot |
+| DOM 模拟 | 所有权、nonce、冲突、owner document、HMR 接管 |
+| 浏览器 | computed style、ShadowRoot、Unicode framing、hydration |
+| RazorVue | `jazorStyle.mjs` 导入、值工厂调用、普通 class 字符串 |
+| Emit | catalog、source map、manifest、debug 物化 |
+| Bundle | release 仅保留 bundle 与 map，运行时完整可执行 |
+| NuGet | 包内容、精确依赖、无 CSS targets、公开包消费 |
 
-## 6. 稳定非目标
+## 5. 完成门槛
 
-以下项目不属于 `Jazor.Style` 完整运行时合同：
+发布前必须同时满足：
 
-- `styled(Component)`、Vue wrapper 或组件库适配层；
-- 原始 CSS block、标签模板或 CSS 文本解析器；
-- 构建时静态提取、独立 `.css`、CSS Modules、PostCSS 与 autoprefixer；
-- 完整 CSS Typed OM 值类型系统；
-- statement at-rule 的动态注册；
+1. 属性生成器 `--check` 通过，语法来源与 inventory 版本一致；
+2. `Jazor.Style.Test`、Compiler 专用回归、RazorVue 与 Emit 聚焦测试全部通过；
+3. 真实浏览器验证通过 document、Shadow DOM、HMR 与 hydration；
+4. 本地 NuGet 消费项目在 `debug` 下物化 `jazorStyle.mjs`，在 `release` 下仅生成 Bundle；
+5. 完整解决方案构建和仓库测试脚本通过；
+6. 包 README、根中英文 README、目标、状态和发布说明使用同一公共合同；
+7. 提交、推送、打 tag 后，CI 发布成功，并从公开源完成一次全新消费验证。
+
+## 6. 非交付项
+
+- 原始 CSS parser、tagged template 与任意 CSS block；
+- `styled(Component)` 或框架组件包装；
+- CSS Typed OM 的完整对象模型；
+- 构建期静态提取、独立 `.css`、PostCSS、autoprefixer 与 CSS Modules；
+- 动态 statement at-rule；
 - 自动引用计数、规则回收或 LRU；
-- CSS 专用 source map；
-- 新增 `JazorStyle*` 配置项。
+- Style 专用配置、Hook 或编译器 lowering。
 
-这些边界用于保持模块职责清晰，不视为隐藏的未完成实现。
-
-## 7. 完成定义
-
-只有满足以下条件，完整实现才可标记完成：
-
-1. 第一阶段 11 项运行时回归全部保持通过，固定名称与正文无变化。
-2. 新 context、at-rule、target 与 snapshot 场景均有 Deno 回归。
-3. 真实浏览器验证 ShadowRoot 样式生效，并验证 snapshot hydration 不重复写入。
-4. 编译器集成确认新 API 仍走常规 import 与 record lowering。
-5. RazorVue、CatalogReader、debug、release Bundle 和本地 NuGet 消费全部通过。
-6. 属性生成 `--check`、pack 内容和精确版本依赖通过。
-7. README、目标、完成状态和发布说明使用同一正式合同。
-8. 相关改动提交、推送并发布；发布包可由公开源重新消费验证。
+这些内容属于明确的产品边界，不作为兼容 fallback 或隐藏待办保留。

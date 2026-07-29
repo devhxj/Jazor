@@ -35,7 +35,7 @@ Jazor 当前的 Razor-to-Vue 生产链路如下：
 | --- | --- |
 | Razor-to-Vue 设计 | [01-目标/razorvue/README.md](./01-目标/razorvue/README.md) |
 | Jazor.Style 目标与边界 | [01-目标/jazor.style/README.md](./01-目标/jazor.style/README.md) |
-| Jazor.Style 第一阶段状态 | [03-完成/jazor.style/status.md](./03-完成/jazor.style/status.md) |
+| Jazor.Style 完成状态 | [03-完成/jazor.style/status.md](./03-完成/jazor.style/status.md) |
 | Vue 3 绑定设计 | [01-目标/ecmascript.vue3/vue3-balanced-design.md](./01-目标/ecmascript.vue3/vue3-balanced-design.md) |
 | Vue 3 实施计划 | [02-计划/ecmascript.vue3/ECMAScript.Vue3.Authoring.ImplementationPlan.md](./02-计划/ecmascript.vue3/ECMAScript.Vue3.Authoring.ImplementationPlan.md) |
 | Vue 3 当前状态 | [03-完成/ecmascript.vue3/status.md](./03-完成/ecmascript.vue3/status.md) |
