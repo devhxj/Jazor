@@ -33,15 +33,16 @@ public sealed record DirectRenderFailureCase(
     string TypeName,
     string Body,
     string Members,
-    string ExpectedFailureFragment);
+    string ExpectedFailureFragment,
+    RazorVueUsageScenarioId? Scenario);
 
-internal static class DirectRenderFailureCaseCatalog
+internal static partial class DirectRenderFailureCaseCatalog
 {
     public static IReadOnlyList<DirectRenderFailureCase> All { get; } = CreateCases();
 
     private static IReadOnlyList<DirectRenderFailureCase> CreateCases()
     {
-        var cases = new List<DirectRenderFailureCase>(64);
+        var cases = new List<DirectRenderFailureCase>(576);
         for (var shape = 0; shape < 16; shape++)
         {
             for (var variant = 0; variant < 4; variant++)
@@ -55,9 +56,12 @@ internal static class DirectRenderFailureCaseCatalog
                     "DirectRenderFailure" + cases.Count.ToString("D3", System.Globalization.CultureInfo.InvariantCulture),
                     body,
                     members,
-                    expectedFailure));
+                    expectedFailure,
+                    Scenario: null));
             }
         }
+
+        AddCoverageDiagnosticCases(cases);
 
         return cases;
     }
@@ -351,6 +355,7 @@ internal static class RazorSgDirectRenderFailureMatrixTestHost
             using System.Collections.Generic;
             using ECMAScript;
             using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Web;
             using Microsoft.AspNetCore.Components.Rendering;
             using static ECMAScript.Vue3;
 
@@ -381,6 +386,30 @@ internal static class RazorSgDirectRenderFailureMatrixTestHost
         {
             [Parameter] public RenderFragment? ChildContent { get; set; }
         }
+
+        [ECMAScriptModule("./failure-matrix/article-child.mjs")]
+        public sealed class FailureMatrixArticleChild : ComponentBase, IVueComponent;
+
+        [ECMAScriptModule("./failure-matrix/aside-child.mjs")]
+        public sealed class FailureMatrixAsideChild : ComponentBase, IVueComponent;
+
+        [ECMAScriptModule("./failure-matrix/button-child.mjs")]
+        public sealed class FailureMatrixButtonChild : ComponentBase, IVueComponent;
+
+        [ECMAScriptModule("./failure-matrix/div-child.mjs")]
+        public sealed class FailureMatrixDivChild : ComponentBase, IVueComponent;
+
+        [ECMAScriptModule("./failure-matrix/form-child.mjs")]
+        public sealed class FailureMatrixFormChild : ComponentBase, IVueComponent;
+
+        [ECMAScriptModule("./failure-matrix/main-child.mjs")]
+        public sealed class FailureMatrixMainChild : ComponentBase, IVueComponent;
+
+        [ECMAScriptModule("./failure-matrix/section-child.mjs")]
+        public sealed class FailureMatrixSectionChild : ComponentBase, IVueComponent;
+
+        [ECMAScriptModule("./failure-matrix/span-child.mjs")]
+        public sealed class FailureMatrixSpanChild : ComponentBase, IVueComponent;
         """;
 
     private sealed record Fixture(

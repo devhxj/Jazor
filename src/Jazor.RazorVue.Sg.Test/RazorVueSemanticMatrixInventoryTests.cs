@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorVueSemanticMatrixInventoryTests
 {
     [TestMethod]
-    public void SemanticMatrix_Contains3478UniqueCasesAndCompleteCatalogCoverage()
+    public void SemanticMatrix_Contains3990UniqueCasesAndCompleteCatalogCoverage()
     {
         Assert.HasCount(3312, DirectRenderCaseCatalog.SuccessCases);
         Assert.HasCount(
@@ -66,12 +66,19 @@ public sealed class RazorVueSemanticMatrixInventoryTests
         Assert.HasCount(32, SlotExpressionCase.All);
         Assert.HasCount(40, ComponentCandidateCase.All);
         Assert.HasCount(30, VueInjectCase.All);
-        Assert.HasCount(64, DirectRenderFailureCaseCatalog.All);
-        var failureFamilies = DirectRenderFailureCaseCatalog.All
+        Assert.HasCount(576, DirectRenderFailureCaseCatalog.All);
+        var baselineFailureCases = DirectRenderFailureCaseCatalog.All
+            .Where(static testCase => testCase.Scenario is null)
+            .ToArray();
+        Assert.HasCount(64, baselineFailureCases);
+        var failureFamilies = baselineFailureCases
             .GroupBy(static item => item.Id[..item.Id.LastIndexOf('_')], StringComparer.Ordinal)
             .ToArray();
         Assert.HasCount(16, failureFamilies);
         Assert.IsTrue(failureFamilies.All(static family => family.Count() == 4));
+        Assert.HasCount(
+            512,
+            DirectRenderFailureCaseCatalog.All.Where(static testCase => testCase.Scenario is not null));
 
         var ids = DirectRenderCaseCatalog.SuccessCases.Select(static item => "render:" + item.Id)
             .Concat(SlotExpressionCase.All.Select(static item => "slot:" + item.Id))
@@ -79,7 +86,7 @@ public sealed class RazorVueSemanticMatrixInventoryTests
             .Concat(VueInjectCase.All.Select(static item => "inject:" + item.Id))
             .Concat(DirectRenderFailureCaseCatalog.All.Select(static item => "failure:" + item.Id))
             .ToArray();
-        Assert.HasCount(3478, ids);
+        Assert.HasCount(3990, ids);
         Assert.HasCount(ids.Length, ids.Distinct(StringComparer.Ordinal));
         Assert.HasCount(
             DirectRenderCaseCatalog.SuccessCases.Count,
@@ -105,23 +112,39 @@ public sealed class RazorVueSemanticMatrixInventoryTests
     private static void AssertUsageScenarioCoverage()
     {
         var definitions = RazorVueUsageScenarioCatalog.All;
-        Assert.HasCount(192, definitions);
+        Assert.HasCount(256, definitions);
         Assert.HasCount(
             definitions.Count,
             definitions.Select(static definition => definition.Id).Distinct());
 
         var definitionById = definitions.ToDictionary(static definition => definition.Id);
-        var observed = DirectRenderCaseCatalog.SuccessCases
+        var successfulObservations = DirectRenderCaseCatalog.SuccessCases
             .Where(static testCase => testCase.Scenario is not null)
+            .Select(static testCase => (
+                Scenario: testCase.Scenario!.Value,
+                testCase.Body,
+                Expectation: RazorVueUsageScenarioExpectation.Emission))
             .ToArray();
-        Assert.HasCount(1536, observed);
-        Assert.IsTrue(observed.All(static testCase => testCase.Group == DirectRenderCaseGroup.Coverage));
-        Assert.IsTrue(observed.All(testCase => definitionById.ContainsKey(testCase.Scenario!.Value)));
-        Assert.IsTrue(observed.All(testCase =>
-            definitionById[testCase.Scenario!.Value].Expectation == RazorVueUsageScenarioExpectation.Emission));
+        Assert.HasCount(1536, successfulObservations);
+        Assert.IsTrue(DirectRenderCaseCatalog.SuccessCases
+            .Where(static testCase => testCase.Scenario is not null)
+            .All(static testCase => testCase.Group == DirectRenderCaseGroup.Coverage));
+        var diagnosticObservations = DirectRenderFailureCaseCatalog.All
+            .Where(static testCase => testCase.Scenario is not null)
+            .Select(static testCase => (
+                Scenario: testCase.Scenario!.Value,
+                testCase.Body,
+                Expectation: RazorVueUsageScenarioExpectation.Diagnostic))
+            .ToArray();
+        Assert.HasCount(512, diagnosticObservations);
+
+        var observed = successfulObservations.Concat(diagnosticObservations).ToArray();
+        Assert.HasCount(2048, observed);
+        Assert.IsTrue(observed.All(item => definitionById.ContainsKey(item.Scenario)));
+        Assert.IsTrue(observed.All(item => definitionById[item.Scenario].Expectation == item.Expectation));
 
         var observedByScenario = observed
-            .GroupBy(static testCase => testCase.Scenario!.Value)
+            .GroupBy(static testCase => testCase.Scenario)
             .ToDictionary(static group => group.Key, static group => group.ToArray());
         Assert.IsTrue(definitions.All(definition => observedByScenario.ContainsKey(definition.Id)));
         Assert.IsTrue(observedByScenario.Values.All(static cases => cases.Length == 8));

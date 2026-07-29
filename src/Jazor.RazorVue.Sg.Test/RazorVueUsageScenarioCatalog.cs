@@ -405,6 +405,118 @@ internal static class RazorVueUsageScenarioCatalog
                     "named slot descriptor",
                     "scoped slot descriptor",
                     "combined descriptor mapping"
+                ]),
+            new(
+                RazorVueUsageScenarioFamily.MissingAttributeTarget,
+                RazorVueUsageScenarioArea.Diagnostic,
+                RazorVueUsageScenarioExpectation.Diagnostic,
+                [
+                    "attribute without open frame",
+                    "component parameter without component",
+                    "multiple attributes without open frame",
+                    "attribute update without open frame",
+                    "attribute after closed element",
+                    "parameter after closed component",
+                    "attribute on region frame",
+                    "component parameter on element frame"
+                ]),
+            new(
+                RazorVueUsageScenarioFamily.InvalidUpdatesTarget,
+                RazorVueUsageScenarioArea.Diagnostic,
+                RazorVueUsageScenarioExpectation.Diagnostic,
+                [
+                    "updates metadata without frame",
+                    "updates metadata on component",
+                    "updates metadata on region",
+                    "updates metadata after closed element",
+                    "updates metadata after closed component",
+                    "updates metadata after clear",
+                    "updates metadata on nested region",
+                    "updates metadata on nested component"
+                ]),
+            new(
+                RazorVueUsageScenarioFamily.UpdatesAfterChild,
+                RazorVueUsageScenarioArea.Diagnostic,
+                RazorVueUsageScenarioExpectation.Diagnostic,
+                [
+                    "updates metadata after text child",
+                    "updates metadata after markup child",
+                    "updates metadata after element child",
+                    "updates metadata after region child",
+                    "updates metadata after component child",
+                    "updates metadata after fragment child",
+                    "updates metadata after conditional child",
+                    "updates metadata after referenced child"
+                ]),
+            new(
+                RazorVueUsageScenarioFamily.InvalidEventModifierTarget,
+                RazorVueUsageScenarioArea.Diagnostic,
+                RazorVueUsageScenarioExpectation.Diagnostic,
+                [
+                    "event modifier without frame",
+                    "event modifier on component",
+                    "event modifier on region",
+                    "event modifier after closed element",
+                    "event modifier after text child",
+                    "event modifier after element child",
+                    "event modifier on nested component",
+                    "event modifier after fragment child"
+                ]),
+            new(
+                RazorVueUsageScenarioFamily.InvalidNamedEvent,
+                RazorVueUsageScenarioArea.Diagnostic,
+                RazorVueUsageScenarioExpectation.Diagnostic,
+                [
+                    "named event without frame",
+                    "named event on component",
+                    "named event after child",
+                    "dynamic source event name",
+                    "dynamic assigned event name",
+                    "empty source event name",
+                    "blank assigned event name",
+                    "conditional assigned event name"
+                ]),
+            new(
+                RazorVueUsageScenarioFamily.InvalidRenderMode,
+                RazorVueUsageScenarioArea.Diagnostic,
+                RazorVueUsageScenarioExpectation.Diagnostic,
+                [
+                    "render mode without frame",
+                    "render mode on element",
+                    "render mode on region",
+                    "render mode after closed component",
+                    "render mode after text child",
+                    "render mode after element child",
+                    "render mode on nested element",
+                    "render mode after root output"
+                ]),
+            new(
+                RazorVueUsageScenarioFamily.ReferenceAfterChild,
+                RazorVueUsageScenarioArea.Diagnostic,
+                RazorVueUsageScenarioExpectation.Diagnostic,
+                [
+                    "element reference after text child",
+                    "element reference after markup child",
+                    "element reference after element child",
+                    "element reference after region child",
+                    "component reference after text child",
+                    "component reference after element child",
+                    "element reference after fragment child",
+                    "component reference after component child"
+                ]),
+            new(
+                RazorVueUsageScenarioFamily.InvalidMetadataTiming,
+                RazorVueUsageScenarioArea.Diagnostic,
+                RazorVueUsageScenarioExpectation.Diagnostic,
+                [
+                    "key metadata after child",
+                    "attribute update after child",
+                    "named event metadata after child",
+                    "render mode metadata after child",
+                    "multiple attributes after child",
+                    "attribute metadata after child",
+                    "updates metadata after child",
+                    "event modifier metadata after child"
                 ])
         ];
 
