@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Numerics;
 using System.Text;
+using Acornima;
 using Acornima.Ast;
 
 namespace Jazor.Compiler;
@@ -147,6 +149,37 @@ public static class JavaScriptAstFactory
 
         raw.Append('"');
         return new StringLiteral(value, raw.ToString());
+    }
+
+    internal static Expression CreateNumericExpression(double value, string raw)
+    {
+        if (double.IsNaN(value))
+            return new Identifier("NaN");
+        if (double.IsPositiveInfinity(value))
+            return new Identifier("Infinity");
+        if (double.IsNegativeInfinity(value))
+            return new NonUpdateUnaryExpression(Operator.UnaryNegation, new Identifier("Infinity"));
+
+        if (raw.Length > 1 && raw[0] == '-')
+        {
+            return new NonUpdateUnaryExpression(
+                Operator.UnaryNegation,
+                new NumericLiteral(-value, raw.Substring(1)));
+        }
+
+        return new NumericLiteral(value, raw);
+    }
+
+    internal static Expression CreateBigIntExpression(BigInteger value, string raw)
+    {
+        if (value.Sign < 0)
+        {
+            return new NonUpdateUnaryExpression(
+                Operator.UnaryNegation,
+                new BigIntLiteral(BigInteger.Negate(value), raw.Substring(1)));
+        }
+
+        return new BigIntLiteral(value, raw);
     }
 
     private static bool IsDecimalDigit(char value)

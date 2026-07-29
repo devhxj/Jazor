@@ -1508,17 +1508,17 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             bool b => new BooleanLiteral(b, b.ToString().ToLowerInvariant()),
             char c => JavaScriptAstFactory.CreateStringLiteral(c.ToString()),
             string s => JavaScriptAstFactory.CreateStringLiteral(s),
-            sbyte sb => new NumericLiteral(sb, sb.ToString(CultureInfo.InvariantCulture)),
-            byte b => new NumericLiteral(b, b.ToString(CultureInfo.InvariantCulture)),
-            short s => new NumericLiteral(s, s.ToString(CultureInfo.InvariantCulture)),
-            ushort us => new NumericLiteral(us, us.ToString(CultureInfo.InvariantCulture)),
-            int i => new NumericLiteral(i, i.ToString(CultureInfo.InvariantCulture)),
-            uint ui => new NumericLiteral(ui, ui.ToString(CultureInfo.InvariantCulture)),
-            long l => new BigIntLiteral(new BigInteger(l), $"{l.ToString(CultureInfo.InvariantCulture)}n"),
-            ulong ul => new BigIntLiteral(new BigInteger(ul), $"{ul.ToString(CultureInfo.InvariantCulture)}n"),
-            double d => new NumericLiteral(d, d.ToString("R", CultureInfo.InvariantCulture)),
-            float f => new NumericLiteral(f, f.ToString("R", CultureInfo.InvariantCulture)),
-            decimal dec => new NumericLiteral(System.Convert.ToDouble(dec), dec.ToString(CultureInfo.InvariantCulture)),
+            sbyte sb => JavaScriptAstFactory.CreateNumericExpression(sb, sb.ToString(CultureInfo.InvariantCulture)),
+            byte b => JavaScriptAstFactory.CreateNumericExpression(b, b.ToString(CultureInfo.InvariantCulture)),
+            short s => JavaScriptAstFactory.CreateNumericExpression(s, s.ToString(CultureInfo.InvariantCulture)),
+            ushort us => JavaScriptAstFactory.CreateNumericExpression(us, us.ToString(CultureInfo.InvariantCulture)),
+            int i => JavaScriptAstFactory.CreateNumericExpression(i, i.ToString(CultureInfo.InvariantCulture)),
+            uint ui => JavaScriptAstFactory.CreateNumericExpression(ui, ui.ToString(CultureInfo.InvariantCulture)),
+            long l => JavaScriptAstFactory.CreateBigIntExpression(new BigInteger(l), $"{l.ToString(CultureInfo.InvariantCulture)}n"),
+            ulong ul => JavaScriptAstFactory.CreateBigIntExpression(new BigInteger(ul), $"{ul.ToString(CultureInfo.InvariantCulture)}n"),
+            double d => JavaScriptAstFactory.CreateNumericExpression(d, d.ToString("R", CultureInfo.InvariantCulture)),
+            float f => JavaScriptAstFactory.CreateNumericExpression(f, f.ToString("R", CultureInfo.InvariantCulture)),
+            decimal dec => JavaScriptAstFactory.CreateNumericExpression(System.Convert.ToDouble(dec), dec.ToString(CultureInfo.InvariantCulture)),
             _ => throw new NotSupportedException($"Unsupported literal type: {value.GetType()}")
         };
     }
@@ -1531,7 +1531,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             var raw = value is IFormattable formattable
                 ? formattable.ToString("R", CultureInfo.InvariantCulture)
                 : number.ToString("R", CultureInfo.InvariantCulture);
-            expression = new NumericLiteral(number, raw);
+            expression = JavaScriptAstFactory.CreateNumericExpression(number, raw);
             return true;
         }
 
