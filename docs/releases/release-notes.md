@@ -7,6 +7,8 @@
 - Existing class names, keyframe names, global rules, DOM framing, RazorVue string consumption, and the standard `JazorMode` debug/release workflow remain compatible.
 - Dynamic Razor event modifiers now preserve their boolean conditions, including repeated `preventDefault` and `stopPropagation` modifiers, instead of being treated as unconditionally enabled.
 - RenderTreeBuilder helpers can compose output after root-level local declarations while declarations inside an open element or component frame remain explicitly rejected.
+- Nullable `GetValueOrDefault()` calls now emit the correct default for the underlying value type, including booleans, characters, 64-bit integers, and enums.
+- Compiler-generated temporary names are stable across repository relocations and parallel Git worktrees instead of depending on absolute source paths.
 
 ## 2026-07-28
 
