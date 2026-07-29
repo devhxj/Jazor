@@ -520,7 +520,7 @@ public static class DecimalModule
 
 	private static string CreateDecimalFromNumber(Number value)
 	{
-		if (!DoubleModule._aed2927097617729(value))
+		if (!DoubleModule.IsFiniteCore(value))
 			throw new Error("OverflowException: Value was either too large or too small for a Decimal.");
 
 		return NormalizeDecimal(value.ToString());

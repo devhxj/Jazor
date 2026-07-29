@@ -35,6 +35,9 @@ internal sealed record ClrRuntimeValue(
         => new(ClrRuntimeValueKind.Number, value.ToString("R", System.Globalization.CultureInfo.InvariantCulture));
 
     public static ClrRuntimeValue BigInt(long value)
+        => BigInt(new System.Numerics.BigInteger(value));
+
+    public static ClrRuntimeValue BigInt(System.Numerics.BigInteger value)
         => new(ClrRuntimeValueKind.BigInt, value.ToString(System.Globalization.CultureInfo.InvariantCulture));
 
     public static ClrRuntimeValue Boolean(bool value)
@@ -76,7 +79,9 @@ internal static class ClrRuntimeScenarioCatalog
         .. ClrRuntimeCharScenarios.All,
         .. ClrRuntimeStringScenarios.All,
         .. ClrRuntimeArrayScenarios.All,
-        .. ClrRuntimeListScenarios.All
+        .. ClrRuntimeListScenarios.All,
+        .. ClrRuntimeDoubleScenarios.All,
+        .. ClrRuntimeMathScenarios.All
     ];
 
     public static ClrRuntimeScenario Get(string id)

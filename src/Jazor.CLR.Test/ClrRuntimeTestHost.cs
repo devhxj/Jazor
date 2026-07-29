@@ -163,7 +163,10 @@ internal static class ClrRuntimeTestHost
           if (Array.isArray(value)) return { kind: "array", items: value.map(encode) };
           switch (typeof value) {
             case "string": return { kind: "string", scalar: value };
-            case "number": return { kind: "number", scalar: String(value) };
+            case "number": return {
+              kind: "number",
+              scalar: Object.is(value, -0) ? "-0" : String(value)
+            };
             case "boolean": return { kind: "boolean", scalar: String(value) };
             case "bigint": return { kind: "bigInt", scalar: String(value) };
             case "function": {

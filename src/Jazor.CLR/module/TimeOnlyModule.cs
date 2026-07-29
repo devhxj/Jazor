@@ -51,10 +51,10 @@ public static class TimeOnlyModule
 
 	private static BigInt CreateTruncatedTicksFromDouble(Number value)
 	{
-		if (DoubleModule._24e14b276e0c7e30(value))
+		if (DoubleModule.IsNaNCore(value))
 			throw new Error("ArgumentException: Value cannot be NaN.");
 
-		if (!DoubleModule._aed2927097617729(value))
+		if (!DoubleModule.IsFiniteCore(value))
 			throw new Error("ArgumentOutOfRangeException: Value must be finite.");
 
 		return BigIntFn(Math.TruncFn(value));

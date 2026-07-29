@@ -1099,10 +1099,10 @@ public static class DateTimeOffsetModule
 
 	private static BigInt CreateAddUnitTicks(Number value, BigInt ticksPerUnit)
 	{
-		if (DoubleModule._24e14b276e0c7e30(value))
+		if (DoubleModule.IsNaNCore(value))
 			throw new Error("ArgumentException: Value cannot be NaN.");
 
-		if (!DoubleModule._aed2927097617729(value))
+		if (!DoubleModule.IsFiniteCore(value))
 			throw new Error("ArgumentOutOfRangeException: Value must be finite.");
 
 		var maxUnitCount = NumberFn(MaxDateTimeTicks) / NumberFn(ticksPerUnit);

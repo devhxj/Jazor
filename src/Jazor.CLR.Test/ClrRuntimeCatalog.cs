@@ -8,6 +8,8 @@ using ECMAScript;
 
 namespace Jazor.CLR.Test;
 
+internal sealed record ClrRuntimeNamedImport(string ModulePath, string ImportedName);
+
 internal sealed record ClrRuntimeModuleArtifact(
     string AssemblyName,
     string TypeName,
@@ -28,11 +30,70 @@ internal sealed record ClrRuntimeModuleArtifact(
             .Select(static name => name!)
             .ToHashSet(StringComparer.Ordinal);
 
+    public IReadOnlySet<string> GetExportedNames()
+    {
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var export in Parse().Body.OfType<ExportNamedDeclaration>())
+        {
+            switch (export.Declaration)
+            {
+                case FunctionDeclaration function when function.Id is not null:
+                    names.Add(function.Id.Name);
+                    break;
+                case ClassDeclaration @class when @class.Id is not null:
+                    names.Add(@class.Id.Name);
+                    break;
+                case VariableDeclaration variables:
+                    foreach (var variable in variables.Declarations)
+                    {
+                        if (variable.Id is not Identifier identifier)
+                            throw new NotSupportedException($"Unsupported exported variable pattern: {variable.Id.Type}");
+
+                        names.Add(identifier.Name);
+                    }
+                    break;
+                case null:
+                    foreach (var specifier in export.Specifiers)
+                    {
+                        names.Add(specifier.Exported switch
+                        {
+                            Identifier identifier => identifier.Name,
+                            StringLiteral literal => literal.Value,
+                            _ => throw new NotSupportedException(
+                                $"Unsupported named export key: {specifier.Exported.Type}")
+                        });
+                    }
+                    break;
+                default:
+                    throw new NotSupportedException(
+                        $"Unsupported named export declaration: {export.Declaration.Type}");
+            }
+        }
+
+        return names;
+    }
+
     public IReadOnlySet<string> GetImportedModulePaths()
         => Parse().Body
             .OfType<ImportDeclaration>()
             .Select(static import => import.Source.Value)
             .ToHashSet(StringComparer.Ordinal);
+
+    public IReadOnlyList<ClrRuntimeNamedImport> GetNamedImports()
+        => Parse().Body
+            .OfType<ImportDeclaration>()
+            .SelectMany(static import => import.Specifiers
+                .OfType<ImportSpecifier>()
+                .Select(specifier => new ClrRuntimeNamedImport(
+                    import.Source.Value,
+                    specifier.Imported switch
+                    {
+                        Identifier identifier => identifier.Name,
+                        StringLiteral literal => literal.Value,
+                        _ => throw new NotSupportedException(
+                            $"Unsupported named import key: {specifier.Imported.Type}")
+                    })))
+            .ToArray();
 
     public FunctionDeclaration GetExportedFunction(string exportName)
         => Parse().Body

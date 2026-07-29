@@ -60,4 +60,20 @@ public sealed class ClrRuntimeCatalogTests
 
         Assert.DoesNotContain(modulePath, module.GetImportedModulePaths());
     }
+
+    [TestMethod]
+    [DynamicData(nameof(Modules))]
+    public void CatalogModule_NamedImportsHavePublishedTargetBindings(string modulePath)
+    {
+        var module = ClrRuntimeCatalog.Get(modulePath);
+
+        foreach (var import in module.GetNamedImports())
+        {
+            var target = ClrRuntimeCatalog.Get(import.ModulePath);
+            Assert.Contains(
+                import.ImportedName,
+                target.GetExportedNames(),
+                $"{modulePath} imports missing binding '{import.ImportedName}' from {import.ModulePath}.");
+        }
+    }
 }

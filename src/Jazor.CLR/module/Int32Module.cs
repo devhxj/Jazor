@@ -59,7 +59,7 @@ public static class Int32Module
 			return false;
 		}
 
-		value = parsed;
+		value = parsed == 0 ? 0 : parsed;
 		return true;
 	}
 

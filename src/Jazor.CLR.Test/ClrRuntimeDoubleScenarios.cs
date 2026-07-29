@@ -1,0 +1,87 @@
+namespace Jazor.CLR.Test;
+
+internal static class ClrRuntimeDoubleScenarios
+{
+    private const string ModulePath = "System/DoubleModule.js";
+
+    public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
+    [
+        Success("double.compare.null-is-before-value", "double.CompareTo(object)", [Number(1), Null()], Number(1)),
+        Success("double.compare.nan-before-number", "double.CompareTo(object)", [Number(double.NaN), Number(1)], Number(-1)),
+        Success("double.compare.nan-equals-nan", "double.CompareTo(object)", [Number(double.NaN), Number(double.NaN)], Number(0)),
+        Failure("double.compare.wrong-type", "double.CompareTo(object)", [Number(1), Text("1")], "ArgumentException"),
+        Success("double.equals.nan-values", "override double.Equals(object)", [Number(double.NaN), Number(double.NaN)], Bool(true)),
+        Success("double.equals.wrong-type", "override double.Equals(object)", [Number(1), Text("1")], Bool(false)),
+        Success("double.parse.decimal-exponent", "static double.Parse(string)", [Text(" -1.25e2 ")], Number(-125)),
+        Success("double.parse.positive-infinity", "static double.Parse(string)", [Text("Infinity")], Number(double.PositiveInfinity)),
+        Success("double.parse.nan-token", "static double.Parse(string)", [Text("NaN")], Number(double.NaN)),
+        Failure("double.parse.javascript-hex-is-invalid", "static double.Parse(string)", [Text("0x10")], "FormatException"),
+        Failure("double.parse.null", "static double.Parse(string)", [Null()], "ArgumentNullException"),
+        Failure("double.parse.whitespace", "static double.Parse(string)", [Text("  ")], "FormatException"),
+        Success(
+            "double.try-parse.nan-token",
+            "static double.TryParse(string, out double)",
+            [Text("NaN"), Number(7)],
+            Array(Bool(true), Number(double.NaN))),
+        Success(
+            "double.try-parse.invalid-text",
+            "static double.TryParse(string, out double)",
+            [Text("twelve"), Number(7)],
+            Array(Bool(false), Number(0))),
+        Success(
+            "double.try-parse.null",
+            "static double.TryParse(string, out double)",
+            [Null(), Number(7)],
+            Array(Bool(false), Number(0))),
+        Success(
+            "double.try-parse.provider-overload",
+            "static double.TryParse(string, System.IFormatProvider, out double)",
+            [Text("2.5"), Null(), Number(0)],
+            Array(Bool(true), Number(2.5))),
+        Success("double.is-pow2.fractional-power", "static double.IsPow2(double)", [Number(0.5)], Bool(true)),
+        Success("double.is-pow2.non-power", "static double.IsPow2(double)", [Number(12)], Bool(false)),
+        Success("double.is-pow2.infinity", "static double.IsPow2(double)", [Number(double.PositiveInfinity)], Bool(false)),
+        Success("double.sign.negative", "static double.Sign(double)", [Number(-3.5)], Number(-1)),
+        Success("double.sign.negative-zero", "static double.Sign(double)", [Number(-0.0)], Number(0)),
+        Failure("double.sign.nan", "static double.Sign(double)", [Number(double.NaN)], "ArithmeticException"),
+        Success("double.max-magnitude.larger-absolute-value", "static double.MaxMagnitude(double, double)", [Number(-9), Number(4)], Number(-9)),
+        Success("double.max-magnitude.equal-prefers-positive", "static double.MaxMagnitude(double, double)", [Number(-7), Number(7)], Number(7)),
+        Success("double.max-magnitude.nan-propagates", "static double.MaxMagnitude(double, double)", [Number(double.NaN), Number(7)], Number(double.NaN)),
+        Success("double.max-magnitude-number.skips-nan", "static double.MaxMagnitudeNumber(double, double)", [Number(double.NaN), Number(7)], Number(7)),
+        Success("double.min-magnitude.smaller-absolute-value", "static double.MinMagnitude(double, double)", [Number(-9), Number(4)], Number(4)),
+        Success("double.min-magnitude.equal-prefers-negative", "static double.MinMagnitude(double, double)", [Number(-7), Number(7)], Number(-7)),
+        Success("double.min-magnitude.negative-zero", "static double.MinMagnitude(double, double)", [Number(-0.0), Number(0.0)], Number(-0.0)),
+        Success("double.min-magnitude-number.skips-nan", "static double.MinMagnitudeNumber(double, double)", [Number(4), Number(double.NaN)], Number(4)),
+        Success(
+            "double.sin-cos.zero",
+            "static double.SinCos(double)",
+            [Number(0)],
+            Record(("sin", Number(0)), ("cos", Number(1)))),
+        Success(
+            "double.sin-cos-pi.zero",
+            "static double.SinCosPi(double)",
+            [Number(0)],
+            Record(("sinPi", Number(0)), ("cosPi", Number(1))))
+    ];
+
+    private static ClrRuntimeScenario Success(
+        string id,
+        string member,
+        IReadOnlyList<ClrRuntimeValue> arguments,
+        ClrRuntimeValue expected)
+        => new(id, member, ModulePath, arguments, expected);
+
+    private static ClrRuntimeScenario Failure(
+        string id,
+        string member,
+        IReadOnlyList<ClrRuntimeValue> arguments,
+        string error)
+        => new(id, member, ModulePath, arguments, ExpectedValue: null, ExpectedErrorContains: error);
+
+    private static ClrRuntimeValue Null() => ClrRuntimeValue.Null();
+    private static ClrRuntimeValue Text(string value) => ClrRuntimeValue.Text(value);
+    private static ClrRuntimeValue Number(double value) => ClrRuntimeValue.Number(value);
+    private static ClrRuntimeValue Bool(bool value) => ClrRuntimeValue.Boolean(value);
+    private static ClrRuntimeValue Array(params ClrRuntimeValue[] values) => ClrRuntimeValue.Array(values);
+    private static ClrRuntimeValue Record(params (string Name, ClrRuntimeValue Value)[] values) => ClrRuntimeValue.Record(values);
+}

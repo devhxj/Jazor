@@ -70,10 +70,10 @@ public static class TimeSpanModule
 
 	private static RuntimeModule.JTimeSpan CreateFromTruncatedTicks(Number value)
 	{
-		if (DoubleModule._24e14b276e0c7e30(value))
+		if (DoubleModule.IsNaNCore(value))
 			throw new Error("ArgumentException: TimeSpan value cannot be NaN.");
 
-		if (!DoubleModule._aed2927097617729(value))
+		if (!DoubleModule.IsFiniteCore(value))
 			throw new Error("OverflowException: TimeSpan is too long or too short.");
 
 		if (value > MaxTimeSpanTicksAsDouble || value < MinTimeSpanTicksAsDouble)
@@ -86,10 +86,10 @@ public static class TimeSpanModule
 
 	private static RuntimeModule.JTimeSpan CreateFromRoundedTicks(Number value)
 	{
-		if (DoubleModule._24e14b276e0c7e30(value))
+		if (DoubleModule.IsNaNCore(value))
 			throw new Error("ArgumentException: TimeSpan value cannot be NaN.");
 
-		if (!DoubleModule._aed2927097617729(value))
+		if (!DoubleModule.IsFiniteCore(value))
 			throw new Error("OverflowException: TimeSpan is too long or too short.");
 
 		var rounded = RoundToEven(value);
@@ -179,7 +179,7 @@ public static class TimeSpanModule
 
 	private static RuntimeModule.JTimeSpan MultiplyByDouble(RuntimeModule.JTimeSpan instance, Number factor)
 	{
-		if (DoubleModule._24e14b276e0c7e30(factor) || !DoubleModule._aed2927097617729(factor))
+		if (DoubleModule.IsNaNCore(factor) || !DoubleModule.IsFiniteCore(factor))
 			return CreateFromRoundedTicks(NumberFn(instance.Ticks) * factor);
 
 		var ratio = GetFiniteDoubleRatio(factor);
@@ -188,7 +188,7 @@ public static class TimeSpanModule
 
 	private static RuntimeModule.JTimeSpan DivideByDouble(RuntimeModule.JTimeSpan instance, Number divisor)
 	{
-		if (DoubleModule._24e14b276e0c7e30(divisor) || !DoubleModule._aed2927097617729(divisor) || divisor == 0d)
+		if (DoubleModule.IsNaNCore(divisor) || !DoubleModule.IsFiniteCore(divisor) || divisor == 0d)
 			return CreateFromRoundedTicks(NumberFn(instance.Ticks) / divisor);
 
 		var ratio = GetFiniteDoubleRatio(divisor);
