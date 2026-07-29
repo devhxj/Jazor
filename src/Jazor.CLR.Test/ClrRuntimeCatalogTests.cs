@@ -51,4 +51,13 @@ public sealed class ClrRuntimeCatalogTests
         foreach (var importedPath in module.GetImportedModulePaths())
             Assert.AreEqual(importedPath, ClrRuntimeCatalog.Get(importedPath).RelativePath);
     }
+
+    [TestMethod]
+    [DynamicData(nameof(Modules))]
+    public void CatalogModule_DoesNotImportItself(string modulePath)
+    {
+        var module = ClrRuntimeCatalog.Get(modulePath);
+
+        Assert.DoesNotContain(modulePath, module.GetImportedModulePaths());
+    }
 }

@@ -22,9 +22,10 @@ public static class Int32Module
 	private static Number CompareCore(Number left, Number right)
 		=> left < right ? -1 : (left > right ? 1 : 0);
 
-	private static bool TryParseInt32Core(string? s, out Number value)
+	private static bool TryParseInt32Core(string? s, out Number value, out bool overflow)
 	{
 		value = 0;
+		overflow = false;
 		if (s == null)
 			return false;
 
@@ -53,7 +54,10 @@ public static class Int32Module
 		if (IsNaN(parsed) || Math.FloorFn(parsed) != parsed)
 			return false;
 		if (parsed < -2147483648 || parsed > 2147483647)
+		{
+			overflow = true;
 			return false;
+		}
 
 		value = parsed;
 		return true;
@@ -153,8 +157,13 @@ public static class Int32Module
 	{
 		if (s == null)
 			throw new Error("ArgumentNullException: String cannot be null.");
-		if (!TryParseInt32Core(s, out var value))
+		if (!TryParseInt32Core(s, out var value, out var overflow))
+		{
+			if (overflow)
+				throw new Error($"OverflowException: Value '{s}' was either too large or too small for an Int32.");
+
 			throw new Error($"FormatException: String '{s}' was not recognized as a valid Int32.");
+		}
 
 		return value;
 	}
@@ -178,7 +187,7 @@ public static class Int32Module
 	[Jazor(Op.Import, "static int.TryParse(string, out int)")]
 	public static Array<object?> _16e2a901535b765e(string? s, Number result)
 	{
-		if (!TryParseInt32Core(s, out var value))
+		if (!TryParseInt32Core(s, out var value, out var overflow))
 			return [false, 0];
 
 		return [true, value];

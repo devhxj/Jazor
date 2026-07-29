@@ -137,6 +137,8 @@ internal static class ClrRuntimeTestHost
             case "boolean": return value.scalar === "true";
             case "bigInt": return BigInt(value.scalar);
             case "array": return value.items.map(decode);
+            case "record": return Object.fromEntries(
+              Object.entries(value.properties).map(([name, item]) => [name, decode(item)]));
             case "undefined": return undefined;
             default: throw new Error(`Unsupported CLR runtime value kind: ${value.kind}`);
           }
@@ -151,6 +153,13 @@ internal static class ClrRuntimeTestHost
             case "number": return { kind: "number", scalar: String(value) };
             case "boolean": return { kind: "boolean", scalar: String(value) };
             case "bigint": return { kind: "bigInt", scalar: String(value) };
+            case "object": return {
+              kind: "record",
+              properties: Object.fromEntries(
+                Object.entries(value)
+                  .sort(([left], [right]) => left.localeCompare(right))
+                  .map(([name, item]) => [name, encode(item)]))
+            };
             default: throw new Error(`Unsupported CLR runtime result type: ${typeof value}`);
           }
         }

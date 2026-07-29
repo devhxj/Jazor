@@ -3,7 +3,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class ClrRuntimeBehaviorTests
 {
-    public static IEnumerable<TestDataRow<string>> GuidScenarios
+    public static IEnumerable<TestDataRow<string>> Scenarios
         => ClrRuntimeScenarioCatalog.All.Select(static scenario => new TestDataRow<string>(scenario.Id)
         {
             DisplayName = scenario.Id
@@ -25,8 +25,8 @@ public sealed class ClrRuntimeBehaviorTests
     }
 
     [TestMethod]
-    [DynamicData(nameof(GuidScenarios))]
-    public async Task GuidRuntimeScenario_MatchesExpectedBehavior(string scenarioId)
+    [DynamicData(nameof(Scenarios))]
+    public async Task RuntimeScenario_MatchesExpectedBehavior(string scenarioId)
     {
         var scenario = ClrRuntimeScenarioCatalog.Get(scenarioId);
         var results = await ClrRuntimeTestHost.RunAsync();
@@ -56,5 +56,14 @@ public sealed class ClrRuntimeBehaviorTests
         Assert.HasCount(expectedItems.Count, actualItems, path);
         for (var index = 0; index < expectedItems.Count; index++)
             AssertValue(expectedItems[index], actualItems[index], $"{path}[{index}]");
+
+        var expectedProperties = expected.Properties ?? new Dictionary<string, ClrRuntimeValue>(StringComparer.Ordinal);
+        var actualProperties = actual.Properties ?? new Dictionary<string, ClrRuntimeValue>(StringComparer.Ordinal);
+        Assert.HasCount(expectedProperties.Count, actualProperties, path);
+        foreach (var (name, expectedValue) in expectedProperties)
+        {
+            Assert.IsTrue(actualProperties.TryGetValue(name, out var actualValue), $"{path}.{name}");
+            AssertValue(expectedValue, actualValue, $"{path}.{name}");
+        }
     }
 }
