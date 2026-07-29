@@ -17,5 +17,6 @@ public partial class SemanticWalker
 	{
 		// 初始白名单特殊编译处理
 		funcs["static extern ECMAScript.Global.TypeOf(object)"] = Compile_27d71701fd254382;
+		funcs["System.Nullable<T>.GetValueOrDefault()"] = CompileNullableGetValueOrDefault;
 	}
 }

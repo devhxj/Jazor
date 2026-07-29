@@ -22,8 +22,8 @@ public static class NullableT1Module<T>
 	/// C#: nullable.GetValueOrDefault()
 	/// JS: value ?? default(T)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Nullable<T>.GetValueOrDefault()", "(__arg1 ?? null)")]
-	public extern static T? _getValueOrDefault(T? instance);
+	[Jazor(Op.Compile, "System.Nullable<T>.GetValueOrDefault()", "NullableGetValueOrDefault")]
+	public extern static T _getValueOrDefault(T? instance);
 
 	/// <summary>
 	/// C#: nullable.GetValueOrDefault(defaultValue)

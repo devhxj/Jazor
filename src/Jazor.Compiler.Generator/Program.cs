@@ -145,7 +145,7 @@ static void GenerateWhiteListArtifacts(string repoRoot, IEnumerable<MetadataRefe
 	/// <returns></returns>
 	Expression? Compile{n.Value}(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
 "));
-    var funssInit = string.Join(Split, members
+    var funssInit = string.Join(Environment.NewLine, members
         .Where(x => x.Op == nameof(Op.Compile))
         .Select(n => $"\t\tfuncs[\"{n.Member}\"] = Compile{n.Value};"));
 

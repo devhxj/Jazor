@@ -21,4 +21,15 @@ partial interface IWhiteList
 	/// <returns></returns>
 	Expression? Compile_27d71701fd254382(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
 
+	/// <summary>
+	/// System.Nullable<T>.GetValueOrDefault()
+	/// </summary>
+	/// <param name="symbol"></param>
+	/// <param name="context"></param>
+	/// <param name="handler"></param>
+	/// <param name="args"></param>
+	/// <param name="originOperation"></param>
+	/// <returns></returns>
+	Expression? CompileNullableGetValueOrDefault(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
+
 }

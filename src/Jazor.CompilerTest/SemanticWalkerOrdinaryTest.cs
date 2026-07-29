@@ -4954,7 +4954,83 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
     Assert.IsNotNull(script);
-    StringAssert.Contains(script, "value ?? null");
+    StringAssert.Contains(script, "value ?? 0");
+  }
+
+  [TestMethod]
+  [DataRow("bool?", "false")]
+  [DataRow("char?", "\"\\0\"")]
+  [DataRow("long?", "0n")]
+  public void Visit_Nullable_GetValueOrDefault_UsesUnderlyingValueTypeDefault(
+    string nullableType,
+    string expectedDefault)
+  {
+    var block = GetBlockOperation($$"""
+            class TestClass
+            {
+                void TestMethod({{nullableType}} value)
+                {
+                    var actual = value.GetValueOrDefault();
+                }
+            }
+            """);
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, $"value ?? {expectedDefault}");
+  }
+
+  [TestMethod]
+  public void Visit_NullableEnum_GetValueOrDefault_UsesUnderlyingZeroValue()
+  {
+    var block = GetBlockOperation("""
+            enum ReleaseState
+            {
+                Pending,
+                Running,
+                Completed
+            }
+
+            class TestClass
+            {
+                void TestMethod(ReleaseState? state)
+                {
+                    var actual = state.GetValueOrDefault();
+                }
+            }
+            """);
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "state ?? 0");
+  }
+
+  [TestMethod]
+  public void Visit_GenericNullable_GetValueOrDefault_ReportsErasedDefaultLimitation()
+  {
+    var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod<T>(T? value) where T : struct
+                {
+                    var actual = value.GetValueOrDefault();
+                }
+            }
+            """);
+
+    var walker = new SemanticWalker(true);
+    var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
+
+    Assert.AreEqual(OperationKind.Invocation, exception.Kind);
+    StringAssert.Contains(
+      exception.Message ?? string.Empty,
+      "default(T) is not supported because the runtime type parameter may be a value type");
   }
 
   [TestMethod]

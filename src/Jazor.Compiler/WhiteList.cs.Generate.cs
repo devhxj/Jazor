@@ -1302,7 +1302,6 @@ internal static partial class WhiteList
 		members["static System.Math.ScaleB(double, int)"] = new(Op.Inline, "(__arg1 * Math.pow(2, __arg2))");
 		members["System.Nullable<T>.HasValue.get"] = new(Op.Inline, "(__arg1 !== null && __arg1 !== undefined)");
 		members["System.Nullable<T>.Value.get"] = new(Op.Inline, "__arg1");
-		members["System.Nullable<T>.GetValueOrDefault()"] = new(Op.Inline, "(__arg1 ?? null)");
 		members["System.Nullable<T>.GetValueOrDefault(T)"] = new(Op.Inline, "(__arg1 ?? __arg2)");
 		members["object.GetType()"] = new(Op.Inline, "typeof __arg1");
 		members["object.Object()"] = new(Op.Allowed);
