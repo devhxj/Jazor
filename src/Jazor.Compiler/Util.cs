@@ -304,6 +304,30 @@ public static class Util
     public static bool IsECMAScriptSupportMarkerAttribute(INamedTypeSymbol? symbol)
         => symbol?.ToDisplayString() is ECMAScriptAttributeMetadataName or ECMAScriptModuleAttributeMetadataName;
 
+    internal static string? GetECMAScriptModuleImportPath(ITypeSymbol symbol)
+    {
+        foreach (var attribute in symbol.GetAttributes())
+        {
+            if (!IsECMAScriptSupportMarkerAttribute(attribute.AttributeClass) ||
+                attribute.ConstructorArguments.Length != 1)
+            {
+                continue;
+            }
+
+            var importArgument = attribute.ConstructorArguments[0];
+            if (importArgument.Kind == TypedConstantKind.Array ||
+                importArgument.Value is not string importPath ||
+                string.IsNullOrWhiteSpace(importPath))
+            {
+                continue;
+            }
+
+            return ECMAScriptModulePath.NormalizeImportSpecifier(importPath);
+        }
+
+        return null;
+    }
+
     public static bool HasECMAScriptSupportMarker(ISymbol? symbol)
     {
         if (symbol is null)

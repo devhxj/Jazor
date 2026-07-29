@@ -52,12 +52,17 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         options?.Profile ?? AstConverterProfile.Standard);
     private readonly IReadOnlyDictionary<ISymbol, string>? _declaredNameOverrides = options?.DeclaredNames;
     private readonly SemanticWalkerHost? _semanticWalkerHost = options?.Host;
+    private readonly string? _currentModuleImportPath = Util.GetECMAScriptModuleImportPath(classSymbol);
+    private HashSet<string>? _moduleDeclaredBindings;
 
     private HashSet<string> ModuleLocalNames => _moduleNamePlan.LocalNames;
 
     private IReadOnlyDictionary<ISymbol, string> ModuleDeclaredNames => _declaredNameOverrides ?? _moduleNamePlan.DeclaredNames;
 
     private HashSet<string> ReservedImportNames => _moduleNamePlan.ReservedImportNames;
+
+    private HashSet<string> ModuleDeclaredBindings
+        => _moduleDeclaredBindings ??= new HashSet<string>(ModuleDeclaredNames.Values, System.StringComparer.Ordinal);
 
     /// <summary>
     /// 将C# 14 ClassDeclarationSyntax 转换为Acornima.Ast.Module(es6+ module)
@@ -167,6 +172,20 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 .Where(specifier => ShouldRetainImportSpecifier(specifier, referencedIdentifiers))
                 .ToArray();
 
+            if (uniqueSpecifiers.Length > 0 &&
+                string.Equals(
+                    ECMAScriptModulePath.NormalizeImportSpecifier(pair.Key),
+                    _currentModuleImportPath,
+                    System.StringComparison.Ordinal))
+            {
+                var importedNames = string.Join(
+                    ", ",
+                    uniqueSpecifiers.Select(GetImportedSpecifierName));
+                throw new NotSupportedException(
+                    $"Import '{importedNames}' resolves to the current module '{_currentModuleImportPath}', " +
+                    "but that module does not declare a matching local binding.");
+            }
+
             foreach (var declaration in ImportDeclarationFactory.Create(
                          pair.Key,
                          uniqueSpecifiers))
@@ -188,6 +207,16 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             ImportDefaultSpecifier @default => referencedIdentifiers.Contains(@default.Local.Name),
             ImportNamespaceSpecifier @namespace => referencedIdentifiers.Contains(@namespace.Local.Name),
             _ => true
+        };
+
+    private static string GetImportedSpecifierName(ImportDeclarationSpecifier specifier)
+        => specifier switch
+        {
+            ImportSpecifier named when named.Imported is Identifier identifier => identifier.Name,
+            ImportSpecifier named when named.Imported is StringLiteral literal => literal.Value,
+            ImportDefaultSpecifier => "default",
+            ImportNamespaceSpecifier => "*",
+            _ => specifier.Local.Name
         };
 
     private void MergeImports(in SenseArgument argument)
@@ -218,7 +247,12 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     /// </summary>
     private SenseArgument CreateImportAwareArgument(Sense sense)
         => new SenseArgument(sense, UseImportAliases: true)
-            .WithImportContext(_importBindings, _importLocalBindings, ReservedImportNames);
+            .WithImportContext(
+                _importBindings,
+                _importLocalBindings,
+                ReservedImportNames,
+                _currentModuleImportPath,
+                ModuleDeclaredBindings);
 
     private SemanticModel GetSemanticModel(SyntaxNode syntax)
         => syntax.SyntaxTree == _classModel.SyntaxTree

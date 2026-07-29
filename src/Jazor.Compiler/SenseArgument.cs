@@ -41,6 +41,8 @@ public record struct SenseArgument
     private readonly Dictionary<string, string>? _importBindings;
     private readonly Dictionary<string, string>? _importLocalBindings;
     private readonly HashSet<string>? _reservedImportNames;
+    private readonly string? _currentModuleImportPath;
+    private readonly HashSet<string>? _currentModuleBindings;
 
     /// <summary>默认参数</summary>
     public static SenseArgument Default => new();
@@ -58,6 +60,8 @@ public record struct SenseArgument
         _importBindings = [];
         _importLocalBindings = [];
         _reservedImportNames = [];
+        _currentModuleImportPath = null;
+        _currentModuleBindings = null;
     }
 
     /// <summary>完整构造函数</summary>
@@ -79,6 +83,8 @@ public record struct SenseArgument
         _importBindings = [];
         _importLocalBindings = [];
         _reservedImportNames = [];
+        _currentModuleImportPath = null;
+        _currentModuleBindings = null;
     }
 
     /// <summary>内部构造函数（用于 WithNewScope，共享 specifiers）</summary>
@@ -93,7 +99,9 @@ public record struct SenseArgument
         Dictionary<string, string>? importBindings,
         Dictionary<string, string>? importLocalBindings,
         HashSet<string>? reservedImportNames,
-        EmissionScopeContext? scopeContext)
+        EmissionScopeContext? scopeContext,
+        string? currentModuleImportPath,
+        HashSet<string>? currentModuleBindings)
     {
         Sense = sense;
         UseImportAliases = useImportAliases;
@@ -106,6 +114,8 @@ public record struct SenseArgument
         _importBindings = importBindings;
         _importLocalBindings = importLocalBindings;
         _reservedImportNames = reservedImportNames;
+        _currentModuleImportPath = currentModuleImportPath;
+        _currentModuleBindings = currentModuleBindings;
     }
 
     // ===== 依赖项状态检查 =====
@@ -118,7 +128,7 @@ public record struct SenseArgument
     // ===== Sense 变更 =====
     /// <summary>创建新实例，设置 Sense</summary>
     public SenseArgument With(Sense sense)
-        => new(sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext);
+        => new(sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext, _currentModuleImportPath, _currentModuleBindings);
 
     // ===== 作用域隔离 =====
     /// <summary>
@@ -126,10 +136,10 @@ public record struct SenseArgument
     /// 共享导入字典，创建新的变量声明字典。
     /// </summary>
     public SenseArgument WithNewScope()
-        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, [], _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext);
+        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, [], _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext, _currentModuleImportPath, _currentModuleBindings);
 
     internal SenseArgument WithScope(EmissionScopeContext scopeContext)
-        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, scopeContext);
+        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, scopeContext, _currentModuleImportPath, _currentModuleBindings);
 
     internal SenseArgument EnterScope(IOperation anchor, ScopeSite site)
     {
@@ -150,7 +160,9 @@ public record struct SenseArgument
             _importBindings,
             _importLocalBindings,
             _reservedImportNames,
-            ScopeContext.Enter(anchor, site));
+            ScopeContext.Enter(anchor, site),
+            _currentModuleImportPath,
+            _currentModuleBindings);
     }
 
     internal SenseArgument EnterEmissionScope(IOperation anchor, ScopeSite site)
@@ -172,7 +184,9 @@ public record struct SenseArgument
             _importBindings,
             _importLocalBindings,
             _reservedImportNames,
-            ScopeContext.Enter(anchor, site));
+            ScopeContext.Enter(anchor, site),
+            _currentModuleImportPath,
+            _currentModuleBindings);
     }
 
     internal string AllocateName(LoweringNameOwner owner, LoweringSite site)
@@ -186,31 +200,33 @@ public record struct SenseArgument
     // ===== 模式匹配上下文 =====
     /// <summary>设置模式匹配输入表达式</summary>
     public SenseArgument WithPatternInput(Expression? input)
-        => new(Sense, UseImportAliases, input, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext);
+        => new(Sense, UseImportAliases, input, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext, _currentModuleImportPath, _currentModuleBindings);
 
     // ===== 异常处理上下文 =====
     /// <summary>设置 Catch 异常参数名</summary>
     public SenseArgument WithCatchVar(string? varName)
-        => new(Sense, UseImportAliases, PatternInput, varName, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext);
+        => new(Sense, UseImportAliases, PatternInput, varName, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext, _currentModuleImportPath, _currentModuleBindings);
 
     // ===== Switch 表达式上下文 =====
     /// <summary>设置 Switch 表达式变量名</summary>
     public SenseArgument WithSwitchVar(string? varName)
-        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, varName, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext);
+        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, varName, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext, _currentModuleImportPath, _currentModuleBindings);
 
     // ===== 组合设置 =====
     /// <summary>设置 Sense 和 PatternInput</summary>
     public SenseArgument With(Sense sense, Expression patternInput)
-        => new(sense, UseImportAliases, patternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext);
+        => new(sense, UseImportAliases, patternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext, _currentModuleImportPath, _currentModuleBindings);
 
     public SenseArgument WithImportAliases(bool useImportAliases = true)
-        => new(Sense, useImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext);
+        => new(Sense, useImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext, _currentModuleImportPath, _currentModuleBindings);
 
     public SenseArgument WithImportContext(
         Dictionary<string, string> importBindings,
         Dictionary<string, string> importLocalBindings,
-        HashSet<string> reservedImportNames)
-        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, importBindings, importLocalBindings, reservedImportNames, ScopeContext);
+        HashSet<string> reservedImportNames,
+        string? currentModuleImportPath,
+        HashSet<string> currentModuleBindings)
+        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, importBindings, importLocalBindings, reservedImportNames, ScopeContext, currentModuleImportPath, currentModuleBindings);
 
     // ===== 依赖项操作 =====
     /// <summary>
@@ -258,6 +274,15 @@ public record struct SenseArgument
 
         if (string.IsNullOrWhiteSpace(modulePath))
             return new Identifier(importedName);
+
+        if (string.Equals(
+                ECMAScriptModulePath.NormalizeImportSpecifier(modulePath!),
+                _currentModuleImportPath,
+                System.StringComparison.Ordinal))
+        {
+            if (_currentModuleBindings?.Contains(importedName) == true)
+                return new Identifier(importedName);
+        }
 
         if (_specifiers is null || _importBindings is null)
             return new Identifier(importedName);

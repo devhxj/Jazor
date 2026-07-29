@@ -108,29 +108,7 @@ public partial class SemanticWalker
 	}
 
 	private static string? GetModuleImportPath(ITypeSymbol symbol)
-	{
-		foreach (var attribute in symbol.GetAttributes())
-		{
-			var attributeName = attribute.AttributeClass?.ToDisplayString();
-			if (attributeName is not ("ECMAScript.ECMAScriptModuleAttribute" or "ECMAScript.ECMAScriptAttribute"))
-				continue;
-
-			if (attribute.ConstructorArguments.Length != 1)
-				continue;
-
-			var importArgument = attribute.ConstructorArguments[0];
-			if (importArgument.Kind == TypedConstantKind.Array ||
-				importArgument.Value is not string importPath ||
-				string.IsNullOrWhiteSpace(importPath))
-			{
-				continue;
-			}
-
-			return ECMAScriptModulePath.NormalizeImportSpecifier(importPath);
-		}
-
-		return null;
-	}
+		=> Util.GetECMAScriptModuleImportPath(symbol);
 
 	private static bool ShouldFlattenRuntimeNestedType(ITypeSymbol symbol)
 	{

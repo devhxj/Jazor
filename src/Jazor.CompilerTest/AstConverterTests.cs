@@ -15956,6 +15956,61 @@ export function create() {{
     }
 
     [TestMethod]
+    public async Task Convert_CurrentModuleImportTarget_ReusesDeclaredLocalBinding()
+    {
+        var code = """
+            using ECMAScript;
+
+            [ECMAScriptModule("System/StringModule.js")]
+            public static class TestClass
+            {
+                public static string _5ad63706a889c294(string instance, int index)
+                    => instance.Substring(index, 1);
+
+                public static char ReadFirst(string value) => value[0];
+            }
+            """;
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(module);
+        Assert.IsEmpty(module.Body.OfType<ImportDeclaration>());
+        StringAssert.Contains(script, "return _5ad63706a889c294(value, 0);");
+        _ = new Acornima.Parser().ParseModule(script);
+    }
+
+    [TestMethod]
+    public async Task Convert_CurrentModuleImportWithoutLocalBinding_ThrowsActionableDiagnostic()
+    {
+        var code = """
+            using ECMAScript;
+
+            [ECMAScriptModule("System/StringModule.js")]
+            public static class TestClass
+            {
+                public static char ReadFirst(string value) => value[0];
+            }
+            """;
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(() => converter.Convert());
+
+        StringAssert.Contains(exception.Message, "_5ad63706a889c294");
+        StringAssert.Contains(exception.Message, "System/StringModule.js");
+        StringAssert.Contains(exception.Message, "does not declare a matching local binding");
+    }
+
+    [TestMethod]
     public async Task Convert_ClassWithConditionalAccessSequenceFieldInitializer_EmitsParseableModule()
     {
         var code = """
