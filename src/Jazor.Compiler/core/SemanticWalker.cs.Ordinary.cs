@@ -1853,7 +1853,8 @@ public partial class SemanticWalker
 				return WithOrigin(WrapTarget(new SequenceExpression(NodeList.From(expressions))), operation);
 			}
 
-			if (!IsPassThroughCustomOperatorFallbackAllowed(operation.OperatorMethod))
+			if (!IsPassThroughCustomOperatorFallbackAllowed(operation.OperatorMethod) &&
+				!CanPassThroughIntrinsicIncrementOrDecrement(operation))
 				return HandleTransformationFailure<Node>(
 					operation,
 					$"Increment/decrement operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' requires an explicit whitelist mapping and cannot fall back to raw JavaScript update semantics.");
@@ -1902,17 +1903,28 @@ public partial class SemanticWalker
 			if (mapped is not null)
 				return mapped;
 
-			if (!IsPassThroughCustomOperatorFallbackAllowed(operation.OperatorMethod))
+			if (!IsPassThroughCustomOperatorFallbackAllowed(operation.OperatorMethod) &&
+				!CanPassThroughIntrinsicIncrementOrDecrement(operation))
 				return HandleTransformationFailure<Expression>(
 					operation,
 					$"Increment/decrement operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' requires an explicit whitelist/ECMAScript mapping and cannot fall back to raw JavaScript update semantics.");
 		}
 
-		var one = new NumericLiteral(1, "1");
+		var targetType = operation.Target.Type ?? operation.Type;
+		Expression one = targetType is not null && GetMapperType(targetType).Mapper == TypeMapper.BigInt
+			? new BigIntLiteral(System.Numerics.BigInteger.One, "1n")
+			: new NumericLiteral(1, "1");
 		return new NonLogicalBinaryExpression(
 			operation.Kind == OperationKind.Increment ? Operator.Addition : Operator.Subtraction,
 			operand,
 			one);
+	}
+
+	private static bool CanPassThroughIntrinsicIncrementOrDecrement(IIncrementOrDecrementOperation operation)
+	{
+		var targetType = operation.Target.Type ?? operation.Type;
+		return targetType is not null &&
+			GetMapperType(targetType).Mapper is TypeMapper.Number or TypeMapper.BigInt;
 	}
 
 	private bool TryPreparePropertyMutationAccess(

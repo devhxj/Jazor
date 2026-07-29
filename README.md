@@ -43,6 +43,7 @@ The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyz
 - `Jazor.Css` provides deterministic, framework-neutral CSS-in-JS authoring with generated properties, modern structured at-rules, isolated registries, Shadow DOM targets, SSR snapshots, and idempotent hydration.
 - RazorVue direct rendering preserves dynamic event-modifier conditions and supports helper-composed output with root-level local declarations.
 - Compiler output now preserves nullable underlying defaults and keeps generated temporary names stable across repository relocations and Git worktrees.
+- BigInt-mapped increment and decrement operations now preserve BigInt operands for locals and mapped indexers, including `Int128` and `UInt128` values.
 - Generated CLR modules now include `System.Guid`, preserve UTF-16 character conversion semantics, and emit valid nested conditional-access initializers.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
