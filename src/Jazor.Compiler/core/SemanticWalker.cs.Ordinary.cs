@@ -630,6 +630,37 @@ public partial class SemanticWalker
 		{
 			var targetType = GetMapperType(operation.Type);
 			var operandType = GetMapperType(operation.Operand.Type);
+			var targetIsChar = operation.Type.SpecialType == SpecialType.System_Char;
+			var operandIsChar = operation.Operand.Type.SpecialType == SpecialType.System_Char;
+
+			if (operandIsChar && targetType.Mapper is TypeMapper.Number or TypeMapper.BigInt)
+			{
+				var codeUnit = new CallExpression(
+					new MemberExpression(expr, new Identifier("charCodeAt"), computed: false, optional: false),
+					NodeList.From<Expression>(new NumericLiteral(0, "0")),
+					optional: false);
+				return targetType.Mapper == TypeMapper.BigInt
+					? new CallExpression(new Identifier("BigInt"), NodeList.From<Expression>(codeUnit), optional: false)
+					: codeUnit;
+			}
+
+			if (targetIsChar && operandType.Mapper is TypeMapper.Number or TypeMapper.BigInt)
+			{
+				if (operation.IsChecked)
+				{
+					return HandleTransformationFailure<Node>(
+						operation,
+						"Checked numeric-to-char conversion is not supported because JavaScript String.fromCharCode applies unchecked UInt16 coercion.");
+				}
+
+				var codeUnit = operandType.Mapper == TypeMapper.BigInt
+					? new CallExpression(new Identifier("Number"), NodeList.From(expr), optional: false)
+					: expr;
+				return new CallExpression(
+					new MemberExpression(new Identifier("String"), new Identifier("fromCharCode"), computed: false, optional: false),
+					NodeList.From(codeUnit),
+					optional: false);
+			}
 
 			// Number → BigInt: (long)1 → BigInt(1)
 			if (operandType.Mapper == TypeMapper.Number && targetType.Mapper == TypeMapper.BigInt)
@@ -696,6 +727,9 @@ public partial class SemanticWalker
 		// 先转换 Operation，然后通过 PatternInput 传递给 WhenNotNull
 		var whenNotNullArg = argument.WithPatternInput(operand);
 		var whenNotNull = Translate<Expression>(operation.WhenNotNull, whenNotNullArg);
+		if (whenNotNull is SequenceExpression)
+			return whenNotNull;
+
 		return new ChainExpression(whenNotNull);
 	}
 

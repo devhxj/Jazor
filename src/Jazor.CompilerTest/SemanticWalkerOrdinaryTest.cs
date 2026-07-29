@@ -1,3 +1,5 @@
+using Acornima;
+using Acornima.Ast;
 using ECMAScript;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
@@ -741,6 +743,32 @@ public sealed class SemanticWalkerOrdinaryTest
   let length = str?.length;
 }", script);
 
+  }
+
+  [TestMethod]
+  public void Visit_VariableDeclaratorWithConditionalAccessSequence_ParenthesizesInitializer()
+  {
+    var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod(string? value)
+                {
+                    var normalized = value?.Trim()?.ToLower();
+                }
+            }
+            """);
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    var body = Assert.IsInstanceOfType<BlockStatement>(node);
+    var declaration = Assert.IsInstanceOfType<VariableDeclaration>(body.Body.Last());
+    var initializer = declaration.Declarations[0].Init;
+    Assert.IsInstanceOfType<SequenceExpression>(initializer);
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let normalized = (");
+    _ = new Parser().ParseScript(script);
   }
 
   /// <summary>
@@ -3146,6 +3174,100 @@ public sealed class SemanticWalkerOrdinaryTest
   let l = 42n;
   let i = Number(l);
 }", script);
+  }
+
+  [TestMethod]
+  public void Visit_Conversion_CharArithmetic_PreservesUtf16CodeUnitSemantics()
+  {
+    var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod(char value)
+                {
+                    var shifted = value + 32;
+                    var lower = (char)shifted;
+                }
+            }
+            """);
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual("""
+{
+  let shifted = value.charCodeAt(0) + 32;
+  let lower = String.fromCharCode(shifted);
+}
+""", script);
+  }
+
+  [TestMethod]
+  public void Visit_Conversion_CharToInt64_ConvertsCodeUnitBeforeBigInt()
+  {
+    var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod(char value)
+                {
+                    long codeUnit = value;
+                }
+            }
+            """);
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual("""
+{
+  let codeUnit = BigInt(value.charCodeAt(0));
+}
+""", script);
+  }
+
+  [TestMethod]
+  public void Visit_Conversion_Int64ToChar_ConvertsBigIntThroughNumber()
+  {
+    var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod(long codeUnit)
+                {
+                    var value = (char)codeUnit;
+                }
+            }
+            """);
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual("""
+{
+  let value = String.fromCharCode(Number(codeUnit));
+}
+""", script);
+  }
+
+  [TestMethod]
+  public void Visit_Conversion_CheckedNumericToChar_ReportsUnsupportedCoercion()
+  {
+    var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod(int codeUnit)
+                {
+                    var value = checked((char)codeUnit);
+                }
+            }
+            """);
+
+    var walker = new SemanticWalker(true);
+    var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
+
+    Assert.AreEqual(OperationKind.Conversion, exception.Kind);
+    StringAssert.Contains(exception.Message ?? string.Empty, "Checked numeric-to-char conversion is not supported");
   }
 
   #endregion

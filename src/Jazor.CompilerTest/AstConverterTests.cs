@@ -15923,5 +15923,59 @@ export function create() {{
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
 
+    [TestMethod]
+    public async Task Convert_ClassWithRepeatedGuidCalls_EmitsOneGuidModuleImportWithUniqueSpecifiers()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static string ParseCompact(string input)
+                    => Guid.Parse(input).ToString("N");
+
+                public static Guid ParseAgain(string input)
+                    => Guid.Parse(input);
+            }
+            """;
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+
+        Assert.IsNotNull(module);
+        var import = module.Body.OfType<ImportDeclaration>().Single();
+        Assert.AreEqual("System/GuidModule.js", ((StringLiteral)import.Source).Value);
+        var importedNames = import.Specifiers
+            .OfType<ImportSpecifier>()
+            .Select(static specifier => ((Identifier)specifier.Imported).Name)
+            .ToArray();
+        Assert.HasCount(2, importedNames);
+        Assert.HasCount(importedNames.Length, importedNames.Distinct(StringComparer.Ordinal));
+        _ = new Acornima.Parser().ParseModule(module.ToKnRECMAScript());
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithConditionalAccessSequenceFieldInitializer_EmitsParseableModule()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public static string? Value = GetValue()?.Trim()?.ToLower();
+
+                private static string? GetValue() => null;
+            }
+            """;
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "let value = (");
+        _ = new Acornima.Parser().ParseModule(script);
+    }
+
     #endregion
 }
