@@ -14,6 +14,12 @@ public sealed class RazorSgDirectRenderAdvancedMatrixTests
     [TestMethod]
     [DynamicData(nameof(Cases))]
     public void TryEmit_LowersAdvancedSemanticFamiliesToAst(DirectRenderCase testCase)
+        => RazorSgDirectRenderMatrixAssertions.AssertEmission(testCase);
+}
+
+internal static class RazorSgDirectRenderMatrixAssertions
+{
+    public static void AssertEmission(DirectRenderCase testCase)
     {
         var observation = RazorSgDirectRenderMatrixTestHost.Emit(testCase);
         var emitted = observation.Prelude + "\n" + observation.RenderExpression;

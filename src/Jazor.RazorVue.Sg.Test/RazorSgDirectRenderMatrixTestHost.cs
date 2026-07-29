@@ -168,7 +168,8 @@ public sealed record DirectRenderCase(
     bool UsesSlots,
     int ImportCount,
     string? TertiaryExpectedFragment,
-    string? UnexpectedFragment);
+    string? UnexpectedFragment,
+    RazorVueUsageScenarioId? Scenario);
 
 public enum DirectRenderCaseGroup
 {
@@ -176,7 +177,8 @@ public enum DirectRenderCaseGroup
     Component,
     ControlFlow,
     Extended,
-    Advanced
+    Advanced,
+    Coverage
 }
 
 internal static partial class DirectRenderCaseCatalog
@@ -194,6 +196,7 @@ internal static partial class DirectRenderCaseCatalog
         AddControlFlowCases(cases);
         AddExtendedCases(cases);
         AddAdvancedCases(cases);
+        AddCoverageCases(cases);
         return cases;
     }
 
@@ -607,7 +610,8 @@ internal static partial class DirectRenderCaseCatalog
         bool usesSlots = false,
         int importCount = 0,
         string? tertiaryExpectedFragment = null,
-        string? unexpectedFragment = null)
+        string? unexpectedFragment = null,
+        RazorVueUsageScenarioId? scenario = null)
     {
         var typeName = "DirectRender" + cases.Count.ToString("D3", System.Globalization.CultureInfo.InvariantCulture);
         cases.Add(new DirectRenderCase(
@@ -624,7 +628,8 @@ internal static partial class DirectRenderCaseCatalog
             usesSlots,
             importCount,
             tertiaryExpectedFragment,
-            unexpectedFragment));
+            unexpectedFragment,
+            scenario));
     }
 
     private static string CSharpStringLiteral(string value)

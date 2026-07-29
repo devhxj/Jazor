@@ -4,9 +4,9 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorVueSemanticMatrixInventoryTests
 {
     [TestMethod]
-    public void SemanticMatrix_Contains1942UniqueCasesAcrossOwnedBoundaries()
+    public void SemanticMatrix_Contains2454UniqueCasesAndCompleteCatalogCoverage()
     {
-        Assert.HasCount(1776, DirectRenderCaseCatalog.SuccessCases);
+        Assert.HasCount(2288, DirectRenderCaseCatalog.SuccessCases);
         Assert.HasCount(
             192,
             DirectRenderCaseCatalog.SuccessCases.Where(static item => item.Group == DirectRenderCaseGroup.Surface));
@@ -22,6 +22,9 @@ public sealed class RazorVueSemanticMatrixInventoryTests
         Assert.HasCount(
             1024,
             DirectRenderCaseCatalog.SuccessCases.Where(static item => item.Group == DirectRenderCaseGroup.Advanced));
+        Assert.HasCount(
+            512,
+            DirectRenderCaseCatalog.SuccessCases.Where(static item => item.Group == DirectRenderCaseGroup.Coverage));
         AssertDirectRenderCaseCount(48, "content_");
         AssertDirectRenderCaseCount(32, "markup_");
         AssertDirectRenderCaseCount(48, "element_");
@@ -76,14 +79,17 @@ public sealed class RazorVueSemanticMatrixInventoryTests
             .Concat(VueInjectCase.All.Select(static item => "inject:" + item.Id))
             .Concat(DirectRenderFailureCaseCatalog.All.Select(static item => "failure:" + item.Id))
             .ToArray();
-        Assert.HasCount(1942, ids);
+        Assert.HasCount(2454, ids);
         Assert.HasCount(ids.Length, ids.Distinct(StringComparer.Ordinal));
         Assert.HasCount(
             DirectRenderCaseCatalog.SuccessCases.Count,
             DirectRenderCaseCatalog.SuccessCases.Select(static item => item.TypeName).Distinct(StringComparer.Ordinal));
-        Assert.HasCount(
-            DirectRenderCaseCatalog.SuccessCases.Count,
-            DirectRenderCaseCatalog.SuccessCases.Select(static item => item.Body).Distinct(StringComparer.Ordinal));
+        var duplicateSuccessBodies = DirectRenderCaseCatalog.SuccessCases
+            .GroupBy(static item => item.Body, StringComparer.Ordinal)
+            .Where(static group => group.Count() > 1)
+            .Select(static group => string.Join(", ", group.Select(static item => item.Id)) + ": " + group.Key)
+            .ToArray();
+        Assert.IsEmpty(duplicateSuccessBodies, string.Join(Environment.NewLine, duplicateSuccessBodies));
         Assert.HasCount(
             DirectRenderFailureCaseCatalog.All.Count,
             DirectRenderFailureCaseCatalog.All.Select(static item => item.TypeName).Distinct(StringComparer.Ordinal));
@@ -92,6 +98,40 @@ public sealed class RazorVueSemanticMatrixInventoryTests
             DirectRenderFailureCaseCatalog.All
                 .Select(static item => item.Body + "\n" + item.Members)
                 .Distinct(StringComparer.Ordinal));
+
+        AssertUsageScenarioCoverage();
+    }
+
+    private static void AssertUsageScenarioCoverage()
+    {
+        var definitions = RazorVueUsageScenarioCatalog.All;
+        Assert.HasCount(64, definitions);
+        Assert.HasCount(
+            definitions.Count,
+            definitions.Select(static definition => definition.Id).Distinct());
+
+        var definitionById = definitions.ToDictionary(static definition => definition.Id);
+        var observed = DirectRenderCaseCatalog.SuccessCases
+            .Where(static testCase => testCase.Scenario is not null)
+            .ToArray();
+        Assert.HasCount(512, observed);
+        Assert.IsTrue(observed.All(static testCase => testCase.Group == DirectRenderCaseGroup.Coverage));
+        Assert.IsTrue(observed.All(testCase => definitionById.ContainsKey(testCase.Scenario!.Value)));
+        Assert.IsTrue(observed.All(testCase =>
+            definitionById[testCase.Scenario!.Value].Expectation == RazorVueUsageScenarioExpectation.Emission));
+
+        var observedByScenario = observed
+            .GroupBy(static testCase => testCase.Scenario!.Value)
+            .ToDictionary(static group => group.Key, static group => group.ToArray());
+        Assert.IsTrue(definitions.All(definition => observedByScenario.ContainsKey(definition.Id)));
+        Assert.IsTrue(observedByScenario.Values.All(static cases => cases.Length == 8));
+        Assert.IsTrue(observedByScenario.Values.All(static cases =>
+            cases.Select(static testCase => testCase.Body).Distinct(StringComparer.Ordinal).Count() == 8));
+
+        var coveredDefinitions = definitions.Count(definition => observedByScenario.ContainsKey(definition.Id));
+        var coverage = (double)coveredDefinitions / definitions.Count;
+        Assert.IsGreaterThanOrEqualTo(0.95, coverage);
+        Assert.AreEqual(1d, coverage);
     }
 
     private static void AssertDirectRenderCaseCount(int expected, params string[] idPrefixes)
