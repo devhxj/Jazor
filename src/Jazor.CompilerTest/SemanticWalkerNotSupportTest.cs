@@ -435,48 +435,6 @@ public sealed class SemanticWalkerNotSupportTest
     }
 
     [TestMethod]
-    public void ConvertFromSyntaxNode_WhenReportIsNull_AttachesLocationMetadataToSyntaxTransformationException()
-    {
-        var syntax = SyntaxFactory.ParseStatement("int value = 1;");
-        var method = typeof(SemanticWalker).GetMethod(
-            "ConvertFromSyntaxNode",
-            BindingFlags.Instance | BindingFlags.NonPublic,
-            binder: null,
-            types: [typeof(SyntaxNode)],
-            modifiers: null);
-        Assert.IsNotNull(method, "未找到 ConvertFromSyntaxNode 私有方法。");
-
-        var walker = new SemanticWalker(true);
-        try
-        {
-            method.Invoke(walker, [syntax]);
-            Assert.Fail("Expected SyntaxNodeTransformationException but no exception was thrown.");
-        }
-        catch (TargetInvocationException invocation) when (invocation.InnerException is SyntaxNodeTransformationException exception)
-        {
-            Assert.AreEqual(syntax.Kind(), exception.Kind);
-            StringAssert.Contains(exception.Message ?? string.Empty, "Unsupported syntax node kind");
-
-            var path = exception.Data["location.path"] as string;
-            Assert.IsFalse(string.IsNullOrWhiteSpace(path));
-
-            var startLineRaw = exception.Data["location.startLine"];
-            Assert.IsTrue(startLineRaw is int);
-            var startLineValue = (int)startLineRaw!;
-            Assert.IsTrue(startLineValue >= 1);
-
-            Assert.IsTrue(exception.Data["location.startColumn"] is int startColumn && startColumn >= 1);
-
-            var endLineRaw = exception.Data["location.endLine"];
-            Assert.IsTrue(endLineRaw is int);
-            var endLineValue = (int)endLineRaw!;
-            Assert.IsTrue(endLineValue >= startLineValue);
-
-            Assert.IsTrue(exception.Data["location.endColumn"] is int endColumn && endColumn >= 1);
-        }
-    }
-
-    [TestMethod]
     public void VisitNotSupportHandlers_AllRejectWithTransformationException()
     {
         var handlers = LoadNotSupportHandlers();

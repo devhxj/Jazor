@@ -320,10 +320,7 @@ public partial class SemanticWalker
 		if (targetSyntax is null)
 			return null;
 
-		var target = TryBuildStaticHostExpressionFromSyntax(targetSyntax);
-		if (target is null)
-			target = ConvertFromSyntaxNode(targetSyntax) as Expression;
-		return target;
+		return TryBuildStaticHostExpressionFromSyntax(targetSyntax);
 	}
 
 	private static bool IsMemberAccessNameSyntax(SyntaxNode syntax)
