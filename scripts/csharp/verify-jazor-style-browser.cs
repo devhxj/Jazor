@@ -257,8 +257,8 @@ static string GetBrowserHarness() => """
       <body>
         <button id="target">Styled</button>
         <script type="module">
-          import * as firstModule from "./Jazor.Style/runtime.mjs";
-          import * as secondModule from "./Jazor.Style/runtime.mjs?hmr=1";
+          import * as firstModule from "./jazorStyle.mjs";
+          import * as secondModule from "./jazorStyle.mjs?hmr=1";
 
           function finish(value) {
             const bytes = new TextEncoder().encode(JSON.stringify(value));
@@ -297,20 +297,20 @@ static string GetBrowserHarness() => """
             const shadowRoot = shadowHost.attachShadow({ mode: "open" });
             const shadowButton = document.createElement("button");
             shadowRoot.appendChild(shadowButton);
-            const shadowContext = firstModule.createContext({ target: shadowRoot, styleId: "shadow-css" });
-            shadowButton.className = firstModule.classIn(shadowContext, { color: "rgb(0, 128, 0)" });
+            const shadowContext = firstModule.context({ target: shadowRoot, styleId: "shadow-css" });
+            shadowButton.className = firstModule.styleIn(shadowContext, { color: "rgb(0, 128, 0)" });
             const shadowStyle = shadowRoot.getElementById("shadow-css");
             const shadowBeforeAdoption = shadowStyle.textContent;
-            const reloadedShadowContext = secondModule.createContext({ target: shadowRoot, styleId: "shadow-css" });
-            secondModule.classIn(reloadedShadowContext, { color: "rgb(0, 128, 0)" });
+            const reloadedShadowContext = secondModule.context({ target: shadowRoot, styleId: "shadow-css" });
+            secondModule.styleIn(reloadedShadowContext, { color: "rgb(0, 128, 0)" });
 
-            const serverContext = firstModule.createContext({
+            const serverContext = firstModule.context({
               detached: true,
               styleId: "hydrated-css",
               nonce: "jazor-css-nonce"
             });
             const hydrationRule = { "border-top-width": "3px", "border-top-style": "solid" };
-            const serverName = firstModule.classIn(serverContext, hydrationRule);
+            const serverName = firstModule.styleIn(serverContext, hydrationRule);
             const serverSnapshot = firstModule.snapshotFrom(serverContext);
             const hydrationStyle = document.createElement("style");
             hydrationStyle.id = serverSnapshot.styleId;
@@ -318,11 +318,11 @@ static string GetBrowserHarness() => """
             hydrationStyle.textContent = serverSnapshot.hydrationText;
             document.head.appendChild(hydrationStyle);
             const hydrationBeforeAdoption = hydrationStyle.textContent;
-            const browserContext = secondModule.createContext({
+            const browserContext = secondModule.context({
               styleId: "hydrated-css",
               nonce: "jazor-css-nonce"
             });
-            const browserName = secondModule.classIn(browserContext, hydrationRule);
+            const browserName = secondModule.styleIn(browserContext, hydrationRule);
 
             finish({
               ok: true,

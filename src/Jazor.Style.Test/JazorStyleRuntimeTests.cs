@@ -6,6 +6,91 @@ namespace Jazor.Style.Tests;
 public sealed class JazorStyleRuntimeTests
 {
     [TestMethod]
+    public async Task Runtime_TypedFactories_EmitPlainCssStringsAndComposeValues()
+    {
+        var result = await JazorStyleModuleTestHost.RunDenoAsync(
+            """
+            import {
+              style, px, rem, percent, rgba, hex, variable, varOr, ms,
+              fr, minMax, repeat, translateY, rotate, deg, transform, extract
+            } from "./runtime.mjs";
+
+            const name = style({
+              width: `calc(${percent(100)} - ${rem(2)})`,
+              gap: variable("--space"),
+              color: varOr("--button-color", rgba(23, 105, 170, 0.8)),
+              "border-color": hex("fff8"),
+              "transition-duration": ms(180),
+              "grid-template-columns": repeat(3, minMax(px(0), fr(1))),
+              transform: transform([translateY(px(2)), rotate(deg(4))])
+            });
+            console.log(JSON.stringify({ name, css: extract() }));
+            """);
+
+        Assert.AreEqual(0, result.ExitCode, result.StandardError);
+        using var json = JsonDocument.Parse(result.StandardOutput.Trim());
+        var name = json.RootElement.GetProperty("name").GetString();
+        var css = json.RootElement.GetProperty("css").GetString() ?? string.Empty;
+        Assert.IsNotNull(name);
+        StringAssert.Contains(css, "." + name + "{");
+        StringAssert.Contains(css, "width:calc(100% - 2rem);");
+        StringAssert.Contains(css, "gap:var(--space);");
+        StringAssert.Contains(css, "color:var(--button-color,rgb(23 105 170 / 0.8));");
+        StringAssert.Contains(css, "border-color:#fff8;");
+        StringAssert.Contains(css, "transition-duration:180ms;");
+        StringAssert.Contains(css, "grid-template-columns:repeat(3,minmax(0px,1fr));");
+        StringAssert.Contains(css, "transform:translateY(2px) rotate(4deg);");
+    }
+
+    [TestMethod]
+    public async Task Runtime_TypedFactories_RejectInvalidValuesWithActionableErrors()
+    {
+        var result = await JazorStyleModuleTestHost.RunDenoAsync(
+            """
+            import {
+              px, hex, rgb, rgba, hsl, ratio, repeat, fr, transform,
+              keyword, ident, variable
+            } from "./runtime.mjs";
+
+            const messages = [];
+            const capture = action => {
+              try { action(); messages.push("missing-error"); }
+              catch (error) { messages.push(error.message); }
+            };
+
+            capture(() => px(Infinity));
+            capture(() => hex("12xz"));
+            capture(() => rgb(256, 0, 0));
+            capture(() => rgba(0, 0, 0, 2));
+            capture(() => hsl(0, -1, 50));
+            capture(() => ratio(1, 0));
+            capture(() => repeat(0, fr(1)));
+            capture(() => transform([]));
+            capture(() => keyword("1invalid"));
+            capture(() => ident("-1invalid"));
+            capture(() => variable("brand"));
+            console.log(JSON.stringify(messages));
+            """);
+
+        Assert.AreEqual(0, result.ExitCode, result.StandardError);
+        var messages = JsonSerializer.Deserialize<string[]>(result.StandardOutput.Trim());
+        Assert.IsNotNull(messages);
+        Assert.HasCount(11, messages);
+        Assert.IsFalse(messages.Contains("missing-error", StringComparer.Ordinal));
+        StringAssert.Contains(messages[0], "finite");
+        StringAssert.Contains(messages[1], "hexadecimal");
+        StringAssert.Contains(messages[2], "between 0 and 255");
+        StringAssert.Contains(messages[3], "between 0 and 1");
+        StringAssert.Contains(messages[4], "between 0 and 100");
+        StringAssert.Contains(messages[5], "greater than zero");
+        StringAssert.Contains(messages[6], "greater than zero");
+        StringAssert.Contains(messages[7], "at least one function");
+        StringAssert.Contains(messages[8], "must start");
+        StringAssert.Contains(messages[9], "must start");
+        StringAssert.Contains(messages[10], "start with '--'");
+    }
+
+    [TestMethod]
     public async Task Runtime_HashV1_MatchesFixedVector()
     {
         var result = await JazorStyleModuleTestHost.RunDenoAsync(

@@ -2893,6 +2893,7 @@ public sealed class RazorSgComponentMemberClosureTests
             """
             using ECMAScript;
             using Jazor.Style;
+            using static Jazor.Style.css;
             using static ECMAScript.Vue3;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -2906,9 +2907,9 @@ public sealed class RazorSgComponentMemberClosureTests
                     {
                         var className = css.style(new CssRule
                         {
-                            Display = "inline-flex",
-                            Color = "white",
-                            BackgroundColor = "#1769aa"
+                            Display = inlineFlex,
+                            Color = color("white"),
+                            BackgroundColor = hex("1769aa")
                         });
                         builder.OpenElement(0, "button");
                         builder.AddAttribute(1, "class", className);
@@ -2926,11 +2927,11 @@ public sealed class RazorSgComponentMemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        StringAssert.Contains(script, "from \"Jazor.Style/runtime.mjs\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, "from \"jazorStyle.mjs\";", StringComparison.Ordinal);
         StringAssert.Contains(script, "const className = style({", StringComparison.Ordinal);
-        StringAssert.Contains(script, "display: \"inline-flex\"", StringComparison.Ordinal);
-        StringAssert.Contains(script, "color: \"white\"", StringComparison.Ordinal);
-        StringAssert.Contains(script, "\"background-color\": \"#1769aa\"", StringComparison.Ordinal);
+        StringAssert.Contains(script, "display: inlineFlex", StringComparison.Ordinal);
+        StringAssert.Contains(script, "color: color(\"white\")", StringComparison.Ordinal);
+        StringAssert.Contains(script, "\"background-color\": hex(\"1769aa\")", StringComparison.Ordinal);
         StringAssert.Contains(script, "class: className", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("VueClassValue", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("JazorStyle", StringComparison.Ordinal), script);

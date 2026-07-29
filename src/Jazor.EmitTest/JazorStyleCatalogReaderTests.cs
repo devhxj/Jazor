@@ -19,21 +19,21 @@ public sealed class JazorStyleCatalogReaderTests
         var module = modules.Single();
         Assert.AreEqual("Jazor.Style", module.AssemblyName);
         Assert.AreEqual("Jazor.Style.css", module.TypeName);
-        Assert.AreEqual("Jazor.Style/runtime.mjs", module.RelativePath);
+        Assert.AreEqual("jazorStyle.mjs", module.RelativePath);
         StringAssert.Contains(module.Content, " as style };");
         StringAssert.Contains(module.Content, " as context };");
         StringAssert.Contains(module.Content, "export function styleIn(");
         StringAssert.Contains(module.Content, "export function atRuleIn(");
         StringAssert.Contains(module.Content, "export function snapshotFrom(");
         Assert.HasCount(64, module.Hash);
-        Assert.AreEqual("Jazor.Style/runtime.mjs.map", module.SourceMapRelativePath);
+        Assert.AreEqual("jazorStyle.mjs.map", module.SourceMapRelativePath);
         Assert.HasCount(64, module.MapHash!);
         Assert.AreEqual(ComputeHash(module.Content), module.Hash);
         Assert.AreEqual(ComputeHash(module.SourceMapContent!), module.MapHash);
 
         using var sourceMap = JsonDocument.Parse(module.SourceMapContent!);
         Assert.AreEqual(3, sourceMap.RootElement.GetProperty("version").GetInt32());
-        Assert.AreEqual("Jazor.Style/runtime.mjs", sourceMap.RootElement.GetProperty("file").GetString());
+        Assert.AreEqual("jazorStyle.mjs", sourceMap.RootElement.GetProperty("file").GetString());
     }
 
     [TestMethod]
@@ -50,7 +50,7 @@ public sealed class JazorStyleCatalogReaderTests
         Assert.AreEqual(1, result.AssemblyCount);
         Assert.AreEqual(1, result.CatalogCount);
         var module = result.Modules.Single();
-        Assert.AreEqual("Jazor.Style/runtime.mjs", module.RelativePath);
+        Assert.AreEqual("jazorStyle.mjs", module.RelativePath);
         Assert.IsNotNull(module.SourceMapContent);
     }
 

@@ -9,7 +9,7 @@
     <RootNamespace>Jazor.Style</RootNamespace>
     <Version Condition="'$(Version)' == ''">0.1.0</Version>
     <Authors>hanxj</Authors>
-    <Description>Deterministic CSS-in-JS runtime for Jazor applications authored in C#.</Description>
+    <Description>Strongly typed, deterministic CSS-in-JS for Jazor applications authored in C#.</Description>
     <PackageProjectUrl>https://github.com/devhxj/Jazor</PackageProjectUrl>
     <RepositoryUrl>https://github.com/devhxj/Jazor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

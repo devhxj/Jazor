@@ -7,2118 +7,2118 @@ namespace Jazor.Style;
 public partial record CssDeclarations
 {
     [global::System.ComponentModel.Description("@#-webkit-align-content")]
-    public string? WebkitAlignContent { get; init; }
+    public CssValue? WebkitAlignContent { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-align-items")]
-    public string? WebkitAlignItems { get; init; }
+    public CssValue? WebkitAlignItems { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-align-self")]
-    public string? WebkitAlignSelf { get; init; }
+    public CssValue? WebkitAlignSelf { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-animation")]
-    public string? WebkitAnimation { get; init; }
+    public CssValue? WebkitAnimation { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-animation-delay")]
-    public string? WebkitAnimationDelay { get; init; }
+    public CssTimeValue? WebkitAnimationDelay { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-animation-direction")]
-    public string? WebkitAnimationDirection { get; init; }
+    public CssValue? WebkitAnimationDirection { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-animation-duration")]
-    public string? WebkitAnimationDuration { get; init; }
+    public CssTimeValue? WebkitAnimationDuration { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-animation-fill-mode")]
-    public string? WebkitAnimationFillMode { get; init; }
+    public CssValue? WebkitAnimationFillMode { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-animation-iteration-count")]
-    public string? WebkitAnimationIterationCount { get; init; }
+    public CssValue? WebkitAnimationIterationCount { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-animation-name")]
-    public string? WebkitAnimationName { get; init; }
+    public CssValue? WebkitAnimationName { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-animation-play-state")]
-    public string? WebkitAnimationPlayState { get; init; }
+    public CssValue? WebkitAnimationPlayState { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-animation-timing-function")]
-    public string? WebkitAnimationTimingFunction { get; init; }
+    public CssValue? WebkitAnimationTimingFunction { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-appearance")]
-    public string? WebkitAppearance { get; init; }
+    public CssValue? WebkitAppearance { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-backface-visibility")]
-    public string? WebkitBackfaceVisibility { get; init; }
+    public CssKeywordValue? WebkitBackfaceVisibility { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-background-clip")]
-    public string? WebkitBackgroundClip { get; init; }
+    public CssValue? WebkitBackgroundClip { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-background-origin")]
-    public string? WebkitBackgroundOrigin { get; init; }
+    public CssValue? WebkitBackgroundOrigin { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-background-size")]
-    public string? WebkitBackgroundSize { get; init; }
+    public CssValue? WebkitBackgroundSize { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-border-bottom-left-radius")]
-    public string? WebkitBorderBottomLeftRadius { get; init; }
+    public CssLengthPercentageValue? WebkitBorderBottomLeftRadius { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-border-bottom-right-radius")]
-    public string? WebkitBorderBottomRightRadius { get; init; }
+    public CssLengthPercentageValue? WebkitBorderBottomRightRadius { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-border-radius")]
-    public string? WebkitBorderRadius { get; init; }
+    public CssLengthPercentageValue? WebkitBorderRadius { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-border-top-left-radius")]
-    public string? WebkitBorderTopLeftRadius { get; init; }
+    public CssLengthPercentageValue? WebkitBorderTopLeftRadius { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-border-top-right-radius")]
-    public string? WebkitBorderTopRightRadius { get; init; }
+    public CssLengthPercentageValue? WebkitBorderTopRightRadius { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-box-align")]
-    public string? WebkitBoxAlign { get; init; }
+    public CssValue? WebkitBoxAlign { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-box-flex")]
-    public string? WebkitBoxFlex { get; init; }
+    public CssValue? WebkitBoxFlex { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-box-ordinal-group")]
-    public string? WebkitBoxOrdinalGroup { get; init; }
+    public CssValue? WebkitBoxOrdinalGroup { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-box-orient")]
-    public string? WebkitBoxOrient { get; init; }
+    public CssValue? WebkitBoxOrient { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-box-pack")]
-    public string? WebkitBoxPack { get; init; }
+    public CssValue? WebkitBoxPack { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-box-shadow")]
-    public string? WebkitBoxShadow { get; init; }
+    public CssValue? WebkitBoxShadow { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-box-sizing")]
-    public string? WebkitBoxSizing { get; init; }
+    public CssKeywordValue? WebkitBoxSizing { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-filter")]
-    public string? WebkitFilter { get; init; }
+    public CssValue? WebkitFilter { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-flex")]
-    public string? WebkitFlex { get; init; }
+    public CssLengthPercentageNumberValue? WebkitFlex { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-flex-basis")]
-    public string? WebkitFlexBasis { get; init; }
+    public CssLengthPercentageValue? WebkitFlexBasis { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-flex-direction")]
-    public string? WebkitFlexDirection { get; init; }
+    public CssKeywordValue? WebkitFlexDirection { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-flex-flow")]
-    public string? WebkitFlexFlow { get; init; }
+    public CssKeywordValue? WebkitFlexFlow { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-flex-grow")]
-    public string? WebkitFlexGrow { get; init; }
+    public CssNumberValue? WebkitFlexGrow { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-flex-shrink")]
-    public string? WebkitFlexShrink { get; init; }
+    public CssNumberValue? WebkitFlexShrink { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-flex-wrap")]
-    public string? WebkitFlexWrap { get; init; }
+    public CssKeywordValue? WebkitFlexWrap { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-justify-content")]
-    public string? WebkitJustifyContent { get; init; }
+    public CssValue? WebkitJustifyContent { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-line-clamp")]
-    public string? WebkitLineClamp { get; init; }
+    public CssIntegerValue? WebkitLineClamp { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-mask")]
-    public string? WebkitMask { get; init; }
+    public CssValue? WebkitMask { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-mask-box-image")]
-    public string? WebkitMaskBoxImage { get; init; }
+    public CssValue? WebkitMaskBoxImage { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-mask-box-image-outset")]
-    public string? WebkitMaskBoxImageOutset { get; init; }
+    public CssValue? WebkitMaskBoxImageOutset { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-mask-box-image-repeat")]
-    public string? WebkitMaskBoxImageRepeat { get; init; }
+    public CssValue? WebkitMaskBoxImageRepeat { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-mask-box-image-slice")]
-    public string? WebkitMaskBoxImageSlice { get; init; }
+    public CssValue? WebkitMaskBoxImageSlice { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-mask-box-image-source")]
-    public string? WebkitMaskBoxImageSource { get; init; }
+    public CssValue? WebkitMaskBoxImageSource { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-mask-box-image-width")]
-    public string? WebkitMaskBoxImageWidth { get; init; }
+    public CssValue? WebkitMaskBoxImageWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-mask-clip")]
-    public string? WebkitMaskClip { get; init; }
+    public CssValue? WebkitMaskClip { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-mask-composite")]
-    public string? WebkitMaskComposite { get; init; }
+    public CssValue? WebkitMaskComposite { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-mask-image")]
-    public string? WebkitMaskImage { get; init; }
+    public CssValue? WebkitMaskImage { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-mask-origin")]
-    public string? WebkitMaskOrigin { get; init; }
+    public CssValue? WebkitMaskOrigin { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-mask-position")]
-    public string? WebkitMaskPosition { get; init; }
+    public CssValue? WebkitMaskPosition { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-mask-repeat")]
-    public string? WebkitMaskRepeat { get; init; }
+    public CssValue? WebkitMaskRepeat { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-mask-size")]
-    public string? WebkitMaskSize { get; init; }
+    public CssValue? WebkitMaskSize { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-order")]
-    public string? WebkitOrder { get; init; }
+    public CssIntegerValue? WebkitOrder { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-perspective")]
-    public string? WebkitPerspective { get; init; }
+    public CssLengthValue? WebkitPerspective { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-perspective-origin")]
-    public string? WebkitPerspectiveOrigin { get; init; }
+    public CssValue? WebkitPerspectiveOrigin { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-text-fill-color")]
-    public string? WebkitTextFillColor { get; init; }
+    public CssColorValue? WebkitTextFillColor { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-text-size-adjust")]
-    public string? WebkitTextSizeAdjust { get; init; }
+    public CssPercentageValue? WebkitTextSizeAdjust { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-text-stroke")]
-    public string? WebkitTextStroke { get; init; }
+    public CssValue? WebkitTextStroke { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-text-stroke-color")]
-    public string? WebkitTextStrokeColor { get; init; }
+    public CssColorValue? WebkitTextStrokeColor { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-text-stroke-width")]
-    public string? WebkitTextStrokeWidth { get; init; }
+    public CssLineWidthValue? WebkitTextStrokeWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-transform")]
-    public string? WebkitTransform { get; init; }
+    public CssTransformValue? WebkitTransform { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-transform-origin")]
-    public string? WebkitTransformOrigin { get; init; }
+    public CssLengthPercentageValue? WebkitTransformOrigin { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-transform-style")]
-    public string? WebkitTransformStyle { get; init; }
+    public CssKeywordValue? WebkitTransformStyle { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-transition")]
-    public string? WebkitTransition { get; init; }
+    public CssValue? WebkitTransition { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-transition-delay")]
-    public string? WebkitTransitionDelay { get; init; }
+    public CssTimeValue? WebkitTransitionDelay { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-transition-duration")]
-    public string? WebkitTransitionDuration { get; init; }
+    public CssTimeValue? WebkitTransitionDuration { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-transition-property")]
-    public string? WebkitTransitionProperty { get; init; }
+    public CssValue? WebkitTransitionProperty { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-transition-timing-function")]
-    public string? WebkitTransitionTimingFunction { get; init; }
+    public CssValue? WebkitTransitionTimingFunction { get; init; }
 
     [global::System.ComponentModel.Description("@#-webkit-user-select")]
-    public string? WebkitUserSelect { get; init; }
+    public CssKeywordValue? WebkitUserSelect { get; init; }
 
     [global::System.ComponentModel.Description("@#accent-color")]
-    public string? AccentColor { get; init; }
+    public CssColorValue? AccentColor { get; init; }
 
     [global::System.ComponentModel.Description("@#align-content")]
-    public string? AlignContent { get; init; }
+    public CssValue? AlignContent { get; init; }
 
     [global::System.ComponentModel.Description("@#align-items")]
-    public string? AlignItems { get; init; }
+    public CssValue? AlignItems { get; init; }
 
     [global::System.ComponentModel.Description("@#align-self")]
-    public string? AlignSelf { get; init; }
+    public CssValue? AlignSelf { get; init; }
 
     [global::System.ComponentModel.Description("@#alignment-baseline")]
-    public string? AlignmentBaseline { get; init; }
+    public CssKeywordValue? AlignmentBaseline { get; init; }
 
     [global::System.ComponentModel.Description("@#all")]
-    public string? All { get; init; }
+    public CssKeywordValue? All { get; init; }
 
     [global::System.ComponentModel.Description("@#anchor-name")]
-    public string? AnchorName { get; init; }
+    public CssKeywordValue? AnchorName { get; init; }
 
     [global::System.ComponentModel.Description("@#anchor-scope")]
-    public string? AnchorScope { get; init; }
+    public CssKeywordValue? AnchorScope { get; init; }
 
     [global::System.ComponentModel.Description("@#animation")]
-    public string? Animation { get; init; }
+    public CssValue? Animation { get; init; }
 
     [global::System.ComponentModel.Description("@#animation-composition")]
-    public string? AnimationComposition { get; init; }
+    public CssValue? AnimationComposition { get; init; }
 
     [global::System.ComponentModel.Description("@#animation-delay")]
-    public string? AnimationDelay { get; init; }
+    public CssTimeValue? AnimationDelay { get; init; }
 
     [global::System.ComponentModel.Description("@#animation-direction")]
-    public string? AnimationDirection { get; init; }
+    public CssValue? AnimationDirection { get; init; }
 
     [global::System.ComponentModel.Description("@#animation-duration")]
-    public string? AnimationDuration { get; init; }
+    public CssTimeValue? AnimationDuration { get; init; }
 
     [global::System.ComponentModel.Description("@#animation-fill-mode")]
-    public string? AnimationFillMode { get; init; }
+    public CssValue? AnimationFillMode { get; init; }
 
     [global::System.ComponentModel.Description("@#animation-iteration-count")]
-    public string? AnimationIterationCount { get; init; }
+    public CssValue? AnimationIterationCount { get; init; }
 
     [global::System.ComponentModel.Description("@#animation-name")]
-    public string? AnimationName { get; init; }
+    public CssValue? AnimationName { get; init; }
 
     [global::System.ComponentModel.Description("@#animation-play-state")]
-    public string? AnimationPlayState { get; init; }
+    public CssValue? AnimationPlayState { get; init; }
 
     [global::System.ComponentModel.Description("@#animation-range")]
-    public string? AnimationRange { get; init; }
+    public CssValue? AnimationRange { get; init; }
 
     [global::System.ComponentModel.Description("@#animation-range-end")]
-    public string? AnimationRangeEnd { get; init; }
+    public CssValue? AnimationRangeEnd { get; init; }
 
     [global::System.ComponentModel.Description("@#animation-range-start")]
-    public string? AnimationRangeStart { get; init; }
+    public CssValue? AnimationRangeStart { get; init; }
 
     [global::System.ComponentModel.Description("@#animation-timeline")]
-    public string? AnimationTimeline { get; init; }
+    public CssValue? AnimationTimeline { get; init; }
 
     [global::System.ComponentModel.Description("@#animation-timing-function")]
-    public string? AnimationTimingFunction { get; init; }
+    public CssValue? AnimationTimingFunction { get; init; }
 
     [global::System.ComponentModel.Description("@#appearance")]
-    public string? Appearance { get; init; }
+    public CssValue? Appearance { get; init; }
 
     [global::System.ComponentModel.Description("@#aspect-ratio")]
-    public string? AspectRatio { get; init; }
+    public CssRatioValue? AspectRatio { get; init; }
 
     [global::System.ComponentModel.Description("@#backdrop-filter")]
-    public string? BackdropFilter { get; init; }
+    public CssValue? BackdropFilter { get; init; }
 
     [global::System.ComponentModel.Description("@#backface-visibility")]
-    public string? BackfaceVisibility { get; init; }
+    public CssKeywordValue? BackfaceVisibility { get; init; }
 
     [global::System.ComponentModel.Description("@#background")]
-    public string? Background { get; init; }
+    public CssValue? Background { get; init; }
 
     [global::System.ComponentModel.Description("@#background-attachment")]
-    public string? BackgroundAttachment { get; init; }
+    public CssValue? BackgroundAttachment { get; init; }
 
     [global::System.ComponentModel.Description("@#background-blend-mode")]
-    public string? BackgroundBlendMode { get; init; }
+    public CssValue? BackgroundBlendMode { get; init; }
 
     [global::System.ComponentModel.Description("@#background-clip")]
-    public string? BackgroundClip { get; init; }
+    public CssValue? BackgroundClip { get; init; }
 
     [global::System.ComponentModel.Description("@#background-color")]
-    public string? BackgroundColor { get; init; }
+    public CssColorValue? BackgroundColor { get; init; }
 
     [global::System.ComponentModel.Description("@#background-image")]
-    public string? BackgroundImage { get; init; }
+    public CssImageValue? BackgroundImage { get; init; }
 
     [global::System.ComponentModel.Description("@#background-origin")]
-    public string? BackgroundOrigin { get; init; }
+    public CssValue? BackgroundOrigin { get; init; }
 
     [global::System.ComponentModel.Description("@#background-position")]
-    public string? BackgroundPosition { get; init; }
+    public CssValue? BackgroundPosition { get; init; }
 
     [global::System.ComponentModel.Description("@#background-position-block")]
-    public string? BackgroundPositionBlock { get; init; }
+    public CssLengthPercentageValue? BackgroundPositionBlock { get; init; }
 
     [global::System.ComponentModel.Description("@#background-position-inline")]
-    public string? BackgroundPositionInline { get; init; }
+    public CssLengthPercentageValue? BackgroundPositionInline { get; init; }
 
     [global::System.ComponentModel.Description("@#background-position-x")]
-    public string? BackgroundPositionX { get; init; }
+    public CssLengthPercentageValue? BackgroundPositionX { get; init; }
 
     [global::System.ComponentModel.Description("@#background-position-y")]
-    public string? BackgroundPositionY { get; init; }
+    public CssLengthPercentageValue? BackgroundPositionY { get; init; }
 
     [global::System.ComponentModel.Description("@#background-repeat")]
-    public string? BackgroundRepeat { get; init; }
+    public CssValue? BackgroundRepeat { get; init; }
 
     [global::System.ComponentModel.Description("@#background-size")]
-    public string? BackgroundSize { get; init; }
+    public CssValue? BackgroundSize { get; init; }
 
     [global::System.ComponentModel.Description("@#background-tbd")]
-    public string? BackgroundTbd { get; init; }
+    public CssValue? BackgroundTbd { get; init; }
 
     [global::System.ComponentModel.Description("@#baseline-shift")]
-    public string? BaselineShift { get; init; }
+    public CssLengthPercentageValue? BaselineShift { get; init; }
 
     [global::System.ComponentModel.Description("@#baseline-source")]
-    public string? BaselineSource { get; init; }
+    public CssKeywordValue? BaselineSource { get; init; }
 
     [global::System.ComponentModel.Description("@#block-ellipsis")]
-    public string? BlockEllipsis { get; init; }
+    public CssStringValue? BlockEllipsis { get; init; }
 
     [global::System.ComponentModel.Description("@#block-size")]
-    public string? BlockSize { get; init; }
+    public CssLengthPercentageValue? BlockSize { get; init; }
 
     [global::System.ComponentModel.Description("@#block-step")]
-    public string? BlockStep { get; init; }
+    public CssLengthValue? BlockStep { get; init; }
 
     [global::System.ComponentModel.Description("@#block-step-align")]
-    public string? BlockStepAlign { get; init; }
+    public CssKeywordValue? BlockStepAlign { get; init; }
 
     [global::System.ComponentModel.Description("@#block-step-insert")]
-    public string? BlockStepInsert { get; init; }
+    public CssKeywordValue? BlockStepInsert { get; init; }
 
     [global::System.ComponentModel.Description("@#block-step-round")]
-    public string? BlockStepRound { get; init; }
+    public CssKeywordValue? BlockStepRound { get; init; }
 
     [global::System.ComponentModel.Description("@#block-step-size")]
-    public string? BlockStepSize { get; init; }
+    public CssLengthValue? BlockStepSize { get; init; }
 
     [global::System.ComponentModel.Description("@#bookmark-label")]
-    public string? BookmarkLabel { get; init; }
+    public CssValue? BookmarkLabel { get; init; }
 
     [global::System.ComponentModel.Description("@#bookmark-level")]
-    public string? BookmarkLevel { get; init; }
+    public CssIntegerValue? BookmarkLevel { get; init; }
 
     [global::System.ComponentModel.Description("@#bookmark-state")]
-    public string? BookmarkState { get; init; }
+    public CssKeywordValue? BookmarkState { get; init; }
 
     [global::System.ComponentModel.Description("@#border")]
-    public string? Border { get; init; }
+    public CssValue? Border { get; init; }
 
     [global::System.ComponentModel.Description("@#border-block")]
-    public string? BorderBlock { get; init; }
+    public CssValue? BorderBlock { get; init; }
 
     [global::System.ComponentModel.Description("@#border-block-color")]
-    public string? BorderBlockColor { get; init; }
+    public CssValue? BorderBlockColor { get; init; }
 
     [global::System.ComponentModel.Description("@#border-block-end")]
-    public string? BorderBlockEnd { get; init; }
+    public CssValue? BorderBlockEnd { get; init; }
 
     [global::System.ComponentModel.Description("@#border-block-end-color")]
-    public string? BorderBlockEndColor { get; init; }
+    public CssValue? BorderBlockEndColor { get; init; }
 
     [global::System.ComponentModel.Description("@#border-block-end-radius")]
-    public string? BorderBlockEndRadius { get; init; }
+    public CssLengthPercentageValue? BorderBlockEndRadius { get; init; }
 
     [global::System.ComponentModel.Description("@#border-block-end-style")]
-    public string? BorderBlockEndStyle { get; init; }
+    public CssLineStyleValue? BorderBlockEndStyle { get; init; }
 
     [global::System.ComponentModel.Description("@#border-block-end-width")]
-    public string? BorderBlockEndWidth { get; init; }
+    public CssLineWidthValue? BorderBlockEndWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#border-block-start")]
-    public string? BorderBlockStart { get; init; }
+    public CssValue? BorderBlockStart { get; init; }
 
     [global::System.ComponentModel.Description("@#border-block-start-color")]
-    public string? BorderBlockStartColor { get; init; }
+    public CssValue? BorderBlockStartColor { get; init; }
 
     [global::System.ComponentModel.Description("@#border-block-start-radius")]
-    public string? BorderBlockStartRadius { get; init; }
+    public CssLengthPercentageValue? BorderBlockStartRadius { get; init; }
 
     [global::System.ComponentModel.Description("@#border-block-start-style")]
-    public string? BorderBlockStartStyle { get; init; }
+    public CssLineStyleValue? BorderBlockStartStyle { get; init; }
 
     [global::System.ComponentModel.Description("@#border-block-start-width")]
-    public string? BorderBlockStartWidth { get; init; }
+    public CssLineWidthValue? BorderBlockStartWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#border-block-style")]
-    public string? BorderBlockStyle { get; init; }
+    public CssLineStyleValue? BorderBlockStyle { get; init; }
 
     [global::System.ComponentModel.Description("@#border-block-width")]
-    public string? BorderBlockWidth { get; init; }
+    public CssLineWidthValue? BorderBlockWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#border-bottom")]
-    public string? BorderBottom { get; init; }
+    public CssValue? BorderBottom { get; init; }
 
     [global::System.ComponentModel.Description("@#border-bottom-color")]
-    public string? BorderBottomColor { get; init; }
+    public CssValue? BorderBottomColor { get; init; }
 
     [global::System.ComponentModel.Description("@#border-bottom-left-radius")]
-    public string? BorderBottomLeftRadius { get; init; }
+    public CssLengthPercentageValue? BorderBottomLeftRadius { get; init; }
 
     [global::System.ComponentModel.Description("@#border-bottom-radius")]
-    public string? BorderBottomRadius { get; init; }
+    public CssLengthPercentageValue? BorderBottomRadius { get; init; }
 
     [global::System.ComponentModel.Description("@#border-bottom-right-radius")]
-    public string? BorderBottomRightRadius { get; init; }
+    public CssLengthPercentageValue? BorderBottomRightRadius { get; init; }
 
     [global::System.ComponentModel.Description("@#border-bottom-style")]
-    public string? BorderBottomStyle { get; init; }
+    public CssLineStyleValue? BorderBottomStyle { get; init; }
 
     [global::System.ComponentModel.Description("@#border-bottom-width")]
-    public string? BorderBottomWidth { get; init; }
+    public CssLineWidthValue? BorderBottomWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#border-boundary")]
-    public string? BorderBoundary { get; init; }
+    public CssKeywordValue? BorderBoundary { get; init; }
 
     [global::System.ComponentModel.Description("@#border-clip")]
-    public string? BorderClip { get; init; }
+    public CssValue? BorderClip { get; init; }
 
     [global::System.ComponentModel.Description("@#border-clip-bottom")]
-    public string? BorderClipBottom { get; init; }
+    public CssValue? BorderClipBottom { get; init; }
 
     [global::System.ComponentModel.Description("@#border-clip-left")]
-    public string? BorderClipLeft { get; init; }
+    public CssValue? BorderClipLeft { get; init; }
 
     [global::System.ComponentModel.Description("@#border-clip-right")]
-    public string? BorderClipRight { get; init; }
+    public CssValue? BorderClipRight { get; init; }
 
     [global::System.ComponentModel.Description("@#border-clip-top")]
-    public string? BorderClipTop { get; init; }
+    public CssValue? BorderClipTop { get; init; }
 
     [global::System.ComponentModel.Description("@#border-collapse")]
-    public string? BorderCollapse { get; init; }
+    public CssKeywordValue? BorderCollapse { get; init; }
 
     [global::System.ComponentModel.Description("@#border-color")]
-    public string? BorderColor { get; init; }
+    public CssValue? BorderColor { get; init; }
 
     [global::System.ComponentModel.Description("@#border-end-end-radius")]
-    public string? BorderEndEndRadius { get; init; }
+    public CssLengthPercentageValue? BorderEndEndRadius { get; init; }
 
     [global::System.ComponentModel.Description("@#border-end-start-radius")]
-    public string? BorderEndStartRadius { get; init; }
+    public CssLengthPercentageValue? BorderEndStartRadius { get; init; }
 
     [global::System.ComponentModel.Description("@#border-image")]
-    public string? BorderImage { get; init; }
+    public CssValue? BorderImage { get; init; }
 
     [global::System.ComponentModel.Description("@#border-image-outset")]
-    public string? BorderImageOutset { get; init; }
+    public CssLengthPercentageNumberValue? BorderImageOutset { get; init; }
 
     [global::System.ComponentModel.Description("@#border-image-repeat")]
-    public string? BorderImageRepeat { get; init; }
+    public CssKeywordValue? BorderImageRepeat { get; init; }
 
     [global::System.ComponentModel.Description("@#border-image-slice")]
-    public string? BorderImageSlice { get; init; }
+    public CssNumberPercentageValue? BorderImageSlice { get; init; }
 
     [global::System.ComponentModel.Description("@#border-image-source")]
-    public string? BorderImageSource { get; init; }
+    public CssImageValue? BorderImageSource { get; init; }
 
     [global::System.ComponentModel.Description("@#border-image-width")]
-    public string? BorderImageWidth { get; init; }
+    public CssLengthPercentageNumberValue? BorderImageWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#border-inline")]
-    public string? BorderInline { get; init; }
+    public CssValue? BorderInline { get; init; }
 
     [global::System.ComponentModel.Description("@#border-inline-color")]
-    public string? BorderInlineColor { get; init; }
+    public CssValue? BorderInlineColor { get; init; }
 
     [global::System.ComponentModel.Description("@#border-inline-end")]
-    public string? BorderInlineEnd { get; init; }
+    public CssValue? BorderInlineEnd { get; init; }
 
     [global::System.ComponentModel.Description("@#border-inline-end-color")]
-    public string? BorderInlineEndColor { get; init; }
+    public CssValue? BorderInlineEndColor { get; init; }
 
     [global::System.ComponentModel.Description("@#border-inline-end-radius")]
-    public string? BorderInlineEndRadius { get; init; }
+    public CssLengthPercentageValue? BorderInlineEndRadius { get; init; }
 
     [global::System.ComponentModel.Description("@#border-inline-end-style")]
-    public string? BorderInlineEndStyle { get; init; }
+    public CssLineStyleValue? BorderInlineEndStyle { get; init; }
 
     [global::System.ComponentModel.Description("@#border-inline-end-width")]
-    public string? BorderInlineEndWidth { get; init; }
+    public CssLineWidthValue? BorderInlineEndWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#border-inline-start")]
-    public string? BorderInlineStart { get; init; }
+    public CssValue? BorderInlineStart { get; init; }
 
     [global::System.ComponentModel.Description("@#border-inline-start-color")]
-    public string? BorderInlineStartColor { get; init; }
+    public CssValue? BorderInlineStartColor { get; init; }
 
     [global::System.ComponentModel.Description("@#border-inline-start-radius")]
-    public string? BorderInlineStartRadius { get; init; }
+    public CssLengthPercentageValue? BorderInlineStartRadius { get; init; }
 
     [global::System.ComponentModel.Description("@#border-inline-start-style")]
-    public string? BorderInlineStartStyle { get; init; }
+    public CssLineStyleValue? BorderInlineStartStyle { get; init; }
 
     [global::System.ComponentModel.Description("@#border-inline-start-width")]
-    public string? BorderInlineStartWidth { get; init; }
+    public CssLineWidthValue? BorderInlineStartWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#border-inline-style")]
-    public string? BorderInlineStyle { get; init; }
+    public CssLineStyleValue? BorderInlineStyle { get; init; }
 
     [global::System.ComponentModel.Description("@#border-inline-width")]
-    public string? BorderInlineWidth { get; init; }
+    public CssLineWidthValue? BorderInlineWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#border-left")]
-    public string? BorderLeft { get; init; }
+    public CssValue? BorderLeft { get; init; }
 
     [global::System.ComponentModel.Description("@#border-left-color")]
-    public string? BorderLeftColor { get; init; }
+    public CssValue? BorderLeftColor { get; init; }
 
     [global::System.ComponentModel.Description("@#border-left-radius")]
-    public string? BorderLeftRadius { get; init; }
+    public CssLengthPercentageValue? BorderLeftRadius { get; init; }
 
     [global::System.ComponentModel.Description("@#border-left-style")]
-    public string? BorderLeftStyle { get; init; }
+    public CssLineStyleValue? BorderLeftStyle { get; init; }
 
     [global::System.ComponentModel.Description("@#border-left-width")]
-    public string? BorderLeftWidth { get; init; }
+    public CssLineWidthValue? BorderLeftWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#border-limit")]
-    public string? BorderLimit { get; init; }
+    public CssLengthPercentageValue? BorderLimit { get; init; }
 
     [global::System.ComponentModel.Description("@#border-radius")]
-    public string? BorderRadius { get; init; }
+    public CssLengthPercentageValue? BorderRadius { get; init; }
 
     [global::System.ComponentModel.Description("@#border-right")]
-    public string? BorderRight { get; init; }
+    public CssValue? BorderRight { get; init; }
 
     [global::System.ComponentModel.Description("@#border-right-color")]
-    public string? BorderRightColor { get; init; }
+    public CssValue? BorderRightColor { get; init; }
 
     [global::System.ComponentModel.Description("@#border-right-radius")]
-    public string? BorderRightRadius { get; init; }
+    public CssLengthPercentageValue? BorderRightRadius { get; init; }
 
     [global::System.ComponentModel.Description("@#border-right-style")]
-    public string? BorderRightStyle { get; init; }
+    public CssLineStyleValue? BorderRightStyle { get; init; }
 
     [global::System.ComponentModel.Description("@#border-right-width")]
-    public string? BorderRightWidth { get; init; }
+    public CssLineWidthValue? BorderRightWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#border-spacing")]
-    public string? BorderSpacing { get; init; }
+    public CssLengthValue? BorderSpacing { get; init; }
 
     [global::System.ComponentModel.Description("@#border-start-end-radius")]
-    public string? BorderStartEndRadius { get; init; }
+    public CssLengthPercentageValue? BorderStartEndRadius { get; init; }
 
     [global::System.ComponentModel.Description("@#border-start-start-radius")]
-    public string? BorderStartStartRadius { get; init; }
+    public CssLengthPercentageValue? BorderStartStartRadius { get; init; }
 
     [global::System.ComponentModel.Description("@#border-style")]
-    public string? BorderStyle { get; init; }
+    public CssLineStyleValue? BorderStyle { get; init; }
 
     [global::System.ComponentModel.Description("@#border-top")]
-    public string? BorderTop { get; init; }
+    public CssValue? BorderTop { get; init; }
 
     [global::System.ComponentModel.Description("@#border-top-color")]
-    public string? BorderTopColor { get; init; }
+    public CssValue? BorderTopColor { get; init; }
 
     [global::System.ComponentModel.Description("@#border-top-left-radius")]
-    public string? BorderTopLeftRadius { get; init; }
+    public CssLengthPercentageValue? BorderTopLeftRadius { get; init; }
 
     [global::System.ComponentModel.Description("@#border-top-radius")]
-    public string? BorderTopRadius { get; init; }
+    public CssLengthPercentageValue? BorderTopRadius { get; init; }
 
     [global::System.ComponentModel.Description("@#border-top-right-radius")]
-    public string? BorderTopRightRadius { get; init; }
+    public CssLengthPercentageValue? BorderTopRightRadius { get; init; }
 
     [global::System.ComponentModel.Description("@#border-top-style")]
-    public string? BorderTopStyle { get; init; }
+    public CssLineStyleValue? BorderTopStyle { get; init; }
 
     [global::System.ComponentModel.Description("@#border-top-width")]
-    public string? BorderTopWidth { get; init; }
+    public CssLineWidthValue? BorderTopWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#border-width")]
-    public string? BorderWidth { get; init; }
+    public CssLineWidthValue? BorderWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#bottom")]
-    public string? Bottom { get; init; }
+    public CssLengthPercentageValue? Bottom { get; init; }
 
     [global::System.ComponentModel.Description("@#box-decoration-break")]
-    public string? BoxDecorationBreak { get; init; }
+    public CssKeywordValue? BoxDecorationBreak { get; init; }
 
     [global::System.ComponentModel.Description("@#box-shadow")]
-    public string? BoxShadow { get; init; }
+    public CssValue? BoxShadow { get; init; }
 
     [global::System.ComponentModel.Description("@#box-shadow-blur")]
-    public string? BoxShadowBlur { get; init; }
+    public CssLengthValue? BoxShadowBlur { get; init; }
 
     [global::System.ComponentModel.Description("@#box-shadow-color")]
-    public string? BoxShadowColor { get; init; }
+    public CssColorValue? BoxShadowColor { get; init; }
 
     [global::System.ComponentModel.Description("@#box-shadow-offset")]
-    public string? BoxShadowOffset { get; init; }
+    public CssLengthValue? BoxShadowOffset { get; init; }
 
     [global::System.ComponentModel.Description("@#box-shadow-position")]
-    public string? BoxShadowPosition { get; init; }
+    public CssKeywordValue? BoxShadowPosition { get; init; }
 
     [global::System.ComponentModel.Description("@#box-shadow-spread")]
-    public string? BoxShadowSpread { get; init; }
+    public CssLengthValue? BoxShadowSpread { get; init; }
 
     [global::System.ComponentModel.Description("@#box-sizing")]
-    public string? BoxSizing { get; init; }
+    public CssKeywordValue? BoxSizing { get; init; }
 
     [global::System.ComponentModel.Description("@#box-snap")]
-    public string? BoxSnap { get; init; }
+    public CssKeywordValue? BoxSnap { get; init; }
 
     [global::System.ComponentModel.Description("@#break-after")]
-    public string? BreakAfter { get; init; }
+    public CssKeywordValue? BreakAfter { get; init; }
 
     [global::System.ComponentModel.Description("@#break-before")]
-    public string? BreakBefore { get; init; }
+    public CssKeywordValue? BreakBefore { get; init; }
 
     [global::System.ComponentModel.Description("@#break-inside")]
-    public string? BreakInside { get; init; }
+    public CssKeywordValue? BreakInside { get; init; }
 
     [global::System.ComponentModel.Description("@#caption-side")]
-    public string? CaptionSide { get; init; }
+    public CssKeywordValue? CaptionSide { get; init; }
 
     [global::System.ComponentModel.Description("@#caret")]
-    public string? Caret { get; init; }
+    public CssColorValue? Caret { get; init; }
 
     [global::System.ComponentModel.Description("@#caret-animation")]
-    public string? CaretAnimation { get; init; }
+    public CssKeywordValue? CaretAnimation { get; init; }
 
     [global::System.ComponentModel.Description("@#caret-color")]
-    public string? CaretColor { get; init; }
+    public CssColorValue? CaretColor { get; init; }
 
     [global::System.ComponentModel.Description("@#caret-shape")]
-    public string? CaretShape { get; init; }
+    public CssKeywordValue? CaretShape { get; init; }
 
     [global::System.ComponentModel.Description("@#clear")]
-    public string? Clear { get; init; }
+    public CssKeywordValue? Clear { get; init; }
 
     [global::System.ComponentModel.Description("@#clip")]
-    public string? Clip { get; init; }
+    public CssValue? Clip { get; init; }
 
     [global::System.ComponentModel.Description("@#clip-path")]
-    public string? ClipPath { get; init; }
+    public CssValue? ClipPath { get; init; }
 
     [global::System.ComponentModel.Description("@#clip-rule")]
-    public string? ClipRule { get; init; }
+    public CssKeywordValue? ClipRule { get; init; }
 
     [global::System.ComponentModel.Description("@#color")]
-    public string? Color { get; init; }
+    public CssColorValue? Color { get; init; }
 
     [global::System.ComponentModel.Description("@#color-adjust")]
-    public string? ColorAdjust { get; init; }
+    public CssKeywordValue? ColorAdjust { get; init; }
 
     [global::System.ComponentModel.Description("@#color-interpolation")]
-    public string? ColorInterpolation { get; init; }
+    public CssKeywordValue? ColorInterpolation { get; init; }
 
     [global::System.ComponentModel.Description("@#color-interpolation-filters")]
-    public string? ColorInterpolationFilters { get; init; }
+    public CssKeywordValue? ColorInterpolationFilters { get; init; }
 
     [global::System.ComponentModel.Description("@#color-scheme")]
-    public string? ColorScheme { get; init; }
+    public CssKeywordValue? ColorScheme { get; init; }
 
     [global::System.ComponentModel.Description("@#column-count")]
-    public string? ColumnCount { get; init; }
+    public CssIntegerValue? ColumnCount { get; init; }
 
     [global::System.ComponentModel.Description("@#column-fill")]
-    public string? ColumnFill { get; init; }
+    public CssKeywordValue? ColumnFill { get; init; }
 
     [global::System.ComponentModel.Description("@#column-gap")]
-    public string? ColumnGap { get; init; }
+    public CssLengthPercentageValue? ColumnGap { get; init; }
 
     [global::System.ComponentModel.Description("@#column-rule")]
-    public string? ColumnRule { get; init; }
+    public CssValue? ColumnRule { get; init; }
 
     [global::System.ComponentModel.Description("@#column-rule-color")]
-    public string? ColumnRuleColor { get; init; }
+    public CssColorValue? ColumnRuleColor { get; init; }
 
     [global::System.ComponentModel.Description("@#column-rule-style")]
-    public string? ColumnRuleStyle { get; init; }
+    public CssLineStyleValue? ColumnRuleStyle { get; init; }
 
     [global::System.ComponentModel.Description("@#column-rule-width")]
-    public string? ColumnRuleWidth { get; init; }
+    public CssLineWidthValue? ColumnRuleWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#column-span")]
-    public string? ColumnSpan { get; init; }
+    public CssIntegerValue? ColumnSpan { get; init; }
 
     [global::System.ComponentModel.Description("@#column-width")]
-    public string? ColumnWidth { get; init; }
+    public CssLengthValue? ColumnWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#columns")]
-    public string? Columns { get; init; }
+    public CssValue? Columns { get; init; }
 
     [global::System.ComponentModel.Description("@#contain")]
-    public string? Contain { get; init; }
+    public CssKeywordValue? Contain { get; init; }
 
     [global::System.ComponentModel.Description("@#contain-intrinsic-block-size")]
-    public string? ContainIntrinsicBlockSize { get; init; }
+    public CssLengthValue? ContainIntrinsicBlockSize { get; init; }
 
     [global::System.ComponentModel.Description("@#contain-intrinsic-height")]
-    public string? ContainIntrinsicHeight { get; init; }
+    public CssLengthValue? ContainIntrinsicHeight { get; init; }
 
     [global::System.ComponentModel.Description("@#contain-intrinsic-inline-size")]
-    public string? ContainIntrinsicInlineSize { get; init; }
+    public CssLengthValue? ContainIntrinsicInlineSize { get; init; }
 
     [global::System.ComponentModel.Description("@#contain-intrinsic-size")]
-    public string? ContainIntrinsicSize { get; init; }
+    public CssLengthValue? ContainIntrinsicSize { get; init; }
 
     [global::System.ComponentModel.Description("@#contain-intrinsic-width")]
-    public string? ContainIntrinsicWidth { get; init; }
+    public CssLengthValue? ContainIntrinsicWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#container")]
-    public string? Container { get; init; }
+    public CssKeywordValue? Container { get; init; }
 
     [global::System.ComponentModel.Description("@#container-name")]
-    public string? ContainerName { get; init; }
+    public CssKeywordValue? ContainerName { get; init; }
 
     [global::System.ComponentModel.Description("@#container-type")]
-    public string? ContainerType { get; init; }
+    public CssKeywordValue? ContainerType { get; init; }
 
     [global::System.ComponentModel.Description("@#content")]
-    public string? Content { get; init; }
+    public CssValue? Content { get; init; }
 
     [global::System.ComponentModel.Description("@#content-visibility")]
-    public string? ContentVisibility { get; init; }
+    public CssKeywordValue? ContentVisibility { get; init; }
 
     [global::System.ComponentModel.Description("@#continue")]
-    public string? Continue { get; init; }
+    public CssKeywordValue? Continue { get; init; }
 
     [global::System.ComponentModel.Description("@#copy-into")]
-    public string? CopyInto { get; init; }
+    public CssValue? CopyInto { get; init; }
 
     [global::System.ComponentModel.Description("@#corner-shape")]
-    public string? CornerShape { get; init; }
+    public CssKeywordValue? CornerShape { get; init; }
 
     [global::System.ComponentModel.Description("@#corners")]
-    public string? Corners { get; init; }
+    public CssLengthPercentageValue? Corners { get; init; }
 
     [global::System.ComponentModel.Description("@#counter-increment")]
-    public string? CounterIncrement { get; init; }
+    public CssValue? CounterIncrement { get; init; }
 
     [global::System.ComponentModel.Description("@#counter-reset")]
-    public string? CounterReset { get; init; }
+    public CssValue? CounterReset { get; init; }
 
     [global::System.ComponentModel.Description("@#counter-set")]
-    public string? CounterSet { get; init; }
+    public CssValue? CounterSet { get; init; }
 
     [global::System.ComponentModel.Description("@#cue")]
-    public string? Cue { get; init; }
+    public CssValue? Cue { get; init; }
 
     [global::System.ComponentModel.Description("@#cue-after")]
-    public string? CueAfter { get; init; }
+    public CssValue? CueAfter { get; init; }
 
     [global::System.ComponentModel.Description("@#cue-before")]
-    public string? CueBefore { get; init; }
+    public CssValue? CueBefore { get; init; }
 
     [global::System.ComponentModel.Description("@#cursor")]
-    public string? Cursor { get; init; }
+    public CssValue? Cursor { get; init; }
 
     [global::System.ComponentModel.Description("@#cx")]
-    public string? Cx { get; init; }
+    public CssLengthPercentageValue? Cx { get; init; }
 
     [global::System.ComponentModel.Description("@#cy")]
-    public string? Cy { get; init; }
+    public CssLengthPercentageValue? Cy { get; init; }
 
     [global::System.ComponentModel.Description("@#d")]
-    public string? D { get; init; }
+    public CssStringValue? D { get; init; }
 
     [global::System.ComponentModel.Description("@#direction")]
-    public string? Direction { get; init; }
+    public CssKeywordValue? Direction { get; init; }
 
     [global::System.ComponentModel.Description("@#display")]
-    public string? Display { get; init; }
+    public CssDisplayValue? Display { get; init; }
 
     [global::System.ComponentModel.Description("@#dominant-baseline")]
-    public string? DominantBaseline { get; init; }
+    public CssKeywordValue? DominantBaseline { get; init; }
 
     [global::System.ComponentModel.Description("@#dynamic-range-limit")]
-    public string? DynamicRangeLimit { get; init; }
+    public CssKeywordValue? DynamicRangeLimit { get; init; }
 
     [global::System.ComponentModel.Description("@#empty-cells")]
-    public string? EmptyCells { get; init; }
+    public CssKeywordValue? EmptyCells { get; init; }
 
     [global::System.ComponentModel.Description("@#field-sizing")]
-    public string? FieldSizing { get; init; }
+    public CssKeywordValue? FieldSizing { get; init; }
 
     [global::System.ComponentModel.Description("@#fill")]
-    public string? Fill { get; init; }
+    public CssValue? Fill { get; init; }
 
     [global::System.ComponentModel.Description("@#fill-break")]
-    public string? FillBreak { get; init; }
+    public CssKeywordValue? FillBreak { get; init; }
 
     [global::System.ComponentModel.Description("@#fill-color")]
-    public string? FillColor { get; init; }
+    public CssColorValue? FillColor { get; init; }
 
     [global::System.ComponentModel.Description("@#fill-image")]
-    public string? FillImage { get; init; }
+    public CssValue? FillImage { get; init; }
 
     [global::System.ComponentModel.Description("@#fill-opacity")]
-    public string? FillOpacity { get; init; }
+    public CssNumberPercentageValue? FillOpacity { get; init; }
 
     [global::System.ComponentModel.Description("@#fill-origin")]
-    public string? FillOrigin { get; init; }
+    public CssKeywordValue? FillOrigin { get; init; }
 
     [global::System.ComponentModel.Description("@#fill-position")]
-    public string? FillPosition { get; init; }
+    public CssValue? FillPosition { get; init; }
 
     [global::System.ComponentModel.Description("@#fill-repeat")]
-    public string? FillRepeat { get; init; }
+    public CssValue? FillRepeat { get; init; }
 
     [global::System.ComponentModel.Description("@#fill-rule")]
-    public string? FillRule { get; init; }
+    public CssKeywordValue? FillRule { get; init; }
 
     [global::System.ComponentModel.Description("@#fill-size")]
-    public string? FillSize { get; init; }
+    public CssValue? FillSize { get; init; }
 
     [global::System.ComponentModel.Description("@#filter")]
-    public string? Filter { get; init; }
+    public CssValue? Filter { get; init; }
 
     [global::System.ComponentModel.Description("@#flex")]
-    public string? Flex { get; init; }
+    public CssLengthPercentageNumberValue? Flex { get; init; }
 
     [global::System.ComponentModel.Description("@#flex-basis")]
-    public string? FlexBasis { get; init; }
+    public CssLengthPercentageValue? FlexBasis { get; init; }
 
     [global::System.ComponentModel.Description("@#flex-direction")]
-    public string? FlexDirection { get; init; }
+    public CssKeywordValue? FlexDirection { get; init; }
 
     [global::System.ComponentModel.Description("@#flex-flow")]
-    public string? FlexFlow { get; init; }
+    public CssKeywordValue? FlexFlow { get; init; }
 
     [global::System.ComponentModel.Description("@#flex-grow")]
-    public string? FlexGrow { get; init; }
+    public CssNumberValue? FlexGrow { get; init; }
 
     [global::System.ComponentModel.Description("@#flex-shrink")]
-    public string? FlexShrink { get; init; }
+    public CssNumberValue? FlexShrink { get; init; }
 
     [global::System.ComponentModel.Description("@#flex-wrap")]
-    public string? FlexWrap { get; init; }
+    public CssKeywordValue? FlexWrap { get; init; }
 
     [global::System.ComponentModel.Description("@#float")]
-    public string? Float { get; init; }
+    public CssValue? Float { get; init; }
 
     [global::System.ComponentModel.Description("@#float-defer")]
-    public string? FloatDefer { get; init; }
+    public CssIntegerValue? FloatDefer { get; init; }
 
     [global::System.ComponentModel.Description("@#float-offset")]
-    public string? FloatOffset { get; init; }
+    public CssValue? FloatOffset { get; init; }
 
     [global::System.ComponentModel.Description("@#float-reference")]
-    public string? FloatReference { get; init; }
+    public CssKeywordValue? FloatReference { get; init; }
 
     [global::System.ComponentModel.Description("@#flood-color")]
-    public string? FloodColor { get; init; }
+    public CssColorValue? FloodColor { get; init; }
 
     [global::System.ComponentModel.Description("@#flood-opacity")]
-    public string? FloodOpacity { get; init; }
+    public CssNumberPercentageValue? FloodOpacity { get; init; }
 
     [global::System.ComponentModel.Description("@#flow-from")]
-    public string? FlowFrom { get; init; }
+    public CssKeywordValue? FlowFrom { get; init; }
 
     [global::System.ComponentModel.Description("@#flow-into")]
-    public string? FlowInto { get; init; }
+    public CssKeywordValue? FlowInto { get; init; }
 
     [global::System.ComponentModel.Description("@#font")]
-    public string? Font { get; init; }
+    public CssValue? Font { get; init; }
 
     [global::System.ComponentModel.Description("@#font-family")]
-    public string? FontFamily { get; init; }
+    public CssValue? FontFamily { get; init; }
 
     [global::System.ComponentModel.Description("@#font-feature-settings")]
-    public string? FontFeatureSettings { get; init; }
+    public CssValue? FontFeatureSettings { get; init; }
 
     [global::System.ComponentModel.Description("@#font-kerning")]
-    public string? FontKerning { get; init; }
+    public CssKeywordValue? FontKerning { get; init; }
 
     [global::System.ComponentModel.Description("@#font-language-override")]
-    public string? FontLanguageOverride { get; init; }
+    public CssStringValue? FontLanguageOverride { get; init; }
 
     [global::System.ComponentModel.Description("@#font-optical-sizing")]
-    public string? FontOpticalSizing { get; init; }
+    public CssKeywordValue? FontOpticalSizing { get; init; }
 
     [global::System.ComponentModel.Description("@#font-palette")]
-    public string? FontPalette { get; init; }
+    public CssValue? FontPalette { get; init; }
 
     [global::System.ComponentModel.Description("@#font-size")]
-    public string? FontSize { get; init; }
+    public CssValue? FontSize { get; init; }
 
     [global::System.ComponentModel.Description("@#font-size-adjust")]
-    public string? FontSizeAdjust { get; init; }
+    public CssNumberValue? FontSizeAdjust { get; init; }
 
     [global::System.ComponentModel.Description("@#font-stretch")]
-    public string? FontStretch { get; init; }
+    public CssValue? FontStretch { get; init; }
 
     [global::System.ComponentModel.Description("@#font-style")]
-    public string? FontStyle { get; init; }
+    public CssAngleValue? FontStyle { get; init; }
 
     [global::System.ComponentModel.Description("@#font-synthesis")]
-    public string? FontSynthesis { get; init; }
+    public CssKeywordValue? FontSynthesis { get; init; }
 
     [global::System.ComponentModel.Description("@#font-synthesis-position")]
-    public string? FontSynthesisPosition { get; init; }
+    public CssKeywordValue? FontSynthesisPosition { get; init; }
 
     [global::System.ComponentModel.Description("@#font-synthesis-small-caps")]
-    public string? FontSynthesisSmallCaps { get; init; }
+    public CssKeywordValue? FontSynthesisSmallCaps { get; init; }
 
     [global::System.ComponentModel.Description("@#font-synthesis-style")]
-    public string? FontSynthesisStyle { get; init; }
+    public CssKeywordValue? FontSynthesisStyle { get; init; }
 
     [global::System.ComponentModel.Description("@#font-synthesis-weight")]
-    public string? FontSynthesisWeight { get; init; }
+    public CssKeywordValue? FontSynthesisWeight { get; init; }
 
     [global::System.ComponentModel.Description("@#font-variant")]
-    public string? FontVariant { get; init; }
+    public CssValue? FontVariant { get; init; }
 
     [global::System.ComponentModel.Description("@#font-variant-alternates")]
-    public string? FontVariantAlternates { get; init; }
+    public CssValue? FontVariantAlternates { get; init; }
 
     [global::System.ComponentModel.Description("@#font-variant-caps")]
-    public string? FontVariantCaps { get; init; }
+    public CssKeywordValue? FontVariantCaps { get; init; }
 
     [global::System.ComponentModel.Description("@#font-variant-east-asian")]
-    public string? FontVariantEastAsian { get; init; }
+    public CssValue? FontVariantEastAsian { get; init; }
 
     [global::System.ComponentModel.Description("@#font-variant-emoji")]
-    public string? FontVariantEmoji { get; init; }
+    public CssKeywordValue? FontVariantEmoji { get; init; }
 
     [global::System.ComponentModel.Description("@#font-variant-ligatures")]
-    public string? FontVariantLigatures { get; init; }
+    public CssValue? FontVariantLigatures { get; init; }
 
     [global::System.ComponentModel.Description("@#font-variant-numeric")]
-    public string? FontVariantNumeric { get; init; }
+    public CssValue? FontVariantNumeric { get; init; }
 
     [global::System.ComponentModel.Description("@#font-variant-position")]
-    public string? FontVariantPosition { get; init; }
+    public CssKeywordValue? FontVariantPosition { get; init; }
 
     [global::System.ComponentModel.Description("@#font-variation-settings")]
-    public string? FontVariationSettings { get; init; }
+    public CssValue? FontVariationSettings { get; init; }
 
     [global::System.ComponentModel.Description("@#font-weight")]
-    public string? FontWeight { get; init; }
+    public CssValue? FontWeight { get; init; }
 
     [global::System.ComponentModel.Description("@#font-width")]
-    public string? FontWidth { get; init; }
+    public CssPercentageValue? FontWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#footnote-display")]
-    public string? FootnoteDisplay { get; init; }
+    public CssKeywordValue? FootnoteDisplay { get; init; }
 
     [global::System.ComponentModel.Description("@#footnote-policy")]
-    public string? FootnotePolicy { get; init; }
+    public CssKeywordValue? FootnotePolicy { get; init; }
 
     [global::System.ComponentModel.Description("@#forced-color-adjust")]
-    public string? ForcedColorAdjust { get; init; }
+    public CssKeywordValue? ForcedColorAdjust { get; init; }
 
     [global::System.ComponentModel.Description("@#gap")]
-    public string? Gap { get; init; }
+    public CssLengthPercentageValue? Gap { get; init; }
 
     [global::System.ComponentModel.Description("@#glyph-orientation-vertical")]
-    public string? GlyphOrientationVertical { get; init; }
+    public CssKeywordValue? GlyphOrientationVertical { get; init; }
 
     [global::System.ComponentModel.Description("@#grid")]
-    public string? Grid { get; init; }
+    public CssValue? Grid { get; init; }
 
     [global::System.ComponentModel.Description("@#grid-area")]
-    public string? GridArea { get; init; }
+    public CssValue? GridArea { get; init; }
 
     [global::System.ComponentModel.Description("@#grid-auto-columns")]
-    public string? GridAutoColumns { get; init; }
+    public CssTrackValue? GridAutoColumns { get; init; }
 
     [global::System.ComponentModel.Description("@#grid-auto-flow")]
-    public string? GridAutoFlow { get; init; }
+    public CssKeywordValue? GridAutoFlow { get; init; }
 
     [global::System.ComponentModel.Description("@#grid-auto-rows")]
-    public string? GridAutoRows { get; init; }
+    public CssTrackValue? GridAutoRows { get; init; }
 
     [global::System.ComponentModel.Description("@#grid-column")]
-    public string? GridColumn { get; init; }
+    public CssValue? GridColumn { get; init; }
 
     [global::System.ComponentModel.Description("@#grid-column-end")]
-    public string? GridColumnEnd { get; init; }
+    public CssValue? GridColumnEnd { get; init; }
 
     [global::System.ComponentModel.Description("@#grid-column-gap")]
-    public string? GridColumnGap { get; init; }
+    public CssValue? GridColumnGap { get; init; }
 
     [global::System.ComponentModel.Description("@#grid-column-start")]
-    public string? GridColumnStart { get; init; }
+    public CssValue? GridColumnStart { get; init; }
 
     [global::System.ComponentModel.Description("@#grid-gap")]
-    public string? GridGap { get; init; }
+    public CssValue? GridGap { get; init; }
 
     [global::System.ComponentModel.Description("@#grid-row")]
-    public string? GridRow { get; init; }
+    public CssValue? GridRow { get; init; }
 
     [global::System.ComponentModel.Description("@#grid-row-end")]
-    public string? GridRowEnd { get; init; }
+    public CssValue? GridRowEnd { get; init; }
 
     [global::System.ComponentModel.Description("@#grid-row-gap")]
-    public string? GridRowGap { get; init; }
+    public CssValue? GridRowGap { get; init; }
 
     [global::System.ComponentModel.Description("@#grid-row-start")]
-    public string? GridRowStart { get; init; }
+    public CssValue? GridRowStart { get; init; }
 
     [global::System.ComponentModel.Description("@#grid-template")]
-    public string? GridTemplate { get; init; }
+    public CssValue? GridTemplate { get; init; }
 
     [global::System.ComponentModel.Description("@#grid-template-areas")]
-    public string? GridTemplateAreas { get; init; }
+    public CssStringValue? GridTemplateAreas { get; init; }
 
     [global::System.ComponentModel.Description("@#grid-template-columns")]
-    public string? GridTemplateColumns { get; init; }
+    public CssTrackValue? GridTemplateColumns { get; init; }
 
     [global::System.ComponentModel.Description("@#grid-template-rows")]
-    public string? GridTemplateRows { get; init; }
+    public CssTrackValue? GridTemplateRows { get; init; }
 
     [global::System.ComponentModel.Description("@#hanging-punctuation")]
-    public string? HangingPunctuation { get; init; }
+    public CssKeywordValue? HangingPunctuation { get; init; }
 
     [global::System.ComponentModel.Description("@#height")]
-    public string? Height { get; init; }
+    public CssLengthPercentageValue? Height { get; init; }
 
     [global::System.ComponentModel.Description("@#hyphenate-character")]
-    public string? HyphenateCharacter { get; init; }
+    public CssStringValue? HyphenateCharacter { get; init; }
 
     [global::System.ComponentModel.Description("@#hyphenate-limit-chars")]
-    public string? HyphenateLimitChars { get; init; }
+    public CssIntegerValue? HyphenateLimitChars { get; init; }
 
     [global::System.ComponentModel.Description("@#hyphenate-limit-last")]
-    public string? HyphenateLimitLast { get; init; }
+    public CssKeywordValue? HyphenateLimitLast { get; init; }
 
     [global::System.ComponentModel.Description("@#hyphenate-limit-lines")]
-    public string? HyphenateLimitLines { get; init; }
+    public CssIntegerValue? HyphenateLimitLines { get; init; }
 
     [global::System.ComponentModel.Description("@#hyphenate-limit-zone")]
-    public string? HyphenateLimitZone { get; init; }
+    public CssLengthPercentageValue? HyphenateLimitZone { get; init; }
 
     [global::System.ComponentModel.Description("@#hyphens")]
-    public string? Hyphens { get; init; }
+    public CssKeywordValue? Hyphens { get; init; }
 
     [global::System.ComponentModel.Description("@#image-orientation")]
-    public string? ImageOrientation { get; init; }
+    public CssAngleValue? ImageOrientation { get; init; }
 
     [global::System.ComponentModel.Description("@#image-rendering")]
-    public string? ImageRendering { get; init; }
+    public CssKeywordValue? ImageRendering { get; init; }
 
     [global::System.ComponentModel.Description("@#image-resolution")]
-    public string? ImageResolution { get; init; }
+    public CssResolutionValue? ImageResolution { get; init; }
 
     [global::System.ComponentModel.Description("@#initial-letter")]
-    public string? InitialLetter { get; init; }
+    public CssValue? InitialLetter { get; init; }
 
     [global::System.ComponentModel.Description("@#initial-letter-align")]
-    public string? InitialLetterAlign { get; init; }
+    public CssKeywordValue? InitialLetterAlign { get; init; }
 
     [global::System.ComponentModel.Description("@#initial-letter-wrap")]
-    public string? InitialLetterWrap { get; init; }
+    public CssLengthPercentageValue? InitialLetterWrap { get; init; }
 
     [global::System.ComponentModel.Description("@#inline-size")]
-    public string? InlineSize { get; init; }
+    public CssLengthPercentageValue? InlineSize { get; init; }
 
     [global::System.ComponentModel.Description("@#inline-sizing")]
-    public string? InlineSizing { get; init; }
+    public CssKeywordValue? InlineSizing { get; init; }
 
     [global::System.ComponentModel.Description("@#input-security")]
-    public string? InputSecurity { get; init; }
+    public CssKeywordValue? InputSecurity { get; init; }
 
     [global::System.ComponentModel.Description("@#inset")]
-    public string? Inset { get; init; }
+    public CssLengthPercentageValue? Inset { get; init; }
 
     [global::System.ComponentModel.Description("@#inset-area")]
-    public string? InsetArea { get; init; }
+    public CssValue? InsetArea { get; init; }
 
     [global::System.ComponentModel.Description("@#inset-block")]
-    public string? InsetBlock { get; init; }
+    public CssLengthPercentageValue? InsetBlock { get; init; }
 
     [global::System.ComponentModel.Description("@#inset-block-end")]
-    public string? InsetBlockEnd { get; init; }
+    public CssLengthPercentageValue? InsetBlockEnd { get; init; }
 
     [global::System.ComponentModel.Description("@#inset-block-start")]
-    public string? InsetBlockStart { get; init; }
+    public CssLengthPercentageValue? InsetBlockStart { get; init; }
 
     [global::System.ComponentModel.Description("@#inset-inline")]
-    public string? InsetInline { get; init; }
+    public CssLengthPercentageValue? InsetInline { get; init; }
 
     [global::System.ComponentModel.Description("@#inset-inline-end")]
-    public string? InsetInlineEnd { get; init; }
+    public CssLengthPercentageValue? InsetInlineEnd { get; init; }
 
     [global::System.ComponentModel.Description("@#inset-inline-start")]
-    public string? InsetInlineStart { get; init; }
+    public CssLengthPercentageValue? InsetInlineStart { get; init; }
 
     [global::System.ComponentModel.Description("@#isolation")]
-    public string? Isolation { get; init; }
+    public CssValue? Isolation { get; init; }
 
     [global::System.ComponentModel.Description("@#justify-content")]
-    public string? JustifyContent { get; init; }
+    public CssValue? JustifyContent { get; init; }
 
     [global::System.ComponentModel.Description("@#justify-items")]
-    public string? JustifyItems { get; init; }
+    public CssValue? JustifyItems { get; init; }
 
     [global::System.ComponentModel.Description("@#justify-self")]
-    public string? JustifySelf { get; init; }
+    public CssValue? JustifySelf { get; init; }
 
     [global::System.ComponentModel.Description("@#left")]
-    public string? Left { get; init; }
+    public CssLengthPercentageValue? Left { get; init; }
 
     [global::System.ComponentModel.Description("@#letter-spacing")]
-    public string? LetterSpacing { get; init; }
+    public CssLengthPercentageValue? LetterSpacing { get; init; }
 
     [global::System.ComponentModel.Description("@#lighting-color")]
-    public string? LightingColor { get; init; }
+    public CssColorValue? LightingColor { get; init; }
 
     [global::System.ComponentModel.Description("@#line-break")]
-    public string? LineBreak { get; init; }
+    public CssKeywordValue? LineBreak { get; init; }
 
     [global::System.ComponentModel.Description("@#line-clamp")]
-    public string? LineClamp { get; init; }
+    public CssValue? LineClamp { get; init; }
 
     [global::System.ComponentModel.Description("@#line-grid")]
-    public string? LineGrid { get; init; }
+    public CssKeywordValue? LineGrid { get; init; }
 
     [global::System.ComponentModel.Description("@#line-height")]
-    public string? LineHeight { get; init; }
+    public CssLengthPercentageNumberValue? LineHeight { get; init; }
 
     [global::System.ComponentModel.Description("@#line-height-step")]
-    public string? LineHeightStep { get; init; }
+    public CssLengthValue? LineHeightStep { get; init; }
 
     [global::System.ComponentModel.Description("@#line-padding")]
-    public string? LinePadding { get; init; }
+    public CssLengthValue? LinePadding { get; init; }
 
     [global::System.ComponentModel.Description("@#line-snap")]
-    public string? LineSnap { get; init; }
+    public CssKeywordValue? LineSnap { get; init; }
 
     [global::System.ComponentModel.Description("@#link-parameters")]
-    public string? LinkParameters { get; init; }
+    public CssValue? LinkParameters { get; init; }
 
     [global::System.ComponentModel.Description("@#list-style")]
-    public string? ListStyle { get; init; }
+    public CssValue? ListStyle { get; init; }
 
     [global::System.ComponentModel.Description("@#list-style-image")]
-    public string? ListStyleImage { get; init; }
+    public CssImageValue? ListStyleImage { get; init; }
 
     [global::System.ComponentModel.Description("@#list-style-position")]
-    public string? ListStylePosition { get; init; }
+    public CssKeywordValue? ListStylePosition { get; init; }
 
     [global::System.ComponentModel.Description("@#list-style-type")]
-    public string? ListStyleType { get; init; }
+    public CssValue? ListStyleType { get; init; }
 
     [global::System.ComponentModel.Description("@#margin")]
-    public string? Margin { get; init; }
+    public CssLengthPercentageValue? Margin { get; init; }
 
     [global::System.ComponentModel.Description("@#margin-block")]
-    public string? MarginBlock { get; init; }
+    public CssLengthPercentageValue? MarginBlock { get; init; }
 
     [global::System.ComponentModel.Description("@#margin-block-end")]
-    public string? MarginBlockEnd { get; init; }
+    public CssLengthPercentageValue? MarginBlockEnd { get; init; }
 
     [global::System.ComponentModel.Description("@#margin-block-start")]
-    public string? MarginBlockStart { get; init; }
+    public CssLengthPercentageValue? MarginBlockStart { get; init; }
 
     [global::System.ComponentModel.Description("@#margin-bottom")]
-    public string? MarginBottom { get; init; }
+    public CssLengthPercentageValue? MarginBottom { get; init; }
 
     [global::System.ComponentModel.Description("@#margin-break")]
-    public string? MarginBreak { get; init; }
+    public CssKeywordValue? MarginBreak { get; init; }
 
     [global::System.ComponentModel.Description("@#margin-inline")]
-    public string? MarginInline { get; init; }
+    public CssLengthPercentageValue? MarginInline { get; init; }
 
     [global::System.ComponentModel.Description("@#margin-inline-end")]
-    public string? MarginInlineEnd { get; init; }
+    public CssLengthPercentageValue? MarginInlineEnd { get; init; }
 
     [global::System.ComponentModel.Description("@#margin-inline-start")]
-    public string? MarginInlineStart { get; init; }
+    public CssLengthPercentageValue? MarginInlineStart { get; init; }
 
     [global::System.ComponentModel.Description("@#margin-left")]
-    public string? MarginLeft { get; init; }
+    public CssLengthPercentageValue? MarginLeft { get; init; }
 
     [global::System.ComponentModel.Description("@#margin-right")]
-    public string? MarginRight { get; init; }
+    public CssLengthPercentageValue? MarginRight { get; init; }
 
     [global::System.ComponentModel.Description("@#margin-top")]
-    public string? MarginTop { get; init; }
+    public CssLengthPercentageValue? MarginTop { get; init; }
 
     [global::System.ComponentModel.Description("@#margin-trim")]
-    public string? MarginTrim { get; init; }
+    public CssKeywordValue? MarginTrim { get; init; }
 
     [global::System.ComponentModel.Description("@#marker")]
-    public string? Marker { get; init; }
+    public CssValue? Marker { get; init; }
 
     [global::System.ComponentModel.Description("@#marker-end")]
-    public string? MarkerEnd { get; init; }
+    public CssValue? MarkerEnd { get; init; }
 
     [global::System.ComponentModel.Description("@#marker-mid")]
-    public string? MarkerMid { get; init; }
+    public CssValue? MarkerMid { get; init; }
 
     [global::System.ComponentModel.Description("@#marker-side")]
-    public string? MarkerSide { get; init; }
+    public CssKeywordValue? MarkerSide { get; init; }
 
     [global::System.ComponentModel.Description("@#marker-start")]
-    public string? MarkerStart { get; init; }
+    public CssValue? MarkerStart { get; init; }
 
     [global::System.ComponentModel.Description("@#mask")]
-    public string? Mask { get; init; }
+    public CssValue? Mask { get; init; }
 
     [global::System.ComponentModel.Description("@#mask-border")]
-    public string? MaskBorder { get; init; }
+    public CssValue? MaskBorder { get; init; }
 
     [global::System.ComponentModel.Description("@#mask-border-mode")]
-    public string? MaskBorderMode { get; init; }
+    public CssKeywordValue? MaskBorderMode { get; init; }
 
     [global::System.ComponentModel.Description("@#mask-border-outset")]
-    public string? MaskBorderOutset { get; init; }
+    public CssLengthPercentageNumberValue? MaskBorderOutset { get; init; }
 
     [global::System.ComponentModel.Description("@#mask-border-repeat")]
-    public string? MaskBorderRepeat { get; init; }
+    public CssKeywordValue? MaskBorderRepeat { get; init; }
 
     [global::System.ComponentModel.Description("@#mask-border-slice")]
-    public string? MaskBorderSlice { get; init; }
+    public CssNumberPercentageValue? MaskBorderSlice { get; init; }
 
     [global::System.ComponentModel.Description("@#mask-border-source")]
-    public string? MaskBorderSource { get; init; }
+    public CssImageValue? MaskBorderSource { get; init; }
 
     [global::System.ComponentModel.Description("@#mask-border-width")]
-    public string? MaskBorderWidth { get; init; }
+    public CssLengthPercentageNumberValue? MaskBorderWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#mask-clip")]
-    public string? MaskClip { get; init; }
+    public CssValue? MaskClip { get; init; }
 
     [global::System.ComponentModel.Description("@#mask-composite")]
-    public string? MaskComposite { get; init; }
+    public CssValue? MaskComposite { get; init; }
 
     [global::System.ComponentModel.Description("@#mask-image")]
-    public string? MaskImage { get; init; }
+    public CssValue? MaskImage { get; init; }
 
     [global::System.ComponentModel.Description("@#mask-mode")]
-    public string? MaskMode { get; init; }
+    public CssValue? MaskMode { get; init; }
 
     [global::System.ComponentModel.Description("@#mask-origin")]
-    public string? MaskOrigin { get; init; }
+    public CssValue? MaskOrigin { get; init; }
 
     [global::System.ComponentModel.Description("@#mask-position")]
-    public string? MaskPosition { get; init; }
+    public CssValue? MaskPosition { get; init; }
 
     [global::System.ComponentModel.Description("@#mask-repeat")]
-    public string? MaskRepeat { get; init; }
+    public CssValue? MaskRepeat { get; init; }
 
     [global::System.ComponentModel.Description("@#mask-size")]
-    public string? MaskSize { get; init; }
+    public CssValue? MaskSize { get; init; }
 
     [global::System.ComponentModel.Description("@#mask-type")]
-    public string? MaskType { get; init; }
+    public CssKeywordValue? MaskType { get; init; }
 
     [global::System.ComponentModel.Description("@#masonry-auto-flow")]
-    public string? MasonryAutoFlow { get; init; }
+    public CssKeywordValue? MasonryAutoFlow { get; init; }
 
     [global::System.ComponentModel.Description("@#math-depth")]
-    public string? MathDepth { get; init; }
+    public CssIntegerValue? MathDepth { get; init; }
 
     [global::System.ComponentModel.Description("@#math-shift")]
-    public string? MathShift { get; init; }
+    public CssKeywordValue? MathShift { get; init; }
 
     [global::System.ComponentModel.Description("@#math-style")]
-    public string? MathStyle { get; init; }
+    public CssKeywordValue? MathStyle { get; init; }
 
     [global::System.ComponentModel.Description("@#max-block-size")]
-    public string? MaxBlockSize { get; init; }
+    public CssLengthPercentageValue? MaxBlockSize { get; init; }
 
     [global::System.ComponentModel.Description("@#max-height")]
-    public string? MaxHeight { get; init; }
+    public CssLengthPercentageValue? MaxHeight { get; init; }
 
     [global::System.ComponentModel.Description("@#max-inline-size")]
-    public string? MaxInlineSize { get; init; }
+    public CssLengthPercentageValue? MaxInlineSize { get; init; }
 
     [global::System.ComponentModel.Description("@#max-lines")]
-    public string? MaxLines { get; init; }
+    public CssIntegerValue? MaxLines { get; init; }
 
     [global::System.ComponentModel.Description("@#max-width")]
-    public string? MaxWidth { get; init; }
+    public CssLengthPercentageValue? MaxWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#min-block-size")]
-    public string? MinBlockSize { get; init; }
+    public CssLengthPercentageValue? MinBlockSize { get; init; }
 
     [global::System.ComponentModel.Description("@#min-height")]
-    public string? MinHeight { get; init; }
+    public CssLengthPercentageValue? MinHeight { get; init; }
 
     [global::System.ComponentModel.Description("@#min-inline-size")]
-    public string? MinInlineSize { get; init; }
+    public CssLengthPercentageValue? MinInlineSize { get; init; }
 
     [global::System.ComponentModel.Description("@#min-intrinsic-sizing")]
-    public string? MinIntrinsicSizing { get; init; }
+    public CssKeywordValue? MinIntrinsicSizing { get; init; }
 
     [global::System.ComponentModel.Description("@#min-width")]
-    public string? MinWidth { get; init; }
+    public CssLengthPercentageValue? MinWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#mix-blend-mode")]
-    public string? MixBlendMode { get; init; }
+    public CssValue? MixBlendMode { get; init; }
 
     [global::System.ComponentModel.Description("@#nav-down")]
-    public string? NavDown { get; init; }
+    public CssValue? NavDown { get; init; }
 
     [global::System.ComponentModel.Description("@#nav-left")]
-    public string? NavLeft { get; init; }
+    public CssValue? NavLeft { get; init; }
 
     [global::System.ComponentModel.Description("@#nav-right")]
-    public string? NavRight { get; init; }
+    public CssValue? NavRight { get; init; }
 
     [global::System.ComponentModel.Description("@#nav-up")]
-    public string? NavUp { get; init; }
+    public CssValue? NavUp { get; init; }
 
     [global::System.ComponentModel.Description("@#object-fit")]
-    public string? ObjectFit { get; init; }
+    public CssKeywordValue? ObjectFit { get; init; }
 
     [global::System.ComponentModel.Description("@#object-position")]
-    public string? ObjectPosition { get; init; }
+    public CssValue? ObjectPosition { get; init; }
 
     [global::System.ComponentModel.Description("@#object-view-box")]
-    public string? ObjectViewBox { get; init; }
+    public CssValue? ObjectViewBox { get; init; }
 
     [global::System.ComponentModel.Description("@#offset")]
-    public string? Offset { get; init; }
+    public CssValue? Offset { get; init; }
 
     [global::System.ComponentModel.Description("@#offset-anchor")]
-    public string? OffsetAnchor { get; init; }
+    public CssValue? OffsetAnchor { get; init; }
 
     [global::System.ComponentModel.Description("@#offset-distance")]
-    public string? OffsetDistance { get; init; }
+    public CssLengthPercentageValue? OffsetDistance { get; init; }
 
     [global::System.ComponentModel.Description("@#offset-path")]
-    public string? OffsetPath { get; init; }
+    public CssValue? OffsetPath { get; init; }
 
     [global::System.ComponentModel.Description("@#offset-position")]
-    public string? OffsetPosition { get; init; }
+    public CssValue? OffsetPosition { get; init; }
 
     [global::System.ComponentModel.Description("@#offset-rotate")]
-    public string? OffsetRotate { get; init; }
+    public CssAngleValue? OffsetRotate { get; init; }
 
     [global::System.ComponentModel.Description("@#opacity")]
-    public string? Opacity { get; init; }
+    public CssNumberPercentageValue? Opacity { get; init; }
 
     [global::System.ComponentModel.Description("@#order")]
-    public string? Order { get; init; }
+    public CssIntegerValue? Order { get; init; }
 
     [global::System.ComponentModel.Description("@#orphans")]
-    public string? Orphans { get; init; }
+    public CssIntegerValue? Orphans { get; init; }
 
     [global::System.ComponentModel.Description("@#outline")]
-    public string? Outline { get; init; }
+    public CssValue? Outline { get; init; }
 
     [global::System.ComponentModel.Description("@#outline-color")]
-    public string? OutlineColor { get; init; }
+    public CssValue? OutlineColor { get; init; }
 
     [global::System.ComponentModel.Description("@#outline-offset")]
-    public string? OutlineOffset { get; init; }
+    public CssLengthValue? OutlineOffset { get; init; }
 
     [global::System.ComponentModel.Description("@#outline-style")]
-    public string? OutlineStyle { get; init; }
+    public CssLineStyleValue? OutlineStyle { get; init; }
 
     [global::System.ComponentModel.Description("@#outline-width")]
-    public string? OutlineWidth { get; init; }
+    public CssLineWidthValue? OutlineWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#overflow")]
-    public string? Overflow { get; init; }
+    public CssOverflowValue? Overflow { get; init; }
 
     [global::System.ComponentModel.Description("@#overflow-anchor")]
-    public string? OverflowAnchor { get; init; }
+    public CssKeywordValue? OverflowAnchor { get; init; }
 
     [global::System.ComponentModel.Description("@#overflow-block")]
-    public string? OverflowBlock { get; init; }
+    public CssOverflowValue? OverflowBlock { get; init; }
 
     [global::System.ComponentModel.Description("@#overflow-clip-margin")]
-    public string? OverflowClipMargin { get; init; }
+    public CssValue? OverflowClipMargin { get; init; }
 
     [global::System.ComponentModel.Description("@#overflow-clip-margin-block")]
-    public string? OverflowClipMarginBlock { get; init; }
+    public CssValue? OverflowClipMarginBlock { get; init; }
 
     [global::System.ComponentModel.Description("@#overflow-clip-margin-block-end")]
-    public string? OverflowClipMarginBlockEnd { get; init; }
+    public CssValue? OverflowClipMarginBlockEnd { get; init; }
 
     [global::System.ComponentModel.Description("@#overflow-clip-margin-block-start")]
-    public string? OverflowClipMarginBlockStart { get; init; }
+    public CssValue? OverflowClipMarginBlockStart { get; init; }
 
     [global::System.ComponentModel.Description("@#overflow-clip-margin-bottom")]
-    public string? OverflowClipMarginBottom { get; init; }
+    public CssValue? OverflowClipMarginBottom { get; init; }
 
     [global::System.ComponentModel.Description("@#overflow-clip-margin-inline")]
-    public string? OverflowClipMarginInline { get; init; }
+    public CssValue? OverflowClipMarginInline { get; init; }
 
     [global::System.ComponentModel.Description("@#overflow-clip-margin-inline-end")]
-    public string? OverflowClipMarginInlineEnd { get; init; }
+    public CssValue? OverflowClipMarginInlineEnd { get; init; }
 
     [global::System.ComponentModel.Description("@#overflow-clip-margin-inline-start")]
-    public string? OverflowClipMarginInlineStart { get; init; }
+    public CssValue? OverflowClipMarginInlineStart { get; init; }
 
     [global::System.ComponentModel.Description("@#overflow-clip-margin-left")]
-    public string? OverflowClipMarginLeft { get; init; }
+    public CssValue? OverflowClipMarginLeft { get; init; }
 
     [global::System.ComponentModel.Description("@#overflow-clip-margin-right")]
-    public string? OverflowClipMarginRight { get; init; }
+    public CssValue? OverflowClipMarginRight { get; init; }
 
     [global::System.ComponentModel.Description("@#overflow-clip-margin-top")]
-    public string? OverflowClipMarginTop { get; init; }
+    public CssValue? OverflowClipMarginTop { get; init; }
 
     [global::System.ComponentModel.Description("@#overflow-inline")]
-    public string? OverflowInline { get; init; }
+    public CssOverflowValue? OverflowInline { get; init; }
 
     [global::System.ComponentModel.Description("@#overflow-wrap")]
-    public string? OverflowWrap { get; init; }
+    public CssKeywordValue? OverflowWrap { get; init; }
 
     [global::System.ComponentModel.Description("@#overflow-x")]
-    public string? OverflowX { get; init; }
+    public CssOverflowValue? OverflowX { get; init; }
 
     [global::System.ComponentModel.Description("@#overflow-y")]
-    public string? OverflowY { get; init; }
+    public CssOverflowValue? OverflowY { get; init; }
 
     [global::System.ComponentModel.Description("@#overlay")]
-    public string? Overlay { get; init; }
+    public CssKeywordValue? Overlay { get; init; }
 
     [global::System.ComponentModel.Description("@#overscroll-behavior")]
-    public string? OverscrollBehavior { get; init; }
+    public CssKeywordValue? OverscrollBehavior { get; init; }
 
     [global::System.ComponentModel.Description("@#overscroll-behavior-block")]
-    public string? OverscrollBehaviorBlock { get; init; }
+    public CssKeywordValue? OverscrollBehaviorBlock { get; init; }
 
     [global::System.ComponentModel.Description("@#overscroll-behavior-inline")]
-    public string? OverscrollBehaviorInline { get; init; }
+    public CssKeywordValue? OverscrollBehaviorInline { get; init; }
 
     [global::System.ComponentModel.Description("@#overscroll-behavior-x")]
-    public string? OverscrollBehaviorX { get; init; }
+    public CssKeywordValue? OverscrollBehaviorX { get; init; }
 
     [global::System.ComponentModel.Description("@#overscroll-behavior-y")]
-    public string? OverscrollBehaviorY { get; init; }
+    public CssKeywordValue? OverscrollBehaviorY { get; init; }
 
     [global::System.ComponentModel.Description("@#padding")]
-    public string? Padding { get; init; }
+    public CssLengthPercentageValue? Padding { get; init; }
 
     [global::System.ComponentModel.Description("@#padding-block")]
-    public string? PaddingBlock { get; init; }
+    public CssLengthPercentageValue? PaddingBlock { get; init; }
 
     [global::System.ComponentModel.Description("@#padding-block-end")]
-    public string? PaddingBlockEnd { get; init; }
+    public CssLengthPercentageValue? PaddingBlockEnd { get; init; }
 
     [global::System.ComponentModel.Description("@#padding-block-start")]
-    public string? PaddingBlockStart { get; init; }
+    public CssLengthPercentageValue? PaddingBlockStart { get; init; }
 
     [global::System.ComponentModel.Description("@#padding-bottom")]
-    public string? PaddingBottom { get; init; }
+    public CssLengthPercentageValue? PaddingBottom { get; init; }
 
     [global::System.ComponentModel.Description("@#padding-inline")]
-    public string? PaddingInline { get; init; }
+    public CssLengthPercentageValue? PaddingInline { get; init; }
 
     [global::System.ComponentModel.Description("@#padding-inline-end")]
-    public string? PaddingInlineEnd { get; init; }
+    public CssLengthPercentageValue? PaddingInlineEnd { get; init; }
 
     [global::System.ComponentModel.Description("@#padding-inline-start")]
-    public string? PaddingInlineStart { get; init; }
+    public CssLengthPercentageValue? PaddingInlineStart { get; init; }
 
     [global::System.ComponentModel.Description("@#padding-left")]
-    public string? PaddingLeft { get; init; }
+    public CssLengthPercentageValue? PaddingLeft { get; init; }
 
     [global::System.ComponentModel.Description("@#padding-right")]
-    public string? PaddingRight { get; init; }
+    public CssLengthPercentageValue? PaddingRight { get; init; }
 
     [global::System.ComponentModel.Description("@#padding-top")]
-    public string? PaddingTop { get; init; }
+    public CssLengthPercentageValue? PaddingTop { get; init; }
 
     [global::System.ComponentModel.Description("@#page")]
-    public string? Page { get; init; }
+    public CssKeywordValue? Page { get; init; }
 
     [global::System.ComponentModel.Description("@#page-break-after")]
-    public string? PageBreakAfter { get; init; }
+    public CssKeywordValue? PageBreakAfter { get; init; }
 
     [global::System.ComponentModel.Description("@#page-break-before")]
-    public string? PageBreakBefore { get; init; }
+    public CssKeywordValue? PageBreakBefore { get; init; }
 
     [global::System.ComponentModel.Description("@#page-break-inside")]
-    public string? PageBreakInside { get; init; }
+    public CssKeywordValue? PageBreakInside { get; init; }
 
     [global::System.ComponentModel.Description("@#paint-order")]
-    public string? PaintOrder { get; init; }
+    public CssKeywordValue? PaintOrder { get; init; }
 
     [global::System.ComponentModel.Description("@#pause")]
-    public string? Pause { get; init; }
+    public CssTimeValue? Pause { get; init; }
 
     [global::System.ComponentModel.Description("@#pause-after")]
-    public string? PauseAfter { get; init; }
+    public CssTimeValue? PauseAfter { get; init; }
 
     [global::System.ComponentModel.Description("@#pause-before")]
-    public string? PauseBefore { get; init; }
+    public CssTimeValue? PauseBefore { get; init; }
 
     [global::System.ComponentModel.Description("@#perspective")]
-    public string? Perspective { get; init; }
+    public CssLengthValue? Perspective { get; init; }
 
     [global::System.ComponentModel.Description("@#perspective-origin")]
-    public string? PerspectiveOrigin { get; init; }
+    public CssValue? PerspectiveOrigin { get; init; }
 
     [global::System.ComponentModel.Description("@#place-content")]
-    public string? PlaceContent { get; init; }
+    public CssValue? PlaceContent { get; init; }
 
     [global::System.ComponentModel.Description("@#place-items")]
-    public string? PlaceItems { get; init; }
+    public CssValue? PlaceItems { get; init; }
 
     [global::System.ComponentModel.Description("@#place-self")]
-    public string? PlaceSelf { get; init; }
+    public CssValue? PlaceSelf { get; init; }
 
     [global::System.ComponentModel.Description("@#pointer-events")]
-    public string? PointerEvents { get; init; }
+    public CssKeywordValue? PointerEvents { get; init; }
 
     [global::System.ComponentModel.Description("@#position")]
-    public string? Position { get; init; }
+    public CssPositionValue? Position { get; init; }
 
     [global::System.ComponentModel.Description("@#position-anchor")]
-    public string? PositionAnchor { get; init; }
+    public CssValue? PositionAnchor { get; init; }
 
     [global::System.ComponentModel.Description("@#position-try")]
-    public string? PositionTry { get; init; }
+    public CssValue? PositionTry { get; init; }
 
     [global::System.ComponentModel.Description("@#position-try-options")]
-    public string? PositionTryOptions { get; init; }
+    public CssValue? PositionTryOptions { get; init; }
 
     [global::System.ComponentModel.Description("@#position-try-order")]
-    public string? PositionTryOrder { get; init; }
+    public CssValue? PositionTryOrder { get; init; }
 
     [global::System.ComponentModel.Description("@#position-visibility")]
-    public string? PositionVisibility { get; init; }
+    public CssKeywordValue? PositionVisibility { get; init; }
 
     [global::System.ComponentModel.Description("@#print-color-adjust")]
-    public string? PrintColorAdjust { get; init; }
+    public CssKeywordValue? PrintColorAdjust { get; init; }
 
     [global::System.ComponentModel.Description("@#quotes")]
-    public string? Quotes { get; init; }
+    public CssStringValue? Quotes { get; init; }
 
     [global::System.ComponentModel.Description("@#r")]
-    public string? R { get; init; }
+    public CssLengthPercentageValue? R { get; init; }
 
     [global::System.ComponentModel.Description("@#reading-order-items")]
-    public string? ReadingOrderItems { get; init; }
+    public CssKeywordValue? ReadingOrderItems { get; init; }
 
     [global::System.ComponentModel.Description("@#region-fragment")]
-    public string? RegionFragment { get; init; }
+    public CssKeywordValue? RegionFragment { get; init; }
 
     [global::System.ComponentModel.Description("@#resize")]
-    public string? Resize { get; init; }
+    public CssKeywordValue? Resize { get; init; }
 
     [global::System.ComponentModel.Description("@#rest")]
-    public string? Rest { get; init; }
+    public CssTimeValue? Rest { get; init; }
 
     [global::System.ComponentModel.Description("@#rest-after")]
-    public string? RestAfter { get; init; }
+    public CssTimeValue? RestAfter { get; init; }
 
     [global::System.ComponentModel.Description("@#rest-before")]
-    public string? RestBefore { get; init; }
+    public CssTimeValue? RestBefore { get; init; }
 
     [global::System.ComponentModel.Description("@#right")]
-    public string? Right { get; init; }
+    public CssLengthPercentageValue? Right { get; init; }
 
     [global::System.ComponentModel.Description("@#rotate")]
-    public string? Rotate { get; init; }
+    public CssValue? Rotate { get; init; }
 
     [global::System.ComponentModel.Description("@#row-gap")]
-    public string? RowGap { get; init; }
+    public CssLengthPercentageValue? RowGap { get; init; }
 
     [global::System.ComponentModel.Description("@#ruby-align")]
-    public string? RubyAlign { get; init; }
+    public CssKeywordValue? RubyAlign { get; init; }
 
     [global::System.ComponentModel.Description("@#ruby-merge")]
-    public string? RubyMerge { get; init; }
+    public CssKeywordValue? RubyMerge { get; init; }
 
     [global::System.ComponentModel.Description("@#ruby-overhang")]
-    public string? RubyOverhang { get; init; }
+    public CssKeywordValue? RubyOverhang { get; init; }
 
     [global::System.ComponentModel.Description("@#ruby-position")]
-    public string? RubyPosition { get; init; }
+    public CssKeywordValue? RubyPosition { get; init; }
 
     [global::System.ComponentModel.Description("@#rx")]
-    public string? Rx { get; init; }
+    public CssLengthPercentageValue? Rx { get; init; }
 
     [global::System.ComponentModel.Description("@#ry")]
-    public string? Ry { get; init; }
+    public CssLengthPercentageValue? Ry { get; init; }
 
     [global::System.ComponentModel.Description("@#scale")]
-    public string? Scale { get; init; }
+    public CssNumberPercentageValue? Scale { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-behavior")]
-    public string? ScrollBehavior { get; init; }
+    public CssKeywordValue? ScrollBehavior { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-margin")]
-    public string? ScrollMargin { get; init; }
+    public CssLengthValue? ScrollMargin { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-margin-block")]
-    public string? ScrollMarginBlock { get; init; }
+    public CssLengthValue? ScrollMarginBlock { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-margin-block-end")]
-    public string? ScrollMarginBlockEnd { get; init; }
+    public CssLengthValue? ScrollMarginBlockEnd { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-margin-block-start")]
-    public string? ScrollMarginBlockStart { get; init; }
+    public CssLengthValue? ScrollMarginBlockStart { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-margin-bottom")]
-    public string? ScrollMarginBottom { get; init; }
+    public CssLengthValue? ScrollMarginBottom { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-margin-inline")]
-    public string? ScrollMarginInline { get; init; }
+    public CssLengthValue? ScrollMarginInline { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-margin-inline-end")]
-    public string? ScrollMarginInlineEnd { get; init; }
+    public CssLengthValue? ScrollMarginInlineEnd { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-margin-inline-start")]
-    public string? ScrollMarginInlineStart { get; init; }
+    public CssLengthValue? ScrollMarginInlineStart { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-margin-left")]
-    public string? ScrollMarginLeft { get; init; }
+    public CssLengthValue? ScrollMarginLeft { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-margin-right")]
-    public string? ScrollMarginRight { get; init; }
+    public CssLengthValue? ScrollMarginRight { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-margin-top")]
-    public string? ScrollMarginTop { get; init; }
+    public CssLengthValue? ScrollMarginTop { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-padding")]
-    public string? ScrollPadding { get; init; }
+    public CssLengthPercentageValue? ScrollPadding { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-padding-block")]
-    public string? ScrollPaddingBlock { get; init; }
+    public CssLengthPercentageValue? ScrollPaddingBlock { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-padding-block-end")]
-    public string? ScrollPaddingBlockEnd { get; init; }
+    public CssLengthPercentageValue? ScrollPaddingBlockEnd { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-padding-block-start")]
-    public string? ScrollPaddingBlockStart { get; init; }
+    public CssLengthPercentageValue? ScrollPaddingBlockStart { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-padding-bottom")]
-    public string? ScrollPaddingBottom { get; init; }
+    public CssLengthPercentageValue? ScrollPaddingBottom { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-padding-inline")]
-    public string? ScrollPaddingInline { get; init; }
+    public CssLengthPercentageValue? ScrollPaddingInline { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-padding-inline-end")]
-    public string? ScrollPaddingInlineEnd { get; init; }
+    public CssLengthPercentageValue? ScrollPaddingInlineEnd { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-padding-inline-start")]
-    public string? ScrollPaddingInlineStart { get; init; }
+    public CssLengthPercentageValue? ScrollPaddingInlineStart { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-padding-left")]
-    public string? ScrollPaddingLeft { get; init; }
+    public CssLengthPercentageValue? ScrollPaddingLeft { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-padding-right")]
-    public string? ScrollPaddingRight { get; init; }
+    public CssLengthPercentageValue? ScrollPaddingRight { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-padding-top")]
-    public string? ScrollPaddingTop { get; init; }
+    public CssLengthPercentageValue? ScrollPaddingTop { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-snap-align")]
-    public string? ScrollSnapAlign { get; init; }
+    public CssKeywordValue? ScrollSnapAlign { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-snap-stop")]
-    public string? ScrollSnapStop { get; init; }
+    public CssKeywordValue? ScrollSnapStop { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-snap-type")]
-    public string? ScrollSnapType { get; init; }
+    public CssKeywordValue? ScrollSnapType { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-start")]
-    public string? ScrollStart { get; init; }
+    public CssLengthPercentageValue? ScrollStart { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-start-block")]
-    public string? ScrollStartBlock { get; init; }
+    public CssLengthPercentageValue? ScrollStartBlock { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-start-inline")]
-    public string? ScrollStartInline { get; init; }
+    public CssLengthPercentageValue? ScrollStartInline { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-start-target")]
-    public string? ScrollStartTarget { get; init; }
+    public CssKeywordValue? ScrollStartTarget { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-start-target-block")]
-    public string? ScrollStartTargetBlock { get; init; }
+    public CssKeywordValue? ScrollStartTargetBlock { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-start-target-inline")]
-    public string? ScrollStartTargetInline { get; init; }
+    public CssKeywordValue? ScrollStartTargetInline { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-start-target-x")]
-    public string? ScrollStartTargetX { get; init; }
+    public CssKeywordValue? ScrollStartTargetX { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-start-target-y")]
-    public string? ScrollStartTargetY { get; init; }
+    public CssKeywordValue? ScrollStartTargetY { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-start-x")]
-    public string? ScrollStartX { get; init; }
+    public CssLengthPercentageValue? ScrollStartX { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-start-y")]
-    public string? ScrollStartY { get; init; }
+    public CssLengthPercentageValue? ScrollStartY { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-timeline")]
-    public string? ScrollTimeline { get; init; }
+    public CssKeywordValue? ScrollTimeline { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-timeline-axis")]
-    public string? ScrollTimelineAxis { get; init; }
+    public CssKeywordValue? ScrollTimelineAxis { get; init; }
 
     [global::System.ComponentModel.Description("@#scroll-timeline-name")]
-    public string? ScrollTimelineName { get; init; }
+    public CssKeywordValue? ScrollTimelineName { get; init; }
 
     [global::System.ComponentModel.Description("@#scrollbar-color")]
-    public string? ScrollbarColor { get; init; }
+    public CssColorValue? ScrollbarColor { get; init; }
 
     [global::System.ComponentModel.Description("@#scrollbar-gutter")]
-    public string? ScrollbarGutter { get; init; }
+    public CssKeywordValue? ScrollbarGutter { get; init; }
 
     [global::System.ComponentModel.Description("@#scrollbar-width")]
-    public string? ScrollbarWidth { get; init; }
+    public CssKeywordValue? ScrollbarWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#shape-image-threshold")]
-    public string? ShapeImageThreshold { get; init; }
+    public CssNumberPercentageValue? ShapeImageThreshold { get; init; }
 
     [global::System.ComponentModel.Description("@#shape-inside")]
-    public string? ShapeInside { get; init; }
+    public CssValue? ShapeInside { get; init; }
 
     [global::System.ComponentModel.Description("@#shape-margin")]
-    public string? ShapeMargin { get; init; }
+    public CssLengthPercentageValue? ShapeMargin { get; init; }
 
     [global::System.ComponentModel.Description("@#shape-outside")]
-    public string? ShapeOutside { get; init; }
+    public CssValue? ShapeOutside { get; init; }
 
     [global::System.ComponentModel.Description("@#shape-padding")]
-    public string? ShapePadding { get; init; }
+    public CssLengthPercentageValue? ShapePadding { get; init; }
 
     [global::System.ComponentModel.Description("@#shape-rendering")]
-    public string? ShapeRendering { get; init; }
+    public CssKeywordValue? ShapeRendering { get; init; }
 
     [global::System.ComponentModel.Description("@#shape-subtract")]
-    public string? ShapeSubtract { get; init; }
+    public CssValue? ShapeSubtract { get; init; }
 
     [global::System.ComponentModel.Description("@#spatial-navigation-action")]
-    public string? SpatialNavigationAction { get; init; }
+    public CssKeywordValue? SpatialNavigationAction { get; init; }
 
     [global::System.ComponentModel.Description("@#spatial-navigation-contain")]
-    public string? SpatialNavigationContain { get; init; }
+    public CssKeywordValue? SpatialNavigationContain { get; init; }
 
     [global::System.ComponentModel.Description("@#spatial-navigation-function")]
-    public string? SpatialNavigationFunction { get; init; }
+    public CssKeywordValue? SpatialNavigationFunction { get; init; }
 
     [global::System.ComponentModel.Description("@#speak")]
-    public string? Speak { get; init; }
+    public CssKeywordValue? Speak { get; init; }
 
     [global::System.ComponentModel.Description("@#speak-as")]
-    public string? SpeakAs { get; init; }
+    public CssKeywordValue? SpeakAs { get; init; }
 
     [global::System.ComponentModel.Description("@#stop-color")]
-    public string? StopColor { get; init; }
+    public CssValue? StopColor { get; init; }
 
     [global::System.ComponentModel.Description("@#stop-opacity")]
-    public string? StopOpacity { get; init; }
+    public CssValue? StopOpacity { get; init; }
 
     [global::System.ComponentModel.Description("@#string-set")]
-    public string? StringSet { get; init; }
+    public CssValue? StringSet { get; init; }
 
     [global::System.ComponentModel.Description("@#stroke")]
-    public string? Stroke { get; init; }
+    public CssValue? Stroke { get; init; }
 
     [global::System.ComponentModel.Description("@#stroke-align")]
-    public string? StrokeAlign { get; init; }
+    public CssKeywordValue? StrokeAlign { get; init; }
 
     [global::System.ComponentModel.Description("@#stroke-alignment")]
-    public string? StrokeAlignment { get; init; }
+    public CssKeywordValue? StrokeAlignment { get; init; }
 
     [global::System.ComponentModel.Description("@#stroke-break")]
-    public string? StrokeBreak { get; init; }
+    public CssKeywordValue? StrokeBreak { get; init; }
 
     [global::System.ComponentModel.Description("@#stroke-color")]
-    public string? StrokeColor { get; init; }
+    public CssColorValue? StrokeColor { get; init; }
 
     [global::System.ComponentModel.Description("@#stroke-dash-corner")]
-    public string? StrokeDashCorner { get; init; }
+    public CssLengthValue? StrokeDashCorner { get; init; }
 
     [global::System.ComponentModel.Description("@#stroke-dash-justify")]
-    public string? StrokeDashJustify { get; init; }
+    public CssKeywordValue? StrokeDashJustify { get; init; }
 
     [global::System.ComponentModel.Description("@#stroke-dashadjust")]
-    public string? StrokeDashadjust { get; init; }
+    public CssKeywordValue? StrokeDashadjust { get; init; }
 
     [global::System.ComponentModel.Description("@#stroke-dasharray")]
-    public string? StrokeDasharray { get; init; }
+    public CssLengthPercentageNumberValue? StrokeDasharray { get; init; }
 
     [global::System.ComponentModel.Description("@#stroke-dashcorner")]
-    public string? StrokeDashcorner { get; init; }
+    public CssLengthValue? StrokeDashcorner { get; init; }
 
     [global::System.ComponentModel.Description("@#stroke-dashoffset")]
-    public string? StrokeDashoffset { get; init; }
+    public CssLengthPercentageNumberValue? StrokeDashoffset { get; init; }
 
     [global::System.ComponentModel.Description("@#stroke-image")]
-    public string? StrokeImage { get; init; }
+    public CssValue? StrokeImage { get; init; }
 
     [global::System.ComponentModel.Description("@#stroke-linecap")]
-    public string? StrokeLinecap { get; init; }
+    public CssKeywordValue? StrokeLinecap { get; init; }
 
     [global::System.ComponentModel.Description("@#stroke-linejoin")]
-    public string? StrokeLinejoin { get; init; }
+    public CssKeywordValue? StrokeLinejoin { get; init; }
 
     [global::System.ComponentModel.Description("@#stroke-miterlimit")]
-    public string? StrokeMiterlimit { get; init; }
+    public CssNumberValue? StrokeMiterlimit { get; init; }
 
     [global::System.ComponentModel.Description("@#stroke-opacity")]
-    public string? StrokeOpacity { get; init; }
+    public CssNumberPercentageValue? StrokeOpacity { get; init; }
 
     [global::System.ComponentModel.Description("@#stroke-origin")]
-    public string? StrokeOrigin { get; init; }
+    public CssKeywordValue? StrokeOrigin { get; init; }
 
     [global::System.ComponentModel.Description("@#stroke-position")]
-    public string? StrokePosition { get; init; }
+    public CssValue? StrokePosition { get; init; }
 
     [global::System.ComponentModel.Description("@#stroke-repeat")]
-    public string? StrokeRepeat { get; init; }
+    public CssValue? StrokeRepeat { get; init; }
 
     [global::System.ComponentModel.Description("@#stroke-size")]
-    public string? StrokeSize { get; init; }
+    public CssValue? StrokeSize { get; init; }
 
     [global::System.ComponentModel.Description("@#stroke-width")]
-    public string? StrokeWidth { get; init; }
+    public CssLengthPercentageNumberValue? StrokeWidth { get; init; }
 
     [global::System.ComponentModel.Description("@#tab-size")]
-    public string? TabSize { get; init; }
+    public CssLengthPercentageNumberValue? TabSize { get; init; }
 
     [global::System.ComponentModel.Description("@#table-layout")]
-    public string? TableLayout { get; init; }
+    public CssKeywordValue? TableLayout { get; init; }
 
     [global::System.ComponentModel.Description("@#text-align")]
-    public string? TextAlign { get; init; }
+    public CssStringValue? TextAlign { get; init; }
 
     [global::System.ComponentModel.Description("@#text-align-all")]
-    public string? TextAlignAll { get; init; }
+    public CssStringValue? TextAlignAll { get; init; }
 
     [global::System.ComponentModel.Description("@#text-align-last")]
-    public string? TextAlignLast { get; init; }
+    public CssKeywordValue? TextAlignLast { get; init; }
 
     [global::System.ComponentModel.Description("@#text-anchor")]
-    public string? TextAnchor { get; init; }
+    public CssKeywordValue? TextAnchor { get; init; }
 
     [global::System.ComponentModel.Description("@#text-autospace")]
-    public string? TextAutospace { get; init; }
+    public CssValue? TextAutospace { get; init; }
 
     [global::System.ComponentModel.Description("@#text-box-edge")]
-    public string? TextBoxEdge { get; init; }
+    public CssKeywordValue? TextBoxEdge { get; init; }
 
     [global::System.ComponentModel.Description("@#text-box-trim")]
-    public string? TextBoxTrim { get; init; }
+    public CssKeywordValue? TextBoxTrim { get; init; }
 
     [global::System.ComponentModel.Description("@#text-combine-upright")]
-    public string? TextCombineUpright { get; init; }
+    public CssIntegerValue? TextCombineUpright { get; init; }
 
     [global::System.ComponentModel.Description("@#text-decoration")]
-    public string? TextDecoration { get; init; }
+    public CssValue? TextDecoration { get; init; }
 
     [global::System.ComponentModel.Description("@#text-decoration-color")]
-    public string? TextDecorationColor { get; init; }
+    public CssColorValue? TextDecorationColor { get; init; }
 
     [global::System.ComponentModel.Description("@#text-decoration-line")]
-    public string? TextDecorationLine { get; init; }
+    public CssKeywordValue? TextDecorationLine { get; init; }
 
     [global::System.ComponentModel.Description("@#text-decoration-skip")]
-    public string? TextDecorationSkip { get; init; }
+    public CssKeywordValue? TextDecorationSkip { get; init; }
 
     [global::System.ComponentModel.Description("@#text-decoration-skip-box")]
-    public string? TextDecorationSkipBox { get; init; }
+    public CssKeywordValue? TextDecorationSkipBox { get; init; }
 
     [global::System.ComponentModel.Description("@#text-decoration-skip-ink")]
-    public string? TextDecorationSkipInk { get; init; }
+    public CssKeywordValue? TextDecorationSkipInk { get; init; }
 
     [global::System.ComponentModel.Description("@#text-decoration-skip-self")]
-    public string? TextDecorationSkipSelf { get; init; }
+    public CssKeywordValue? TextDecorationSkipSelf { get; init; }
 
     [global::System.ComponentModel.Description("@#text-decoration-skip-spaces")]
-    public string? TextDecorationSkipSpaces { get; init; }
+    public CssKeywordValue? TextDecorationSkipSpaces { get; init; }
 
     [global::System.ComponentModel.Description("@#text-decoration-style")]
-    public string? TextDecorationStyle { get; init; }
+    public CssKeywordValue? TextDecorationStyle { get; init; }
 
     [global::System.ComponentModel.Description("@#text-decoration-thickness")]
-    public string? TextDecorationThickness { get; init; }
+    public CssLengthPercentageValue? TextDecorationThickness { get; init; }
 
     [global::System.ComponentModel.Description("@#text-decoration-trim")]
-    public string? TextDecorationTrim { get; init; }
+    public CssLengthValue? TextDecorationTrim { get; init; }
 
     [global::System.ComponentModel.Description("@#text-emphasis")]
-    public string? TextEmphasis { get; init; }
+    public CssValue? TextEmphasis { get; init; }
 
     [global::System.ComponentModel.Description("@#text-emphasis-color")]
-    public string? TextEmphasisColor { get; init; }
+    public CssColorValue? TextEmphasisColor { get; init; }
 
     [global::System.ComponentModel.Description("@#text-emphasis-position")]
-    public string? TextEmphasisPosition { get; init; }
+    public CssKeywordValue? TextEmphasisPosition { get; init; }
 
     [global::System.ComponentModel.Description("@#text-emphasis-skip")]
-    public string? TextEmphasisSkip { get; init; }
+    public CssKeywordValue? TextEmphasisSkip { get; init; }
 
     [global::System.ComponentModel.Description("@#text-emphasis-style")]
-    public string? TextEmphasisStyle { get; init; }
+    public CssStringValue? TextEmphasisStyle { get; init; }
 
     [global::System.ComponentModel.Description("@#text-group-align")]
-    public string? TextGroupAlign { get; init; }
+    public CssKeywordValue? TextGroupAlign { get; init; }
 
     [global::System.ComponentModel.Description("@#text-indent")]
-    public string? TextIndent { get; init; }
+    public CssLengthPercentageValue? TextIndent { get; init; }
 
     [global::System.ComponentModel.Description("@#text-justify")]
-    public string? TextJustify { get; init; }
+    public CssKeywordValue? TextJustify { get; init; }
 
     [global::System.ComponentModel.Description("@#text-orientation")]
-    public string? TextOrientation { get; init; }
+    public CssKeywordValue? TextOrientation { get; init; }
 
     [global::System.ComponentModel.Description("@#text-overflow")]
-    public string? TextOverflow { get; init; }
+    public CssValue? TextOverflow { get; init; }
 
     [global::System.ComponentModel.Description("@#text-rendering")]
-    public string? TextRendering { get; init; }
+    public CssKeywordValue? TextRendering { get; init; }
 
     [global::System.ComponentModel.Description("@#text-shadow")]
-    public string? TextShadow { get; init; }
+    public CssValue? TextShadow { get; init; }
 
     [global::System.ComponentModel.Description("@#text-size-adjust")]
-    public string? TextSizeAdjust { get; init; }
+    public CssPercentageValue? TextSizeAdjust { get; init; }
 
     [global::System.ComponentModel.Description("@#text-spacing")]
-    public string? TextSpacing { get; init; }
+    public CssValue? TextSpacing { get; init; }
 
     [global::System.ComponentModel.Description("@#text-spacing-trim")]
-    public string? TextSpacingTrim { get; init; }
+    public CssValue? TextSpacingTrim { get; init; }
 
     [global::System.ComponentModel.Description("@#text-transform")]
-    public string? TextTransform { get; init; }
+    public CssKeywordValue? TextTransform { get; init; }
 
     [global::System.ComponentModel.Description("@#text-underline-offset")]
-    public string? TextUnderlineOffset { get; init; }
+    public CssLengthPercentageValue? TextUnderlineOffset { get; init; }
 
     [global::System.ComponentModel.Description("@#text-underline-position")]
-    public string? TextUnderlinePosition { get; init; }
+    public CssKeywordValue? TextUnderlinePosition { get; init; }
 
     [global::System.ComponentModel.Description("@#text-wrap")]
-    public string? TextWrap { get; init; }
+    public CssKeywordValue? TextWrap { get; init; }
 
     [global::System.ComponentModel.Description("@#text-wrap-mode")]
-    public string? TextWrapMode { get; init; }
+    public CssKeywordValue? TextWrapMode { get; init; }
 
     [global::System.ComponentModel.Description("@#text-wrap-style")]
-    public string? TextWrapStyle { get; init; }
+    public CssKeywordValue? TextWrapStyle { get; init; }
 
     [global::System.ComponentModel.Description("@#timeline-scope")]
-    public string? TimelineScope { get; init; }
+    public CssKeywordValue? TimelineScope { get; init; }
 
     [global::System.ComponentModel.Description("@#top")]
-    public string? Top { get; init; }
+    public CssLengthPercentageValue? Top { get; init; }
 
     [global::System.ComponentModel.Description("@#touch-action")]
-    public string? TouchAction { get; init; }
+    public CssKeywordValue? TouchAction { get; init; }
 
     [global::System.ComponentModel.Description("@#transform")]
-    public string? Transform { get; init; }
+    public CssTransformValue? Transform { get; init; }
 
     [global::System.ComponentModel.Description("@#transform-box")]
-    public string? TransformBox { get; init; }
+    public CssKeywordValue? TransformBox { get; init; }
 
     [global::System.ComponentModel.Description("@#transform-origin")]
-    public string? TransformOrigin { get; init; }
+    public CssLengthPercentageValue? TransformOrigin { get; init; }
 
     [global::System.ComponentModel.Description("@#transform-style")]
-    public string? TransformStyle { get; init; }
+    public CssKeywordValue? TransformStyle { get; init; }
 
     [global::System.ComponentModel.Description("@#transition")]
-    public string? Transition { get; init; }
+    public CssValue? Transition { get; init; }
 
     [global::System.ComponentModel.Description("@#transition-behavior")]
-    public string? TransitionBehavior { get; init; }
+    public CssValue? TransitionBehavior { get; init; }
 
     [global::System.ComponentModel.Description("@#transition-delay")]
-    public string? TransitionDelay { get; init; }
+    public CssTimeValue? TransitionDelay { get; init; }
 
     [global::System.ComponentModel.Description("@#transition-duration")]
-    public string? TransitionDuration { get; init; }
+    public CssTimeValue? TransitionDuration { get; init; }
 
     [global::System.ComponentModel.Description("@#transition-property")]
-    public string? TransitionProperty { get; init; }
+    public CssValue? TransitionProperty { get; init; }
 
     [global::System.ComponentModel.Description("@#transition-timing-function")]
-    public string? TransitionTimingFunction { get; init; }
+    public CssValue? TransitionTimingFunction { get; init; }
 
     [global::System.ComponentModel.Description("@#translate")]
-    public string? Translate { get; init; }
+    public CssLengthPercentageValue? Translate { get; init; }
 
     [global::System.ComponentModel.Description("@#unicode-bidi")]
-    public string? UnicodeBidi { get; init; }
+    public CssKeywordValue? UnicodeBidi { get; init; }
 
     [global::System.ComponentModel.Description("@#user-select")]
-    public string? UserSelect { get; init; }
+    public CssKeywordValue? UserSelect { get; init; }
 
     [global::System.ComponentModel.Description("@#vector-effect")]
-    public string? VectorEffect { get; init; }
+    public CssKeywordValue? VectorEffect { get; init; }
 
     [global::System.ComponentModel.Description("@#vertical-align")]
-    public string? VerticalAlign { get; init; }
+    public CssLengthPercentageValue? VerticalAlign { get; init; }
 
     [global::System.ComponentModel.Description("@#view-timeline")]
-    public string? ViewTimeline { get; init; }
+    public CssValue? ViewTimeline { get; init; }
 
     [global::System.ComponentModel.Description("@#view-timeline-axis")]
-    public string? ViewTimelineAxis { get; init; }
+    public CssKeywordValue? ViewTimelineAxis { get; init; }
 
     [global::System.ComponentModel.Description("@#view-timeline-inset")]
-    public string? ViewTimelineInset { get; init; }
+    public CssLengthPercentageValue? ViewTimelineInset { get; init; }
 
     [global::System.ComponentModel.Description("@#view-timeline-name")]
-    public string? ViewTimelineName { get; init; }
+    public CssKeywordValue? ViewTimelineName { get; init; }
 
     [global::System.ComponentModel.Description("@#view-transition-class")]
-    public string? ViewTransitionClass { get; init; }
+    public CssKeywordValue? ViewTransitionClass { get; init; }
 
     [global::System.ComponentModel.Description("@#view-transition-name")]
-    public string? ViewTransitionName { get; init; }
+    public CssKeywordValue? ViewTransitionName { get; init; }
 
     [global::System.ComponentModel.Description("@#visibility")]
-    public string? Visibility { get; init; }
+    public CssKeywordValue? Visibility { get; init; }
 
     [global::System.ComponentModel.Description("@#voice-balance")]
-    public string? VoiceBalance { get; init; }
+    public CssNumberValue? VoiceBalance { get; init; }
 
     [global::System.ComponentModel.Description("@#voice-duration")]
-    public string? VoiceDuration { get; init; }
+    public CssTimeValue? VoiceDuration { get; init; }
 
     [global::System.ComponentModel.Description("@#voice-family")]
-    public string? VoiceFamily { get; init; }
+    public CssValue? VoiceFamily { get; init; }
 
     [global::System.ComponentModel.Description("@#voice-pitch")]
-    public string? VoicePitch { get; init; }
+    public CssValue? VoicePitch { get; init; }
 
     [global::System.ComponentModel.Description("@#voice-range")]
-    public string? VoiceRange { get; init; }
+    public CssValue? VoiceRange { get; init; }
 
     [global::System.ComponentModel.Description("@#voice-rate")]
-    public string? VoiceRate { get; init; }
+    public CssPercentageValue? VoiceRate { get; init; }
 
     [global::System.ComponentModel.Description("@#voice-stress")]
-    public string? VoiceStress { get; init; }
+    public CssKeywordValue? VoiceStress { get; init; }
 
     [global::System.ComponentModel.Description("@#voice-volume")]
-    public string? VoiceVolume { get; init; }
+    public CssValue? VoiceVolume { get; init; }
 
     [global::System.ComponentModel.Description("@#white-space")]
-    public string? WhiteSpace { get; init; }
+    public CssKeywordValue? WhiteSpace { get; init; }
 
     [global::System.ComponentModel.Description("@#white-space-collapse")]
-    public string? WhiteSpaceCollapse { get; init; }
+    public CssKeywordValue? WhiteSpaceCollapse { get; init; }
 
     [global::System.ComponentModel.Description("@#white-space-trim")]
-    public string? WhiteSpaceTrim { get; init; }
+    public CssKeywordValue? WhiteSpaceTrim { get; init; }
 
     [global::System.ComponentModel.Description("@#widows")]
-    public string? Widows { get; init; }
+    public CssIntegerValue? Widows { get; init; }
 
     [global::System.ComponentModel.Description("@#width")]
-    public string? Width { get; init; }
+    public CssLengthPercentageValue? Width { get; init; }
 
     [global::System.ComponentModel.Description("@#will-change")]
-    public string? WillChange { get; init; }
+    public CssValue? WillChange { get; init; }
 
     [global::System.ComponentModel.Description("@#word-break")]
-    public string? WordBreak { get; init; }
+    public CssKeywordValue? WordBreak { get; init; }
 
     [global::System.ComponentModel.Description("@#word-space-transform")]
-    public string? WordSpaceTransform { get; init; }
+    public CssKeywordValue? WordSpaceTransform { get; init; }
 
     [global::System.ComponentModel.Description("@#word-spacing")]
-    public string? WordSpacing { get; init; }
+    public CssLengthPercentageValue? WordSpacing { get; init; }
 
     [global::System.ComponentModel.Description("@#word-wrap")]
-    public string? WordWrap { get; init; }
+    public CssKeywordValue? WordWrap { get; init; }
 
     [global::System.ComponentModel.Description("@#wrap-after")]
-    public string? WrapAfter { get; init; }
+    public CssKeywordValue? WrapAfter { get; init; }
 
     [global::System.ComponentModel.Description("@#wrap-before")]
-    public string? WrapBefore { get; init; }
+    public CssKeywordValue? WrapBefore { get; init; }
 
     [global::System.ComponentModel.Description("@#wrap-flow")]
-    public string? WrapFlow { get; init; }
+    public CssKeywordValue? WrapFlow { get; init; }
 
     [global::System.ComponentModel.Description("@#wrap-inside")]
-    public string? WrapInside { get; init; }
+    public CssKeywordValue? WrapInside { get; init; }
 
     [global::System.ComponentModel.Description("@#wrap-through")]
-    public string? WrapThrough { get; init; }
+    public CssKeywordValue? WrapThrough { get; init; }
 
     [global::System.ComponentModel.Description("@#writing-mode")]
-    public string? WritingMode { get; init; }
+    public CssKeywordValue? WritingMode { get; init; }
 
     [global::System.ComponentModel.Description("@#x")]
-    public string? X { get; init; }
+    public CssLengthPercentageValue? X { get; init; }
 
     [global::System.ComponentModel.Description("@#y")]
-    public string? Y { get; init; }
+    public CssLengthPercentageValue? Y { get; init; }
 
     [global::System.ComponentModel.Description("@#z-index")]
-    public string? ZIndex { get; init; }
+    public CssIntegerValue? ZIndex { get; init; }
 
     [global::System.ComponentModel.Description("@#zoom")]
-    public string? Zoom { get; init; }
+    public CssNumberPercentageValue? Zoom { get; init; }
 
 }

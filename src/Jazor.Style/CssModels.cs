@@ -7,7 +7,7 @@ public partial record CssDeclarations
     [Description("@#$additional")]
     public CssDeclaration[]? Additional { get; init; }
 
-    public extern string? this[string propertyName] { get; set; }
+    public extern CssValue? this[string propertyName] { get; set; }
 }
 
 [ECMAScript]
@@ -22,7 +22,7 @@ public sealed record CssRule : CssDeclarations
 [Description("@#")]
 public sealed record CssDeclaration(
     string Name,
-    string Value,
+    CssValue Value,
     bool Important = false);
 
 [String]

@@ -1,6 +1,6 @@
 namespace Jazor.Style;
 
-[ECMAScriptModule("Jazor.Style/runtime.mjs")]
+[ECMAScriptModule("jazorStyle.mjs")]
 public static partial class css
 {
     private const string VersionPrefix = "jazor-css:v1\0";

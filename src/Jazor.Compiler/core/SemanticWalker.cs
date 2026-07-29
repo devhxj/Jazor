@@ -911,11 +911,19 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         if (IsStructuralRuntimeSemanticInvocation(originOperation as IInvocationOperation))
             return null;
 
+        var legacyArguments = CreateLegacyWhiteListArguments(symbol, arguments, instance);
+        var inlineMethod = symbol as IMethodSymbol;
+        var inlineTemplate = string.Empty;
+        var hasInlineTemplate = inlineMethod is
+            { MethodKind: MethodKind.UserDefinedOperator or MethodKind.Conversion } &&
+            TryGetEcmascriptInlineTemplate(inlineMethod, out inlineTemplate);
+
         var effectiveHostType = hostType ?? TryGetRuntimeMemberHostType(originOperation);
         if (!Util.IsECMAScriptRecordProxyMember(symbol, effectiveHostType) &&
             IsNonStructuralRuntimeMember(
                 symbol,
-                effectiveHostType))
+                effectiveHostType) &&
+            !hasInlineTemplate)
         {
             return null;
         }
@@ -924,7 +932,12 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         if (compileExpr is not null)
             return compileExpr;
 
-        var legacyArguments = CreateLegacyWhiteListArguments(symbol, arguments, instance);
+        if (hasInlineTemplate)
+        {
+            var signature = inlineMethod!.OriginalDefinition.ToDisplayString(Format.NameFormat);
+            return InstantiateInlineTemplate(signature, inlineTemplate, legacyArguments);
+        }
+
         if (TryGetWhiteListValue(WhiteList.Members, symbol, out var displayString, out var entry))
         {
             if (entry.Op == Op.Alias)

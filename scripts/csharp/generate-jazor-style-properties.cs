@@ -2,9 +2,11 @@
 
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 var repoRoot = FindRepositoryRoot();
 var inventoryPath = Path.Combine(repoRoot, "src", "ECMAScript", "webidl", "webidl.inventory.json");
+var grammarPath = Path.Combine(repoRoot, "src", "Jazor.Style", "CssProperties.Webref.json");
 var outputPath = Path.Combine(repoRoot, "src", "Jazor.Style", "CssDeclarations.Properties.g.cs");
 var checkOnly = args.Any(static argument => string.Equals(argument, "--check", StringComparison.Ordinal));
 
@@ -13,6 +15,21 @@ var root = document.RootElement;
 var schemaVersion = root.GetProperty("schemaVersion").GetInt32();
 var webrefCssVersion = root.GetProperty("source").GetProperty("webrefCss").GetString()
     ?? throw new InvalidDataException("The inventory source.webrefCss value is missing.");
+
+using var grammarDocument = JsonDocument.Parse(File.ReadAllText(grammarPath));
+var grammarRoot = grammarDocument.RootElement;
+if (grammarRoot.GetProperty("schemaVersion").GetInt32() != 1)
+    throw new InvalidDataException("Unsupported Jazor.Style CSS grammar schema version.");
+var grammarSource = grammarRoot.GetProperty("source").GetString()
+    ?? throw new InvalidDataException("The Jazor.Style CSS grammar source is missing.");
+if (!string.Equals(grammarSource, webrefCssVersion, StringComparison.Ordinal))
+    throw new InvalidDataException($"CSS grammar source '{grammarSource}' does not match inventory source '{webrefCssVersion}'.");
+var grammarsByCssName = grammarRoot.GetProperty("properties")
+    .EnumerateObject()
+    .ToDictionary(
+        static property => property.Name,
+        static property => property.Value.EnumerateArray().Select(static value => value.GetString()!).ToArray(),
+        StringComparer.Ordinal);
 
 var propertiesByCssName = new Dictionary<string, CssProperty>(StringComparer.Ordinal);
 foreach (var file in root.GetProperty("files").EnumerateArray())
@@ -46,7 +63,7 @@ foreach (var file in root.GetProperty("files").EnumerateArray())
             if (string.Equals(idlName, "cssText", StringComparison.Ordinal))
                 continue;
 
-            var property = CreateProperty(idlName);
+            var property = CreateProperty(idlName, grammarsByCssName);
             if (propertiesByCssName.TryGetValue(property.CssName, out var existing))
             {
                 if (!string.Equals(existing.MemberName, property.MemberName, StringComparison.Ordinal))
@@ -113,7 +130,7 @@ static bool HasStringValue(JsonElement element, string propertyName, string expe
        property.ValueKind == JsonValueKind.String &&
        string.Equals(property.GetString(), expected, StringComparison.Ordinal);
 
-static CssProperty CreateProperty(string idlName)
+static CssProperty CreateProperty(string idlName, IReadOnlyDictionary<string, string[]> grammarsByCssName)
 {
     var normalizedName = idlName switch
     {
@@ -131,7 +148,111 @@ static CssProperty CreateProperty(string idlName)
         cssName = "-" + cssName;
     }
 
-    return new CssProperty(cssName, memberName);
+    var grammars = FindGrammars(cssName, grammarsByCssName);
+    return new CssProperty(cssName, memberName, ClassifyValueType(cssName, grammars, grammarsByCssName));
+}
+
+static string[] FindGrammars(string cssName, IReadOnlyDictionary<string, string[]> grammarsByCssName)
+{
+    if (grammarsByCssName.TryGetValue(cssName, out var grammars))
+        return grammars;
+
+    foreach (var prefix in new[] { "-webkit-", "-moz-", "-ms-", "-o-" })
+    {
+        if (cssName.StartsWith(prefix, StringComparison.Ordinal) &&
+            grammarsByCssName.TryGetValue(cssName[prefix.Length..], out grammars))
+            return grammars;
+    }
+
+    return [];
+}
+
+static string ClassifyValueType(
+    string cssName,
+    IReadOnlyList<string> grammars,
+    IReadOnlyDictionary<string, string[]> grammarsByCssName)
+{
+    if (cssName == "display")
+        return "CssDisplayValue";
+    if (cssName == "position")
+        return "CssPositionValue";
+    if (cssName is "overflow" or "overflow-block" or "overflow-inline" or "overflow-x" or "overflow-y")
+        return "CssOverflowValue";
+    if (cssName == "transform")
+        return "CssTransformValue";
+    if (cssName is "grid-template-columns" or "grid-template-rows" or "grid-auto-columns" or "grid-auto-rows")
+        return "CssTrackValue";
+    if (cssName == "aspect-ratio")
+        return "CssRatioValue";
+
+    var references = new HashSet<string>(StringComparer.Ordinal);
+    CollectReferences(grammars, grammarsByCssName, references, new(StringComparer.Ordinal));
+    if (grammars.Count == 0)
+        return "CssValue";
+    if (references.Count == 0 || references.All(static reference => reference is "custom-ident" or "dashed-ident" or "ident"))
+        return "CssKeywordValue";
+    if (references.SetEquals(["color"]))
+        return "CssColorValue";
+    if (references.SetEquals(["image"]) || references.SetEquals(["bg-image"]))
+        return "CssImageValue";
+    if (references.SetEquals(["time"]))
+        return "CssTimeValue";
+    if (references.SetEquals(["angle"]))
+        return "CssAngleValue";
+    if (references.SetEquals(["resolution"]))
+        return "CssResolutionValue";
+    if (references.SetEquals(["frequency"]) || references.SetEquals(["frequency", "percentage"]))
+        return "CssFrequencyValue";
+    if (references.SetEquals(["length"]))
+        return "CssLengthValue";
+    if (references.SetEquals(["length-percentage"]) || references.SetEquals(["length", "length-percentage"]))
+        return "CssLengthPercentageValue";
+    if (references.SetEquals(["length-percentage", "number"]) ||
+        references.SetEquals(["length", "number"]) ||
+        references.SetEquals(["length", "length-percentage", "number"]))
+        return "CssLengthPercentageNumberValue";
+    if (references.SetEquals(["percentage"]))
+        return "CssPercentageValue";
+    if (references.SetEquals(["number"]))
+        return "CssNumberValue";
+    if (references.SetEquals(["integer"]))
+        return "CssIntegerValue";
+    if (references.SetEquals(["number", "percentage"]) || references.SetEquals(["opacity-value"]))
+        return "CssNumberPercentageValue";
+    if (references.SetEquals(["line-width"]))
+        return "CssLineWidthValue";
+    if (references.SetEquals(["line-style"]) || references.SetEquals(["outline-line-style"]))
+        return "CssLineStyleValue";
+    if (references.SetEquals(["string"]))
+        return "CssStringValue";
+    if (references.SetEquals(["transform-list"]))
+        return "CssTransformValue";
+    if (references.SetEquals(["ratio"]))
+        return "CssRatioValue";
+
+    return "CssValue";
+}
+
+static void CollectReferences(
+    IReadOnlyList<string> grammars,
+    IReadOnlyDictionary<string, string[]> grammarsByCssName,
+    HashSet<string> references,
+    HashSet<string> visitedProperties)
+{
+    var grammar = string.Join(" | ", grammars);
+    foreach (Match match in Regex.Matches(grammar, @"<\s*(?:'([^']+)'|([a-zA-Z0-9-]+))"))
+    {
+        var propertyReference = match.Groups[1].Value;
+        if (propertyReference.Length > 0)
+        {
+            if (visitedProperties.Add(propertyReference) &&
+                grammarsByCssName.TryGetValue(propertyReference, out var referencedGrammars))
+                CollectReferences(referencedGrammars, grammarsByCssName, references, visitedProperties);
+            continue;
+        }
+
+        references.Add(match.Groups[2].Value);
+    }
 }
 
 static bool HasVendorPrefix(string value, string prefix)
@@ -178,7 +299,7 @@ static string BuildOutput(int schemaVersion, string webrefCssVersion, IEnumerabl
         builder.Append("    [global::System.ComponentModel.Description(\"@#");
         builder.Append(property.CssName.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal));
         builder.AppendLine("\")]");
-        builder.Append("    public string? ").Append(property.MemberName).AppendLine(" { get; init; }");
+        builder.Append("    public ").Append(property.ValueType).Append("? ").Append(property.MemberName).AppendLine(" { get; init; }");
         builder.AppendLine();
     }
 
@@ -200,4 +321,4 @@ static string FindRepositoryRoot()
     throw new DirectoryNotFoundException("Repository root containing Jazor.slnx was not found.");
 }
 
-internal sealed record CssProperty(string CssName, string MemberName);
+internal sealed record CssProperty(string CssName, string MemberName, string ValueType);

@@ -166,7 +166,7 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, debugBuild.ExitCode, debugBuild.ToString());
 
         var outputRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
-        var runtimePath = Path.Combine(outputRoot, "Jazor.Style", "runtime.mjs");
+        var runtimePath = Path.Combine(outputRoot, "jazorStyle.mjs");
         var runtimeMapPath = runtimePath + ".map";
         var appPath = Path.Combine(outputRoot, "app.mjs");
         var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
@@ -176,16 +176,16 @@ public sealed class SdkIntegrationTests
         Assert.IsTrue(File.Exists(appPath), $"Consumer module was not materialized: {appPath}");
         Assert.IsTrue(File.Exists(manifestPath), $"Debug manifest was not generated: {manifestPath}");
         var appModule = await File.ReadAllTextAsync(appPath);
-        StringAssert.Contains(appModule, "from \"Jazor.Style/runtime.mjs\"");
-        StringAssert.Contains(appModule, "\"background-color\": \"#1769aa\"");
-        StringAssert.Contains(appModule, "createContext");
-        StringAssert.Contains(appModule, "classIn");
+        StringAssert.Contains(appModule, "from \"jazorStyle.mjs\"");
+        StringAssert.Contains(appModule, "\"background-color\": hex(\"1769aa\")");
+        StringAssert.Contains(appModule, "context as ");
+        StringAssert.Contains(appModule, "styleIn");
         StringAssert.Contains(appModule, "atRuleIn");
         StringAssert.Contains(appModule, "snapshotFrom");
 
         var manifest = LoadManifest(manifestPath);
-        var runtimeEntry = manifest.Modules.Single(static entry => entry.RelativePath == "Jazor.Style/runtime.mjs");
-        Assert.AreEqual("Jazor.Style/runtime.mjs.map", runtimeEntry.SourceMapPath);
+        var runtimeEntry = manifest.Modules.Single(static entry => entry.RelativePath == "jazorStyle.mjs");
+        Assert.AreEqual("jazorStyle.mjs.map", runtimeEntry.SourceMapPath);
         Assert.HasCount(64, runtimeEntry.Hash);
         Assert.HasCount(64, runtimeEntry.MapHash!);
 
@@ -207,7 +207,7 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(bundle, "font-face");
         StringAssert.Contains(bundle, "server-css");
         StringAssert.Contains(bundle, "sourceMappingURL=bundle.js.map");
-        Assert.IsFalse(bundle.Contains("from \"Jazor.Style/runtime.mjs\"", StringComparison.Ordinal), bundle);
+        Assert.IsFalse(bundle.Contains("from \"jazorStyle.mjs\"", StringComparison.Ordinal), bundle);
     }
 
     [TestMethod]
@@ -2146,6 +2146,7 @@ public sealed class SdkIntegrationTests
             """
             using ECMAScript;
             using Jazor.Style;
+            using static Jazor.Style.css;
 
             namespace JazorStylePackageConsumer;
 
@@ -2160,13 +2161,13 @@ public sealed class SdkIntegrationTests
 
                 public static string ButtonClass() => css.style(Context, new CssRule
                 {
-                    Color = "white",
-                    BackgroundColor = "#1769aa",
+                    Color = color("white"),
+                    BackgroundColor = hex("1769aa"),
                     Children =
                     [
                         new(CssChildKind.Container, "toolbar (width > 30rem)", new CssRule
                         {
-                            Display = "grid"
+                            Display = grid
                         })
                     ]
                 });
@@ -2177,8 +2178,8 @@ public sealed class SdkIntegrationTests
                         "font-face",
                         new CssDeclarations
                         {
-                            FontFamily = "Jazor Sans",
-                            ["src"] = "url(jazor.woff2)"
+                            FontFamily = str("Jazor Sans"),
+                            ["src"] = raw("url(jazor.woff2)")
                         }));
                     return css.snapshot(Context);
                 }

@@ -1,207 +1,209 @@
 # Jazor.Style
 
-Deterministic, framework-neutral CSS-in-JS for Jazor applications.
+Strongly typed, deterministic CSS-in-JS for Jazor applications.
 
-`Jazor.Style` turns structured C# declarations into the standard `Jazor.Style/runtime.mjs` module. It provides generated CSS properties, stable content-based names, ordered nesting, structured at-rules, isolated registries, browser and Shadow DOM targets, SSR snapshots, CSP nonce handling, and idempotent hydration. `Css.Class` returns an ordinary `string`, so ECMAScript modules, Vue bindings, and RazorVue components use it without an adapter.
+`Jazor.Style` is an independent opt-in package. It turns structured C# values into the standard `jazorStyle.mjs` runtime module, while preserving ordinary ECMAScript imports, RazorVue interoperability, stable content-based names, isolated registries, Shadow DOM ownership, server-rendered snapshots, CSP nonces, and idempotent hydration.
 
-## Install
+## Installation
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor.Style" Version="0.1.32" />
+  <PackageReference Include="Jazor.Style" Version="0.1.33" />
 </ItemGroup>
 ```
 
-The package depends on the exact same version of `Jazor`. It installs no Razor Hook, Vue integration, CSS-specific analyzer, or additional MSBuild target.
+The package depends on the exact same version of `Jazor`. It installs no Razor hook, CSS-specific MSBuild target, Vue adapter, or compiler branch. Merely referencing the package does not register styles; registration occurs only when a `css` API is executed.
 
-## Class Rules
+## Authoring
+
+The public facade is the lowercase static class `css`. Use it by qualification or import its members explicitly:
 
 ```csharp
 using Jazor.Style;
+using static Jazor.Style.css;
 
-var buttonClass = Css.Class(new CssRule
+var actionClass = style(new CssRule
 {
-    Display = "inline-flex",
-    AlignItems = "center",
-    Gap = "0.5rem",
-    Color = "white",
-    BackgroundColor = "#1769aa",
-    ["--button-shadow"] = "0 0.25rem 0.75rem rgb(0 0 0 / 18%)",
+    Display = inlineFlex,
+    AlignItems = keyword("center"),
+    Gap = rem(0.5),
+    Width = percent(100) - rem(2),
+    Color = varOr("--action-color", color("white")),
+    BackgroundColor = hex("1769aa"),
+    TransitionDuration = ms(180),
+    Opacity = 0.9,
+    ["--action-shadow"] = raw("0 0.25rem 0.75rem rgb(0 0 0 / 18%)"),
     Children =
     [
         new(CssChildKind.Selector, "&:hover, &:focus-visible", new CssRule
         {
-            BackgroundColor = "#125486"
+            BackgroundColor = hex("125486")
         }),
         new(CssChildKind.Container, "toolbar (width < 40rem)", new CssRule
         {
-            Width = "100%"
-        }),
-        new(CssChildKind.StartingStyle, null, new CssRule
-        {
-            Opacity = "0"
+            Width = percent(100)
         })
     ]
 });
 ```
 
-The generated catalog exposes standard writable `CSSStyleDeclaration` properties from Webref. The string indexer covers custom properties, emerging properties, and at-rule descriptors that do not belong to `CSSStyleDeclaration`.
-
-Named declarations are normalized by CSS name, independent of C# initializer order. `Additional` and `Children` retain author order because fallback and cascade order are observable:
+The qualified form remains available:
 
 ```csharp
-var layoutClass = Css.Class(new CssRule
+var className = css.style(rule);
+var width = css.px(24);
+```
+
+Package-owned global usings are not installed. Each consumer decides whether `using static Jazor.Style.css;` is appropriate.
+
+## Typed Values
+
+The generated catalog contains 705 writable `CSSStyleDeclaration` properties from the locked `@webref/css@6.12.7` grammar snapshot. Properties use native C# union domains instead of `string?`, including:
+
+| Domain | Representative properties | Accepted values |
+| --- | --- | --- |
+| `CssLengthPercentageValue` | `Width`, `Margin`, `Gap` | `px(...)`, `rem(...)`, `percent(...)`, mixed `calc(...)`, variables, keywords |
+| `CssColorValue` | `Color`, `BackgroundColor` | `color(...)`, `hex(...)`, `rgb(...)`, `rgba(...)`, variables, color keywords |
+| `CssTimeValue` | `TransitionDuration`, `AnimationDelay` | `ms(...)`, `seconds(...)`, variables |
+| `CssNumberPercentageValue` | `Opacity` | numeric values, `percent(...)`, variables |
+| `CssDisplayValue` | `Display` | `block`, `flex`, `grid`, `inlineFlex`, `none`, variables |
+| `CssTrackValue` | `GridTemplateColumns`, `GridAutoRows` | lengths, percentages, `fr(...)`, `minMax(...)`, `repeat(...)` |
+
+Nominal token types prevent accidental cross-domain assignments. For example, `Width = deg(10)`, `Color = rem(1)`, and `Height = "10px"` do not compile. Mixed length-percentage arithmetic has its own `CssLengthPercentage` type, so it is accepted by `Width` but rejected by pure-length properties such as `ColumnWidth`.
+
+The value API includes:
+
+- units: `px`, `rem`, `em`, viewport units, physical units, `percent`, angles, times, frequencies, and resolutions;
+- colors and text: `color`, `hex`, `rgb`, `rgba`, `hsl`, `hsla`, `url`, and `str`;
+- variables and identifiers: `var`, `varOr`, `ident`, and `keyword`;
+- grids and transforms: `fr`, `minMax`, `fitContent`, `repeat`, `translate`, `rotate`, `scale`, and `transform`;
+- numeric composition: typed operators produce `calc(...)`, with `min`, `max`, and `clamp` for length values.
+
+Use `raw(...)` when valid CSS cannot yet be represented by the typed surface:
+
+```csharp
+var rule = new CssRule
+{
+    Width = raw("anchor-size(--card inline, 20rem)"),
+    Color = raw("oklch(from var(--brand) l c h)")
+};
+```
+
+`raw(...)` is explicit so future syntax remains available without weakening every property back to an unrestricted string.
+
+## Rules And Ordering
+
+Named declarations are normalized by final CSS name and sorted ordinally, so C# initializer order does not affect the generated name. Order remains significant for `Additional`, `Children`, keyframe frames, and nested at-rules.
+
+```csharp
+var layoutClass = style(new CssRule
 {
     Additional =
     [
-        new("display", "-webkit-box"),
-        new("display", "flex", Important: true)
+        new("display", keyword("-webkit-box")),
+        new("display", flex, Important: true)
     ]
 });
 ```
 
-## Nested Rules
+`CssChildKind` supports `Selector`, `Media`, `Supports`, `Container`, `Layer`, `Scope`, and `StartingStyle`. Selector lists are processed with quote, escape, parenthesis, and attribute-selector awareness; nested grouping rules preserve the active selector and author order.
 
-`CssChildKind` supports the structured grouping forms used by component styles:
-
-| Kind | Output |
-| --- | --- |
-| `Selector` | Nested selector; `&` refers to the current selector |
-| `Media` | `@media <prelude> { ... }` |
-| `Supports` | `@supports <prelude> { ... }` |
-| `Container` | `@container <prelude> { ... }` |
-| `Layer` | Named or anonymous `@layer` block |
-| `Scope` | Named or anonymous `@scope` block |
-| `StartingStyle` | `@starting-style` block without a prelude |
-
-Selector lists are parsed with quote, escape, parenthesis, and attribute-selector awareness. Nested grouping rules preserve the active selector and sibling order.
-
-## Keyframes And Global Rules
+## Keyframes And At-Rules
 
 ```csharp
-var fadeIn = Css.Keyframes(
-    new("from", new CssDeclarations { Opacity = "0" }),
-    new("to", new CssDeclarations { Opacity = "1" }));
+var fadeIn = keyframes(
+    new("from", new CssDeclarations { Opacity = 0 }),
+    new("to", new CssDeclarations { Opacity = 1 }));
 
-Css.Global("html, body", new CssRule
+global("html, body", new CssRule
 {
-    Margin = "0",
-    MinHeight = "100%"
+    Margin = px(0),
+    MinHeight = percent(100)
 });
-```
 
-Keyframes, classes, global selectors, and declaration at-rules use separate hash domains. Identical content is registered once while first-registration order remains stable.
-
-## Declaration At-Rules
-
-`Css.AtRule` represents block at-rules without accepting raw CSS:
-
-```csharp
-Css.AtRule(new CssAtRule(
+atRule(new CssAtRule(
     "font-face",
     new CssDeclarations
     {
-        FontFamily = "Jazor Sans",
-        ["src"] = "url('/fonts/jazor.woff2') format('woff2')",
-        FontDisplay = "swap"
+        FontFamily = str("Jazor Sans"),
+        ["src"] = raw("url('/fonts/jazor.woff2') format('woff2')"),
+        FontDisplay = keyword("swap")
     }));
-
-Css.AtRule(new CssAtRule(
-    "page",
-    new CssDeclarations { Margin = "12mm" },
-    Prelude: ":first",
-    Children:
-    [
-        new("top-left", new CssDeclarations
-        {
-            Content = "'Jazor'"
-        })
-    ]));
 ```
 
-This model covers declaration-block rules such as `@font-face`, `@property`, `@counter-style`, `@page`, and nested page-margin rules. Runtime statement rules such as `@charset`, `@import`, and `@namespace` are intentionally excluded because their ordering and fetch semantics do not fit incremental style registration.
+`CssAtRule` represents declaration blocks such as `@font-face`, `@property`, `@counter-style`, `@page`, and nested page-margin rules. Statement rules such as `@charset`, `@import`, and `@namespace` are excluded because their ordering and fetch semantics do not fit incremental registration.
 
-## Browser Configuration
+## Contexts And Hydration
 
-The default registry targets `document.head`:
+The default context targets `document.head`. Configure it before its first registration:
 
 ```csharp
-Css.Configure(new CssOptions
+configure(new CssOptions
 {
     StyleId = "application-styles",
     Nonce = cspNonce
 });
 ```
 
-Call `Css.Configure` before the first default-context registration. The runtime creates or adopts one owned `<style>`, validates its ID and nonce, and stores entries in versioned UTF-16 length frames so module reloads do not duplicate rules.
-
-For Shadow DOM, create a context bound to the shadow root:
+Create an explicit context for Shadow DOM or request-local rendering:
 
 ```csharp
-var shadowStyles = Css.CreateContext(new CssOptions
+var shadowStyles = context(new CssOptions
 {
     Target = shadowRoot,
     StyleId = "widget-styles",
     Nonce = cspNonce
 });
 
-var className = Css.ClassIn(shadowStyles, widgetRule);
-```
+var widgetClass = style(shadowStyles, widgetRule);
 
-Contexts with different targets or IDs own independent style nodes. Contexts that point to the same target and ID adopt the same marked node.
-
-## Isolated Rendering And Hydration
-
-Create a detached context for request-local rendering or deterministic extraction:
-
-```csharp
-var requestStyles = Css.CreateContext(new CssOptions
+var requestStyles = context(new CssOptions
 {
     Detached = true,
-    StyleId = "request-styles",
-    Nonce = cspNonce
+    StyleId = "request-styles"
 });
 
-var className = Css.ClassIn(requestStyles, rule);
-Css.GlobalIn(requestStyles, "body", globalRule);
-var snapshot = Css.SnapshotFrom(requestStyles);
+global(requestStyles, "body", globalRule);
+var result = snapshot(requestStyles);
 ```
 
-Context-aware operations are explicit:
+The same operation names are overloaded for the default and explicit contexts:
 
-| Default registry | Explicit context |
+| Default context | Explicit context |
 | --- | --- |
-| `Css.Class` | `Css.ClassIn` |
-| `Css.Keyframes` | `Css.KeyframesIn` |
-| `Css.Global` | `Css.GlobalIn` |
-| `Css.AtRule` | `Css.AtRuleIn` |
-| `Css.Extract` | `Css.ExtractFrom` |
-| `Css.Snapshot` | `Css.SnapshotFrom` |
+| `style(rule)` | `style(context, rule)` |
+| `keyframes(frames)` | `keyframes(context, frames)` |
+| `global(selector, rule)` | `global(context, selector, rule)` |
+| `atRule(rule)` | `atRule(context, rule)` |
+| `extract()` | `extract(context)` |
+| `snapshot()` | `snapshot(context)` |
 
-`CssSnapshot.CssText` is plain CSS. `HydrationText` includes the ownership marker and framed entries expected by browser adoption. Render the hydration text as the text content of a `<style>` whose ID and nonce come from the same snapshot; a browser context configured with those values adopts it without rewriting or duplicating rules.
+`CssSnapshot.CssText` contains plain CSS. `HydrationText` contains the stable ownership marker and UTF-16 length-framed entries used for browser adoption. A browser context with the same target, style ID, and nonce adopts the node without rewriting or duplicating rules.
 
 ## Build Output
 
-`Jazor.Style` uses the standard Jazor output contract:
+`Jazor.Style` uses the standard Jazor build contract and adds no configuration properties:
 
-- `JazorMode=none` writes no frontend artifacts.
-- `JazorMode=debug` materializes `Jazor.Style/runtime.mjs`, its source map, and a manifest entry.
-- `JazorMode=release` includes the runtime and its consumers in `bundle.js`.
+| `JazorMode` | Output |
+| --- | --- |
+| `none` | No frontend artifacts |
+| `debug` | `jazorStyle.mjs`, `jazorStyle.mjs.map`, consumer modules, and `jazor-manifest.json` |
+| `release` | `bundle.js` and `bundle.js.map`; the Style runtime is included in the bundle |
 
-No `Jazor.Style`-specific build property exists. Release remains runtime CSS-in-JS; it does not emit a separate `.css` file or invoke PostCSS, autoprefixer, or CSS Modules.
+The default output root is `$(MSBuildProjectDirectory)\wwwroot\jazor\`. Release remains runtime CSS-in-JS and does not produce a separate `.css` file or invoke PostCSS, autoprefixer, or CSS Modules.
 
 ## Stable Boundaries
 
-- The package does not wrap Goober or ship third-party JavaScript.
-- It does not provide `styled(Component)` or a Vue/component-library adapter.
+- `jazor-css:v1`, `jz-*`, `jz-k-*`, and the default style ID remain stable protocol values.
+- `Jazor.Style` does not wrap Goober or ship third-party JavaScript.
+- It does not provide `styled(Component)`, a Vue wrapper, or a component-library adapter.
 - It does not parse raw CSS blocks or tagged templates.
-- It does not add compiler intrinsics, analyzer exceptions, or RazorVue lowering branches.
-- It does not reclaim rules automatically. Use inline styles or custom properties for high-cardinality continuous values.
-- Declaration values remain authored CSS source; Jazor.Style validates structure required for deterministic serialization, not the complete CSS value grammar.
+- It does not add CSS-specific compiler, analyzer, RazorVue, or MSBuild paths.
+- Registered rules are not reclaimed automatically; use inline styles or custom properties for high-cardinality continuous values.
 
 ## Verification
 
-```powershell
+```text
 dotnet run --file scripts/csharp/generate-jazor-style-properties.cs -- --check
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project css
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project css-browser
@@ -209,4 +211,4 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter JazorStyle
 dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --filter JazorStyle
 ```
 
-The browser verification executes the generated runtime and checks computed styles, CSP nonce propagation, one-style ownership, Unicode framing, HMR adoption, Shadow DOM targeting, and detached-snapshot hydration.
+Browser verification executes the generated module and checks computed styles, nonce propagation, one-node ownership, Unicode framing, module reload adoption, Shadow DOM targeting, and detached snapshot hydration.

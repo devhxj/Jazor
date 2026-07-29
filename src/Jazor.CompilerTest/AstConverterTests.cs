@@ -15898,6 +15898,42 @@ export function create() {{
     }
 
     [TestMethod]
+    public async Task Convert_EcmascriptInlineOperator_UsesInlineExpressionTemplate()
+    {
+        var code = """
+            using ECMAScript;
+
+            [ECMAScript]
+            public sealed class Length
+            {
+                [ECMAScriptInline("`calc(${__arg1} - ${__arg2})`")]
+                public static extern Length operator -(Length left, Length right);
+            }
+
+            [ECMAScriptModule("typed-values.mjs")]
+            public static class TypedValueModule
+            {
+                public static Length Subtract(Length left, Length right) => left - right;
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TypedValueModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptInlineAttribute).Assembly.Location));
+        var module = await new AstConverter(classSymbol, semanticModel).Convert();
+
+        AssertScriptEqual(
+            """
+            export function subtract(left, right) {
+              return `calc(${left} - ${right})`;
+            }
+
+            """,
+            module?.ToKnRECMAScript());
+    }
+
+    [TestMethod]
     public async Task Convert_ClassWithInlineWhitelistAnonymousObject_PreservesObjectLiteralArguments()
     {
         // Arrange

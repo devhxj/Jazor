@@ -1,0 +1,1926 @@
+{
+  "schemaVersion": 1,
+  "source": "@webref/css@6.12.7",
+  "properties": {
+    "-webkit-line-clamp": [
+      "none | \u003Cinteger [1,\u221E]\u003E"
+    ],
+    "-webkit-text-fill-color": [
+      "\u003Ccolor\u003E"
+    ],
+    "-webkit-text-stroke": [
+      "\u003Cline-width\u003E || \u003Ccolor\u003E"
+    ],
+    "-webkit-text-stroke-color": [
+      "\u003Ccolor\u003E"
+    ],
+    "-webkit-text-stroke-width": [
+      "\u003Cline-width\u003E"
+    ],
+    "accent-color": [
+      "auto | \u003Ccolor\u003E"
+    ],
+    "align-content": [
+      "normal | \u003Cbaseline-position\u003E | \u003Ccontent-distribution\u003E | \u003Coverflow-position\u003E? \u003Ccontent-position\u003E"
+    ],
+    "align-items": [
+      "normal | stretch | \u003Cbaseline-position\u003E | [ \u003Coverflow-position\u003E? \u003Cself-position\u003E ]"
+    ],
+    "align-self": [
+      "auto | normal | stretch | \u003Cbaseline-position\u003E | \u003Coverflow-position\u003E? \u003Cself-position\u003E"
+    ],
+    "alignment-baseline": [
+      "baseline | text-bottom | alphabetic | ideographic | middle | central | mathematical | text-top"
+    ],
+    "all": [
+      "initial | inherit | unset | revert | revert-layer"
+    ],
+    "anchor-name": [
+      "none | \u003Cdashed-ident\u003E#"
+    ],
+    "anchor-scope": [
+      "none | all | \u003Cdashed-ident\u003E#"
+    ],
+    "animation": [
+      "\u003Csingle-animation\u003E#"
+    ],
+    "animation-composition": [
+      "\u003Csingle-animation-composition\u003E#"
+    ],
+    "animation-delay": [
+      "\u003Ctime\u003E#"
+    ],
+    "animation-direction": [
+      "\u003Csingle-animation-direction\u003E#"
+    ],
+    "animation-duration": [
+      "\u003Ctime [0s,\u221E]\u003E#",
+      "[ auto | \u003Ctime [0s,\u221E]\u003E ]#"
+    ],
+    "animation-fill-mode": [
+      "\u003Csingle-animation-fill-mode\u003E#"
+    ],
+    "animation-iteration-count": [
+      "\u003Csingle-animation-iteration-count\u003E#"
+    ],
+    "animation-name": [
+      "[ none | \u003Ckeyframes-name\u003E ]#"
+    ],
+    "animation-play-state": [
+      "\u003Csingle-animation-play-state\u003E#"
+    ],
+    "animation-range": [
+      "[ \u003C\u0027animation-range-start\u0027\u003E \u003C\u0027animation-range-end\u0027\u003E? ]#"
+    ],
+    "animation-range-end": [
+      "[ normal | \u003Clength-percentage\u003E | \u003Ctimeline-range-name\u003E \u003Clength-percentage\u003E? ]#"
+    ],
+    "animation-range-start": [
+      "[ normal | \u003Clength-percentage\u003E | \u003Ctimeline-range-name\u003E \u003Clength-percentage\u003E? ]#"
+    ],
+    "animation-timeline": [
+      "\u003Csingle-animation-timeline\u003E#"
+    ],
+    "animation-timing-function": [
+      "\u003Ceasing-function\u003E#"
+    ],
+    "appearance": [
+      "none | auto | \u003Ccompat-auto\u003E | \u003Ccompat-special\u003E"
+    ],
+    "aspect-ratio": [
+      "auto || \u003Cratio\u003E"
+    ],
+    "backdrop-filter": [
+      "none | \u003Cfilter-value-list\u003E"
+    ],
+    "backface-visibility": [
+      "visible | hidden"
+    ],
+    "background": [
+      "\u003Cbg-layer\u003E#? , \u003Cfinal-bg-layer\u003E"
+    ],
+    "background-attachment": [
+      "\u003Cattachment\u003E#"
+    ],
+    "background-blend-mode": [
+      "\u003Cmix-blend-mode\u003E#"
+    ],
+    "background-clip": [
+      "\u003Cbg-clip\u003E#",
+      "\u003Cvisual-box\u003E#"
+    ],
+    "background-color": [
+      "\u003Ccolor\u003E"
+    ],
+    "background-image": [
+      "\u003Cbg-image\u003E#"
+    ],
+    "background-origin": [
+      "\u003Cvisual-box\u003E#"
+    ],
+    "background-position": [
+      "\u003Cbg-position\u003E#"
+    ],
+    "background-position-block": [
+      "[ center | [ [ start | end ]? \u003Clength-percentage\u003E? ]! ]#"
+    ],
+    "background-position-inline": [
+      "[ center | [ [ start | end ]? \u003Clength-percentage\u003E? ]! ]#"
+    ],
+    "background-position-x": [
+      "[ center | [ [ left | right | x-start | x-end ]? \u003Clength-percentage\u003E? ]! ]#"
+    ],
+    "background-position-y": [
+      "[ center | [ [ top | bottom | y-start | y-end ]? \u003Clength-percentage\u003E? ]! ]#"
+    ],
+    "background-repeat": [
+      "\u003Crepeat-style\u003E#"
+    ],
+    "background-size": [
+      "\u003Cbg-size\u003E#"
+    ],
+    "background-tbd": [
+      "\u003Cbg-layer\u003E#"
+    ],
+    "baseline-shift": [
+      "\u003Clength-percentage\u003E | sub | super | top | center | bottom"
+    ],
+    "baseline-source": [
+      "auto | first | last"
+    ],
+    "block-ellipsis": [
+      "none | auto | \u003Cstring\u003E"
+    ],
+    "block-size": [
+      "\u003C\u0027width\u0027\u003E"
+    ],
+    "block-step": [
+      "\u003C\u0027block-step-size\u0027\u003E || \u003C\u0027block-step-insert\u0027\u003E || \u003C\u0027block-step-align\u0027\u003E || \u003C\u0027block-step-round\u0027\u003E"
+    ],
+    "block-step-align": [
+      "auto | center | start | end"
+    ],
+    "block-step-insert": [
+      "margin | padding"
+    ],
+    "block-step-round": [
+      "up | down | nearest"
+    ],
+    "block-step-size": [
+      "none | \u003Clength [0,\u221E]\u003E"
+    ],
+    "bookmark-label": [
+      "\u003Ccontent-list\u003E"
+    ],
+    "bookmark-level": [
+      "none | \u003Cinteger [1,\u221E]\u003E"
+    ],
+    "bookmark-state": [
+      "open | closed"
+    ],
+    "border": [
+      "\u003Cline-width\u003E || \u003Cline-style\u003E || \u003Ccolor\u003E"
+    ],
+    "border-block": [
+      "\u003C\u0027border-block-start\u0027\u003E"
+    ],
+    "border-block-color": [
+      "\u003C\u0027border-top-color\u0027\u003E{1,2}"
+    ],
+    "border-block-end": [
+      "\u003Cline-width\u003E || \u003Cline-style\u003E || \u003Ccolor\u003E"
+    ],
+    "border-block-end-color": [
+      "\u003Ccolor\u003E | \u003Cimage-1D\u003E"
+    ],
+    "border-block-end-radius": [
+      "\u003Clength-percentage [0,\u221E]\u003E{1,2} [ / \u003Clength-percentage [0,\u221E]\u003E{1,2} ]?"
+    ],
+    "border-block-end-style": [
+      "\u003Cline-style\u003E"
+    ],
+    "border-block-end-width": [
+      "\u003Cline-width\u003E"
+    ],
+    "border-block-start": [
+      "\u003Cline-width\u003E || \u003Cline-style\u003E || \u003Ccolor\u003E"
+    ],
+    "border-block-start-color": [
+      "\u003Ccolor\u003E | \u003Cimage-1D\u003E"
+    ],
+    "border-block-start-radius": [
+      "\u003Clength-percentage [0,\u221E]\u003E{1,2} [ / \u003Clength-percentage [0,\u221E]\u003E{1,2} ]?"
+    ],
+    "border-block-start-style": [
+      "\u003Cline-style\u003E"
+    ],
+    "border-block-start-width": [
+      "\u003Cline-width\u003E"
+    ],
+    "border-block-style": [
+      "\u003C\u0027border-top-style\u0027\u003E{1,2}"
+    ],
+    "border-block-width": [
+      "\u003C\u0027border-top-width\u0027\u003E{1,2}"
+    ],
+    "border-bottom": [
+      "\u003Cline-width\u003E || \u003Cline-style\u003E || \u003Ccolor\u003E"
+    ],
+    "border-bottom-color": [
+      "\u003Ccolor\u003E | \u003Cimage-1D\u003E"
+    ],
+    "border-bottom-left-radius": [
+      "\u003Clength-percentage [0,\u221E]\u003E{1,2}"
+    ],
+    "border-bottom-radius": [
+      "\u003Clength-percentage [0,\u221E]\u003E{1,2} [ / \u003Clength-percentage [0,\u221E]\u003E{1,2} ]?"
+    ],
+    "border-bottom-right-radius": [
+      "\u003Clength-percentage [0,\u221E]\u003E{1,2}"
+    ],
+    "border-bottom-style": [
+      "\u003Cline-style\u003E"
+    ],
+    "border-bottom-width": [
+      "\u003Cline-width\u003E"
+    ],
+    "border-boundary": [
+      "none | parent | display"
+    ],
+    "border-clip": [
+      "normal | [ \u003Clength-percentage [0,\u221E]\u003E | \u003Cflex\u003E ]\u002B"
+    ],
+    "border-clip-bottom": [
+      "normal | [ \u003Clength-percentage [0,\u221E]\u003E | \u003Cflex\u003E ]\u002B"
+    ],
+    "border-clip-left": [
+      "normal | [ \u003Clength-percentage [0,\u221E]\u003E | \u003Cflex\u003E ]\u002B"
+    ],
+    "border-clip-right": [
+      "normal | [ \u003Clength-percentage [0,\u221E]\u003E | \u003Cflex\u003E ]\u002B"
+    ],
+    "border-clip-top": [
+      "normal | [ \u003Clength-percentage [0,\u221E]\u003E | \u003Cflex\u003E ]\u002B"
+    ],
+    "border-collapse": [
+      "separate | collapse"
+    ],
+    "border-color": [
+      "[ \u003Ccolor\u003E | \u003Cimage-1D\u003E ]{1,4}"
+    ],
+    "border-end-end-radius": [
+      "\u003Clength-percentage [0,\u221E]\u003E{1,2}"
+    ],
+    "border-end-start-radius": [
+      "\u003Clength-percentage [0,\u221E]\u003E{1,2}"
+    ],
+    "border-image": [
+      "\u003C\u0027border-image-source\u0027\u003E || \u003C\u0027border-image-slice\u0027\u003E [ / \u003C\u0027border-image-width\u0027\u003E | / \u003C\u0027border-image-width\u0027\u003E? / \u003C\u0027border-image-outset\u0027\u003E ]? || \u003C\u0027border-image-repeat\u0027\u003E"
+    ],
+    "border-image-outset": [
+      "[ \u003Clength [0,\u221E]\u003E | \u003Cnumber [0,\u221E]\u003E ]{1,4}"
+    ],
+    "border-image-repeat": [
+      "[ stretch | repeat | round | space ]{1,2}"
+    ],
+    "border-image-slice": [
+      "[\u003Cnumber [0,\u221E]\u003E | \u003Cpercentage [0,\u221E]\u003E]{1,4} \u0026\u0026 fill?"
+    ],
+    "border-image-source": [
+      "none | \u003Cimage\u003E"
+    ],
+    "border-image-width": [
+      "[ \u003Clength-percentage [0,\u221E]\u003E | \u003Cnumber [0,\u221E]\u003E | auto ]{1,4}"
+    ],
+    "border-inline": [
+      "\u003C\u0027border-block-start\u0027\u003E"
+    ],
+    "border-inline-color": [
+      "\u003C\u0027border-top-color\u0027\u003E{1,2}"
+    ],
+    "border-inline-end": [
+      "\u003Cline-width\u003E || \u003Cline-style\u003E || \u003Ccolor\u003E"
+    ],
+    "border-inline-end-color": [
+      "\u003Ccolor\u003E | \u003Cimage-1D\u003E"
+    ],
+    "border-inline-end-radius": [
+      "\u003Clength-percentage [0,\u221E]\u003E{1,2} [ / \u003Clength-percentage [0,\u221E]\u003E{1,2} ]?"
+    ],
+    "border-inline-end-style": [
+      "\u003Cline-style\u003E"
+    ],
+    "border-inline-end-width": [
+      "\u003Cline-width\u003E"
+    ],
+    "border-inline-start": [
+      "\u003Cline-width\u003E || \u003Cline-style\u003E || \u003Ccolor\u003E"
+    ],
+    "border-inline-start-color": [
+      "\u003Ccolor\u003E | \u003Cimage-1D\u003E"
+    ],
+    "border-inline-start-radius": [
+      "\u003Clength-percentage [0,\u221E]\u003E{1,2} [ / \u003Clength-percentage [0,\u221E]\u003E{1,2} ]?"
+    ],
+    "border-inline-start-style": [
+      "\u003Cline-style\u003E"
+    ],
+    "border-inline-start-width": [
+      "\u003Cline-width\u003E"
+    ],
+    "border-inline-style": [
+      "\u003C\u0027border-top-style\u0027\u003E{1,2}"
+    ],
+    "border-inline-width": [
+      "\u003C\u0027border-top-width\u0027\u003E{1,2}"
+    ],
+    "border-left": [
+      "\u003Cline-width\u003E || \u003Cline-style\u003E || \u003Ccolor\u003E"
+    ],
+    "border-left-color": [
+      "\u003Ccolor\u003E | \u003Cimage-1D\u003E"
+    ],
+    "border-left-radius": [
+      "\u003Clength-percentage [0,\u221E]\u003E{1,2} [ / \u003Clength-percentage [0,\u221E]\u003E{1,2} ]?"
+    ],
+    "border-left-style": [
+      "\u003Cline-style\u003E"
+    ],
+    "border-left-width": [
+      "\u003Cline-width\u003E"
+    ],
+    "border-limit": [
+      "all | [ sides | corners ] \u003Clength-percentage [0,\u221E]\u003E? | [ top | right | bottom | left ] \u003Clength-percentage [0,\u221E]\u003E"
+    ],
+    "border-radius": [
+      "\u003Clength-percentage [0,\u221E]\u003E{1,4} [ / \u003Clength-percentage [0,\u221E]\u003E{1,4} ]?"
+    ],
+    "border-right": [
+      "\u003Cline-width\u003E || \u003Cline-style\u003E || \u003Ccolor\u003E"
+    ],
+    "border-right-color": [
+      "\u003Ccolor\u003E | \u003Cimage-1D\u003E"
+    ],
+    "border-right-radius": [
+      "\u003Clength-percentage [0,\u221E]\u003E{1,2} [ / \u003Clength-percentage [0,\u221E]\u003E{1,2} ]?"
+    ],
+    "border-right-style": [
+      "\u003Cline-style\u003E"
+    ],
+    "border-right-width": [
+      "\u003Cline-width\u003E"
+    ],
+    "border-spacing": [
+      "\u003Clength\u003E{1,2}"
+    ],
+    "border-start-end-radius": [
+      "\u003Clength-percentage [0,\u221E]\u003E{1,2}"
+    ],
+    "border-start-start-radius": [
+      "\u003Clength-percentage [0,\u221E]\u003E{1,2}"
+    ],
+    "border-style": [
+      "\u003Cline-style\u003E{1,4}"
+    ],
+    "border-top": [
+      "\u003Cline-width\u003E || \u003Cline-style\u003E || \u003Ccolor\u003E"
+    ],
+    "border-top-color": [
+      "\u003Ccolor\u003E | \u003Cimage-1D\u003E"
+    ],
+    "border-top-left-radius": [
+      "\u003Clength-percentage [0,\u221E]\u003E{1,2}"
+    ],
+    "border-top-radius": [
+      "\u003Clength-percentage [0,\u221E]\u003E{1,2} [ / \u003Clength-percentage [0,\u221E]\u003E{1,2} ]?"
+    ],
+    "border-top-right-radius": [
+      "\u003Clength-percentage [0,\u221E]\u003E{1,2}"
+    ],
+    "border-top-style": [
+      "\u003Cline-style\u003E"
+    ],
+    "border-top-width": [
+      "\u003Cline-width\u003E"
+    ],
+    "border-width": [
+      "\u003Cline-width\u003E{1,4}"
+    ],
+    "bottom": [
+      "auto | \u003Clength-percentage\u003E"
+    ],
+    "box-decoration-break": [
+      "slice | clone"
+    ],
+    "box-shadow": [
+      "\u003Cspread-shadow\u003E#"
+    ],
+    "box-shadow-blur": [
+      "\u003Clength [0,\u221E]\u003E#"
+    ],
+    "box-shadow-color": [
+      "\u003Ccolor\u003E#"
+    ],
+    "box-shadow-offset": [
+      "[ none | \u003Clength\u003E{2} ]#"
+    ],
+    "box-shadow-position": [
+      "[ outset | inset ]#"
+    ],
+    "box-shadow-spread": [
+      "\u003Clength\u003E#"
+    ],
+    "box-sizing": [
+      "content-box | border-box"
+    ],
+    "box-snap": [
+      "none | block-start | block-end | center | baseline | last-baseline"
+    ],
+    "break-after": [
+      "auto | avoid | always | all | avoid-page | page | left | right | recto | verso | avoid-column | column | avoid-region | region"
+    ],
+    "break-before": [
+      "auto | avoid | always | all | avoid-page | page | left | right | recto | verso | avoid-column | column | avoid-region | region"
+    ],
+    "break-inside": [
+      "auto | avoid | avoid-page | avoid-column | avoid-region"
+    ],
+    "caption-side": [
+      "top | bottom"
+    ],
+    "caret": [
+      "\u003C\u0027caret-color\u0027\u003E || \u003C\u0027caret-animation\u0027\u003E || \u003C\u0027caret-shape\u0027\u003E"
+    ],
+    "caret-animation": [
+      "auto | manual"
+    ],
+    "caret-color": [
+      "auto | \u003Ccolor\u003E"
+    ],
+    "caret-shape": [
+      "auto | bar | block | underscore"
+    ],
+    "clear": [
+      "inline-start | inline-end | block-start | block-end | left | right | top | bottom | both-inline | both-block | both | none"
+    ],
+    "clip": [
+      "\u003Crect()\u003E | auto"
+    ],
+    "clip-path": [
+      "\u003Cclip-source\u003E | [ \u003Cbasic-shape\u003E || \u003Cgeometry-box\u003E ] | none"
+    ],
+    "clip-rule": [
+      "nonzero | evenodd"
+    ],
+    "color": [
+      "\u003Ccolor\u003E"
+    ],
+    "color-adjust": [
+      "\u003C\u0027print-color-adjust\u0027\u003E"
+    ],
+    "color-interpolation": [
+      "auto | sRGB | linearRGB"
+    ],
+    "color-interpolation-filters": [
+      "auto | sRGB | linearRGB"
+    ],
+    "color-scheme": [
+      "normal | [ light | dark | \u003Ccustom-ident\u003E ]\u002B \u0026\u0026 only?"
+    ],
+    "column-count": [
+      "auto | \u003Cinteger [1,\u221E]\u003E"
+    ],
+    "column-fill": [
+      "auto | balance | balance-all"
+    ],
+    "column-gap": [
+      "normal | \u003Clength-percentage [0,\u221E]\u003E"
+    ],
+    "column-rule": [
+      "\u003C\u0027column-rule-width\u0027\u003E || \u003C\u0027column-rule-style\u0027\u003E || \u003C\u0027column-rule-color\u0027\u003E"
+    ],
+    "column-rule-color": [
+      "\u003Ccolor\u003E"
+    ],
+    "column-rule-style": [
+      "\u003Cline-style\u003E"
+    ],
+    "column-rule-width": [
+      "\u003Cline-width\u003E"
+    ],
+    "column-span": [
+      "none | \u003Cinteger [1,\u221E]\u003E | all | auto",
+      "none | all"
+    ],
+    "column-width": [
+      "auto | \u003Clength [0,\u221E]\u003E"
+    ],
+    "columns": [
+      "\u003C\u0027column-width\u0027\u003E || \u003C\u0027column-count\u0027\u003E"
+    ],
+    "contain": [
+      "none | strict | content | [ [size | inline-size] || layout || style || paint ]",
+      "none | strict | content | [ size || layout || style || paint ]"
+    ],
+    "contain-intrinsic-block-size": [
+      "auto? [ none | \u003Clength\u003E ]"
+    ],
+    "contain-intrinsic-height": [
+      "auto? [ none | \u003Clength\u003E ]"
+    ],
+    "contain-intrinsic-inline-size": [
+      "auto? [ none | \u003Clength\u003E ]"
+    ],
+    "contain-intrinsic-size": [
+      "[ auto? [ none | \u003Clength\u003E ] ]{1,2}"
+    ],
+    "contain-intrinsic-width": [
+      "auto? [ none | \u003Clength\u003E ]"
+    ],
+    "container": [
+      "\u003C\u0027container-name\u0027\u003E [ / \u003C\u0027container-type\u0027\u003E ]?"
+    ],
+    "container-name": [
+      "none | \u003Ccustom-ident\u003E\u002B"
+    ],
+    "container-type": [
+      "normal | size | inline-size"
+    ],
+    "content": [
+      "normal | none | [ \u003Ccontent-replacement\u003E | \u003Ccontent-list\u003E ] [/ [ \u003Cstring\u003E | \u003Ccounter\u003E | \u003Cattr()\u003E ]\u002B ]?"
+    ],
+    "content-visibility": [
+      "visible | auto | hidden"
+    ],
+    "continue": [
+      "auto | discard | -webkit-discard | overflow | paginate | fragments"
+    ],
+    "copy-into": [
+      "none | [ [ \u003Ccustom-ident\u003E \u003Ccontent-level\u003E] [, \u003Ccustom-ident\u003E \u003Ccontent-level\u003E]* ]?"
+    ],
+    "corner-shape": [
+      "[ round | angle ]{1,4}"
+    ],
+    "corners": [
+      "\u003C\u0027corner-shape\u0027\u003E || \u003C\u0027border-radius\u0027\u003E"
+    ],
+    "counter-increment": [
+      "[ \u003Ccounter-name\u003E \u003Cinteger\u003E? ]\u002B | none"
+    ],
+    "counter-reset": [
+      "[ \u003Ccounter-name\u003E \u003Cinteger\u003E? | \u003Creversed-counter-name\u003E \u003Cinteger\u003E? ]\u002B | none"
+    ],
+    "counter-set": [
+      "[ \u003Ccounter-name\u003E \u003Cinteger\u003E? ]\u002B | none"
+    ],
+    "cue": [
+      "\u003C\u0027cue-before\u0027\u003E \u003C\u0027cue-after\u0027\u003E?"
+    ],
+    "cue-after": [
+      "\u003Curi\u003E \u003Cdecibel\u003E? | none"
+    ],
+    "cue-before": [
+      "\u003Curi\u003E \u003Cdecibel\u003E? | none"
+    ],
+    "cursor": [
+      "[ [ \u003Curl\u003E | \u003Curl-set\u003E ] [\u003Cx\u003E \u003Cy\u003E]? ]#? [ auto | default | none | context-menu | help | pointer | progress | wait | cell | crosshair | text | vertical-text | alias | copy | move | no-drop | not-allowed | grab | grabbing | e-resize | n-resize | ne-resize | nw-resize | s-resize | se-resize | sw-resize | w-resize | ew-resize | ns-resize | nesw-resize | nwse-resize | col-resize | row-resize | all-scroll | zoom-in | zoom-out ]"
+    ],
+    "cx": [
+      "\u003Clength-percentage\u003E"
+    ],
+    "cy": [
+      "\u003Clength-percentage\u003E"
+    ],
+    "d": [
+      "none | \u003Cstring\u003E"
+    ],
+    "direction": [
+      "ltr | rtl"
+    ],
+    "display": [
+      "[ \u003Cdisplay-outside\u003E || \u003Cdisplay-inside\u003E ] | \u003Cdisplay-listitem\u003E | \u003Cdisplay-internal\u003E | \u003Cdisplay-box\u003E | \u003Cdisplay-legacy\u003E"
+    ],
+    "dominant-baseline": [
+      "auto | text-bottom | alphabetic | ideographic | middle | central | mathematical | hanging | text-top"
+    ],
+    "dynamic-range-limit": [
+      "standard | high | constrained-high"
+    ],
+    "empty-cells": [
+      "show | hide"
+    ],
+    "field-sizing": [
+      "fixed | content"
+    ],
+    "fill": [
+      "\u003Cpaint\u003E"
+    ],
+    "fill-break": [
+      "bounding-box | slice | clone"
+    ],
+    "fill-color": [
+      "\u003Ccolor\u003E"
+    ],
+    "fill-image": [
+      "\u003Cpaint\u003E#"
+    ],
+    "fill-opacity": [
+      "\u003C\u0027opacity\u0027\u003E"
+    ],
+    "fill-origin": [
+      "match-parent | fill-box | stroke-box | content-box | padding-box | border-box"
+    ],
+    "fill-position": [
+      "\u003Cposition\u003E#"
+    ],
+    "fill-repeat": [
+      "\u003Crepeat-style\u003E#"
+    ],
+    "fill-rule": [
+      "nonzero | evenodd"
+    ],
+    "fill-size": [
+      "\u003Cbg-size\u003E#"
+    ],
+    "filter": [
+      "none | \u003Cfilter-value-list\u003E"
+    ],
+    "flex": [
+      "none | [ \u003C\u0027flex-grow\u0027\u003E \u003C\u0027flex-shrink\u0027\u003E? || \u003C\u0027flex-basis\u0027\u003E ]"
+    ],
+    "flex-basis": [
+      "content | \u003C\u0027width\u0027\u003E"
+    ],
+    "flex-direction": [
+      "row | row-reverse | column | column-reverse"
+    ],
+    "flex-flow": [
+      "\u003C\u0027flex-direction\u0027\u003E || \u003C\u0027flex-wrap\u0027\u003E"
+    ],
+    "flex-grow": [
+      "\u003Cnumber [0,\u221E]\u003E"
+    ],
+    "flex-shrink": [
+      "\u003Cnumber [0,\u221E]\u003E"
+    ],
+    "flex-wrap": [
+      "nowrap | wrap | wrap-reverse"
+    ],
+    "float": [
+      "block-start | block-end | inline-start | inline-end | snap-block | \u003Csnap-block()\u003E | snap-inline | \u003Csnap-inline()\u003E | left | right | top | bottom | none"
+    ],
+    "float-defer": [
+      "\u003Cinteger\u003E | last | none"
+    ],
+    "float-offset": [
+      "\u003Clength\u003E | \u003Cpercentage\u003E"
+    ],
+    "float-reference": [
+      "inline | column | region | page"
+    ],
+    "flood-color": [
+      "\u003Ccolor\u003E"
+    ],
+    "flood-opacity": [
+      "\u003C\u0027opacity\u0027\u003E"
+    ],
+    "flow-from": [
+      "\u003Cident\u003E | none"
+    ],
+    "flow-into": [
+      "none | \u003Cident\u003E [element | content]?"
+    ],
+    "font": [
+      "[ [ \u003C\u0027font-style\u0027\u003E || \u003Cfont-variant-css2\u003E || \u003C\u0027font-weight\u0027\u003E || \u003Cfont-width-css3\u003E ]? \u003C\u0027font-size\u0027\u003E [ / \u003C\u0027line-height\u0027\u003E ]? \u003C\u0027font-family\u0027\u003E ] | \u003Csystem-family-name\u003E"
+    ],
+    "font-family": [
+      "[ \u003Cfamily-name\u003E | \u003Cgeneric-family\u003E ]#"
+    ],
+    "font-feature-settings": [
+      "normal | \u003Cfeature-tag-value\u003E#"
+    ],
+    "font-kerning": [
+      "auto | normal | none"
+    ],
+    "font-language-override": [
+      "normal | \u003Cstring\u003E"
+    ],
+    "font-optical-sizing": [
+      "auto | none"
+    ],
+    "font-palette": [
+      "normal | light | dark | \u003Cpalette-identifier\u003E | \u003Cpalette-mix()\u003E"
+    ],
+    "font-size": [
+      "\u003Cabsolute-size\u003E | \u003Crelative-size\u003E | \u003Clength-percentage [0,\u221E]\u003E | math"
+    ],
+    "font-size-adjust": [
+      "none | \u003Cnumber [0,\u221E]\u003E",
+      "none | [ ex-height | cap-height | ch-width | ic-width | ic-height ]? [ from-font | \u003Cnumber [0,\u221E]\u003E ]"
+    ],
+    "font-style": [
+      "normal | italic | oblique \u003Cangle [-90deg,90deg]\u003E?"
+    ],
+    "font-synthesis": [
+      "none | [ weight || style || small-caps || position]"
+    ],
+    "font-synthesis-position": [
+      "auto | none"
+    ],
+    "font-synthesis-small-caps": [
+      "auto | none"
+    ],
+    "font-synthesis-style": [
+      "auto | none"
+    ],
+    "font-synthesis-weight": [
+      "auto | none"
+    ],
+    "font-variant": [
+      "normal | none | [ [ \u003Ccommon-lig-values\u003E || \u003Cdiscretionary-lig-values\u003E || \u003Chistorical-lig-values\u003E || \u003Ccontextual-alt-values\u003E ] || [ small-caps | all-small-caps | petite-caps | all-petite-caps | unicase | titling-caps ] || [ stylistic(\u003Cfeature-value-name\u003E) || historical-forms || styleset(\u003Cfeature-value-name\u003E#) || character-variant(\u003Cfeature-value-name\u003E#) || swash(\u003Cfeature-value-name\u003E) || ornaments(\u003Cfeature-value-name\u003E) || annotation(\u003Cfeature-value-name\u003E) ] || [ \u003Cnumeric-figure-values\u003E || \u003Cnumeric-spacing-values\u003E || \u003Cnumeric-fraction-values\u003E || ordinal || slashed-zero ] || [ \u003Ceast-asian-variant-values\u003E || \u003Ceast-asian-width-values\u003E || ruby ] || [ sub | super ] || [ text | emoji | unicode ] ]"
+    ],
+    "font-variant-alternates": [
+      "normal | [ stylistic(\u003Cfeature-value-name\u003E) || historical-forms || styleset(\u003Cfeature-value-name\u003E#) || character-variant(\u003Cfeature-value-name\u003E#) || swash(\u003Cfeature-value-name\u003E) || ornaments(\u003Cfeature-value-name\u003E) || annotation(\u003Cfeature-value-name\u003E) ]"
+    ],
+    "font-variant-caps": [
+      "normal | small-caps | all-small-caps | petite-caps | all-petite-caps | unicase | titling-caps"
+    ],
+    "font-variant-east-asian": [
+      "normal | [ \u003Ceast-asian-variant-values\u003E || \u003Ceast-asian-width-values\u003E || ruby ]"
+    ],
+    "font-variant-emoji": [
+      "normal | text | emoji | unicode"
+    ],
+    "font-variant-ligatures": [
+      "normal | none | [ \u003Ccommon-lig-values\u003E || \u003Cdiscretionary-lig-values\u003E || \u003Chistorical-lig-values\u003E || \u003Ccontextual-alt-values\u003E ]"
+    ],
+    "font-variant-numeric": [
+      "normal | [ \u003Cnumeric-figure-values\u003E || \u003Cnumeric-spacing-values\u003E || \u003Cnumeric-fraction-values\u003E || ordinal || slashed-zero ]"
+    ],
+    "font-variant-position": [
+      "normal | sub | super"
+    ],
+    "font-variation-settings": [
+      "normal | [ \u003Copentype-tag\u003E \u003Cnumber\u003E]#"
+    ],
+    "font-weight": [
+      "\u003Cfont-weight-absolute\u003E | bolder | lighter"
+    ],
+    "font-width": [
+      "normal | \u003Cpercentage [0,\u221E]\u003E | ultra-condensed | extra-condensed | condensed | semi-condensed | semi-expanded | expanded | extra-expanded | ultra-expanded"
+    ],
+    "footnote-display": [
+      "block | inline | compact"
+    ],
+    "footnote-policy": [
+      "auto | line | block"
+    ],
+    "forced-color-adjust": [
+      "auto | none | preserve-parent-color"
+    ],
+    "gap": [
+      "\u003C\u0027row-gap\u0027\u003E \u003C\u0027column-gap\u0027\u003E?"
+    ],
+    "glyph-orientation-vertical": [
+      "auto | 0deg | 90deg | 0 | 90"
+    ],
+    "grid": [
+      "\u003C\u0027grid-template\u0027\u003E | \u003C\u0027grid-template-rows\u0027\u003E / [ auto-flow \u0026\u0026 dense? ] \u003C\u0027grid-auto-columns\u0027\u003E? | [ auto-flow \u0026\u0026 dense? ] \u003C\u0027grid-auto-rows\u0027\u003E? / \u003C\u0027grid-template-columns\u0027\u003E"
+    ],
+    "grid-area": [
+      "\u003Cgrid-line\u003E [ / \u003Cgrid-line\u003E ]{0,3}"
+    ],
+    "grid-auto-columns": [
+      "\u003Ctrack-size\u003E\u002B"
+    ],
+    "grid-auto-flow": [
+      "[ row | column ] || dense"
+    ],
+    "grid-auto-rows": [
+      "\u003Ctrack-size\u003E\u002B"
+    ],
+    "grid-column": [
+      "\u003Cgrid-line\u003E [ / \u003Cgrid-line\u003E ]?"
+    ],
+    "grid-column-end": [
+      "\u003Cgrid-line\u003E"
+    ],
+    "grid-column-start": [
+      "\u003Cgrid-line\u003E"
+    ],
+    "grid-row": [
+      "\u003Cgrid-line\u003E [ / \u003Cgrid-line\u003E ]?"
+    ],
+    "grid-row-end": [
+      "\u003Cgrid-line\u003E"
+    ],
+    "grid-row-start": [
+      "\u003Cgrid-line\u003E"
+    ],
+    "grid-template": [
+      "none | [ \u003C\u0027grid-template-rows\u0027\u003E / \u003C\u0027grid-template-columns\u0027\u003E ] | [ \u003Cline-names\u003E? \u003Cstring\u003E \u003Ctrack-size\u003E? \u003Cline-names\u003E? ]\u002B [ / \u003Cexplicit-track-list\u003E ]?"
+    ],
+    "grid-template-areas": [
+      "none | \u003Cstring\u003E\u002B"
+    ],
+    "grid-template-columns": [
+      "none | \u003Ctrack-list\u003E | \u003Cauto-track-list\u003E | subgrid \u003Cline-name-list\u003E?"
+    ],
+    "grid-template-rows": [
+      "none | \u003Ctrack-list\u003E | \u003Cauto-track-list\u003E | subgrid \u003Cline-name-list\u003E?"
+    ],
+    "hanging-punctuation": [
+      "none | [ first || [ force-end | allow-end ] || last ]"
+    ],
+    "height": [
+      "auto | \u003Clength-percentage [0,\u221E]\u003E | min-content | max-content | fit-content(\u003Clength-percentage [0,\u221E]\u003E)"
+    ],
+    "hyphenate-character": [
+      "auto | \u003Cstring\u003E"
+    ],
+    "hyphenate-limit-chars": [
+      "[ auto | \u003Cinteger\u003E ]{1,3}"
+    ],
+    "hyphenate-limit-last": [
+      "none | always | column | page | spread"
+    ],
+    "hyphenate-limit-lines": [
+      "no-limit | \u003Cinteger\u003E"
+    ],
+    "hyphenate-limit-zone": [
+      "\u003Clength-percentage\u003E"
+    ],
+    "hyphens": [
+      "none | manual | auto"
+    ],
+    "image-orientation": [
+      "from-image | none | [ \u003Cangle\u003E || flip ]"
+    ],
+    "image-rendering": [
+      "auto | smooth | high-quality | pixelated | crisp-edges"
+    ],
+    "image-resolution": [
+      "[ from-image || \u003Cresolution\u003E ] \u0026\u0026 snap?"
+    ],
+    "initial-letter": [
+      "normal | \u003Cnumber [1,\u221E]\u003E \u003Cinteger [1,\u221E]\u003E | \u003Cnumber [1,\u221E]\u003E \u0026\u0026 [ drop | raise ]?"
+    ],
+    "initial-letter-align": [
+      "[ border-box? [ alphabetic | ideographic | hanging | leading ]? ]!"
+    ],
+    "initial-letter-wrap": [
+      "none | first | all | grid | \u003Clength-percentage\u003E"
+    ],
+    "inline-size": [
+      "\u003C\u0027width\u0027\u003E"
+    ],
+    "inline-sizing": [
+      "normal | stretch"
+    ],
+    "input-security": [
+      "auto | none"
+    ],
+    "inset": [
+      "\u003C\u0027top\u0027\u003E{1,4}"
+    ],
+    "inset-area": [
+      "none | \u003Cinset-area\u003E"
+    ],
+    "inset-block": [
+      "\u003C\u0027top\u0027\u003E{1,2}"
+    ],
+    "inset-block-end": [
+      "auto | \u003Clength-percentage\u003E"
+    ],
+    "inset-block-start": [
+      "auto | \u003Clength-percentage\u003E"
+    ],
+    "inset-inline": [
+      "\u003C\u0027top\u0027\u003E{1,2}"
+    ],
+    "inset-inline-end": [
+      "auto | \u003Clength-percentage\u003E"
+    ],
+    "inset-inline-start": [
+      "auto | \u003Clength-percentage\u003E"
+    ],
+    "isolation": [
+      "\u003Cisolation-mode\u003E"
+    ],
+    "justify-content": [
+      "normal | \u003Ccontent-distribution\u003E | \u003Coverflow-position\u003E? [ \u003Ccontent-position\u003E | left | right ]"
+    ],
+    "justify-items": [
+      "normal | stretch | \u003Cbaseline-position\u003E | \u003Coverflow-position\u003E? [ \u003Cself-position\u003E | left | right ] | legacy | legacy \u0026\u0026 [ left | right | center ]"
+    ],
+    "justify-self": [
+      "auto | normal | stretch | \u003Cbaseline-position\u003E | \u003Coverflow-position\u003E? [ \u003Cself-position\u003E | left | right ]"
+    ],
+    "left": [
+      "auto | \u003Clength-percentage\u003E"
+    ],
+    "letter-spacing": [
+      "normal | \u003Clength-percentage\u003E",
+      "normal | \u003Clength\u003E"
+    ],
+    "lighting-color": [
+      "\u003Ccolor\u003E"
+    ],
+    "line-break": [
+      "auto | loose | normal | strict | anywhere"
+    ],
+    "line-clamp": [
+      "none | \u003Cinteger [1,\u221E]\u003E || \u003C\u0027block-ellipsis\u0027\u003E"
+    ],
+    "line-grid": [
+      "match-parent | create"
+    ],
+    "line-height": [
+      "normal | \u003Cnumber [0,\u221E]\u003E | \u003Clength-percentage [0,\u221E]\u003E"
+    ],
+    "line-height-step": [
+      "\u003Clength [0,\u221E]\u003E"
+    ],
+    "line-padding": [
+      "\u003Clength\u003E"
+    ],
+    "line-snap": [
+      "none | baseline | contain"
+    ],
+    "link-parameters": [
+      "none | \u003Clink-param\u003E\u002B"
+    ],
+    "list-style": [
+      "\u003C\u0027list-style-position\u0027\u003E || \u003C\u0027list-style-image\u0027\u003E || \u003C\u0027list-style-type\u0027\u003E"
+    ],
+    "list-style-image": [
+      "\u003Cimage\u003E | none"
+    ],
+    "list-style-position": [
+      "inside | outside"
+    ],
+    "list-style-type": [
+      "\u003Ccounter-style\u003E | \u003Cstring\u003E | none"
+    ],
+    "margin": [
+      "\u003C\u0027margin-top\u0027\u003E{1,4}"
+    ],
+    "margin-block": [
+      "\u003C\u0027margin-top\u0027\u003E{1,2}"
+    ],
+    "margin-block-end": [
+      "\u003C\u0027margin-top\u0027\u003E"
+    ],
+    "margin-block-start": [
+      "\u003C\u0027margin-top\u0027\u003E"
+    ],
+    "margin-bottom": [
+      "\u003Clength-percentage\u003E | auto"
+    ],
+    "margin-break": [
+      "auto | keep | discard"
+    ],
+    "margin-inline": [
+      "\u003C\u0027margin-top\u0027\u003E{1,2}"
+    ],
+    "margin-inline-end": [
+      "\u003C\u0027margin-top\u0027\u003E"
+    ],
+    "margin-inline-start": [
+      "\u003C\u0027margin-top\u0027\u003E"
+    ],
+    "margin-left": [
+      "\u003Clength-percentage\u003E | auto"
+    ],
+    "margin-right": [
+      "\u003Clength-percentage\u003E | auto"
+    ],
+    "margin-top": [
+      "\u003Clength-percentage\u003E | auto"
+    ],
+    "margin-trim": [
+      "none | block | inline | [ block-start || inline-start || block-end || inline-end ]"
+    ],
+    "marker": [
+      "none | \u003Cmarker-ref\u003E"
+    ],
+    "marker-end": [
+      "none | \u003Cmarker-ref\u003E"
+    ],
+    "marker-mid": [
+      "none | \u003Cmarker-ref\u003E"
+    ],
+    "marker-side": [
+      "match-self | match-parent"
+    ],
+    "marker-start": [
+      "none | \u003Cmarker-ref\u003E"
+    ],
+    "mask": [
+      "\u003Cmask-layer\u003E#"
+    ],
+    "mask-border": [
+      "\u003C\u0027mask-border-source\u0027\u003E || \u003C\u0027mask-border-slice\u0027\u003E [ / \u003C\u0027mask-border-width\u0027\u003E? [ / \u003C\u0027mask-border-outset\u0027\u003E ]? ]? || \u003C\u0027mask-border-repeat\u0027\u003E || \u003C\u0027mask-border-mode\u0027\u003E"
+    ],
+    "mask-border-mode": [
+      "luminance | alpha"
+    ],
+    "mask-border-outset": [
+      "[ \u003Clength\u003E | \u003Cnumber\u003E ]{1,4}"
+    ],
+    "mask-border-repeat": [
+      "[ stretch | repeat | round | space ]{1,2}"
+    ],
+    "mask-border-slice": [
+      "[ \u003Cnumber\u003E | \u003Cpercentage\u003E ]{1,4} fill?"
+    ],
+    "mask-border-source": [
+      "none | \u003Cimage\u003E"
+    ],
+    "mask-border-width": [
+      "[ \u003Clength-percentage\u003E | \u003Cnumber\u003E | auto ]{1,4}"
+    ],
+    "mask-clip": [
+      "[ \u003Ccoord-box\u003E | no-clip ]#"
+    ],
+    "mask-composite": [
+      "\u003Ccompositing-operator\u003E#"
+    ],
+    "mask-image": [
+      "\u003Cmask-reference\u003E#"
+    ],
+    "mask-mode": [
+      "\u003Cmasking-mode\u003E#"
+    ],
+    "mask-origin": [
+      "\u003Ccoord-box\u003E#"
+    ],
+    "mask-position": [
+      "\u003Cposition\u003E#"
+    ],
+    "mask-repeat": [
+      "\u003Crepeat-style\u003E#"
+    ],
+    "mask-size": [
+      "\u003Cbg-size\u003E#"
+    ],
+    "mask-type": [
+      "luminance | alpha"
+    ],
+    "masonry-auto-flow": [
+      "[ pack | next ] || [definite-first | ordered ]"
+    ],
+    "math-depth": [
+      "auto-add | add(\u003Cinteger\u003E) | \u003Cinteger\u003E"
+    ],
+    "math-shift": [
+      "normal | compact"
+    ],
+    "math-style": [
+      "normal | compact"
+    ],
+    "max-block-size": [
+      "\u003C\u0027max-width\u0027\u003E"
+    ],
+    "max-height": [
+      "none | \u003Clength-percentage [0,\u221E]\u003E | min-content | max-content | fit-content(\u003Clength-percentage [0,\u221E]\u003E)"
+    ],
+    "max-inline-size": [
+      "\u003C\u0027max-width\u0027\u003E"
+    ],
+    "max-lines": [
+      "none | \u003Cinteger [1,\u221E]\u003E"
+    ],
+    "max-width": [
+      "none | \u003Clength-percentage [0,\u221E]\u003E | min-content | max-content | fit-content(\u003Clength-percentage [0,\u221E]\u003E)"
+    ],
+    "min-block-size": [
+      "\u003C\u0027min-width\u0027\u003E"
+    ],
+    "min-height": [
+      "auto | \u003Clength-percentage [0,\u221E]\u003E | min-content | max-content | fit-content(\u003Clength-percentage [0,\u221E]\u003E)"
+    ],
+    "min-inline-size": [
+      "\u003C\u0027min-width\u0027\u003E"
+    ],
+    "min-intrinsic-sizing": [
+      "legacy | zero-if-scroll || zero-if-extrinsic"
+    ],
+    "min-width": [
+      "auto | \u003Clength-percentage [0,\u221E]\u003E | min-content | max-content | fit-content(\u003Clength-percentage [0,\u221E]\u003E)"
+    ],
+    "mix-blend-mode": [
+      "\u003Cblend-mode\u003E | plus-darker | plus-lighter"
+    ],
+    "nav-down": [
+      "auto | \u003Cid\u003E [ current | root | \u003Ctarget-name\u003E ]?"
+    ],
+    "nav-left": [
+      "auto | \u003Cid\u003E [ current | root | \u003Ctarget-name\u003E ]?"
+    ],
+    "nav-right": [
+      "auto | \u003Cid\u003E [ current | root | \u003Ctarget-name\u003E ]?"
+    ],
+    "nav-up": [
+      "auto | \u003Cid\u003E [ current | root | \u003Ctarget-name\u003E ]?"
+    ],
+    "object-fit": [
+      "fill | contain | cover | none | scale-down",
+      "fill | none | [contain | cover] || scale-down"
+    ],
+    "object-position": [
+      "\u003Cposition\u003E"
+    ],
+    "object-view-box": [
+      "none | \u003Cbasic-shape-rect\u003E"
+    ],
+    "offset": [
+      "[ \u003C\u0027offset-position\u0027\u003E? [ \u003C\u0027offset-path\u0027\u003E [ \u003C\u0027offset-distance\u0027\u003E || \u003C\u0027offset-rotate\u0027\u003E ]? ]? ]! [ / \u003C\u0027offset-anchor\u0027\u003E ]?"
+    ],
+    "offset-anchor": [
+      "auto | \u003Cposition\u003E"
+    ],
+    "offset-distance": [
+      "\u003Clength-percentage\u003E"
+    ],
+    "offset-path": [
+      "none | \u003Coffset-path\u003E || \u003Ccoord-box\u003E"
+    ],
+    "offset-position": [
+      "normal | auto | \u003Cposition\u003E"
+    ],
+    "offset-rotate": [
+      "[ auto | reverse ] || \u003Cangle\u003E"
+    ],
+    "opacity": [
+      "\u003Copacity-value\u003E"
+    ],
+    "order": [
+      "\u003Cinteger\u003E"
+    ],
+    "orphans": [
+      "\u003Cinteger [1,\u221E]\u003E"
+    ],
+    "outline": [
+      "[ \u003C\u0027outline-color\u0027\u003E || \u003C\u0027outline-style\u0027\u003E || \u003C\u0027outline-width\u0027\u003E ]"
+    ],
+    "outline-color": [
+      "auto | [ \u003Ccolor\u003E | \u003Cimage-1D\u003E ]"
+    ],
+    "outline-offset": [
+      "\u003Clength\u003E"
+    ],
+    "outline-style": [
+      "auto | \u003Coutline-line-style\u003E"
+    ],
+    "outline-width": [
+      "\u003Cline-width\u003E"
+    ],
+    "overflow": [
+      "\u003C\u0027overflow-block\u0027\u003E{1,2}"
+    ],
+    "overflow-anchor": [
+      "auto | none"
+    ],
+    "overflow-block": [
+      "visible | hidden | clip | scroll | auto"
+    ],
+    "overflow-clip-margin": [
+      "\u003Cvisual-box\u003E || \u003Clength [0,\u221E]\u003E"
+    ],
+    "overflow-clip-margin-block": [
+      "\u003Cvisual-box\u003E || \u003Clength [0,\u221E]\u003E"
+    ],
+    "overflow-clip-margin-block-end": [
+      "\u003Cvisual-box\u003E || \u003Clength [0,\u221E]\u003E"
+    ],
+    "overflow-clip-margin-block-start": [
+      "\u003Cvisual-box\u003E || \u003Clength [0,\u221E]\u003E"
+    ],
+    "overflow-clip-margin-bottom": [
+      "\u003Cvisual-box\u003E || \u003Clength [0,\u221E]\u003E"
+    ],
+    "overflow-clip-margin-inline": [
+      "\u003Cvisual-box\u003E || \u003Clength [0,\u221E]\u003E"
+    ],
+    "overflow-clip-margin-inline-end": [
+      "\u003Cvisual-box\u003E || \u003Clength [0,\u221E]\u003E"
+    ],
+    "overflow-clip-margin-inline-start": [
+      "\u003Cvisual-box\u003E || \u003Clength [0,\u221E]\u003E"
+    ],
+    "overflow-clip-margin-left": [
+      "\u003Cvisual-box\u003E || \u003Clength [0,\u221E]\u003E"
+    ],
+    "overflow-clip-margin-right": [
+      "\u003Cvisual-box\u003E || \u003Clength [0,\u221E]\u003E"
+    ],
+    "overflow-clip-margin-top": [
+      "\u003Cvisual-box\u003E || \u003Clength [0,\u221E]\u003E"
+    ],
+    "overflow-inline": [
+      "visible | hidden | clip | scroll | auto"
+    ],
+    "overflow-wrap": [
+      "normal | break-word | anywhere"
+    ],
+    "overflow-x": [
+      "visible | hidden | clip | scroll | auto"
+    ],
+    "overflow-y": [
+      "visible | hidden | clip | scroll | auto"
+    ],
+    "overlay": [
+      "none | auto"
+    ],
+    "overscroll-behavior": [
+      "[ contain | none | auto ]{1,2}"
+    ],
+    "overscroll-behavior-block": [
+      "contain | none | auto"
+    ],
+    "overscroll-behavior-inline": [
+      "contain | none | auto"
+    ],
+    "overscroll-behavior-x": [
+      "contain | none | auto"
+    ],
+    "overscroll-behavior-y": [
+      "contain | none | auto"
+    ],
+    "padding": [
+      "\u003C\u0027padding-top\u0027\u003E{1,4}"
+    ],
+    "padding-block": [
+      "\u003C\u0027padding-top\u0027\u003E{1,2}"
+    ],
+    "padding-block-end": [
+      "\u003C\u0027padding-top\u0027\u003E"
+    ],
+    "padding-block-start": [
+      "\u003C\u0027padding-top\u0027\u003E"
+    ],
+    "padding-bottom": [
+      "\u003Clength-percentage [0,\u221E]\u003E"
+    ],
+    "padding-inline": [
+      "\u003C\u0027padding-top\u0027\u003E{1,2}"
+    ],
+    "padding-inline-end": [
+      "\u003C\u0027padding-top\u0027\u003E"
+    ],
+    "padding-inline-start": [
+      "\u003C\u0027padding-top\u0027\u003E"
+    ],
+    "padding-left": [
+      "\u003Clength-percentage [0,\u221E]\u003E"
+    ],
+    "padding-right": [
+      "\u003Clength-percentage [0,\u221E]\u003E"
+    ],
+    "padding-top": [
+      "\u003Clength-percentage [0,\u221E]\u003E"
+    ],
+    "page": [
+      "auto | \u003Ccustom-ident\u003E"
+    ],
+    "page-break-after": [
+      "auto | always | avoid | left | right | inherit"
+    ],
+    "page-break-before": [
+      "auto | always | avoid | left | right | inherit"
+    ],
+    "page-break-inside": [
+      "avoid | auto | inherit"
+    ],
+    "paint-order": [
+      "normal | [ fill || stroke || markers ]"
+    ],
+    "pause": [
+      "\u003C\u0027pause-before\u0027\u003E \u003C\u0027pause-after\u0027\u003E?"
+    ],
+    "pause-after": [
+      "\u003Ctime [0s,\u221E]\u003E | none | x-weak | weak | medium | strong | x-strong"
+    ],
+    "pause-before": [
+      "\u003Ctime [0s,\u221E]\u003E | none | x-weak | weak | medium | strong | x-strong"
+    ],
+    "perspective": [
+      "none | \u003Clength [0,\u221E]\u003E"
+    ],
+    "perspective-origin": [
+      "\u003Cposition\u003E"
+    ],
+    "place-content": [
+      "\u003C\u0027align-content\u0027\u003E \u003C\u0027justify-content\u0027\u003E?"
+    ],
+    "place-items": [
+      "\u003C\u0027align-items\u0027\u003E \u003C\u0027justify-items\u0027\u003E?"
+    ],
+    "place-self": [
+      "\u003C\u0027align-self\u0027\u003E \u003C\u0027justify-self\u0027\u003E?"
+    ],
+    "pointer-events": [
+      "auto | bounding-box | visiblePainted | visibleFill | visibleStroke | visible | painted | fill | stroke | all | none"
+    ],
+    "position": [
+      "static | relative | absolute | sticky | fixed"
+    ],
+    "position-anchor": [
+      "\u003Canchor-element\u003E"
+    ],
+    "position-try": [
+      "\u003C\u0027position-try-order\u0027\u003E? \u003C\u0027position-try-options\u0027\u003E"
+    ],
+    "position-try-options": [
+      "none | [ [\u003Cdashed-ident\u003E || \u003Ctry-tactic\u003E] | inset-area( \u003C\u0027inset-area\u0027\u003E ) ]#"
+    ],
+    "position-try-order": [
+      "normal | \u003Ctry-size\u003E"
+    ],
+    "position-visibility": [
+      "always | [ anchors-valid || anchors-visible || no-overflow ]"
+    ],
+    "print-color-adjust": [
+      "economy | exact"
+    ],
+    "quotes": [
+      "auto | none | match-parent | [ \u003Cstring\u003E \u003Cstring\u003E ]\u002B"
+    ],
+    "r": [
+      "\u003Clength-percentage\u003E"
+    ],
+    "reading-order-items": [
+      "normal | flex-visual | flex-flow | grid-rows | grid-columns | grid-order"
+    ],
+    "region-fragment": [
+      "auto | break"
+    ],
+    "resize": [
+      "none | both | horizontal | vertical | block | inline"
+    ],
+    "rest": [
+      "\u003C\u0027rest-before\u0027\u003E \u003C\u0027rest-after\u0027\u003E?"
+    ],
+    "rest-after": [
+      "\u003Ctime [0s,\u221E]\u003E | none | x-weak | weak | medium | strong | x-strong"
+    ],
+    "rest-before": [
+      "\u003Ctime [0s,\u221E]\u003E | none | x-weak | weak | medium | strong | x-strong"
+    ],
+    "right": [
+      "auto | \u003Clength-percentage\u003E"
+    ],
+    "rotate": [
+      "none | \u003Cangle\u003E | [ x | y | z | \u003Cnumber\u003E{3} ] \u0026\u0026 \u003Cangle\u003E"
+    ],
+    "row-gap": [
+      "normal | \u003Clength-percentage [0,\u221E]\u003E"
+    ],
+    "ruby-align": [
+      "start | center | space-between | space-around"
+    ],
+    "ruby-merge": [
+      "separate | merge | auto"
+    ],
+    "ruby-overhang": [
+      "auto | none"
+    ],
+    "ruby-position": [
+      "[ alternate || [ over | under ] ] | inter-character"
+    ],
+    "rx": [
+      "\u003Clength-percentage\u003E | auto"
+    ],
+    "ry": [
+      "\u003Clength-percentage\u003E | auto"
+    ],
+    "scale": [
+      "none | [ \u003Cnumber\u003E | \u003Cpercentage\u003E ]{1,3}"
+    ],
+    "scroll-behavior": [
+      "auto | smooth"
+    ],
+    "scroll-margin": [
+      "\u003Clength\u003E{1,4}"
+    ],
+    "scroll-margin-block": [
+      "\u003Clength\u003E{1,2}"
+    ],
+    "scroll-margin-block-end": [
+      "\u003Clength\u003E"
+    ],
+    "scroll-margin-block-start": [
+      "\u003Clength\u003E"
+    ],
+    "scroll-margin-bottom": [
+      "\u003Clength\u003E"
+    ],
+    "scroll-margin-inline": [
+      "\u003Clength\u003E{1,2}"
+    ],
+    "scroll-margin-inline-end": [
+      "\u003Clength\u003E"
+    ],
+    "scroll-margin-inline-start": [
+      "\u003Clength\u003E"
+    ],
+    "scroll-margin-left": [
+      "\u003Clength\u003E"
+    ],
+    "scroll-margin-right": [
+      "\u003Clength\u003E"
+    ],
+    "scroll-margin-top": [
+      "\u003Clength\u003E"
+    ],
+    "scroll-padding": [
+      "[ auto | \u003Clength-percentage [0,\u221E]\u003E ]{1,4}"
+    ],
+    "scroll-padding-block": [
+      "[ auto | \u003Clength-percentage [0,\u221E]\u003E ]{1,2}"
+    ],
+    "scroll-padding-block-end": [
+      "auto | \u003Clength-percentage [0,\u221E]\u003E"
+    ],
+    "scroll-padding-block-start": [
+      "auto | \u003Clength-percentage [0,\u221E]\u003E"
+    ],
+    "scroll-padding-bottom": [
+      "auto | \u003Clength-percentage [0,\u221E]\u003E"
+    ],
+    "scroll-padding-inline": [
+      "[ auto | \u003Clength-percentage [0,\u221E]\u003E ]{1,2}"
+    ],
+    "scroll-padding-inline-end": [
+      "auto | \u003Clength-percentage [0,\u221E]\u003E"
+    ],
+    "scroll-padding-inline-start": [
+      "auto | \u003Clength-percentage [0,\u221E]\u003E"
+    ],
+    "scroll-padding-left": [
+      "auto | \u003Clength-percentage [0,\u221E]\u003E"
+    ],
+    "scroll-padding-right": [
+      "auto | \u003Clength-percentage [0,\u221E]\u003E"
+    ],
+    "scroll-padding-top": [
+      "auto | \u003Clength-percentage [0,\u221E]\u003E"
+    ],
+    "scroll-snap-align": [
+      "[ none | start | end | center ]{1,2}"
+    ],
+    "scroll-snap-stop": [
+      "normal | always"
+    ],
+    "scroll-snap-type": [
+      "none | [ x | y | block | inline | both ] [ mandatory | proximity ]?"
+    ],
+    "scroll-start": [
+      "[ auto | start | end | center | left | right | top | bottom | \u003Clength-percentage [0,\u221E]\u003E ]{1,2}"
+    ],
+    "scroll-start-block": [
+      "auto | start | end | center | \u003Clength-percentage [0,\u221E]\u003E"
+    ],
+    "scroll-start-inline": [
+      "auto | start | end | center | \u003Clength-percentage [0,\u221E]\u003E"
+    ],
+    "scroll-start-target": [
+      "[ none | auto ]{1,2}"
+    ],
+    "scroll-start-target-block": [
+      "auto | none"
+    ],
+    "scroll-start-target-inline": [
+      "auto | none"
+    ],
+    "scroll-start-target-x": [
+      "none | auto"
+    ],
+    "scroll-start-target-y": [
+      "none | auto"
+    ],
+    "scroll-start-x": [
+      "auto | start | end | center | \u003Clength-percentage [0,\u221E]\u003E"
+    ],
+    "scroll-start-y": [
+      "auto | start | end | center | \u003Clength-percentage [0,\u221E]\u003E"
+    ],
+    "scroll-timeline": [
+      "[ \u003C\u0027scroll-timeline-name\u0027\u003E \u003C\u0027scroll-timeline-axis\u0027\u003E? ]#"
+    ],
+    "scroll-timeline-axis": [
+      "[ block | inline | x | y ]#"
+    ],
+    "scroll-timeline-name": [
+      "[ none | \u003Cdashed-ident\u003E ]#"
+    ],
+    "scrollbar-color": [
+      "auto | \u003Ccolor\u003E{2}"
+    ],
+    "scrollbar-gutter": [
+      "auto | stable \u0026\u0026 both-edges?"
+    ],
+    "scrollbar-width": [
+      "auto | thin | none"
+    ],
+    "shape-image-threshold": [
+      "\u003Copacity-value\u003E"
+    ],
+    "shape-inside": [
+      "auto | outside-shape | [ \u003Cbasic-shape\u003E || shape-box ] | \u003Cimage\u003E | display"
+    ],
+    "shape-margin": [
+      "\u003Clength-percentage [0,\u221E]\u003E"
+    ],
+    "shape-outside": [
+      "none | [ \u003Cbasic-shape\u003E || \u003Cshape-box\u003E ] | \u003Cimage\u003E"
+    ],
+    "shape-padding": [
+      "\u003Clength-percentage [0,\u221E]\u003E"
+    ],
+    "shape-rendering": [
+      "auto | optimizeSpeed | crispEdges | geometricPrecision"
+    ],
+    "shape-subtract": [
+      "none | [ \u003Cbasic-shape\u003E| \u003Curi\u003E ]\u002B"
+    ],
+    "spatial-navigation-action": [
+      "auto | focus | scroll"
+    ],
+    "spatial-navigation-contain": [
+      "auto | contain"
+    ],
+    "spatial-navigation-function": [
+      "normal | grid"
+    ],
+    "speak": [
+      "auto | never | always"
+    ],
+    "speak-as": [
+      "normal | spell-out || digits || [ literal-punctuation | no-punctuation ]"
+    ],
+    "string-set": [
+      "none | [ \u003Ccustom-ident\u003E \u003Cstring\u003E\u002B ]#"
+    ],
+    "stroke": [
+      "\u003Cpaint\u003E"
+    ],
+    "stroke-align": [
+      "center | inset | outset"
+    ],
+    "stroke-alignment": [
+      "center | inner | outer"
+    ],
+    "stroke-break": [
+      "bounding-box | slice | clone"
+    ],
+    "stroke-color": [
+      "\u003Ccolor\u003E#"
+    ],
+    "stroke-dash-corner": [
+      "none | \u003Clength\u003E"
+    ],
+    "stroke-dash-justify": [
+      "none | [ stretch | compress ] || [ dashes || gaps ]"
+    ],
+    "stroke-dashadjust": [
+      "none | [stretch | compress] [dashes | gaps]?"
+    ],
+    "stroke-dasharray": [
+      "none | [\u003Clength-percentage\u003E | \u003Cnumber\u003E]\u002B#"
+    ],
+    "stroke-dashcorner": [
+      "none | \u003Clength\u003E"
+    ],
+    "stroke-dashoffset": [
+      "\u003Clength-percentage\u003E | \u003Cnumber\u003E"
+    ],
+    "stroke-image": [
+      "\u003Cpaint\u003E#"
+    ],
+    "stroke-linecap": [
+      "butt | round | square"
+    ],
+    "stroke-linejoin": [
+      "[ crop | arcs | miter ] || [ bevel | round | fallback ]"
+    ],
+    "stroke-miterlimit": [
+      "\u003Cnumber\u003E"
+    ],
+    "stroke-opacity": [
+      "\u003C\u0027opacity\u0027\u003E"
+    ],
+    "stroke-origin": [
+      "match-parent | fill-box | stroke-box | content-box | padding-box | border-box"
+    ],
+    "stroke-position": [
+      "\u003Cposition\u003E#"
+    ],
+    "stroke-repeat": [
+      "\u003Crepeat-style\u003E#"
+    ],
+    "stroke-size": [
+      "\u003Cbg-size\u003E#"
+    ],
+    "stroke-width": [
+      "[\u003Clength-percentage\u003E | \u003Cnumber\u003E]#"
+    ],
+    "tab-size": [
+      "\u003Cnumber [0,\u221E]\u003E | \u003Clength [0,\u221E]\u003E"
+    ],
+    "table-layout": [
+      "auto | fixed"
+    ],
+    "text-align": [
+      "start | end | left | right | center | \u003Cstring\u003E | justify | match-parent | justify-all",
+      "start | end | left | right | center | justify | match-parent | justify-all"
+    ],
+    "text-align-all": [
+      "start | end | left | right | center | \u003Cstring\u003E | justify | match-parent",
+      "start | end | left | right | center | justify | match-parent"
+    ],
+    "text-align-last": [
+      "auto | start | end | left | right | center | justify | match-parent"
+    ],
+    "text-anchor": [
+      "start | middle | end"
+    ],
+    "text-autospace": [
+      "normal | \u003Cautospace\u003E | auto"
+    ],
+    "text-box-edge": [
+      "leading | [ text | cap | ex | ideographic | ideographic-ink ] [ text | alphabetic | ideographic | ideographic-ink ]?"
+    ],
+    "text-box-trim": [
+      "none | start | end | both"
+    ],
+    "text-combine-upright": [
+      "none | all | [ digits \u003Cinteger [2,4]\u003E? ]"
+    ],
+    "text-decoration": [
+      "\u003C\u0027text-decoration-line\u0027\u003E || \u003C\u0027text-decoration-style\u0027\u003E || \u003C\u0027text-decoration-color\u0027\u003E",
+      "\u003C\u0027text-decoration-line\u0027\u003E || \u003C\u0027text-decoration-thickness\u0027\u003E || \u003C\u0027text-decoration-style\u0027\u003E || \u003C\u0027text-decoration-color\u0027\u003E"
+    ],
+    "text-decoration-color": [
+      "\u003Ccolor\u003E"
+    ],
+    "text-decoration-line": [
+      "none | [ underline || overline || line-through || blink ]",
+      "none | [ underline || overline || line-through || blink ] | spelling-error | grammar-error"
+    ],
+    "text-decoration-skip": [
+      "none | auto"
+    ],
+    "text-decoration-skip-box": [
+      "none | all"
+    ],
+    "text-decoration-skip-ink": [
+      "auto | none | all"
+    ],
+    "text-decoration-skip-self": [
+      "auto | skip-all | [ skip-underline || skip-overline || skip-line-through ] | no-skip"
+    ],
+    "text-decoration-skip-spaces": [
+      "none | all | [ start || end ]"
+    ],
+    "text-decoration-style": [
+      "solid | double | dotted | dashed | wavy"
+    ],
+    "text-decoration-thickness": [
+      "auto | from-font | \u003Clength-percentage\u003E"
+    ],
+    "text-decoration-trim": [
+      "\u003Clength\u003E{1,2} | auto"
+    ],
+    "text-emphasis": [
+      "\u003C\u0027text-emphasis-style\u0027\u003E || \u003C\u0027text-emphasis-color\u0027\u003E"
+    ],
+    "text-emphasis-color": [
+      "\u003Ccolor\u003E"
+    ],
+    "text-emphasis-position": [
+      "[ over | under ] \u0026\u0026 [ right | left ]?"
+    ],
+    "text-emphasis-skip": [
+      "spaces || punctuation || symbols || narrow"
+    ],
+    "text-emphasis-style": [
+      "none | [ [ filled | open ] || [ dot | circle | double-circle | triangle | sesame ] ] | \u003Cstring\u003E"
+    ],
+    "text-group-align": [
+      "none | start | end | left | right | center"
+    ],
+    "text-indent": [
+      "[ \u003Clength-percentage\u003E ] \u0026\u0026 hanging? \u0026\u0026 each-line?"
+    ],
+    "text-justify": [
+      "[ auto | none | inter-word | inter-character | ruby ] || no-compress",
+      "auto | none | inter-word | inter-character"
+    ],
+    "text-orientation": [
+      "mixed | upright | sideways"
+    ],
+    "text-overflow": [
+      "[ clip | ellipsis | \u003Cstring\u003E | fade | \u003Cfade()\u003E ]{1,2}",
+      "clip | ellipsis"
+    ],
+    "text-rendering": [
+      "auto | optimizeSpeed | optimizeLegibility | geometricPrecision"
+    ],
+    "text-shadow": [
+      "none | \u003Cshadow\u003E#",
+      "none | [ \u003Ccolor\u003E? \u0026\u0026 \u003Clength\u003E{2,3} ]#"
+    ],
+    "text-size-adjust": [
+      "auto | none | \u003Cpercentage [0,\u221E]\u003E"
+    ],
+    "text-spacing": [
+      "none | auto | \u003Cspacing-trim\u003E || \u003Cautospace\u003E"
+    ],
+    "text-spacing-trim": [
+      "\u003Cspacing-trim\u003E | auto"
+    ],
+    "text-transform": [
+      "none | [capitalize | uppercase | lowercase ] || full-width || full-size-kana"
+    ],
+    "text-underline-offset": [
+      "auto | \u003Clength-percentage\u003E"
+    ],
+    "text-underline-position": [
+      "auto | [ from-font | under ] || [ left | right ]",
+      "auto | [ under || [ left | right ] ]"
+    ],
+    "text-wrap": [
+      "\u003C\u0027text-wrap-mode\u0027\u003E || \u003C\u0027text-wrap-style\u0027\u003E"
+    ],
+    "text-wrap-mode": [
+      "wrap | nowrap"
+    ],
+    "text-wrap-style": [
+      "auto | balance | stable | pretty"
+    ],
+    "timeline-scope": [
+      "none | all | \u003Cdashed-ident\u003E#"
+    ],
+    "top": [
+      "auto | \u003Clength-percentage\u003E"
+    ],
+    "touch-action": [
+      "auto | none | [ [ pan-x | pan-left | pan-right ] || [ pan-y | pan-up | pan-down ] || pinch-zoom ] | manipulation"
+    ],
+    "transform": [
+      "none | \u003Ctransform-list\u003E"
+    ],
+    "transform-box": [
+      "content-box | border-box | fill-box | stroke-box | view-box"
+    ],
+    "transform-origin": [
+      "[ left | center | right | top | bottom | \u003Clength-percentage\u003E ] | [ left | center | right | \u003Clength-percentage\u003E ] [ top | center | bottom | \u003Clength-percentage\u003E ] \u003Clength\u003E? | [[ center | left | right ] \u0026\u0026 [ center | top | bottom ]] \u003Clength\u003E?"
+    ],
+    "transform-style": [
+      "flat | preserve-3d"
+    ],
+    "transition": [
+      "\u003Csingle-transition\u003E#"
+    ],
+    "transition-behavior": [
+      "\u003Ctransition-behavior-value\u003E#"
+    ],
+    "transition-delay": [
+      "\u003Ctime\u003E#"
+    ],
+    "transition-duration": [
+      "\u003Ctime [0s,\u221E]\u003E#"
+    ],
+    "transition-property": [
+      "none | \u003Csingle-transition-property\u003E#"
+    ],
+    "transition-timing-function": [
+      "\u003Ceasing-function\u003E#"
+    ],
+    "translate": [
+      "none | \u003Clength-percentage\u003E [ \u003Clength-percentage\u003E \u003Clength\u003E? ]?"
+    ],
+    "unicode-bidi": [
+      "normal | embed | isolate | bidi-override | isolate-override | plaintext"
+    ],
+    "user-select": [
+      "auto | text | none | contain | all"
+    ],
+    "vector-effect": [
+      "none | non-scaling-stroke | non-scaling-size | non-rotation | fixed-position"
+    ],
+    "vertical-align": [
+      "[ first | last] || \u003C\u0027alignment-baseline\u0027\u003E || \u003C\u0027baseline-shift\u0027\u003E"
+    ],
+    "view-timeline": [
+      "[ \u003C\u0027view-timeline-name\u0027\u003E [ \u003C\u0027view-timeline-axis\u0027\u003E || \u003C\u0027view-timeline-inset\u0027\u003E ]? ]#"
+    ],
+    "view-timeline-axis": [
+      "[ block | inline | x | y ]#"
+    ],
+    "view-timeline-inset": [
+      "[ [ auto | \u003Clength-percentage\u003E ]{1,2} ]#"
+    ],
+    "view-timeline-name": [
+      "[ none | \u003Cdashed-ident\u003E ]#"
+    ],
+    "view-transition-class": [
+      "none | \u003Ccustom-ident\u003E\u002B"
+    ],
+    "view-transition-name": [
+      "none | \u003Ccustom-ident\u003E"
+    ],
+    "visibility": [
+      "visible | hidden | collapse"
+    ],
+    "voice-balance": [
+      "\u003Cnumber\u003E | left | center | right | leftwards | rightwards"
+    ],
+    "voice-duration": [
+      "auto | \u003Ctime [0s,\u221E]\u003E"
+    ],
+    "voice-family": [
+      "[[\u003Cfamily-name\u003E | \u003Cgeneric-voice\u003E],]* [\u003Cfamily-name\u003E | \u003Cgeneric-voice\u003E] | preserve"
+    ],
+    "voice-pitch": [
+      "\u003Cfrequency [0Hz,\u221E]\u003E \u0026\u0026 absolute | [[x-low | low | medium | high | x-high] || [\u003Cfrequency\u003E | \u003Csemitones\u003E | \u003Cpercentage\u003E]]"
+    ],
+    "voice-range": [
+      "\u003Cfrequency [0Hz,\u221E]\u003E \u0026\u0026 absolute | [[x-low | low | medium | high | x-high] || [\u003Cfrequency\u003E | \u003Csemitones\u003E | \u003Cpercentage\u003E]]"
+    ],
+    "voice-rate": [
+      "[normal | x-slow | slow | medium | fast | x-fast] || \u003Cpercentage [0,\u221E]\u003E"
+    ],
+    "voice-stress": [
+      "normal | strong | moderate | none | reduced"
+    ],
+    "voice-volume": [
+      "silent | [[x-soft | soft | medium | loud | x-loud] || \u003Cdecibel\u003E]"
+    ],
+    "white-space": [
+      "normal | pre | nowrap | pre-wrap | break-spaces | pre-line",
+      "normal | pre | pre-wrap | pre-line | \u003C\u0027white-space-collapse\u0027\u003E || \u003C\u0027text-wrap-mode\u0027\u003E || \u003C\u0027white-space-trim\u0027\u003E"
+    ],
+    "white-space-collapse": [
+      "collapse | discard | preserve | preserve-breaks | preserve-spaces | break-spaces"
+    ],
+    "white-space-trim": [
+      "none | discard-before || discard-after || discard-inner"
+    ],
+    "widows": [
+      "\u003Cinteger [1,\u221E]\u003E"
+    ],
+    "width": [
+      "auto | \u003Clength-percentage [0,\u221E]\u003E | min-content | max-content | fit-content(\u003Clength-percentage [0,\u221E]\u003E)"
+    ],
+    "will-change": [
+      "auto | \u003Canimateable-feature\u003E#"
+    ],
+    "word-break": [
+      "normal | break-all | keep-all | manual | auto-phrase | break-word",
+      "normal | keep-all | break-all | break-word"
+    ],
+    "word-space-transform": [
+      "none | [ space | ideographic-space ] \u0026\u0026 auto-phrase?"
+    ],
+    "word-spacing": [
+      "normal | \u003Clength-percentage\u003E",
+      "normal | \u003Clength\u003E"
+    ],
+    "word-wrap": [
+      "normal | break-word | anywhere"
+    ],
+    "wrap-after": [
+      "auto | avoid | avoid-line | avoid-flex | line | flex"
+    ],
+    "wrap-before": [
+      "auto | avoid | avoid-line | avoid-flex | line | flex"
+    ],
+    "wrap-flow": [
+      "auto | both | start | end | minimum | maximum | clear"
+    ],
+    "wrap-inside": [
+      "auto | avoid"
+    ],
+    "wrap-through": [
+      "wrap | none"
+    ],
+    "writing-mode": [
+      "horizontal-tb | vertical-rl | vertical-lr | sideways-rl | sideways-lr"
+    ],
+    "x": [
+      "\u003Clength-percentage\u003E"
+    ],
+    "y": [
+      "\u003Clength-percentage\u003E"
+    ],
+    "z-index": [
+      "auto | \u003Cinteger\u003E | inherit"
+    ],
+    "zoom": [
+      "\u003Cnumber [0,\u221E]\u003E || \u003Cpercentage [0,\u221E]\u003E"
+    ]
+  }
+}
