@@ -256,6 +256,27 @@ public static class BigIntegerModule
 		return Math.Log(NumberFn(x), baseValue) + shift / Math.Log(baseValue, 2);
 	}
 
+	private static bool TryParseCore(string? text, out BigInt value)
+	{
+		value = BigInt.Zero;
+		if (text == null)
+			return false;
+
+		var trimmed = text.Trim();
+		if (!RegExp(@"^[+-]?\d+$").Test(trimmed))
+			return false;
+
+		try
+		{
+			value = BigIntFn(trimmed);
+			return true;
+		}
+		catch
+		{
+			return false;
+		}
+	}
+
 	/// <summary>
 	/// C#: BigInteger.Parse(value)
 	/// JS: BigInt(value.trim()) with validation
@@ -266,18 +287,10 @@ public static class BigIntegerModule
 		if (value == null)
 			throw new Error("ArgumentNullException: String cannot be null.");
 
-		var trimmed = value.Trim();
-		if (trimmed.Length == 0)
-			throw new Error("FormatException: The input string was not in a correct format.");
-
-		try
-		{
-			return BigIntFn(trimmed);
-		}
-		catch
-		{
+		if (!TryParseCore(value, out var result))
 			throw new Error($"FormatException: The input string '{value}' was not in a correct format.");
-		}
+
+		return result;
 	}
 
 	///<summary>Converts the string representation of a number in a specified style to its <see cref="T:System.Numerics.BigInteger" /> equivalent.</summary>
@@ -296,21 +309,10 @@ public static class BigIntegerModule
 	[Jazor(Op.Import, "static System.Numerics.BigInteger.TryParse(string, out System.Numerics.BigInteger)")]
 	public static Array<object?> _59acea2facdaa757(string? value, BigInt? result)
 	{
-		if (value == null || value.Length == 0)
+		if (!TryParseCore(value, out var parsed))
 			return [false, BigInt.Zero];
 
-		try
-		{
-			var trimmed = value.Trim();
-			if (trimmed.Length == 0)
-				return [false, BigInt.Zero];
-
-			return [true, BigIntFn(trimmed)];
-		}
-		catch
-		{
-			return [false, BigInt.Zero];
-		}
+		return [true, parsed];
 	}
 
 	///<summary>Tries to convert the string representation of a number in a specified style and culture-specific format to its <see cref="T:System.Numerics.BigInteger" /> equivalent, and returns a value that indicates whether the conversion succeeded.</summary>
@@ -383,7 +385,7 @@ public static class BigIntegerModule
 	public static Array<object?> _598611fb2b8a064a(BigInt dividend, BigInt divisor, BigInt remainder)
 	{
 		if (divisor == BigInt.Zero)
-			throw new RangeError("Division by zero");
+			throw new Error("DivideByZeroException: Attempted to divide by zero.");
 
 		var quotient = dividend / divisor;
 		var rem = dividend % divisor;
@@ -499,7 +501,7 @@ public static class BigIntegerModule
 	public static BigInt _31cf4d89164dee40(BigInt value, Number exponent)
 	{
 		if (exponent < 0 || !Number.IsInteger(exponent))
-			throw new RangeError("The exponent must be a non-negative integer");
+			throw new Error("ArgumentOutOfRangeException: Exponent must be a non-negative integer.");
 
 		var result = BigInt.One;
 		var current = value;
@@ -1182,7 +1184,7 @@ public static class BigIntegerModule
 	public static Array<BigInt> _22a21ffe19479f32(BigInt left, BigInt right)
 	{
 		if (right == BigInt.Zero)
-			throw new RangeError("Division by zero");
+			throw new Error("DivideByZeroException: Attempted to divide by zero.");
 
 		var quotient = left / right;
 		var remainder = left % right;
@@ -1214,7 +1216,17 @@ public static class BigIntegerModule
 			return BigInt.Zero;
 
 		var count = BigInt.Zero;
-		var n = value < BigInt.Zero ? -value - BigInt.One : value;
+		var n = value;
+		if (value < BigInt.Zero)
+		{
+			var bitLength = GetBitLengthCore(value) + BigInt.One;
+			var wordSize = BigIntFn(32);
+			var width = ((bitLength + wordSize - BigInt.One) / wordSize) * wordSize;
+			if (width < wordSize)
+				width = wordSize;
+
+			n = (BigInt.One << width) + value;
+		}
 
 		// Brian Kernighan算法
 		while (n > BigInt.Zero)
@@ -1292,7 +1304,7 @@ public static class BigIntegerModule
 	{
 		// Handle zero value
 		if (value == BigInt.Zero)
-			return BigInt.Zero;
+			return BigIntFn(32);
 
 		var count = BigInt.Zero;
 		var temp = value;
@@ -1327,9 +1339,10 @@ public static class BigIntegerModule
 	[Jazor(Op.Import ,"static System.Numerics.BigInteger.Log2(System.Numerics.BigInteger)")]
 	public static BigInt _c29a05a989ec3b33(BigInt value)
 	{
-		// Logarithm is undefined for non-positive numbers
-		if (value <= BigInt.Zero)
-			throw new RangeError("value must be positive");
+		if (value < BigInt.Zero)
+			throw new Error("ArgumentOutOfRangeException: Value must be non-negative.");
+		if (value == BigInt.Zero)
+			return BigInt.Zero;
 
 		var result = BigInt.Zero;
 		var temp = value;
@@ -1350,7 +1363,7 @@ public static class BigIntegerModule
 	{
 		// Validate that min <= max
 		if (min > max)
-			throw new RangeError("min must be less than or equal to max");
+			throw new Error("ArgumentException: min must be less than or equal to max.");
 
 		var result = value;
 
