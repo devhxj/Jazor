@@ -5,7 +5,7 @@ using System.Text.Json;
 
 if (args.Length != 1 || !Directory.Exists(args[0]))
 {
-    Console.Error.WriteLine("Usage: dotnet run --file scripts/csharp/update-jazor-style-css-grammars.cs -- <extracted @webref/css package directory>");
+    Console.Error.WriteLine("Usage: dotnet run --file scripts/csharp/update-ecmascript-style-css-grammars.cs -- <extracted @webref/css package directory>");
     Environment.ExitCode = 1;
     return;
 }
@@ -43,7 +43,7 @@ foreach (var path in Directory.EnumerateFiles(packageRoot, "*.json").Order(Strin
     }
 }
 
-var outputPath = Path.Combine(repoRoot, "src", "Jazor.Style", "CssProperties.Webref.json");
+var outputPath = Path.Combine(repoRoot, "src", "ECMAScript.Style", "CssProperties.Webref.json");
 using var stream = new MemoryStream();
 using (var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true }))
 {
@@ -63,7 +63,7 @@ using (var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented 
 }
 var output = Encoding.UTF8.GetString(stream.ToArray()) + "\n";
 File.WriteAllText(outputPath, output, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-Console.WriteLine($"Generated {properties.Count} Jazor.Style CSS grammar entries from @webref/css@{version}.");
+Console.WriteLine($"Generated {properties.Count} ECMAScript.Style CSS grammar entries from @webref/css@{version}.");
 
 static string FindRepositoryRoot()
 {

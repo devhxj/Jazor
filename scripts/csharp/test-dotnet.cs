@@ -8,14 +8,14 @@ var dotnetCliHome = Path.Combine(repoRoot, ".dotnet");
 
 var compilerTestProject = Path.Combine(repoRoot, "src", "Jazor.CompilerTest", "Jazor.CompilerTest.csproj");
 var clrTestProject = Path.Combine(repoRoot, "src", "Jazor.CLR.Test", "Jazor.CLR.Test.csproj");
-var cssTestProject = Path.Combine(repoRoot, "src", "Jazor.Style.Test", "Jazor.Style.Test.csproj");
+var styleTestProject = Path.Combine(repoRoot, "src", "ECMAScript.Style.Test", "ECMAScript.Style.Test.csproj");
 var piniaTestProject = Path.Combine(repoRoot, "src", "ECMAScript.Pinia.Test", "ECMAScript.Pinia.Test.csproj");
 var piniaTestingTestProject = Path.Combine(repoRoot, "src", "ECMAScript.Pinia.Testing.Test", "ECMAScript.Pinia.Testing.Test.csproj");
 var vueRouteTestProject = Path.Combine(repoRoot, "src", "ECMAScript.VueRoute.Test", "ECMAScript.VueRoute.Test.csproj");
 var razorSgTestProject = Path.Combine(repoRoot, "src", "Jazor.RazorVue.Sg.Test", "Jazor.RazorVue.Sg.Test.csproj");
 var emitTestProject = Path.Combine(repoRoot, "src", "Jazor.EmitTest", "Jazor.EmitTest.csproj");
 var renderContextTestScript = Path.Combine("scripts", "csharp", "test-render-context.cs");
-var cssBrowserTestScript = Path.Combine("scripts", "csharp", "verify-jazor-style-browser.cs");
+var styleBrowserTestScript = Path.Combine("scripts", "csharp", "verify-ecmascript-style-browser.cs");
 
 if (options.Project == "render-context")
 {
@@ -28,12 +28,12 @@ if (options.Project == "render-context")
     return;
 }
 
-if (options.Project == "css-browser")
+if (options.Project == "style-browser")
 {
     if (!string.IsNullOrWhiteSpace(options.Filter))
-        throw new InvalidOperationException("--filter is not supported for the Jazor.Style browser smoke.");
+        throw new InvalidOperationException("--filter is not supported for the ECMAScript.Style browser smoke.");
 
-    await ScriptHelpers.RunDotNetAsync(["run", "--file", cssBrowserTestScript], repoRoot, dotnetCliHome);
+    await ScriptHelpers.RunDotNetAsync(["run", "--file", styleBrowserTestScript], repoRoot, dotnetCliHome);
     return;
 }
 
@@ -84,7 +84,7 @@ var testTargets = options.Project switch
 {
     "compiler" => new[] { compilerTestProject },
     "clr" => new[] { clrTestProject },
-    "css" => new[] { cssTestProject },
+    "style" => new[] { styleTestProject },
     "pinia" => new[] { piniaTestProject },
     "pinia-testing" => new[] { piniaTestingTestProject },
     "vueroute" => new[] { vueRouteTestProject },
@@ -94,7 +94,7 @@ var testTargets = options.Project switch
     {
         compilerTestProject,
         clrTestProject,
-        cssTestProject,
+        styleTestProject,
         piniaTestProject,
         piniaTestingTestProject,
         vueRouteTestProject,
@@ -103,10 +103,10 @@ var testTargets = options.Project switch
     }
 };
 
-if (testTargets.Contains(cssTestProject, StringComparer.OrdinalIgnoreCase))
+if (testTargets.Contains(styleTestProject, StringComparer.OrdinalIgnoreCase))
 {
     await ScriptHelpers.RunDotNetAsync(
-        ["run", "--file", Path.Combine("scripts", "csharp", "generate-jazor-style-properties.cs"), "--", "--check"],
+        ["run", "--file", Path.Combine("scripts", "csharp", "generate-ecmascript-style-properties.cs"), "--", "--check"],
         repoRoot,
         dotnetCliHome);
 }
@@ -198,8 +198,8 @@ internal sealed record ScriptArguments
         var normalized = project.Trim().ToLowerInvariant();
         var supported = new HashSet<string>(StringComparer.Ordinal)
         {
-            "all", "compiler", "clr", "css", "pinia", "pinia-testing", "vueroute", "razor-sg",
-            "emit", "render-context", "css-browser", "wiki", "wiki-publish", "wiki-browser", "wiki-browser-publish"
+            "all", "compiler", "clr", "style", "pinia", "pinia-testing", "vueroute", "razor-sg",
+            "emit", "render-context", "style-browser", "wiki", "wiki-publish", "wiki-browser", "wiki-browser-publish"
         };
 
         if (!supported.Contains(normalized))
@@ -225,7 +225,7 @@ internal sealed record ScriptArguments
     {
         Console.WriteLine("Usage: dotnet run --file scripts/csharp/test-dotnet.cs -- [options]");
         Console.WriteLine("Options:");
-        Console.WriteLine("  --project <all|compiler|clr|css|css-browser|pinia|pinia-testing|vueroute|razor-sg|emit|render-context|wiki|wiki-publish|wiki-browser|wiki-browser-publish>");
+        Console.WriteLine("  --project <all|compiler|clr|style|style-browser|pinia|pinia-testing|vueroute|razor-sg|emit|render-context|wiki|wiki-publish|wiki-browser|wiki-browser-publish>");
         Console.WriteLine("  --configuration <Debug|Release>");
         Console.WriteLine("  --filter <expression>");
         Console.WriteLine("  --base-output-path <path>");

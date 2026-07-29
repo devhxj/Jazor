@@ -6,8 +6,8 @@ using System.Text.RegularExpressions;
 
 var repoRoot = FindRepositoryRoot();
 var inventoryPath = Path.Combine(repoRoot, "src", "ECMAScript", "webidl", "webidl.inventory.json");
-var grammarPath = Path.Combine(repoRoot, "src", "Jazor.Style", "CssProperties.Webref.json");
-var outputPath = Path.Combine(repoRoot, "src", "Jazor.Style", "CssDeclarations.Properties.g.cs");
+var grammarPath = Path.Combine(repoRoot, "src", "ECMAScript.Style", "CssProperties.Webref.json");
+var outputPath = Path.Combine(repoRoot, "src", "ECMAScript.Style", "CssDeclarations.Properties.g.cs");
 var checkOnly = args.Any(static argument => string.Equals(argument, "--check", StringComparison.Ordinal));
 
 using var document = JsonDocument.Parse(File.ReadAllText(inventoryPath));
@@ -19,9 +19,9 @@ var webrefCssVersion = root.GetProperty("source").GetProperty("webrefCss").GetSt
 using var grammarDocument = JsonDocument.Parse(File.ReadAllText(grammarPath));
 var grammarRoot = grammarDocument.RootElement;
 if (grammarRoot.GetProperty("schemaVersion").GetInt32() != 1)
-    throw new InvalidDataException("Unsupported Jazor.Style CSS grammar schema version.");
+    throw new InvalidDataException("Unsupported ECMAScript.Style CSS grammar schema version.");
 var grammarSource = grammarRoot.GetProperty("source").GetString()
-    ?? throw new InvalidDataException("The Jazor.Style CSS grammar source is missing.");
+    ?? throw new InvalidDataException("The ECMAScript.Style CSS grammar source is missing.");
 if (!string.Equals(grammarSource, webrefCssVersion, StringComparison.Ordinal))
     throw new InvalidDataException($"CSS grammar source '{grammarSource}' does not match inventory source '{webrefCssVersion}'.");
 var grammarsByCssName = grammarRoot.GetProperty("properties")
@@ -111,19 +111,19 @@ if (checkOnly)
 {
     if (!File.Exists(outputPath) || !string.Equals(File.ReadAllText(outputPath), output, StringComparison.Ordinal))
     {
-        Console.Error.WriteLine("Jazor.Style generated properties are out of date. Run:");
-        Console.Error.WriteLine("  dotnet run --file scripts/csharp/generate-jazor-style-properties.cs");
+        Console.Error.WriteLine("ECMAScript.Style generated properties are out of date. Run:");
+        Console.Error.WriteLine("  dotnet run --file scripts/csharp/generate-ecmascript-style-properties.cs");
         Environment.ExitCode = 1;
         return;
     }
 
-    Console.WriteLine($"Jazor.Style properties are current: {propertiesByCssName.Count} properties ({webrefCssVersion}).");
+    Console.WriteLine($"ECMAScript.Style properties are current: {propertiesByCssName.Count} properties ({webrefCssVersion}).");
     return;
 }
 
 Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
 File.WriteAllText(outputPath, output, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-Console.WriteLine($"Generated {propertiesByCssName.Count} Jazor.Style properties from {webrefCssVersion}.");
+Console.WriteLine($"Generated {propertiesByCssName.Count} ECMAScript.Style properties from {webrefCssVersion}.");
 
 static bool HasStringValue(JsonElement element, string propertyName, string expected)
     => element.TryGetProperty(propertyName, out var property) &&
@@ -290,7 +290,7 @@ static string BuildOutput(int schemaVersion, string webrefCssVersion, IEnumerabl
         .Append(", ").Append(webrefCssVersion).AppendLine();
     builder.AppendLine("#nullable enable");
     builder.AppendLine();
-    builder.AppendLine("namespace Jazor.Style;");
+    builder.AppendLine("namespace ECMAScript.Style;");
     builder.AppendLine();
     builder.AppendLine("public partial record CssDeclarations");
     builder.AppendLine("{");

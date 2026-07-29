@@ -1,11 +1,11 @@
-namespace Jazor.Style;
+namespace ECMAScript.Style;
 
 public static partial class css
 {
     private static string CombineSelectors(string parentSelector, string childSelector)
     {
         if (childSelector.IndexOf(RootSelectorToken) >= 0)
-            Fail("Child selector contains the reserved Jazor.Style root selector token.");
+            Fail("Child selector contains the reserved ECMAScript.Style root selector token.");
 
         var parents = SplitSelectorList(parentSelector, "Parent selector");
         var children = SplitSelectorList(childSelector, "Child selector");
@@ -29,7 +29,7 @@ public static partial class css
     {
         var normalized = selector.Trim();
         if (normalized.IndexOf(RootSelectorToken) >= 0)
-            Fail(label + " contains the reserved Jazor.Style root selector token.");
+            Fail(label + " contains the reserved ECMAScript.Style root selector token.");
 
         return SplitSelectorList(normalized, label).Join(",");
     }

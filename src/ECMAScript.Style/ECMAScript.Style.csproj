@@ -5,20 +5,20 @@
     <Nullable>enable</Nullable>
     <IsPackable>true</IsPackable>
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    <PackageId>Jazor.Style</PackageId>
-    <RootNamespace>Jazor.Style</RootNamespace>
+    <PackageId>ECMAScript.Style</PackageId>
+    <RootNamespace>ECMAScript.Style</RootNamespace>
     <Version Condition="'$(Version)' == ''">0.1.0</Version>
     <Authors>hanxj</Authors>
-    <Description>Strongly typed, deterministic CSS-in-JS for Jazor applications authored in C#.</Description>
+    <Description>Strongly typed, deterministic CSS-in-JS for ECMAScript modules authored in C#.</Description>
     <PackageProjectUrl>https://github.com/devhxj/Jazor</PackageProjectUrl>
     <RepositoryUrl>https://github.com/devhxj/Jazor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <NuspecFile>Jazor.Style.nuspec</NuspecFile>
+    <NuspecFile>ECMAScript.Style.nuspec</NuspecFile>
     <NoWarn>$(NoWarn);CS0626;CS0824;CS8981;IDE0130;CA1416;CA1822;IDE0060;IDE1006</NoWarn>
-    <JazorStyleProjectOutputRoot Condition="'$(JazorIsolatedBaseOutputRoot)' == ''">$(MSBuildThisFileDirectory)..\</JazorStyleProjectOutputRoot>
-    <JazorStyleProjectOutputRoot Condition="'$(JazorIsolatedBaseOutputRoot)' != ''">$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseOutputRoot)'))</JazorStyleProjectOutputRoot>
+    <ECMAScriptStyleProjectOutputRoot Condition="'$(JazorIsolatedBaseOutputRoot)' == ''">$(MSBuildThisFileDirectory)..\</ECMAScriptStyleProjectOutputRoot>
+    <ECMAScriptStyleProjectOutputRoot Condition="'$(JazorIsolatedBaseOutputRoot)' != ''">$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseOutputRoot)'))</ECMAScriptStyleProjectOutputRoot>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,12 +28,12 @@
     <ProjectReference Include="..\Jazor.Analyzer\Jazor.Analyzer.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
-  <Target Name="AddLocalJazorStyleAnalyzerDependencies" BeforeTargets="CoreCompile">
+  <Target Name="AddLocalECMAScriptStyleAnalyzerDependencies" BeforeTargets="CoreCompile">
     <ItemGroup>
       <Analyzer Include="$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll" />
       <Analyzer Include="$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll" />
-      <Analyzer Include="$(JazorStyleProjectOutputRoot)ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll" />
-      <Analyzer Include="$(JazorStyleProjectOutputRoot)Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll" />
+      <Analyzer Include="$(ECMAScriptStyleProjectOutputRoot)ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll" />
+      <Analyzer Include="$(ECMAScriptStyleProjectOutputRoot)Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll" />
     </ItemGroup>
   </Target>
 

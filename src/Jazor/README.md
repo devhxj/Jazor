@@ -17,7 +17,7 @@ Jazor is a C#-to-JavaScript compiler that translates Roslyn `IOperation` semanti
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.31" />
+  <PackageReference Include="Jazor" Version="0.1.33" />
 </ItemGroup>
 ```
 
@@ -29,7 +29,7 @@ Every project that declares `[ECMAScriptModule]` must reference `Jazor`:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.31" />
+  <PackageReference Include="Jazor" Version="0.1.33" />
 </ItemGroup>
 ```
 
@@ -41,18 +41,18 @@ Library projects keep the default `JazorMode=none`.
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.31" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.31" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.1.31" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.31" />
-  <PackageReference Include="ECMAScript.TDesign" Version="0.1.31" />
-  <PackageReference Include="Jazor.Style" Version="0.1.31" />
+  <PackageReference Include="Jazor" Version="0.1.33" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.1.33" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.1.33" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.1.33" />
+  <PackageReference Include="ECMAScript.TDesign" Version="0.1.33" />
+  <PackageReference Include="ECMAScript.Style" Version="0.1.33" />
 </ItemGroup>
 ```
 
 - `ECMAScript.Vue3` remains part of the default `Jazor` package.
 - `ECMAScript.Pinia.Testing` is a separate opt-in testing package layered on top of `ECMAScript.Pinia`.
-- `Jazor.Style` is a framework-neutral CSS-in-JS package. It depends on the exact same `Jazor` version and reuses this package's compiler and MSBuild integration.
+- `ECMAScript.Style` is a framework-neutral module in the ECMAScript ecosystem. It depends on the exact same `Jazor` version and reuses this package's compiler and MSBuild integration.
 
 ### Host / executable projects
 
@@ -60,7 +60,7 @@ The final executable or web host project selects one output mode:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.31" />
+  <PackageReference Include="Jazor" Version="0.1.33" />
 </ItemGroup>
 
 <PropertyGroup>
@@ -85,8 +85,8 @@ Add `Jazor.Vue` to a Razor SDK project to opt into the official Razor Source Gen
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jazor" Version="0.1.31" />
-    <PackageReference Include="Jazor.Vue" Version="0.1.31" PrivateAssets="all" />
+    <PackageReference Include="Jazor" Version="0.1.33" />
+    <PackageReference Include="Jazor.Vue" Version="0.1.33" PrivateAssets="all" />
   </ItemGroup>
 </Project>
 ```

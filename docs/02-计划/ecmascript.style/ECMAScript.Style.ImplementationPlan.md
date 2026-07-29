@@ -1,4 +1,4 @@
-# Jazor.Style 实现计划
+# ECMAScript.Style 实现计划
 
 > 状态：已实施，等待发布验收
 >
@@ -8,7 +8,7 @@
 
 ## 1. 交付范围
 
-`Jazor.Style` 采用结构化 C# 模型与普通 ECMAScript 模块，不复制浏览器 CSS 解析器，也不建立编译器特例。交付范围由五个层次组成：
+`ECMAScript.Style` 采用结构化 C# 模型与普通 ECMAScript 模块，不复制浏览器 CSS 解析器，也不建立编译器特例。交付范围由五个层次组成：
 
 1. 小写静态门面 `css`，同时支持限定调用与显式静态导入；
 2. 基于 Webref 语法数据、C# 原生 union 和名义值的强类型 CSS 值系统；
@@ -22,7 +22,7 @@
 typed values + CssRule / CssAtRule
     -> Roslyn IOperation
     -> Jazor.Compiler 通用 lowering
-    -> jazorStyle.mjs
+    -> style.mjs
     -> CssContext registry
     -> DOM / ShadowRoot / CssSnapshot
 ```
@@ -31,7 +31,7 @@ typed values + CssRule / CssAtRule
 
 以下合同在实现与发布中不得改变：
 
-- `Jazor.Style` 是独立 opt-in 包，并精确依赖同版本 `Jazor`；
+- `ECMAScript.Style` 是独立 opt-in 包，并精确依赖同版本 `Jazor`；
 - 不增加 CSS 专用 Hook、RazorVue 分支、analyzer 例外或 MSBuild 属性；
 - `style(...)` 与 `keyframes(...)` 返回普通 `string`；
 - `jazor-css:v1`、类名、关键帧名、默认 StyleId 与 DOM 条目帧保持稳定；
@@ -44,8 +44,8 @@ typed values + CssRule / CssAtRule
 
 | 工作 | 交付物 | 验收 |
 | --- | --- | --- |
-| 建立唯一门面 | `Jazor.Style.css` | 所有公共方法和值 lower camel case |
-| 支持静态导入 | `using static Jazor.Style.css` | `px(...)`、`style(...)` 可直接调用 |
+| 建立唯一门面 | `ECMAScript.Style.css` | 所有公共方法和值 lower camel case |
+| 支持静态导入 | `using static ECMAScript.Style.css` | `px(...)`、`style(...)` 可直接调用 |
 | 统一上下文重载 | 默认与显式上下文使用同名方法 | ECMAScript 导出通过稳定名称消除重载冲突 |
 | 保持模型命名 | `CssRule`、`CssContext`、`CssOptions` 等 | 类型采用标准 PascalCase |
 
@@ -88,9 +88,9 @@ typed values + CssRule / CssAtRule
 | 工作 | 交付物 | 验收 |
 | --- | --- | --- |
 | 通用内联运算 | `[ECMAScriptInline]` 支持用户运算符 | `calc(...)` 无 Style 专用分支 |
-| 模块目录 | `jazorStyle.mjs` 与 source map catalog | 路径、hash、map file 一致 |
+| 模块目录 | `style.mjs` 与 source map catalog | 路径、hash、map file 一致 |
 | RazorVue | 普通模块导入与 string 类名 | class prop 无适配层 |
-| debug | 根目录物化模块与 manifest | `jazorStyle.mjs` 可直接导入 |
+| debug | 根目录物化模块与 manifest | `style.mjs` 可直接导入 |
 | release | Deno/Netpack Bundle | 无未解析 Style runtime import |
 | NuGet | 独立包与精确 Jazor 依赖 | 外部临时项目可 debug/release 构建 |
 
@@ -104,7 +104,7 @@ typed values + CssRule / CssAtRule
 | Deno | 工厂值、组合值、规则正文、hash、错误传播、context、snapshot |
 | DOM 模拟 | 所有权、nonce、冲突、owner document、HMR 接管 |
 | 浏览器 | computed style、ShadowRoot、Unicode framing、hydration |
-| RazorVue | `jazorStyle.mjs` 导入、值工厂调用、普通 class 字符串 |
+| RazorVue | `style.mjs` 导入、值工厂调用、普通 class 字符串 |
 | Emit | catalog、source map、manifest、debug 物化 |
 | Bundle | release 仅保留 bundle 与 map，运行时完整可执行 |
 | NuGet | 包内容、精确依赖、无 CSS targets、公开包消费 |
@@ -114,9 +114,9 @@ typed values + CssRule / CssAtRule
 发布前必须同时满足：
 
 1. 属性生成器 `--check` 通过，语法来源与 inventory 版本一致；
-2. `Jazor.Style.Test`、Compiler 专用回归、RazorVue 与 Emit 聚焦测试全部通过；
+2. `ECMAScript.Style.Test`、Compiler 专用回归、RazorVue 与 Emit 聚焦测试全部通过；
 3. 真实浏览器验证通过 document、Shadow DOM、HMR 与 hydration；
-4. 本地 NuGet 消费项目在 `debug` 下物化 `jazorStyle.mjs`，在 `release` 下仅生成 Bundle；
+4. 本地 NuGet 消费项目在 `debug` 下物化 `style.mjs`，在 `release` 下仅生成 Bundle；
 5. 完整解决方案构建和仓库测试脚本通过；
 6. 包 README、根中英文 README、目标、状态和发布说明使用同一公共合同；
 7. 提交、推送、打 tag 后，CI 发布成功，并从公开源完成一次全新消费验证。

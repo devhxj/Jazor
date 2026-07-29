@@ -1,10 +1,10 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace Jazor.Style.Tests;
+namespace ECMAScript.Style.Tests;
 
 [TestClass]
-public sealed class JazorStyleValueDomainTests
+public sealed class EcmaScriptStyleValueDomainTests
 {
     [TestMethod]
     public void GeneratedProperties_UseGrammarSpecificNativeUnions()

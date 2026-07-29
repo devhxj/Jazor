@@ -29,7 +29,7 @@
 | `ecmascript.vue3/` | Vue 3 绑定与 authoring surface 计划 |
 | `ecmascript.pinia/` | Pinia 绑定收口计划 |
 | `ecmascript.vuetify/` | Vuetify 组件覆盖和收口计划 |
-| [jazor.style/](./jazor.style/Jazor.Style.Complete.ImplementationPlan.md) | 强类型 C# CSS-in-JS 的公共 API、运行时、集成与发布实施计划 |
+| [ecmascript.style/](./ecmascript.style/ECMAScript.Style.ImplementationPlan.md) | 强类型 C# CSS-in-JS 的公共 API、运行时、集成与发布实施计划 |
 | `jazor.admin/` | 管理后台壳层实施计划 |
 | `wiki/` | Wiki sample 的阶段计划 |
 | `workstream-dashboard.md` | 工作流依赖和当前执行概览 |

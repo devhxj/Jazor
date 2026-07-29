@@ -6,40 +6,40 @@ using Jazor.Emit;
 namespace Jazor.EmitTest;
 
 [TestClass]
-public sealed class JazorStyleCatalogReaderTests
+public sealed class EcmaScriptStyleCatalogReaderTests
 {
     [TestMethod]
-    public void CatalogReader_TryRead_ReadsJazorStyleRuntimeWithSourceMap()
+    public void CatalogReader_TryRead_ReadsEcmaScriptStyleRuntimeWithSourceMap()
     {
-        var assembly = typeof(global::Jazor.Style.css).Assembly;
+        var assembly = typeof(global::ECMAScript.Style.css).Assembly;
 
         var modules = CatalogReader.TryRead(assembly);
 
         Assert.IsNotNull(modules);
         var module = modules.Single();
-        Assert.AreEqual("Jazor.Style", module.AssemblyName);
-        Assert.AreEqual("Jazor.Style.css", module.TypeName);
-        Assert.AreEqual("jazorStyle.mjs", module.RelativePath);
+        Assert.AreEqual("ECMAScript.Style", module.AssemblyName);
+        Assert.AreEqual("ECMAScript.Style.css", module.TypeName);
+        Assert.AreEqual("style.mjs", module.RelativePath);
         StringAssert.Contains(module.Content, " as style };");
         StringAssert.Contains(module.Content, " as context };");
         StringAssert.Contains(module.Content, "export function styleIn(");
         StringAssert.Contains(module.Content, "export function atRuleIn(");
         StringAssert.Contains(module.Content, "export function snapshotFrom(");
         Assert.HasCount(64, module.Hash);
-        Assert.AreEqual("jazorStyle.mjs.map", module.SourceMapRelativePath);
+        Assert.AreEqual("style.mjs.map", module.SourceMapRelativePath);
         Assert.HasCount(64, module.MapHash!);
         Assert.AreEqual(ComputeHash(module.Content), module.Hash);
         Assert.AreEqual(ComputeHash(module.SourceMapContent!), module.MapHash);
 
         using var sourceMap = JsonDocument.Parse(module.SourceMapContent!);
         Assert.AreEqual(3, sourceMap.RootElement.GetProperty("version").GetInt32());
-        Assert.AreEqual("jazorStyle.mjs", sourceMap.RootElement.GetProperty("file").GetString());
+        Assert.AreEqual("style.mjs", sourceMap.RootElement.GetProperty("file").GetString());
     }
 
     [TestMethod]
-    public void ModuleCollector_Collect_ReadsJazorStyleRuntimeFromReferencedAssembly()
+    public void ModuleCollector_Collect_ReadsEcmaScriptStyleRuntimeFromReferencedAssembly()
     {
-        var assemblyPath = typeof(global::Jazor.Style.css).Assembly.Location;
+        var assemblyPath = typeof(global::ECMAScript.Style.css).Assembly.Location;
         var loadContext = new EmitLoadContext(assemblyPath);
         var collector = new ModuleCollector(loadContext);
         collector.AddAssembly(assemblyPath);
@@ -50,7 +50,7 @@ public sealed class JazorStyleCatalogReaderTests
         Assert.AreEqual(1, result.AssemblyCount);
         Assert.AreEqual(1, result.CatalogCount);
         var module = result.Modules.Single();
-        Assert.AreEqual("jazorStyle.mjs", module.RelativePath);
+        Assert.AreEqual("style.mjs", module.RelativePath);
         Assert.IsNotNull(module.SourceMapContent);
     }
 

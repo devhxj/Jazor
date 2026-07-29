@@ -53,7 +53,7 @@ internal static class RazorSgTestHost
 
         AddAssemblyLocation(referencePaths, typeof(ECMAScript.Vue3));
         AddAssemblyLocation(referencePaths, typeof(ECMAScript.VueContract.VueLibraryComponentAttribute));
-        AddAssemblyLocation(referencePaths, typeof(global::Jazor.Style.css));
+        AddAssemblyLocation(referencePaths, typeof(global::ECMAScript.Style.css));
         AddAssemblyLocation(referencePaths, typeof(Microsoft.AspNetCore.Components.ComponentBase));
         AddAssemblyLocation(referencePaths, typeof(Microsoft.AspNetCore.Components.Web.MouseEventArgs));
         AddAssemblyLocation(referencePaths, typeof(Compilation));

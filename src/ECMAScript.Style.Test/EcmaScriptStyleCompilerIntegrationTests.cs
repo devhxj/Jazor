@@ -5,18 +5,18 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Jazor.Style.Tests;
+namespace ECMAScript.Style.Tests;
 
 [TestClass]
-public sealed class JazorStyleCompilerIntegrationTests
+public sealed class EcmaScriptStyleCompilerIntegrationTests
 {
     [TestMethod]
-    public async Task Convert_CSharpStyleModule_ImportsJazorStyleRuntimeWithoutCompilerSpecialCase()
+    public async Task Convert_CSharpStyleModule_ImportsEcmaScriptStyleRuntimeWithoutCompilerSpecialCase()
     {
         const string source = """
             using ECMAScript;
-            using Jazor.Style;
-            using static Jazor.Style.css;
+            using ECMAScript.Style;
+            using static ECMAScript.Style.css;
 
             namespace Demo;
 
@@ -48,7 +48,7 @@ public sealed class JazorStyleCompilerIntegrationTests
             CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview),
             path: "/src/ButtonStyles.cs");
         var compilation = CSharpCompilation.Create(
-            "JazorStyleConsumer",
+            "EcmaScriptStyleConsumer",
             [syntaxTree],
             Net110.References.All.Concat(
             [
@@ -67,7 +67,7 @@ public sealed class JazorStyleCompilerIntegrationTests
         var module = await new AstConverter(symbol, semanticModel).Convert();
         var script = module?.ToKnRECMAScript() ?? string.Empty;
 
-        StringAssert.Contains(script, "from \"jazorStyle.mjs\"");
+        StringAssert.Contains(script, "from \"style.mjs\"");
         StringAssert.Contains(script, "style(");
         StringAssert.Contains(script, "display: inlineFlex");
         StringAssert.Contains(script, "calc(${percent(100)} - ${rem(2)})");
@@ -85,8 +85,8 @@ public sealed class JazorStyleCompilerIntegrationTests
     {
         const string source = """
             using ECMAScript;
-            using Jazor.Style;
-            using static Jazor.Style.css;
+            using ECMAScript.Style;
+            using static ECMAScript.Style.css;
 
             namespace Demo;
 
@@ -129,7 +129,7 @@ public sealed class JazorStyleCompilerIntegrationTests
             CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview),
             path: "/src/ServerStyles.cs");
         var compilation = CSharpCompilation.Create(
-            "JazorStyleContextConsumer",
+            "EcmaScriptStyleContextConsumer",
             [syntaxTree],
             Net110.References.All.Concat(
             [
@@ -162,8 +162,8 @@ public sealed class JazorStyleCompilerIntegrationTests
     public void Compile_ValueDomains_RejectCrossDomainAndImplicitStringAssignments()
     {
         const string source = """
-            using Jazor.Style;
-            using static Jazor.Style.css;
+            using ECMAScript.Style;
+            using static ECMAScript.Style.css;
 
             namespace Demo;
 
@@ -194,8 +194,8 @@ public sealed class JazorStyleCompilerIntegrationTests
     public void Compile_RawEscapeHatch_AllowsFutureSyntaxExplicitly()
     {
         const string source = """
-            using Jazor.Style;
-            using static Jazor.Style.css;
+            using ECMAScript.Style;
+            using static ECMAScript.Style.css;
 
             namespace Demo;
 

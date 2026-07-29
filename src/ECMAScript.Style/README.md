@@ -1,26 +1,26 @@
-# Jazor.Style
+# ECMAScript.Style
 
-Strongly typed, deterministic CSS-in-JS for Jazor applications.
+Strongly typed, deterministic CSS-in-JS for ECMAScript modules authored in C#.
 
-`Jazor.Style` is an independent opt-in package. It turns structured C# values into the standard `jazorStyle.mjs` runtime module, while preserving ordinary ECMAScript imports, RazorVue interoperability, stable content-based names, isolated registries, Shadow DOM ownership, server-rendered snapshots, CSP nonces, and idempotent hydration.
+`ECMAScript.Style` is an independent opt-in module in the ECMAScript ecosystem. It turns structured C# values into the standard `style.mjs` runtime module while preserving ordinary ECMAScript imports, RazorVue interoperability, stable content-based names, isolated registries, Shadow DOM ownership, server-rendered snapshots, CSP nonces, and idempotent hydration.
 
 ## Installation
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor.Style" Version="0.1.33" />
+  <PackageReference Include="ECMAScript.Style" Version="0.1.33" />
 </ItemGroup>
 ```
 
-The package depends on the exact same version of `Jazor`. It installs no Razor hook, CSS-specific MSBuild target, Vue adapter, or compiler branch. Merely referencing the package does not register styles; registration occurs only when a `css` API is executed.
+The package depends on the exact same version of `Jazor` for compilation and artifact emission. It installs no Razor hook, CSS-specific MSBuild target, Vue adapter, or compiler branch. Merely referencing the package does not register styles; registration occurs only when a `css` API is executed.
 
 ## Authoring
 
 The public facade is the lowercase static class `css`. Use it by qualification or import its members explicitly:
 
 ```csharp
-using Jazor.Style;
-using static Jazor.Style.css;
+using ECMAScript.Style;
+using static ECMAScript.Style.css;
 
 var actionClass = style(new CssRule
 {
@@ -54,7 +54,7 @@ var className = css.style(rule);
 var width = css.px(24);
 ```
 
-Package-owned global usings are not installed. Each consumer decides whether `using static Jazor.Style.css;` is appropriate.
+Package-owned global usings are not installed. Each consumer decides whether `using static ECMAScript.Style.css;` is appropriate.
 
 ## Typed Values
 
@@ -182,12 +182,12 @@ The same operation names are overloaded for the default and explicit contexts:
 
 ## Build Output
 
-`Jazor.Style` uses the standard Jazor build contract and adds no configuration properties:
+`ECMAScript.Style` uses the standard Jazor build contract and adds no configuration properties:
 
 | `JazorMode` | Output |
 | --- | --- |
 | `none` | No frontend artifacts |
-| `debug` | `jazorStyle.mjs`, `jazorStyle.mjs.map`, consumer modules, and `jazor-manifest.json` |
+| `debug` | `style.mjs`, `style.mjs.map`, consumer modules, and `jazor-manifest.json` |
 | `release` | `bundle.js` and `bundle.js.map`; the Style runtime is included in the bundle |
 
 The default output root is `$(MSBuildProjectDirectory)\wwwroot\jazor\`. Release remains runtime CSS-in-JS and does not produce a separate `.css` file or invoke PostCSS, autoprefixer, or CSS Modules.
@@ -195,7 +195,7 @@ The default output root is `$(MSBuildProjectDirectory)\wwwroot\jazor\`. Release 
 ## Stable Boundaries
 
 - `jazor-css:v1`, `jz-*`, `jz-k-*`, and the default style ID remain stable protocol values.
-- `Jazor.Style` does not wrap Goober or ship third-party JavaScript.
+- `ECMAScript.Style` does not wrap Goober or ship third-party JavaScript.
 - It does not provide `styled(Component)`, a Vue wrapper, or a component-library adapter.
 - It does not parse raw CSS blocks or tagged templates.
 - It does not add CSS-specific compiler, analyzer, RazorVue, or MSBuild paths.
@@ -204,11 +204,11 @@ The default output root is `$(MSBuildProjectDirectory)\wwwroot\jazor\`. Release 
 ## Verification
 
 ```text
-dotnet run --file scripts/csharp/generate-jazor-style-properties.cs -- --check
-dotnet run --file scripts/csharp/test-dotnet.cs -- --project css
-dotnet run --file scripts/csharp/test-dotnet.cs -- --project css-browser
-dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter JazorStyle
-dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --filter JazorStyle
+dotnet run --file scripts/csharp/generate-ecmascript-style-properties.cs -- --check
+dotnet run --file scripts/csharp/test-dotnet.cs -- --project style
+dotnet run --file scripts/csharp/test-dotnet.cs -- --project style-browser
+dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter EcmaScriptStyle
+dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --filter EcmaScriptStyle
 ```
 
 Browser verification executes the generated module and checks computed styles, nonce propagation, one-node ownership, Unicode framing, module reload adoption, Shadow DOM targeting, and detached snapshot hydration.

@@ -27,7 +27,7 @@ Razor-to-Vue 的正式入口是 `Jazor.Vue`。它在官方 Razor Source Generato
 | `clr/` | CLR 映射声明与白名单生成链路 |
 | `analyzer/` | 静态分析和编译期诊断 |
 | `razorvue/` | Razor-to-Vue 目标、边界和实现落点 |
-| `jazor.style/` | 结构化 CSS-in-JS 的产品定位、运行时合同与边界 |
+| `ecmascript.style/` | 结构化 CSS-in-JS 的产品定位、运行时合同与边界 |
 | `ecmascript/` | ECMAScript 宿主契约和平台边界 |
 | `ecmascript.vue3/` | Vue 3 类型绑定和 API 映射 |
 | `ecmascript.pinia/` | Pinia 类型绑定和 API 映射 |

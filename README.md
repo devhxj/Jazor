@@ -40,7 +40,7 @@ The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyz
 
 ### 2026-07-29
 
-- `Jazor.Style` now provides a lowercase `css` facade, native-union CSS value domains, typed units and composition helpers, and an explicit `raw(...)` escape hatch; debug output uses the single `jazorStyle.mjs` entry.
+- `ECMAScript.Style` is the independent ECMAScript ecosystem package for typed CSS-in-JS. It provides a lowercase `css` facade, native-union value domains, typed composition helpers, an explicit `raw(...)` escape hatch, and the single debug entry `style.mjs`.
 - RazorVue direct rendering preserves dynamic event-modifier conditions and supports helper-composed output with root-level local declarations.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
@@ -67,7 +67,7 @@ Add ecosystem packages explicitly when needed:
 ```xml
 <ItemGroup>
   <PackageReference Include="Jazor" Version="0.1.33" />
-  <PackageReference Include="Jazor.Style" Version="0.1.33" />
+  <PackageReference Include="ECMAScript.Style" Version="0.1.33" />
   <PackageReference Include="ECMAScript.Pinia" Version="0.1.33" />
   <PackageReference Include="ECMAScript.VueRoute" Version="0.1.33" />
   <PackageReference Include="ECMAScript.Vuetify" Version="0.1.33" />
@@ -139,11 +139,11 @@ See the [Razor-to-Vue design](docs/01-%E7%9B%AE%E6%A0%87/razorvue/README.md) for
 
 ### Deterministic CSS-in-JS
 
-Reference `Jazor.Style` when an application needs structured runtime styles:
+Reference `ECMAScript.Style` when an application needs structured runtime styles:
 
 ```csharp
-using Jazor.Style;
-using static Jazor.Style.css;
+using ECMAScript.Style;
+using static ECMAScript.Style.css;
 
 var actionClass = style(new CssRule
 {
@@ -162,9 +162,9 @@ var actionClass = style(new CssRule
 });
 ```
 
-The package generates 705 standard properties from a locked Webref grammar snapshot. Native C# unions distinguish lengths, percentages, colors, times, display values, and other domains; `raw(...)` explicitly admits future or unmodeled syntax. Stable content names, nonce-aware `document`/`ShadowRoot` ownership, detached extraction, and hydration share one runtime contract. `style(...)` returns a plain string for ordinary modules and RazorVue `class` attributes. The package adds no CSS-specific MSBuild property; debug materialization writes `jazorStyle.mjs` under `JazorDir`.
+The package generates 705 standard properties from a locked Webref grammar snapshot. Native C# unions distinguish lengths, percentages, colors, times, display values, and other domains; `raw(...)` explicitly admits future or unmodeled syntax. Stable content names, nonce-aware `document`/`ShadowRoot` ownership, detached extraction, and hydration share one runtime contract. `style(...)` returns a plain string for ordinary modules and RazorVue `class` attributes. The package adds no CSS-specific MSBuild property; debug materialization writes `style.mjs` under `JazorDir`.
 
-See the [Jazor.Style package guide](src/Jazor.Style/README.md) and [design boundary](docs/01-%E7%9B%AE%E6%A0%87/jazor.style/README.md).
+See the [ECMAScript.Style package guide](src/ECMAScript.Style/README.md) and [design boundary](docs/01-%E7%9B%AE%E6%A0%87/ecmascript.style/README.md).
 
 ## MSBuild Properties
 
@@ -209,7 +209,7 @@ Jazor/
 │   ├── Jazor.Analyzer/              # Static analyzer diagnostics
 │   ├── Jazor.RazorVue/              # Generator integration, SG binding, and Vue render framing
 │   ├── Jazor.Emit/                  # Materialization, manifests, source maps, and bundling
-│   ├── Jazor.Style/                 # Strongly typed, deterministic CSS-in-JS runtime
+│   ├── ECMAScript.Style/            # Strongly typed, deterministic CSS-in-JS runtime
 │   ├── Jazor.Common/                # Shared formatting/source-map utilities and contracts
 │   ├── Jazor.AspNetCore*/           # ASP.NET Core runtime and dev integration
 │   ├── Jazor/                       # NuGet package bundling core SDK assets
@@ -243,8 +243,8 @@ dotnet run --file scripts/csharp/test-dotnet.cs
 
 # Focused suites
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
-dotnet run --file scripts/csharp/test-dotnet.cs -- --project css
-dotnet run --file scripts/csharp/test-dotnet.cs -- --project css-browser
+dotnet run --file scripts/csharp/test-dotnet.cs -- --project style
+dotnet run --file scripts/csharp/test-dotnet.cs -- --project style-browser
 dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj
 dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
 
@@ -263,7 +263,7 @@ Repository automation scripts should be single-file C# entrypoints under `script
 | Compiler implementation principles | [src/Jazor.Compiler/ImplementationPrinciples.md](src/Jazor.Compiler/ImplementationPrinciples.md) |
 | Compiler status | [docs/03-完成/compiler/status.md](docs/03-%E5%AE%8C%E6%88%90/compiler/status.md) |
 | RazorVue design | [docs/01-目标/razorvue/README.md](docs/01-%E7%9B%AE%E6%A0%87/razorvue/README.md) |
-| Jazor.Style design and status | [docs/01-目标/jazor.style/README.md](docs/01-%E7%9B%AE%E6%A0%87/jazor.style/README.md), [docs/03-完成/jazor.style/status.md](docs/03-%E5%AE%8C%E6%88%90/jazor.style/status.md) |
+| ECMAScript.Style design and status | [docs/01-目标/ecmascript.style/README.md](docs/01-%E7%9B%AE%E6%A0%87/ecmascript.style/README.md), [docs/03-完成/ecmascript.style/status.md](docs/03-%E5%AE%8C%E6%88%90/ecmascript.style/status.md) |
 | Transformation plan | [docs/02-计划/Jazor 架构转型开发计划.md](docs/02-%E8%AE%A1%E5%88%92/Jazor%20%E6%9E%B6%E6%9E%84%E8%BD%AC%E5%9E%8B%E5%BC%80%E5%8F%91%E8%AE%A1%E5%88%92.md) |
 | G0 decision record | [docs/02-计划/RazorSgFinalDocument.G0.DecisionRecord.md](docs/02-%E8%AE%A1%E5%88%92/RazorSgFinalDocument.G0.DecisionRecord.md) |
 | Emit status | [docs/03-完成/emit/status.md](docs/03-%E5%AE%8C%E6%88%90/emit/status.md) |

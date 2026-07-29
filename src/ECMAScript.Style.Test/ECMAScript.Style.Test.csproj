@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Jazor.Style\Jazor.Style.csproj" />
+    <ProjectReference Include="..\ECMAScript.Style\ECMAScript.Style.csproj" />
     <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" />
   </ItemGroup>
 

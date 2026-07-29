@@ -9,7 +9,7 @@
 | 编译器 | [compiler/status.md](./compiler/status.md) | 编译器支持边界和当前实现状态 |
 | Emit | [emit/status.md](./emit/status.md) | 物化、manifest、源映射和 bundle 状态 |
 | Razor-to-Vue | [razorvue/completion-analysis.md](./razorvue/completion-analysis.md) | RazorVue 阶段性完成材料，需结合当前源码核对 |
-| Jazor.Style | [jazor.style/status.md](./jazor.style/status.md) | 强类型 API、运行时、Emit、RazorVue、浏览器与 NuGet 验证状态 |
+| ECMAScript.Style | [ecmascript.style/status.md](./ecmascript.style/status.md) | 强类型 API、运行时、Emit、RazorVue、浏览器与 NuGet 验证状态 |
 | Vue 3 | [ecmascript.vue3/status.md](./ecmascript.vue3/status.md) | Vue 3 绑定状态 |
 | Pinia | [ecmascript.pinia/status.md](./ecmascript.pinia/status.md) | Pinia 绑定状态 |
 | Vue Router | [ecmascript.vueroute/status.md](./ecmascript.vueroute/status.md) | Vue Router 绑定状态 |

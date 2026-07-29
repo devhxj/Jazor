@@ -1,6 +1,6 @@
-# Jazor.Style 目标与边界
+# ECMAScript.Style 目标与边界
 
-`Jazor.Style` 为 Jazor 应用提供强类型、确定且与 UI 框架无关的 CSS-in-JS 能力。开发者使用 C# 类型系统描述属性和值；生成后的标准 ECMAScript 模块负责规则规范化、稳定命名、注册、DOM 注入、提取与水合。
+`ECMAScript.Style` 是 ECMAScript 生态中的独立样式模块，为使用 C# 编写的 ECMAScript 程序提供强类型、确定且与 UI 框架无关的 CSS-in-JS 能力。开发者使用 C# 类型系统描述属性和值；生成后的标准 ECMAScript 模块负责规则规范化、稳定命名、注册、DOM 注入、提取与水合。Jazor 仅为其提供通用编译、物化与打包基础设施。
 
 ## 产品目标
 
@@ -16,7 +16,7 @@
 ```text
 CssRule / CssAtRule / typed CSS values
     -> Jazor.Compiler 常规 IOperation 降低
-    -> jazorStyle.mjs
+    -> style.mjs
     -> CssContext 注册表
     -> document / ShadowRoot / detached snapshot
     -> debug 模块或 release Bundle
@@ -24,8 +24,8 @@ CssRule / CssAtRule / typed CSS values
 
 ## 包边界
 
-- `Jazor.Style` 是独立、显式引用的 NuGet 包，并精确依赖同版本 `Jazor`。
-- `Jazor` 不反向依赖 `Jazor.Style`；仅引用核心包不会获得 Style API 或模块目录项。
+- `ECMAScript.Style` 是独立、显式引用的 NuGet 包，并精确依赖同版本 `Jazor`。
+- `Jazor` 不反向依赖 `ECMAScript.Style`；仅引用核心包不会获得 Style API 或模块目录项。
 - 包不依赖 Vue、RazorVue、ASP.NET Core 或任何组件库。
 - 引用包只使 API 与模块目录可用；只有执行注册方法才会创建规则或修改 DOM。
 - 包不安装 Razor Hook，不扫描组件，不提供 CSS 专用 props、targets 或用户配置项。
@@ -37,8 +37,8 @@ CssRule / CssAtRule / typed CSS values
 唯一公共门面为小写静态类 `css`。所有方法和预定义值采用 lower camel case，可按需静态导入：
 
 ```csharp
-using Jazor.Style;
-using static Jazor.Style.css;
+using ECMAScript.Style;
+using static ECMAScript.Style.css;
 
 var className = style(new CssRule
 {
@@ -100,7 +100,7 @@ var className = style(new CssRule
 
 ## 输出合同
 
-`Jazor.Style` 复用且仅复用三项标准 Jazor 配置：
+`ECMAScript.Style` 复用且仅复用三项标准 Jazor 配置：
 
 | 配置 | 默认值 | Style 行为 |
 | --- | --- | --- |
@@ -108,7 +108,7 @@ var className = style(new CssRule
 | `JazorDir` | `$(MSBuildProjectDirectory)\wwwroot\jazor\` | debug 与 release 的统一输出根目录 |
 | `JazorTool` | `Deno` | 仅在 `release` 下选择 Deno 或 Netpack |
 
-debug 入口固定为 `jazorStyle.mjs`；release 将该运行时与消费模块纳入 `bundle.js`。模块不生成独立 `.css`，也不执行 PostCSS、autoprefixer 或 CSS Modules 转换。
+debug 入口固定为 `style.mjs`；release 将该运行时与消费模块纳入 `bundle.js`。模块不生成独立 `.css`，也不执行 PostCSS、autoprefixer 或 CSS Modules 转换。
 
 ## 明确非目标
 
@@ -118,6 +118,6 @@ debug 入口固定为 `jazorStyle.mjs`；release 将该运行时与消费模块�
 - 不增加 Style 专用 compiler intrinsic、analyzer 例外或 RazorVue lowering；
 - 不动态注册 `@charset`、`@import`、`@namespace` 等 statement at-rule；
 - 不提供自动规则回收、引用计数或 LRU；
-- 不增加 `JazorStyle*` 构建配置。
+- 不增加任何 Style 专用构建配置。
 
-实施步骤见[实现计划](../../02-计划/jazor.style/Jazor.Style.Complete.ImplementationPlan.md)，验收结果见[完成状态](../../03-完成/jazor.style/status.md)。
+实施步骤见[实现计划](../../02-计划/ecmascript.style/ECMAScript.Style.ImplementationPlan.md)，验收结果见[完成状态](../../03-完成/ecmascript.style/status.md)。

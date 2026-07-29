@@ -13,7 +13,7 @@ namespace Jazor.EmitTest;
 public sealed class SdkIntegrationTests
 {
     private static readonly Lazy<Task<LocalPackageFixture>> LocalPackage = new(CreateLocalPackageAsync);
-    private static readonly Lazy<Task<LocalCssPackageFixture>> LocalCssPackage = new(CreateLocalCssPackageAsync);
+    private static readonly Lazy<Task<LocalStylePackageFixture>> LocalStylePackage = new(CreateLocalStylePackageAsync);
     private static readonly SemaphoreSlim SourceReferencedRazorVueBuildGate = new(1, 1);
 
     [TestMethod]
@@ -123,32 +123,32 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
-    public async Task CreateLocalPackage_IncludesJazorStyleAsIndependentOptInPackage()
+    public async Task CreateLocalPackage_IncludesEcmaScriptStyleAsIndependentOptInPackage()
     {
-        var package = await LocalCssPackage.Value;
+        var package = await LocalStylePackage.Value;
 
-        using var archive = ZipFile.OpenRead(package.CssPackagePath);
+        using var archive = ZipFile.OpenRead(package.StylePackagePath);
         var entryNames = archive.Entries
             .Select(static entry => entry.FullName.Replace('\\', '/'))
             .ToArray();
-        var nuspec = ReadPackageEntryText(package.CssPackagePath, "Jazor.Style.nuspec");
+        var nuspec = ReadPackageEntryText(package.StylePackagePath, "ECMAScript.Style.nuspec");
 
-        CollectionAssert.Contains(entryNames, "lib/net11.0/Jazor.Style.dll");
+        CollectionAssert.Contains(entryNames, "lib/net11.0/ECMAScript.Style.dll");
         CollectionAssert.Contains(entryNames, "README.md");
         StringAssert.Contains(nuspec, "<dependency id=\"Jazor\" version=\"[" + package.PackageVersion + "]\" />");
         Assert.IsFalse(
             entryNames.Any(static path => path.StartsWith("build", StringComparison.OrdinalIgnoreCase)),
-            "Jazor.Style must rely on Jazor's existing build integration and must not install CSS-specific targets.");
+            "ECMAScript.Style must rely on Jazor's existing build integration and must not install CSS-specific targets.");
     }
 
     [TestMethod]
-    public async Task Build_LocalJazorStylePackage_DebugMaterializesAndReleaseBundlesRuntime()
+    public async Task Build_LocalEcmaScriptStylePackage_DebugMaterializesAndReleaseBundlesRuntime()
     {
-        var package = await LocalCssPackage.Value;
+        var package = await LocalStylePackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
-        var projectRoot = Path.Combine(workspace.RootPath, "JazorStylePackageConsumer");
-        var projectPath = CreateJazorStylePackageConsumerProject(projectRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "EcmaScriptStylePackageConsumer");
+        var projectPath = CreateEcmaScriptStylePackageConsumerProject(projectRoot);
         var commonArguments = new[]
         {
             "-t:Rebuild",
@@ -166,17 +166,17 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, debugBuild.ExitCode, debugBuild.ToString());
 
         var outputRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
-        var runtimePath = Path.Combine(outputRoot, "jazorStyle.mjs");
+        var runtimePath = Path.Combine(outputRoot, "style.mjs");
         var runtimeMapPath = runtimePath + ".map";
         var appPath = Path.Combine(outputRoot, "app.mjs");
         var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
 
-        Assert.IsTrue(File.Exists(runtimePath), $"Jazor.Style runtime was not materialized: {runtimePath}");
-        Assert.IsTrue(File.Exists(runtimeMapPath), $"Jazor.Style source map was not materialized: {runtimeMapPath}");
+        Assert.IsTrue(File.Exists(runtimePath), $"ECMAScript.Style runtime was not materialized: {runtimePath}");
+        Assert.IsTrue(File.Exists(runtimeMapPath), $"ECMAScript.Style source map was not materialized: {runtimeMapPath}");
         Assert.IsTrue(File.Exists(appPath), $"Consumer module was not materialized: {appPath}");
         Assert.IsTrue(File.Exists(manifestPath), $"Debug manifest was not generated: {manifestPath}");
         var appModule = await File.ReadAllTextAsync(appPath);
-        StringAssert.Contains(appModule, "from \"jazorStyle.mjs\"");
+        StringAssert.Contains(appModule, "from \"style.mjs\"");
         StringAssert.Contains(appModule, "\"background-color\": hex(\"1769aa\")");
         StringAssert.Contains(appModule, "context as ");
         StringAssert.Contains(appModule, "styleIn");
@@ -184,8 +184,8 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(appModule, "snapshotFrom");
 
         var manifest = LoadManifest(manifestPath);
-        var runtimeEntry = manifest.Modules.Single(static entry => entry.RelativePath == "jazorStyle.mjs");
-        Assert.AreEqual("jazorStyle.mjs.map", runtimeEntry.SourceMapPath);
+        var runtimeEntry = manifest.Modules.Single(static entry => entry.RelativePath == "style.mjs");
+        Assert.AreEqual("style.mjs.map", runtimeEntry.SourceMapPath);
         Assert.HasCount(64, runtimeEntry.Hash);
         Assert.HasCount(64, runtimeEntry.MapHash!);
 
@@ -196,8 +196,8 @@ public sealed class SdkIntegrationTests
 
         var bundlePath = Path.Combine(outputRoot, "bundle.js");
         var bundleMapPath = Path.Combine(outputRoot, "bundle.js.map");
-        Assert.IsTrue(File.Exists(bundlePath), $"Jazor.Style bundle was not generated: {bundlePath}");
-        Assert.IsTrue(File.Exists(bundleMapPath), $"Jazor.Style bundle source map was not generated: {bundleMapPath}");
+        Assert.IsTrue(File.Exists(bundlePath), $"ECMAScript.Style bundle was not generated: {bundlePath}");
+        Assert.IsTrue(File.Exists(bundleMapPath), $"ECMAScript.Style bundle source map was not generated: {bundleMapPath}");
         Assert.IsFalse(File.Exists(runtimePath), "Release must not retain the debug runtime module.");
         Assert.IsFalse(File.Exists(manifestPath), "Release must not retain the debug manifest.");
 
@@ -207,7 +207,7 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(bundle, "font-face");
         StringAssert.Contains(bundle, "server-css");
         StringAssert.Contains(bundle, "sourceMappingURL=bundle.js.map");
-        Assert.IsFalse(bundle.Contains("from \"jazorStyle.mjs\"", StringComparison.Ordinal), bundle);
+        Assert.IsFalse(bundle.Contains("from \"style.mjs\"", StringComparison.Ordinal), bundle);
     }
 
     [TestMethod]
@@ -1373,7 +1373,7 @@ public sealed class SdkIntegrationTests
         Assert.HasCount(0, failures, "Browser console/runtime failures were observed:" + Environment.NewLine + string.Join(Environment.NewLine, failures));
     }
 
-    private static async Task<LocalCssPackageFixture> CreateLocalCssPackageAsync()
+    private static async Task<LocalStylePackageFixture> CreateLocalStylePackageAsync()
     {
         var repoRoot = FindRepoRoot();
         var packageOutputDirectory = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "css-nupkg", Guid.NewGuid().ToString("N"));
@@ -1406,19 +1406,19 @@ public sealed class SdkIntegrationTests
 
         await PackProjectAndAssertOutputAsync(
             repoRoot,
-            Path.Combine(repoRoot, "src", "Jazor.Style", "Jazor.Style.csproj"),
-            Path.Combine(packageBuildOutputRoot, "Jazor.Style", "bin", "Debug", "net11.0", "Jazor.Style.dll"),
+            Path.Combine(repoRoot, "src", "ECMAScript.Style", "ECMAScript.Style.csproj"),
+            Path.Combine(packageBuildOutputRoot, "ECMAScript.Style", "bin", "Debug", "net11.0", "ECMAScript.Style.dll"),
             packageBuildOutputRoot,
             packageBuildIntermediateRoot,
             packageOutputDirectory,
             packageVersion);
 
-        return new LocalCssPackageFixture(
+        return new LocalStylePackageFixture(
             repoRoot,
             packageVersion,
             packageOutputDirectory,
             restorePackagesPath,
-            GetPackagePath(packageOutputDirectory, "Jazor.Style", packageVersion));
+            GetPackagePath(packageOutputDirectory, "ECMAScript.Style", packageVersion));
     }
 
     private static async Task<LocalPackageFixture> CreateLocalPackageAsync()
@@ -2112,10 +2112,10 @@ public sealed class SdkIntegrationTests
         return projectPath;
     }
 
-    private static string CreateJazorStylePackageConsumerProject(string projectRoot)
+    private static string CreateEcmaScriptStylePackageConsumerProject(string projectRoot)
     {
         Directory.CreateDirectory(projectRoot);
-        var projectPath = Path.Combine(projectRoot, "JazorStylePackageConsumer.csproj");
+        var projectPath = Path.Combine(projectRoot, "EcmaScriptStylePackageConsumer.csproj");
 
         WriteFile(
             projectPath,
@@ -2130,7 +2130,7 @@ public sealed class SdkIntegrationTests
               </PropertyGroup>
 
               <ItemGroup>
-                <PackageReference Include="Jazor.Style" Version="$(JazorPackageVersion)" />
+                <PackageReference Include="ECMAScript.Style" Version="$(JazorPackageVersion)" />
               </ItemGroup>
             </Project>
             """);
@@ -2138,17 +2138,17 @@ public sealed class SdkIntegrationTests
         WriteFile(
             Path.Combine(projectRoot, "Program.cs"),
             """
-            Console.WriteLine("Jazor.Style package consumer");
+            Console.WriteLine("ECMAScript.Style package consumer");
             """);
 
         WriteFile(
             Path.Combine(projectRoot, "AppModule.cs"),
             """
             using ECMAScript;
-            using Jazor.Style;
-            using static Jazor.Style.css;
+            using ECMAScript.Style;
+            using static ECMAScript.Style.css;
 
-            namespace JazorStylePackageConsumer;
+            namespace EcmaScriptStylePackageConsumer;
 
             [ECMAScriptModule("app.mjs")]
             public static class AppModule
@@ -2492,12 +2492,12 @@ public sealed class SdkIntegrationTests
         string TDesignPackagePath,
         string DenoExePath);
 
-    private sealed record LocalCssPackageFixture(
+    private sealed record LocalStylePackageFixture(
         string RepoRoot,
         string PackageVersion,
         string PackageOutputDirectory,
         string RestorePackagesPath,
-        string CssPackagePath);
+        string StylePackagePath);
 
     private sealed class TestWorkspace : IDisposable
     {

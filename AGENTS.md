@@ -25,7 +25,7 @@ Shared infrastructure used by the active line:
 | `src/ECMAScript.WebIDL.Generator` | WebIDL spec-to-C# binding generator |
 | `src/Jazor` | NuGet package bundling runtime, analyzer, generators, emit, and MSBuild integration |
 
-Vue/Vuetify ecosystem layer:
+ECMAScript ecosystem layer:
 
 | Project | Role |
 |---------|------|
@@ -34,6 +34,7 @@ Vue/Vuetify ecosystem layer:
 | `src/ECMAScript.VueRoute` | Vue Router type bindings |
 | `src/ECMAScript.Vuetify` | Vuetify component wrappers (props, events, slots, value types) |
 | `src/ECMAScript.Pinia` | Pinia state management bindings |
+| `src/ECMAScript.Style` | Strongly typed, deterministic CSS-in-JS authoring and runtime module |
 
 ASP.NET Core integration layer:
 
@@ -42,7 +43,7 @@ ASP.NET Core integration layer:
 | `src/Jazor.AspNetCore` | ASP.NET Core runtime integration |
 | `src/Jazor.AspNetCore.Dev` | Development-time integration (HMR, DevServer bridging) |
 
-Test projects live under `src/Jazor.CompilerTest`, `src/Jazor.CLR.Test`, `src/Jazor.RazorVue.Sg.Test`, `src/Jazor.EmitTest`, `src/ECMAScript.WebIDL.GeneratorTest`, `src/ECMAScript.VueRoute.Test`, `src/ECMAScript.Pinia.Test`, and `src/ECMAScript.Pinia.Testing.Test`. Auxiliary tooling outside the main solution includes `src/Wiki` and `samples/`.
+Test projects live under `src/Jazor.CompilerTest`, `src/Jazor.CLR.Test`, `src/Jazor.RazorVue.Sg.Test`, `src/Jazor.EmitTest`, `src/ECMAScript.Style.Test`, `src/ECMAScript.WebIDL.GeneratorTest`, `src/ECMAScript.VueRoute.Test`, `src/ECMAScript.Pinia.Test`, and `src/ECMAScript.Pinia.Testing.Test`. Auxiliary tooling outside the main solution includes `src/Wiki` and `samples/`.
 
 Documentation is organized under `docs/` in five categories:
 - `docs/01-目标/` — why each module exists, the problem it solves, and implementation direction

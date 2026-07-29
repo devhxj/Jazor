@@ -35,7 +35,7 @@ jobs:
             --output-directory 'artifacts/packages' `
             --package jazor `
             --package jazor-vue `
-            --package jazor-style `
+            --package style `
             --package admin `
             --package pinia `
             --package pinia-testing `

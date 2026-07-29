@@ -1,14 +1,14 @@
 using System.Text.Json;
 
-namespace Jazor.Style.Tests;
+namespace ECMAScript.Style.Tests;
 
 [TestClass]
-public sealed class JazorStyleRuntimeTests
+public sealed class EcmaScriptStyleRuntimeTests
 {
     [TestMethod]
     public async Task Runtime_TypedFactories_EmitPlainCssStringsAndComposeValues()
     {
-        var result = await JazorStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
             """
             import {
               style, px, rem, percent, rgba, hex, variable, varOr, ms,
@@ -45,7 +45,7 @@ public sealed class JazorStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_TypedFactories_RejectInvalidValuesWithActionableErrors()
     {
-        var result = await JazorStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
             """
             import {
               px, hex, rgb, rgba, hsl, ratio, repeat, fr, transform,
@@ -93,7 +93,7 @@ public sealed class JazorStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_HashV1_MatchesFixedVector()
     {
-        var result = await JazorStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
             """
             import { style } from "./runtime.mjs";
             console.log(style({ color: "red" }));
@@ -106,7 +106,7 @@ public sealed class JazorStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_NoDom_GeneratesDeterministicRulesAndExtractsCss()
     {
-        var result = await JazorStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
             """
             import { style, keyframes, global as cssGlobal, extract } from "./runtime.mjs";
 
@@ -162,7 +162,7 @@ public sealed class JazorStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_Dom_InjectsNonceAndAdoptsLengthFramedEntriesAcrossReload()
     {
-        var result = await JazorStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
             """
             class FakeElement {
               constructor(localName, owner) {
@@ -227,7 +227,7 @@ public sealed class JazorStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_InvalidInputs_FailWithActionableErrors()
     {
-        var result = await JazorStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
             """
             import { style, keyframes, configure, context, atRule } from "./runtime.mjs";
 
@@ -280,7 +280,7 @@ public sealed class JazorStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_SelectorScanner_PreservesNestedCommasAndAttributeValues()
     {
-        var result = await JazorStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
             """
             import { style, extract } from "./runtime.mjs";
             const name = style({
@@ -304,7 +304,7 @@ public sealed class JazorStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_NormalizationPreservesObservableOrderAndSeparatesNameDomains()
     {
-        var result = await JazorStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
             """
             import { style, keyframes, global, extract } from "./runtime.mjs";
 
@@ -351,7 +351,7 @@ public sealed class JazorStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_NestedConditionsPreserveSelectorContextAndSiblingOrder()
     {
-        var result = await JazorStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
             """
             import { style, extract } from "./runtime.mjs";
             const name = style({
@@ -380,7 +380,7 @@ public sealed class JazorStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_DomAppearingAfterRegistrationAttachesCacheAndRejectsForeignOwnership()
     {
-        var result = await JazorStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
             """
             const memoryModule = await import("./runtime.mjs");
             const name = memoryModule.style({ color: "red" });
@@ -459,7 +459,7 @@ public sealed class JazorStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_IsolatedContextsProvideDeterministicNamesSnapshotsAndAtRules()
     {
-        var result = await JazorStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
             """
             import {
               context,
@@ -526,7 +526,7 @@ public sealed class JazorStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_ModernGroupingAtRulesPreserveStructuredNestingAndOrder()
     {
-        var result = await JazorStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
             """
             import { style, extract } from "./runtime.mjs";
 
@@ -561,7 +561,7 @@ public sealed class JazorStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_TargetContextCreatesAndAdoptsOneOwnedStylePerFragment()
     {
-        var result = await JazorStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
             """
             import { context, styleIn, snapshotFrom } from "./runtime.mjs";
 

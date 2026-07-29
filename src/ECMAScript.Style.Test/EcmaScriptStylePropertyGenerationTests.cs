@@ -1,9 +1,9 @@
 using System.Reflection;
 
-namespace Jazor.Style.Tests;
+namespace ECMAScript.Style.Tests;
 
 [TestClass]
-public sealed class JazorStylePropertyGenerationTests
+public sealed class EcmaScriptStylePropertyGenerationTests
 {
     [TestMethod]
     public void GeneratedProperties_ExposeStableCssNamesWithoutRuntimeInventory()

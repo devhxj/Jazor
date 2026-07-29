@@ -4,19 +4,19 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Jazor.Style.Tests;
+namespace ECMAScript.Style.Tests;
 
-internal static class JazorStyleModuleTestHost
+internal static class EcmaScriptStyleModuleTestHost
 {
     public static ModuleRecord GetRuntimeModule()
     {
         var assembly = typeof(css).Assembly;
         var catalogType = assembly.GetType("Jazor.Generated.ModuleCatalog", throwOnError: false, ignoreCase: false)
-            ?? throw new InvalidOperationException("Jazor.Style module catalog was not generated.");
+            ?? throw new InvalidOperationException("ECMAScript.Style module catalog was not generated.");
         var getModules = catalogType.GetMethod("GetModules", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException("Jazor.Style module catalog has no GetModules method.");
+            ?? throw new InvalidOperationException("ECMAScript.Style module catalog has no GetModules method.");
         var modules = ((IEnumerable?)getModules.Invoke(null, null))?.Cast<object>().ToArray()
-            ?? throw new InvalidOperationException("Jazor.Style module catalog returned null.");
+            ?? throw new InvalidOperationException("ECMAScript.Style module catalog returned null.");
         var module = modules.Single();
 
         return new ModuleRecord(
@@ -34,8 +34,8 @@ internal static class JazorStyleModuleTestHost
             var module = GetRuntimeModule();
             var runtimePath = Path.Combine(root, "runtime.mjs");
             var runnerPath = Path.Combine(root, "runner.mjs");
-            await File.WriteAllTextAsync(runtimePath, module.Content, new UTF8Encoding(false));
-            await File.WriteAllTextAsync(runnerPath, runnerSource, new UTF8Encoding(false));
+            await global::System.IO.File.WriteAllTextAsync(runtimePath, module.Content, new UTF8Encoding(false));
+            await global::System.IO.File.WriteAllTextAsync(runnerPath, runnerSource, new UTF8Encoding(false));
 
             var startInfo = new ProcessStartInfo
             {
@@ -77,7 +77,7 @@ internal static class JazorStyleModuleTestHost
                     : "osx-x64";
         var executableName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "deno.exe" : "deno";
         var path = Path.Combine(AppContext.BaseDirectory, "runtimes", runtimeIdentifier, "native", executableName);
-        return File.Exists(path)
+        return global::System.IO.File.Exists(path)
             ? path
             : throw new FileNotFoundException("Bundled Deno runtime was not found.", path);
     }
