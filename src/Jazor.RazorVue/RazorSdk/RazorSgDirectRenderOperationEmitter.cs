@@ -736,7 +736,7 @@ internal static class RazorSgDirectRenderOperationEmitter
                 context.LocalComponentTypes,
                 context.SecondaryBuilders,
                 context.PreludeStatements,
-                AllowPreludeDeclarations: false,
+                AllowPreludeDeclarations: context.AllowPreludeDeclarations,
                 Argument: context.Argument);
             _ = EmitOperations(body.Operations, helperContext, state);
             return true;

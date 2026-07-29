@@ -4,9 +4,9 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorVueSemanticMatrixInventoryTests
 {
     [TestMethod]
-    public void SemanticMatrix_Contains2966UniqueCasesAndCompleteCatalogCoverage()
+    public void SemanticMatrix_Contains3478UniqueCasesAndCompleteCatalogCoverage()
     {
-        Assert.HasCount(2800, DirectRenderCaseCatalog.SuccessCases);
+        Assert.HasCount(3312, DirectRenderCaseCatalog.SuccessCases);
         Assert.HasCount(
             192,
             DirectRenderCaseCatalog.SuccessCases.Where(static item => item.Group == DirectRenderCaseGroup.Surface));
@@ -23,7 +23,7 @@ public sealed class RazorVueSemanticMatrixInventoryTests
             1024,
             DirectRenderCaseCatalog.SuccessCases.Where(static item => item.Group == DirectRenderCaseGroup.Advanced));
         Assert.HasCount(
-            1024,
+            1536,
             DirectRenderCaseCatalog.SuccessCases.Where(static item => item.Group == DirectRenderCaseGroup.Coverage));
         AssertDirectRenderCaseCount(48, "content_");
         AssertDirectRenderCaseCount(32, "markup_");
@@ -79,7 +79,7 @@ public sealed class RazorVueSemanticMatrixInventoryTests
             .Concat(VueInjectCase.All.Select(static item => "inject:" + item.Id))
             .Concat(DirectRenderFailureCaseCatalog.All.Select(static item => "failure:" + item.Id))
             .ToArray();
-        Assert.HasCount(2966, ids);
+        Assert.HasCount(3478, ids);
         Assert.HasCount(ids.Length, ids.Distinct(StringComparer.Ordinal));
         Assert.HasCount(
             DirectRenderCaseCatalog.SuccessCases.Count,
@@ -105,7 +105,7 @@ public sealed class RazorVueSemanticMatrixInventoryTests
     private static void AssertUsageScenarioCoverage()
     {
         var definitions = RazorVueUsageScenarioCatalog.All;
-        Assert.HasCount(128, definitions);
+        Assert.HasCount(192, definitions);
         Assert.HasCount(
             definitions.Count,
             definitions.Select(static definition => definition.Id).Distinct());
@@ -114,7 +114,7 @@ public sealed class RazorVueSemanticMatrixInventoryTests
         var observed = DirectRenderCaseCatalog.SuccessCases
             .Where(static testCase => testCase.Scenario is not null)
             .ToArray();
-        Assert.HasCount(1024, observed);
+        Assert.HasCount(1536, observed);
         Assert.IsTrue(observed.All(static testCase => testCase.Group == DirectRenderCaseGroup.Coverage));
         Assert.IsTrue(observed.All(testCase => definitionById.ContainsKey(testCase.Scenario!.Value)));
         Assert.IsTrue(observed.All(testCase =>

@@ -13,6 +13,7 @@ internal static partial class DirectRenderCaseCatalog
     {
         AddCoverageAuthoringCases(cases);
         AddCoverageCallbackTemplateCases(cases);
+        AddCoverageCompositionCompilerCases(cases);
     }
 
     private static void AddCoverageAuthoringCases(List<DirectRenderCase> cases)

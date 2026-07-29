@@ -293,6 +293,118 @@ internal static class RazorVueUsageScenarioCatalog
                     "scoped slot repeated projection",
                     "scoped slot returned by helper",
                     "scoped slot returned by property"
+                ]),
+            new(
+                RazorVueUsageScenarioFamily.NestedElement,
+                RazorVueUsageScenarioArea.Composition,
+                RazorVueUsageScenarioExpectation.Emission,
+                [
+                    "element with nested child",
+                    "three-level nested elements",
+                    "element with sibling children",
+                    "element containing component",
+                    "component slot containing element",
+                    "element containing static markup",
+                    "element containing region",
+                    "element containing repeated children"
+                ]),
+            new(
+                RazorVueUsageScenarioFamily.RepeatedComponentImport,
+                RazorVueUsageScenarioArea.Compiler,
+                RazorVueUsageScenarioExpectation.Emission,
+                [
+                    "sibling repeated components",
+                    "conditional repeated component",
+                    "repeated component collection",
+                    "fragment and root component reuse",
+                    "helper component reuse",
+                    "nested slot component reuse",
+                    "generic and typeof component reuse",
+                    "keyed component reuse"
+                ]),
+            new(
+                RazorVueUsageScenarioFamily.HelperComposition,
+                RazorVueUsageScenarioArea.Composition,
+                RazorVueUsageScenarioExpectation.Emission,
+                [
+                    "helper text composition",
+                    "helper element composition",
+                    "helper component composition",
+                    "helper region composition",
+                    "helper conditional composition",
+                    "helper collection composition",
+                    "nested helper composition",
+                    "helper local prelude composition"
+                ]),
+            new(
+                RazorVueUsageScenarioFamily.FragmentComposition,
+                RazorVueUsageScenarioArea.Composition,
+                RazorVueUsageScenarioExpectation.Emission,
+                [
+                    "fragment text composition",
+                    "fragment element composition",
+                    "fragment sibling roots",
+                    "fragment static markup",
+                    "fragment conditional content",
+                    "fragment collection content",
+                    "nested fragment invocation",
+                    "conditional fragment selection"
+                ]),
+            new(
+                RazorVueUsageScenarioFamily.LocalPrelude,
+                RazorVueUsageScenarioArea.Compiler,
+                RazorVueUsageScenarioExpectation.Emission,
+                [
+                    "string local prelude",
+                    "numeric local prelude",
+                    "boolean local prelude",
+                    "collection alias prelude",
+                    "nullable local prelude",
+                    "markup local prelude",
+                    "component parameter local prelude",
+                    "local prelude after prior output"
+                ]),
+            new(
+                RazorVueUsageScenarioFamily.ConditionalComposition,
+                RazorVueUsageScenarioArea.Composition,
+                RazorVueUsageScenarioExpectation.Emission,
+                [
+                    "conditional text composition",
+                    "conditional element composition",
+                    "conditional component composition",
+                    "conditional empty branch",
+                    "conditional attribute composition",
+                    "conditional slot composition",
+                    "nested conditional composition",
+                    "conditional fragment composition"
+                ]),
+            new(
+                RazorVueUsageScenarioFamily.ForeachCollection,
+                RazorVueUsageScenarioArea.Compiler,
+                RazorVueUsageScenarioExpectation.Emission,
+                [
+                    "string collection content",
+                    "numeric collection content",
+                    "nullable collection content",
+                    "local collection alias",
+                    "collection element projection",
+                    "nested collection projection",
+                    "collection component projection",
+                    "collection fragment projection"
+                ]),
+            new(
+                RazorVueUsageScenarioFamily.DescriptorMapping,
+                RazorVueUsageScenarioArea.Compiler,
+                RazorVueUsageScenarioExpectation.Emission,
+                [
+                    "renamed prop descriptor",
+                    "model prop descriptor",
+                    "event descriptor",
+                    "model-update event descriptor",
+                    "default slot descriptor",
+                    "named slot descriptor",
+                    "scoped slot descriptor",
+                    "combined descriptor mapping"
                 ])
         ];
 
