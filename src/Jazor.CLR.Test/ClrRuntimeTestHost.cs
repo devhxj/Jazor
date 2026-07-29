@@ -15,6 +15,7 @@ internal sealed record ClrRuntimeExecutionResult(
     string Id,
     bool Succeeded,
     ClrRuntimeValue? Value,
+    IReadOnlyList<ClrRuntimeValue>? Arguments,
     string? Error);
 
 internal sealed record DenoImportMap(IReadOnlyDictionary<string, string> Imports);
@@ -139,6 +140,18 @@ internal static class ClrRuntimeTestHost
             case "array": return value.items.map(decode);
             case "record": return Object.fromEntries(
               Object.entries(value.properties).map(([name, item]) => [name, decode(item)]));
+            case "callable": {
+              let fn;
+              switch (value.scalar) {
+                case "IsEven": fn = item => typeof item === "number" && item % 2 === 0; break;
+                case "IsPositive": fn = item => typeof item === "number" && item > 0; break;
+                case "DoubleNumber": fn = item => item * 2; break;
+                case "CompareDescending": fn = (left, right) => right - left; break;
+                default: throw new Error(`Unsupported CLR runtime callable kind: ${value.scalar}`);
+              }
+              Object.defineProperty(fn, "__clrRuntimeCallable", { value: value.scalar });
+              return fn;
+            }
             case "undefined": return undefined;
             default: throw new Error(`Unsupported CLR runtime value kind: ${value.kind}`);
           }
@@ -153,6 +166,11 @@ internal static class ClrRuntimeTestHost
             case "number": return { kind: "number", scalar: String(value) };
             case "boolean": return { kind: "boolean", scalar: String(value) };
             case "bigint": return { kind: "bigInt", scalar: String(value) };
+            case "function": {
+              if (typeof value.__clrRuntimeCallable !== "string")
+                throw new Error("Cannot encode an unregistered CLR runtime callable");
+              return { kind: "callable", scalar: value.__clrRuntimeCallable };
+            }
             case "object": return {
               kind: "record",
               properties: Object.fromEntries(
@@ -171,13 +189,21 @@ internal static class ClrRuntimeTestHost
             const runtimeFunction = runtimeModule[scenario.exportName];
             if (typeof runtimeFunction !== "function")
               throw new Error(`Missing runtime export ${scenario.exportName} in ${scenario.modulePath}`);
-            const value = await runtimeFunction(...scenario.arguments.map(decode));
-            results.push({ id: scenario.id, succeeded: true, value: encode(value), error: null });
+            const args = scenario.arguments.map(decode);
+            const value = await runtimeFunction(...args);
+            results.push({
+              id: scenario.id,
+              succeeded: true,
+              value: encode(value),
+              arguments: args.map(encode),
+              error: null
+            });
           } catch (error) {
             results.push({
               id: scenario.id,
               succeeded: false,
               value: null,
+              arguments: null,
               error: String(error?.stack ?? error)
             });
           }

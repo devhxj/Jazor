@@ -9,7 +9,16 @@ internal enum ClrRuntimeValueKind
     BigInt,
     Array,
     Record,
+    Callable,
     Undefined
+}
+
+internal enum ClrRuntimeCallableKind
+{
+    IsEven,
+    IsPositive,
+    DoubleNumber,
+    CompareDescending
 }
 
 internal sealed record ClrRuntimeValue(
@@ -42,6 +51,9 @@ internal sealed record ClrRuntimeValue(
                 static property => property.Value,
                 StringComparer.Ordinal));
 
+    public static ClrRuntimeValue Callable(ClrRuntimeCallableKind kind)
+        => new(ClrRuntimeValueKind.Callable, kind.ToString());
+
     public static ClrRuntimeValue Undefined() => new(ClrRuntimeValueKind.Undefined);
 }
 
@@ -51,7 +63,8 @@ internal sealed record ClrRuntimeScenario(
     string ModulePath,
     IReadOnlyList<ClrRuntimeValue> Arguments,
     ClrRuntimeValue? ExpectedValue,
-    string? ExpectedErrorContains = null);
+    string? ExpectedErrorContains = null,
+    IReadOnlyList<ClrRuntimeValue>? ExpectedArguments = null);
 
 internal static class ClrRuntimeScenarioCatalog
 {
@@ -61,7 +74,9 @@ internal static class ClrRuntimeScenarioCatalog
         .. ClrRuntimeBooleanScenarios.All,
         .. ClrRuntimeInt32Scenarios.All,
         .. ClrRuntimeCharScenarios.All,
-        .. ClrRuntimeStringScenarios.All
+        .. ClrRuntimeStringScenarios.All,
+        .. ClrRuntimeArrayScenarios.All,
+        .. ClrRuntimeListScenarios.All
     ];
 
     public static ClrRuntimeScenario Get(string id)

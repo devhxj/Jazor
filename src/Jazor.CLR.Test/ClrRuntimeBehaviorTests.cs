@@ -21,6 +21,11 @@ public sealed class ClrRuntimeBehaviorTests
             var mapping = ClrRuntimeMappingCatalog.GetImport(scenario.Member);
             Assert.AreEqual(scenario.ModulePath, mapping.ModulePath, scenario.Id);
             Assert.AreNotEqual(scenario.ExpectedValue is null, scenario.ExpectedErrorContains is null, scenario.Id);
+            if (scenario.ExpectedArguments is not null)
+            {
+                Assert.IsNotNull(scenario.ExpectedValue, scenario.Id);
+                Assert.HasCount(scenario.Arguments.Count, scenario.ExpectedArguments, scenario.Id);
+            }
         }
     }
 
@@ -44,6 +49,19 @@ public sealed class ClrRuntimeBehaviorTests
         Assert.IsNotNull(scenario.ExpectedValue, scenarioId);
         Assert.IsNotNull(result.Value, scenarioId);
         AssertValue(scenario.ExpectedValue, result.Value, scenarioId);
+
+        if (scenario.ExpectedArguments is not null)
+        {
+            Assert.IsNotNull(result.Arguments, scenarioId);
+            Assert.HasCount(scenario.ExpectedArguments.Count, result.Arguments, scenarioId);
+            for (var index = 0; index < scenario.ExpectedArguments.Count; index++)
+            {
+                AssertValue(
+                    scenario.ExpectedArguments[index],
+                    result.Arguments[index],
+                    $"{scenarioId}.arguments[{index}]");
+            }
+        }
     }
 
     private static void AssertValue(ClrRuntimeValue expected, ClrRuntimeValue actual, string path)

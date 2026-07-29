@@ -834,7 +834,7 @@ public static class ArrayModule<T>
 			throw new Error("ArgumentNullException: array is null");
 		if (match == null)
 			throw new Error("ArgumentNullException: match is null");
-		return array.Find(match);
+		return array.Find(match) ?? MissingValue();
 	}
 
 	///<summary>Retrieves all the elements that match the conditions defined by the specified predicate.</summary>
@@ -1255,6 +1255,48 @@ public static class ArrayModule<T>
 
 	#endregion
 
+	private static void SortKeyItemRange<TKey, TValue>(
+		Array<TKey> keys,
+		Array<TValue>? items,
+		Number index,
+		Number length,
+		Func<TKey, TKey, Number> comparison)
+	{
+		if (keys == null)
+			throw new Error("ArgumentNullException: keys is null");
+		if (index < 0)
+			throw new Error("ArgumentOutOfRangeException: index is less than zero");
+		if (length < 0)
+			throw new Error("ArgumentOutOfRangeException: length is less than zero");
+		if (index + length > keys.Length)
+			throw new Error("ArgumentException: index + length exceeds keys length");
+		if (items != null && index + length > items.Length)
+			throw new Error("ArgumentException: index + length exceeds items length");
+
+		var order = new Array<Number>();
+		for (Number offset = 0; offset < length; offset++)
+			order.Push(offset);
+
+		order.Sort((left, right) => comparison(keys[index + left], keys[index + right]));
+
+		var sortedKeys = new Array<TKey>();
+		var sortedItems = items == null ? null : new Array<TValue>();
+		for (Number offset = 0; offset < length; offset++)
+		{
+			var sourceOffset = order[offset];
+			sortedKeys.Push(keys[index + sourceOffset]);
+			if (sortedItems != null)
+				sortedItems.Push(items![index + sourceOffset]);
+		}
+
+		for (Number offset = 0; offset < length; offset++)
+		{
+			keys[index + offset] = sortedKeys[offset];
+			if (sortedItems != null)
+				items![index + offset] = sortedItems[offset];
+		}
+	}
+
 	#region Sort 方法系列
 
 	///<summary>Sorts the elements in an entire one-dimensional <see cref="T:System.Array" /> using the <see cref="T:System.IComparable" /> implementation of each element of the <see cref="T:System.Array" />.</summary>
@@ -1269,15 +1311,11 @@ public static class ArrayModule<T>
 
 	///<summary>Sorts a pair of one-dimensional <see cref="T:System.Array" /> objects (one contains the keys and the other contains the corresponding items) based on the keys in the first <see cref="T:System.Array" /> using the <see cref="T:System.IComparable" /> implementation of each key.</summary>
 	[Jazor(Op.Import, "static System.Array.Sort(System.Array, System.Array)")]
-	public static void _4df21ca760120c59(Array<T> keys, Array items)
+	public static void _4df21ca760120c59<TValue>(Array<T> keys, Array<TValue>? items)
 	{
 		if (keys == null)
 			throw new Error("ArgumentNullException: keys is null");
-		if (items != null && keys.Length != items.Length)
-			throw new Error("ArgumentException: keys and items have different lengths");
-		// JS 不支持直接按键排序两个数组，需要实现
-		// 简化实现：只排序 keys，忽略 items
-		keys.Sort((left, right) => CompareDefault(left, right));
+		SortKeyItemRange(keys, items, 0, keys.Length, (left, right) => CompareDefault(left, right));
 	}
 
 	///<summary>Sorts the elements in a range of elements in a one-dimensional <see cref="T:System.Array" /> using the <see cref="T:System.IComparable" /> implementation of each element of the <see cref="T:System.Array" />.</summary>
@@ -1302,18 +1340,8 @@ public static class ArrayModule<T>
 
 	///<summary>Sorts a range of elements in a pair of one-dimensional <see cref="T:System.Array" /> objects (one contains the keys and the other contains the corresponding items) based on the keys in the first <see cref="T:System.Array" /> using the <see cref="T:System.IComparable" /> implementation of each key.</summary>
 	[Jazor(Op.Import, "static System.Array.Sort(System.Array, System.Array, int, int)")]
-	public static void _12789d2affa27035(Array<T> keys, Array items, Number index, Number length)
-	{
-		if (keys == null)
-			throw new Error("ArgumentNullException: keys is null");
-		if (index < 0 || length < 0 || index + length > keys.Length)
-			throw new Error("ArgumentException: invalid index or length");
-
-		var subArray = keys.Slice(index, index + length);
-		subArray.Sort((left, right) => CompareDefault(left, right));
-		for (Number i = 0; i < length; i++)
-			keys[index + i] = subArray[i];
-	}
+	public static void _12789d2affa27035<TValue>(Array<T> keys, Array<TValue>? items, Number index, Number length)
+		=> SortKeyItemRange(keys, items, index, length, (left, right) => CompareDefault(left, right));
 
 	///<summary>Sorts the elements in a one-dimensional <see cref="T:System.Array" /> using the specified <see cref="T:System.Collections.IComparer" />.</summary>
 	[Jazor(Op.Import, "static System.Array.Sort(System.Array, System.Collections.IComparer)")]
@@ -1329,14 +1357,16 @@ public static class ArrayModule<T>
 
 	///<summary>Sorts a pair of one-dimensional <see cref="T:System.Array" /> objects (one contains the keys and the other contains the corresponding items) based on the keys in the first <see cref="T:System.Array" /> using the specified <see cref="T:System.Collections.IComparer" />.</summary>
 	[Jazor(Op.Import, "static System.Array.Sort(System.Array, System.Array, System.Collections.IComparer)")]
-	public static void _122404a1fc2867ba(Array<T> keys, Array<T> items, System.Collections.IComparer comparer)
+	public static void _122404a1fc2867ba<TValue>(Array<T> keys, Array<TValue>? items, System.Collections.IComparer comparer)
 	{
 		if (keys == null)
 			throw new Error("ArgumentNullException: keys is null");
-		if (comparer == null)
-			keys.Sort((left, right) => CompareDefault(left, right));
-		else
-			keys.Sort((a, b) => comparer.Compare(a, b));
+		SortKeyItemRange(
+			keys,
+			items,
+			0,
+			keys.Length,
+			(left, right) => comparer == null ? CompareDefault(left, right) : comparer.Compare(left, right));
 	}
 
 	///<summary>Sorts the elements in a range of elements in a one-dimensional <see cref="T:System.Array" /> using the specified <see cref="T:System.Collections.IComparer" />.</summary>
@@ -1359,21 +1389,13 @@ public static class ArrayModule<T>
 
 	///<summary>Sorts a range of elements in a pair of one-dimensional <see cref="T:System.Array" /> objects (one contains the keys and the other contains the corresponding items) based on the keys in the first <see cref="T:System.Array" /> using the specified <see cref="T:System.Collections.IComparer" />.</summary>
 	[Jazor(Op.Import, "static System.Array.Sort(System.Array, System.Array, int, int, System.Collections.IComparer)")]
-	public static void _a95c3f83e8cd4623(Array<T> keys, Array<T> items, Number index, Number length, System.Collections.IComparer comparer)
-	{
-		if (keys == null)
-			throw new Error("ArgumentNullException: keys is null");
-		if (index < 0 || length < 0 || index + length > keys.Length)
-			throw new Error("ArgumentException: invalid index or length");
-
-		var subArray = keys.Slice(index, index + length);
-		if (comparer == null)
-			subArray.Sort((left, right) => CompareDefault(left, right));
-		else
-			subArray.Sort((a, b) => comparer.Compare(a, b));
-		for (Number i = 0; i < length; i++)
-			keys[index + i] = subArray[i];
-	}
+	public static void _a95c3f83e8cd4623<TValue>(Array<T> keys, Array<TValue>? items, Number index, Number length, System.Collections.IComparer comparer)
+		=> SortKeyItemRange(
+			keys,
+			items,
+			index,
+			length,
+			(left, right) => comparer == null ? CompareDefault(left, right) : comparer.Compare(left, right));
 
 	///<summary>Sorts the elements in an entire <see cref="T:System.Array" /> using the <see cref="T:System.IComparable`1" /> generic interface implementation of each element of the <see cref="T:System.Array" />.</summary>
 	[Jazor(Op.Import, "static System.Array.Sort<T>(T[])")]
@@ -1390,7 +1412,7 @@ public static class ArrayModule<T>
 	{
 		if (keys == null)
 			throw new Error("ArgumentNullException: keys is null");
-		keys.Sort((left, right) => CompareDefaultKey(left, right));
+		SortKeyItemRange(keys, items, 0, keys.Length, (left, right) => CompareDefaultKey(left, right));
 	}
 
 	///<summary>Sorts the elements in a range of elements in an <see cref="T:System.Array" /> using the <see cref="T:System.IComparable`1" /> generic interface implementation of each element of the <see cref="T:System.Array" />.</summary>
@@ -1411,17 +1433,7 @@ public static class ArrayModule<T>
 	///<summary>Sorts a range of elements in a pair of <see cref="T:System.Array" /> objects (one contains the keys and the other contains the corresponding items) based on the keys in the first <see cref="T:System.Array" /> using the <see cref="T:System.IComparable`1" /> generic interface implementation of each key.</summary>
 	[Jazor(Op.Import, "static System.Array.Sort<TKey, TValue>(TKey[], TValue[], int, int)")]
 	public static void _9b803c8e781cf3c0<TKey, TValue>(Array<TKey> keys, Array<TValue> items, Number index, Number length)
-	{
-		if (keys == null)
-			throw new Error("ArgumentNullException: keys is null");
-		if (index < 0 || length < 0 || index + length > keys.Length)
-			throw new Error("ArgumentException: invalid index or length");
-
-		var subArray = keys.Slice(index, index + length);
-		subArray.Sort((left, right) => CompareDefaultKey(left, right));
-		for (Number i = 0; i < length; i++)
-			keys[index + i] = subArray[i];
-	}
+		=> SortKeyItemRange(keys, items, index, length, (left, right) => CompareDefaultKey(left, right));
 
 	///<summary>Sorts the elements in an <see cref="T:System.Array" /> using the specified <see cref="T:System.Collections.Generic.IComparer`1" /> generic interface.</summary>
 	[Jazor(Op.Import, "static System.Array.Sort<T>(T[], System.Collections.Generic.IComparer<T>)")]
@@ -1441,10 +1453,12 @@ public static class ArrayModule<T>
 	{
 		if (keys == null)
 			throw new Error("ArgumentNullException: keys is null");
-		if (comparer == null)
-			keys.Sort((left, right) => CompareDefaultKey(left, right));
-		else
-			keys.Sort(comparer.Compare);
+		SortKeyItemRange(
+			keys,
+			items,
+			0,
+			keys.Length,
+			(left, right) => comparer == null ? CompareDefaultKey(left, right) : comparer.Compare(left, right));
 	}
 
 	///<summary>Sorts the elements in a range of elements in an <see cref="T:System.Array" /> using the specified <see cref="T:System.Collections.Generic.IComparer`1" /> generic interface.</summary>
@@ -1468,20 +1482,12 @@ public static class ArrayModule<T>
 	///<summary>Sorts a range of elements in a pair of <see cref="T:System.Array" /> objects (one contains the keys and the other contains the corresponding items) based on the keys in the first <see cref="T:System.Array" /> using the specified <see cref="T:System.Collections.Generic.IComparer`1" /> generic interface.</summary>
 	[Jazor(Op.Import, "static System.Array.Sort<TKey, TValue>(TKey[], TValue[], int, int, System.Collections.Generic.IComparer<TKey>)")]
 	public static void _f3e7263659ac2e30<TKey, TValue>(Array<TKey> keys, Array<TValue> items, Number index, Number length, IComparer<TKey>? comparer)
-	{
-		if (keys == null)
-			throw new Error("ArgumentNullException: keys is null");
-		if (index < 0 || length < 0 || index + length > keys.Length)
-			throw new Error("ArgumentException: invalid index or length");
-
-		var subArray = keys.Slice(index, index + length);
-		if (comparer == null)
-			subArray.Sort((left, right) => CompareDefaultKey(left, right));
-		else
-			subArray.Sort(comparer.Compare);
-		for (Number i = 0; i < length; i++)
-			keys[index + i] = subArray[i];
-	}
+		=> SortKeyItemRange(
+			keys,
+			items,
+			index,
+			length,
+			(left, right) => comparer == null ? CompareDefaultKey(left, right) : comparer.Compare(left, right));
 
 	///<summary>Sorts the elements in an <see cref="T:System.Array" /> using the specified <see cref="T:System.Comparison`1" />.</summary>
 	[Jazor(Op.Import, "static System.Array.Sort<T>(T[], System.Comparison<T>)")]
