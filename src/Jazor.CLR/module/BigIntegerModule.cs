@@ -4,6 +4,97 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "System.Numerics.BigInteger", "BigInt")]
 public static class BigIntegerModule
 {
+	private static BigInt ParseBytesCore(Array<byte> bytes, bool isUnsigned, bool isBigEndian)
+	{
+		if (bytes.Length == 0)
+			return BigInt.Zero;
+
+		var value = BigInt.Zero;
+		if (isBigEndian)
+		{
+			for (var i = 0; i < bytes.Length; i++)
+				value = (value << BigIntFn(8)) | BigIntFn(bytes[i]);
+		}
+		else
+		{
+			for (var i = bytes.Length - 1; i >= 0; i--)
+				value = (value << BigIntFn(8)) | BigIntFn(bytes[i]);
+		}
+
+		var signByte = isBigEndian ? bytes[0] : bytes[bytes.Length - 1];
+		if (!isUnsigned && (signByte & 0x80) != 0)
+			value -= BigInt.One << BigIntFn(bytes.Length * 8);
+
+		return value;
+	}
+
+	private static Number GetByteCountCore(BigInt value, bool isUnsigned)
+	{
+		if (isUnsigned && value < BigInt.Zero)
+			throw new Error("OverflowException: Negative values do not have an unsigned representation.");
+
+		var bitLength = GetBitLengthCore(value) + (isUnsigned ? BigInt.Zero : BigInt.One);
+		var byteCount = (bitLength + BigIntFn(7)) / BigIntFn(8);
+		return NumberFn(byteCount > BigInt.Zero ? byteCount : BigInt.One);
+	}
+
+	private static Array<byte> GetBytesCore(BigInt value, bool isUnsigned, bool isBigEndian)
+	{
+		var byteCount = GetByteCountCore(value, isUnsigned);
+		var encoded = value;
+		if (value < BigInt.Zero)
+			encoded += BigInt.One << BigIntFn(byteCount * 8);
+
+		var bytes = new Array<byte>();
+		for (var i = 0; i < byteCount; i++)
+		{
+			bytes.Push(NumberFn(encoded & BigIntFn(0xFF)));
+			encoded >>= BigIntFn(8);
+		}
+
+		if (isBigEndian)
+			bytes.Reverse();
+
+		return bytes;
+	}
+
+	private static BigInt GetWordWidthCore(BigInt value, BigInt minimumWidth)
+	{
+		var magnitude = value < BigInt.Zero ? -value : value;
+		var bitLength = GetBitLengthCore(magnitude);
+		var wordSize = BigIntFn(32);
+		var width = ((bitLength + wordSize - BigInt.One) / wordSize) * wordSize;
+		return width < minimumWidth ? minimumWidth : width;
+	}
+
+	private static BigInt RotateCore(BigInt value, Number rotateAmount, bool rotateLeft)
+	{
+		if (value == BigInt.Zero)
+			return BigInt.Zero;
+
+		var width = GetWordWidthCore(value, BigIntFn(32));
+		var widthNumber = NumberFn(width);
+		var amount = rotateAmount % widthNumber;
+		if (amount < 0)
+			amount += widthNumber;
+		if (amount == 0)
+			return value;
+
+		var modulus = BigInt.One << width;
+		var mask = modulus - BigInt.One;
+		var bits = value < BigInt.Zero ? modulus + value : value;
+		var shift = BigIntFn(amount);
+		var complementShift = width - shift;
+		var rotated = rotateLeft
+			? ((bits << shift) | (bits >> complementShift)) & mask
+			: ((bits >> shift) | (bits << complementShift)) & mask;
+
+		if (value < BigInt.Zero && (rotated & (BigInt.One << (width - BigInt.One))) != BigInt.Zero)
+			return rotated - modulus;
+
+		return rotated;
+	}
+
 	///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure using a 32-bit signed integer value.</summary>
 	[Jazor(Op.Discard ,"System.Numerics.BigInteger.BigInteger(int)")]
 	public extern static BigInt _ba6e0e86598dc8b2(Number value);
@@ -35,133 +126,12 @@ public static class BigIntegerModule
 	///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure using the values in a byte array.</summary>
 	[Jazor(Op.Import ,"System.Numerics.BigInteger.BigInteger(byte[])")]
 	public static BigInt _c1e724fa6dbf63eb(Array<byte> value)
-	{
-		// 空白数组处理
-		if (value.Length == 0)
-			return BigInt.Zero;
-
-		var buffer = new ArrayBuffer(value.Length);
-		var array = new Uint8Array(buffer);
-		var view = new DataView(array.Buffer, array.ByteOffset, array.ByteLength);
-		var result = BigInt.Zero;
-		var i = 0u;
-
-		// 每次处理 8 字节（64位）
-		for (; i + 8 <= value.Length; i += 8)
-			result = (result << BigIntFn(64)) | view.GetBigUint64(i, false);
-
-		// 处理剩余字节（最多7字节）
-		if (i < value.Length)
-		{
-			var remaining = BigInt.Zero;
-			for (; i < value.Length; i++)
-				remaining = (remaining << BigIntFn(8)) | BigIntFn(value[i]);
-
-			result = (result << BigIntFn((value.Length - i) * 8u)) | remaining;
-		}
-
-		return result;
-	}	
+		=> ParseBytesCore(value, false, false);
 
 	///<summary>Initializes a new instance of the <see cref="T:System.Numerics.BigInteger" /> structure using the values in a read-only span of bytes, and optionally indicating the signing encoding and the endianness byte order.</summary>
 	[Jazor(Op.Import ,"System.Numerics.BigInteger.BigInteger(System.ReadOnlySpan<byte>, bool, bool)")]
 	public static BigInt _9c321a7400e5ff9b(Array<byte> value, bool isUnsigned, bool isBigEndian)
-	{
-		// 处理空字节数组
-		if (value.Length == 0)
-			return BigInt.Zero;
-
-		// 处理1字节特殊情况
-		if (value.Length == 1)
-		{
-			if (isUnsigned)
-			{
-				return BigIntFn(value[0]);
-			}
-			else
-			{
-				// 有符号数：如果最高位为1，则为负数
-				return (value[0] & 0x80) == 0
-					? BigIntFn(value[0])
-					: BigIntFn(value[0]) - BigIntFn(0x100);
-			}
-		}
-
-		// 处理标准长度（2/4/8字节）
-		if (value.Length <= 8)
-		{
-			var buffer = new ArrayBuffer(value.Length);
-			var view = new DataView(buffer);
-			value.ForEach((item, index) => view.SetUint8(index, item));
-
-			if (value.Length == 2)
-				return isUnsigned
-					? BigIntFn(view.GetUint16(0, !isBigEndian))
-					: BigIntFn(view.GetInt16(0, !isBigEndian));
-
-			if (value.Length == 4)
-				return isUnsigned
-					? BigIntFn(view.GetUint32(0, !isBigEndian))
-					: BigIntFn(view.GetInt32(0, !isBigEndian));
-
-			if (value.Length == 8)
-				return isUnsigned
-					? view.GetBigUint64(0, !isBigEndian)
-					: view.GetBigInt64(0, !isBigEndian);
-
-			// 3/5/6/7字节长度使用非标准处理
-			return ProcessNonStandardLength(value, isUnsigned, isBigEndian);
-		}
-
-		// 处理超过8字节以上的非标准长度
-		return ProcessNonStandardLength(value, isUnsigned, isBigEndian);
-
-		// 处理非标准长度字节数组（3-7字节或>8字节）
-		static BigInt ProcessNonStandardLength(Array<byte> bytes, bool isUnsigned, bool isBigEndian)
-		{
-			// 创建字节数组的副本以避免修改原始数据
-			var processedBytes = bytes.Slice(0);
-
-			// 如果需要转换为小端序以便处理
-			if (isBigEndian)
-			{
-				processedBytes.Reverse();
-			}
-
-			// 从小端序字节数组构建无符号大整数
-			var result = BuildBigIntFromLEBytes(processedBytes);
-
-			// 对于有符号数的处理，转换如果最高位为1
-			if (!isUnsigned && (processedBytes[processedBytes.Length - 1] & 0x80) != 0)
-			{
-				// 计算位宽度 = 字节数 * 8
-				var bitWidth = BigIntFn(processedBytes.Length) * BigIntFn(8);
-
-				// 计算2的bitWidth次方作为偏移量
-				var offset = BigInt.One << bitWidth;
-
-				// 转换为有符号补码值
-				result -= offset;
-			}
-
-			return result;
-		}
-
-		// 从小端序字节数组构建无符号大整数
-		static BigInt BuildBigIntFromLEBytes(Array<byte> littleEndianBytes)
-		{
-			var result = BigInt.Zero;
-
-			// 从最低字节开始，按小端序累加，最后一个字节是最高位
-			for (var i = littleEndianBytes.Length - 1; i >= 0; i--)
-			{
-				// 移位8位拼接当前字节值
-				result = (result << BigIntFn(8)) | BigIntFn(littleEndianBytes[i] & 0xFF);
-			}
-
-			return result;
-		}
-	}
+		=> ParseBytesCore(value, isUnsigned, isBigEndian);
 
 	/// <summary>
 	/// C#: BigInteger.Zero
@@ -587,175 +557,23 @@ public static class BigIntegerModule
 	///<summary>Converts a <see cref="T:System.Numerics.BigInteger" /> value to a byte array.</summary>
 	[Jazor(Op.Import ,"System.Numerics.BigInteger.ToByteArray()")]
 	public static byte[] _ca46777d5c8cc9b9(BigInt instance)
-	{
-		if (instance == BigInt.Zero)
-			return [0];
-
-		var isNegative = instance < BigInt.Zero;
-		var value = isNegative ? -instance : instance;
-		var bytes = new Array<byte>();
-
-		while (value > BigInt.Zero)
-		{
-			bytes.Unshift(NumberFn(value & BigIntFn(0xFF)));
-			value >>= BigIntFn(8);
-		}
-
-		// 处理负数的补码表示
-		if (isNegative)
-		{
-			// 按位取反
-			for (var i = 0u; i < bytes.Length; i++)
-				bytes[i] = (byte)((~bytes[i]) & 0xFF);
-
-			// 加1（补码）
-			var carry = 1u;
-			for (var i = (uint)bytes.Length - 1; i >= 0 && carry > 0; i--)
-			{
-				var sum = bytes[i] + carry;
-				bytes[i] = (byte)(sum & 0xFF);
-				carry = sum >> 8;
-			}
-
-			// 确保符号位为1（最高位为1）
-			if ((bytes[0] & 0x80) == 0)
-				bytes.Unshift(0xFF);
-		}
-
-		return bytes;
-	}	
+		=> GetBytesCore(instance, false, false);
 
 	///<summary>Returns the value of this <see cref="T:System.Numerics.BigInteger" /> as a byte array using the fewest number of bytes possible. If the value is zero, returns an array of one byte whose element is 0x00.</summary>
 	[Jazor(Op.Import ,"System.Numerics.BigInteger.ToByteArray(bool, bool)")]
 	public static byte[] _11ed9d474ccf2419(BigInt instance, bool isUnsigned, bool isBigEndian)
-	{
-		if (instance == BigInt.Zero)
-			return [0];
-
-		var isNegative = !isUnsigned && instance < BigInt.Zero;
-		var value = isNegative ? -instance - BigInt.One : instance;
-		var bytes = new Array<byte>();
-		var bitLength = 0;
-		var temp = value;
-
-		while (temp > BigInt.Zero)
-		{
-			bitLength++;
-			temp >>= BigInt.One;
-		}
-
-		var minLength = isNegative ? Math.CeilFn((bitLength + 1) / 8) : Math.CeilFn(bitLength / 8);
-		var byteLength = Math.MaxFn(minLength, 1);
-
-		for (var i = 0; i < byteLength; i++)
-		{
-			var b = NumberFn(value & BigIntFn(0xFF));
-			if (isBigEndian)
-				bytes.Unshift(b);
-			else
-				bytes.Push(b);
-
-			value >>= BigIntFn(8);
-		}
-
-		if (isNegative)
-		{
-			for (var i = 0u; i < bytes.Length; i++)
-				bytes[i] = (byte)((~bytes[i]) & 0xFF);
-
-			if (isBigEndian && (bytes[0] & 0x80) == 0)
-				bytes.Unshift(0xFF);
-
-			else if (!isBigEndian && (bytes[bytes.Length - 1] & 0x80) == 0)
-				bytes.Push(0xFF);
-		}
-
-		return bytes;
-	}
+		=> GetBytesCore(instance, isUnsigned, isBigEndian);
 
 	///<summary>Copies the value of this <see cref="T:System.Numerics.BigInteger" /> as little-endian twos-complement bytes, using the fewest number of bytes possible. If the value is zero, outputs one byte whose element is 0x00.</summary>
 	[Jazor(Op.Import, "System.Numerics.BigInteger.TryWriteBytes(System.Span<byte>, out int, bool, bool)")]
 	public static Array<object?> _76ae4e496fc976fd(BigInt instance, Uint8Array destination, Number bytesWritten, bool isUnsigned, bool isBigEndian)
 	{
-		// 1. 计算所需字节数
-		var requiredBytes = 1; // 至少需要1字节
-		if (instance != BigInt.Zero)
-		{
-			var isNegative = !isUnsigned && instance < BigInt.Zero;
-			var value = isNegative ? (isUnsigned ? instance : -instance - BigInt.One) : instance;
-			var bitLength = 0u;
-
-			// 计算位长度
-			while (value > BigInt.Zero)
-			{
-				bitLength++;
-				value >>= BigInt.One;
-			}
-
-			// 计算所需字节数
-			requiredBytes = isUnsigned
-				? Math.MaxFn(1, Math.CeilFn(bitLength / 8))
-				: Math.MaxFn(1, Math.CeilFn((bitLength + 1) / 8));
-		}
-
-		// 2. 检查缓冲区大小
-		if (destination.Length < requiredBytes)
+		var bytes = GetBytesCore(instance, isUnsigned, isBigEndian);
+		if (destination.Length < bytes.Length)
 			return [false, 0];
 
-		// 3. 转换为字节数组
-		var bytes = new Array<byte>();
-		if (instance == BigInt.Zero)
-			bytes.Push(0);
-		else
-		{
-			var isNegative = !isUnsigned && instance < BigInt.Zero;
-			var value = isNegative ? -instance - BigInt.One : instance;
-
-			// 按实际需要生成字节数
-			var byteCount = requiredBytes;
-			while (byteCount-- > 0)
-			{
-				var b = NumberFn(value & BigIntFn(0xFF));
-				if (isBigEndian)
-					bytes.Unshift(b);
-				else
-					bytes.Push(b);
-
-				value >>= BigIntFn(8);
-			}
-
-			// 处理负数的补码
-			if (isNegative)
-			{
-				for (var i = 0u; i < bytes.Length; i++)
-					bytes[i] = (byte)((~bytes[i]) & 0xFF);
-
-				// 确保符号位正确
-				if (isBigEndian && (bytes[0] & 0x80) == 0)
-				{
-					bytes.Unshift(0xFF);
-					requiredBytes++;
-				}
-				else if (!isBigEndian && (bytes[bytes.Length - 1] & 0x80) == 0)
-				{
-					bytes.Push(0xFF);
-					requiredBytes++;
-				}
-			}
-		}
-
-		// 4. 检查结果字节数是否超出缓冲区
-		if (bytes.Length > destination.Length)
-			return [false, 0];
-
-		// 5. 写入目标缓冲区
-		for (var i = 0u; i < bytes.Length; i++)
+		for (var i = 0; i < bytes.Length; i++)
 			destination[i] = bytes[i];
-
-		// 6. 填充剩余字节（如果需要）
-		var fillByte = !isUnsigned && instance < BigInt.Zero ? 0xFF : 0;
-		for (var i = bytes.Length; i < destination.Length; i++)
-			destination[i] = (byte)fillByte;
 
 		return [true, bytes.Length];
 	}
@@ -763,27 +581,7 @@ public static class BigIntegerModule
 	///<summary>Gets the number of bytes that will be output by <see cref="M:System.Numerics.BigInteger.ToByteArray(System.Boolean,System.Boolean)" /> and <see cref="M:System.Numerics.BigInteger.TryWriteBytes(System.Span{System.Byte},System.Int32@,System.Boolean,System.Boolean)" />.</summary>
 	[Jazor(Op.Import ,"System.Numerics.BigInteger.GetByteCount(bool)")]
 	public static Number _c1393b267008395c(BigInt instance, bool isUnsigned)
-	{
-		if (instance == BigInt.Zero)
-			return 1;
-
-		var isNegative = !isUnsigned && instance < BigInt.Zero;
-		var value = isNegative ? -instance : instance;
-		var bitLength = 0;
-
-		while (value > BigInt.Zero)
-		{
-			bitLength++;
-			value >>= BigInt.One;
-		}
-
-		if (isUnsigned)
-			return Math.MaxFn(1, Math.CeilFn(bitLength / 8));
-		else
-			return isNegative
-				? Math.MaxFn(1, Math.CeilFn((bitLength + 1) / 8))  // 负数需要符号位
-				: Math.MaxFn(1, Math.CeilFn(bitLength / 8));        // 正数不需要符号位
-	}	
+		=> GetByteCountCore(instance, isUnsigned);
 
 	/// <summary>
 	/// C#: value.ToString()
@@ -1241,62 +1039,12 @@ public static class BigIntegerModule
 	///<summary>Rotates a value left by a given amount.</summary>
 	[Jazor(Op.Import ,"static System.Numerics.BigInteger.RotateLeft(System.Numerics.BigInteger, int)")]
 	public static BigInt _ae7b1dd18af32f04(BigInt value, Number rotateAmount)
-	{
-		if (value == BigInt.Zero)
-			return BigInt.Zero;
-
-		var bitLength = NumberFn(_41fe76dfb4ee2ab2(value));
-
-		var ra = rotateAmount % bitLength;
-		if (ra < 0)
-			ra += bitLength;
-
-		if (ra == 0)
-			return value;
-
-		var mask = (BigInt.One << BigIntFn(ra)) - BigInt.One;
-		var rotatedOutBits = (value >> BigIntFn(bitLength - ra)) & mask;
-		var result = ((value << BigIntFn(ra)) | rotatedOutBits) & ((BigInt.One << BigIntFn(bitLength)) - BigInt.One);
-
-		return result;
-	}	
+		=> RotateCore(value, rotateAmount, true);
 
 	///<summary>Rotates a value right by a given amount.</summary>
 	[Jazor(Op.Import ,"static System.Numerics.BigInteger.RotateRight(System.Numerics.BigInteger, int)")]
 	public static BigInt _dc8cc860511e78b3(BigInt value, Number rotateAmount)
-	{
-		if (rotateAmount == 0)
-			return value;
-
-		// Handle zero value
-		if (value == BigInt.Zero)
-			return BigInt.Zero;
-
-		var bitLength = NumberFn(_41fe76dfb4ee2ab2(value));
-
-		// Handle negative rotateAmount (convert to left rotation)
-		if (rotateAmount < 0)
-		{
-			var absAmount = -rotateAmount;
-			absAmount %= bitLength;
-			if (absAmount == 0)
-				return value;
-
-			return (value << BigIntFn(absAmount)) | (value >> BigIntFn(bitLength - absAmount));
-		}
-
-		// Normalize rotateAmount to be within [0, bitLength)
-		var ra = rotateAmount % bitLength;
-		if (ra == 0)
-			return value;
-
-		// Perform right rotation
-		var rightPart = value >> BigIntFn(ra);
-		var leftPart = value & ((BigInt.One << BigIntFn(ra)) - BigInt.One);
-		var rotated = (leftPart << BigIntFn(bitLength - ra)) | rightPart;
-
-		return rotated;
-	}	
+		=> RotateCore(value, rotateAmount, false);
 
 	///<summary>Computes the number of trailing zeros in a value.</summary>
 	[Jazor(Op.Import ,"static System.Numerics.BigInteger.TrailingZeroCount(System.Numerics.BigInteger)")]
@@ -1521,16 +1269,18 @@ public static class BigIntegerModule
 	public static BigInt _49adf7adfc1228f8(BigInt value, Number shiftAmount)
 	{
 		if (shiftAmount < 0)
-			throw new RangeError("Shift amount must be non-negative");
+			return value << BigIntFn(-shiftAmount);
 
 		var shift = BigIntFn(shiftAmount);
 
 		if (value >= BigInt.Zero)
 			return value >> shift;
 
-		// BigInt 没有原生的 >>> 运算符（JavaScript 的 >>> 仅适用于 Number）
-		// 对于负数，抛出异常说明不支持
-		throw new Error("Unsigned right shift (>>>) is not supported for BigInt in JavaScript");
+		var width = GetWordWidthCore(value, BigIntFn(64));
+		if (shift >= width)
+			return BigInt.Zero;
+
+		return ((BigInt.One << width) + value) >> shift;
 	}	
 
 	///<summary>Parses a span of characters into a value.</summary>

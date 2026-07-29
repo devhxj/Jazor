@@ -82,7 +82,8 @@ internal static class ClrRuntimeScenarioCatalog
         .. ClrRuntimeListScenarios.All,
         .. ClrRuntimeDoubleScenarios.All,
         .. ClrRuntimeMathScenarios.All,
-        .. ClrRuntimeBigIntegerScenarios.All
+        .. ClrRuntimeBigIntegerScenarios.All,
+        .. ClrRuntimeBigIntegerBinaryScenarios.All
     ];
 
     public static ClrRuntimeScenario Get(string id)
