@@ -1586,7 +1586,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private void ValidateModuleExportPolicy()
     {
-        foreach (var member in _classSymbol.GetMembers())
+        var exportedNames = new Dictionary<string, ISymbol>(System.StringComparer.Ordinal);
+        foreach (var member in EnumerateModuleMembersForConversion())
         {
             if (!ShouldIncludeModuleMember(member))
                 continue;
@@ -1594,19 +1595,21 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             switch (member)
             {
                 case IFieldSymbol field:
-                    ValidateModuleExportPolicy(field);
+                    ValidateModuleExportPolicy(field, exportedNames);
                     break;
                 case IMethodSymbol method when ShouldReserveModuleMethodName(method):
-                    ValidateModuleExportPolicy(method);
+                    ValidateModuleExportPolicy(method, exportedNames);
                     break;
                 case INamedTypeSymbol type when IsRuntimeMemberClass(type):
-                    ValidateModuleExportPolicy(type);
+                    ValidateModuleExportPolicy(type, exportedNames);
                     break;
             }
         }
     }
 
-    private void ValidateModuleExportPolicy(ISymbol symbol)
+    private void ValidateModuleExportPolicy(
+        ISymbol symbol,
+        Dictionary<string, ISymbol> exportedNames)
     {
         if (ShouldBePrivate(symbol.DeclaredAccessibility))
             return;
@@ -1617,6 +1620,17 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             throw new NotSupportedException(
                 $"Jazor module export does not support default export. Member '{symbol.ToDisplayString(Format.NameFormat)}' resolves to export name 'default'. Use a named export instead.");
         }
+
+        if (exportedNames.TryGetValue(exportName, out var existingSymbol))
+        {
+            throw new NotSupportedException(
+                $"Jazor module export does not support duplicate named export '{exportName}'. " +
+                $"Members '{existingSymbol.ToDisplayString(Format.NameFormat)}' and " +
+                $"'{symbol.ToDisplayString(Format.NameFormat)}' resolve to the same export name. " +
+                "Use unique named exports instead.");
+        }
+
+        exportedNames.Add(exportName, symbol);
     }
 
     private static HashSet<string> BuildModuleLocalNames(INamedTypeSymbol classSymbol, AstConverterProfile profile)
