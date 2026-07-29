@@ -181,6 +181,118 @@ internal static class RazorVueUsageScenarioCatalog
                     "Clear removes prior text output",
                     "Clear removes prior static output",
                     "empty conditional output"
+                ]),
+            new(
+                RazorVueUsageScenarioFamily.ElementEventCallback,
+                RazorVueUsageScenarioArea.Callback,
+                RazorVueUsageScenarioExpectation.Emission,
+                [
+                    "EventCallback method handler",
+                    "EventCallback lambda handler",
+                    "Action method handler",
+                    "typed string callback",
+                    "typed change-event callback",
+                    "typed callback assignment lambda",
+                    "typed mouse-event callback",
+                    "state-mutating callback lambda"
+                ]),
+            new(
+                RazorVueUsageScenarioFamily.ElementBind,
+                RazorVueUsageScenarioArea.Callback,
+                RazorVueUsageScenarioExpectation.Emission,
+                [
+                    "input value bound on input",
+                    "input value bound on change",
+                    "textarea value binding",
+                    "select value binding",
+                    "checkbox checked binding",
+                    "numeric value binding",
+                    "nullable value binding",
+                    "manual callback with updates metadata"
+                ]),
+            new(
+                RazorVueUsageScenarioFamily.EventModifier,
+                RazorVueUsageScenarioArea.Callback,
+                RazorVueUsageScenarioExpectation.Emission,
+                [
+                    "enabled prevent-default modifier",
+                    "enabled stop-propagation modifier",
+                    "combined enabled modifiers",
+                    "disabled prevent-default modifier",
+                    "disabled stop-propagation modifier",
+                    "dynamic prevent-default modifier",
+                    "dynamic stop-propagation modifier",
+                    "combined dynamic modifiers"
+                ]),
+            new(
+                RazorVueUsageScenarioFamily.ElementReference,
+                RazorVueUsageScenarioArea.Callback,
+                RazorVueUsageScenarioExpectation.Emission,
+                [
+                    "element reference field assignment",
+                    "element reference method handler",
+                    "multiple element reference captures",
+                    "keyed element reference",
+                    "attributed element reference",
+                    "bound element reference",
+                    "conditional element references",
+                    "repeated element references"
+                ]),
+            new(
+                RazorVueUsageScenarioFamily.ComponentReference,
+                RazorVueUsageScenarioArea.Callback,
+                RazorVueUsageScenarioExpectation.Emission,
+                [
+                    "component reference field assignment",
+                    "component reference method handler",
+                    "multiple component reference captures",
+                    "keyed component reference",
+                    "parameterized component reference",
+                    "typeof component reference",
+                    "conditional component references",
+                    "repeated component references"
+                ]),
+            new(
+                RazorVueUsageScenarioFamily.DefaultSlot,
+                RazorVueUsageScenarioArea.Template,
+                RazorVueUsageScenarioExpectation.Emission,
+                [
+                    "default slot text",
+                    "default slot element",
+                    "default slot sibling roots",
+                    "default slot static markup",
+                    "default slot conditional content",
+                    "default slot repeated content",
+                    "default slot returned by helper",
+                    "default slot returned by property"
+                ]),
+            new(
+                RazorVueUsageScenarioFamily.NamedSlot,
+                RazorVueUsageScenarioArea.Template,
+                RazorVueUsageScenarioExpectation.Emission,
+                [
+                    "named slot text",
+                    "named slot element",
+                    "named slot sibling roots",
+                    "named slot static markup",
+                    "named slot conditional content",
+                    "named slot repeated content",
+                    "named slot returned by helper",
+                    "named slot returned by property"
+                ]),
+            new(
+                RazorVueUsageScenarioFamily.ScopedSlot,
+                RazorVueUsageScenarioArea.Template,
+                RazorVueUsageScenarioExpectation.Emission,
+                [
+                    "scoped slot text projection",
+                    "scoped slot element projection",
+                    "scoped slot sibling roots",
+                    "scoped slot conditional projection",
+                    "scoped slot with outer parameter",
+                    "scoped slot repeated projection",
+                    "scoped slot returned by helper",
+                    "scoped slot returned by property"
                 ])
         ];
 

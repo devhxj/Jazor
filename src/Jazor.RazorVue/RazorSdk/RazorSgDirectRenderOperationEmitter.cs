@@ -915,7 +915,7 @@ internal static class RazorSgDirectRenderOperationEmitter
 
             var value = LowerExpression(invocation.Arguments[valueArgumentIndex].Value, context);
             if (value is not BooleanLiteral { Value: false })
-                frame.SetEventModifier(eventName, preventDefault, stopPropagation);
+                frame.SetEventModifier(eventName, value, preventDefault, stopPropagation);
         }
 
         private static void EmitAddNamedEvent(IInvocationOperation invocation, RenderState state)
@@ -1766,25 +1766,32 @@ internal static class RazorSgDirectRenderOperationEmitter
         {
             renderFragment = default;
             var method = invocation.TargetMethod;
-            if (!IsRenderFragmentType(method.ReturnType) ||
+            if (!IsAnyRenderFragmentType(method.ReturnType) ||
                 method.DeclaringSyntaxReferences.Length != 1 ||
                 !IsCurrentComponentMethod(method))
             {
                 return false;
             }
 
-            if (!TryGetReturnedRenderFragmentBody(method, out var builder, out var body))
+            if (!TryGetReturnedRenderFragmentBody(method, out var valueParameter, out var builder, out var body))
                 return false;
 
             if (_activeRenderFragmentHelpers.Contains(method.OriginalDefinition) ||
                 ContainsMethodInvocation(body, method))
             {
-                var helper = EnsureRenderFragmentHelperFunction(method, builder, body, context);
+                var helper = EnsureRenderFragmentHelperFunction(method, valueParameter, builder, body, context);
                 var arguments = invocation.Arguments
                     .Select(argument => LowerExpression(argument.Value, context))
-                    .ToArray();
+                    .ToList();
+                string? parameterName = null;
+                if (valueParameter is not null)
+                {
+                    parameterName = SanitizeJavaScriptIdentifierPart(valueParameter.Name, "value");
+                    arguments.Add(new Identifier(parameterName));
+                }
                 renderFragment = new DirectRenderFragment(
-                    Call(new Identifier(helper.FunctionName), arguments),
+                    Call(new Identifier(helper.FunctionName), arguments.ToArray()),
+                    ParameterName: parameterName,
                     UsesFragment: helper.UsesFragment,
                     UsesStaticVNode: helper.UsesStaticVNode);
                 return true;
@@ -1801,6 +1808,14 @@ internal static class RazorSgDirectRenderOperationEmitter
             {
                 renderFragment = WithScopedLocalNames(() =>
                 {
+                    var parameterAliases = context.ParameterAliases;
+                    string? parameterName = null;
+                    if (valueParameter is not null)
+                    {
+                        parameterName = SanitizeJavaScriptIdentifierPart(valueParameter.Name, "value");
+                        parameterAliases = parameterAliases.SetItem(valueParameter, parameterName);
+                    }
+
                     var fragmentState = new RenderState();
                     var preludeStatements = new List<Statement>();
                     var fragmentArgument = context.Argument.WithNewScope();
@@ -1809,7 +1824,7 @@ internal static class RazorSgDirectRenderOperationEmitter
                         new EmitContext(
                             BuilderBinding.ForSymbol(builder),
                             substitutions.ToImmutable(),
-                            context.ParameterAliases,
+                            parameterAliases,
                             context.LocalAliases,
                             context.LocalRenderFragments,
                             context.LocalRenderObjects,
@@ -1824,6 +1839,7 @@ internal static class RazorSgDirectRenderOperationEmitter
 
                     return new DirectRenderFragment(
                         WrapWithExpressionScope(fragmentArgument, preludeStatements, fragmentState.ToRenderExpression()),
+                        ParameterName: parameterName,
                         UsesFragment: fragmentState.UsesFragment || fragmentState.Roots.Count > 1,
                         UsesStaticVNode: fragmentState.UsesStaticVNode);
                 });
@@ -1837,6 +1853,7 @@ internal static class RazorSgDirectRenderOperationEmitter
 
         private DirectRenderFunction EnsureRenderFragmentHelperFunction(
             IMethodSymbol method,
+            IParameterSymbol? valueParameter,
             IParameterSymbol builder,
             IOperation body,
             EmitContext context)
@@ -1860,6 +1877,12 @@ internal static class RazorSgDirectRenderOperationEmitter
                     var parameterName = CreateUniqueLocalName(parameter.Name);
                     parameterAliases[parameter] = parameterName;
                     parameterNames.Add(parameterName);
+                }
+                if (valueParameter is not null)
+                {
+                    var valueParameterName = CreateUniqueLocalName(valueParameter.Name);
+                    parameterAliases[valueParameter] = valueParameterName;
+                    parameterNames.Add(valueParameterName);
                 }
 
                 var lowered = WithScopedLocalNames(() =>
@@ -1942,9 +1965,11 @@ internal static class RazorSgDirectRenderOperationEmitter
 
         private bool TryGetReturnedRenderFragmentBody(
             IMethodSymbol method,
+            out IParameterSymbol? valueParameter,
             out IParameterSymbol builder,
             out IOperation body)
         {
+            valueParameter = null;
             builder = null!;
             body = null!;
             var syntax = method.DeclaringSyntaxReferences[0].GetSyntax();
@@ -1956,8 +1981,12 @@ internal static class RazorSgDirectRenderOperationEmitter
                 _ => null
             };
 
-            return returnedOperation is not null &&
-                   TryGetRenderFragmentBody(returnedOperation, out builder, out body);
+            if (returnedOperation is null)
+                return false;
+            if (TryGetRenderFragmentBody(returnedOperation, out builder, out body))
+                return true;
+
+            return TryGetGenericRenderFragmentBody(returnedOperation, out valueParameter, out builder, out body);
         }
 
         private static IOperation? TryGetSingleReturnValue(IOperation? operation)
@@ -2756,10 +2785,8 @@ internal static class RazorSgDirectRenderOperationEmitter
         var eventParameter = new Identifier("event");
         var args = new Identifier("args");
         var statements = new List<Statement>();
-        if (modifier.PreventDefault)
-            statements.Add(new NonSpecialExpressionStatement(OptionalMethodCall(eventParameter, "preventDefault")));
-        if (modifier.StopPropagation)
-            statements.Add(new NonSpecialExpressionStatement(OptionalMethodCall(eventParameter, "stopPropagation")));
+        AddDirectEventModifierStatement(statements, eventParameter, modifier.PreventDefaultCondition, "preventDefault");
+        AddDirectEventModifierStatement(statements, eventParameter, modifier.StopPropagationCondition, "stopPropagation");
         statements.Add(new ReturnStatement(new CallExpression(
             handlerExpression,
             NodeList.From<Expression>(eventParameter, new SpreadElement(args)),
@@ -2769,6 +2796,21 @@ internal static class RazorSgDirectRenderOperationEmitter
             new FunctionBody(NodeList.From(statements), strict: true),
             expression: false,
             async: false);
+    }
+
+    private static void AddDirectEventModifierStatement(
+        List<Statement> statements,
+        Expression eventParameter,
+        Expression? condition,
+        string methodName)
+    {
+        if (condition is null || condition is BooleanLiteral { Value: false })
+            return;
+
+        var invocation = new NonSpecialExpressionStatement(OptionalMethodCall(eventParameter, methodName));
+        statements.Add(condition is BooleanLiteral { Value: true }
+            ? invocation
+            : new IfStatement(condition, invocation, null));
     }
 
     private static CallExpression OptionalMethodCall(Expression receiver, string methodName)
@@ -3136,13 +3178,31 @@ internal static class RazorSgDirectRenderOperationEmitter
                 ?.Name;
         }
 
-        public void SetEventModifier(string eventName, bool preventDefault, bool stopPropagation)
+        public void SetEventModifier(
+            string eventName,
+            Expression condition,
+            bool preventDefault,
+            bool stopPropagation)
         {
             var runtimeName = NormalizeDirectElementAttributeName(eventName);
             _eventModifiers.TryGetValue(runtimeName, out var existing);
             _eventModifiers[runtimeName] = new DirectEventModifier(
-                existing.PreventDefault || preventDefault,
-                existing.StopPropagation || stopPropagation);
+                preventDefault
+                    ? MergeDirectEventModifierCondition(existing.PreventDefaultCondition, condition)
+                    : existing.PreventDefaultCondition,
+                stopPropagation
+                    ? MergeDirectEventModifierCondition(existing.StopPropagationCondition, condition)
+                    : existing.StopPropagationCondition);
+        }
+
+        private static Expression MergeDirectEventModifierCondition(Expression? existing, Expression condition)
+        {
+            if (existing is null)
+                return condition;
+            if (existing is BooleanLiteral { Value: true } || condition is BooleanLiteral { Value: true })
+                return new BooleanLiteral(true, "true");
+
+            return new LogicalExpression(Operator.LogicalOr, existing, condition);
         }
 
         protected override Expression FormatAttributeValueExpression(DirectAttribute attribute)
@@ -3408,8 +3468,8 @@ internal static class RazorSgDirectRenderOperationEmitter
         bool UsesStaticVNode);
 
     private readonly record struct DirectEventModifier(
-        bool PreventDefault,
-        bool StopPropagation);
+        Expression? PreventDefaultCondition,
+        Expression? StopPropagationCondition);
 
     private static NullLiteral Null()
         => new("null");
