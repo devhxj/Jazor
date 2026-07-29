@@ -5,7 +5,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using EsNode = Acornima.Ast.Node;
 
 namespace Jazor.ComplierTest;
@@ -13,6 +12,13 @@ namespace Jazor.ComplierTest;
 [TestClass]
 public sealed class SemanticWalkerNotSupportTest
 {
+    public static IEnumerable<TestDataRow<UnsupportedOperationCase>> UnsupportedHandlers
+        => LoadNotSupportHandlers().Select(static testCase =>
+            new TestDataRow<UnsupportedOperationCase>(testCase)
+            {
+                DisplayName = testCase.Id
+            });
+
     private static IBlockOperation GetBlockOperation(string code, string methodName = "TestMethod")
     {
         var usings = @"
@@ -137,28 +143,42 @@ public sealed class SemanticWalkerNotSupportTest
         throw new InvalidOperationException("未找到仓库根目录 Jazor.slnx。");
     }
 
-    private static IReadOnlyList<(string MethodName, Type OperationType)> LoadNotSupportHandlers()
+    private static IReadOnlyList<UnsupportedOperationCase> LoadNotSupportHandlers()
     {
         var sourcePath = ResolveNotSupportSourcePath();
         var source = System.IO.File.ReadAllText(sourcePath);
-        var matcher = new Regex(
-            @"public\s+override\s+Node\?\s+(?<method>Visit\w+)\s*\(\s*(?<op>I\w+Operation)\s+\w+\s*,\s*SenseArgument\s+\w+\s*\)",
-            RegexOptions.Compiled);
-        var operationAssembly = typeof(IOperation).Assembly;
-        var operationTypes = operationAssembly
-            .GetTypes()
-            .Where(static type => type.IsInterface && typeof(IOperation).IsAssignableFrom(type))
-            .GroupBy(static type => type.Name, StringComparer.Ordinal)
-            .ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
+        var root = CSharpSyntaxTree.ParseText(source).GetRoot();
+        var methodNames = root.DescendantNodes()
+            .OfType<MethodDeclarationSyntax>()
+            .Where(static method => method.Modifiers.Any(SyntaxKind.PublicKeyword))
+            .Where(static method => method.Modifiers.Any(SyntaxKind.OverrideKeyword))
+            .Select(static method => method.Identifier.ValueText)
+            .Where(static methodName => methodName.StartsWith("Visit", StringComparison.Ordinal))
+            .Order(StringComparer.Ordinal)
+            .ToArray();
 
-        var handlers = new List<(string MethodName, Type OperationType)>();
-        foreach (Match match in matcher.Matches(source))
+        var visitorMethods = typeof(SemanticWalker)
+            .GetMethods(BindingFlags.Instance | BindingFlags.Public)
+            .Where(static method => method.Name.StartsWith("Visit", StringComparison.Ordinal))
+            .Where(static method =>
+            {
+                var parameters = method.GetParameters();
+                return parameters.Length == 2 &&
+                    typeof(IOperation).IsAssignableFrom(parameters[0].ParameterType) &&
+                    parameters[1].ParameterType == typeof(SenseArgument);
+            })
+            .ToLookup(static method => method.Name, StringComparer.Ordinal);
+
+        var handlers = new List<UnsupportedOperationCase>(methodNames.Length);
+        foreach (var methodName in methodNames)
         {
-            var methodName = match.Groups["method"].Value;
-            var operationTypeName = match.Groups["op"].Value;
-            if (!operationTypes.TryGetValue(operationTypeName, out var operationType))
-                throw new InvalidOperationException($"无法解析操作类型: {operationTypeName}");
-            handlers.Add((methodName, operationType));
+            var method = visitorMethods[methodName].SingleOrDefault()
+                ?? throw new InvalidOperationException($"无法绑定拒绝处理器: {methodName}");
+            var operationType = method.GetParameters()[0].ParameterType;
+            handlers.Add(new UnsupportedOperationCase(
+                Id: methodName + "_RejectsWithTransformationException",
+                MethodName: methodName,
+                OperationType: operationType));
         }
 
         return handlers;
@@ -435,35 +455,40 @@ public sealed class SemanticWalkerNotSupportTest
     }
 
     [TestMethod]
-    public void VisitNotSupportHandlers_AllRejectWithTransformationException()
+    [DynamicData(nameof(UnsupportedHandlers))]
+    public void VisitNotSupportHandler_RejectsWithTransformationException(UnsupportedOperationCase testCase)
+    {
+        var walker = new SemanticWalker(true);
+        var method = typeof(SemanticWalker).GetMethod(
+            testCase.MethodName,
+            BindingFlags.Instance | BindingFlags.Public,
+            binder: null,
+            types: [testCase.OperationType, typeof(SenseArgument)],
+            modifiers: null);
+        Assert.IsNotNull(method, $"未找到处理器方法: {testCase.MethodName}({testCase.OperationType.Name})");
+
+        var operation = CreateOperationProxy(testCase.OperationType, OperationKind.None);
+        try
+        {
+            method.Invoke(walker, [operation, new SenseArgument()]);
+            Assert.Fail($"处理器未拒绝: {testCase.MethodName}({testCase.OperationType.Name})");
+        }
+        catch (TargetInvocationException invocation) when (invocation.InnerException is OperationTransformationException exception)
+        {
+            Assert.AreEqual(OperationKind.None, exception.Kind, $"处理器未透传 operation.Kind: {testCase.MethodName}");
+            var message = (exception.Message ?? string.Empty).ToLowerInvariant();
+            StringAssert.Contains(message, "not supported");
+        }
+    }
+
+    [TestMethod]
+    public void UnsupportedHandlerCatalog_HasUniqueIdsMethodsAndOperationTypes()
     {
         var handlers = LoadNotSupportHandlers();
-        Assert.IsTrue(handlers.Count >= 30, $"NotSupport 处理器数量异常，实际为 {handlers.Count}。");
-
-        var walker = new SemanticWalker(true);
-        foreach (var handler in handlers)
-        {
-            var method = typeof(SemanticWalker).GetMethod(
-                handler.MethodName,
-                BindingFlags.Instance | BindingFlags.Public,
-                binder: null,
-                types: [handler.OperationType, typeof(SenseArgument)],
-                modifiers: null);
-            Assert.IsNotNull(method, $"未找到处理器方法: {handler.MethodName}({handler.OperationType.Name})");
-
-            var operation = CreateOperationProxy(handler.OperationType, OperationKind.None);
-            try
-            {
-                method.Invoke(walker, [operation, new SenseArgument()]);
-                Assert.Fail($"处理器未拒绝: {handler.MethodName}({handler.OperationType.Name})");
-            }
-            catch (TargetInvocationException invocation) when (invocation.InnerException is OperationTransformationException exception)
-            {
-                Assert.AreEqual(OperationKind.None, exception.Kind, $"处理器未透传 operation.Kind: {handler.MethodName}");
-                var message = (exception.Message ?? string.Empty).ToLowerInvariant();
-                StringAssert.Contains(message, "not supported");
-            }
-        }
+        Assert.HasCount(31, handlers);
+        Assert.HasCount(handlers.Count, handlers.Select(static item => item.Id).Distinct(StringComparer.Ordinal));
+        Assert.HasCount(handlers.Count, handlers.Select(static item => item.MethodName).Distinct(StringComparer.Ordinal));
+        Assert.HasCount(handlers.Count, handlers.Select(static item => item.OperationType).Distinct());
     }
 
     [TestMethod]
@@ -607,3 +632,8 @@ public sealed class SemanticWalkerNotSupportTest
         StringAssert.Contains(exception.Message ?? string.Empty, "not supported");
     }
 }
+
+public sealed record UnsupportedOperationCase(
+    string Id,
+    string MethodName,
+    Type OperationType);
