@@ -362,6 +362,68 @@ internal static class ForEachDeconstructionScenarioCatalog
             Array(
                 Item("key"),
                 NestedItem(Object(Property("count", "count"), Property("enabled", "active"))))),
+        Success(
+            "tuple-with-nested-key-value-pair",
+            "tuple-slot-with-map-entry-array-pattern",
+            """
+            class TestClass
+            {
+                void TestMethod(
+                    (System.Collections.Generic.KeyValuePair<string, int> Pair, bool Enabled)[] entries)
+                {
+                    foreach (var ((key, value), active) in entries) { }
+                }
+            }
+            """,
+            Object(
+                NestedProperty("pair", Array(Item("key"), Item("value"))),
+                Property("enabled", "active"))),
+        Success(
+            "record-with-nested-key-value-pair",
+            "record-slot-with-map-entry-array-pattern",
+            """
+            public sealed record Entry(
+                System.Collections.Generic.KeyValuePair<string, int> Pair,
+                string Label);
+
+            class TestClass
+            {
+                void TestMethod(Entry[] entries)
+                {
+                    foreach (var ((key, value), text) in entries) { }
+                }
+            }
+            """,
+            Object(
+                NestedProperty("pair", Array(Item("key"), Item("value"))),
+                Property("label", "text"))),
+        Success(
+            "deep-record-tuple-key-value-pair",
+            "recursive-record-tuple-map-entry-shapes-with-discards",
+            """
+            public sealed record Entry(
+                (System.Collections.Generic.KeyValuePair<string, (int Count, bool Enabled)> Pair, int Revision) Data,
+                string Label);
+
+            class TestClass
+            {
+                void TestMethod(Entry[] entries)
+                {
+                    foreach (var (((key, (count, _)), revision), text) in entries) { }
+                }
+            }
+            """,
+            Object(
+                NestedProperty(
+                    "data",
+                    Object(
+                        NestedProperty(
+                            "pair",
+                            Array(
+                                Item("key"),
+                                NestedItem(Object(Property("count", "count"))))),
+                        Property("revision", "revision"))),
+                Property("label", "text"))),
         Failure(
             "custom-class-deconstruct",
             "unproven-custom-runtime-shape-is-rejected",
@@ -386,7 +448,32 @@ internal static class ForEachDeconstructionScenarioCatalog
                 }
             }
             """,
-            "does not have a compiler-known structural runtime shape")
+            "does not have a compiler-known structural runtime shape"),
+        Failure(
+            "nested-custom-deconstruct",
+            "unproven-nested-runtime-shape-is-rejected",
+            """
+            public sealed class Value
+            {
+                public int Left { get; init; }
+                public int Right { get; init; }
+
+                public void Deconstruct(out int left, out int right)
+                {
+                    left = Left;
+                    right = Right;
+                }
+            }
+
+            class TestClass
+            {
+                void TestMethod((Value Value, int Id)[] entries)
+                {
+                    foreach (var ((left, right), id) in entries) { }
+                }
+            }
+            """,
+            "Nested for-each deconstruction slot 0")
     ];
 
     private static ForEachDeconstructionScenario Success(
