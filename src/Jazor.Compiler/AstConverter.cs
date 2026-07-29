@@ -1,5 +1,6 @@
 using Acornima;
 using Acornima.Ast;
+using ECMAScript.Contract;
 using Jazor.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -30,6 +31,9 @@ namespace Jazor.Compiler;
 /// 成员枚举 仅作为编译期值域类型参与，不发射模块级 runtime 声明
 /// 其他的如接口、委托、事件等，都忽略
 /// 对于代码段，基于operationwalker 根据 IOperation 生成 Acornima AST
+/// <para><b>职责边界</b></para>
+/// AstConverter 负责模块级声明、成员组织和导入提升；表达式/语句语义统一交给 SemanticWalker。
+/// 不要在这里通过字符串拼接绕过 walker，否则会丢失白名单裁决、稳定命名和 source origin。
 /// </summary>
 public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel, AstConverterOptions? options = null)
 {
@@ -406,21 +410,60 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             async: symbol.IsAsync);
 
         if (ShouldBePrivate(symbol.DeclaredAccessibility))
-            statements.Add(declaration);
+            AddModuleMethodDeclaration(statements, declaration, symbol);
         else if (string.Equals(localName, GetModuleNamedExportName(symbol), System.StringComparison.Ordinal))
         {
-            statements.Add(new ExportNamedDeclaration(
+            AddModuleMethodDeclaration(statements, new ExportNamedDeclaration(
                 declaration,
                 NodeList.From<ExportSpecifier>([]),
                 null,
-                NodeList.From<ImportAttribute>([])));
+                NodeList.From<ImportAttribute>([])), symbol);
         }
         else
         {
-            statements.Add(declaration);
+            AddModuleMethodDeclaration(statements, declaration, symbol);
             statements.Add(CreateNamedExport(localName, GetModuleNamedExportName(symbol)));
         }
     }
+
+    private void AddModuleMethodDeclaration(
+        List<Statement> statements,
+        Statement declaration,
+        IMethodSymbol symbol)
+    {
+        if (TryGetClrImportMemberName(symbol, out var memberName))
+            statements.Add(new BlockComment($"jazor:clr-member {memberName}"));
+
+        statements.Add(declaration);
+    }
+
+    private bool TryGetClrImportMemberName(IMethodSymbol symbol, out string memberName)
+    {
+        memberName = string.Empty;
+        if (_options.Profile != AstConverterProfile.ClrRuntime)
+            return false;
+
+        var annotatedSymbol = symbol.AssociatedSymbol ?? (ISymbol)symbol;
+        foreach (var attribute in annotatedSymbol.GetAttributes())
+        {
+            if (attribute.AttributeClass?.Name is not ("JazorAttribute" or "Jazor") ||
+                attribute.ConstructorArguments.Length < 2 ||
+                !IsImportOperation(attribute.ConstructorArguments[0]) ||
+                attribute.ConstructorArguments[1].Value is not string { Length: > 0 } authoredMemberName)
+            {
+                continue;
+            }
+
+            memberName = authoredMemberName;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsImportOperation(TypedConstant argument)
+        => argument.Value is not null &&
+           System.Convert.ToInt32(argument.Value, CultureInfo.InvariantCulture) == (int)Op.Import;
 
     private static NotSupportedException CreateMissingOperationException(ISymbol symbol, SyntaxNode syntax)
     {

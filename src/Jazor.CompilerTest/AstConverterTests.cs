@@ -15673,6 +15673,58 @@ export function create() {{
     }
 
     [TestMethod]
+    public async Task Convert_ClrRuntimeImportMethod_EmitsAuthoredMemberCommentBeforeDeclaration()
+    {
+        var code = """
+            using System;
+
+            namespace Demo
+            {
+                [AttributeUsage(AttributeTargets.Method)]
+                public sealed class JazorAttribute : Attribute
+                {
+                    public JazorAttribute(int op, string member) { }
+                }
+
+                public static class RuntimeModule
+                {
+                    [Jazor(3, "static string.Compare(string, string)")]
+                    public static int _e16eea9fe3891a62(string left, string right)
+                    {
+                        return left == right ? 0 : 1;
+                    }
+
+                    public static int Helper() => 0;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code, "RuntimeModule");
+        var clrConverter = new AstConverter(
+            classSymbol,
+            semanticModel,
+            new AstConverterOptions(AstConverterProfile.ClrRuntime));
+
+        var clrModule = await clrConverter.Convert();
+        var clrScript = clrModule?.ToKnRECMAScript();
+
+        Assert.IsNotNull(clrScript);
+        var comment = "jazor:clr-member static string.Compare(string, string)";
+        var commentIndex = clrScript.IndexOf(comment, StringComparison.Ordinal);
+        var declarationIndex = clrScript.IndexOf("export function _e16eea9fe3891a62", StringComparison.Ordinal);
+        Assert.IsGreaterThanOrEqualTo(0, commentIndex, clrScript);
+        Assert.IsGreaterThan(commentIndex, declarationIndex, clrScript);
+        Assert.AreEqual(1, clrScript.Split(comment, StringSplitOptions.None).Length - 1, clrScript);
+
+        var standardConverter = new AstConverter(classSymbol, semanticModel);
+        var standardModule = await standardConverter.Convert();
+        var standardScript = standardModule?.ToKnRECMAScript();
+
+        Assert.IsNotNull(standardScript);
+        Assert.IsFalse(standardScript.Contains("jazor:clr-member", StringComparison.Ordinal), standardScript);
+    }
+
+    [TestMethod]
     public async Task Convert_ClrRuntimeStyleNestedTypes_DoNotImportOwnModuleSymbols()
     {
         var code = """

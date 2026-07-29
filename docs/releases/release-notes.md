@@ -9,6 +9,7 @@
 - `ECMAScript.Style` remains an independent opt-in package and adds no Style-specific build configuration; it uses only `JazorMode`, `JazorDir`, and `JazorTool`.
 - Dynamic Razor event modifiers now preserve their boolean conditions, including repeated `preventDefault` and `stopPropagation` modifiers, instead of being treated as unconditionally enabled.
 - RenderTreeBuilder helpers can compose output after root-level local declarations while declarations inside an open element or component frame remain explicitly rejected.
+- CLR runtime modules now annotate imported hashed JavaScript helper declarations with their authored CLR member names, making packaged runtime output easier to inspect without changing runtime behavior.
 
 ## 2026-07-28
 

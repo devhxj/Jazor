@@ -8,7 +8,11 @@ namespace Jazor.Compiler;
 /// <summary>
 /// 自定义注释节点
 /// </summary>
-public sealed class BlockComment(in string comment) : Expression(NodeType.Extension)
+/// <remarks>
+/// BlockComment 是 statement-list 专用的 AST 扩展节点，只在最终 JavaScript writer 阶段写出块注释。
+/// 它不参与 C# 运行时语义，也不能被普通 AST 优化器当成可执行语句处理。
+/// </remarks>
+public sealed class BlockComment(in string comment) : Statement(NodeType.Extension)
 {
     public string Comment { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; } = comment;
 
@@ -16,7 +20,7 @@ public sealed class BlockComment(in string comment) : Expression(NodeType.Extens
     {
         if (visitor is AstToJavaScriptConverter v)
         {
-            v.Writer.WriteBlockComment([Comment], TriviaFlags.None);
+            v.Writer.WriteBlockComment([Comment], TriviaFlags.TrailingNewLineRequired);
         }
 
         return this;
