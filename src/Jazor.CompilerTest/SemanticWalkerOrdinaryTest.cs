@@ -3260,6 +3260,56 @@ public sealed class SemanticWalkerOrdinaryTest
 }", script);
   }
 
+  [TestMethod]
+  public void Visit_Literal_UserDefinedNumericConstants_PreserveSpecialValuesAndWidths()
+  {
+    var block = GetBlockOperation("""
+            class TestClass
+            {
+                private const float SingleNaN = float.NaN;
+                private const float SinglePositiveInfinity = float.PositiveInfinity;
+                private const float SingleNegativeInfinity = float.NegativeInfinity;
+                private const double DoubleNaN = double.NaN;
+                private const double DoublePositiveInfinity = double.PositiveInfinity;
+                private const double DoubleNegativeInfinity = double.NegativeInfinity;
+                private const decimal ExactDecimal = 1234567890.123456789m;
+                private const long SignedMinimum = long.MinValue;
+                private const ulong UnsignedMaximum = ulong.MaxValue;
+
+                void TestMethod()
+                {
+                    var singleNaN = SingleNaN;
+                    var singlePositiveInfinity = SinglePositiveInfinity;
+                    var singleNegativeInfinity = SingleNegativeInfinity;
+                    var doubleNaN = DoubleNaN;
+                    var doublePositiveInfinity = DoublePositiveInfinity;
+                    var doubleNegativeInfinity = DoubleNegativeInfinity;
+                    var exactDecimal = ExactDecimal;
+                    var signedMinimum = SignedMinimum;
+                    var unsignedMaximum = UnsignedMaximum;
+                }
+            }
+            """);
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual("""
+            {
+              let singleNaN = NaN;
+              let singlePositiveInfinity = Infinity;
+              let singleNegativeInfinity = -Infinity;
+              let doubleNaN = NaN;
+              let doublePositiveInfinity = Infinity;
+              let doubleNegativeInfinity = -Infinity;
+              let exactDecimal = 1234567890.123456789;
+              let signedMinimum = -9223372036854775808n;
+              let unsignedMaximum = 18446744073709551615n;
+            }
+            """, script);
+  }
+
   #endregion
 
   #region 类型转换测试
