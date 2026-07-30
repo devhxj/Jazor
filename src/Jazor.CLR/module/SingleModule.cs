@@ -42,6 +42,41 @@ public static class SingleModule
 	private static bool IsFiniteCore(Number value)
 		=> !IsNaN(value) && value != Number.POSITIVE_INFINITY && value != Number.NEGATIVE_INFINITY;
 
+	private static bool TryParseCore(string? text, out Number value)
+	{
+		value = 0;
+		if (text == null)
+			return false;
+
+		var trimmed = text.Trim();
+		if (trimmed.Length == 0)
+			return false;
+
+		var token = trimmed.ToLower();
+		if (token == "nan")
+		{
+			value = Number.NaN;
+			return true;
+		}
+		if (token == "infinity" || token == "+infinity")
+		{
+			value = Number.POSITIVE_INFINITY;
+			return true;
+		}
+		if (token == "-infinity")
+		{
+			value = Number.NEGATIVE_INFINITY;
+			return true;
+		}
+
+		var decimalPattern = new RegExp(@"^[+-]?(?:(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$");
+		if (!decimalPattern.Test(trimmed))
+			return false;
+
+		value = NumberFn(trimmed.Replace(",", ""));
+		return true;
+	}
+
 	private static bool IsPow2Core(Number value)
 	{
 		if (!IsFiniteCore(value) || value <= 0)
@@ -309,11 +344,7 @@ public static class SingleModule
 	{
 		if (s == null)
 			throw new Error("ArgumentNullException: String cannot be null.");
-		var trimmed = s.Trim();
-		if (trimmed.Length == 0)
-			throw new Error("FormatException: The input string was not in a correct format.");
-		var result = NumberFn(trimmed);
-		if (IsNaN(result))
+		if (!TryParseCore(s, out var result))
 			throw new Error($"FormatException: The input string '{s}' was not in a correct format.");
 		return result;
 	}
@@ -341,22 +372,10 @@ public static class SingleModule
 	[Jazor(Op.Import, "static float.TryParse(string, out float)")]
 	public static Array<object?> _ced8b209dbd75890(string? s, Number result)
 	{
-		if (s == null || s.Length == 0)
+		if (!TryParseCore(s, out var value))
 			return [false, 0];
-		try
-		{
-			var trimmed = s.Trim();
-			if (trimmed.Length == 0)
-				return [false, 0];
-			var val = NumberFn(trimmed);
-			if (IsNaN(val))
-				return [false, 0];
-			return [true, val];
-		}
-		catch
-		{
-			return [false, 0];
-		}
+
+		return [true, value];
 	}
 
 	///<summary>Converts the string representation of a number in a character span to its single-precision floating-point number equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
