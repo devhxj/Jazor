@@ -1518,10 +1518,6 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                 builder.Append("|symbol=").Append(DescribeStableSymbol(anonymousFunction.Symbol));
                 break;
 
-            case ILocalFunctionOperation localFunction:
-                builder.Append("|symbol=").Append(DescribeStableSymbol(localFunction.Symbol));
-                break;
-
             default:
                 foreach (var child in operation.ChildOperations)
                 {
