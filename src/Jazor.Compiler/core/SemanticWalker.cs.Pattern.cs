@@ -957,43 +957,11 @@ public partial class SemanticWalker
 				$"Slice pattern on '{hostType?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<unknown>"}' requires a supported slice symbol.");
 		}
 
-		if (slicePattern.SliceSymbol is IMethodSymbol method &&
-			method.AssociatedSymbol is IPropertySymbol property)
-		{
-			var propertySliceArguments = BuildListPatternSlicePropertyArguments(
-				slicePattern,
-				property,
-				startExpr,
-				lengthExpr,
-				sliceIndex,
-				elementsAfterSlice);
-			return BuildListPatternBoundAccess(
-				slicePattern,
-				method,
-				targetExpr,
-				propertySliceArguments,
-				argument,
-				"list pattern slice access",
-				hostType ?? property.ContainingType);
-		}
-
 		if (slicePattern.SliceSymbol is IPropertySymbol sliceProperty)
 		{
-			var propertySliceArguments = BuildListPatternSlicePropertyArguments(
+			return HandleTransformationFailure<Expression>(
 				slicePattern,
-				sliceProperty,
-				startExpr,
-				lengthExpr,
-				sliceIndex,
-				elementsAfterSlice);
-			return BuildListPatternBoundAccess(
-				slicePattern,
-				(ISymbol?)sliceProperty.GetMethod ?? sliceProperty,
-				targetExpr,
-				propertySliceArguments,
-				argument,
-				"list pattern slice access",
-				hostType ?? sliceProperty.ContainingType);
+				$"Range-based slice property '{sliceProperty.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not supported in list pattern lowering. Expose a Slice(int, int) member or configure a whitelist mapping.");
 		}
 
 		if (slicePattern.SliceSymbol is not IMethodSymbol sliceMethod)
@@ -1047,32 +1015,6 @@ public partial class SemanticWalker
 		int sliceIndex,
 		int elementsAfterSlice)
 	{
-		if (method.Parameters.Length == 1)
-		{
-			if (IsSystemRangeType(method.Parameters[0].Type))
-			{
-				return HandleUnsupportedSliceArguments(
-					ownerOperation,
-					$"Range-based slice method '{method.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not supported in list pattern lowering. Expose a Slice(int, int) member or configure a whitelist mapping.");
-			}
-
-			if (method.Parameters[0].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32)
-			{
-				return HandleUnsupportedSliceArguments(
-					ownerOperation,
-					$"Slice method '{method.OriginalDefinition.ToDisplayString(Format.NameFormat)}' must take int-compatible parameters for list pattern lowering.");
-			}
-
-			if (elementsAfterSlice != 0)
-			{
-				return HandleUnsupportedSliceArguments(
-					ownerOperation,
-					$"Slice method '{method.OriginalDefinition.ToDisplayString(Format.NameFormat)}' cannot represent a bounded middle slice in list pattern lowering.");
-			}
-
-			return [startExpr];
-		}
-
 		if (method.Parameters.Length != 2 ||
 			method.Parameters[0].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32 ||
 			method.Parameters[1].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32)
@@ -1080,63 +1022,6 @@ public partial class SemanticWalker
 			return HandleUnsupportedSliceArguments(
 				ownerOperation,
 				$"Slice method '{method.OriginalDefinition.ToDisplayString(Format.NameFormat)}' must expose Slice(int, int) semantics for list pattern lowering.");
-		}
-
-		return
-		[
-			startExpr,
-			BuildListPatternSliceLengthExpression(lengthExpr, sliceIndex, elementsAfterSlice)
-		];
-	}
-
-	private List<Expression> BuildListPatternSlicePropertyArguments(
-		IOperation ownerOperation,
-		IPropertySymbol property,
-		Expression startExpr,
-		Expression lengthExpr,
-		int sliceIndex,
-		int elementsAfterSlice)
-	{
-		if (!property.IsIndexer || property.Parameters.Length == 0)
-		{
-			return HandleUnsupportedSliceArguments(
-				ownerOperation,
-				$"Unsupported slice property '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' in list pattern.");
-		}
-
-		if (property.Parameters.Length == 1)
-		{
-			if (IsSystemRangeType(property.Parameters[0].Type))
-			{
-				return HandleUnsupportedSliceArguments(
-					ownerOperation,
-					$"Range-based slice property '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not supported in list pattern lowering. Expose a Slice(int, int) member or configure a whitelist mapping.");
-			}
-
-			if (property.Parameters[0].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32)
-			{
-				return HandleUnsupportedSliceArguments(
-					ownerOperation,
-					$"Slice property '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' must take int-compatible parameters for list pattern lowering.");
-			}
-
-			if (elementsAfterSlice != 0)
-			{
-				return HandleUnsupportedSliceArguments(
-					ownerOperation,
-					$"Slice property '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' cannot represent a bounded middle slice in list pattern lowering.");
-			}
-
-			return [startExpr];
-		}
-
-		if (property.Parameters.Length != 2 ||
-			property.Parameters[0].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32 ||
-			property.Parameters[1].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32)
-		{
-			return HandleUnsupportedSliceArguments(
-				ownerOperation,
-				$"Slice property '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' must expose two int-compatible parameters for list pattern lowering.");
 		}
 
 		return
