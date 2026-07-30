@@ -1495,6 +1495,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
         protected override object VisitFunctionExpression(FunctionExpression node) => node;
         protected override object VisitArrowFunctionExpression(ArrowFunctionExpression node) => node;
+        protected override object VisitFunctionDeclaration(FunctionDeclaration node) => node;
     }
 
     private static Expression CreateLiteralExpression(object? value)
