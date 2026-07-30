@@ -113,6 +113,7 @@ internal static class ClrRuntimeScenarioCatalog
         .. ClrRuntimeSetScenarios.HashSet,
         .. ClrRuntimeSetScenarios.InterfaceSet,
         .. ClrRuntimeDictionaryScenarios.All,
+        .. ClrRuntimeIntegralScenarios.All,
         .. ClrRuntimeBooleanScenarios.All,
         .. ClrRuntimeInt32Scenarios.All,
         .. ClrRuntimeCharScenarios.All,
