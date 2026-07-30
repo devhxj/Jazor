@@ -44,6 +44,7 @@ The implementation is composed from `Jazor.Compiler`, `Jazor.CLR`, `Jazor.Analyz
 - RazorVue direct rendering preserves dynamic event-modifier conditions and supports helper-composed output with root-level local declarations.
 - CLR runtime modules annotate hashed JavaScript helper declarations with their authored CLR member names for easier package inspection.
 - Generic whitelist compatibility lookup now reuses indexed key shapes, avoiding repeated full-catalog scans when compiling ordinary generic method calls.
+- Inline-backed CLR and host calls preserve C# receiver and argument evaluation order, timing, and single-evaluation semantics when templates repeat, omit, reorder, or defer placeholders.
 
 See [release notes](docs/releases/release-notes.md) for the full history.
 

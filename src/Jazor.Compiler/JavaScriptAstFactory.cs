@@ -189,6 +189,33 @@ public static class JavaScriptAstFactory
         return new BigIntLiteral(value, raw);
     }
 
+    /// <summary>
+    /// Builds an expression-bodied arrow invocation whose call arguments are evaluated once,
+    /// from left to right, before the projected expression consumes them.
+    /// </summary>
+    internal static Expression CreateSingleEvaluationArrowInvocation(
+        IReadOnlyList<(string ParameterName, Expression Value)> inputs,
+        Func<Identifier[], Expression> bodyFactory)
+    {
+        var parameters = new Identifier[inputs.Count];
+        var parameterNodes = new Node[inputs.Count];
+        var values = new Expression[inputs.Count];
+        for (var index = 0; index < inputs.Count; index++)
+        {
+            var parameter = new Identifier(inputs[index].ParameterName);
+            parameters[index] = parameter;
+            parameterNodes[index] = parameter;
+            values[index] = inputs[index].Value;
+        }
+
+        var arrow = new ArrowFunctionExpression(
+            NodeList.From(parameterNodes),
+            bodyFactory(parameters),
+            expression: true,
+            async: false);
+        return new CallExpression(arrow, NodeList.From(values), optional: false);
+    }
+
     private static bool IsDecimalDigit(char value)
         => value >= '0' && value <= '9';
 

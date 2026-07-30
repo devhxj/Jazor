@@ -261,7 +261,7 @@ internal static class ChildrenToSlotIntrinsic
 
 		if (props is null)
 		{
-			return BuildSingleEvaluationArrowInvocation(
+			return JavaScriptAstFactory.CreateSingleEvaluationArrowInvocation(
 				[
 					(DefaultSlotComponentParameterName, component),
 					(DefaultSlotChildParameterName, childContent)
@@ -272,7 +272,7 @@ internal static class ChildrenToSlotIntrinsic
 					optional: false));
 		}
 
-		return BuildSingleEvaluationArrowInvocation(
+		return JavaScriptAstFactory.CreateSingleEvaluationArrowInvocation(
 			[
 				(DefaultSlotComponentParameterName, component),
 				(DefaultSlotPropsParameterName, props),
@@ -410,29 +410,6 @@ internal static class ChildrenToSlotIntrinsic
 			shorthand: false,
 			method: false);
 		return new ObjectExpression(NodeList.From<Node>(slotProperty));
-	}
-
-	private static Expression BuildSingleEvaluationArrowInvocation(
-		IReadOnlyList<(string ParameterName, Expression Value)> inputs,
-		Func<Identifier[], Expression> bodyFactory)
-	{
-		var parameters = new Identifier[inputs.Count];
-		var parameterNodes = new Node[inputs.Count];
-		var values = new Expression[inputs.Count];
-		for (var index = 0; index < inputs.Count; index++)
-		{
-			var parameter = new Identifier(inputs[index].ParameterName);
-			parameters[index] = parameter;
-			parameterNodes[index] = parameter;
-			values[index] = inputs[index].Value;
-		}
-
-		var arrow = new ArrowFunctionExpression(
-			NodeList.From(parameterNodes),
-			bodyFactory(parameters),
-			expression: true,
-			async: false);
-		return new CallExpression(arrow, NodeList.From(values), optional: false);
 	}
 
 	private enum DefaultSlotInvocationKind

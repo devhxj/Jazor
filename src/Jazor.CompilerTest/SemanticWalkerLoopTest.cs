@@ -163,7 +163,9 @@ public sealed class SemanticWalkerLoopTest
     var script = node?.ToKnRECMAScript();
 
     Assert.IsNotNull(script);
-    StringAssert.Contains(script, "for await (let task of async function*() {", StringComparison.Ordinal);
+    StringAssert.Contains(script, "for await (let task of (__jz_arg0 => async function*() {", StringComparison.Ordinal);
+    StringAssert.Contains(script, "const pending = Array.from(__jz_arg0);", StringComparison.Ordinal);
+    StringAssert.Contains(script, "}())([first, second])) {", StringComparison.Ordinal);
     StringAssert.Contains(script, "await Promise.race(", StringComparison.Ordinal);
     StringAssert.Contains(script, "console.log(await task);", StringComparison.Ordinal);
   }

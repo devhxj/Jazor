@@ -13,23 +13,27 @@ namespace Jazor.Compiler;
 /// </summary>
 /// <remarks>
 /// inline 只适合短小、稳定的表达式模板；模板中的 <c>__argN</c> 不是用户变量，而是
-/// 编译器约定的参数占位符。实例化前会统一改写为保留前缀，避免与真实 C# 参数同名。
+/// 编译器约定的参数占位符。需要建立求值边界时会绑定到保留前缀参数，避免重复或延迟求值。
 /// 需要分支、临时变量或共享 helper 的行为应升级为 Import/Compile，而不是继续拉长模板。
 /// </remarks>
 public sealed partial class SemanticWalker
 {
-    // 外部模板使用 __arg1 / __arg2 ...，
-    // 内部会统一规范化成不会与真实参数名混淆的保留前缀。
-    private const string InlinePlaceholderPrefix = "__jz_arg";
+    private const string InlinePlaceholderPrefix = "__arg";
+    private const string InternalInlineBindingPrefix = "__jz_arg";
     private static readonly Regex LegacyInlinePlaceholderRegex = new(@"@#\{(\d+)\}");
-    private static readonly Regex InlinePlaceholderRegex = new(@"__arg([1-9]\d*)");
-    private static readonly Regex ZeroBasedInlinePlaceholderRegex = new(@"\b__arg0\d*\b");
 
-    // Inline 模板按白名单成员签名缓存。
-    // 当前约定下，同一签名对应同一模板；因此可以安全地“一次 parse，多次实例化”。
-    private static readonly ConcurrentDictionary<string, InlineTemplate> InlineTemplateCache = new();
+    // 独立 compilation 可以声明相同成员签名但使用不同模板，缓存身份必须包含原始模板。
+    private static readonly ConcurrentDictionary<(string Signature, string Template), InlineTemplate> InlineTemplateCache = new();
 
-    private sealed record InlineTemplate(Expression Ast, int PlaceholderCount);
+    private sealed record InlineTemplate(
+        Expression Ast,
+        int PlaceholderCount,
+        InlineTemplateEvaluation Evaluation);
+
+    private sealed record InlineTemplateEvaluation(
+        IReadOnlyList<int> UsageCounts,
+        IReadOnlyList<int> EvaluationOrder,
+        IReadOnlyList<bool> ConditionalUsage);
 
     /// <summary>
     /// 实例化 Inline AST 模板。
@@ -49,50 +53,97 @@ public sealed partial class SemanticWalker
         string? importedIdentifierName = null,
         Identifier? importedBinding = null)
     {
-        var parsedTemplate = InlineTemplateCache.GetOrAdd(signature, _ => ParseInlineTemplate(signature, template));
+        var parsedTemplate = InlineTemplateCache.GetOrAdd(
+            (signature, template),
+            static key => ParseInlineTemplate(key.Signature, key.Template));
         if (parsedTemplate.PlaceholderCount > arguments.Count)
             throw new InvalidOperationException($"Inline template '{signature}' expects at least {parsedTemplate.PlaceholderCount} arguments, but received {arguments.Count}.");
 
-        return (Expression) (new InlinePlaceholderRewriter(signature, arguments, importedIdentifierName, importedBinding).Visit(parsedTemplate.Ast)
-            ?? throw new InvalidOperationException($"Inline template '{signature}' produced a null AST."));
+        Expression Rewrite(IReadOnlyList<Expression> replacements)
+            => (Expression) (new InlinePlaceholderRewriter(replacements, importedIdentifierName, importedBinding).Visit(parsedTemplate.Ast)
+                ?? throw new InvalidOperationException($"Inline template '{signature}' produced a null AST."));
+
+        if (!RequiresInlineEvaluationBoundary(parsedTemplate, arguments))
+            return Rewrite(arguments);
+
+        // C# evaluates the receiver and every argument once, left to right, before entering
+        // the method. An inline template may reorder, repeat, conditionally consume, or omit
+        // placeholders; the arrow call preserves the original protocol without serializing AST.
+        var inputs = new (string ParameterName, Expression Value)[arguments.Count];
+        for (var index = 0; index < arguments.Count; index++)
+            inputs[index] = ($"{InternalInlineBindingPrefix}{index}", arguments[index]);
+
+        return JavaScriptAstFactory.CreateSingleEvaluationArrowInvocation(
+            inputs,
+            parameters => Rewrite(parameters));
+    }
+
+    private static bool RequiresInlineEvaluationBoundary(
+        InlineTemplate template,
+        IReadOnlyList<Expression> arguments)
+    {
+        for (var index = 0; index < arguments.Count; index++)
+        {
+            if (!NeedsSingleEvaluationCaching(arguments[index]))
+                continue;
+
+            var usageCount = index < template.Evaluation.UsageCounts.Count
+                ? template.Evaluation.UsageCounts[index]
+                : 0;
+            var conditionallyUsed = index < template.Evaluation.ConditionalUsage.Count &&
+                template.Evaluation.ConditionalUsage[index];
+            if (usageCount != 1 || conditionallyUsed)
+                return true;
+        }
+
+        var previousEffectfulIndex = -1;
+        foreach (var index in template.Evaluation.EvaluationOrder)
+        {
+            if ((uint) index >= (uint) arguments.Count ||
+                !NeedsSingleEvaluationCaching(arguments[index]))
+            {
+                continue;
+            }
+
+            if (index < previousEffectfulIndex)
+                return true;
+
+            previousEffectfulIndex = index;
+        }
+
+        return false;
     }
 
     /// <summary>
     /// 预解析 Inline 模板。
     /// <para/>
-    /// 模板外部语法使用 __arg1 / __arg2 ...，
-    /// 解析前会先规范化成内部保留标识符 __jz_arg0 / __jz_arg1 ...，
-    /// 这样后续只需要在 AST 中查找普通 Identifier，就能稳定替换占位符。
+    /// 模板外部语法使用 __arg1 / __arg2 ...。模板先原样解析，随后仅把 AST 中作为
+    /// 表达式出现的完整 Identifier 识别为占位符；字符串内容和标识符子串不会被改写。
     /// <para/>
     /// 这里仍然保留 Parser，但只用于“模板预解析一次”。
     /// 每次调用不会重复 parse。
     /// </summary>
     private static InlineTemplate ParseInlineTemplate(string signature, string template)
     {
-        if (template.Contains(InlinePlaceholderPrefix, StringComparison.Ordinal))
-            throw new InvalidOperationException($"Inline template '{signature}' contains the reserved placeholder prefix '{InlinePlaceholderPrefix}'.");
-
-        if (LegacyInlinePlaceholderRegex.IsMatch(template))
-            throw new InvalidOperationException($"Inline template '{signature}' uses the legacy placeholder syntax. Use __arg1, __arg2, ... instead.");
-
-        if (ZeroBasedInlinePlaceholderRegex.IsMatch(template))
-            throw new InvalidOperationException($"Inline template '{signature}' uses an invalid zero-based placeholder. Placeholders are 1-based: __arg1, __arg2, ...");
-
-        var maxPlaceholder = -1;
-        var normalized = InlinePlaceholderRegex.Replace(template, match =>
-        {
-            var index = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) - 1;
-            maxPlaceholder = Math.Max(maxPlaceholder, index);
-            return $"{InlinePlaceholderPrefix}{index}";
-        });
-
         try
         {
             var parser = new Parser();
-            return new InlineTemplate(parser.ParseExpression(normalized, null, true), maxPlaceholder + 1);
+            var ast = parser.ParseExpression(template, null, true);
+            var analysis = InlineTemplateEvaluationCollector.Collect(ast, signature);
+            return new InlineTemplate(
+                ast,
+                analysis.PlaceholderCount,
+                analysis.Evaluation);
         }
         catch (ParseErrorException exception)
         {
+            if (LegacyInlinePlaceholderRegex.IsMatch(template))
+            {
+                throw new InvalidOperationException(
+                    $"Inline template '{signature}' uses the legacy placeholder syntax. Use __arg1, __arg2, ... instead.",
+                    exception);
+            }
+
             throw new InvalidOperationException(
                 $"Inline template '{signature}' is not a valid JavaScript expression: {exception.Message}",
                 exception);
@@ -108,7 +159,6 @@ public sealed partial class SemanticWalker
     /// 这类场景应升级到 Op.Compile。
     /// </summary>
     private sealed class InlinePlaceholderRewriter(
-        string signature,
         IReadOnlyList<Expression> arguments,
         string? importedIdentifierName,
         Identifier? importedBinding) : AstRewriter
@@ -121,9 +171,6 @@ public sealed partial class SemanticWalker
                        string.Equals(node.Name, importedIdentifierName, StringComparison.Ordinal)
                     ? importedBinding
                     : node;
-
-            if ((uint) index >= (uint) arguments.Count)
-                throw new InvalidOperationException($"Inline template '{signature}' references argument index {index}, but only {arguments.Count} argument(s) were supplied.");
 
             // 直接把占位符节点替换成真实参数 AST。
             // 这里不做字符串展开，也不重新 parse。
@@ -146,13 +193,184 @@ public sealed partial class SemanticWalker
             return new MemberExpression(@object, property, node.Computed, node.Optional);
         }
 
-        private static bool TryGetPlaceholderIndex(string? name, out int index)
-        {
-            index = -1;
-            if (name is null || name.Length == 0 || !name.StartsWith(InlinePlaceholderPrefix, StringComparison.Ordinal))
-                return false;
+    }
 
-            return int.TryParse(name.Substring(InlinePlaceholderPrefix.Length), NumberStyles.None, CultureInfo.InvariantCulture, out index);
+    private sealed record InlineTemplateAnalysis(
+        int PlaceholderCount,
+        InlineTemplateEvaluation Evaluation);
+
+    private sealed class InlineTemplateEvaluationCollector(string signature) : AstVisitor
+    {
+        private readonly HashSet<int> _conditionalUsage = new();
+        private readonly List<int> _evaluationOrder = new();
+        private readonly Dictionary<int, int> _usageCounts = new();
+        private int _conditionalDepth;
+        private int _maxPlaceholderIndex = -1;
+
+        public static InlineTemplateAnalysis Collect(Expression ast, string signature)
+        {
+            var collector = new InlineTemplateEvaluationCollector(signature);
+            collector.Visit(ast);
+
+            var placeholderCount = collector._maxPlaceholderIndex + 1;
+            var usageCounts = new int[placeholderCount];
+            foreach (var entry in collector._usageCounts)
+                usageCounts[entry.Key] = entry.Value;
+
+            var conditionalUsage = new bool[placeholderCount];
+            foreach (var index in collector._conditionalUsage)
+                conditionalUsage[index] = true;
+
+            return new InlineTemplateAnalysis(
+                placeholderCount,
+                new InlineTemplateEvaluation(
+                    usageCounts,
+                    collector._evaluationOrder,
+                    conditionalUsage));
         }
+
+        protected override object VisitIdentifier(Identifier node)
+        {
+            if (node.Name.StartsWith(InternalInlineBindingPrefix, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(
+                    $"Inline template '{signature}' contains the reserved placeholder prefix '{InternalInlineBindingPrefix}'.");
+            }
+
+            if (IsZeroBasedPlaceholder(node.Name))
+            {
+                throw new InvalidOperationException(
+                    $"Inline template '{signature}' uses an invalid zero-based placeholder. Placeholders are 1-based: __arg1, __arg2, ...");
+            }
+
+            if (TryGetPlaceholderIndex(node.Name, out var index))
+            {
+                _maxPlaceholderIndex = Math.Max(_maxPlaceholderIndex, index);
+                _usageCounts.TryGetValue(index, out var usageCount);
+                _usageCounts[index] = usageCount + 1;
+                _evaluationOrder.Add(index);
+                if (_conditionalDepth > 0)
+                    _conditionalUsage.Add(index);
+            }
+
+            return node;
+        }
+
+        protected override object VisitBinaryExpression(BinaryExpression node)
+        {
+            Visit(node.Left);
+            if (node is LogicalExpression)
+                VisitConditionally(node.Right);
+            else
+                Visit(node.Right);
+            return node;
+        }
+
+        protected override object VisitCallExpression(CallExpression node)
+        {
+            Visit(node.Callee);
+            foreach (var argument in node.Arguments)
+            {
+                if (node.Optional)
+                    VisitConditionally(argument);
+                else
+                    Visit(argument);
+            }
+            return node;
+        }
+
+        protected override object VisitChainExpression(ChainExpression node)
+        {
+            // The chain may stop at any optional segment. Conservatively classify all
+            // placeholders inside it as conditional; this affects only non-trivial inputs.
+            VisitConditionally(node.Expression);
+            return node;
+        }
+
+        protected override object VisitConditionalExpression(ConditionalExpression node)
+        {
+            Visit(node.Test);
+            VisitConditionally(node.Consequent);
+            VisitConditionally(node.Alternate);
+            return node;
+        }
+
+        protected override object VisitMemberExpression(MemberExpression node)
+        {
+            Visit(node.Object);
+            if (node.Computed)
+            {
+                if (node.Optional)
+                    VisitConditionally(node.Property);
+                else
+                    Visit(node.Property);
+            }
+            return node;
+        }
+
+        protected override object VisitArrowFunctionExpression(ArrowFunctionExpression node)
+            => VisitDeferred(node, () => base.VisitArrowFunctionExpression(node));
+
+        protected override object VisitFunctionExpression(FunctionExpression node)
+            => VisitDeferred(node, () => base.VisitFunctionExpression(node));
+
+        private void VisitConditionally(Node node)
+            => _ = VisitDeferred(node, () => Visit(node));
+
+        private object VisitDeferred(Node fallback, Func<object?> visit)
+        {
+            _conditionalDepth++;
+            try
+            {
+                return visit() ?? fallback;
+            }
+            finally
+            {
+                _conditionalDepth--;
+            }
+        }
+    }
+
+    private static bool TryGetPlaceholderIndex(string? name, out int index)
+    {
+        index = -1;
+        if (name is null ||
+            !name.StartsWith(InlinePlaceholderPrefix, StringComparison.Ordinal) ||
+            name.Length == InlinePlaceholderPrefix.Length ||
+            name[InlinePlaceholderPrefix.Length] == '0')
+        {
+            return false;
+        }
+
+        var digits = name.Substring(InlinePlaceholderPrefix.Length);
+        for (var digitIndex = 0; digitIndex < digits.Length; digitIndex++)
+        {
+            if (digits[digitIndex] is < '0' or > '9')
+                return false;
+        }
+
+        if (!int.TryParse(digits, NumberStyles.None, CultureInfo.InvariantCulture, out var oneBasedIndex))
+        {
+            throw new InvalidOperationException(
+                $"Inline placeholder '{name}' exceeds the supported index range.");
+        }
+
+        index = oneBasedIndex - 1;
+        return true;
+    }
+
+    private static bool IsZeroBasedPlaceholder(string name)
+    {
+        const string zeroBasedPrefix = "__arg0";
+        if (!name.StartsWith(zeroBasedPrefix, StringComparison.Ordinal))
+            return false;
+
+        for (var index = zeroBasedPrefix.Length; index < name.Length; index++)
+        {
+            if (name[index] is < '0' or > '9')
+                return false;
+        }
+
+        return true;
     }
 }

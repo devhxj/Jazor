@@ -1444,39 +1444,10 @@ private bool TryExpandEcmascriptParamsArgument(
 						BuildInstanceMethodCall(instance, "padEnd", arguments[0]),
 					"PadRight" when arguments.Count == 2 =>
 						BuildInstanceMethodCall(instance, "padEnd", arguments[0], arguments[1]),
-					"ToCharArray" when arguments.Count == 0 =>
-						BuildInstanceMethodCall(instance, "split", CreateStringLiteral("")),
-					"ToCharArray" when arguments.Count == 2 =>
-						BuildInstanceMethodCall(
-							BuildInstanceMethodCall(
-								instance,
-								"substring",
-								arguments[0],
-								new NonLogicalBinaryExpression(Operator.Addition, arguments[0], arguments[1])),
-							"split",
-							CreateStringLiteral("")),
 					"ToLowerInvariant" when arguments.Count == 0 =>
 						BuildInstanceMethodCall(instance, "toLowerCase"),
 					"ToUpperInvariant" when arguments.Count == 0 =>
 						BuildInstanceMethodCall(instance, "toUpperCase"),
-					"Remove" when arguments.Count == 1 =>
-						BuildInstanceMethodCall(instance, "slice", new NumericLiteral(0, "0"), arguments[0]),
-					"Remove" when arguments.Count == 2 =>
-						new NonLogicalBinaryExpression(
-							Operator.Addition,
-							BuildInstanceMethodCall(instance, "slice", new NumericLiteral(0, "0"), arguments[0]),
-							BuildInstanceMethodCall(
-								instance,
-								"slice",
-								new NonLogicalBinaryExpression(Operator.Addition, arguments[0], arguments[1]))),
-					"Insert" when arguments.Count == 2 =>
-						new NonLogicalBinaryExpression(
-							Operator.Addition,
-							new NonLogicalBinaryExpression(
-								Operator.Addition,
-								BuildInstanceMethodCall(instance, "slice", new NumericLiteral(0, "0"), arguments[0]),
-								arguments[1]),
-							BuildInstanceMethodCall(instance, "slice", arguments[0])),
 					_ => null
 				};
 
