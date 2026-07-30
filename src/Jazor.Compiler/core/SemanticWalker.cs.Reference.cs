@@ -533,37 +533,6 @@ public partial class SemanticWalker
 	}
 
 	/// <summary>
-	/// 某些泛型数学静态成员在调用点会先绑定成接口投影方法，
-	/// 例如 <c>ushort.PopCount</c> / <c>uint.PopCount</c>。
-	/// 这类符号若直接查白名单，会漏掉具体类型上的映射，随后退回错误的 runtime host。
-	///
-	/// 这里仅在“静态接口方法 + 能从调用点恢复具体宿主”时，尝试拉回实现面。
-	/// 普通成员路径保持不变，避免扩大影响面。
-	/// </summary>
-	private static IMethodSymbol ResolveStaticInterfaceProjectionMethod(IMethodSymbol method, SyntaxNode syntax, SemanticModel? semanticModel)
-	{
-		if (!method.IsStatic || method.ContainingType?.TypeKind != TypeKind.Interface)
-			return method;
-
-		if (TryGetStaticSourceHostTypeFromSyntax(syntax, semanticModel) is not INamedTypeSymbol sourceHostType ||
-			!IsStaticHostOverrideCompatible(sourceHostType, method.ContainingType))
-			return method;
-
-		if (sourceHostType.FindImplementationForInterfaceMember(method) is IMethodSymbol implementation)
-			return implementation;
-
-		foreach (var candidate in sourceHostType.GetMembers(method.Name).OfType<IMethodSymbol>())
-		{
-			if (candidate.IsStatic &&
-				candidate.Arity == method.Arity &&
-				candidate.Parameters.Length == method.Parameters.Length)
-				return candidate;
-		}
-
-		return method;
-	}
-
-	/// <summary>
 	/// 判断调用点宿主是否可以安全覆盖声明宿主。
 	///
 	/// 允许覆盖的前提是：调用点宿主必须就是声明宿主本身，或者能通过
@@ -2287,8 +2256,7 @@ private bool TryExpandEcmascriptParamsArgument(
 			.Select(i => new Identifier($"{name}${i}") as Expression)
 			.ToList();
 
-		var whiteListMethod = ResolveStaticInterfaceProjectionMethod(operation.Method, operation.Syntax, operation.SemanticModel);
-		var valueExpr = GetWhiteListExpression(whiteListMethod, argument, args, out var alias, operation);
+		var valueExpr = GetWhiteListExpression(operation.Method, argument, args, out var alias, operation);
 		if (valueExpr is not null)
 		{
 			// 生成箭头函数表达式作为代理方法
@@ -2304,7 +2272,7 @@ private bool TryExpandEcmascriptParamsArgument(
 		}
 
 		if (string.IsNullOrEmpty(alias))
-			RejectUnsupportedRuntimeFallback(operation, whiteListMethod, "method reference", operation.Instance?.Type ?? operation.Method.ContainingType);
+			RejectUnsupportedRuntimeFallback(operation, operation.Method, "method reference", operation.Instance?.Type ?? operation.Method.ContainingType);
 
 		var instance = Translate<Expression>(operation.Instance, argument, null);
 		if (Host?.RewriteMethodReference(operation, argument, instance) is Expression hostExpression)
@@ -2570,19 +2538,18 @@ private bool TryExpandEcmascriptParamsArgument(
 			hostType ?? targetMethod.ContainingType,
 			"method invocation");
 
-		var whiteListMethod = ResolveStaticInterfaceProjectionMethod(targetMethod, syntax, semanticModel);
 		if (allowIntrinsic &&
 			invocationOperation is not null &&
-			TryBuildIntrinsicMethodInvocation(invocationOperation, whiteListMethod, instance, arguments, argument, out var intrinsicExpr) &&
+			TryBuildIntrinsicMethodInvocation(invocationOperation, targetMethod, instance, arguments, argument, out var intrinsicExpr) &&
 			intrinsicExpr is not null)
 			return intrinsicExpr;
 
-		var mapperExpr = GetWhiteListExpression(whiteListMethod, argument, arguments, instance, out var alias, ownerOperation);
+		var mapperExpr = GetWhiteListExpression(targetMethod, argument, arguments, instance, out var alias, ownerOperation);
 		if (mapperExpr is not null)
 			return mapperExpr;
 
 		if (string.IsNullOrEmpty(alias))
-			RejectUnsupportedRuntimeFallback(ownerOperation, whiteListMethod, "method invocation", hostType ?? targetMethod.ContainingType);
+			RejectUnsupportedRuntimeFallback(ownerOperation, targetMethod, "method invocation", hostType ?? targetMethod.ContainingType);
 
 		var methodName = string.IsNullOrEmpty(alias) ? GetCurrentModuleDeclaredOrConfigName(targetMethod) : alias;
 		if (instance is not null)

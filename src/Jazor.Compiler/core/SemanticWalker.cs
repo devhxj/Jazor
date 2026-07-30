@@ -1292,11 +1292,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
             case LoweringSiteKind.MethodReferenceProxy:
                 if (operation is IMethodReferenceOperation methodReference)
                 {
-                    var resolvedMethod = ResolveStaticInterfaceProjectionMethod(
-                        methodReference.Method,
-                        methodReference.Syntax,
-                        methodReference.SemanticModel);
-                    builder.Append(DescribeStableSymbol(resolvedMethod)).Append('|');
+                    builder.Append(DescribeStableSymbol(methodReference.Method)).Append('|');
                     builder.Append(methodReference.Instance is null
                         ? "<null>"
                         : BuildSemanticNameKey(methodReference.Instance));
