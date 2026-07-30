@@ -193,15 +193,18 @@ public static class ArrayModule<T>
 			throw new Error("ArgumentNullException: sourceArray is null");
 		if (destinationArray == null)
 			throw new Error("ArgumentNullException: destinationArray is null");
-		if (length < 0)
+		var sourceOffset = NumberFn(sourceIndex);
+		var destinationOffset = NumberFn(destinationIndex);
+		var copyLength = NumberFn(length);
+		if (copyLength < 0)
 			throw new Error("ArgumentOutOfRangeException: length is less than zero");
-		if (sourceIndex < 0 || sourceIndex + length > sourceArray.Length)
+		if (sourceOffset < 0 || sourceOffset + copyLength > sourceArray.Length)
 			throw new Error("ArgumentOutOfRangeException: sourceIndex is out of range");
-		if (destinationIndex < 0 || destinationIndex + length > destinationArray.Length)
+		if (destinationOffset < 0 || destinationOffset + copyLength > destinationArray.Length)
 			throw new Error("ArgumentOutOfRangeException: destinationIndex is out of range");
 
-		for (var i = 0; i < length; i++)
-			destinationArray[destinationIndex + i] = sourceArray[sourceIndex + i];
+		for (Number i = 0; i < copyLength; i++)
+			destinationArray[destinationOffset + i] = sourceArray[sourceOffset + i];
 	}
 
 	/// <summary>
