@@ -8,6 +8,7 @@ internal enum ClrRuntimeValueKind
     Boolean,
     BigInt,
     Array,
+    Set,
     Record,
     Callable,
     RuntimeInvocation,
@@ -54,6 +55,9 @@ internal sealed record ClrRuntimeValue(
     public static ClrRuntimeValue Array(params ClrRuntimeValue[] values)
         => new(ClrRuntimeValueKind.Array, Items: values);
 
+    public static ClrRuntimeValue Set(params ClrRuntimeValue[] values)
+        => new(ClrRuntimeValueKind.Set, Items: values);
+
     public static ClrRuntimeValue Record(params (string Name, ClrRuntimeValue Value)[] properties)
         => new(
             ClrRuntimeValueKind.Record,
@@ -90,6 +94,8 @@ internal static class ClrRuntimeScenarioCatalog
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [
         .. ClrRuntimeGuidScenarios.All,
+        .. ClrRuntimeSetScenarios.HashSet,
+        .. ClrRuntimeSetScenarios.InterfaceSet,
         .. ClrRuntimeBooleanScenarios.All,
         .. ClrRuntimeInt32Scenarios.All,
         .. ClrRuntimeCharScenarios.All,

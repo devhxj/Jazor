@@ -145,6 +145,7 @@ internal static class ClrRuntimeTestHost
             case "boolean": return value.scalar === "true";
             case "bigInt": return BigInt(value.scalar);
             case "array": return await decodeAll(value.items);
+            case "set": return new Set(await decodeAll(value.items));
             case "record": {
               const entries = [];
               for (const [name, item] of Object.entries(value.properties))
@@ -182,6 +183,7 @@ internal static class ClrRuntimeTestHost
           if (value === null) return { kind: "null" };
           if (value === undefined) return { kind: "undefined" };
           if (Array.isArray(value)) return { kind: "array", items: value.map(encode) };
+          if (value instanceof Set) return { kind: "set", items: Array.from(value, encode) };
           if (typeof value === "object" && Object.hasOwn(value, Symbol.toPrimitive)) {
             const primitive = value[Symbol.toPrimitive]("string");
             if (primitive === value)
