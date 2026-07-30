@@ -1302,29 +1302,16 @@ public partial class SemanticWalker
 		{
 			case IPropertyReferenceOperation propertyReference:
 			{
-				if (propertyReference.Property.GetMethod is null)
-				{
-					return HandleTransformationFailure<Expression>(
-						operation,
-						$"Member initializer target '{propertyReference.Property.ToDisplayString(Jazor.Common.Format.NameFormat)}' must have an accessible getter.");
-				}
-
-				var instance = Translate<Expression>(propertyReference.Instance, argument, null) ?? fallbackInstance;
+				var instance = Translate<Expression>(propertyReference.Instance, argument, null) ?? fallbackInstance!;
 				var arguments = new List<Expression>(propertyReference.Arguments.Length);
 				foreach (var propertyArgument in propertyReference.Arguments)
-				{
-					var argContext = propertyArgument.Parameter?.RefKind is RefKind.Out
-						? argument.With(Sense.OutParameter)
-						: argument;
-					arguments.Add(Translate<Expression>(propertyArgument.Value, argContext));
-				}
+					arguments.Add(Translate<Expression>(propertyArgument.Value, argument));
 
-				var mapperExpr = GetWhiteListExpression(propertyReference.Property.GetMethod, argument, arguments, instance, out var alias, propertyReference);
+				var mapperExpr = GetWhiteListExpression(propertyReference.Property.GetMethod!, argument, arguments, instance, out var alias, propertyReference);
 				if (mapperExpr is not null)
 					return mapperExpr;
 
-				if (instance is not null &&
-					arguments.Count > 0 &&
+				if (arguments.Count > 0 &&
 					(propertyReference.Property.IsIndexer || propertyReference.Property.Parameters.Length > 0))
 				{
 					if (arguments.Count != 1)
@@ -1354,40 +1341,16 @@ public partial class SemanticWalker
 						propertyReference.Instance?.Type ?? propertyReference.Property.ContainingType)
 					: alias!;
 
-				if (instance is not null)
-				{
-					return BuildAliasedPropertyAccess(
-						instance,
-						propertyName,
-						optional: false,
-						ShouldInvokeAliasedPropertyGetter(propertyReference, propertyName));
-				}
-
-				if (propertyReference.Property.IsStatic && propertyReference.Property.ContainingType is not null)
-				{
-					if (TryBuildCurrentModulePropertyGetterCall(propertyReference.Property, out var currentModuleProperty) &&
-						currentModuleProperty is not null)
-						return currentModuleProperty;
-
-					if (TryBuildImportedModulePropertyAccess(propertyReference.Property, argument, out var importedProperty) &&
-						importedProperty is not null)
-						return importedProperty;
-
-					if (TryBuildPreferredRuntimeStaticMemberAccess(propertyReference.Property, propertyReference.Syntax, propertyReference.SemanticModel, propertyName, out var preferredStaticProperty) &&
-						preferredStaticProperty is not null)
-						return preferredStaticProperty;
-
-					var containing = BuildFullTypeName(propertyReference.Property.ContainingType, argument);
-					if (containing is not null)
-						return new MemberExpression(containing, new Identifier(propertyName), computed: false, optional: false);
-				}
-
-				return new Identifier(propertyName);
+				return BuildAliasedPropertyAccess(
+					instance,
+					propertyName,
+					optional: false,
+					ShouldInvokeAliasedPropertyGetter(propertyReference, propertyName));
 			}
 
 			case IFieldReferenceOperation fieldReference:
 			{
-				var instance = Translate<Expression>(fieldReference.Instance, argument, null) ?? fallbackInstance;
+				var instance = Translate<Expression>(fieldReference.Instance, argument, null) ?? fallbackInstance!;
 				var mapperExpr = GetWhiteListExpression(fieldReference.Field, argument, [], instance, out var alias, fieldReference);
 				if (mapperExpr is not null)
 					return mapperExpr;
@@ -1400,21 +1363,7 @@ public partial class SemanticWalker
 						fieldReference.Instance?.Type ?? fieldReference.Field.ContainingType)
 					: alias!;
 
-				if (instance is not null)
-					return new MemberExpression(instance, new Identifier(fieldName), computed: false, optional: false);
-
-				if (fieldReference.Field.IsStatic && fieldReference.Field.ContainingType is not null)
-				{
-					if (TryBuildImportedModuleMember(fieldReference.Field.ContainingType, fieldName, argument, out var importedMember) &&
-						importedMember is not null)
-						return importedMember;
-
-					var containing = BuildFullTypeName(fieldReference.Field.ContainingType, argument);
-					if (containing is not null)
-						return new MemberExpression(containing, new Identifier(fieldName), computed: false, optional: false);
-				}
-
-				return new Identifier(fieldName);
+				return new MemberExpression(instance, new Identifier(fieldName), computed: false, optional: false);
 			}
 
 			default:
