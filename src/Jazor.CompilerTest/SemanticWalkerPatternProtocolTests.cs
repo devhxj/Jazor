@@ -331,6 +331,16 @@ internal static class PatternProtocolCatalog
             "middle = buffer.slice(1, v$0 - 2)",
             "buffer[v$0 - 1] === 4"),
         Success(
+            "slice.custom-whole-method",
+            "carrier=custom;slice=Slice(int,int);position=whole;length=cached;binding=declaration",
+            """
+                        var buffer = new BoundedSliceBuffer();
+                        if (buffer is [.. var all])
+                            Consume(all.Length);
+                """,
+            "v$0 = buffer.length",
+            "all = buffer.slice(0, v$0)"),
+        Success(
             "slice.array-recursive-subpattern",
             "carrier=int[];slice=intrinsic-array;subpattern=recursive-property;binding=none",
             """
