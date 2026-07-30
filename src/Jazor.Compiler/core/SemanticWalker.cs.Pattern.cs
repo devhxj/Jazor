@@ -517,13 +517,10 @@ public partial class SemanticWalker
 
 		if (!string.IsNullOrEmpty(alias))
 		{
-			if (memberReference is IPropertyReferenceOperation propertyReference)
+			if (memberReference is IPropertyReferenceOperation)
 			{
-				var invoke = ShouldInvokeAliasedPropertyGetter(propertyReference, alias!);
-				if (!invoke)
-					existencePropertyName = alias!;
-
-				return BuildAliasedPropertyAccess(targetExpr, alias!, optional: false, invoke);
+				existencePropertyName = alias!;
+				return BuildAliasedPropertyAccess(targetExpr, alias!, optional: false);
 			}
 
 			existencePropertyName = alias!;

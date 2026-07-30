@@ -914,16 +914,6 @@ public partial class SemanticWalker
 		return literalText is not null;
 	}
 
-	private static bool IsDateLikeType(ITypeSymbol? type)
-	{
-		if (type is null)
-			return false;
-
-		var displayName = type.OriginalDefinition.ToDisplayString(Format.NameFormat);
-		return type.SpecialType == SpecialType.System_DateTime ||
-			displayName == "System.DateOnly";
-	}
-
 	private static bool IsErasedUnionProjectionProperty(IPropertySymbol property)
 	{
 		if (property.IsStatic ||
@@ -961,26 +951,11 @@ public partial class SemanticWalker
 			Util.IsRuntimeIUnionType(originalDefinition);
 	}
 
-	private static bool ShouldInvokeAliasedPropertyGetter(IPropertyReferenceOperation operation, string alias)
+	private static Expression BuildAliasedPropertyAccess(Expression instance, string propertyName, bool optional)
 	{
-		if (operation.Instance is null || operation.Arguments.Length != 0 || string.IsNullOrEmpty(alias))
-			return false;
-
-		if (!IsDateLikeType(operation.Instance.Type))
-			return false;
-
-		return alias is "getDate" or "getHours" or "getMilliseconds" or "getMinutes" or "getSeconds" or "getFullYear";
-	}
-
-	private static Expression BuildAliasedPropertyAccess(Expression instance, string propertyName, bool optional, bool invoke)
-	{
-		var member = TryBuildComputedAliasProperty(propertyName, out var computedProperty)
+		return TryBuildComputedAliasProperty(propertyName, out var computedProperty)
 			? new MemberExpression(instance, computedProperty, computed: true, optional: optional)
 			: new MemberExpression(instance, new Identifier(propertyName), computed: false, optional: optional);
-		if (!invoke)
-			return member;
-
-		return new CallExpression(member, NodeList.Empty<Expression>(), optional: false);
 	}
 
 	private static bool TryBuildComputedAliasProperty(string propertyName, out Expression property)
@@ -2232,7 +2207,7 @@ private bool TryExpandEcmascriptParamsArgument(
 		{
 			var optional = operation.Instance is IConditionalAccessInstanceOperation;
 			return WithOriginIfMissing(
-				BuildAliasedPropertyAccess(instance, propertyName!, optional, ShouldInvokeAliasedPropertyGetter(operation, propertyName!)),
+				BuildAliasedPropertyAccess(instance, propertyName!, optional),
 				operation);
 		}
 

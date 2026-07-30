@@ -2041,8 +2041,7 @@ public partial class SemanticWalker
 		if (entry.Op != Op.Alias)
 			return true;
 
-		return propertyReference.Arguments.Length > 0 ||
-			(!string.IsNullOrEmpty(entry.Value) && ShouldInvokeAliasedPropertyGetter(propertyReference, entry.Value!));
+		return propertyReference.Arguments.Length > 0;
 	}
 
 	private Expression MaterializePropertyMutationOperand(

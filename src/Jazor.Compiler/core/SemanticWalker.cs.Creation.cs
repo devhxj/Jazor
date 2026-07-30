@@ -1344,8 +1344,7 @@ public partial class SemanticWalker
 				return BuildAliasedPropertyAccess(
 					instance,
 					propertyName,
-					optional: false,
-					ShouldInvokeAliasedPropertyGetter(propertyReference, propertyName));
+					optional: false);
 			}
 
 			case IFieldReferenceOperation fieldReference:
