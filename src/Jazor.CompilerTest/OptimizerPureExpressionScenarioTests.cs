@@ -38,8 +38,15 @@ public sealed class OptimizerPureExpressionScenarioTests
         Assert.AreNotSame(left, right, $"{testCase.Id}: scenarios must use distinct AST instances.");
         var input = new LogicalExpression(Operator.LogicalAnd, left, right);
 
+        var structurallyEqual = Optimizer.PureExpressionComparer.Instance.Equals(left, right);
+        var leftHash = Optimizer.PureExpressionComparer.Instance.GetHashCode(left);
+        var rightHash = Optimizer.PureExpressionComparer.Instance.GetHashCode(right);
+
         var actual = Optimizer.OptimizeLogical(input);
 
+        Assert.AreEqual(testCase.StructurallyEqual, structurallyEqual, testCase.Id);
+        if (structurallyEqual)
+            Assert.AreEqual(leftHash, rightHash, $"{testCase.Id}: equivalent AST nodes must have equal hashes.");
         Assert.AreEqual(testCase.ExpectedJavaScript, actual.ToKnRECMAScript(), testCase.Id);
         if (testCase.ShouldDeduplicate)
         {
@@ -55,6 +62,19 @@ public sealed class OptimizerPureExpressionScenarioTests
         }
     }
 
+    [TestMethod]
+    public void PureExpressionComparer_HandlesReferenceNullAndNodeTypeBoundaries()
+    {
+        var comparer = Optimizer.PureExpressionComparer.Instance;
+        var identifier = Identifier("value");
+
+        Assert.IsTrue(comparer.Equals(null, null));
+        Assert.IsTrue(comparer.Equals(identifier, identifier));
+        Assert.IsFalse(comparer.Equals(null, identifier));
+        Assert.IsFalse(comparer.Equals(identifier, null));
+        Assert.IsFalse(comparer.Equals(identifier, String("value")));
+    }
+
     private static (Expression Left, Expression Right) CreateOperands(
         OptimizerPureExpressionScenarioKind kind)
         => kind switch
@@ -63,6 +83,8 @@ public sealed class OptimizerPureExpressionScenarioTests
                 (Identifier("value"), Identifier("value")),
             OptimizerPureExpressionScenarioKind.DifferentIdentifiers =>
                 (Identifier("left"), Identifier("right")),
+            OptimizerPureExpressionScenarioKind.DifferentNodeTypes =>
+                (Identifier("value"), String("value")),
             OptimizerPureExpressionScenarioKind.EqualNullLiterals =>
                 (new NullLiteral("null"), new NullLiteral("null")),
             OptimizerPureExpressionScenarioKind.EqualBooleanLiterals =>
@@ -91,6 +113,9 @@ public sealed class OptimizerPureExpressionScenarioTests
             OptimizerPureExpressionScenarioKind.DifferentNestedLogicalOperators =>
                 (Logical(Operator.LogicalAnd, Identifier("a"), Identifier("b")),
                     Logical(Operator.LogicalOr, Identifier("a"), Identifier("b"))),
+            OptimizerPureExpressionScenarioKind.DifferentNestedLogicalRightOperands =>
+                (Logical(Operator.LogicalOr, Identifier("a"), Identifier("b")),
+                    Logical(Operator.LogicalOr, Identifier("a"), Identifier("c"))),
             OptimizerPureExpressionScenarioKind.EqualStrictBinaryExpressions =>
                 (Binary(Operator.StrictEquality, Identifier("left"), Identifier("right")),
                     Binary(Operator.StrictEquality, Identifier("left"), Identifier("right"))),
@@ -100,9 +125,15 @@ public sealed class OptimizerPureExpressionScenarioTests
             OptimizerPureExpressionScenarioKind.DifferentStrictBinaryLeftOperands =>
                 (Binary(Operator.StrictEquality, Identifier("left"), Identifier("right")),
                     Binary(Operator.StrictEquality, Identifier("other"), Identifier("right"))),
+            OptimizerPureExpressionScenarioKind.DifferentStrictBinaryRightOperands =>
+                (Binary(Operator.StrictEquality, Identifier("left"), Identifier("right")),
+                    Binary(Operator.StrictEquality, Identifier("left"), Identifier("other"))),
             OptimizerPureExpressionScenarioKind.EqualLooseNullChecks =>
                 (Binary(Operator.Equality, Identifier("value"), new NullLiteral("null")),
                     Binary(Operator.Equality, Identifier("value"), new NullLiteral("null"))),
+            OptimizerPureExpressionScenarioKind.EqualLooseNullLeftChecks =>
+                (Binary(Operator.Equality, new NullLiteral("null"), Identifier("value")),
+                    Binary(Operator.Equality, new NullLiteral("null"), Identifier("value"))),
             OptimizerPureExpressionScenarioKind.EqualLooseNonNullChecksPreserved =>
                 (Binary(Operator.Equality, Identifier("left"), Identifier("right")),
                     Binary(Operator.Equality, Identifier("left"), Identifier("right"))),
@@ -112,6 +143,15 @@ public sealed class OptimizerPureExpressionScenarioTests
             OptimizerPureExpressionScenarioKind.DifferentUnaryOperators =>
                 (Unary(Operator.LogicalNot, Identifier("ready")),
                     Unary(Operator.TypeOf, Identifier("ready"))),
+            OptimizerPureExpressionScenarioKind.DifferentUnaryArguments =>
+                (Unary(Operator.LogicalNot, Identifier("ready")),
+                    Unary(Operator.LogicalNot, Identifier("other"))),
+            OptimizerPureExpressionScenarioKind.EqualVoidUnaryExpressions =>
+                (Unary(Operator.Void, Identifier("ready")),
+                    Unary(Operator.Void, Identifier("ready"))),
+            OptimizerPureExpressionScenarioKind.EqualArithmeticUnaryExpressionsPreserved =>
+                (Unary(Operator.UnaryPlus, Identifier("value")),
+                    Unary(Operator.UnaryPlus, Identifier("value"))),
             OptimizerPureExpressionScenarioKind.EqualConditionalExpressions =>
                 (Conditional("ready", "yes", "no"), Conditional("ready", "yes", "no")),
             OptimizerPureExpressionScenarioKind.DifferentConditionalTests =>
@@ -183,6 +223,7 @@ public enum OptimizerPureExpressionScenarioKind
 {
     EqualIdentifiers,
     DifferentIdentifiers,
+    DifferentNodeTypes,
     EqualNullLiterals,
     EqualBooleanLiterals,
     DifferentBooleanLiterals,
@@ -196,13 +237,19 @@ public enum OptimizerPureExpressionScenarioKind
     EqualSuperExpressions,
     EqualNestedLogicalExpressions,
     DifferentNestedLogicalOperators,
+    DifferentNestedLogicalRightOperands,
     EqualStrictBinaryExpressions,
     DifferentStrictBinaryOperators,
     DifferentStrictBinaryLeftOperands,
+    DifferentStrictBinaryRightOperands,
     EqualLooseNullChecks,
+    EqualLooseNullLeftChecks,
     EqualLooseNonNullChecksPreserved,
     EqualUnaryExpressions,
     DifferentUnaryOperators,
+    DifferentUnaryArguments,
+    EqualVoidUnaryExpressions,
+    EqualArithmeticUnaryExpressionsPreserved,
     EqualConditionalExpressions,
     DifferentConditionalTests,
     DifferentConditionalConsequents,
@@ -219,6 +266,7 @@ public sealed record OptimizerPureExpressionScenario(
     string Id,
     string Dimension,
     OptimizerPureExpressionScenarioKind Kind,
+    bool StructurallyEqual,
     bool ShouldDeduplicate,
     bool ShouldReuseLeftInstance,
     string ExpectedJavaScript);
@@ -229,6 +277,7 @@ internal static class OptimizerPureExpressionScenarioCatalog
     [
         Case("identifier.equal", "identifier-name-structural-equality", OptimizerPureExpressionScenarioKind.EqualIdentifiers, true, "value"),
         Case("identifier.different", "identifier-name-inequality", OptimizerPureExpressionScenarioKind.DifferentIdentifiers, false, "left && right"),
+        Case("node-type.different", "node-runtime-type-inequality", OptimizerPureExpressionScenarioKind.DifferentNodeTypes, false, "value && \"value\""),
         Case("null.equal", "null-literal-structural-equality", OptimizerPureExpressionScenarioKind.EqualNullLiterals, true, "null"),
         Case("boolean.equal", "boolean-value-structural-equality", OptimizerPureExpressionScenarioKind.EqualBooleanLiterals, true, "true"),
         Case("boolean.different", "boolean-value-inequality", OptimizerPureExpressionScenarioKind.DifferentBooleanLiterals, false, "true && false"),
@@ -242,13 +291,19 @@ internal static class OptimizerPureExpressionScenarioCatalog
         Case("super.equal", "super-expression-structural-equality", OptimizerPureExpressionScenarioKind.EqualSuperExpressions, true, "super"),
         Case("logical.equal", "nested-logical-tree-structural-equality", OptimizerPureExpressionScenarioKind.EqualNestedLogicalExpressions, true, "a || b", shouldReuseLeftInstance: false),
         Case("logical.operator-different", "nested-logical-operator-inequality", OptimizerPureExpressionScenarioKind.DifferentNestedLogicalOperators, false, "a && b && (a || b)"),
+        Case("logical.right-different", "nested-logical-right-operand-inequality", OptimizerPureExpressionScenarioKind.DifferentNestedLogicalRightOperands, false, "(a || b) && (a || c)"),
         Case("binary.equal", "strict-binary-tree-structural-equality", OptimizerPureExpressionScenarioKind.EqualStrictBinaryExpressions, true, "left === right"),
         Case("binary.operator-different", "strict-binary-operator-inequality", OptimizerPureExpressionScenarioKind.DifferentStrictBinaryOperators, false, "left === right && left !== right"),
         Case("binary.left-different", "strict-binary-left-operand-inequality", OptimizerPureExpressionScenarioKind.DifferentStrictBinaryLeftOperands, false, "left === right && other === right"),
+        Case("binary.right-different", "strict-binary-right-operand-inequality", OptimizerPureExpressionScenarioKind.DifferentStrictBinaryRightOperands, false, "left === right && left === other"),
         Case("binary.loose-null-equal", "loose-null-check-structural-equality", OptimizerPureExpressionScenarioKind.EqualLooseNullChecks, true, "value == null"),
-        Case("binary.loose-non-null-preserved", "loose-value-coercion-purity-boundary", OptimizerPureExpressionScenarioKind.EqualLooseNonNullChecksPreserved, false, "left == right && left == right"),
+        Case("binary.loose-null-left-equal", "loose-null-left-check-purity", OptimizerPureExpressionScenarioKind.EqualLooseNullLeftChecks, true, "null == value"),
+        Case("binary.loose-non-null-preserved", "loose-value-coercion-purity-boundary", OptimizerPureExpressionScenarioKind.EqualLooseNonNullChecksPreserved, false, "left == right && left == right", structurallyEqual: true),
         Case("unary.equal", "pure-unary-tree-structural-equality", OptimizerPureExpressionScenarioKind.EqualUnaryExpressions, true, "!ready"),
         Case("unary.operator-different", "pure-unary-operator-inequality", OptimizerPureExpressionScenarioKind.DifferentUnaryOperators, false, "!ready && typeof ready"),
+        Case("unary.argument-different", "pure-unary-argument-inequality", OptimizerPureExpressionScenarioKind.DifferentUnaryArguments, false, "!ready && !other"),
+        Case("unary.void-equal", "void-unary-purity", OptimizerPureExpressionScenarioKind.EqualVoidUnaryExpressions, true, "void ready"),
+        Case("unary.arithmetic-equal-preserved", "arithmetic-unary-purity-boundary", OptimizerPureExpressionScenarioKind.EqualArithmeticUnaryExpressionsPreserved, false, "+value && +value", structurallyEqual: true),
         Case("conditional.equal", "conditional-tree-structural-equality", OptimizerPureExpressionScenarioKind.EqualConditionalExpressions, true, "ready ? yes : no"),
         Case("conditional.test-different", "conditional-test-inequality", OptimizerPureExpressionScenarioKind.DifferentConditionalTests, false, "(ready ? yes : no) && (other ? yes : no)"),
         Case("conditional.consequent-different", "conditional-consequent-inequality", OptimizerPureExpressionScenarioKind.DifferentConditionalConsequents, false, "(ready ? yes : no) && (ready ? other : no)"),
@@ -256,7 +311,7 @@ internal static class OptimizerPureExpressionScenarioCatalog
         Case("sequence.equal", "sequence-element-structural-equality", OptimizerPureExpressionScenarioKind.EqualSequenceExpressions, true, "first, second"),
         Case("sequence.length-different", "sequence-length-inequality", OptimizerPureExpressionScenarioKind.DifferentSequenceLengths, false, "(first, second) && (first, second, third)"),
         Case("sequence.element-different", "sequence-element-inequality", OptimizerPureExpressionScenarioKind.DifferentSequenceElements, false, "(first, second) && (first, other)"),
-        Case("arithmetic.equal-preserved", "arithmetic-purity-conservative-boundary", OptimizerPureExpressionScenarioKind.EqualArithmeticExpressionsPreserved, false, "left + right && left + right"),
+        Case("arithmetic.equal-preserved", "arithmetic-purity-conservative-boundary", OptimizerPureExpressionScenarioKind.EqualArithmeticExpressionsPreserved, false, "left + right && left + right", structurallyEqual: true),
         Case("conditional.call-preserved", "conditional-side-effect-boundary", OptimizerPureExpressionScenarioKind.ConditionalCallEffectsPreserved, false, "(check() ? yes : no) && (check() ? yes : no)"),
         Case("sequence.call-preserved", "sequence-side-effect-boundary", OptimizerPureExpressionScenarioKind.SequenceCallEffectsPreserved, false, "(first, next()) && (first, next())")
     ];
@@ -267,11 +322,13 @@ internal static class OptimizerPureExpressionScenarioCatalog
         OptimizerPureExpressionScenarioKind kind,
         bool shouldDeduplicate,
         string expectedJavaScript,
-        bool? shouldReuseLeftInstance = null)
+        bool? shouldReuseLeftInstance = null,
+        bool? structurallyEqual = null)
         => new(
             $"optimizer.pure-expression.{id}",
             dimension,
             kind,
+            structurallyEqual ?? shouldDeduplicate,
             shouldDeduplicate,
             shouldReuseLeftInstance ?? shouldDeduplicate,
             expectedJavaScript);

@@ -122,7 +122,7 @@ public static class Optimizer
             => op is Operator.LogicalNot or Operator.TypeOf or Operator.Void;
     }
 
-    private sealed class PureExpressionComparer : IEqualityComparer<Expression>
+    internal sealed class PureExpressionComparer : IEqualityComparer<Expression>
     {
         public static PureExpressionComparer Instance { get; } = new();
 
