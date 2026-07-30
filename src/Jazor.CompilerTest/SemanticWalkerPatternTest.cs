@@ -1,3 +1,4 @@
+using Acornima;
 using Acornima.Ast;
 using ECMAScript;
 using Jazor.Compiler;
@@ -5078,6 +5079,73 @@ line2"";
   let obj = new Map;
   let result = obj instanceof Map;
 }", script);
+  }
+
+  [TestMethod]
+  public void Visit_TypePattern_TupleTarget_UsesErasedObjectCheck()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(object value)
+                {
+                    bool result = value is ValueTuple<int, int> tuple;
+                }
+            }
+            ");
+
+    var first = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
+    var second = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
+
+    Assert.IsNotNull(first);
+    Assert.AreEqual(first, second);
+    StringAssert.Contains(first, "value !== null && typeof value === \"object\"");
+    StringAssert.Contains(first, "tuple = value");
+    _ = new Parser().ParseScript(first);
+  }
+
+  [TestMethod]
+  public void Visit_TypePattern_HashSetTarget_UsesSetCarrier()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(object value)
+                {
+                    bool result = value is HashSet<int>;
+                }
+            }
+            ");
+
+    var first = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
+    var second = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
+
+    Assert.IsNotNull(first);
+    Assert.AreEqual(first, second);
+    StringAssert.Contains(first, "value instanceof Set");
+    _ = new Parser().ParseScript(first);
+  }
+
+  [TestMethod]
+  public void Visit_TypePattern_EcmascriptDateTarget_UsesDateCarrier()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(object value)
+                {
+                    bool result = value is ECMAScript.Date;
+                }
+            }
+            ");
+
+    var first = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
+    var second = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
+
+    Assert.IsNotNull(first);
+    Assert.AreEqual(first, second);
+    StringAssert.Contains(first, "value instanceof Date");
+    _ = new Parser().ParseScript(first);
   }
 
   #endregion
