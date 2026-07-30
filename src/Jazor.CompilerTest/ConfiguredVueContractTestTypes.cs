@@ -44,3 +44,54 @@ public sealed record TestInheritedContractComponentOptions<TProps> : TestInherit
 	[ComponentDescription("@#setup")]
 	public VueTypedSetupCallback<TProps>? Setup { get; init; }
 }
+
+public sealed record TestInvalidPropsTypeComponentOptions<TProps> : VueComponentDefinition
+	where TProps : VueProps
+{
+	[ComponentDescription("@#props")]
+	[Props]
+	public string? Props { get; init; }
+}
+
+public sealed record TestNegativePropsIndexComponentOptions<TProps> : VueComponentDefinition
+	where TProps : VueProps
+{
+	[ComponentDescription("@#props")]
+	[Props(TypeArgumentIndex = -1)]
+	public string[]? Props { get; init; }
+}
+
+public sealed record TestMissingPropsTypeArgumentComponentOptions<TProps> : VueComponentDefinition
+	where TProps : VueProps
+{
+	[ComponentDescription("@#props")]
+	[Props(TypeArgumentIndex = 1)]
+	public string[]? Props { get; init; }
+}
+
+public sealed record TestInvalidEmitsTypeComponentOptions<TProps> : VueComponentDefinition
+	where TProps : VueProps
+{
+	[ComponentDescription("@#emits")]
+	[Emits]
+	public string? Emits { get; init; }
+
+	[ComponentDescription("@#setup")]
+	public VueTypedSetupCallback<TProps>? Setup { get; init; }
+}
+
+public sealed record TestMissingEmitsSourceComponentOptions<TProps> : VueComponentDefinition
+	where TProps : VueProps
+{
+	[ComponentDescription("@#emits")]
+	[Emits(SourceMemberName = "Missing")]
+	public string[]? Emits { get; init; }
+}
+
+public sealed record TestWhitespaceEmitsSourceComponentOptions<TProps> : VueComponentDefinition
+	where TProps : VueProps
+{
+	[ComponentDescription("@#emits")]
+	[Emits(SourceMemberName = " ")]
+	public string[]? Emits { get; init; }
+}

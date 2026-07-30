@@ -2549,6 +2549,25 @@ private bool TryExpandEcmascriptParamsArgument(
 			operation.Instance?.Type ?? operation.Method.ContainingType,
 			"method reference");
 
+		if (operation.Method.MethodKind == MethodKind.LocalFunction)
+		{
+			var localFunction = new Identifier(GetCurrentModuleDeclaredOrConfigName(operation.Method));
+			if (operation.Method.IsStatic || operation.Instance is null)
+				return WithOriginIfMissing(localFunction, operation);
+
+			// Roslyn exposes the captured containing instance on a non-static local-function method group.
+			// The function is still a lexical declaration, so bind that declaration instead of probing this.LocalFunction.
+			var capturedInstance = Translate<Expression>(operation.Instance, argument, null);
+			if (capturedInstance is null)
+				return WithOriginIfMissing(localFunction, operation);
+
+			var boundLocalFunction = new CallExpression(
+				new MemberExpression(localFunction, new Identifier("bind"), computed: false, optional: false),
+				NodeList.From(capturedInstance),
+				optional: false);
+			return WithOriginIfMissing(boundLocalFunction, operation);
+		}
+
 		// 如果是白名单方法调用，需要生成本地代理方法
 		// 生成代理方法参数
 		var name = AllocateUniqueName(operation, argument, LoweringSite.MethodReferenceProxy());
