@@ -24,18 +24,17 @@ public partial class SemanticWalker
 	/// <summary>
 	/// 构建对象创建表达式
 	/// </summary>
-	/// <param name="assignObj"></param>
 	/// <param name="operation"></param>
 	/// <param name="argument"></param>
 	/// <returns></returns>
-	private Expression BuildObjectCreation(Expression? assignObj, IObjectCreationOperation operation, SenseArgument argument)
+	private Expression BuildObjectCreation(IObjectCreationOperation operation, SenseArgument argument)
 	{
 		if (operation.Type is null)
 			return HandleTransformationFailure<Expression>(operation, "Object creation type could not be translated to JavaScript.");
 
 		if (operation.Type is INamedTypeSymbol namedType &&
 			ShouldLowerStructurally(namedType))
-			return BuildStructuralLiteral(assignObj, operation, argument);
+			return BuildStructuralLiteral(operation, argument);
 
 		RejectUnsupportedTypeFallback(operation, operation.Type, "object creation");
 		RejectUnsupportedNativeMapSetEqualityBoundaryIfNeeded(operation, operation.Type, "object creation");
@@ -64,14 +63,9 @@ public partial class SemanticWalker
 					$"Object-literal host type '{operation.Type.ToDisplayString(Format.NameFormat)}' does not support constructor arguments.");
 			}
 
-			Expression literal = operation.Initializer?.Initializers.Length > 0
+			return operation.Initializer?.Initializers.Length > 0
 				? RecursiveObjectOrCollectionInitializer(operation.Initializer, argument)
 				: new ObjectExpression(NodeList.Empty<Node>());
-
-			if (assignObj is not null)
-				literal = new AssignmentExpression(Operator.Assignment, assignObj, literal);
-
-			return literal;
 		}
 
 		Expression? mappedConstructor = null;
@@ -106,13 +100,7 @@ public partial class SemanticWalker
 		// 如果有初始化器，则需要用IIFE处理
 		if (operation.Initializer?.Initializers.Length > 0)
 		{
-			if (Util.IsECMAScriptRuntimeType(operation.Type) &&
-				Util.HasNameResolutionBoundary(operation.Type))
-			{
-				expr = RecursiveObjectOrCollectionInitializer(operation.Initializer, argument);
-			}
-
-			else if (TryBuildCollectionLiteral(operation.Initializer, mapper, argument, out var collectionLiteral))
+			if (TryBuildCollectionLiteral(operation.Initializer, mapper, argument, out var collectionLiteral))
 			{
 				expr = collectionLiteral;
 			}
@@ -124,9 +112,6 @@ public partial class SemanticWalker
 				expr = BuildObjectOrCollectionInitializer(expr, operation.Initializer, argument)!;
 			}
 		}
-
-		if (assignObj is not null)
-			expr = new AssignmentExpression(Operator.Assignment, assignObj, expr);
 
 		return expr;
 	}
@@ -196,7 +181,7 @@ public partial class SemanticWalker
 	private static bool IsObjectLiteralHostType(ITypeSymbol? typeSymbol)
 		=> Util.IsObjectLiteralHostType(typeSymbol);
 
-	private Expression BuildStructuralLiteral(Expression? assignObj, IObjectCreationOperation operation, SenseArgument argument)
+	private Expression BuildStructuralLiteral(IObjectCreationOperation operation, SenseArgument argument)
 	{
 		if (operation.Type is not INamedTypeSymbol namedType)
 			return HandleTransformationFailure<Expression>(operation, "Structural type could not be translated to JavaScript.");
@@ -257,11 +242,7 @@ public partial class SemanticWalker
 
 		AppendInferredRecordMembers(namedType, operation.Initializer, memberOrder, members, operation);
 
-		Expression expr = new ObjectExpression(NodeList.From(members.Select(static member => member.Node)));
-		if (assignObj is not null)
-			expr = new AssignmentExpression(Operator.Assignment, assignObj, expr);
-
-		return expr;
+		return new ObjectExpression(NodeList.From(members.Select(static member => member.Node)));
 	}
 
 	private Dictionary<string, int> BuildStructuralMemberOrderMap(INamedTypeSymbol type)
@@ -1408,7 +1389,7 @@ public partial class SemanticWalker
 				// through the same mapped setter path as every other initializer assignment.
 				var right = simpleAssignmentOp.Value is IObjectCreationOperation subObjectCreationOp &&
 					subObjectCreationOp.Initializer is not null
-					? BuildObjectCreation(null, subObjectCreationOp, argument)
+					? BuildObjectCreation(subObjectCreationOp, argument)
 					: TranslateTupleForTarget(simpleAssignmentOp.Value, simpleAssignmentOp.Target.Type, argument);
 
 				if (propertyReference?.Property.SetMethod is not null && propertyInstance is not null)
@@ -1803,7 +1784,7 @@ public partial class SemanticWalker
 				return WithOriginIfMissing(hostExpression, operation);
 		}
 
-		return BuildObjectCreation(null, operation, argument);
+		return BuildObjectCreation(operation, argument);
 	}
 
 	/// <summary>

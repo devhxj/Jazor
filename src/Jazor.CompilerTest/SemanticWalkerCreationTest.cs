@@ -247,6 +247,38 @@ public sealed class SemanticWalkerCreationTest
     }
 
     [TestMethod]
+    public void VisitObjectCreation_ObjectLiteralHostWithConstructorArgument_Throws()
+    {
+        var block = GetBlockOperation(@"
+            [ECMAScript]
+            [System.ComponentModel.Description(""@#"")]
+            sealed class ObjectLiteralHost
+            {
+                public ObjectLiteralHost(int value) { }
+            }
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var value = new ObjectLiteralHost(42);
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+
+        var exception = Assert.Throws<OperationTransformationException>(() =>
+        {
+            _ = walker.VisitObjectCreation(operation, new());
+        });
+
+        StringAssert.Contains(exception.Message, "does not support constructor arguments");
+        StringAssert.Contains(exception.Message, "ObjectLiteralHost");
+    }
+
+    [TestMethod]
     public void VisitObjectCreation_UnsupportedExternalType_Throws()
     {
         var block = GetBlockOperation(@"
