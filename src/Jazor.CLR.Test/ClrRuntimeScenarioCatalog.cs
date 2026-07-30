@@ -103,7 +103,8 @@ internal static class ClrRuntimeScenarioCatalog
         .. ClrRuntimeDecimalScenarios.All,
         .. ClrRuntimeDateTimeScenarios.All,
         .. ClrRuntimeTimeSpanScenarios.All,
-        .. ClrRuntimeDateTimeOffsetScenarios.All
+        .. ClrRuntimeDateTimeOffsetScenarios.All,
+        .. ClrRuntimeTimeOnlyScenarios.All
     ];
 
     public static ClrRuntimeScenario Get(string id)
