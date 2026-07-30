@@ -27,6 +27,7 @@ public static class DateTimeOffsetModule
 	private static Number DateTimeStylesAdjustToUniversal => 16;
 	private static Number DateTimeStylesAssumeLocal => 32;
 	private static Number DateTimeStylesAssumeUniversal => 64;
+	private static Number AllowedDateTimeStylesMask => 255;
 
 	private static void EnsureWholeNumber(Number value, string message)
 	{
@@ -50,6 +51,8 @@ public static class DateTimeOffsetModule
 	private static void ValidateDateTimeOffsetRange(BigInt utcTicks, BigInt offsetTicks)
 	{
 		ValidateOffsetTicks(offsetTicks);
+		if (utcTicks < ZeroTicks || utcTicks > MaxDateTimeTicks)
+			throw new Error("ArgumentOutOfRangeException: The UTC time and offset must produce a DateTimeOffset within range.");
 
 		var ticks = utcTicks + offsetTicks;
 		if (ticks < ZeroTicks || ticks > MaxDateTimeTicks)
@@ -889,6 +892,19 @@ public static class DateTimeOffsetModule
 		return day >= 1 && day <= daysInMonth;
 	}
 
+	private static bool HasIsoDatePrefix(string text)
+		=> text.Length >= 10
+			&& text[4] == '-'
+			&& text[7] == '-'
+			&& IsAsciiDigit(text[0])
+			&& IsAsciiDigit(text[1])
+			&& IsAsciiDigit(text[2])
+			&& IsAsciiDigit(text[3])
+			&& IsAsciiDigit(text[5])
+			&& IsAsciiDigit(text[6])
+			&& IsAsciiDigit(text[8])
+			&& IsAsciiDigit(text[9]);
+
 	private static bool TryParseIsoDateTime(
 		string text,
 		out Number year,
@@ -1128,7 +1144,7 @@ public static class DateTimeOffsetModule
 
 	private static void ValidateDateTimeStyles(Number styles)
 	{
-		if (styles < 0 || Math.FloorFn(styles) != styles)
+		if (styles < 0 || Math.FloorFn(styles) != styles || (styles & ~AllowedDateTimeStylesMask) != 0)
 			throw new Error("ArgumentException: Invalid DateTimeStyles value.");
 
 		if ((styles & DateTimeStylesNoCurrentDateDefault) != 0)
@@ -1306,6 +1322,10 @@ public static class DateTimeOffsetModule
 			var localTicks = CreateLocalTicks(year, month, day, hour, minute, second, millisecond) + subMillisecondTicks;
 			return CreateFromUtcTicks(localTicks - offsetTicks, offsetTicks);
 		}
+
+		// JS Date 会把 2023-02-29 归一化为三月一日；ISO 形状输入必须遵守 CLR 的严格日期契约。
+		if (HasIsoDatePrefix(s))
+			throw new Error($"FormatException: String '{input}' was not recognized as a valid DateTimeOffset.");
 
 		var parsed = new Date(s);
 		if (IsNaN(parsed.GetTime()))
