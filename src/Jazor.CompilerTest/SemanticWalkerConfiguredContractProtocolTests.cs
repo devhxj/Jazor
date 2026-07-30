@@ -120,6 +120,15 @@ public sealed class SemanticWalkerConfiguredContractProtocolTests
                     return () => H("div", props.Message);
                 }
 
+                private static VueRenderCallback ExpressionSetup(CounterProps props, VueSetupContext context)
+                    => () => H("div", props.BaseValue);
+
+                private static VueRenderCallback SetupWithoutEmitContext(CounterProps props, object context)
+                    => () => H("div", props.Message);
+
+                private static VueTypedSetupCallback<CounterProps> GetSetup()
+                    => Setup;
+
             {{methods}}
             }
             """;
@@ -186,6 +195,42 @@ internal static class ConfiguredContractProtocolCatalog
             "emits: [\"ready\", \"changed\"]",
             "setup: ConfiguredContractScenarios.setup"),
         Success(
+            "method-group.expression-body-empty-emits",
+            "props=generic-index-1;setup=method-group-expression-body;emit-context=present;emits=empty",
+            """
+                        var options = new TestShiftedContractComponentOptions<int, CounterProps>
+                        {
+                            Bootstrap = ExpressionSetup
+                        };
+                """,
+            "props: [\"baseValue\", \"message\"]",
+            "emits: []",
+            "setup: ConfiguredContractScenarios.expressionSetup"),
+        Success(
+            "method-group.no-emit-context-parameter",
+            "props=generic-index-1;setup=contravariant-method-group;emit-context=absent;emits=empty",
+            """
+                        var options = new TestShiftedContractComponentOptions<int, CounterProps>
+                        {
+                            Bootstrap = SetupWithoutEmitContext
+                        };
+                """,
+            "props: [\"baseValue\", \"message\"]",
+            "emits: []",
+            "setup: ConfiguredContractScenarios.setupWithoutEmitContext"),
+        Success(
+            "method-group.explicit-delegate-conversion",
+            "props=generic-index-1;setup=method-group-explicit-cast;operation=delegate-creation;emits=deduplicated",
+            """
+                        var options = new TestShiftedContractComponentOptions<int, CounterProps>
+                        {
+                            Bootstrap = (VueTypedSetupCallback<CounterProps>)(Setup)
+                        };
+                """,
+            "props: [\"baseValue\", \"message\"]",
+            "emits: [\"ready\", \"changed\"]",
+            "setup: ConfiguredContractScenarios.setup"),
+        Success(
             "inline-lambda.literal-emits",
             "props=generic-index-1;setup=anonymous-function;emits=literal-order",
             """
@@ -202,6 +247,41 @@ internal static class ConfiguredContractProtocolCatalog
             "props: [\"baseValue\", \"message\"]",
             "emits: [\"opened\", \"closed\"]",
             "setup: (props, context) =>"),
+        Success(
+            "inline-lambda.context-property-access",
+            "props=generic-index-1;setup=anonymous-function;context-use=direct-property;emits=literal",
+            """
+                        var options = new TestShiftedContractComponentOptions<int, CounterProps>
+                        {
+                            Bootstrap = (props, context) =>
+                            {
+                                var attrs = context.Attrs;
+                                context.Emit("attrs-read");
+                                return () => H("div", props.Message);
+                            }
+                        };
+                """,
+            "props: [\"baseValue\", \"message\"]",
+            "emits: [\"attrs-read\"]",
+            "let attrs = context.attrs"),
+        Success(
+            "local-function.block-body-emits",
+            "props=generic-index-1;setup=local-function-block-body;emits=literal",
+            """
+                        VueRenderCallback LocalSetup(CounterProps props, VueSetupContext context)
+                        {
+                            context.Emit("local-ready");
+                            return () => H("div", props.Message);
+                        }
+
+                        var options = new TestShiftedContractComponentOptions<int, CounterProps>
+                        {
+                            Bootstrap = LocalSetup
+                        };
+                """,
+            "props: [\"baseValue\", \"message\"]",
+            "emits: [\"local-ready\"]",
+            "setup: LocalSetup.bind(this)"),
         Success(
             "local-function.no-emits",
             "props=generic-index-1;setup=local-function-expression-body;emits=empty",
@@ -323,7 +403,18 @@ internal static class ConfiguredContractProtocolCatalog
                             }
                         };
                 """,
-            "requires literal non-empty event names")
+            "requires literal non-empty event names"),
+        Failure(
+            "emits.callback-factory-invocation",
+            "attribute=Emits;setup=invocation-result;analysis-root=unavailable;result=rejected",
+            """
+                        var options = new TestShiftedContractComponentOptions<int, CounterProps>
+                        {
+                            Bootstrap = GetSetup()
+                        };
+                """,
+            "could not analyze the setup callback",
+            "Use an inline lambda or a source-declared method group")
     ];
 
     private static ConfiguredContractSuccessCase Success(
