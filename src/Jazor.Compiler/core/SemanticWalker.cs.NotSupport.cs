@@ -317,8 +317,10 @@ public partial class SemanticWalker
 	public override Node? VisitRangeOperation(IRangeOperation operation, SenseArgument argument)
 	{
 		// 单独的范围操作在 JavaScript 中没有直接等价物
-		// 如果在数组元素访问上下文中，应该由 VisitArrayElementReference 处理
-		return HandleTransformationFailure<Node>(operation, "Standalone range operations are not supported in JavaScript conversion. Use array slicing instead.");
+		// 数组、string 或受支持 slice 上下文会由各自的父级访问节点消费。
+		return HandleTransformationFailure<Node>(
+			operation,
+			"Standalone System.Range values are not supported in JavaScript conversion. Use '..' directly in an array, string, or supported slice access.");
 	}
 
 	/// <summary>

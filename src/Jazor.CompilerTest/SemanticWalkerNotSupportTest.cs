@@ -392,9 +392,9 @@ public sealed class SemanticWalkerNotSupportTest
             block,
             static x => FindFirstOperation<IRangeOperation>(x),
             static (walker, operation) => walker.VisitRangeOperation(operation, new()),
-            "Standalone range operations are not supported");
+            "Standalone System.Range values are not supported");
 
-        AssertUnsupportedByDispatch(code, OperationKind.Range, "Standalone range operations are not supported");
+        AssertUnsupportedByDispatch(code, OperationKind.Range, "Standalone System.Range values are not supported");
     }
 
     [TestMethod]

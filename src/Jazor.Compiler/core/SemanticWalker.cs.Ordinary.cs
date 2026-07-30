@@ -872,6 +872,15 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitUnaryOperator(IUnaryOperation operation, SenseArgument argument)
 	{
+		// '^' needs the containing indexer/range to supply Length/Count. Reaching the
+		// unary visitor directly means C# is materializing a standalone System.Index value.
+		if (operation.OperatorKind == UnaryOperatorKind.Hat)
+		{
+			return HandleTransformationFailure<Node>(
+				operation,
+				"Standalone System.Index values are not supported in JavaScript conversion. Use '^' directly in an array, string, or supported indexer access.");
+		}
+
 		var operand = Translate<Expression>(operation.Operand, argument);
 		if (operation.OperatorMethod is not null)
 		{
@@ -907,10 +916,6 @@ public partial class SemanticWalker
 			// 将操作数强制转换为布尔值，应该转换为!!(operand) 或 Boolean(operand)
 			var innerOperand = new NonUpdateUnaryExpression(Operator.LogicalNot, operand);
 			return new NonUpdateUnaryExpression(Operator.LogicalNot, innerOperand);
-		}
-		else if (operation.OperatorKind == UnaryOperatorKind.Hat)
-		{
-			// 需要根据上下文语义来生成内容
 		}
 		else if (operation.OperatorKind == UnaryOperatorKind.None)
 		{
