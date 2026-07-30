@@ -117,6 +117,7 @@ internal static class ClrRuntimeScenarioCatalog
         .. ClrRuntimeDictionaryScenarios.All,
         .. ClrRuntimeIntegralScenarios.All,
         .. ClrRuntimeReadOnlyCollectionScenarios.All,
+        .. ClrRuntimeQueueStackScenarios.All,
         .. ClrRuntimeBooleanScenarios.All,
         .. ClrRuntimeInt32Scenarios.All,
         .. ClrRuntimeCharScenarios.All,

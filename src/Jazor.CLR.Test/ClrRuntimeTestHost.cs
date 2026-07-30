@@ -222,6 +222,13 @@ internal static class ClrRuntimeTestHost
           if (value instanceof Set) return { kind: "set", items: Array.from(value, encode) };
           if (value instanceof Map) return { kind: "map", items: Array.from(value).flatMap(([key, item]) => [encode(key), encode(item)]) };
           if (value instanceof WeakMap) return { kind: "weakMap", items: Array.from(value.__clrRuntimeEntries ?? []).flatMap(([key, item]) => [encode(key), encode(item)]) };
+          // JQueue/JStack state is exposed through prototype getters, not enumerable own fields.
+          if (value?.constructor?.name === "JQueue") {
+            return { kind: "record", properties: { head: encode(value.head), items: encode(value.items) } };
+          }
+          if (value?.constructor?.name === "JStack") {
+            return { kind: "record", properties: { items: encode(value.items) } };
+          }
           if (typeof value === "object" && Object.hasOwn(value, Symbol.toPrimitive)) {
             const primitive = value[Symbol.toPrimitive]("string");
             if (primitive === value)
