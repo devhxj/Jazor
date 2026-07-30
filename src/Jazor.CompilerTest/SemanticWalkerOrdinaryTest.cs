@@ -3547,6 +3547,62 @@ public sealed class SemanticWalkerOrdinaryTest
 }", script);
   }
 
+  [TestMethod]
+  public void Visit_UnaryOperator_SourceCustomOperator_RequiresExplicitMapping()
+  {
+    var block = GetBlockOperation("""
+            public readonly struct Flag
+            {
+                public static Flag operator -(Flag value) => value;
+            }
+
+            class TestClass
+            {
+                void TestMethod(Flag value)
+                {
+                    var result = -value;
+                }
+            }
+            """);
+
+    var exception = Assert.Throws<OperationTransformationException>(() =>
+      new SemanticWalker(true).Visit(block, new SenseArgument()));
+
+    StringAssert.Contains(exception.Message, "Flag.operator -(Flag)");
+    StringAssert.Contains(exception.Message, "requires an explicit whitelist/ECMAScript mapping");
+  }
+
+  [TestMethod]
+  public void Visit_UnaryOperator_EcmascriptTrueOperator_UsesBooleanCoercion()
+  {
+    var block = GetBlockOperation("""
+            [ECMAScript]
+            public readonly struct JsFlag
+            {
+                public static extern bool operator true(JsFlag value);
+                public static extern bool operator false(JsFlag value);
+            }
+
+            class TestClass
+            {
+                void TestMethod(JsFlag value)
+                {
+                    if (value)
+                    {
+                    }
+                }
+            }
+            """);
+
+    var first = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
+    var second = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
+
+    Assert.IsNotNull(first);
+    Assert.AreEqual(first, second);
+    StringAssert.Contains(first, "if (!(!value))");
+    _ = new Parser().ParseScript(first);
+  }
+
   #endregion
 
   #region 二元运算符完整测试
